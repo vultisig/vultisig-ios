@@ -2,10 +2,8 @@
 //  SwapKitFeatureFlagTests.swift
 //  VultisigAppTests
 //
-//  Locks the shipped behaviour for SwapKit: the integration is enabled for
-//  everyone now that the former Settings → Advanced opt-out toggle has been
-//  removed. `Coin+Swaps.swapProviders` is the single point of gating, and
-//  the `forcedSwapProvider` debug picker still narrows the provider list.
+//  Locks SwapKit provider availability and verifies that the
+//  `forcedSwapProvider` debug picker still narrows the provider list.
 //
 
 import XCTest
@@ -29,16 +27,7 @@ final class SwapKitFeatureFlagTests: XCTestCase {
         }
     }
 
-    // MARK: - isFeatureEnabled
-
-    func testFeatureFlagIsAlwaysEnabled() {
-        XCTAssertTrue(
-            SwapKitConfig.isFeatureEnabled,
-            "SwapKit has shipped — the feature is always enabled"
-        )
-    }
-
-    // MARK: - Coin+Swaps gating
+    // MARK: - Coin+Swaps availability
 
     func testSwapkitPresentInEthereumProviders() {
         let providers = makeCoin(chain: .ethereum, ticker: "ETH").swapProviders
@@ -56,6 +45,56 @@ final class SwapKitFeatureFlagTests: XCTestCase {
         XCTAssertTrue(providers.contains(.swapkit))
         XCTAssertTrue(providers.contains(.lifi))
         XCTAssertTrue(providers.contains(.thorchain))
+    }
+
+    func testSwapkitIsAddedCentrallyToHyperEvmAndOtherHeldEvmChains() {
+        XCTAssertTrue(makeCoin(chain: .hyperliquid, ticker: "HYPE").swapProviders.contains(.swapkit))
+        XCTAssertTrue(makeCoin(chain: .cronosChain, ticker: "CRO").swapProviders.contains(.swapkit))
+    }
+
+    func testRobinhoodIsSwapKitDestinationOnly() {
+        let ethereum = makeCoin(chain: .ethereum, ticker: "ETH")
+        let robinhood = makeCoin(chain: .robinhood, ticker: "ETH")
+
+        XCTAssertTrue(
+            SwapCoinsResolver.resolveAllProviders(
+                fromCoin: ethereum,
+                toCoin: robinhood
+            ).contains(.swapkit)
+        )
+        XCTAssertFalse(
+            SwapCoinsResolver.resolveAllProviders(
+                fromCoin: robinhood,
+                toCoin: ethereum
+            ).contains(.swapkit)
+        )
+    }
+
+    func testHyperEvmCanOriginateSwapKitQuotes() {
+        let hyperEvm = makeCoin(chain: .hyperliquid, ticker: "HYPE")
+        let ethereum = makeCoin(chain: .ethereum, ticker: "ETH")
+
+        XCTAssertTrue(
+            SwapCoinsResolver.resolveAllProviders(
+                fromCoin: hyperEvm,
+                toCoin: ethereum
+            ).contains(.swapkit)
+        )
+    }
+
+    func testDestinationResolverDropsSwapKitOnlyCoinFromRobinhoodSource() {
+        let robinhood = makeCoin(chain: .robinhood, ticker: "ETH")
+        let ton = makeCoin(chain: .ton, ticker: "GRAM")
+        let ethereum = makeCoin(chain: .ethereum, ticker: "ETH")
+
+        let resolved = SwapCoinsResolver.resolveToCoins(
+            fromCoin: robinhood,
+            allCoins: [ton, ethereum],
+            selectedToCoin: ton
+        )
+
+        XCTAssertEqual(resolved.coins, [ethereum])
+        XCTAssertEqual(resolved.selected, ethereum)
     }
 
     // MARK: - Forced swap provider (debug picker)
@@ -106,7 +145,7 @@ final class SwapKitFeatureFlagTests: XCTestCase {
     }
 
     func testForcedProviderNotEligibleForChainReturnsEmpty() {
-        // Ripple has only [.thorchain] naturally. Forcing 1inch produces
+        // Ripple has no 1inch route. Forcing 1inch produces
         // an empty list — Vultisig won't route through a provider that
         // doesn't support the chain at all.
         UserDefaults.standard.set("oneInch", forKey: forcedKey)

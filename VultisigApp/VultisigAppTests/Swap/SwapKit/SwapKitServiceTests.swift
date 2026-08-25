@@ -116,12 +116,21 @@ final class SwapKitServiceTests: XCTestCase {
         let data = try XCTUnwrap(body.data(using: .utf8))
         let client = NoRoutesHTTPClient(payload: data)
         let cache = await Self.makeCacheWithSupportedPair(fromChain: .bitcoinCash, toChain: .ethereum)
-        let service = SwapKitService(httpClient: client, providerCache: cache)
+        let fromCoin = Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8)
+        let toCoin = Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        let catalog = await Self.makeCatalog(
+            entries: [(fromCoin, "BCH.BCH"), (toCoin, "ETH.ETH")]
+        )
+        let service = SwapKitService(
+            httpClient: client,
+            providerCache: cache,
+            assetCatalog: catalog
+        )
 
         do {
             _ = try await service.fetchBestRoute(
-                fromCoin: Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8),
-                toCoin: Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
                 amount: Decimal(string: "0.0115") ?? .zero,
                 affiliateFeeBps: 50
             )
@@ -156,12 +165,21 @@ final class SwapKitServiceTests: XCTestCase {
             ],
             fetchedAt: Date()
         ))
-        let service = SwapKitService(httpClient: client, providerCache: cache)
+        let fromCoin = Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8)
+        let toCoin = Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        let catalog = await Self.makeCatalog(
+            entries: [(fromCoin, "BCH.BCH"), (toCoin, "ETH.ETH")]
+        )
+        let service = SwapKitService(
+            httpClient: client,
+            providerCache: cache,
+            assetCatalog: catalog
+        )
 
         do {
             _ = try await service.fetchBestRoute(
-                fromCoin: Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8),
-                toCoin: Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
                 amount: Decimal(string: "0.5") ?? .zero,
                 affiliateFeeBps: 50
             )
@@ -178,12 +196,21 @@ final class SwapKitServiceTests: XCTestCase {
         let data = try XCTUnwrap(body.data(using: .utf8))
         let client = NoRoutesHTTPClient(payload: data)
         let cache = await Self.makeCacheWithSupportedPair(fromChain: .bitcoinCash, toChain: .ethereum)
-        let service = SwapKitService(httpClient: client, providerCache: cache)
+        let fromCoin = Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8)
+        let toCoin = Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        let catalog = await Self.makeCatalog(
+            entries: [(fromCoin, "BCH.BCH"), (toCoin, "ETH.ETH")]
+        )
+        let service = SwapKitService(
+            httpClient: client,
+            providerCache: cache,
+            assetCatalog: catalog
+        )
 
         do {
             _ = try await service.fetchBestRoute(
-                fromCoin: Self.makeNativeCoin(.bitcoinCash, ticker: "BCH", decimals: 8),
-                toCoin: Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18),
+                fromCoin: fromCoin,
+                toCoin: toCoin,
                 amount: Decimal(string: "0.5") ?? .zero,
                 affiliateFeeBps: 50
             )
@@ -191,6 +218,25 @@ final class SwapKitServiceTests: XCTestCase {
         } catch let error as SwapKitError {
             XCTAssertEqual(error, .apiKeyInvalid)
         }
+    }
+
+    func testFetchBestRouteCatalogMissSkipsNetwork() async throws {
+        let client = RequestCountingHTTPClient()
+        let catalog = SwapKitAssetCatalog()
+        await catalog.setSnapshot(
+            SwapKitAssetCatalogSnapshot(buckets: [:], identifiers: [:])
+        )
+        let service = SwapKitService(httpClient: client, assetCatalog: catalog)
+
+        let route = try await service.fetchBestRoute(
+            fromCoin: Self.makeNativeCoin(.ethereum, ticker: "ETH", decimals: 18),
+            toCoin: Self.makeNativeCoin(.robinhood, ticker: "ETH", decimals: 18),
+            amount: 1,
+            affiliateFeeBps: 50
+        )
+
+        XCTAssertNil(route)
+        XCTAssertEqual(client.requestCount, 0)
     }
 
     // MARK: - Fixtures
@@ -222,6 +268,19 @@ final class SwapKitServiceTests: XCTestCase {
         )
         await cache.setSnapshot(snapshot)
         return cache
+    }
+
+    private static func makeCatalog(
+        entries: [(Coin, String)]
+    ) async -> SwapKitAssetCatalog {
+        let identifiers = Dictionary(uniqueKeysWithValues: entries.map { coin, identifier in
+            (SwapKitAssetKey(coin: coin), Set([identifier]))
+        })
+        let catalog = SwapKitAssetCatalog()
+        await catalog.setSnapshot(
+            SwapKitAssetCatalogSnapshot(buckets: [:], identifiers: identifiers)
+        )
+        return catalog
     }
 
     private func makeRoute(
@@ -277,5 +336,22 @@ private final class NoRoutesHTTPClient: HTTPClientProtocol, @unchecked Sendable 
         _ = responseType
         await Task.yield()
         throw HTTPError.statusCode(404, payload)
+    }
+}
+
+private final class RequestCountingHTTPClient: HTTPClientProtocol, @unchecked Sendable {
+    private enum TestError: Error { case unexpectedRequest }
+
+    private let lock = NSLock()
+    private var count = 0
+
+    var requestCount: Int {
+        lock.withLock { count }
+    }
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        _ = target
+        lock.withLock { count += 1 }
+        throw TestError.unexpectedRequest
     }
 }

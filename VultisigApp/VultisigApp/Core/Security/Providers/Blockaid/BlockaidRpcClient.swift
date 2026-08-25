@@ -36,7 +36,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         amount: String,
         data: String
     ) async throws -> BlockaidTransactionScanResponseJson {
-        let request = buildEthereumScanRequest(
+        let request = try buildEthereumScanRequest(
             chain: chain,
             from: from,
             to: to,
@@ -57,7 +57,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         amount: String,
         data: String
     ) async throws -> BlockaidEvmSimulationResponseJson {
-        let request = buildEthereumSimulateRequest(
+        let request = try buildEthereumSimulateRequest(
             chain: chain,
             from: from,
             to: to,
@@ -117,7 +117,7 @@ private extension BlockaidRpcClient {
         serializedTransaction: String
     ) -> BitcoinScanTransactionRequestJson {
         return BitcoinScanTransactionRequestJson(
-            chain: Chain.bitcoin.toBlockaidName(),
+            chain: BlockaidChainIdentifier.name(for: .bitcoin) ?? "bitcoin",
             metadata: CommonMetadataJson(url: BlockaidConstants.vultisigDomain),
             options: ["validation"],
             accountAddress: address,
@@ -131,9 +131,15 @@ private extension BlockaidRpcClient {
         to: String,
         data: String,
         amount: String
-    ) -> EthereumScanTransactionRequestJson {
+    ) throws -> EthereumScanTransactionRequestJson {
+        guard let blockaidChain = BlockaidChainIdentifier.name(for: chain) else {
+            throw BlockaidScannerError.scannerError(
+                "Chain \(chain) is not supported",
+                payload: nil
+            )
+        }
         return EthereumScanTransactionRequestJson(
-            chain: chain.toBlockaidName(),
+            chain: blockaidChain,
             metadata: EthereumScanTransactionRequestJson.MetadataJson(
                 domain: BlockaidConstants.vultisigDomain
             ),
@@ -155,7 +161,13 @@ private extension BlockaidRpcClient {
         to: String,
         data: String,
         amount: String
-    ) -> EthereumSimulateTransactionRequestJson {
+    ) throws -> EthereumSimulateTransactionRequestJson {
+        guard let blockaidChain = BlockaidChainIdentifier.name(for: chain) else {
+            throw BlockaidScannerError.scannerError(
+                "Chain \(chain) is not supported",
+                payload: nil
+            )
+        }
         return EthereumSimulateTransactionRequestJson(
             data: EthereumSimulateTransactionRequestJson.DataJson(
                 method: "eth_sendTransaction",
@@ -168,7 +180,7 @@ private extension BlockaidRpcClient {
                     )
                 ]
             ),
-            chain: chain.toBlockaidName(),
+            chain: blockaidChain,
             metadata: EthereumSimulateTransactionRequestJson.MetadataJson(
                 domain: BlockaidConstants.vultisigDomain
             ),
@@ -220,38 +232,5 @@ private extension BlockaidRpcClient {
             accountAddress: address,
             transaction: serializedTransaction
         )
-    }
-}
-
-// MARK: - Chain Extension
-
-private extension Chain {
-    func toBlockaidName() -> String {
-        switch self {
-        case .arbitrum:
-            return "arbitrum"
-        case .avalanche:
-            return "avalanche"
-        case .base:
-            return "base"
-        case .blast:
-            return "blast"
-        case .bscChain:
-            return "bsc"
-        case .bitcoin:
-            return "bitcoin"
-        case .ethereum:
-            return "ethereum"
-        case .optimism:
-            return "optimism"
-        case .polygon, .polygonV2:
-            return "polygon"
-        case .sui:
-            return "sui"
-        case .solana:
-            return "solana"
-        default:
-            return .empty
-        }
     }
 }

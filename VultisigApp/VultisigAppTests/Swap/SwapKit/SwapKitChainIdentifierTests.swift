@@ -21,6 +21,8 @@ final class SwapKitChainIdentifierTests: XCTestCase {
         XCTAssertEqual(SwapKitChainIdentifier.chainId(for: .polygon), "137")
         XCTAssertEqual(SwapKitChainIdentifier.chainId(for: .polygonV2), "137")
         XCTAssertEqual(SwapKitChainIdentifier.chainId(for: .optimism), "10")
+        XCTAssertEqual(SwapKitChainIdentifier.chainId(for: .hyperliquid), "999")
+        XCTAssertEqual(SwapKitChainIdentifier.chainId(for: .robinhood), "4663")
     }
 
     func testTronUsesNumericChainIdNotName() {

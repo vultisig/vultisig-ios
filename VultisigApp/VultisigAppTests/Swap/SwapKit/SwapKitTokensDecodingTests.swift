@@ -108,6 +108,100 @@ final class SwapKitTokensDecodingTests: XCTestCase {
         XCTAssertNil(nearGas.toCoinMeta())
     }
 
+    func testRobinhoodAndHyperEvmTokensUseNumericChainIds() throws {
+        let robinhood = SwapKitToken(
+            chain: "HOOD",
+            chainId: "4663",
+            address: "",
+            ticker: "ETH",
+            identifier: "HOOD.ETH",
+            name: "Ether",
+            decimals: 18,
+            logoURI: nil,
+            coingeckoId: "ethereum"
+        )
+        let hyperEvm = SwapKitToken(
+            chain: "HYPEREVM",
+            chainId: "999",
+            address: "",
+            ticker: "HYPE",
+            identifier: "HYPEREVM.HYPE",
+            name: "HYPE",
+            decimals: 18,
+            logoURI: nil,
+            coingeckoId: "hyperliquid"
+        )
+
+        XCTAssertEqual(try XCTUnwrap(robinhood.toCoinMeta()).chain, .robinhood)
+        XCTAssertEqual(try XCTUnwrap(hyperEvm.toCoinMeta()).chain, .hyperliquid)
+    }
+
+    func testHyperCoreTokenIsNotReverseMappedToHyperEvm() {
+        let hyperCore = SwapKitToken(
+            chain: "HYPE",
+            chainId: "hype",
+            address: "",
+            ticker: "HYPE",
+            identifier: "HYPE.HYPE",
+            name: "HYPE",
+            decimals: 8,
+            logoURI: nil,
+            coingeckoId: "hyperliquid"
+        )
+
+        XCTAssertNil(hyperCore.toCoinMeta())
+    }
+
+    func testCatalogPinsExactNewChainIdentifiers() async throws {
+        let usdcContract = "0xb88339CB7199b77E23DB6E890353E22632Ba630f"
+        let tokens = [
+            SwapKitToken(
+                chain: "HOOD",
+                chainId: "4663",
+                address: "",
+                ticker: "ETH",
+                identifier: "HOOD.ETH",
+                name: "Ether",
+                decimals: 18,
+                logoURI: nil,
+                coingeckoId: "ethereum"
+            ),
+            SwapKitToken(
+                chain: "HYPEREVM",
+                chainId: "999",
+                address: usdcContract,
+                ticker: "USDC",
+                identifier: "HYPEREVM.USDC-\(usdcContract)",
+                name: "USD Coin",
+                decimals: 6,
+                logoURI: nil,
+                coingeckoId: "usd-coin"
+            )
+        ]
+        let catalog = SwapKitAssetCatalog()
+        await catalog.setSnapshot(
+            SwapKitAssetCatalog.buildSnapshot(
+                responses: [
+                    SwapKitTokensResponse(provider: "FLASHNET", count: tokens.count, tokens: tokens)
+                ]
+            )
+        )
+
+        let hoodIdentifier = await catalog.identifier(
+            for: SwapKitAssetKey(chain: .robinhood, contractAddress: "", isNativeToken: true)
+        )
+        let hyperIdentifier = await catalog.identifier(
+            for: SwapKitAssetKey(
+                chain: .hyperliquid,
+                contractAddress: usdcContract.lowercased(),
+                isNativeToken: false
+            )
+        )
+
+        XCTAssertEqual(hoodIdentifier, "HOOD.ETH")
+        XCTAssertEqual(hyperIdentifier, "HYPEREVM.USDC-\(usdcContract)")
+    }
+
     func testMergeByChainDedupesByIdentifier() throws {
         // Two responses both list ETH.USDT — merged bucket has one entry.
         let payload = """

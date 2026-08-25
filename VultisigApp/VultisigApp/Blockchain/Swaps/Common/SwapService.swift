@@ -736,6 +736,9 @@ private extension SwapService {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuote {
+        guard SwapKitCapability.canQuote(from: fromCoin.chain) else {
+            throw SwapKitError.providerNotEnabled
+        }
         // Provider-cache gate — refuse to call `/v3/quote` for a chain SwapKit
         // doesn't enable. Fails CLOSED on the no-snapshot edge (throws
         // `providerNotEnabled`) rather than offering routes that fail
@@ -777,6 +780,10 @@ private extension SwapService {
             routeId: route.routeId,
             sourceAddress: fromCoin.address,
             destinationAddress: destination
+        )
+        try SwapKitService.validateSigningCapability(
+            response: response,
+            fromChain: fromCoin.chain
         )
         return .swapkit(
             response,

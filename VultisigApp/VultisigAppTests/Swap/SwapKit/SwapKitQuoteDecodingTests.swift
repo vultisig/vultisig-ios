@@ -150,6 +150,42 @@ final class SwapKitQuoteDecodingTests: XCTestCase {
             return XCTFail("Expected unsupported tx variant for unknown txType")
         }
         XCTAssertEqual(txType, "FUTURE_CHAIN")
+        XCTAssertThrowsError(
+            try SwapKitService.validateSigningCapability(
+                response: response,
+                fromChain: .ethereum
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? SwapKitError,
+                .unsupportedTxType("FUTURE_CHAIN")
+            )
+        }
+    }
+
+    func testTypedTxMustMatchSourceChainBeforeRanking() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-erc20-erc20-swap"
+        )
+
+        XCTAssertNoThrow(
+            try SwapKitService.validateSigningCapability(
+                response: response,
+                fromChain: .hyperliquid
+            )
+        )
+        XCTAssertThrowsError(
+            try SwapKitService.validateSigningCapability(
+                response: response,
+                fromChain: .solana
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? SwapKitError,
+                .unsupportedTxType("EVM/SOL")
+            )
+        }
     }
 
     func testProvidersFixtureDecodesEnabledChainIds() throws {

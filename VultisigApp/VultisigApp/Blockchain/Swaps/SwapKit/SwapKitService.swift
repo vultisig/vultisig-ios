@@ -19,13 +19,16 @@ struct SwapKitService {
 
     private let httpClient: HTTPClientProtocol
     private let providerCache: SwapKitProviderCache
+    private let assetCatalog: SwapKitAssetCatalog
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
-        providerCache: SwapKitProviderCache = .shared
+        providerCache: SwapKitProviderCache = .shared,
+        assetCatalog: SwapKitAssetCatalog = .shared
     ) {
         self.httpClient = httpClient
         self.providerCache = providerCache
+        self.assetCatalog = assetCatalog
     }
 
     /// Fetch all candidate routes for a (from, to) pair, drop the ones we
@@ -42,19 +45,6 @@ struct SwapKitService {
         slippagePercent: Double? = nil,
         affiliateFeeBps: Int
     ) async throws -> SwapKitRoute? {
-        // Opt-in feature flag (Settings → Advanced → "SwapKit"). When the
-        // flag is off, short-circuit even if `Coin+Swaps.swapProviders`
-        // already filtered `.swapkit` out — defense in depth so a future
-        // call site that bypasses the provider list can't accidentally
-        // light SwapKit up. The Vultisig proxy
-        // (`api.vultisig.com/swapkit/`) attaches the partner API key
-        // server-side; this flag exists to control client-side visibility
-        // during smoke testing.
-        guard SwapKitConfig.isFeatureEnabled else {
-            logger.info("[swapkit] feature flag disabled — skipping fetch")
-            return nil
-        }
-
         // `sellAmount` must be a decimal-with-dot string (e.g. "0.0086"),
         // NOT raw base units. Per the SwapKit API contract:
         //   "Amount in basic units (decimals separated with a dot)"
@@ -74,9 +64,20 @@ struct SwapKitService {
         // (when set) is passed here so SwapKit AML-screens it at quote time and
         // discovers routes that can deliver to it.
         let resolvedDestination = destinationAddress ?? toCoin.address
+        guard
+            let sellAsset = await assetCatalog.identifier(
+                for: SwapKitAssetKey(coin: fromCoin)
+            ),
+            let buyAsset = await assetCatalog.identifier(
+                for: SwapKitAssetKey(coin: toCoin)
+            )
+        else {
+            logger.info("[swapkit] exact catalogue identifier unavailable — skipping quote")
+            return nil
+        }
         let request = SwapKitQuoteRequest(
-            sellAsset: assetIdentifier(for: fromCoin),
-            buyAsset: assetIdentifier(for: toCoin),
+            sellAsset: sellAsset,
+            buyAsset: buyAsset,
             sellAmount: Self.formatSellAmount(amount),
             sourceAddress: fromCoin.address.isEmpty ? nil : fromCoin.address,
             destinationAddress: resolvedDestination.isEmpty ? nil : resolvedDestination,
@@ -178,6 +179,20 @@ struct SwapKitService {
         return ranked.max(by: { $0.1 < $1.1 })?.0
     }
 
+    static func validateSigningCapability(
+        response: SwapKitSwapResponse,
+        fromChain: Chain
+    ) throws {
+        if case let .unsupported(txType, _) = response.tx {
+            throw SwapKitError.unsupportedTxType(txType)
+        }
+        guard SwapKitCapability.canSign(response.tx, from: fromChain) else {
+            throw SwapKitError.unsupportedTxType(
+                "\(response.meta.txType)/\(fromChain.ticker)"
+            )
+        }
+    }
+
     /// Format an amount as a dot-separated decimal string suitable for
     /// `SwapKitQuoteRequest.sellAmount`. SwapKit interprets the value as the
     /// human-readable amount of the source asset (e.g. "0.0086" BNB), NOT
@@ -223,6 +238,9 @@ extension SwapKitService {
     /// and TRON fixtures all report the real native miner/network fee there as
     /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
+        guard SwapKitCapability.canSign(response.tx, from: fromCoin.chain) else {
+            return nil
+        }
         if case let .evm(tx) = response.tx {
             return evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken)
         }
@@ -251,9 +269,13 @@ extension SwapKitService {
     }
 
     private func inboundFeeFromWire(response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
-        let prefix = chainPrefix(for: fromCoin.chain, fallback: fromCoin.ticker)
+        guard let prefix = response.sellAsset.split(separator: ".").first.map(String.init) else {
+            return nil
+        }
         guard
-            let inbound = response.fees.first(where: { $0.type == "inbound" && $0.chain == prefix }),
+            let inbound = response.fees.first(where: {
+                $0.type == "inbound" && $0.chain.caseInsensitiveCompare(prefix) == .orderedSame
+            }),
             let amount = Decimal(string: inbound.amount)
         else {
             return nil
@@ -271,90 +293,7 @@ extension SwapKitService {
     }
 }
 
-extension SwapKitService {
-    /// SwapKit asset identifier format: `Chain.Ticker` for native tokens,
-    /// `Chain.Ticker-Contract` for tokens with an on-chain contract address.
-    /// See `api-contract.md` for the canonical chain prefix table.
-    ///
-    /// SwapKit tracks display renames, so there is no new-to-old mapping to
-    /// apply here. The native TON coin is `TON.GRAM`, not `TON.TON`: the
-    /// Toncoin → Gram rename has landed on their side too, and quoting the
-    /// pre-rename identifier now fails with `tokenPriceUnavailable`. Re-check
-    /// the exact identifier before assuming otherwise — the list is public and
-    /// unauthenticated:
-    ///
-    ///     GET https://api.vultisig.com/swapkit/tokens?provider=NEAR
-    ///
-    /// (bare host, no `/v3` — see `SwapKitAPI.baseURL`). Match on `identifier`;
-    /// `price` is null for every entry on that endpoint, so a null price says
-    /// nothing about whether an asset is quotable.
-    func assetIdentifier(for coin: Coin) -> String {
-        let prefix = chainPrefix(for: coin.chain, fallback: coin.ticker)
-        let symbol = canonicalSymbol(for: coin)
-        if coin.isNativeToken || coin.contractAddress.isEmpty {
-            return "\(prefix).\(symbol)"
-        }
-        return "\(prefix).\(symbol)-\(coin.contractAddress)"
-    }
-}
-
 private extension SwapKitService {
-    /// The symbol to quote the coin under: its own ticker, except that a NATIVE
-    /// coin defers to the curated `TokensStore` entry for its chain.
-    ///
-    /// That normalises a *stale persisted* ticker forward to the name the asset
-    /// trades under today. The launch migration rewrites `vault.coins`, but a
-    /// vault restored from a pre-rebrand backup lands after it has already run
-    /// and still holds a `TON`-ticker'd native, which would quote as the dead
-    /// `TON.TON`.
-    ///
-    /// Note the direction — this maps stale local data onto the CURRENT
-    /// canonical symbol, and reads that symbol from the store rather than
-    /// hardcoding it, so a future rename needs no change here. The reverse
-    /// (rewriting a current ticker back to a legacy one to accommodate a
-    /// lagging counterparty) is exactly what broke TON swaps and must not be
-    /// reintroduced without re-checking the live list first.
-    func canonicalSymbol(for coin: Coin) -> String {
-        guard coin.isNativeToken else { return coin.ticker }
-        let curated = TokensStore.TokenSelectionAssets
-            .first { $0.chain == coin.chain && $0.isNativeToken }
-        return curated?.ticker ?? coin.ticker
-    }
-
-    func chainPrefix(for chain: Chain, fallback: String) -> String {
-        // Canonical prefixes verified empirically against
-        // `/v3/tokens?provider=NEAR` — SwapKit uses chain-specific tickers
-        // for EVM L2s and BSC, not the gas-token tickers Vultisig stores in
-        // `coin.ticker`. Mismatches surface as `helpers_invalid_asset_identifier`
-        // 500s from the proxy at quote time.
-        switch chain {
-        case .ethereum: return "ETH"
-        case .base: return "BASE"
-        case .optimism: return "OP"
-        case .arbitrum: return "ARB"
-        case .avalanche: return "AVAX"
-        case .bscChain: return "BSC"
-        case .polygon, .polygonV2: return "POL"
-        case .solana: return "SOL"
-        case .bitcoin: return "BTC"
-        case .bitcoinCash: return "BCH"
-        case .litecoin: return "LTC"
-        case .dogecoin: return "DOGE"
-        case .tron: return "TRON"
-        case .ton: return "TON"
-        case .cardano: return "ADA"
-        case .sui: return "SUI"
-        case .ripple: return "XRP"
-        case .dash: return "DASH"
-        case .zcash: return "ZEC"
-        case .gaiaChain: return "ATOM"
-        case .kujira: return "KUJI"
-        case .thorChain, .thorChainChainnet, .thorChainStagenet: return "THOR"
-        case .mayaChain: return "MAYA"
-        default: return fallback
-        }
-    }
-
     /// Decimals to scale the inbound fee by. The fee is always denominated in the source chain's
     /// native gas coin, so a native-source coin already carries the right decimals; for an ERC-20 /
     /// SPL token source we look up the chain's native coin (whose decimals differ from the token's)

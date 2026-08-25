@@ -22,9 +22,10 @@ struct SwapCoinsResolver {
     }
 
     static func resolveToCoins(fromCoin: Coin, allCoins: [Coin], selectedToCoin: Coin) -> (coins: [Coin], selected: Coin) {
-        let fromProviders = fromCoin.swapProviders
         let coins = allCoins
-            .filter { $0.swapProviders.contains(where: fromProviders.contains) }
+            .filter {
+                !resolveAllProviders(fromCoin: fromCoin, toCoin: $0).isEmpty
+            }
             .filter { $0 != fromCoin }
             .sorted()
 
@@ -37,6 +38,10 @@ struct SwapCoinsResolver {
         let fromProviders = fromCoin.swapProviders
         let toProviders = toCoin.swapProviders
         var commonProviders = fromProviders.filter { toProviders.contains($0) }
+
+        if !SwapKitCapability.canQuote(from: fromCoin.chain) {
+            commonProviders.removeAll { $0 == .swapkit }
+        }
 
         // If either coin is thorchain stagenet, remove mainnet thorchain provider to avoid mixing networks
         if toCoin.chain == .thorChainChainnet || fromCoin.chain == .thorChainChainnet {

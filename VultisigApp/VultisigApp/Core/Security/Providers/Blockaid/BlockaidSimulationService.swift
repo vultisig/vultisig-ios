@@ -168,7 +168,8 @@ actor BlockaidSimulationService {
         init?(payload: KeysignPayload) {
             switch payload.coin.chainType {
             case .EVM:
-                guard let memo = payload.memo?.lowercased(),
+                guard BlockaidChainIdentifier.name(for: payload.coin.chain) != nil,
+                      let memo = payload.memo?.lowercased(),
                       memo.hasPrefix("0x"),
                       memo.count > 2 else { return nil }
                 self = .evm(chain: payload.coin.chain, memo: memo)

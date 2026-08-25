@@ -88,51 +88,79 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         return Coin(asset: meta, address: "addr", hexPublicKey: "pub")
     }
 
-    /// The native TON asset is `TON.GRAM` on the wire. SwapKit tracked the
-    /// Toncoin → Gram rename, so the pre-rename `TON.TON` no longer resolves —
-    /// quoting it fails with `tokenPriceUnavailable`. Verifiable against
-    /// `GET https://api.vultisig.com/swapkit/tokens?provider=NEAR` (bare host,
-    /// no `/v3`), which lists `TON.GRAM` and no `TON.TON` at all.
-    func testAssetIdentifierUsesGramForTheNativeTonCoin() {
-        let gram = makeCoin(chain: .ton, ticker: "GRAM", isNativeToken: true)
-
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: gram), "TON.GRAM")
-    }
-
-    /// A jetton keeps its own ticker and appends its contract — the native case
-    /// must not bleed into it. Matches SwapKit's listed
-    /// `TON.USDT-EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs`.
-    func testAssetIdentifierKeepsTheJettonTickerAndContract() {
-        let contract = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
-        let usdt = makeCoin(chain: .ton, ticker: "USDT", contractAddress: contract, isNativeToken: false)
-
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: usdt), "TON.USDT-\(contract)")
-    }
-
-    /// A vault restored from a pre-rebrand backup still holds a `TON`-ticker'd
-    /// native: the launch migration rewrites `vault.coins`, but an import lands
-    /// after it has already run. Canonicalising against the curated store keeps
-    /// that vault quotable instead of sending the dead `TON.TON`.
-    func testAssetIdentifierCanonicalisesAnUnmigratedNativeTonCoin() {
+    func testCatalogUsesExactIdentifierForLegacyNativeTicker() async {
+        let catalog = SwapKitAssetCatalog()
+        let token = SwapKitToken(
+            chain: "TON",
+            chainId: "ton",
+            address: "",
+            ticker: "GRAM",
+            identifier: "TON.GRAM",
+            name: "Gram",
+            decimals: 9,
+            logoURI: nil,
+            coingeckoId: "the-open-network"
+        )
+        await catalog.setSnapshot(Self.snapshot(tokens: [token]))
         let legacy = makeCoin(chain: .ton, ticker: "TON", isNativeToken: true)
 
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: legacy), "TON.GRAM")
+        let identifier = await catalog.identifier(for: SwapKitAssetKey(coin: legacy))
+
+        XCTAssertEqual(identifier, "TON.GRAM")
     }
 
-    /// Canonicalisation is scoped to natives — a jetton that happens to carry a
-    /// ticker matching nothing curated must still quote under its own.
-    func testAssetIdentifierDoesNotCanonicaliseNonNativeTokens() {
-        let jetton = makeCoin(chain: .ton, ticker: "TON", contractAddress: "EQjetton", isNativeToken: false)
-
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: jetton), "TON.TON-EQjetton")
-    }
-
-    func testAssetIdentifierLeavesOtherChainsUnchanged() {
+    func testCatalogReturnsNilForUnlistedAsset() async {
+        let catalog = SwapKitAssetCatalog()
+        await catalog.setSnapshot(Self.snapshot(tokens: []))
         let eth = makeCoin(chain: .ethereum, ticker: "ETH", isNativeToken: true)
-        let btc = makeCoin(chain: .bitcoin, ticker: "BTC", isNativeToken: true)
 
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: eth), "ETH.ETH")
-        XCTAssertEqual(SwapKitService().assetIdentifier(for: btc), "BTC.BTC")
+        let identifier = await catalog.identifier(for: SwapKitAssetKey(coin: eth))
+
+        XCTAssertNil(identifier)
+    }
+
+    func testCatalogCollapsesEvmIdentifierAddressCasing() async {
+        let catalog = SwapKitAssetCatalog()
+        let lowercased = SwapKitToken(
+            chain: "ETH",
+            chainId: "1",
+            address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            ticker: "USDC",
+            identifier: "ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            name: "USD Coin",
+            decimals: 6,
+            logoURI: nil,
+            coingeckoId: "usd-coin"
+        )
+        let checksummed = SwapKitToken(
+            chain: "ETH",
+            chainId: "1",
+            address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            ticker: "USDC",
+            identifier: "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            name: "USD Coin",
+            decimals: 6,
+            logoURI: nil,
+            coingeckoId: "usd-coin"
+        )
+        await catalog.setSnapshot(
+            SwapKitAssetCatalog.buildSnapshot(
+                responses: [
+                    SwapKitTokensResponse(provider: "LOWER", count: 1, tokens: [lowercased]),
+                    SwapKitTokensResponse(provider: "CHECKSUM", count: 1, tokens: [checksummed])
+                ]
+            )
+        )
+        let coin = makeCoin(
+            chain: .ethereum,
+            ticker: "USDC",
+            contractAddress: lowercased.address ?? "",
+            isNativeToken: false
+        )
+
+        let identifier = await catalog.identifier(for: SwapKitAssetKey(coin: coin))
+
+        XCTAssertEqual(identifier, lowercased.identifier)
     }
 
     @MainActor
@@ -144,9 +172,17 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
             uniqueIds: [novel.uniqueId]
         )
         let cache = SwapKitTokensCache()
-        cache.setSnapshot(buckets: [.arbitrum: bucket])
+        await cache.setSnapshot(buckets: [.arbitrum: bucket])
         let read = await cache.tokens(for: .arbitrum)
         XCTAssertEqual(read.tokens.count, 1)
         XCTAssertEqual(read.tokens.first?.ticker, "NOVL")
+    }
+
+    private static func snapshot(tokens: [SwapKitToken]) -> SwapKitAssetCatalogSnapshot {
+        SwapKitAssetCatalog.buildSnapshot(
+            responses: [
+                SwapKitTokensResponse(provider: "TEST", count: tokens.count, tokens: tokens)
+            ]
+        )
     }
 }

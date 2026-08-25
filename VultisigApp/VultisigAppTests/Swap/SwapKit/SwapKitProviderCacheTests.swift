@@ -84,6 +84,38 @@ final class SwapKitProviderCacheTests: XCTestCase {
         XCTAssertTrue(SwapKitProviderCache.chainEnabled(.ripple, in: providers))
     }
 
+    func testLiveProviderShapeEnablesRobinhoodAndHyperEvm() {
+        let liveShape = [
+            SwapKitProvider(
+                name: "FLASHNET",
+                provider: "FLASHNET",
+                displayName: "Flashnet",
+                displayNameLong: nil,
+                count: nil,
+                enabledChainIds: ["4663", "999"],
+                supportedChainIds: nil,
+                supportedActions: ["swap"]
+            )
+        ]
+
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.robinhood, in: liveShape))
+        XCTAssertTrue(SwapKitProviderCache.chainEnabled(.hyperliquid, in: liveShape))
+        XCTAssertTrue(
+            SwapKitProviderCache.pairEnabled(
+                fromChain: .robinhood,
+                toChain: .hyperliquid,
+                in: liveShape
+            )
+        )
+    }
+
+    func testFutureEvmChainUsesItsNumericChainIdWithoutMapperRow() {
+        XCTAssertEqual(
+            SwapKitChainIDMapper.swapKitChainId(for: .mantle),
+            String(Chain.mantle.chainID ?? 0)
+        )
+    }
+
     /// LTC is currently NOT in any provider's `enabledChainIds`, so the
     /// cache reads it as "not enabled" and `Coin+Swaps.swift`'s `.litecoin`
     /// arm (which lists `.swapkit`) is silently filtered out at the
