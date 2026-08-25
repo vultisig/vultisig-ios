@@ -99,6 +99,26 @@ final class SecurityScannerSwapTests: XCTestCase {
         }
     }
 
+    func testShortBase58SolanaAddressThrowsInsteadOfScanning() {
+        let transaction = makeTransaction(
+            quote: .jupiter(
+                makeSolanaQuote(base64: Data([1]).base64EncodedString()),
+                fee: nil,
+                platformFee: .zero,
+                feeOnInput: false
+            ),
+            fromAddress: "1"
+        )
+
+        XCTAssertThrowsError(
+            try SecurityScannerTransactionFactory().createSecurityScanner(transaction: transaction)
+        ) { error in
+            guard case SecurityScannerTransactionFactoryError.invalidAddress("1") = error else {
+                return XCTFail("Expected invalid Solana source address, got \(error)")
+            }
+        }
+    }
+
     func testFactoryFailureEndsInVisibleNotScannedState() async {
         let service = FailingSecurityScannerService()
         let viewModel = SecurityScannerViewModel(service: service)
@@ -119,9 +139,24 @@ final class SecurityScannerSwapTests: XCTestCase {
 }
 
 private extension SecurityScannerSwapTests {
-    func makeTransaction(quote: SwapQuote) -> SwapTransaction {
-        let sol = makeCoin(chain: .solana, ticker: "SOL", decimals: 9, isNative: true)
-        let usdc = makeCoin(chain: .solana, ticker: "USDC", decimals: 6, isNative: false)
+    func makeTransaction(
+        quote: SwapQuote,
+        fromAddress: String? = nil
+    ) -> SwapTransaction {
+        let sol = makeCoin(
+            chain: .solana,
+            ticker: "SOL",
+            decimals: 9,
+            isNative: true,
+            address: fromAddress ?? Self.solanaAddress
+        )
+        let usdc = makeCoin(
+            chain: .solana,
+            ticker: "USDC",
+            decimals: 6,
+            isNative: false,
+            address: Self.solanaAddress
+        )
         return SwapTransaction(
             fromCoin: sol,
             toCoin: usdc,
@@ -155,7 +190,8 @@ private extension SecurityScannerSwapTests {
         chain: Chain,
         ticker: String,
         decimals: Int,
-        isNative: Bool
+        isNative: Bool,
+        address: String
     ) -> Coin {
         let meta = CoinMeta.make(
             chain: chain,
@@ -163,7 +199,7 @@ private extension SecurityScannerSwapTests {
             decimals: decimals,
             isNativeToken: isNative
         )
-        return Coin(asset: meta, address: Self.solanaAddress, hexPublicKey: "")
+        return Coin(asset: meta, address: address, hexPublicKey: "")
     }
 
     static let solanaAddress = "So11111111111111111111111111111111111111112"

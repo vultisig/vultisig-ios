@@ -220,7 +220,8 @@ private extension SecurityScannerTransactionFactory {
 
 private extension SecurityScannerTransactionFactory {
     func createSOLSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
-        guard Base58.decodeNoCheck(string: transaction.fromCoin.address) != nil else {
+        guard let decodedAddress = Base58.decodeNoCheck(string: transaction.fromCoin.address),
+              decodedAddress.count == 32 else {
             throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromCoin.address)
         }
         guard let quote = transaction.quote else {
