@@ -157,20 +157,16 @@ actor SwapKitProviderCache {
     }
 }
 
-/// Maps Vultisig's `Chain` enum to SwapKit's chainId string (per
-/// `api-contract.md` canonical chain table). Returns `""` when the chain has
-/// no SwapKit-side identifier — that maps to "definitely not enabled" in the
-/// cache predicate, which is what we want.
+/// Maps Vultisig's `Chain` enum to SwapKit's chainId string. EVM chains use
+/// their decimal chain id directly so a newly supported EVM network does not
+/// require another client allowlist entry just to try a quote.
 enum SwapKitChainIDMapper {
     static func swapKitChainId(for chain: Chain) -> String {
+        if chain.chainType == .EVM, let chainId = chain.chainID {
+            return String(chainId)
+        }
+
         switch chain {
-        case .ethereum: return "1"
-        case .arbitrum: return "42161"
-        case .avalanche: return "43114"
-        case .base: return "8453"
-        case .bscChain: return "56"
-        case .polygon, .polygonV2: return "137"
-        case .optimism: return "10"
         case .solana: return "solana"
         case .bitcoin: return "bitcoin"
         case .bitcoinCash: return "bitcoincash"
@@ -191,15 +187,30 @@ enum SwapKitChainIDMapper {
         }
     }
 
-    /// Reverse map for the per-token `chain` field in `/tokens` responses
-    /// (uppercase ticker-style key, e.g. `"ETH"`, `"BSC"`, `"NEAR"`, `"BTC"`).
+    /// Reverse map for a `/tokens` entry. Numeric EVM `chainId` is
+    /// authoritative, which distinguishes Robinhood (`4663`) from Ethereum
+    /// even though both native assets use the ETH ticker. The `chain` key is
+    /// retained for non-EVM slugs and legacy responses without `chainId`.
     /// Returns `nil` for chains Vultisig has no wallet support for — those
     /// tokens can't be receive destinations so they're dropped at decode.
     /// Note: SwapKit's per-token `chain` is unique per Vultisig chain (Base
     /// ETH appears as `"BASE"`, OP ETH as `"OP"`, not as `"ETH"`), so the
     /// reverse map is many-to-one only for legacy aliases (e.g. `"POL"` and
     /// `"MATIC"` both reaching `.polygon`).
-    static func chain(forSwapKitChain swapKitChain: String) -> Chain? {
+    static func chain(
+        forSwapKitChain swapKitChain: String,
+        chainId: String? = nil
+    ) -> Chain? {
+        if let chainId,
+           let numericChainId = Int(chainId),
+           let evmChain = Chain.allCases.first(where: {
+               $0.chainType == .EVM && $0.chainID == numericChainId
+           }) {
+            // PolygonV2 shares 137 with Polygon. SwapKit's catalogue models
+            // the network as one chain, so keep the canonical wallet chain.
+            return evmChain == .polygonV2 ? .polygon : evmChain
+        }
+
         switch swapKitChain.uppercased() {
         case "ETH": return .ethereum
         case "BSC", "BNB": return .bscChain
@@ -222,6 +233,11 @@ enum SwapKitChainIDMapper {
         case "XRP": return .ripple
         case "ATOM": return .gaiaChain
         case "KUJI": return .kujira
+        case "HOOD": return .robinhood
+        case "HYPEREVM": return .hyperliquid
+        // HyperCore is a separate venue and is deliberately out of scope.
+        // Never infer the EVM wallet chain from its `HYPE` catalogue key.
+        case "HYPE": return nil
         // Chains SwapKit lists tokens on but Vultisig doesn't hold wallets
         // for — caller drops the token. Enumerated for grep-discoverability
         // rather than relying on the default arm.

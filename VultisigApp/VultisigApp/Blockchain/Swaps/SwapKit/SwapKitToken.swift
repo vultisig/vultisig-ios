@@ -21,8 +21,8 @@ import Foundation
 ///    empty string for NEAR's `NEAR.NEAR` gas token, sometimes a NEAR
 ///    intent identifier like `zec.omft.near` for cross-chain entries).
 ///  - `chainId` — SwapKit's per-chain identifier (`"1"` for EVM, `"solana"`,
-///    `"bitcoin"`, etc.). Not used by the adapter; the `chain` string is the
-///    canonical key.
+///    `"bitcoin"`, etc.). Numeric EVM ids are authoritative because the
+///    display `chain` key can otherwise collide or refer to HyperCore.
 struct SwapKitToken: Codable, Hashable {
     let chain: String
     let chainId: String?
@@ -54,7 +54,10 @@ extension SwapKitToken {
     ///    its chain (NEAR cross-chain wrappers like `NEAR.ZEC-zec.omft.near`
     ///    aren't holdable on Vultisig).
     func toCoinMeta() -> CoinMeta? {
-        guard let chain = SwapKitChainIDMapper.chain(forSwapKitChain: self.chain) else {
+        guard let chain = SwapKitChainIDMapper.chain(
+            forSwapKitChain: self.chain,
+            chainId: chainId
+        ) else {
             return nil
         }
 

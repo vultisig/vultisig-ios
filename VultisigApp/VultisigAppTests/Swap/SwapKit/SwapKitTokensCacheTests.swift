@@ -88,7 +88,10 @@ final class SwapKitTokensCacheTests: XCTestCase {
             httpClient: failingClient,
             providerCache: SwapKitProviderCache(httpClient: failingClient)
         )
-        cache.setSnapshot(buckets: [.ethereum: bucket], fetchedAt: Date(timeIntervalSince1970: 0))
+        await cache.setSnapshot(
+            buckets: [.ethereum: bucket],
+            fetchedAt: Date(timeIntervalSince1970: 0)
+        )
 
         // Force a refresh well past the TTL — the snapshot is stale, the fetch
         // fails (no provider snapshot), so last-good must be served.
