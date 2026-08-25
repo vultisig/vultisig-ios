@@ -40,7 +40,7 @@ struct WidgetMarketRow: View {
 
             WidgetSparkline(
                 values: asset.sparkline,
-                isPositive: (asset.priceChangePercentage24h ?? 0) >= 0,
+                isPositive: finiteChange.map { $0 >= 0 },
                 lineWidth: isCompact ? 1.5 : 1.7
             )
             .frame(maxWidth: .infinity)
@@ -54,11 +54,11 @@ struct WidgetMarketRow: View {
                     .lineLimit(1)
 
                 HStack(spacing: 3) {
-                    if asset.priceChangePercentage24h != nil {
-                        Image(systemName: changeSymbol)
+                    if let finiteChange {
+                        Image(systemName: changeSymbol(for: finiteChange))
                             .font(WidgetTheme.iconFont(size: 7, weight: .bold))
                     }
-                    Text(WidgetMarketFormatting.compactChange(asset.priceChangePercentage24h))
+                    Text(WidgetMarketFormatting.change(finiteChange))
                         .font(WidgetTheme.labelFont(size: isCompact ? 10 : 10.5))
                         .foregroundStyle(changeColor)
                         .lineLimit(1)
@@ -72,14 +72,19 @@ struct WidgetMarketRow: View {
     }
 
     private var changeColor: Color {
-        guard let change = asset.priceChangePercentage24h else { return WidgetTheme.secondaryText }
+        guard let change = finiteChange else { return WidgetTheme.secondaryText }
         return change >= 0 ? WidgetTheme.positive : WidgetTheme.negative
     }
 
-    private var changeSymbol: String {
-        (asset.priceChangePercentage24h ?? 0) >= 0
+    private func changeSymbol(for change: Double) -> String {
+        change >= 0
             ? "arrowtriangle.up.fill"
             : "arrowtriangle.down.fill"
+    }
+
+    private var finiteChange: Double? {
+        guard let change = asset.priceChangePercentage24h, change.isFinite else { return nil }
+        return change
     }
 
     private var accessibilityLabel: String {

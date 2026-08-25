@@ -8,8 +8,9 @@ import WidgetKit
 
 struct WidgetSparkline: View {
     let values: [Double]
-    let isPositive: Bool
+    let isPositive: Bool?
     var lineWidth: CGFloat = 2
+    var fillOpacity: Double = 0.20
 
     @Environment(\.widgetRenderingMode) private var renderingMode
 
@@ -49,11 +50,18 @@ struct WidgetSparkline: View {
     }
 
     private var tint: Color {
-        isPositive ? WidgetTheme.positive : WidgetTheme.negative
+        switch isPositive {
+        case true:
+            return WidgetTheme.positive
+        case false:
+            return WidgetTheme.negative
+        case nil:
+            return WidgetTheme.tertiaryText
+        }
     }
 
     private var areaGradient: LinearGradient {
-        let opacity = renderingMode == .fullColor ? 0.25 : 0
+        let opacity = renderingMode == .fullColor ? fillOpacity : 0
         return LinearGradient(
             colors: [tint.opacity(opacity), tint.opacity(0)],
             startPoint: .top,

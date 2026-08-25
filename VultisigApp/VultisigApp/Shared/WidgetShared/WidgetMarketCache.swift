@@ -26,26 +26,49 @@ actor WidgetMarketCache {
     }
 
     func entry(for key: String) -> WidgetMarketCacheEntry? {
-        loadEntries()[key]
+        loadEntries(from: fileURL)[key]
     }
 
     func store(_ assets: [WidgetMarketAsset], updatedAt: Date, for key: String) throws {
         guard let fileURL else { return }
-        var entries = loadEntries()
-        entries[key] = WidgetMarketCacheEntry(assets: assets, updatedAt: updatedAt)
-        while entries.count > Self.maximumEntryCount,
-              let oldestKey = entries.min(by: { $0.value.updatedAt < $1.value.updatedAt })?.key {
-            entries.removeValue(forKey: oldestKey)
-        }
         try FileManager.default.createDirectory(
             at: fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        let data = try encoder.encode(entries)
-        try data.write(to: fileURL, options: .atomic)
+
+        let coordinator = NSFileCoordinator(filePresenter: nil)
+        var coordinationError: NSError?
+        var writeError: Error?
+        coordinator.coordinate(
+            writingItemAt: fileURL,
+            options: .forMerging,
+            error: &coordinationError
+        ) { coordinatedURL in
+            do {
+                var entries = loadEntries(from: coordinatedURL)
+                entries[key] = WidgetMarketCacheEntry(assets: assets, updatedAt: updatedAt)
+                while entries.count > Self.maximumEntryCount,
+                      let oldestKey = entries.min(by: {
+                          $0.value.updatedAt < $1.value.updatedAt
+                      })?.key {
+                    entries.removeValue(forKey: oldestKey)
+                }
+                let data = try encoder.encode(entries)
+                try data.write(to: coordinatedURL, options: .atomic)
+            } catch {
+                writeError = error
+            }
+        }
+
+        if let coordinationError {
+            throw coordinationError
+        }
+        if let writeError {
+            throw writeError
+        }
     }
 
-    private func loadEntries() -> [String: WidgetMarketCacheEntry] {
+    private func loadEntries(from fileURL: URL?) -> [String: WidgetMarketCacheEntry] {
         guard let fileURL,
               let data = try? Data(contentsOf: fileURL),
               let entries = try? decoder.decode([String: WidgetMarketCacheEntry].self, from: data) else {

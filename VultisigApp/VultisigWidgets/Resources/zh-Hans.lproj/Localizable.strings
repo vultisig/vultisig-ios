@@ -1,6 +1,7 @@
 "widget.accessibility.asset" = "%@，%@，价格 %@，涨跌 %@，七日趋势";
 "widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@，%@，%@，%@ %@，七日趋势，%@";
+"widget.accessibility.tickerWithoutTrend" = "%@，%@，%@，%@ %@，%@";
 "widget.asset" = "资产";
 "widget.cached" = "缓存数据";
 "widget.cachedData" = "缓存的数据";
@@ -24,3 +25,4 @@
 "widget.topMarketDataUnavailable" = "热门加密货币市场数据暂时不可用";
 "widget.up" = "上涨";
 "widget.updatedData" = "更新的数据";
+"widget.valueUnavailableDisplay" = "—";

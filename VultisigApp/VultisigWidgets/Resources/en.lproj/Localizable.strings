@@ -1,6 +1,7 @@
 "widget.accessibility.asset" = "%@, %@, price %@, change %@, seven day trend";
 "widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, seven day trend, %@";
+"widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Asset";
 "widget.cached" = "Cached";
 "widget.cachedData" = "cached data";
@@ -24,3 +25,4 @@
 "widget.topMarketDataUnavailable" = "Top cryptocurrency market data is temporarily unavailable";
 "widget.up" = "up";
 "widget.updatedData" = "updated data";
+"widget.valueUnavailableDisplay" = "—";

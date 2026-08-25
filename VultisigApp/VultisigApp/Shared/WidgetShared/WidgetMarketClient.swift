@@ -17,10 +17,12 @@ enum WidgetMarketError: Error, Equatable {
     case emptyResponse
     case emptySelection
     case imageTooLarge
+    case unapprovedImageURL
 }
 
 enum WidgetMarketEndpoint {
     private static let proxyBaseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3")
+    private static let approvedImageHost = "coin-images.coingecko.com"
 
     static func url(query: WidgetMarketQuery, currency: String) throws -> URL {
         guard let baseURL = proxyBaseURL?.appendingPathComponent("coins/markets"),
@@ -54,6 +56,17 @@ enum WidgetMarketEndpoint {
         }
         components.queryItems = [URLQueryItem(name: "query", value: query)]
         guard let url = components.url else { throw WidgetMarketError.invalidURL }
+        return url
+    }
+
+    static func validatedImageURL(_ url: URL) throws -> URL {
+        guard url.scheme?.lowercased() == "https",
+              url.host?.lowercased() == approvedImageHost,
+              url.user == nil,
+              url.password == nil,
+              url.port == nil else {
+            throw WidgetMarketError.unapprovedImageURL
+        }
         return url
     }
 }
@@ -100,7 +113,8 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     }
 
     func iconData(from url: URL) async throws -> Data {
-        var request = URLRequest(url: url)
+        let approvedURL = try WidgetMarketEndpoint.validatedImageURL(url)
+        var request = URLRequest(url: approvedURL)
         request.timeoutInterval = 8
         let (data, response) = try await session.data(for: request)
         try Self.validate(response)
@@ -195,7 +209,7 @@ private struct RemoteMarketAsset: Decodable {
             id: id.lowercased(),
             symbol: symbol.uppercased(),
             name: name,
-            imageURL: image,
+            imageURL: image.flatMap { try? WidgetMarketEndpoint.validatedImageURL($0) },
             iconData: nil,
             currentPrice: currentPrice,
             priceChangePercentage24h: priceChangePercentage24h,

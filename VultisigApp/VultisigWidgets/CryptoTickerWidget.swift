@@ -153,9 +153,11 @@ struct CryptoTickerEntryView: View {
                 tokenIcon(asset, size: 30)
                 identity(asset)
                 Spacer(minLength: 8)
-                Text("widget.sevenDay")
-                    .font(WidgetTheme.labelFont(size: 11))
-                    .foregroundStyle(WidgetTheme.secondaryText)
+                if hasUsableSparkline(asset) {
+                    Text("widget.sevenDay")
+                        .font(WidgetTheme.labelFont(size: 11))
+                        .foregroundStyle(WidgetTheme.secondaryText)
+                }
                 staleIndicator
                 WidgetBrandMark(size: 18)
             }
@@ -176,7 +178,8 @@ struct CryptoTickerEntryView: View {
 
             WidgetSparkline(
                 values: asset.sparkline,
-                isPositive: (asset.priceChangePercentage24h ?? 0) >= 0
+                isPositive: finiteChange(asset).map { $0 >= 0 },
+                fillOpacity: 0.28
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -229,8 +232,17 @@ struct CryptoTickerEntryView: View {
     }
 
     private func changeColor(_ asset: WidgetMarketAsset) -> Color {
-        guard let change = asset.priceChangePercentage24h else { return WidgetTheme.secondaryText }
+        guard let change = finiteChange(asset) else { return WidgetTheme.secondaryText }
         return change >= 0 ? WidgetTheme.positive : WidgetTheme.negative
+    }
+
+    private func finiteChange(_ asset: WidgetMarketAsset) -> Double? {
+        guard let change = asset.priceChangePercentage24h, change.isFinite else { return nil }
+        return change
+    }
+
+    private func hasUsableSparkline(_ asset: WidgetMarketAsset) -> Bool {
+        asset.sparkline.count > 1
     }
 
     @ViewBuilder
@@ -246,7 +258,7 @@ struct CryptoTickerEntryView: View {
     private var accessibilityLabel: String {
         guard let asset = entry.asset else { return String(localized: "widget.cryptoMarketDataUnavailable") }
         let direction: String
-        if let change = asset.priceChangePercentage24h {
+        if let change = finiteChange(asset) {
             direction = change >= 0
                 ? String(localized: "widget.up")
                 : String(localized: "widget.down")
@@ -256,8 +268,11 @@ struct CryptoTickerEntryView: View {
         let freshness = entry.isStale
             ? String(localized: "widget.cachedData")
             : String(localized: "widget.updatedData")
+        let format = hasUsableSparkline(asset)
+            ? String(localized: "widget.accessibility.ticker")
+            : String(localized: "widget.accessibility.tickerWithoutTrend")
         return String(
-            format: String(localized: "widget.accessibility.ticker"),
+            format: format,
             locale: .current,
             asset.name,
             asset.symbol,

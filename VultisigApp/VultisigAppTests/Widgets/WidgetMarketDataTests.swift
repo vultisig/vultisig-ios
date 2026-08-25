@@ -14,7 +14,7 @@ final class WidgetMarketDataTests: XCTestCase {
         "id":"ethereum",
         "symbol":"eth",
         "name":"Ethereum",
-        "image":"https://example.com/eth.png",
+        "image":"https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
         "current_price":4200,
         "market_cap_rank":2,
         "price_change_percentage_24h":-1.25,
@@ -24,7 +24,7 @@ final class WidgetMarketDataTests: XCTestCase {
         "id":"bitcoin",
         "symbol":"btc",
         "name":"Bitcoin",
-        "image":"https://example.com/btc.png",
+        "image":"https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
         "current_price":79910,
         "market_cap_rank":1,
         "price_change_percentage_24h":3.54,
@@ -65,6 +65,24 @@ final class WidgetMarketDataTests: XCTestCase {
 
         XCTAssertEqual(components.path, "/coingeicko/api/v3/search")
         XCTAssertEqual(components.queryItems, [URLQueryItem(name: "query", value: "bitcoin cash")])
+    }
+
+    func testIconURLAcceptsOnlyCoinGeckoHTTPSCDN() throws {
+        let approved = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
+        )
+        let unapproved = try XCTUnwrap(URL(string: "https://example.com/bitcoin.png"))
+        let insecure = try XCTUnwrap(
+            URL(string: "http://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
+        )
+
+        XCTAssertEqual(try WidgetMarketEndpoint.validatedImageURL(approved), approved)
+        XCTAssertThrowsError(try WidgetMarketEndpoint.validatedImageURL(unapproved)) { error in
+            XCTAssertEqual(error as? WidgetMarketError, .unapprovedImageURL)
+        }
+        XCTAssertThrowsError(try WidgetMarketEndpoint.validatedImageURL(insecure)) { error in
+            XCTAssertEqual(error as? WidgetMarketError, .unapprovedImageURL)
+        }
     }
 
     func testEmptyAssetSelectionDoesNotFallThroughToTopMarkets() {
@@ -121,7 +139,7 @@ final class WidgetMarketDataTests: XCTestCase {
         }
     }
 
-    func testRemoteIconURLTakesPriorityOverSharedPreviewAsset() throws {
+    func testRemoteIconURLIsNotExposedToAsyncImageView() throws {
         let imageURL = try XCTUnwrap(URL(string: "https://example.com/bitcoin.png"))
         let asset = WidgetMarketAsset(
             id: "bitcoin",
@@ -135,7 +153,20 @@ final class WidgetMarketDataTests: XCTestCase {
             sparkline: []
         )
 
-        XCTAssertEqual(asset.iconLogo, imageURL.absoluteString)
+        XCTAssertEqual(asset.iconLogo, "btc")
+
+        let unknownAsset = WidgetMarketAsset(
+            id: "chainlink",
+            symbol: "LINK",
+            name: "Chainlink",
+            imageURL: imageURL,
+            iconData: nil,
+            currentPrice: 1,
+            priceChangePercentage24h: nil,
+            marketCapRank: nil,
+            sparkline: []
+        )
+        XCTAssertEqual(unknownAsset.iconLogo, "")
     }
 
     func testCacheRoundTripRetainsIconData() async throws {
@@ -174,6 +205,38 @@ final class WidgetMarketDataTests: XCTestCase {
         let newest = await cache.entry(for: "configuration-6")
         XCTAssertNil(oldest)
         XCTAssertNotNil(newest)
+    }
+
+    func testSeparateCachesPreserveConcurrentWrites() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let asset = try XCTUnwrap(
+            WidgetMarketClient.decode(data: Self.responseData, query: .top(limit: 1)).first
+        )
+
+        for index in 0..<20 {
+            let fileURL = directory.appendingPathComponent("cache-\(index).json")
+            let firstCache = WidgetMarketCache(fileURL: fileURL)
+            let secondCache = WidgetMarketCache(fileURL: fileURL)
+            async let firstWrite: Void = firstCache.store(
+                [asset],
+                updatedAt: Date(timeIntervalSince1970: 1),
+                for: "first"
+            )
+            async let secondWrite: Void = secondCache.store(
+                [asset],
+                updatedAt: Date(timeIntervalSince1970: 2),
+                for: "second"
+            )
+
+            _ = try await (firstWrite, secondWrite)
+
+            let verifier = WidgetMarketCache(fileURL: fileURL)
+            let first = await verifier.entry(for: "first")
+            let second = await verifier.entry(for: "second")
+            XCTAssertNotNil(first, "Missing first write at iteration \(index)")
+            XCTAssertNotNil(second, "Missing second write at iteration \(index)")
+        }
     }
 
     func testServiceFallsBackToLastGoodCache() async throws {

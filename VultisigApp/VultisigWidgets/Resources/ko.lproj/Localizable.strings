@@ -1,6 +1,7 @@
 "widget.accessibility.asset" = "%@, %@, 가격 %@, 변동 %@, 7일 추세";
 "widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, 7일 추세, %@";
+"widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "자산";
 "widget.cached" = "캐시됨";
 "widget.cachedData" = "캐시된 데이터";
@@ -24,3 +25,4 @@
 "widget.topMarketDataUnavailable" = "주요 암호화폐 시장 데이터를 일시적으로 사용할 수 없습니다";
 "widget.up" = "상승";
 "widget.updatedData" = "업데이트된 데이터";
+"widget.valueUnavailableDisplay" = "—";

@@ -7,6 +7,9 @@ import Foundation
 
 enum WidgetMarketFormatting {
     static func price(_ value: Double, currency: String, locale: Locale = .current) -> String {
+        guard value.isFinite else {
+            return String(localized: "widget.valueUnavailableDisplay")
+        }
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = currency.uppercased()
@@ -25,7 +28,8 @@ enum WidgetMarketFormatting {
             formatter.maximumFractionDigits = 8
         }
 
-        return formatter.string(from: NSNumber(value: value)) ?? "—"
+        return formatter.string(from: NSNumber(value: value))
+            ?? String(localized: "widget.valueUnavailableDisplay")
     }
 
     static func change(_ value: Double?, locale: Locale = .current) -> String {
@@ -34,7 +38,9 @@ enum WidgetMarketFormatting {
         }
         let formatter = percentageFormatter(locale: locale)
         formatter.positivePrefix = "+"
-        let percentage = formatter.string(from: NSNumber(value: value / 100)) ?? "—"
+        guard let percentage = formatter.string(from: NSNumber(value: value / 100)) else {
+            return String(localized: "widget.changeUnavailableDisplay")
+        }
         return String(
             format: String(localized: "widget.change"),
             locale: locale,
@@ -58,10 +64,13 @@ enum WidgetMarketFormatting {
     }
 
     static func compactChange(_ value: Double?, locale: Locale = .current) -> String {
-        guard let value, value.isFinite else { return "—" }
+        guard let value, value.isFinite else {
+            return String(localized: "widget.valueUnavailableDisplay")
+        }
         let formatter = percentageFormatter(locale: locale)
         formatter.positivePrefix = ""
-        return formatter.string(from: NSNumber(value: abs(value) / 100)) ?? "—"
+        return formatter.string(from: NSNumber(value: abs(value) / 100))
+            ?? String(localized: "widget.valueUnavailableDisplay")
     }
 
     private static func percentageFormatter(locale: Locale) -> NumberFormatter {

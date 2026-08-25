@@ -1,6 +1,7 @@
 "widget.accessibility.asset" = "%@, %@, preço %@, variação %@, tendência de sete dias";
 "widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, tendência de sete dias, %@";
+"widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Ativo";
 "widget.cached" = "Em cache";
 "widget.cachedData" = "dados em cache";
@@ -24,3 +25,4 @@
 "widget.topMarketDataUnavailable" = "Os dados das principais criptomoedas estão temporariamente indisponíveis";
 "widget.up" = "subiu";
 "widget.updatedData" = "dados atualizados";
+"widget.valueUnavailableDisplay" = "—";

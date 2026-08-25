@@ -1,6 +1,7 @@
 "widget.accessibility.asset" = "%@, %@, cijena %@, promjena %@, sedmodnevni trend";
 "widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, sedmodnevni trend, %@";
+"widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Imovina";
 "widget.cached" = "Predmemorirano";
 "widget.cachedData" = "predmemorirani podaci";
@@ -24,3 +25,4 @@
 "widget.topMarketDataUnavailable" = "Podaci vodećih kriptovaluta privremeno nisu dostupni";
 "widget.up" = "poraslo";
 "widget.updatedData" = "ažurirani podaci";
+"widget.valueUnavailableDisplay" = "—";
