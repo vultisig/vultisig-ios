@@ -268,6 +268,7 @@ struct ChainDetailScreen: View {
                 isLoading: viewModel.tronLoader?.isLoading ?? false
             ).showIf(viewModel.isTron)
         }
+        .animation(.interpolatingSpring(duration: 0.25), value: isQbtcClaimBannerDismissed)
     }
 
     var bottomContentSection: some View {
