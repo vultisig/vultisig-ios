@@ -16,7 +16,7 @@
 - Fonts and typography: both use a compact two-line asset hierarchy with bold tickers, secondary names, and right-aligned price/change values. Vultisig retains the system locale's `US$` presentation, which is intentional dynamic formatting rather than design drift.
 - Spacing and layout rhythm: the three-row, headerless medium layout, row separators, equal edge columns, centered chart track, and rounded widget surface follow the CoinMarketCap reference structure.
 - Colors and visual tokens: Vultisig intentionally keeps its dark navy theme and existing green/red chart gradients while preserving the reference's semantic gain/loss treatment.
-- Image quality and asset fidelity: the visible BTC, ETH, and USDT previews use real bundled token artwork; runtime entries prioritize downloaded CoinGecko image data. No placeholder initials are visible in the verified preview.
+- Image quality and asset fidelity: the visible BTC, ETH, and USDT previews reuse Vultisig's shared token artwork through `AsyncImageView`; runtime entries prioritize downloaded CoinGecko image data. No widget-only token copies or placeholder initials are visible in the verified preview.
 - Copy and content: ticker, name, price, and percentage change match the requested information hierarchy. The title and explanatory copy remain outside the widget in Apple's gallery UI.
 - Icons: gain/loss direction glyphs and token artwork are aligned and visually consistent at preview size.
 - Accessibility and resilience: the row layout uses fixed equal asset/value columns around a flexible chart column, preventing the chart midpoint from drifting when prices vary in width.

@@ -13,7 +13,17 @@ struct WidgetMarketRow: View {
     var body: some View {
         HStack(spacing: isCompact ? 8 : 10) {
             HStack(spacing: isCompact ? 8 : 10) {
-                WidgetTokenIcon(asset: asset, size: isCompact ? 30 : 34)
+                AsyncImageView(
+                    logo: asset.iconLogo,
+                    size: CGSize(
+                        width: isCompact ? 30 : 34,
+                        height: isCompact ? 30 : 34
+                    ),
+                    ticker: asset.symbol,
+                    tokenChainLogo: nil,
+                    imageData: asset.iconData
+                )
+                .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(asset.symbol)

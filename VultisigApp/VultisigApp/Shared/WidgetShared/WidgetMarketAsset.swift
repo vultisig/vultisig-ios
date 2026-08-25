@@ -16,6 +16,27 @@ struct WidgetMarketAsset: Codable, Equatable, Sendable, Identifiable {
     let marketCapRank: Int?
     let sparkline: [Double]
 
+    var iconLogo: String {
+        if let imageURL {
+            return imageURL.absoluteString
+        }
+
+        switch id {
+        case "bitcoin":
+            return "btc"
+        case "ethereum":
+            return "eth"
+        case "tether":
+            return "usdt"
+        case "binancecoin":
+            return "bsc"
+        case "solana":
+            return "solana"
+        default:
+            return ""
+        }
+    }
+
     func withIconData(_ data: Data?) -> WidgetMarketAsset {
         WidgetMarketAsset(
             id: id,

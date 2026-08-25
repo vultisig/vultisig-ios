@@ -88,6 +88,48 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(sampled.last, source.last)
     }
 
+    func testPreviewAssetsReuseSharedAppIconNames() {
+        let expectedIcons = [
+            "bitcoin": "btc",
+            "ethereum": "eth",
+            "tether": "usdt",
+            "binancecoin": "bsc",
+            "solana": "solana"
+        ]
+
+        for (id, iconName) in expectedIcons {
+            let asset = WidgetMarketAsset(
+                id: id,
+                symbol: iconName.uppercased(),
+                name: id,
+                imageURL: nil,
+                iconData: nil,
+                currentPrice: 1,
+                priceChangePercentage24h: nil,
+                marketCapRank: nil,
+                sparkline: []
+            )
+            XCTAssertEqual(asset.iconLogo, iconName)
+        }
+    }
+
+    func testRemoteIconURLTakesPriorityOverSharedPreviewAsset() throws {
+        let imageURL = try XCTUnwrap(URL(string: "https://example.com/bitcoin.png"))
+        let asset = WidgetMarketAsset(
+            id: "bitcoin",
+            symbol: "BTC",
+            name: "Bitcoin",
+            imageURL: imageURL,
+            iconData: nil,
+            currentPrice: 1,
+            priceChangePercentage24h: nil,
+            marketCapRank: nil,
+            sparkline: []
+        )
+
+        XCTAssertEqual(asset.iconLogo, imageURL.absoluteString)
+    }
+
     func testCacheRoundTripRetainsIconData() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

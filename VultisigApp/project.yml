@@ -283,6 +283,12 @@ targets:
         group: VultisigApp/Shared/WidgetShared
       - path: VultisigApp/Shared/WidgetShared/WidgetSparklineSampler.swift
         group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Components/ImageView/AsyncImageView.swift
+        group: VultisigApp/Components/ImageView
+      - path: VultisigApp/Components/ImageView/CachedAsyncImage.swift
+        group: VultisigApp/Components/ImageView
+      - path: VultisigApp/Shared/WidgetShared/MarketWidgetAssets.xcassets
+        group: VultisigApp/Shared/WidgetShared
 
     settings:
       base:
@@ -300,6 +306,7 @@ targets:
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         ENABLE_PREVIEWS: YES
         SWIFT_EMIT_LOC_STRINGS: YES
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_EXTENSION"
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
 
     buildToolPlugins:

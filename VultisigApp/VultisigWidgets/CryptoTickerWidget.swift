@@ -126,7 +126,7 @@ struct CryptoTickerEntryView: View {
     private func smallContent(_ asset: WidgetMarketAsset) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                WidgetTokenIcon(asset: asset, size: 28)
+                tokenIcon(asset, size: 28)
                 identity(asset)
                 Spacer(minLength: 4)
                 staleIndicator
@@ -150,7 +150,7 @@ struct CryptoTickerEntryView: View {
     private func mediumContent(_ asset: WidgetMarketAsset) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                WidgetTokenIcon(asset: asset, size: 30)
+                tokenIcon(asset, size: 30)
                 identity(asset)
                 Spacer(minLength: 8)
                 Text("7D")
@@ -192,6 +192,17 @@ struct CryptoTickerEntryView: View {
                 .foregroundStyle(WidgetTheme.secondaryText)
                 .lineLimit(1)
         }
+    }
+
+    private func tokenIcon(_ asset: WidgetMarketAsset, size: CGFloat) -> some View {
+        AsyncImageView(
+            logo: asset.iconLogo,
+            size: CGSize(width: size, height: size),
+            ticker: asset.symbol,
+            tokenChainLogo: nil,
+            imageData: asset.iconData
+        )
+        .accessibilityHidden(true)
     }
 
     private var unavailableContent: some View {
