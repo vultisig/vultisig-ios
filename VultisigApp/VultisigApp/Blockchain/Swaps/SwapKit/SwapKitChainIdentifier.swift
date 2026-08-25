@@ -3,13 +3,8 @@
 //  VultisigApp
 //
 //  Translation from the Vultisig `Chain` enum to the chainId string SwapKit's
-//  `/track` endpoint expects. The table mirrors the canonical chain table in
-//  `swapkit-spike/api-contract.md` — EVM chains use the decimal chainId,
+//  `/track` endpoint expects. EVM chains use their decimal chainId directly;
 //  non-EVM chains use SwapKit's slug.
-//
-//  Kept separate from `SwapKitService.chainPrefix` because that function maps
-//  to the *asset prefix* (e.g. `ETH`, `ARB`, `BTC`) — `/track` needs the
-//  numeric/slug chainId instead, which only overlaps for a couple of chains.
 //
 
 import Foundation
