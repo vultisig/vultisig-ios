@@ -7,19 +7,20 @@
 //  Figma `Chain Detail Page - Default` banner (node 75201:107954):
 //  a centered text block on a `bgSurface2` card, a radial blue glow,
 //  scattered/rotated BTC coin decorations, and a primary "Claim Now"
-//  pill. No close button — the banner self-hides once the vault has a
-//  QBTC chain (host gates visibility on `!hasQbtcChain`).
+//  pill, plus a close control that lets the host dismiss the banner.
 //
 
 import SwiftUI
 
 struct ClaimQbtcPromoBanner: View {
     let onClaim: () -> Void
+    let onDismiss: () -> Void
 
     var body: some View {
         ZStack {
             backgroundGlow
             decorativeCoins
+                .accessibilityHidden(true)
             foreground
         }
         .frame(height: 156)
@@ -29,7 +30,11 @@ struct ClaimQbtcPromoBanner: View {
                 .fill(Theme.colors.bgSurface2)
         )
         .clipShape(Theme.radius.xl.shape)
-        .accessibilityElement(children: .combine)
+        .overlay(alignment: .topTrailing) {
+            CarouselBannerCloseButton(action: onDismiss)
+                .padding(8)
+                .accessibilityLabel("close".localized)
+        }
     }
 
     private var backgroundGlow: some View {
@@ -105,7 +110,7 @@ struct ClaimQbtcPromoBanner: View {
 }
 
 #Preview {
-    ClaimQbtcPromoBanner(onClaim: {})
+    ClaimQbtcPromoBanner(onClaim: {}, onDismiss: {})
         .padding()
         .background(Theme.colors.bgPrimary)
 }

@@ -30,6 +30,8 @@ struct ChainDetailScreen: View {
     /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
     /// user lands back here with QBTC already added to the vault.
     @State private var pendingQbtcAddAfterKeygen: Bool = false
+    @AppStorage("isQbtcClaimBannerDismissed")
+    private var isQbtcClaimBannerDismissed: Bool = false
     @State private var addressCopyTask: Task<Void, Never>?
     @State private var coinDetailTask: Task<Void, Never>?
 
@@ -41,6 +43,7 @@ struct ChainDetailScreen: View {
     @StateObject private var trustLineActivation = RippleTrustLineActivationViewModel()
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
+    private let topContentSpacing: CGFloat = 32
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.dismiss) var dismiss
@@ -67,6 +70,7 @@ struct ChainDetailScreen: View {
         QBTCConfig.isFeatureEnabled
             && nativeCoin.chain == .bitcoin
             && qbtcEligibility.hasClaimableUtxos
+            && !isQbtcClaimBannerDismissed
     }
 
     /// QBTC chain detail's Claim button mirrors the same predicate: only
@@ -124,7 +128,9 @@ struct ChainDetailScreen: View {
                     topContentSection
                         .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
+                        .geometryGroup()
                 }
+                .animation(.interpolatingSpring(duration: 0.25), value: showsQbtcBanner)
                 .padding(.bottom, showsQbtcClaimButton ? claimButtonReservedHeight : 0)
                 .padding(.horizontal, 16)
                 .padding(.bottom, isMacOS ? 120 : 0)
@@ -238,7 +244,7 @@ struct ChainDetailScreen: View {
     }
 
     var topContentSection: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
             ChainDetailHeaderView(
                 vault: vault,
                 nativeCoin: nativeCoin,
@@ -249,9 +255,9 @@ struct ChainDetailScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
+            .padding(.top, topContentSpacing)
 
-            ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
-                .showIf(showsQbtcBanner)
+            qbtcClaimBannerSection
 
             TronResourcesCardView(
                 availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
@@ -259,8 +265,24 @@ struct ChainDetailScreen: View {
                 availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
                 totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
                 isLoading: viewModel.tronLoader?.isLoading ?? false
-            ).showIf(viewModel.isTron)
+            )
+            .padding(.top, topContentSpacing)
+            .showIf(viewModel.isTron)
         }
+    }
+
+    var qbtcClaimBannerSection: some View {
+        VStack(spacing: 0) {
+            ClaimQbtcPromoBanner(
+                onClaim: onClaimBannerTapped,
+                onDismiss: dismissQbtcClaimBanner
+            )
+            .padding(.top, topContentSpacing)
+        }
+        .allowsHitTesting(showsQbtcBanner)
+        .accessibilityHidden(!showsQbtcBanner)
+        .transition(.verticalGrowAndFade)
+        .showIf(showsQbtcBanner)
     }
 
     var bottomContentSection: some View {
@@ -480,6 +502,12 @@ private extension ChainDetailScreen {
         } else {
             pendingQbtcAddAfterKeygen = true
             router.navigate(to: KeygenRoute.quantumSecurityIntro(vault: vault))
+        }
+    }
+
+    func dismissQbtcClaimBanner() {
+        withAnimation {
+            isQbtcClaimBannerDismissed = true
         }
     }
 
