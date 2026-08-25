@@ -36,26 +36,16 @@ extension Coin {
         return applyProviderGates(providers)
     }
 
-    /// Applies the SwapKit feature flag + the debug forced-provider gate to a
-    /// raw natural-provider list.
+    /// Applies the debug forced-provider gate to a raw natural-provider list.
     private func applyProviderGates(_ raw: [SwapProvider]) -> [SwapProvider] {
-        // SwapKit is opt-in behind the Settings → Advanced → "SwapKit" toggle.
-        let afterSwapKitGate = SwapKitConfig.isFeatureEnabled
-            ? raw
-            : raw.filter { $0 != .swapkit }
-
         // Debug-only: Settings → Advanced → "Force swap provider" lets a
         // tester pin every quote to a single provider so the chosen
         // signing path is exercised in isolation (ranking ties don't
         // matter). Empty UserDefaults value = no force = production
-        // ranking across all providers. The forced-provider gate runs
-        // AFTER the SwapKit feature flag — if SwapKit is off and the
-        // forced provider is "swapkit", the result is empty and the swap
-        // UI surfaces "no providers available" rather than silently
-        // re-enabling SwapKit.
+        // ranking across all providers.
         let forced = UserDefaults.standard.string(forKey: "forcedSwapProvider") ?? ""
-        guard !forced.isEmpty else { return afterSwapKitGate }
-        return afterSwapKitGate.filter { matchesForcedProvider($0, forced: forced) }
+        guard !forced.isEmpty else { return raw }
+        return raw.filter { matchesForcedProvider($0, forced: forced) }
     }
 
     private func matchesForcedProvider(_ provider: SwapProvider, forced: String) -> Bool {
@@ -81,8 +71,8 @@ extension Coin {
         }
     }
 
-    /// The natural swap-provider list for a coin's chain, before the SwapKit
-    /// feature flag + forced-provider gates (`applyProviderGates`).
+    /// The natural swap-provider list for a coin's chain, before the
+    /// forced-provider gate (`applyProviderGates`).
     ///
     /// THORChain / MayaChain are offered at the **chain** level — every token on
     /// a supported EVM chain carries the native provider, and the live quote

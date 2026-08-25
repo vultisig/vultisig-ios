@@ -45,19 +45,6 @@ struct SwapKitService {
         slippagePercent: Double? = nil,
         affiliateFeeBps: Int
     ) async throws -> SwapKitRoute? {
-        // Opt-in feature flag (Settings → Advanced → "SwapKit"). When the
-        // flag is off, short-circuit even if `Coin+Swaps.swapProviders`
-        // already filtered `.swapkit` out — defense in depth so a future
-        // call site that bypasses the provider list can't accidentally
-        // light SwapKit up. The Vultisig proxy
-        // (`api.vultisig.com/swapkit/`) attaches the partner API key
-        // server-side; this flag exists to control client-side visibility
-        // during smoke testing.
-        guard SwapKitConfig.isFeatureEnabled else {
-            logger.info("[swapkit] feature flag disabled — skipping fetch")
-            return nil
-        }
-
         // `sellAmount` must be a decimal-with-dot string (e.g. "0.0086"),
         // NOT raw base units. Per the SwapKit API contract:
         //   "Amount in basic units (decimals separated with a dot)"

@@ -188,9 +188,8 @@ final class ChainSwapAvailabilityTests: XCTestCase {
     //
     // `isSwapAvailable == true` alone would still pass if Robinhood lost a
     // provider or gained one it shouldn't route. Pin the exact contract:
-    // 1inch + LiFi + Kyber (all live-confirmed on 4663), SwapKit follows
-    // its feature gate, and no native (Thor/Maya) or Solana-only provider
-    // leaks in.
+    // 1inch + LiFi + Kyber (all live-confirmed on 4663), plus SwapKit, and no
+    // native (Thor/Maya) or Solana-only provider leaks in.
     @MainActor
     func testRobinhoodProviderContract() {
         let meta = CoinMeta.make(chain: .robinhood, ticker: "ETH", decimals: 18, isNativeToken: true)
@@ -200,11 +199,7 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         XCTAssertTrue(providers.contains(.oneinch(.robinhood)), "1inch must route Robinhood: \(providers)")
         XCTAssertTrue(providers.contains(.lifi), "LiFi must route Robinhood: \(providers)")
         XCTAssertTrue(providers.contains(.kyberswap(.robinhood)), "Kyber must route Robinhood: \(providers)")
-        XCTAssertEqual(
-            providers.contains(.swapkit),
-            SwapKitConfig.isFeatureEnabled,
-            "SwapKit presence must follow its feature gate: \(providers)"
-        )
+        XCTAssertTrue(providers.contains(.swapkit), "SwapKit must route Robinhood: \(providers)")
         XCTAssertFalse(providers.contains(.thorchain), "THORChain must not route Robinhood: \(providers)")
         XCTAssertFalse(providers.contains(.mayachain), "Maya must not route Robinhood: \(providers)")
         XCTAssertFalse(providers.contains(.jupiter), "Jupiter is Solana-only: \(providers)")

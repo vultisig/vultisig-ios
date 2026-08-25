@@ -2,10 +2,8 @@
 //  SwapKitFeatureFlagTests.swift
 //  VultisigAppTests
 //
-//  Locks the shipped behaviour for SwapKit: the integration is enabled for
-//  everyone now that the former Settings → Advanced opt-out toggle has been
-//  removed. `Coin+Swaps.swapProviders` is the single point of gating, and
-//  the `forcedSwapProvider` debug picker still narrows the provider list.
+//  Locks SwapKit provider availability and verifies that the
+//  `forcedSwapProvider` debug picker still narrows the provider list.
 //
 
 import XCTest
@@ -29,16 +27,7 @@ final class SwapKitFeatureFlagTests: XCTestCase {
         }
     }
 
-    // MARK: - isFeatureEnabled
-
-    func testFeatureFlagIsAlwaysEnabled() {
-        XCTAssertTrue(
-            SwapKitConfig.isFeatureEnabled,
-            "SwapKit has shipped — the feature is always enabled"
-        )
-    }
-
-    // MARK: - Coin+Swaps gating
+    // MARK: - Coin+Swaps availability
 
     func testSwapkitPresentInEthereumProviders() {
         let providers = makeCoin(chain: .ethereum, ticker: "ETH").swapProviders

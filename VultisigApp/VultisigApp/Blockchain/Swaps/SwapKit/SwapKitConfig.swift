@@ -68,13 +68,4 @@ enum SwapKitConfig {
         "MAYACHAIN",
         "MAYACHAIN_STREAMING"
     ]
-
-    /// Gates SwapKit across the app — `swapProviders` list inclusion and
-    /// `SwapKitService.fetchBestRoute`. SwapKit has shipped and is always
-    /// enabled; the former Settings → Advanced opt-out toggle has been
-    /// removed. The property is kept as a single source of truth so the
-    /// call sites retain one gate if we ever need to dark-launch a change.
-    static var isFeatureEnabled: Bool {
-        true
-    }
 }

@@ -74,9 +74,6 @@ actor SwapKitAssetCatalog {
         forceRefresh: Bool = false,
         now: Date = Date()
     ) async -> DestinationTokenBucket {
-        guard SwapKitConfig.isFeatureEnabled else {
-            return .empty(chain: chain)
-        }
         let catalog = await ensureSnapshot(now: now, forceRefresh: forceRefresh)
         return catalog?.buckets[chain] ?? .empty(chain: chain)
     }
@@ -86,7 +83,6 @@ actor SwapKitAssetCatalog {
         forceRefresh: Bool = false,
         now: Date = Date()
     ) async -> String? {
-        guard SwapKitConfig.isFeatureEnabled else { return nil }
         guard let identifiers = await ensureSnapshot(
             now: now,
             forceRefresh: forceRefresh
