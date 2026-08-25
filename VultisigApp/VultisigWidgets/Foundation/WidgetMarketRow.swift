@@ -56,7 +56,7 @@ struct WidgetMarketRow: View {
                 HStack(spacing: 3) {
                     if asset.priceChangePercentage24h != nil {
                         Image(systemName: changeSymbol)
-                            .font(.system(size: 7, weight: .bold))
+                            .font(WidgetTheme.iconFont(size: 7, weight: .bold))
                     }
                     Text(WidgetMarketFormatting.compactChange(asset.priceChangePercentage24h))
                         .font(WidgetTheme.labelFont(size: isCompact ? 10 : 10.5))
@@ -84,7 +84,7 @@ struct WidgetMarketRow: View {
 
     private var accessibilityLabel: String {
         let price = WidgetMarketFormatting.price(asset.currentPrice, currency: currency)
-        let change = WidgetMarketFormatting.change(asset.priceChangePercentage24h)
+        let change = WidgetMarketFormatting.accessibilityChange(asset.priceChangePercentage24h)
         return String(
             format: String(localized: "widget.accessibility.asset"),
             locale: .current,

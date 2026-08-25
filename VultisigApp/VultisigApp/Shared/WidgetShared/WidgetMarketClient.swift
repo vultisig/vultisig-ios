@@ -20,10 +20,11 @@ enum WidgetMarketError: Error, Equatable {
 }
 
 enum WidgetMarketEndpoint {
-    private static let baseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3/coins/markets")
+    private static let proxyBaseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3")
 
     static func url(query: WidgetMarketQuery, currency: String) throws -> URL {
-        guard let baseURL, var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+        guard let baseURL = proxyBaseURL?.appendingPathComponent("coins/markets"),
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
             throw WidgetMarketError.invalidURL
         }
 
@@ -45,6 +46,16 @@ enum WidgetMarketEndpoint {
         guard let url = components.url else { throw WidgetMarketError.invalidURL }
         return url
     }
+
+    static func searchURL(query: String) throws -> URL {
+        guard let baseURL = proxyBaseURL?.appendingPathComponent("search"),
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+            throw WidgetMarketError.invalidURL
+        }
+        components.queryItems = [URLQueryItem(name: "query", value: query)]
+        guard let url = components.url else { throw WidgetMarketError.invalidURL }
+        return url
+    }
 }
 
 struct WidgetAssetIdentity: Equatable, Sendable, Identifiable {
@@ -62,7 +73,9 @@ protocol WidgetMarketRemote: Sendable {
     func iconData(from url: URL) async throws -> Data
 }
 
-final class WidgetMarketClient: WidgetMarketRemote, WidgetAssetSearching, @unchecked Sendable {
+protocol WidgetMarketLookup: WidgetMarketRemote, WidgetAssetSearching {}
+
+final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let maximumIconByteCount: Int
@@ -70,7 +83,7 @@ final class WidgetMarketClient: WidgetMarketRemote, WidgetAssetSearching, @unche
     init(
         session: URLSession = .shared,
         decoder: JSONDecoder = JSONDecoder(),
-        maximumIconByteCount: Int = 128 * 1_024
+        maximumIconByteCount: Int = 64 * 1_024
     ) {
         self.session = session
         self.decoder = decoder
@@ -99,12 +112,7 @@ final class WidgetMarketClient: WidgetMarketRemote, WidgetAssetSearching, @unche
     func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else { return [] }
-        guard let baseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3/search"),
-              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
-            throw WidgetMarketError.invalidURL
-        }
-        components.queryItems = [URLQueryItem(name: "query", value: trimmedQuery)]
-        guard let url = components.url else { throw WidgetMarketError.invalidURL }
+        let url = try WidgetMarketEndpoint.searchURL(query: trimmedQuery)
 
         var request = URLRequest(url: url)
         request.timeoutInterval = 8

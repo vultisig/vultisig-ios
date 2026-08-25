@@ -21,4 +21,8 @@ enum WidgetTheme {
     static func priceFont(size: CGFloat) -> Font {
         .custom("Satoshi-Medium", size: size).monospacedDigit()
     }
+
+    static func iconFont(size: CGFloat, weight: Font.Weight = .medium) -> Font {
+        .system(size: size, weight: weight)
+    }
 }

@@ -1,8 +1,12 @@
 "widget.accessibility.asset" = "%@, %@, cijena %@, promjena %@, sedmodnevni trend";
+"widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, sedmodnevni trend, %@";
+"widget.asset" = "Imovina";
 "widget.cached" = "Predmemorirano";
 "widget.cachedData" = "predmemorirani podaci";
-"widget.asset" = "Imovina";
+"widget.change" = "%@ 24H";
+"widget.changeUnavailable" = "nedostupno";
+"widget.changeUnavailableDisplay" = "— 24H";
 "widget.cryptoMarketDataUnavailable" = "Podaci kripto tržišta privremeno nisu dostupni";
 "widget.cryptoTicker" = "Kripto ticker";
 "widget.cryptoTicker.choose" = "Odaberite kriptovalutu prikazanu u ovom widgetu.";
@@ -13,6 +17,7 @@
 "widget.marketData" = "Tržišni podaci";
 "widget.marketDataUnavailable" = "Tržišni podaci privremeno nisu dostupni";
 "widget.price" = "Cijena";
+"widget.sevenDay" = "7D";
 "widget.temporarilyUnavailable" = "Privremeno nedostupno";
 "widget.topCryptos" = "Vodeće kriptovalute";
 "widget.topCryptos.description" = "Pratite vodeće kriptovalute prema tržišnoj kapitalizaciji.";

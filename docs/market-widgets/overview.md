@@ -8,7 +8,6 @@ This document translates the approved Signal Flow concept into native WidgetKit 
 |---|---:|---:|---:|
 | Crypto Ticker | Yes | Yes | No |
 | Top Cryptos | No | Three rows | Five rows |
-| Crypto Watchlist | No | First three configured rows | First five configured rows |
 
 Views use `widgetContentMargins` and the system container corner radius. They must not assume one fixed pixel canvas or draw an inner rounded card.
 
@@ -73,7 +72,7 @@ The widget extension must bundle Brockmann Medium and Satoshi Medium rather than
 ## Large five-row list
 
 - Render up to five records with uniform rows and four lightweight separators.
-- Top Cryptos adds a 16–20 pt rank column. Watchlist omits it and preserves configured order.
+- Top Cryptos adds a 16–20 pt rank column.
 - Columns: optional rank; 30 pt icon; flexible identity column; sparkline with a preferred width of 110–150 pt; trailing value column with price above 24H change.
 - Reserve the far top-trailing corner for the 20 pt Vultisig mark, with `7D` immediately to its leading side.
 - The five rows share all remaining vertical space equally; do not add a separate title bar that compresses the rows.

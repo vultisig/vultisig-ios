@@ -1,8 +1,12 @@
 "widget.accessibility.asset" = "%@，%@，价格 %@，涨跌 %@，七日趋势";
+"widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@，%@，%@，%@ %@，七日趋势，%@";
+"widget.asset" = "资产";
 "widget.cached" = "缓存数据";
 "widget.cachedData" = "缓存的数据";
-"widget.asset" = "资产";
+"widget.change" = "%@ 24H";
+"widget.changeUnavailable" = "不可用";
+"widget.changeUnavailableDisplay" = "— 24H";
 "widget.cryptoMarketDataUnavailable" = "加密货币市场数据暂时不可用";
 "widget.cryptoTicker" = "加密货币行情";
 "widget.cryptoTicker.choose" = "选择此小组件中显示的加密货币。";
@@ -13,6 +17,7 @@
 "widget.marketData" = "市场数据";
 "widget.marketDataUnavailable" = "市场数据暂时不可用";
 "widget.price" = "价格";
+"widget.sevenDay" = "7日";
 "widget.temporarilyUnavailable" = "暂时不可用";
 "widget.topCryptos" = "热门加密货币";
 "widget.topCryptos.description" = "按市值关注领先的加密货币。";

@@ -32,6 +32,8 @@ actor WidgetMarketService {
             return WidgetMarketResult(assets: assets, updatedAt: updatedAt, isStale: false)
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw error
         } catch {
             guard let cached else { throw error }
             return WidgetMarketResult(assets: cached.assets, updatedAt: cached.updatedAt, isStale: true)

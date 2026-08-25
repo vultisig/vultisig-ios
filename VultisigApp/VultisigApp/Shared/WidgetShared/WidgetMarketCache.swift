@@ -11,7 +11,7 @@ struct WidgetMarketCacheEntry: Codable, Equatable, Sendable {
 }
 
 actor WidgetMarketCache {
-    private static let maximumEntryCount = 10
+    private static let maximumEntryCount = 6
 
     private let fileURL: URL?
     private let encoder: JSONEncoder

@@ -35,7 +35,11 @@ struct WidgetSparkline: View {
                     if let lastPoint = points.last {
                         Circle()
                             .fill(tint)
-                            .frame(width: lineWidth * 2.4, height: lineWidth * 2.4)
+                            .frame(width: 5, height: 5)
+                            .overlay {
+                                Circle()
+                                    .stroke(WidgetTheme.primaryText, lineWidth: 1.5)
+                            }
                             .position(lastPoint)
                     }
                 }

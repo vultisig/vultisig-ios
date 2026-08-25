@@ -35,8 +35,20 @@ struct WidgetCryptoAssetEntity: AppEntity, Hashable {
     static let bitcoin = WidgetCryptoAssetEntity(id: "bitcoin", symbol: "BTC", name: "Bitcoin")
 }
 
+private enum WidgetMarketDependencies {
+    static let lookup: any WidgetMarketLookup = WidgetMarketClient()
+}
+
 struct WidgetCryptoAssetEntityQuery: EntityStringQuery {
-    private let client = WidgetMarketClient()
+    private let client: any WidgetMarketLookup
+
+    init() {
+        self.client = WidgetMarketDependencies.lookup
+    }
+
+    init(client: any WidgetMarketLookup) {
+        self.client = client
+    }
 
     func entities(for identifiers: [String]) async throws -> [WidgetCryptoAssetEntity] {
         guard !identifiers.isEmpty else { return [] }

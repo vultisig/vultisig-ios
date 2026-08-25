@@ -59,6 +59,14 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(assets.map(\.symbol), ["ETH", "BTC"])
     }
 
+    func testSearchRequestUsesSharedProxyBasePath() throws {
+        let url = try WidgetMarketEndpoint.searchURL(query: "bitcoin cash")
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+
+        XCTAssertEqual(components.path, "/coingeicko/api/v3/search")
+        XCTAssertEqual(components.queryItems, [URLQueryItem(name: "query", value: "bitcoin cash")])
+    }
+
     func testEmptyAssetSelectionDoesNotFallThroughToTopMarkets() {
         XCTAssertThrowsError(
             try WidgetMarketEndpoint.url(query: .ids([" "]), currency: "usd")
@@ -154,7 +162,7 @@ final class WidgetMarketDataTests: XCTestCase {
             WidgetMarketClient.decode(data: Self.responseData, query: .top(limit: 1)).first
         )
 
-        for index in 0..<11 {
+        for index in 0..<7 {
             try await cache.store(
                 [asset],
                 updatedAt: Date(timeIntervalSince1970: TimeInterval(index)),
@@ -163,7 +171,7 @@ final class WidgetMarketDataTests: XCTestCase {
         }
 
         let oldest = await cache.entry(for: "configuration-0")
-        let newest = await cache.entry(for: "configuration-10")
+        let newest = await cache.entry(for: "configuration-6")
         XCTAssertNil(oldest)
         XCTAssertNotNil(newest)
     }
@@ -186,6 +194,24 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(stale.updatedAt, now)
     }
 
+    func testServiceDoesNotUseStaleCacheForCancelledRequest() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cache = WidgetMarketCache(fileURL: directory.appendingPathComponent("cache.json"))
+        let remote = WidgetMarketRemoteStub()
+        let service = WidgetMarketService(remote: remote, cache: cache)
+
+        _ = try await service.load(query: .top(limit: 2), currency: "usd")
+        await remote.setShouldCancel(true)
+
+        do {
+            _ = try await service.load(query: .top(limit: 2), currency: "usd")
+            XCTFail("Expected cancellation to propagate")
+        } catch let error as URLError {
+            XCTAssertEqual(error.code, .cancelled)
+        }
+    }
+
     func testServiceAttachesDownloadedIconsToFreshAssets() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -205,12 +231,18 @@ final class WidgetMarketDataTests: XCTestCase {
 
 private actor WidgetMarketRemoteStub: WidgetMarketRemote {
     private var shouldFail = false
+    private var shouldCancel = false
 
     func setShouldFail(_ value: Bool) {
         shouldFail = value
     }
 
+    func setShouldCancel(_ value: Bool) {
+        shouldCancel = value
+    }
+
     func markets(query: WidgetMarketQuery, currency _: String) throws -> [WidgetMarketAsset] {
+        if shouldCancel { throw URLError(.cancelled) }
         if shouldFail { throw WidgetMarketError.httpStatus(503) }
         return try WidgetMarketClient.decode(data: WidgetMarketDataTests.responseData, query: query)
     }

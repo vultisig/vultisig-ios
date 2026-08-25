@@ -153,7 +153,7 @@ struct CryptoTickerEntryView: View {
                 tokenIcon(asset, size: 30)
                 identity(asset)
                 Spacer(minLength: 8)
-                Text("7D")
+                Text("widget.sevenDay")
                     .font(WidgetTheme.labelFont(size: 11))
                     .foregroundStyle(WidgetTheme.secondaryText)
                 staleIndicator
@@ -237,7 +237,7 @@ struct CryptoTickerEntryView: View {
     private var staleIndicator: some View {
         if entry.isStale {
             Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 10, weight: .medium))
+                .font(WidgetTheme.iconFont(size: 10))
                 .foregroundStyle(WidgetTheme.tertiaryText)
                 .accessibilityLabel(Text("widget.cached"))
         }
@@ -245,9 +245,14 @@ struct CryptoTickerEntryView: View {
 
     private var accessibilityLabel: String {
         guard let asset = entry.asset else { return String(localized: "widget.cryptoMarketDataUnavailable") }
-        let direction = (asset.priceChangePercentage24h ?? 0) >= 0
-            ? String(localized: "widget.up")
-            : String(localized: "widget.down")
+        let direction: String
+        if let change = asset.priceChangePercentage24h {
+            direction = change >= 0
+                ? String(localized: "widget.up")
+                : String(localized: "widget.down")
+        } else {
+            direction = String(localized: "widget.changeUnavailable")
+        }
         let freshness = entry.isStale
             ? String(localized: "widget.cachedData")
             : String(localized: "widget.updatedData")

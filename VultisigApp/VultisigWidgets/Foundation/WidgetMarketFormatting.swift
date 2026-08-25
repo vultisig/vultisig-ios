@@ -29,18 +29,47 @@ enum WidgetMarketFormatting {
     }
 
     static func change(_ value: Double?, locale: Locale = .current) -> String {
-        guard let value, value.isFinite else { return "— 24H" }
-        return "\(compactChange(value, locale: locale)) 24H"
+        guard let value, value.isFinite else {
+            return String(localized: "widget.changeUnavailableDisplay")
+        }
+        let formatter = percentageFormatter(locale: locale)
+        formatter.positivePrefix = "+"
+        let percentage = formatter.string(from: NSNumber(value: value / 100)) ?? "—"
+        return String(
+            format: String(localized: "widget.change"),
+            locale: locale,
+            percentage
+        )
+    }
+
+    static func accessibilityChange(_ value: Double?, locale: Locale = .current) -> String {
+        guard let value, value.isFinite else {
+            return String(localized: "widget.changeUnavailable")
+        }
+        let direction = value >= 0
+            ? String(localized: "widget.up")
+            : String(localized: "widget.down")
+        return String(
+            format: String(localized: "widget.accessibility.change"),
+            locale: locale,
+            direction,
+            compactChange(value, locale: locale)
+        )
     }
 
     static func compactChange(_ value: Double?, locale: Locale = .current) -> String {
         guard let value, value.isFinite else { return "—" }
+        let formatter = percentageFormatter(locale: locale)
+        formatter.positivePrefix = ""
+        return formatter.string(from: NSNumber(value: abs(value) / 100)) ?? "—"
+    }
+
+    private static func percentageFormatter(locale: Locale) -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.locale = locale
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        formatter.positivePrefix = ""
-        return formatter.string(from: NSNumber(value: abs(value) / 100)) ?? "—"
+        return formatter
     }
 }

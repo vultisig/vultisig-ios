@@ -159,7 +159,7 @@ struct TopCryptosEntryView: View {
             HStack(spacing: 10) {
                 Text("widget.asset")
                     .frame(width: 104, alignment: .leading)
-                Text("7D")
+                Text("widget.sevenDay")
                     .frame(maxWidth: .infinity, alignment: .center)
                 Text("widget.price")
                     .frame(width: 104, alignment: .trailing)
@@ -209,7 +209,7 @@ struct TopCryptosEntryView: View {
     private var staleIndicator: some View {
         if entry.isStale {
             Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 10, weight: .medium))
+                .font(WidgetTheme.iconFont(size: 10))
                 .foregroundStyle(WidgetTheme.tertiaryText)
                 .accessibilityLabel(Text("widget.cached"))
         }

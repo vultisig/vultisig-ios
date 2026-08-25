@@ -1,8 +1,12 @@
 "widget.accessibility.asset" = "%@, %@, Preis %@, Änderung %@, Sieben-Tage-Trend";
+"widget.accessibility.change" = "%@ %@ 24H";
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, Sieben-Tage-Trend, %@";
+"widget.asset" = "Vermögenswert";
 "widget.cached" = "Zwischengespeichert";
 "widget.cachedData" = "zwischengespeicherte Daten";
-"widget.asset" = "Vermögenswert";
+"widget.change" = "%@ 24H";
+"widget.changeUnavailable" = "nicht verfügbar";
+"widget.changeUnavailableDisplay" = "— 24H";
 "widget.cryptoMarketDataUnavailable" = "Krypto-Marktdaten sind vorübergehend nicht verfügbar";
 "widget.cryptoTicker" = "Krypto-Ticker";
 "widget.cryptoTicker.choose" = "Wähle die Kryptowährung für dieses Widget.";
@@ -13,6 +17,7 @@
 "widget.marketData" = "Marktdaten";
 "widget.marketDataUnavailable" = "Marktdaten sind vorübergehend nicht verfügbar";
 "widget.price" = "Preis";
+"widget.sevenDay" = "7 T";
 "widget.temporarilyUnavailable" = "Vorübergehend nicht verfügbar";
 "widget.topCryptos" = "Top-Kryptos";
 "widget.topCryptos.description" = "Verfolge die führenden Kryptowährungen nach Marktkapitalisierung.";
