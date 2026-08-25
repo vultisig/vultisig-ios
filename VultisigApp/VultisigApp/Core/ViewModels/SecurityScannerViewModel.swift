@@ -44,12 +44,12 @@ class SecurityScannerViewModel: ObservableObject {
     }
 
     func scan(transaction: SendTransaction) async {
-        guard isScanningAvailable(for: transaction.coin.chain) else { return }
-        await scan(transactionType: .send(transaction))
+        guard let provider = scanningProvider(for: transaction.coin.chain) else { return }
+        await scan(transactionType: .send(transaction), provider: provider)
     }
 
     func scan(transaction: SwapTransaction) async {
-        guard isScanningAvailable(for: transaction.fromCoin.chain) else {
+        guard let provider = scanningProvider(for: transaction.fromCoin.chain) else {
             // The source-chain swap tx can't be scanned, but an external
             // recipient on a screenable destination chain still must be — fall
             // through to a recipient-only scan instead of returning unscanned.
@@ -58,10 +58,14 @@ class SecurityScannerViewModel: ObservableObject {
             }
             return
         }
-        await scan(transactionType: .swap(transaction))
+        await scan(transactionType: .swap(transaction), provider: provider)
     }
 
-    private func scan(transactionType: SecurityScannerTransactionType) async {
+    private func scan(
+        transactionType: SecurityScannerTransactionType,
+        provider: String
+    ) async {
+        await update(state: .scanning)
         do {
             let tx: SecurityScannerTransaction
             switch transactionType {
@@ -70,8 +74,6 @@ class SecurityScannerViewModel: ObservableObject {
             case .send(let sendTransaction):
                 tx = try await service.createSecurityScannerTransaction(transaction: sendTransaction, vault: sendTransaction.vault)
             }
-            await update(state: .scanning)
-
             var result = try await service.scanTransaction(tx)
 
             // Safety net (HIGH tier): when an external recipient is set, also
@@ -86,11 +88,12 @@ class SecurityScannerViewModel: ObservableObject {
 
             await update(state: .scanned(result))
         } catch {
-            if case let SecurityScannerError.notScanned(provider) = error {
-                await update(state: .notScanned(provider: provider))
+            let failedProvider = if case let SecurityScannerError.notScanned(providerName) = error {
+                providerName
             } else {
-                await update(state: .idle)
+                provider
             }
+            await update(state: .notScanned(provider: failedProvider))
         }
     }
 
@@ -130,14 +133,18 @@ class SecurityScannerViewModel: ObservableObject {
     }
 
     func isScanningAvailable(for chain: Chain) -> Bool {
-        guard service.isSecurityServiceEnabled() else { return false }
+        scanningProvider(for: chain) != nil
+    }
+
+    private func scanningProvider(for chain: Chain) -> String? {
+        guard service.isSecurityServiceEnabled() else { return nil }
         // Check if any provider supports this chain for transaction scanning
         let supportedChains = service.getSupportedChainsByFeature()
-        return supportedChains.contains { support in
+        return supportedChains.first { support in
             support.feature.contains { feature in
                 feature.featureType == .scanTransaction && feature.chains.contains(chain)
             }
-        }
+        }?.provider
     }
 
     private func update(state: SecurityScannerState) async {
