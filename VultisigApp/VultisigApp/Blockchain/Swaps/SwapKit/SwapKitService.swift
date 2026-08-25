@@ -251,6 +251,9 @@ extension SwapKitService {
     /// and TRON fixtures all report the real native miner/network fee there as
     /// a decimal native amount (e.g. "0.000005" SOL).
     func inboundFee(from response: SwapKitSwapResponse, fromCoin: Coin) -> BigInt? {
+        guard SwapKitCapability.canSign(response.tx, from: fromCoin.chain) else {
+            return nil
+        }
         if case let .evm(tx) = response.tx {
             return evmNetworkFee(from: tx, isNativeSource: fromCoin.isNativeToken)
         }
