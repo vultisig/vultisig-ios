@@ -257,6 +257,7 @@ struct ChainDetailScreen: View {
                 onClaim: onClaimBannerTapped,
                 onDismiss: dismissQbtcClaimBanner
             )
+            .transition(.verticalGrowAndFade)
             .showIf(showsQbtcBanner)
 
             TronResourcesCardView(

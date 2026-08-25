@@ -159,7 +159,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     }
 }
 
-private struct CarouselBannerCloseButton: View {
+struct CarouselBannerCloseButton: View {
     let action: () -> Void
 
     var body: some View {

@@ -31,8 +31,9 @@ struct ClaimQbtcPromoBanner: View {
         )
         .clipShape(Theme.radius.xl.shape)
         .overlay(alignment: .topTrailing) {
-            dismissButton
+            CarouselBannerCloseButton(action: onDismiss)
                 .padding(8)
+                .accessibilityLabel("close".localized)
         }
     }
 
@@ -105,16 +106,6 @@ struct ClaimQbtcPromoBanner: View {
             .fixedSize()
         }
         .padding(24)
-    }
-
-    private var dismissButton: some View {
-        Button(action: onDismiss) {
-            Icon(.crossSmall, color: Theme.colors.textPrimary, size: 16)
-                .frame(width: 40, height: 40)
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("close".localized)
     }
 }
 
