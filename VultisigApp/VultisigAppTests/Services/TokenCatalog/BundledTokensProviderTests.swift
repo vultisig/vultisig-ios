@@ -36,6 +36,16 @@ final class BundledTokensProviderTests: XCTestCase {
         XCTAssertEqual(Set(catalog.map { $0.meta.uniqueId }), Set(expected.map { $0.uniqueId }))
     }
 
+    func testEthereumThorUsesThorSwapPriceAndLogo() async throws {
+        let provider = BundledTokensProvider(defaults: makeDefaults())
+        let catalog = await provider.catalogTokens(for: .ethereum)
+        let thor = try XCTUnwrap(catalog.first { $0.meta.contractAddress == TokensStore.ethTHOR.contractAddress })
+
+        XCTAssertEqual(thor.meta.ticker, "THOR")
+        XCTAssertEqual(thor.meta.logo, "thorswap")
+        XCTAssertEqual(thor.meta.priceProviderId, "thorswap")
+    }
+
     func testHighestPrecedenceWinsDedup() {
         // Bundled is Int.max so its CoinMeta always wins a uniqueId collision.
         XCTAssertEqual(BundledTokensProvider(defaults: makeDefaults()).precedence, Int.max)
