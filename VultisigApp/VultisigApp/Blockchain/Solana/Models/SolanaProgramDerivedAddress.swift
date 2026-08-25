@@ -58,6 +58,12 @@ enum SolanaProgramDerivedAddress {
 
     private static let fieldModulus = BigInt(2).power(255) - 19
 
+    /// Whether a base58 Solana address is an ordinary ed25519 public key.
+    static func isOnEd25519Curve(_ address: String) -> Bool {
+        guard let bytes = Base58.decodeNoCheck(string: address) else { return false }
+        return isOnEd25519Curve(bytes)
+    }
+
     /// Whether these 32 bytes decompress to a point on the ed25519 curve — i.e.
     /// whether they are a possible public key rather than a program address.
     ///

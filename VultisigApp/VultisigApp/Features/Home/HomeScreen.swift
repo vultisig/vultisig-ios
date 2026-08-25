@@ -571,7 +571,7 @@ extension HomeScreen {
                     break
                 }
             } else {
-                let isValid = chain.coinType.validate(address: address)
+                let isValid = AddressService.validateRecipientAddress(address: address, chain: chain)
                 if isValid {
                     chainToUse = chain
                     break

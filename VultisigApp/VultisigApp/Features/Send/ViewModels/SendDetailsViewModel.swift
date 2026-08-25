@@ -552,7 +552,7 @@ final class SendDetailsViewModel {
     /// definitive verdict.
     func markInvalidRecipientIfUnresolvable() {
         guard !toAddress.isEmpty else { return }
-        guard !AddressService.validateAddress(address: toAddress, chain: coin.chain) else { return }
+        guard !AddressService.validateRecipientAddress(address: toAddress, chain: coin.chain) else { return }
         guard !toAddress.isENSNameService() else { return }
         let resolvesNames: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
         guard !resolvesNames.contains(coin.chain) else { return }
@@ -614,7 +614,7 @@ final class SendDetailsViewModel {
     func isValidAddressFormat() -> Bool {
         guard !toAddress.isEmpty else { return false }
         normalizeRippleXAddressIfNeeded()
-        let isValid = AddressService.validateAddress(address: toAddress, chain: coin.chain)
+        let isValid = AddressService.validateRecipientAddress(address: toAddress, chain: coin.chain)
         if isValid {
             showAddressAlert = false
             errorMessage = nil

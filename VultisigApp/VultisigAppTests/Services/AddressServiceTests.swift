@@ -25,6 +25,8 @@ final class AddressServiceTests: XCTestCase {
     /// Generic Substrate SS58 address (prefix 42), which is what Bittensor uses.
     private let bittensorAddress = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
     private let evmAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+    private let solanaWalletAddress = "6BTaMq25LcNDTVhheUe9UyvwWgayqFv77njymVnG8SNy"
+    private let solanaMintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 
     // MARK: - Coin builders
 
@@ -185,6 +187,51 @@ final class AddressServiceTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    // MARK: - Solana curve membership
+
+    func testSolanaWalletAddressValidates() {
+        XCTAssertTrue(AddressService.validateAddress(address: solanaWalletAddress, chain: .solana))
+        XCTAssertTrue(AddressService.validateRecipientAddress(address: solanaWalletAddress, chain: .solana))
+    }
+
+    func testSolanaAssociatedTokenAccountIsRejectedEvenThoughWalletCoreAcceptsIt() throws {
+        let tokenAccount = try makeSolanaAssociatedTokenAccount()
+
+        XCTAssertTrue(Chain.solana.coinType.validate(address: tokenAccount))
+        XCTAssertTrue(AddressService.validateAddress(address: tokenAccount, chain: .solana))
+        XCTAssertFalse(AddressService.validateRecipientAddress(address: tokenAccount, chain: .solana))
+    }
+
+    func testSolanaMintStillPassesGenericAddressValidation() {
+        XCTAssertTrue(AddressService.validateAddress(address: solanaMintAddress, chain: .solana))
+    }
+
+    func testSolanaAssociatedTokenAccountIsRejectedByResolution() async throws {
+        let tokenAccount = try makeSolanaAssociatedTokenAccount()
+
+        do {
+            _ = try await AddressService.resolveInput(tokenAccount, chain: .solana)
+            XCTFail("Expected an associated token account to be rejected as a recipient")
+        } catch let error as AddressService.Errors {
+            XCTAssertEqual(error, .invalidAddress)
+        } catch {
+            XCTFail("Expected invalidAddress, got \(error)")
+        }
+    }
+
+    func testSolanaAssociatedTokenAccountDoesNotSwitchToSolana() throws {
+        let sol = SendFormFixture.makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true)
+        let vault = SendFormFixture.makeVault(coins: [sol])
+
+        let detected = AddressService.detectChain(
+            from: try makeSolanaAssociatedTokenAccount(),
+            vault: vault,
+            currentChain: .bitcoin
+        )
+
+        XCTAssertNil(detected)
+    }
+
     // MARK: - EVM
 
     /// From a non-EVM chain, land in the EVM family rather than leaving the
@@ -234,5 +281,15 @@ final class AddressServiceTests: XCTestCase {
         let detected = AddressService.detectChain(from: btcAddress, vault: vault, currentChain: .litecoin)
 
         XCTAssertNil(detected)
+    }
+
+    private func makeSolanaAssociatedTokenAccount() throws -> String {
+        try XCTUnwrap(
+            SolanaAssociatedTokenAccount.derive(
+                owner: solanaWalletAddress,
+                mint: solanaMintAddress,
+                tokenProgram: .token
+            )
+        )
     }
 }

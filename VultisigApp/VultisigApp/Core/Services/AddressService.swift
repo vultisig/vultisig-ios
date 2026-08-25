@@ -15,7 +15,7 @@ struct AddressService {
     /// Returns the detected chain if found and it exists in the vault, or nil otherwise
     static func detectChain(from address: String, vault: Vault, currentChain: Chain) -> Chain? {
         // First check if address is valid for current chain
-        if validateAddress(address: address, chain: currentChain) {
+        if validateRecipientAddress(address: address, chain: currentChain) {
             return nil // Already on correct chain
         }
 
@@ -67,9 +67,9 @@ struct AddressService {
 
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
-            guard coinType.validate(address: address) else { continue }
             // Map CoinType to Vultisig Chain
             guard let chain = Chain.allCases.first(where: { $0.coinType == coinType }) else { continue }
+            guard validateRecipientAddress(address: address, chain: chain) else { continue }
             // Only return if chain exists in vault with native token
             if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {
                 return chain
@@ -137,7 +137,7 @@ struct AddressService {
             }
         }
 
-        if chain.coinType.validate(address: input) {
+        if validateRecipientAddress(address: input, chain: chain) {
             return input
         }
 
@@ -177,17 +177,26 @@ struct AddressService {
         return chain.coinType.validate(address: address)
     }
 
+    static func validateRecipientAddress(address: String, chain: Chain) -> Bool {
+        guard validateAddress(address: address, chain: chain) else { return false }
+        guard chain == .solana else { return true }
+        return SolanaProgramDerivedAddress.isOnEd25519Curve(address)
+    }
+
+}
+
+extension AddressService {
+
+    enum Errors: Error, Equatable {
+        case invalidAddress
+    }
 }
 
 private extension AddressService {
 
-    enum Errors: Error {
-        case invalidAddress
-    }
-
     static func resolveAndValidate(_ resolution: @autoclosure () async throws -> String, chain: Chain) async throws -> String {
         let resolved = try await resolution()
-        guard validateAddress(address: resolved, chain: chain) else {
+        guard validateRecipientAddress(address: resolved, chain: chain) else {
             throw Errors.invalidAddress
         }
         return resolved
