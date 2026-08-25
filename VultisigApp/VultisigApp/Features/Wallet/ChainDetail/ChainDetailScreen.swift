@@ -30,6 +30,8 @@ struct ChainDetailScreen: View {
     /// key — pickup happens once `qbtcQuantumKeygenCompleted` fires so the
     /// user lands back here with QBTC already added to the vault.
     @State private var pendingQbtcAddAfterKeygen: Bool = false
+    @AppStorage("isQbtcClaimBannerDismissed")
+    private var isQbtcClaimBannerDismissed: Bool = false
     @State private var addressCopyTask: Task<Void, Never>?
     @State private var coinDetailTask: Task<Void, Never>?
 
@@ -67,6 +69,7 @@ struct ChainDetailScreen: View {
         QBTCConfig.isFeatureEnabled
             && nativeCoin.chain == .bitcoin
             && qbtcEligibility.hasClaimableUtxos
+            && !isQbtcClaimBannerDismissed
     }
 
     /// QBTC chain detail's Claim button mirrors the same predicate: only
@@ -250,8 +253,11 @@ struct ChainDetailScreen: View {
                 onAction: onAction
             )
 
-            ClaimQbtcPromoBanner(onClaim: onClaimBannerTapped)
-                .showIf(showsQbtcBanner)
+            ClaimQbtcPromoBanner(
+                onClaim: onClaimBannerTapped,
+                onDismiss: dismissQbtcClaimBanner
+            )
+            .showIf(showsQbtcBanner)
 
             TronResourcesCardView(
                 availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
@@ -480,6 +486,12 @@ private extension ChainDetailScreen {
         } else {
             pendingQbtcAddAfterKeygen = true
             router.navigate(to: KeygenRoute.quantumSecurityIntro(vault: vault))
+        }
+    }
+
+    func dismissQbtcClaimBanner() {
+        withAnimation {
+            isQbtcClaimBannerDismissed = true
         }
     }
 
