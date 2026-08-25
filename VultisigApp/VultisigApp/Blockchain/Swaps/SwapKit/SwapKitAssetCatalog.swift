@@ -86,10 +86,10 @@ actor SwapKitAssetCatalog {
         guard let identifiers = await ensureSnapshot(
             now: now,
             forceRefresh: forceRefresh
-        )?.identifiers[key], identifiers.count == 1 else {
+        )?.identifiers[key] else {
             return nil
         }
-        return identifiers.first
+        return Self.preferredIdentifier(from: identifiers, for: key)
     }
 
     func setSnapshot(
@@ -219,5 +219,25 @@ actor SwapKitAssetCatalog {
             buckets: buckets,
             identifiers: assetIdentifiers
         )
+    }
+
+    /// Provider catalogues do not agree on EVM address casing inside an
+    /// otherwise identical identifier. Treat case-only variants as the same
+    /// asset and prefer a spelling whose contract suffix matches the
+    /// lowercased lookup key. Distinct identifiers remain ambiguous and fail
+    /// closed instead of guessing between symbols that share a contract key.
+    nonisolated private static func preferredIdentifier(
+        from identifiers: Set<String>,
+        for key: SwapKitAssetKey
+    ) -> String? {
+        guard !identifiers.isEmpty else { return nil }
+        guard Set(identifiers.map { $0.lowercased() }).count == 1 else {
+            return nil
+        }
+
+        let sorted = identifiers.sorted()
+        guard !key.contractAddress.isEmpty else { return sorted.first }
+        let canonicalSuffix = "-\(key.contractAddress)"
+        return sorted.first(where: { $0.hasSuffix(canonicalSuffix) }) ?? sorted.first
     }
 }

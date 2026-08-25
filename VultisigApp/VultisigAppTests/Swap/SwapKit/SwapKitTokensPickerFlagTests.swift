@@ -119,6 +119,50 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         XCTAssertNil(identifier)
     }
 
+    func testCatalogCollapsesEvmIdentifierAddressCasing() async {
+        let catalog = SwapKitAssetCatalog()
+        let lowercased = SwapKitToken(
+            chain: "ETH",
+            chainId: "1",
+            address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            ticker: "USDC",
+            identifier: "ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            name: "USD Coin",
+            decimals: 6,
+            logoURI: nil,
+            coingeckoId: "usd-coin"
+        )
+        let checksummed = SwapKitToken(
+            chain: "ETH",
+            chainId: "1",
+            address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            ticker: "USDC",
+            identifier: "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            name: "USD Coin",
+            decimals: 6,
+            logoURI: nil,
+            coingeckoId: "usd-coin"
+        )
+        await catalog.setSnapshot(
+            SwapKitAssetCatalog.buildSnapshot(
+                responses: [
+                    SwapKitTokensResponse(provider: "LOWER", count: 1, tokens: [lowercased]),
+                    SwapKitTokensResponse(provider: "CHECKSUM", count: 1, tokens: [checksummed])
+                ]
+            )
+        )
+        let coin = makeCoin(
+            chain: .ethereum,
+            ticker: "USDC",
+            contractAddress: lowercased.address ?? "",
+            isNativeToken: false
+        )
+
+        let identifier = await catalog.identifier(for: SwapKitAssetKey(coin: coin))
+
+        XCTAssertEqual(identifier, lowercased.identifier)
+    }
+
     @MainActor
     func testCacheSeededSnapshotReturnsBuckets() async {
         let novel = CoinMeta(chain: .arbitrum, ticker: "NOVL", logo: "", decimals: 18, priceProviderId: "", contractAddress: "0x000000000000000000000000000000000000000A", isNativeToken: false)
