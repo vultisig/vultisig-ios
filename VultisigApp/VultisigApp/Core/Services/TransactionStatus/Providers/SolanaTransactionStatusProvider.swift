@@ -32,7 +32,7 @@ struct SolanaTransactionStatusProvider: TransactionStatusProvider {
 
         if statusValue.err != nil {
             return TransactionStatusResult(
-                status: .failed(reason: "Transaction error"),
+                status: .failed(reason: "transactionFailed".localized),
                 blockNumber: nil,
                 confirmations: nil
             )

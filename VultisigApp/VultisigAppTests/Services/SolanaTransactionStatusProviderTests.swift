@@ -16,7 +16,7 @@ final class SolanaTransactionStatusProviderTests: XCTestCase {
             errorJSON: #"{"InstructionError":[0,{"Custom":6001}]}"#
         )
 
-        XCTAssertEqual(result.status, .failed(reason: "Transaction error"))
+        XCTAssertEqual(result.status, .failed(reason: "transactionFailed".localized))
     }
 
     func testProcessedStringErrorReturnsFailed() async throws {
@@ -25,7 +25,7 @@ final class SolanaTransactionStatusProviderTests: XCTestCase {
             errorJSON: #""AccountInUse""#
         )
 
-        XCTAssertEqual(result.status, .failed(reason: "Transaction error"))
+        XCTAssertEqual(result.status, .failed(reason: "transactionFailed".localized))
     }
 
     func testErrorWithoutConfirmationStatusReturnsFailed() async throws {
@@ -34,7 +34,7 @@ final class SolanaTransactionStatusProviderTests: XCTestCase {
             errorJSON: #""BlockhashNotFound""#
         )
 
-        XCTAssertEqual(result.status, .failed(reason: "Transaction error"))
+        XCTAssertEqual(result.status, .failed(reason: "transactionFailed".localized))
     }
 
     func testConfirmedWithoutErrorReturnsConfirmed() async throws {
