@@ -44,7 +44,6 @@ struct ChainDetailScreen: View {
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
     private let topContentSpacing: CGFloat = 32
-    private let qbtcClaimBannerHeight: CGFloat = 156
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.dismiss) var dismiss
@@ -129,7 +128,9 @@ struct ChainDetailScreen: View {
                     topContentSection
                         .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
+                        .geometryGroup()
                 }
+                .animation(.interpolatingSpring(duration: 0.25), value: showsQbtcBanner)
                 .padding(.bottom, showsQbtcClaimButton ? claimButtonReservedHeight : 0)
                 .padding(.horizontal, 16)
                 .padding(.bottom, isMacOS ? 120 : 0)
@@ -278,15 +279,10 @@ struct ChainDetailScreen: View {
             )
             .padding(.top, topContentSpacing)
         }
-        .frame(
-            height: showsQbtcBanner ? qbtcClaimBannerHeight + topContentSpacing : 0,
-            alignment: .top
-        )
-        .opacity(showsQbtcBanner ? 1 : 0)
-        .clipped()
         .allowsHitTesting(showsQbtcBanner)
         .accessibilityHidden(!showsQbtcBanner)
-        .animation(.interpolatingSpring(duration: 0.25), value: showsQbtcBanner)
+        .transition(.verticalGrowAndFade)
+        .showIf(showsQbtcBanner)
     }
 
     var bottomContentSection: some View {
