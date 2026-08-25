@@ -212,8 +212,10 @@ final class AddressServiceTests: XCTestCase {
         do {
             _ = try await AddressService.resolveInput(tokenAccount, chain: .solana)
             XCTFail("Expected an associated token account to be rejected as a recipient")
+        } catch let error as AddressService.Errors {
+            XCTAssertEqual(error, .invalidAddress)
         } catch {
-            // Expected: off-curve accounts are not wallet recipients.
+            XCTFail("Expected invalidAddress, got \(error)")
         }
     }
 

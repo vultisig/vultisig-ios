@@ -185,11 +185,14 @@ struct AddressService {
 
 }
 
-private extension AddressService {
+extension AddressService {
 
-    enum Errors: Error {
+    enum Errors: Error, Equatable {
         case invalidAddress
     }
+}
+
+private extension AddressService {
 
     static func resolveAndValidate(_ resolution: @autoclosure () async throws -> String, chain: Chain) async throws -> String {
         let resolved = try await resolution()
