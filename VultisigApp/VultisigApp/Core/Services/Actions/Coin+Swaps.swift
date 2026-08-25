@@ -29,13 +29,11 @@ extension Coin {
     }
 
     var swapProviders: [SwapProvider] {
-        // SwapKit is opt-in behind the Settings → Advanced → "SwapKit"
-        // toggle. When the flag is off, drop `.swapkit` from every chain's
-        // provider list — ranking falls back to the other providers exactly
-        // as before the SwapKit integration shipped. Single point of
-        // gating: every chain's switch arm below carries `.swapkit` as if
-        // unconditionally enabled, and this filter prunes when needed.
-        return applyProviderGates(naturalSwapProviders)
+        var providers = naturalSwapProviders
+        if SwapKitCapability.canReceive(on: chain) {
+            providers.append(.swapkit)
+        }
+        return applyProviderGates(providers)
     }
 
     /// Applies the SwapKit feature flag + the debug forced-provider gate to a
@@ -97,34 +95,34 @@ extension Coin {
         case .mayaChain, .kujira:
             return [.mayachain]
         case .dash:
-            // Tier 1 L1 source — `.swapkit` enables DASH↔EVM / DASH↔SOL routes
+            // Tier 1 L1 source — SwapKit enables DASH↔EVM / DASH↔SOL routes
             // via NEAR Intents. Wire shape mirrors DOGE (legacy P2PKH PSBT,
             // no segwit); signed through `SwapKitDashSigner` riding
             // WalletCore's `CoinType.dash` end-to-end. MayaChain stays as
             // a provider — both rank against each other per quote.
-            return [.mayachain, .swapkit]
+            return [.mayachain]
         case .ethereum:
-            return [.thorchain, .mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.thorchain, .mayachain, .oneinch(chain), .lifi, .kyberswap(chain)]
         case .bscChain:
-            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
         case .avalanche:
-            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
         case .arbitrum:
-            return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain)]
         case .base:
-            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
         case .optimism, .polygon, .polygonV2:
-            return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
+            return [.lifi, .oneinch(chain), .kyberswap(chain)] // KyberSwap supported
         case .mantle:
-            // `.swapkit` is included unconditionally — eligibility per chain
+            // SwapKit is included centrally — eligibility per chain
             // is gated dynamically by `SwapKitProviderCache.isEnabled`
             // against the cached `/v3/providers.enabledChainIds`. If
             // SwapKit lights up Mantle later, no iOS release needed.
-            return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit]
+            return [.lifi, .oneinch(chain), .kyberswap(chain)]
         case .zksync:
-            return [.oneinch(chain), .lifi, .swapkit] // KyberSwap not supported on zkSync
+            return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
         case .blast:
-            return [.lifi, .swapkit] // KyberSwap not supported on Blast
+            return [.lifi] // KyberSwap not supported on Blast
         case .thorChain:
             return [.thorchain, .mayachain]
         case .thorChainChainnet:
@@ -132,22 +130,22 @@ extension Coin {
         case .thorChainStagenet:
             return [.thorchainStagenet]
         case .bitcoin:
-            // Phase 2 chain — `.swapkit` enables BTC↔EVM / BTC↔SOL / BTC↔TON
+            // Phase 2 chain — SwapKit enables BTC↔EVM / BTC↔SOL / BTC↔TON
             // / BTC↔SUI / BTC↔ADA routes via NEAR Intents / Chainflip /
             // Garden / Flashnet / Harbor. SwapKit returns a pre-built base64
             // PSBT and we sign it through the same UTXO helper path
             // THORChain BTC swaps already use.
-            return [.thorchain, .mayachain, .swapkit]
+            return [.thorchain, .mayachain]
         case .dogecoin:
             // Tier 1 L1 source — `.swapkit` enables DOGE↔EVM / DOGE↔SOL routes
             // via NEAR Intents. Wire shape matches BTC (`meta.txType: "PSBT"`)
             // but inputs are legacy P2PKH; signed through `SwapKitDogeSigner`
             // riding WalletCore's `CoinType.dogecoin` end-to-end.
-            return [.thorchain, .swapkit]
+            return [.thorchain]
         case .bitcoinCash:
             // Tier 1 L1 source — same shape as DOGE (legacy P2PKH PSBT).
             // BCH adds SIGHASH_FORKID natively via WalletCore.
-            return [.thorchain, .swapkit]
+            return [.thorchain]
         case .litecoin:
             // Tier 1 L1 source — flag-flip-ready. LTC reuses the existing
             // `SwapKitBTCSigner` (segwit-compatible — LTC addresses are
@@ -157,7 +155,7 @@ extension Coin {
             // Despite this, `/v3/quote` serves LTC routes via NEAR — the gate
             // is overly conservative. Shipping the flip pre-emptively so the
             // gate flip is the only diff when upstream lights up.
-            return [.thorchain, .swapkit]
+            return [.thorchain]
         case .gaiaChain:
             return [.thorchain]
         case .solana:
@@ -166,7 +164,7 @@ extension Coin {
             // SPL↔SPL). Jupiter is Solana-only and same-chain — cross-chain
             // pairs drop it automatically via the `SwapCoinsResolver` from∩to
             // intersection, and THORChain stays for SPL↔other-chain routes.
-            return [.thorchain, .jupiter, .lifi, .swapkit]
+            return [.thorchain, .jupiter, .lifi]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:
@@ -177,7 +175,7 @@ extension Coin {
             // (Vultisig can't manage shielded keys). Sapling-v4 PSBT signed
             // through `SwapKitZcashSigner` with ZIP-243 sighash via
             // WalletCore `CoinType.zcash`.
-            return [.mayachain, .swapkit]
+            return [.mayachain]
         case .ripple:
             // Tier 1 L1 source — `.swapkit` enables XRP↔EVM / XRP↔SOL routes
             // via NEAR Intents. Deposit-only flow: SwapKit returns a per-route
@@ -186,15 +184,15 @@ extension Coin {
             // is defensive — NEAR's ephemeral deposit pattern doesn't need
             // tags, but a future Chainflip shared-vault flip would silently
             // misroute funds without it.
-            return [.thorchain, .swapkit]
+            return [.thorchain]
         case .tron:
-            return [.thorchain, .swapkit]
+            return [.thorchain]
         case .ton, .cardano, .sui:
-            return [.swapkit]
+            return []
         case .robinhood:
             // 1inch live-confirmed on 4663: /quote and /swap return executable
             // calldata to its deployed router (0x5a70…89c7).
-            return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
+            return [.oneinch(chain), .lifi, .kyberswap(chain)]
         case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }
