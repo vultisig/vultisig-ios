@@ -43,6 +43,8 @@ struct ChainDetailScreen: View {
     @StateObject private var trustLineActivation = RippleTrustLineActivationViewModel()
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
+    private let topContentSpacing: CGFloat = 32
+    private let qbtcClaimBannerHeight: CGFloat = 156
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.dismiss) var dismiss
@@ -241,7 +243,7 @@ struct ChainDetailScreen: View {
     }
 
     var topContentSection: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
             ChainDetailHeaderView(
                 vault: vault,
                 nativeCoin: nativeCoin,
@@ -252,13 +254,9 @@ struct ChainDetailScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
+            .padding(.top, topContentSpacing)
 
-            ClaimQbtcPromoBanner(
-                onClaim: onClaimBannerTapped,
-                onDismiss: dismissQbtcClaimBanner
-            )
-            .transition(.verticalGrowAndFade)
-            .showIf(showsQbtcBanner)
+            qbtcClaimBannerSection
 
             TronResourcesCardView(
                 availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
@@ -266,9 +264,29 @@ struct ChainDetailScreen: View {
                 availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
                 totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
                 isLoading: viewModel.tronLoader?.isLoading ?? false
-            ).showIf(viewModel.isTron)
+            )
+            .padding(.top, topContentSpacing)
+            .showIf(viewModel.isTron)
         }
-        .animation(.interpolatingSpring(duration: 0.25), value: isQbtcClaimBannerDismissed)
+    }
+
+    var qbtcClaimBannerSection: some View {
+        VStack(spacing: 0) {
+            ClaimQbtcPromoBanner(
+                onClaim: onClaimBannerTapped,
+                onDismiss: dismissQbtcClaimBanner
+            )
+            .padding(.top, topContentSpacing)
+        }
+        .frame(
+            height: showsQbtcBanner ? qbtcClaimBannerHeight + topContentSpacing : 0,
+            alignment: .top
+        )
+        .opacity(showsQbtcBanner ? 1 : 0)
+        .clipped()
+        .allowsHitTesting(showsQbtcBanner)
+        .accessibilityHidden(!showsQbtcBanner)
+        .animation(.interpolatingSpring(duration: 0.25), value: showsQbtcBanner)
     }
 
     var bottomContentSection: some View {
