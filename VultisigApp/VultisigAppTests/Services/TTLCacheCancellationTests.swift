@@ -95,6 +95,7 @@ final class TTLCacheCancellationTests: XCTestCase {
         let gate = FetchGate()
 
         async let first: Int = cache.value(for: "k", now: now, ttl: ttl) {
+            await Task.yield()
             await gate.markStartedAndWaitForRelease()
             throw CancellationError()
         }
@@ -127,6 +128,7 @@ final class TTLCacheCancellationTests: XCTestCase {
         let gate = FetchGate()
 
         async let first: Int = cache.value(for: "k", now: now, ttl: ttl) {
+            await Task.yield()
             await gate.markStartedAndWaitForRelease()
             return 42
         }
