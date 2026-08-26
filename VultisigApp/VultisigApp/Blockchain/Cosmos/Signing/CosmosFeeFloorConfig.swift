@@ -26,7 +26,7 @@
 //  floor is preserved exactly.
 //
 //  Chains absent from the table are unconstrained — `flooredFee` returns the
-    //  computed fee unchanged (ATOM / Noble / dYdX / Terra / TerraClassic
+//  computed fee unchanged (ATOM / Noble / dYdX / Terra / TerraClassic
 //  pay flat fees above their floors; QBTC has min_gas_price = 0).
 //
 //  If Akash is ever added to `CosmosStakingConfig`, its `feeAmount` must be
