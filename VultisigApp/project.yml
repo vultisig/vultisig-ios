@@ -212,6 +212,13 @@ targets:
           VULTI_LOG_CONFIG: "*:off"
 
     dependencies:
+      # The iOS-only widget extension is embedded only in the iOS destination;
+      # the shared application target must remain independently buildable for
+      # macOS until native macOS widgets are explicitly added to the scope.
+      - target: VultisigWidgets
+        embed: true
+        destinationFilters: [iOS]
+
       # ---- Local embedded xcframeworks (link-only, no embed) ----
       # NOTE: The current pbxproj pins an `expectedSignature` per xcframework.
       # XcodeGen does not yet surface that attribute; after running `xcodegen
@@ -244,6 +251,64 @@ targets:
         product: Mediator
 
     # SwiftPM build-tool plugin (runs before compile).
+    buildToolPlugins:
+      - plugin: SwiftLintBuildToolPlugin
+        package: SwiftLintPlugins
+
+  # ========================================================================
+  #  VultisigWidgets — crypto market WidgetKit extension (iOS)
+  # ========================================================================
+  VultisigWidgets:
+    type: app-extension
+    supportedDestinations: [iOS]
+    deploymentTarget:
+      iOS: "17.0"
+
+    sources:
+      - path: VultisigWidgets
+        excludes:
+          - "**/.DS_Store"
+      # These files already belong to the app's recursive source tree. List
+      # them explicitly here instead of adding an overlapping directory tree,
+      # which makes XcodeGen spend minutes reconciling duplicate groups.
+      - path: VultisigApp/Shared/WidgetShared/WidgetSharedStorage.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketAsset.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketCache.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketClient.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketService.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetSparklineSampler.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Components/ImageView/AsyncImageView.swift
+        group: VultisigApp/Components/ImageView
+      - path: VultisigApp/Components/ImageView/CachedAsyncImage.swift
+        group: VultisigApp/Components/ImageView
+      - path: VultisigApp/Shared/WidgetShared/MarketWidgetAssets.xcassets
+        group: VultisigApp/Shared/WidgetShared
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vultisig.wallet.widgets
+        PRODUCT_NAME: VultisigWidgets
+        INFOPLIST_FILE: VultisigWidgets/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: VultisigWidgets/VultisigWidgets.entitlements
+        CODE_SIGN_IDENTITY: "Apple Development"
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+        ENABLE_PREVIEWS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_EXTENSION"
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins

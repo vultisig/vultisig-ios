@@ -9,6 +9,7 @@ does*; these pages carry the *why* that spans several types.
 
 | Folder | Subsystem |
 |---|---|
+| [`market-widgets/`](market-widgets/overview.md) | Signal Flow visual hierarchy, family layouts, rendering modes, content stress rules and accessibility requirements for the crypto market WidgetKit extension. |
 | [`passcode-keyshare-encryption/`](passcode-keyshare-encryption/overview.md) | The app passcode and at-rest encryption of key shares. Read before touching anything under `Core/Security/Keyshare/` or `Core/Security/Passcode/`. |
 
 These files are outside the XcodeGen source globs in `VultisigApp/project.yml`
