@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
 
 /// A positive event that can contribute to App Store review eligibility.
@@ -116,11 +117,11 @@ final class AppReviewService {
         return true
     }
 
-    /// Compatibility for the existing Done screen while event producers move
-    /// to the typed API.
-    @discardableResult
-    func recordConfirmedTransaction(id: String) -> Bool {
-        record(.confirmedOutboundTransaction(id: id))
+    /// Tells the app-level StoreKit host that the current visible surface can
+    /// safely consume a claim. Recording and presentation are separate so a
+    /// pairing event can navigate into signing without presenting over it.
+    func requestPromptEvaluation() {
+        NotificationCenter.default.post(name: .appReviewPromptOpportunity, object: nil)
     }
 
     // MARK: - Decision and atomic claim
@@ -152,21 +153,6 @@ final class AppReviewService {
             "[AppReview] Prompt claimed for version \(version, privacy: .public) claimCount=\(claimCount, privacy: .public)"
         )
         return true
-    }
-
-    /// Compatibility for the existing Done screen. This remains count-first,
-    /// then claim, until the shared app-level prompt host lands.
-    func claimReviewPrompt(forConfirmedTransaction id: String) -> Bool {
-        guard recordConfirmedTransaction(id: id) else { return false }
-        return claimReviewPrompt()
-    }
-
-    func shouldRequestReview() -> Bool {
-        AppReviewPolicy.shouldRequestReview(
-            state: state,
-            now: now(),
-            currentVersion: bundleVersion()
-        )
     }
 
     var state: AppReviewState {
@@ -220,3 +206,123 @@ struct AppReviewInstrumentation: Equatable {
     let policyEvaluationCount: Int
     let promptClaimCount: Int
 }
+
+extension Notification.Name {
+    static let appReviewPromptOpportunity = Notification.Name("appReviewPromptOpportunity")
+}
+
+/// Conservative balance-delta qualification for the coin detail surface.
+/// A spendable increase comes from a confirmed balance; pending balance is not
+/// an input. Priced assets must clear a fiat floor, while an unpriced asset is
+/// accepted only when it is native and clears its chain dust floor.
+enum AppReviewIncomingBalancePolicy {
+    static let dwellDuration: Duration = .seconds(3)
+    static let minimumFiatValue = Decimal(1)
+
+    static func eventID(
+        coinID: String,
+        previousRawBalance: String,
+        currentRawBalance: String,
+        decimals: Int,
+        fiatRate: Decimal?,
+        isNativeToken: Bool,
+        minimumRawAmount: BigInt,
+        isLikelySpam: Bool,
+        baselineRefreshSucceeded: Bool,
+        confirmationRefreshSucceeded: Bool
+    ) -> String? {
+        guard baselineRefreshSucceeded,
+              confirmationRefreshSucceeded,
+              !isLikelySpam,
+              (0...38).contains(decimals),
+              let previous = BigInt(previousRawBalance),
+              let current = BigInt(currentRawBalance),
+              previous >= 0,
+              current > previous else {
+            return nil
+        }
+
+        let delta = current - previous
+        if let fiatRate, fiatRate > 0 {
+            guard let rawDecimal = Decimal(
+                string: delta.description,
+                locale: Locale(identifier: "en_US_POSIX")
+            ) else {
+                return nil
+            }
+            let decimalDelta = rawDecimal / pow(Decimal(10), decimals)
+            guard decimalDelta * fiatRate >= minimumFiatValue else { return nil }
+        } else {
+            guard isNativeToken, delta >= max(minimumRawAmount, 1) else { return nil }
+        }
+
+        guard let normalizedCoinID = coinID.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty else {
+            return nil
+        }
+        return "\(normalizedCoinID):\(current)"
+    }
+}
+
+#if os(iOS)
+import StoreKit
+import SwiftUI
+
+private struct AppReviewPromptHost: ViewModifier {
+    @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
+
+    @State private var hasPendingEvaluation = false
+    @State private var evaluationGeneration = 0
+    @State private var isSceneActive = false
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: .appReviewPromptOpportunity)) { _ in
+                scheduleEvaluation()
+            }
+            .onAppear {
+                isSceneActive = scenePhase == .active
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                isSceneActive = newPhase == .active
+                guard hasPendingEvaluation else { return }
+                // Cancel an armed task on every phase transition. In
+                // particular, `.inactive` must cancel before a stale active
+                // environment snapshot can consume the version claim.
+                evaluationGeneration += 1
+            }
+            .task(id: evaluationGeneration) {
+                await evaluateAfterNavigationSettles()
+            }
+    }
+
+    private func scheduleEvaluation() {
+        hasPendingEvaluation = true
+        evaluationGeneration += 1
+    }
+
+    private func evaluateAfterNavigationSettles() async {
+        guard hasPendingEvaluation else { return }
+
+        do {
+            try await Task.sleep(for: .seconds(2))
+        } catch {
+            return
+        }
+
+        // Keep the pending bit set so returning to an active scene retries on a
+        // visible surface instead of spending an ask while the app is inactive.
+        guard isSceneActive else { return }
+        hasPendingEvaluation = false
+
+        guard AppReviewService.shared.claimReviewPrompt() else { return }
+        requestReview()
+    }
+}
+
+extension View {
+    func appReviewPromptHost() -> some View {
+        modifier(AppReviewPromptHost())
+    }
+}
+#endif

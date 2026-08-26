@@ -49,6 +49,10 @@ struct VaultBackupContainerView<Content: View>: View {
 
     func fileSaved() {
         backupType.markBackedUp()
+        AppReviewService.shared.record(
+            .vaultBackupCompleted(vaultID: backupType.vault.pubKeyECDSA)
+        )
+        AppReviewService.shared.requestPromptEvaluation()
         FileManager.default.clearTmpDirectory()
     }
 

@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 29/09/2025.
 //
 
+import BigInt
 import SwiftUI
 
 struct CoinDetailScreen: View {
@@ -164,8 +165,8 @@ struct CoinDetailScreen: View {
         .overlay(bottomFade)
         .task {
             viewModel.setup()
+            await refreshAndRecordIncomingAfterDwell()
         }
-        .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)
         .overlay(
             NotificationBannerView(
@@ -258,23 +259,52 @@ struct CoinDetailScreen: View {
 }
 
 private extension CoinDetailScreen {
-    func onAppear() {
-        Task {
-            await refresh()
-        }
-    }
-
     func onRefreshButton() {
         Task {
             await refresh()
         }
     }
 
-    func refresh() async {
-        await BalanceService.shared.updateBalance(for: coin)
+    @discardableResult
+    func refresh() async -> Bool {
+        let didRefreshBalance = await BalanceService.shared.updateBalance(for: coin)
         if viewModel.isTron {
             await MainActor.run { viewModel.tronLoader?.load() }
         }
+        return didRefreshBalance
+    }
+
+    func refreshAndRecordIncomingAfterDwell() async {
+        let baselineRefreshSucceeded = await refresh()
+        let baselineRawBalance = coin.rawBalance
+
+        do {
+            try await Task.sleep(for: AppReviewIncomingBalancePolicy.dwellDuration)
+        } catch {
+            return
+        }
+
+        let confirmationRefreshSucceeded = await refresh()
+        let coinPrice = coin.price
+        guard let eventID = AppReviewIncomingBalancePolicy.eventID(
+            coinID: coin.id,
+            previousRawBalance: baselineRawBalance,
+            currentRawBalance: coin.rawBalance,
+            decimals: coin.decimals,
+            fiatRate: coinPrice.isFinite && coinPrice > 0 ? Decimal(coinPrice) : nil,
+            isNativeToken: coin.isNativeToken,
+            minimumRawAmount: BigInt(coin.coinType.getFixedDustThreshold()),
+            isLikelySpam: CoinService.isLikelySpam(coin.toCoinMeta()),
+            baselineRefreshSucceeded: baselineRefreshSucceeded,
+            confirmationRefreshSucceeded: confirmationRefreshSucceeded
+        ) else {
+            return
+        }
+
+        AppReviewService.shared.record(
+            .confirmedIncomingTransaction(id: eventID)
+        )
+        AppReviewService.shared.requestPromptEvaluation()
     }
 
     func onExplorer() {

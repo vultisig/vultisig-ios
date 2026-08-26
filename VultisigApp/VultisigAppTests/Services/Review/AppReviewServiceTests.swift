@@ -176,14 +176,149 @@ final class AppReviewServiceTests: XCTestCase {
         XCTAssertNil(service.state.lastPromptedVersion)
     }
 
-    func testConfirmedTransactionCompatibilityClaimsOnSecondEvent() {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-        service.record(.vaultBackupCompleted(vaultID: "vault-a"))
-        advance(days: 7)
+    func testPricedIncomingBalanceIncreaseMustClearFiatFloor() {
+        XCTAssertNotNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "btc-address",
+                previousRawBalance: "100000000",
+                currentRawBalance: "300000000",
+                decimals: 8,
+                fiatRate: 1,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "btc-address",
+                previousRawBalance: "100000000",
+                currentRawBalance: "150000000",
+                decimals: 8,
+                fiatRate: 1,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
+    }
 
-        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-a"))
-        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: "hash-a"))
+    func testUnpricedIncomingRequiresNativeAmountAboveDust() {
+        XCTAssertEqual(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "native-address",
+                previousRawBalance: "0",
+                currentRawBalance: "100",
+                decimals: 8,
+                fiatRate: nil,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            ),
+            "native-address:100"
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "token-address",
+                previousRawBalance: "0",
+                currentRawBalance: "1000000",
+                decimals: 6,
+                fiatRate: nil,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
+    }
+
+    func testIncomingRejectsSpamFailedRefreshAndInvalidBalances() {
+        let validArguments = (
+            coinID: "coin-address",
+            previous: "0",
+            current: "2000000"
+        )
+
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: validArguments.previous,
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: true,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: validArguments.previous,
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: false
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: validArguments.previous,
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: false,
+                confirmationRefreshSucceeded: true
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: "",
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
+    }
+
+    func testIncomingIgnoresBalanceAlreadyPresentAtLiveBaseline() {
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "coin-address",
+                previousRawBalance: "2000000",
+                currentRawBalance: "2000000",
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                baselineRefreshSucceeded: true,
+                confirmationRefreshSucceeded: true
+            )
+        )
     }
 
     func testStateIsIsolatedPerDefaultsSuite() {
