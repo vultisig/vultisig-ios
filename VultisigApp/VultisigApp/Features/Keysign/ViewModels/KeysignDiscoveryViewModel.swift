@@ -82,6 +82,18 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.customMessagePayload = customMessagePayload
         self.participantDiscovery = participantDiscovery
 
+        do {
+            if let chain = keysignPayload?.coin.chain, !chain.isSupported {
+                throw CustomMessagePayloadError.unsupportedChain(chain.name)
+            }
+            _ = try customMessagePayload?.resolveSigningChain()
+        } catch {
+            self.logger.error("Refusing keysign for unsupported chain: \(error.localizedDescription)")
+            self.errorMessage = error.localizedDescription
+            self.status = .FailToStart
+            return
+        }
+
         // For a fast vault the server co-signs automatically, so the manual
         // peer-discovery screen must never appear. Flip to the fast-signing
         // state synchronously, before any `await` below (mediator start,
@@ -173,7 +185,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
 
         if let customMessagePayload {
             self.keysignMessages = customMessagePayload.keysignMessages
-            coin = vault.nativeCoin(for: Chain(name: customMessagePayload.chain) ?? .ethereum)
+            if let chain = try? customMessagePayload.resolveSigningChain() {
+                coin = vault.nativeCoin(for: chain)
+            }
         }
 
         if keysignMessages.isEmpty {
