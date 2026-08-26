@@ -275,29 +275,28 @@ private extension CoinDetailScreen {
     }
 
     func refreshAndRecordIncomingAfterDwell() async {
-        let baselineRefreshSucceeded = await refresh()
-        let baselineRawBalance = coin.rawBalance
-
-        do {
-            try await Task.sleep(for: AppReviewIncomingBalancePolicy.dwellDuration)
-        } catch {
-            return
-        }
-
-        let confirmationRefreshSucceeded = await refresh()
+        // `rawBalance` is the persisted result of the last successful live
+        // refresh. Capture it before refreshing so funds that arrived while
+        // this screen was closed are recognized on their first live sighting.
+        let previouslyObservedRawBalance = coin.rawBalance
+        let refreshSucceeded = await refresh()
         let coinPrice = coin.price
-        guard let eventID = AppReviewIncomingBalancePolicy.eventID(
+        let candidateEventID = AppReviewIncomingBalancePolicy.eventID(
             coinID: coin.id,
-            previousRawBalance: baselineRawBalance,
+            previousRawBalance: previouslyObservedRawBalance,
             currentRawBalance: coin.rawBalance,
             decimals: coin.decimals,
             fiatRate: coinPrice.isFinite && coinPrice > 0 ? Decimal(coinPrice) : nil,
             isNativeToken: coin.isNativeToken,
             minimumRawAmount: BigInt(coin.coinType.getFixedDustThreshold()),
             isLikelySpam: CoinService.isLikelySpam(coin.toCoinMeta()),
-            baselineRefreshSucceeded: baselineRefreshSucceeded,
-            confirmationRefreshSucceeded: confirmationRefreshSucceeded
-        ) else {
+            refreshSucceeded: refreshSucceeded
+        )
+
+        // The live confirmed balance is already persisted by `refresh()`. Only
+        // the review event waits: SwiftUI cancels this task if the sheet
+        // disappears before the user has dwelled on the visible balance.
+        guard let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell(candidateEventID) else {
             return
         }
 

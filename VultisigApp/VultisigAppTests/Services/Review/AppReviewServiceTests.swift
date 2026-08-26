@@ -187,8 +187,7 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: true,
                 minimumRawAmount: 100,
                 isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             )
         )
         XCTAssertNil(
@@ -201,8 +200,7 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: true,
                 minimumRawAmount: 100,
                 isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             )
         )
     }
@@ -218,8 +216,7 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: true,
                 minimumRawAmount: 100,
                 isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             ),
             "native-address:100"
         )
@@ -233,13 +230,81 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: false,
                 minimumRawAmount: 1,
                 isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             )
         )
     }
 
-    func testIncomingRejectsSpamFailedRefreshAndInvalidBalances() {
+    func testIncomingBalancePresentAtEntryRecordsAfterDwell() async {
+        let candidate = AppReviewIncomingBalancePolicy.eventID(
+            coinID: "coin-address",
+            previousRawBalance: "0",
+            currentRawBalance: "2000000",
+            decimals: 6,
+            fiatRate: 1,
+            isNativeToken: false,
+            minimumRawAmount: 1,
+            isLikelySpam: false,
+            refreshSucceeded: true
+        )
+
+        let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell(
+            candidate,
+            dwell: {}
+        )
+
+        XCTAssertEqual(eventID, "coin-address:2000000")
+    }
+
+    func testIncomingSameBalanceRepeatDoesNotCreateCandidate() {
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "coin-address",
+                previousRawBalance: "2000000",
+                currentRawBalance: "2000000",
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
+    }
+
+    func testIncomingFailedRefreshDoesNotCreateCandidate() {
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "coin-address",
+                previousRawBalance: "0",
+                currentRawBalance: "2000000",
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: false
+            )
+        )
+    }
+
+    func testIncomingTaskCancellationBeforeDwellDoesNotRecord() async {
+        let service = makeService()
+        let task = Task {
+            let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell("coin-address:2000000") {
+                try await Task.sleep(for: .seconds(60))
+            }
+            guard let eventID else { return }
+            service.record(.confirmedIncomingTransaction(id: eventID))
+        }
+
+        task.cancel()
+        await task.value
+
+        XCTAssertEqual(service.state.qualifyingEventCount, 0)
+    }
+
+    func testIncomingRejectsSpamAndInvalidBalances() {
         let validArguments = (
             coinID: "coin-address",
             previous: "0",
@@ -256,36 +321,7 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: false,
                 minimumRawAmount: 1,
                 isLikelySpam: true,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
-            )
-        )
-        XCTAssertNil(
-            AppReviewIncomingBalancePolicy.eventID(
-                coinID: validArguments.coinID,
-                previousRawBalance: validArguments.previous,
-                currentRawBalance: validArguments.current,
-                decimals: 6,
-                fiatRate: 1,
-                isNativeToken: false,
-                minimumRawAmount: 1,
-                isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: false
-            )
-        )
-        XCTAssertNil(
-            AppReviewIncomingBalancePolicy.eventID(
-                coinID: validArguments.coinID,
-                previousRawBalance: validArguments.previous,
-                currentRawBalance: validArguments.current,
-                decimals: 6,
-                fiatRate: 1,
-                isNativeToken: false,
-                minimumRawAmount: 1,
-                isLikelySpam: false,
-                baselineRefreshSucceeded: false,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             )
         )
         XCTAssertNil(
@@ -298,25 +334,7 @@ final class AppReviewServiceTests: XCTestCase {
                 isNativeToken: false,
                 minimumRawAmount: 1,
                 isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
-            )
-        )
-    }
-
-    func testIncomingIgnoresBalanceAlreadyPresentAtLiveBaseline() {
-        XCTAssertNil(
-            AppReviewIncomingBalancePolicy.eventID(
-                coinID: "coin-address",
-                previousRawBalance: "2000000",
-                currentRawBalance: "2000000",
-                decimals: 6,
-                fiatRate: 1,
-                isNativeToken: false,
-                minimumRawAmount: 1,
-                isLikelySpam: false,
-                baselineRefreshSucceeded: true,
-                confirmationRefreshSucceeded: true
+                refreshSucceeded: true
             )
         )
     }

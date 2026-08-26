@@ -228,11 +228,9 @@ enum AppReviewIncomingBalancePolicy {
         isNativeToken: Bool,
         minimumRawAmount: BigInt,
         isLikelySpam: Bool,
-        baselineRefreshSucceeded: Bool,
-        confirmationRefreshSucceeded: Bool
+        refreshSucceeded: Bool
     ) -> String? {
-        guard baselineRefreshSucceeded,
-              confirmationRefreshSucceeded,
+        guard refreshSucceeded,
               !isLikelySpam,
               (0...38).contains(decimals),
               let previous = BigInt(previousRawBalance),
@@ -260,6 +258,24 @@ enum AppReviewIncomingBalancePolicy {
             return nil
         }
         return "\(normalizedCoinID):\(current)"
+    }
+
+    static func eventIDAfterDwell(
+        _ eventID: String?,
+        dwell: () async throws -> Void = {
+            try await Task.sleep(for: dwellDuration)
+        }
+    ) async -> String? {
+        guard let eventID else { return nil }
+
+        do {
+            try await dwell()
+        } catch {
+            return nil
+        }
+
+        guard !Task.isCancelled else { return nil }
+        return eventID
     }
 }
 
