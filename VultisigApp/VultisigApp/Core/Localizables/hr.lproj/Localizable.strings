@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "Klasične ključeve mogu probiti kvantna računala. Omogućavanje QBTC-a zahtijeva generiranje novog para ključeva.";
 "quantumSecurityIntroTitle" = "Nova kvantna sigurnost";
 "quotedWithdrawalVerifyTitle" = "Podižete";
+"rateTheApp" = "Ocijeni aplikaciju";
 "rawPayload" = "Sirovi podaci";
 "ready" = "Spreman";
 "Rebond" = "Rebond";

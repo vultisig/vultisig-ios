@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "经典密钥可能被量子计算机破解。启用 QBTC 需要生成新的密钥对。";
 "quantumSecurityIntroTitle" = "全新量子安全";
 "quotedWithdrawalVerifyTitle" = "您正在提取";
+"rateTheApp" = "为应用评分";
 "rawPayload" = "原始数据";
 "ready" = "就绪";
 "Rebond" = "重新绑定";

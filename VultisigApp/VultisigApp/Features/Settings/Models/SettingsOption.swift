@@ -35,6 +35,7 @@ enum SettingsOption: String, Identifiable {
     case faq
     case education
     case checkForUpdates
+    case rateApp
     case shareApp
     case twitter
     case discord
@@ -67,6 +68,8 @@ enum SettingsOption: String, Identifiable {
             return "vultisigEducation"
         case .checkForUpdates:
             return "checkForUpdates"
+        case .rateApp:
+            return "rateTheApp"
         case .shareApp:
             return "shareTheApp"
         case .twitter:
@@ -108,6 +111,8 @@ enum SettingsOption: String, Identifiable {
             return .books
         case .checkForUpdates:
             return .cloudUpload
+        case .rateApp:
+            return .stars
         case .shareApp:
             return .connectedDots3
         case .twitter:
@@ -148,6 +153,8 @@ enum SettingsOption: String, Identifiable {
             return .link(url: StaticURL.GithubVultisigURL)
         case .shareApp:
             return .shareLink(url: StaticURL.AppStoreVultisigURL)
+        case .rateApp:
+            return .link(url: StaticURL.AppStoreVultisigReviewURL)
         case .privacyPolicy:
             return .link(url: StaticURL.PrivacyPolicyURL)
         case .termsOfService:

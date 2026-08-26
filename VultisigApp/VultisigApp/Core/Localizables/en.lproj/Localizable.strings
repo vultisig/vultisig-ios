@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "Classical keys can be broken by quantum computers. Enabling QBTC requires generating a new key pair.";
 "quantumSecurityIntroTitle" = "New quantum security";
 "quotedWithdrawalVerifyTitle" = "You are withdrawing";
+"rateTheApp" = "Rate the App";
 "rawPayload" = "Raw Payload";
 "ready" = "Ready";
 "Rebond" = "Rebond";
