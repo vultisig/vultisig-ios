@@ -3348,9 +3348,9 @@ class TokensStore {
     static let ethTHOR: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "THOR",
-        logo: "rune",
+        logo: "thorswap",
         decimals: 18,
-        priceProviderId: "thor",
+        priceProviderId: "thorswap",
         contractAddress: "0xa5f2211B9b8170F694421f2046281775E8468044",
         isNativeToken: false
     )
