@@ -279,10 +279,6 @@ enum ExplorerLinkBuilder {
             tx: { "https://www.mintscan.io/dydx/tx/\($0)" },
             address: { "https://www.mintscan.io/dydx/address/\($0)" }
         ),
-        .kujira: ExplorerConfig(
-            tx: { "https://finder.kujira.network/kaiyo-1/tx/\($0)" },
-            address: { "https://finder.kujira.network/kaiyo-1/address/\($0)" }
-        ),
         .avalanche: ExplorerConfig(
             tx: { "https://snowtrace.io/tx/\($0)" },
             address: { "https://snowtrace.io/address/\($0)" },

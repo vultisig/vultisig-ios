@@ -34,6 +34,9 @@ final class TransactionStatusService: TransactionStatusChecking, @unchecked Send
 
     /// Check transaction status for any chain
     func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+        guard chain.isSupported else {
+            throw CosmosServiceError.unsupportedChain
+        }
         let query = TransactionStatusQuery(txHash: txHash, chain: chain)
         let provider = getProvider(for: chain)
         return try await provider.checkStatus(query: query)

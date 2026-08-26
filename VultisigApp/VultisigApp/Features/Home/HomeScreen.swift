@@ -564,7 +564,7 @@ extension HomeScreen {
 
         var coinToUse: Coin?
         var chainToUse: Chain?
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             if chain == .mayaChain {
                 if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
                     chainToUse = chain

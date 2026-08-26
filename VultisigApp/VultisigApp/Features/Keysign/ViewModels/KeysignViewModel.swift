@@ -481,7 +481,7 @@ class KeysignViewModel: ObservableObject {
             } else if let customMessagePayload = self.customMessagePayload {
                 var targetChain: Chain = .ethereum // Default to Ethereum
                 // Get chain from customMessagePayload and use its coinType (case-insensitive match)
-                if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
+                if let chain = Chain.supportedCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
                     chainPath = chain.coinType.derivationPath()
                     targetChain = chain
                 } else {
@@ -1034,7 +1034,7 @@ class KeysignViewModel: ObservableObject {
                     } catch {
                         await self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
-                case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
+                case .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
                     let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
                     let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
@@ -1053,6 +1053,8 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         throw err
                     }
+                case .kujira:
+                    throw CosmosServiceError.unsupportedChain
                 case .solana:
                     self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:

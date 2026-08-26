@@ -82,7 +82,7 @@ extension Coin {
     /// picker via the native-pool `DestinationTokenProvider`s.
     private var naturalSwapProviders: [SwapProvider] {
         switch chain {
-        case .mayaChain, .kujira:
+        case .mayaChain:
             return [.mayachain]
         case .dash:
             // Tier 1 L1 source — SwapKit enables DASH↔EVM / DASH↔SOL routes
@@ -183,7 +183,7 @@ extension Coin {
             // 1inch live-confirmed on 4663: /quote and /swap return executable
             // calldata to its deployed router (0x5a70…89c7).
             return [.oneinch(chain), .lifi, .kyberswap(chain)]
-        case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
+        case .polkadot, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }
     }

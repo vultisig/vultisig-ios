@@ -872,7 +872,7 @@ private extension BlockChainService {
             let adjustedPriority = maxPriorityFeePerGas > maxFeePerGas ? maxFeePerGas : maxPriorityFeePerGas
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: adjustedPriority, nonce: nonce, gasLimit: gasLimit)
 
-        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash, .qbtc:
+        case .gaiaChain, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash, .qbtc:
             let service = try CosmosService.getService(forChain: coin.chain)
             let account = try await service.fetchAccountNumber(coin.address)
 
@@ -890,7 +890,7 @@ private extension BlockChainService {
             // If this is an IBC transfer OR the coin has an IBC contract address, we need timeout info
             if transactionType == .ibcTransfer || coin.contractAddress.contains("ibc/") {
                 switch coin.chain {
-                case .gaiaChain, .kujira, .osmosis, .terra:
+                case .gaiaChain, .osmosis, .terra:
                     // Only fetch denom traces for actual IBC tokens
                     if coin.contractAddress.contains("ibc/") {
                         if let denomTrace = await service.fetchIbcDenomTraces(coin: coin) {
@@ -1024,6 +1024,9 @@ private extension BlockChainService {
                 ibcDenomTrace: ibcDenomTrace,
                 gasLimit: dynamicGasLimit
             )
+
+        case .kujira:
+            throw CosmosServiceError.unsupportedChain
 
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)

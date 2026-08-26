@@ -110,7 +110,7 @@ struct JoinKeysignView: View {
         if let keysignPayload = viewModel.keysignPayload {
             keysignType = keysignPayload.coin.chain.signingKeyType
         } else if let customMessagePayload = viewModel.customMessagePayload,
-                  let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
+                  let chain = Chain.supportedCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
             keysignType = chain.signingKeyType
         } else {
             keysignType = .ECDSA

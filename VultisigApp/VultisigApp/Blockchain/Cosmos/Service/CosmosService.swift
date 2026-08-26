@@ -10,7 +10,6 @@ import Foundation
 enum CosmosService {
     case gaiaChain
     case dydx
-    case kujira
     case osmosis
     case terra
     case terraClassic
@@ -32,8 +31,6 @@ enum CosmosService {
             return .gaiaChain
         case .dydx:
             return .dydx
-        case .kujira:
-            return .kujira
         case .osmosis:
             return .osmosis
         case .terra:
@@ -59,8 +56,6 @@ enum CosmosService {
             return .gaiaChain
         case .dydx:
             return .dydx
-        case .kujira:
-            return .kujira
         case .osmosis:
             return .osmosis
         case .terra:

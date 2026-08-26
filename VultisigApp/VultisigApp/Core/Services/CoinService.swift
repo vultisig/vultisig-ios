@@ -215,6 +215,9 @@ struct CoinService {
     /// Legacy JSON backups predate `chainPublicKeys` persistence; skip the
     /// guard when the list is empty to avoid soft-bricking restored vaults.
     static func assertChainAllowed(asset: CoinMeta, vault: Vault) throws {
+        guard asset.chain.isSupported else {
+            throw CosmosServiceError.unsupportedChain
+        }
         guard vault.libType == .KeyImport else { return }
         guard !vault.chainPublicKeys.isEmpty else { return }
         guard !vault.chainPublicKeys.contains(where: { $0.chain == asset.chain }) else { return }

@@ -23,7 +23,7 @@ extension CoinAction {
     /// predicate lists them alongside mainnet, because they run the same
     /// `MsgDeposit`.
     static var memoChains: [Chain] = [
-        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
+        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .gaiaChain, .osmosis,
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
@@ -43,6 +43,8 @@ extension CoinAction {
 
 extension Chain {
     var defaultActions: [CoinAction] {
+
+        guard isSupported else { return [] }
 
         var actions: [CoinAction] = []
 

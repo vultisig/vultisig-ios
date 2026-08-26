@@ -26,7 +26,7 @@ final class ChainPendingTransactionSupportTests: XCTestCase {
     /// Preserved exactly from the pre-refactor allow-list.
     private let pendingTrueChains: [Chain] = [
         .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain,
-        .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic,
+        .gaiaChain, .osmosis, .dydx, .terra, .terraClassic,
         .noble, .akash, .qbtc
     ]
 
@@ -44,7 +44,7 @@ final class ChainPendingTransactionSupportTests: XCTestCase {
         // must remain `false` after the exhaustive rewrite.
         let falseChains: [Chain] = [
             .bitcoin, .ethereum, .solana, .bscChain, .sui, .ripple,
-            .cardano, .polkadot, .ton, .tron
+            .cardano, .polkadot, .ton, .tron, .kujira
         ]
         for chain in falseChains {
             XCTAssertFalse(

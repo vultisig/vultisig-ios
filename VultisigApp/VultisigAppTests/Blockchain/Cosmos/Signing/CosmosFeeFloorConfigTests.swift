@@ -82,7 +82,7 @@ final class CosmosFeeFloorConfigTests: XCTestCase {
     // MARK: - Non-floored chains pass through unchanged (regression)
 
     func testNonFlooredCosmosChainsPassThrough() {
-        let chains: [Chain] = [.gaiaChain, .kujira, .noble, .dydx, .terra, .terraClassic, .qbtc]
+        let chains: [Chain] = [.gaiaChain, .noble, .dydx, .terra, .terraClassic, .qbtc]
         for chain in chains {
             XCTAssertEqual(
                 CosmosFeeFloorConfig.flooredFee(for: chain, computedFee: 7_500, gasLimit: 200_000),

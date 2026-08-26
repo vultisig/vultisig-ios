@@ -65,8 +65,8 @@ enum FunctionActionFixture {
         makeCoin(.gaiaChain, ticker: "ATOM", decimals: 6, isNative: true, rawBalance: rawBalance, address: cosmosAddress)
     }
 
-    static func makeKUJI(rawBalance: String = "10000000") -> Coin {
-        makeCoin(.kujira, ticker: "KUJI", decimals: 6, isNative: true, rawBalance: rawBalance, address: kujiAddress)
+    static func makeOSMO(rawBalance: String = "10000000") -> Coin {
+        makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true, rawBalance: rawBalance, address: osmoAddress)
     }
 
     static func makeBTC(rawBalance: String = "100000000") -> Coin {
@@ -78,7 +78,7 @@ enum FunctionActionFixture {
     static let thorAddress = "thor1xyzfixturethorvaultaddress00000000000000"
     static let mayaAddress = "maya1xyzfixturemayachainnodeaddress0000000000"
     static let cosmosAddress = "cosmos1xyzfixturegaiachainvaultaddress000000000"
-    static let kujiAddress = "kujira1xyzfixturekujirachainvaultaddress00000"
+    static let osmoAddress = "osmo1xyzfixtureosmosischainvaultaddress000000"
     static let tonAddress = "UQAfixturetonchainvaultaddress00000000000000000"
     static let btcAddress = "bc1qfixturebtcvaultaddress00000000000"
     static let nodeAddress = "thor1validatorfixturenodeaddress0000000000000"

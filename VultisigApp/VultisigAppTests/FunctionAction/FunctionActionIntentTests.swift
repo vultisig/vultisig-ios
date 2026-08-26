@@ -395,7 +395,7 @@ final class FunctionActionIntentTests: XCTestCase {
     /// asset: an `ibc/…` or `factory/…` token is as transferable as the chain's
     /// own coin, and pinning would silently transfer the wrong asset.
     func testIbcMapsToTheTransferIntentOnTheSelectedCoin() {
-        for coin in [FunctionActionFixture.makeKUJI(), FunctionActionFixture.makeATOM()] {
+        for coin in [FunctionActionFixture.makeOSMO(), FunctionActionFixture.makeATOM()] {
             guard case .ibcTransfer(let mappedCoin, let destination) =
                     FunctionAction.cosmosIBC.transactionType(coin: coin, nodeAddress: nil) else {
                 return XCTFail("IBC must map to the transfer intent on \(coin.chain.rawValue)")
@@ -411,11 +411,11 @@ final class FunctionActionIntentTests: XCTestCase {
     /// way as the other migrations add `ensureRuneCoin`-style pins.
     func testIbcDoesNotPinToTheChainsNativeAsset() {
         let ibcToken = FunctionActionFixture.makeCoin(
-            .kujira,
-            ticker: "USK",
+            .osmosis,
+            ticker: "ION",
             decimals: 6,
             isNative: false,
-            address: FunctionActionFixture.kujiAddress
+            address: FunctionActionFixture.osmoAddress
         )
 
         guard case .ibcTransfer(let mappedCoin, _) =
@@ -423,12 +423,12 @@ final class FunctionActionIntentTests: XCTestCase {
             return XCTFail("IBC must map to the transfer intent")
         }
 
-        XCTAssertEqual(mappedCoin.ticker, "USK")
+        XCTAssertEqual(mappedCoin.ticker, "ION")
         XCTAssertEqual(mappedCoin.isNativeToken, false)
     }
 
     func testIbcIntentResolvesTheCoinItNeeds() {
-        let coin = FunctionActionFixture.makeKUJI()
+        let coin = FunctionActionFixture.makeOSMO()
         let intent = FunctionTransactionType.ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
@@ -467,7 +467,7 @@ final class FunctionActionIntentTests: XCTestCase {
 
     func testIbcStaysSelectableOnEveryChainThatOffersIt() {
         for coin in [
-            FunctionActionFixture.makeKUJI(),
+            FunctionActionFixture.makeOSMO(),
             FunctionActionFixture.makeATOM(),
             FunctionActionFixture.makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true)
         ] {

@@ -78,7 +78,7 @@ struct CustomMessagePayload: Codable, Hashable {
     /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),
     /// which sign the sha256 of the custom message rather than keccak256.
     private var isCosmosFamily: Bool {
-        guard let resolved = Chain.allCases.first(where: {
+        guard let resolved = Chain.supportedCases.first(where: {
             $0.name.caseInsensitiveCompare(chain) == .orderedSame
         }) else {
             return false

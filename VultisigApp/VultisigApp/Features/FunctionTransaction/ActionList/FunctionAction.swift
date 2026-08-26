@@ -72,8 +72,11 @@ enum FunctionAction: String, CaseIterable, Identifiable {
                     .custom]
         case .dydx:
             return [.vote]
-        case .gaiaChain, .kujira, .osmosis:
+        case .gaiaChain, .osmosis:
             return [.cosmosIBC]
+
+        case .kujira:
+            return []
 
         case .thorChainChainnet, .thorChainStagenet:
             // The test networks offer the entry button but had no case list,

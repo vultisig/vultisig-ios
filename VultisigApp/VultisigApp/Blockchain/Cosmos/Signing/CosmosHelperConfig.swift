@@ -18,8 +18,6 @@ struct CosmosHelperConfig {
         switch chain {
         case .gaiaChain:
             return CosmosHelperConfig(chain: chain, coinType: .cosmos, denom: "uatom", gasLimit: 200000)
-        case .kujira:
-            return CosmosHelperConfig(chain: chain, coinType: .kujira, denom: "ukuji", gasLimit: 200000)
         case .osmosis:
             return CosmosHelperConfig(chain: chain, coinType: .osmosis, denom: "uosmo", gasLimit: 300000)
         case .noble:
