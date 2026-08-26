@@ -65,6 +65,10 @@ enum TestStore {
             KaminoPosition.self,
             DatabaseRate.self,
             CustomRPCOverride.self,
+            StoredPendingTransaction.self,
+            AddressBookItem.self,
+            TransactionHistoryItem.self,
+            SwapTrackingMetadata.self,
             LimitOrder.self
         ])
         let configuration = ModelConfiguration(
