@@ -1811,9 +1811,16 @@
 "walletBalanceExceededError" = "El total de la cantidad y la tarifa excede el saldo de tu cartera. Intenta de nuevo.";
 "wantToCreateVaultPrivately" = "¿Quieres crear la bóveda en privado?";
 "wantToSignPrivately" = "¿Quieres firmar en privado?";
+"watchlist" = "Lista de seguimiento";
 "weJustSentYourBackupShare" = "Acabamos de enviar su compartir su copia de seguridad a su correo electrónico. Si no lo ve, revise su carpeta de spam.";
 "whereDoYouMigrateFrom" = "¿De dónde migras?";
 "whitespaceNotAllowed" = "No se permiten espacios en blanco.";
+"widgets" = "Widgets";
+"widgetWatchlist" = "Lista de seguimiento del widget";
+"widgetWatchlistAssets" = "Activos";
+"widgetWatchlistDescription" = "Elige hasta cinco activos para tus widgets de seguimiento. Aparecen en el orden en que los activas.";
+"widgetWatchlistLoadError" = "No se pudieron cargar los activos del mercado. Comprueba tu conexión e inténtalo de nuevo.";
+"widgetWatchlistSelectionCount" = "%d de %d seleccionados";
 "withdraw" = "Retirar";
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowMinimum" = "Monto demasiado pequeño — retira al menos %@ %@";

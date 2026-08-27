@@ -1811,9 +1811,16 @@
 "walletBalanceExceededError" = "Die Gesamtmenge und die Gebühr überschreiten das Saldo deiner Brieftasche. Versuche es erneut.";
 "wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
 "wantToSignPrivately" = "Möchtest du privat signieren?";
+"watchlist" = "Beobachtungsliste";
 "weJustSentYourBackupShare" = "Wir haben gerade Ihre Backup -Freigabe an Ihre E -Mail gesendet. Wenn Sie es nicht sehen, überprüfen Sie Ihren Spam -Ordner.";
 "whereDoYouMigrateFrom" = "Von wo migrierst du?";
 "whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
+"widgets" = "Widgets";
+"widgetWatchlist" = "Widget-Beobachtungsliste";
+"widgetWatchlistAssets" = "Assets";
+"widgetWatchlistDescription" = "Wähle bis zu fünf Assets für deine Watchlist-Widgets. Sie erscheinen in der Reihenfolge, in der du sie aktivierst.";
+"widgetWatchlistLoadError" = "Markt-Assets konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.";
+"widgetWatchlistSelectionCount" = "%d von %d ausgewählt";
 "withdraw" = "Abheben";
 "withdrawAmount" = "%@ abheben";
 "withdrawBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";

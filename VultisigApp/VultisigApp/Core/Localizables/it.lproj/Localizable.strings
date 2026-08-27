@@ -1811,9 +1811,16 @@
 "walletBalanceExceededError" = "La quantità totale e la commissione superano il saldo del tuo portafoglio. Riprova.";
 "wantToCreateVaultPrivately" = "Vuoi creare il vault in privato?";
 "wantToSignPrivately" = "Vuoi firmare in privato?";
+"watchlist" = "Watchlist";
 "weJustSentYourBackupShare" = "Abbiamo appena inviato la tua condivisione di backup alla tua email. Se non lo vedi, controlla la cartella spam.";
 "whereDoYouMigrateFrom" = "Da dove stai migrando?";
 "whitespaceNotAllowed" = "I caratteri di spazio non sono consentiti.";
+"widgets" = "Widget";
+"widgetWatchlist" = "Watchlist del widget";
+"widgetWatchlistAssets" = "Asset";
+"widgetWatchlistDescription" = "Scegli fino a cinque asset per i widget Watchlist. Appariranno nell’ordine in cui li attivi.";
+"widgetWatchlistLoadError" = "Impossibile caricare gli asset di mercato. Controlla la connessione e riprova.";
+"widgetWatchlistSelectionCount" = "%d di %d selezionati";
 "withdraw" = "Preleva";
 "withdrawAmount" = "Preleva %@";
 "withdrawBelowMinimum" = "Importo troppo piccolo — preleva almeno %@ %@";
