@@ -34,11 +34,13 @@ final class WidgetMarketDataTests: XCTestCase {
     """#.utf8)
 
     func testTopRequestIncludesOneBulkMarketQuery() throws {
-        let url = try WidgetMarketEndpoint.url(query: .top(limit: 5), currency: "USD")
-        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
-        let items = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value) })
+        let target = try WidgetMarketAPI.markets(query: .top(limit: 5), currency: "USD")
+        let items = try requestParameters(from: target)
 
-        XCTAssertEqual(components.path, "/coingeicko/api/v3/coins/markets")
+        XCTAssertEqual(target.baseURL.absoluteString, "https://api.vultisig.com")
+        XCTAssertEqual(target.path, "/coingeicko/api/v3/coins/markets")
+        XCTAssertEqual(target.method, .get)
+        XCTAssertEqual(target.timeoutInterval, 12)
         XCTAssertEqual(items["vs_currency"], "usd")
         XCTAssertEqual(items["order"], "market_cap_desc")
         XCTAssertEqual(items["per_page"], "5")
@@ -48,11 +50,8 @@ final class WidgetMarketDataTests: XCTestCase {
     }
 
     func testCatalogRequestSupportsSettingsAssetListWithoutChangingWidgetCap() throws {
-        let catalogURL = try WidgetMarketEndpoint.url(query: .catalog(limit: 100), currency: "USD")
-        let catalogComponents = try XCTUnwrap(URLComponents(url: catalogURL, resolvingAgainstBaseURL: false))
-        let catalogItems = Dictionary(
-            uniqueKeysWithValues: (catalogComponents.queryItems ?? []).map { ($0.name, $0.value) }
-        )
+        let target = try WidgetMarketAPI.markets(query: .catalog(limit: 100), currency: "USD")
+        let catalogItems = try requestParameters(from: target)
 
         XCTAssertEqual(catalogItems["per_page"], "50")
         XCTAssertEqual(catalogItems["sparkline"], "false")
@@ -62,9 +61,8 @@ final class WidgetMarketDataTests: XCTestCase {
 
     func testSelectedAssetRequestNormalizesIDsAndPreservesSelectionOrder() throws {
         let query = WidgetMarketQuery.ids([" Ethereum ", "BITCOIN"])
-        let url = try WidgetMarketEndpoint.url(query: query, currency: "eur")
-        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
-        let ids = components.queryItems?.first(where: { $0.name == "ids" })?.value
+        let target = try WidgetMarketAPI.markets(query: query, currency: "eur")
+        let ids = try requestParameters(from: target)["ids"]
         let assets = try WidgetMarketClient.decode(data: Self.responseData, query: query)
 
         XCTAssertEqual(ids, "ethereum,bitcoin")
@@ -72,12 +70,19 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(assets.map(\.symbol), ["ETH", "BTC"])
     }
 
-    func testSearchRequestUsesSharedProxyBasePath() throws {
-        let url = try WidgetMarketEndpoint.searchURL(query: "bitcoin cash")
-        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+    func testSearchRequestUsesSharedProxyAndEncodesSpacesOnce() async throws {
+        WidgetURLCapturingProtocol.reset()
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [WidgetURLCapturingProtocol.self]
+        let httpClient = HTTPClient(session: URLSession(configuration: configuration))
 
+        _ = try await httpClient.request(WidgetMarketAPI.search(query: "bitcoin cash"))
+
+        let url = try XCTUnwrap(WidgetURLCapturingProtocol.capturedURL)
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
         XCTAssertEqual(components.path, "/coingeicko/api/v3/search")
         XCTAssertEqual(components.queryItems, [URLQueryItem(name: "query", value: "bitcoin cash")])
+        XCTAssertEqual(url.absoluteString, "https://api.vultisig.com/coingeicko/api/v3/search?query=bitcoin%20cash")
     }
 
     func testIconURLAcceptsOnlyCoinGeckoHTTPSCDN() throws {
@@ -89,21 +94,37 @@ final class WidgetMarketDataTests: XCTestCase {
             URL(string: "http://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
         )
 
-        XCTAssertEqual(try WidgetMarketEndpoint.validatedImageURL(approved), approved)
-        XCTAssertThrowsError(try WidgetMarketEndpoint.validatedImageURL(unapproved)) { error in
+        XCTAssertEqual(try WidgetMarketAPI.validatedImageURL(approved), approved)
+        XCTAssertThrowsError(try WidgetMarketAPI.validatedImageURL(unapproved)) { error in
             XCTAssertEqual(error as? WidgetMarketError, .unapprovedImageURL)
         }
-        XCTAssertThrowsError(try WidgetMarketEndpoint.validatedImageURL(insecure)) { error in
+        XCTAssertThrowsError(try WidgetMarketAPI.validatedImageURL(insecure)) { error in
             XCTAssertEqual(error as? WidgetMarketError, .unapprovedImageURL)
         }
     }
 
     func testEmptyAssetSelectionDoesNotFallThroughToTopMarkets() {
         XCTAssertThrowsError(
-            try WidgetMarketEndpoint.url(query: .ids([" "]), currency: "usd")
+            try WidgetMarketAPI.markets(query: .ids([" "]), currency: "usd")
         ) { error in
             XCTAssertEqual(error as? WidgetMarketError, .emptySelection)
         }
+    }
+
+    func testMarketClientUsesInjectedHTTPClient() async throws {
+        let httpClient = WidgetHTTPClientStub(data: Self.responseData)
+        let client = WidgetMarketClient(httpClient: httpClient)
+
+        let assets = try await client.markets(query: .top(limit: 2), currency: "EUR")
+        let targets = await httpClient.targets
+
+        XCTAssertEqual(assets.map(\.id), ["ethereum", "bitcoin"])
+        let target = try XCTUnwrap(targets.first)
+        guard case .marketData(let query, let currency) = target else {
+            return XCTFail("Expected a market-data target")
+        }
+        XCTAssertEqual(query, .top(limit: 2))
+        XCTAssertEqual(currency, "eur")
     }
 
     func testAssetSelectionDeduplicatesAndCapsAtFiveIDs() {
@@ -390,6 +411,81 @@ final class WidgetMarketDataTests: XCTestCase {
     private func watchlistAsset(id: String, symbol: String) -> WidgetWatchlistAsset {
         WidgetWatchlistAsset(id: id, symbol: symbol, name: id.capitalized, imageURL: nil)
     }
+
+    private func requestParameters(from target: WidgetMarketAPI) throws -> [String: String] {
+        guard case .requestParameters(let parameters, .urlEncoding) = target.task else {
+            throw WidgetMarketError.invalidResponse
+        }
+        return parameters.mapValues { String(describing: $0) }
+    }
+}
+
+private actor WidgetHTTPClientStub: HTTPClientProtocol {
+    let data: Data
+    private(set) var targets: [WidgetMarketAPI] = []
+
+    init(data: Data) {
+        self.data = data
+    }
+
+    func request(_ target: TargetType) throws -> HTTPResponse<Data> {
+        guard let widgetTarget = target as? WidgetMarketAPI,
+              let response = HTTPURLResponse(
+                url: HTTPClient.url(for: target),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+              ) else {
+            throw WidgetMarketError.invalidResponse
+        }
+        targets.append(widgetTarget)
+        return HTTPResponse(data: data, response: response)
+    }
+}
+
+private final class WidgetURLCapturingProtocol: URLProtocol {
+    private static let lock = NSLock()
+    private static var storedURL: URL?
+
+    static var capturedURL: URL? {
+        lock.lock()
+        defer { lock.unlock() }
+        return storedURL
+    }
+
+    static func reset() {
+        lock.lock()
+        defer { lock.unlock() }
+        storedURL = nil
+    }
+
+    // swiftlint:disable static_over_final_class
+    override class func canInit(with _: URLRequest) -> Bool { true }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    // swiftlint:enable static_over_final_class
+
+    override func startLoading() {
+        Self.lock.lock()
+        Self.storedURL = request.url
+        Self.lock.unlock()
+
+        guard let url = request.url,
+              let response = HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+              ) else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data(#"{"coins":[]}"#.utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }
 
 private actor WidgetMarketRemoteStub: WidgetMarketRemote {
