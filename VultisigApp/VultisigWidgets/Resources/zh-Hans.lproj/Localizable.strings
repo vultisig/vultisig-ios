@@ -8,11 +8,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "不可用";
 "widget.changeUnavailableDisplay" = "— 24H";
-"widget.cryptocurrency" = "加密货币";
 "widget.cryptoMarketDataUnavailable" = "加密货币市场数据暂时不可用";
 "widget.cryptoTicker" = "加密货币行情";
 "widget.cryptoTicker.choose" = "选择此小组件中显示的加密货币。";
 "widget.cryptoTicker.description" = "跟踪一种加密货币的价格和七日趋势。";
+"widget.cryptocurrency" = "加密货币";
 "widget.down" = "下跌";
 "widget.marketCap" = "市值";
 "widget.marketData" = "市场数据";
@@ -26,7 +26,3 @@
 "widget.up" = "上涨";
 "widget.updatedData" = "更新的数据";
 "widget.valueUnavailableDisplay" = "—";
-"widget.watchlist" = "关注列表";
-"widget.watchlist.configure" = "请在 Vultisig 设置中选择资产";
-"widget.watchlist.description" = "关注最多五种在 Vultisig 中选择的加密货币。";
-"widget.watchlist.marketDataUnavailable" = "关注列表市场数据暂时不可用";

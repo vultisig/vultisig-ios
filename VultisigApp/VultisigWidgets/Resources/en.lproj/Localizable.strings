@@ -8,11 +8,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "unavailable";
 "widget.changeUnavailableDisplay" = "— 24H";
-"widget.cryptocurrency" = "Cryptocurrency";
 "widget.cryptoMarketDataUnavailable" = "Crypto market data is temporarily unavailable";
 "widget.cryptoTicker" = "Crypto Ticker";
 "widget.cryptoTicker.choose" = "Choose the cryptocurrency shown in this widget.";
 "widget.cryptoTicker.description" = "Track the price and seven-day trend of a cryptocurrency.";
+"widget.cryptocurrency" = "Cryptocurrency";
 "widget.down" = "down";
 "widget.marketCap" = "Market Cap";
 "widget.marketData" = "Market data";
@@ -26,7 +26,3 @@
 "widget.up" = "up";
 "widget.updatedData" = "updated data";
 "widget.valueUnavailableDisplay" = "—";
-"widget.watchlist" = "Watchlist";
-"widget.watchlist.configure" = "Choose assets in Vultisig Settings";
-"widget.watchlist.description" = "Follow up to five cryptocurrencies selected in Vultisig.";
-"widget.watchlist.marketDataUnavailable" = "Watchlist market data is temporarily unavailable";

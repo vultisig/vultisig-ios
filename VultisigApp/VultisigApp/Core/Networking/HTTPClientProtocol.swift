@@ -8,13 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger: Logger = {
-    #if WIDGET_EXTENSION
-    Logger(subsystem: "com.vultisig.wallet.widgets", category: "network")
-    #else
-    Log.app.other
-    #endif
-}()
+private let logger = Log.app.other
 
 /// Protocol defining the HTTP client interface
 protocol HTTPClientProtocol: Sendable {

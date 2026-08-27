@@ -291,16 +291,6 @@ targets:
         group: VultisigApp/Shared/WidgetShared
       - path: VultisigApp/Shared/WidgetShared/WidgetSparklineSampler.swift
         group: VultisigApp/Shared/WidgetShared
-      - path: VultisigApp/Core/Networking/HTTPMethod.swift
-        group: VultisigApp/Core/Networking
-      - path: VultisigApp/Core/Networking/TargetType.swift
-        group: VultisigApp/Core/Networking
-      - path: VultisigApp/Core/Networking/HTTPError.swift
-        group: VultisigApp/Core/Networking
-      - path: VultisigApp/Core/Networking/HTTPClientProtocol.swift
-        group: VultisigApp/Core/Networking
-      - path: VultisigApp/Core/Networking/HTTPClient.swift
-        group: VultisigApp/Core/Networking
       - path: VultisigApp/Components/ImageView/AsyncImageView.swift
         group: VultisigApp/Components/ImageView
       - path: VultisigApp/Components/ImageView/CachedAsyncImage.swift

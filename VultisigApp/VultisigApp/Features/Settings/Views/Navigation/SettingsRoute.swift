@@ -13,8 +13,6 @@ enum SettingsRoute: Hashable {
     case vultDiscountTiers(vault: Vault)
     case language
     case currency
-    case widgets
-    case widgetWatchlist
     case addressBook
     case addAddressBook(address: String? = nil, chain: AddressBookChainType? = nil)
     case editAddressBook(addressBookItem: AddressBookItem)
