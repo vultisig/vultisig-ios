@@ -1818,7 +1818,7 @@
 "widgets" = "Widgets";
 "widgetWatchlist" = "Widget-Beobachtungsliste";
 "widgetWatchlistAssets" = "Assets";
-"widgetWatchlistDescription" = "Wähle bis zu fünf Assets für deine Watchlist-Widgets. Sie erscheinen in der Reihenfolge, in der du sie aktivierst.";
+"widgetWatchlistDescription" = "Wähle bis zu fünf Assets für deine Beobachtungslisten-Widgets. Sie erscheinen in der Reihenfolge, in der du sie aktivierst.";
 "widgetWatchlistLoadError" = "Markt-Assets konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.";
 "widgetWatchlistSelectionCount" = "%d von %d ausgewählt";
 "withdraw" = "Abheben";

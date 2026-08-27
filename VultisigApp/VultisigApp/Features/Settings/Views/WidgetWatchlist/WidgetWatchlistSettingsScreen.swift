@@ -32,11 +32,10 @@ struct WidgetWatchlistSettingsScreen: View {
 
             Spacer(minLength: 8)
 
-            Button("retry".localized) {
+            PrimaryButton(title: "retry".localized, type: .secondary, size: .mini) {
                 Task { await viewModel.load(force: true) }
             }
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.primaryAccent4)
+            .fixedSize()
         }
         .padding(16)
         .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
@@ -86,11 +85,10 @@ struct WidgetWatchlistSettingsScreen: View {
                     .foregroundStyle(Theme.colors.textSecondary)
                     .multilineTextAlignment(.center)
 
-                Button("retry".localized) {
+                PrimaryButton(title: "retry".localized, type: .secondary, size: .small) {
                     Task { await viewModel.load(force: true) }
                 }
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.primaryAccent4)
+                .fixedSize()
             }
             .frame(maxWidth: .infinity)
             .padding(24)
