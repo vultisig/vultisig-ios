@@ -102,6 +102,8 @@ packages:
     path: ../Mediator
   VultisigUIResources:
     path: ../VultisigUIResources
+  VultisigDesignSystem:
+    path: ../VultisigDesignSystem
 
 targets:
   # ========================================================================
@@ -253,6 +255,8 @@ targets:
         product: Mediator
       - package: VultisigUIResources
         product: VultisigUIResources
+      - package: VultisigDesignSystem
+        product: VultisigDesignSystem
 
     # SwiftPM build-tool plugin (runs before compile).
     buildToolPlugins:
@@ -314,6 +318,8 @@ targets:
     dependencies:
       - package: VultisigUIResources
         product: VultisigUIResources
+      - package: VultisigDesignSystem
+        product: VultisigDesignSystem
 
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
