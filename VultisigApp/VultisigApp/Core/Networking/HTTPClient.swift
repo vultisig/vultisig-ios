@@ -8,6 +8,14 @@
 import Foundation
 import OSLog
 
+private let defaultHTTPClientLogger: Logger = {
+    #if WIDGET_EXTENSION
+    Logger(subsystem: "com.vultisig.wallet.widgets", category: "network")
+    #else
+    Log.app.other
+    #endif
+}()
+
 /// Concrete implementation of HTTPClientProtocol using URLSession
 final class HTTPClient: HTTPClientProtocol {
 
@@ -26,7 +34,7 @@ final class HTTPClient: HTTPClientProtocol {
         session: URLSession = .shared,
         jsonEncoder: JSONEncoder = JSONEncoder(),
         jsonDecoder: JSONDecoder = JSONDecoder(),
-        logger: Logger = Log.app.other
+        logger: Logger = defaultHTTPClientLogger
     ) {
         self.session = session
         self.jsonEncoder = jsonEncoder
@@ -184,9 +192,7 @@ private extension HTTPClient {
         var queryItems: [URLQueryItem] = []
 
         for (key, value) in parameters {
-            let valueString = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "\(value)"
-            let queryItem = URLQueryItem(name: key, value: valueString)
-            queryItems.append(queryItem)
+            queryItems.append(URLQueryItem(name: key, value: "\(value)"))
         }
 
         urlComponents?.queryItems = queryItems

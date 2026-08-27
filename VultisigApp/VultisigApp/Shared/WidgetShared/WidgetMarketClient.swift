@@ -5,11 +5,6 @@
 
 import Foundation
 
-// The WidgetKit extension cannot link the application's TargetType/HTTPClient
-// graph. This small Foundation-only client is deliberately shared by the app
-// and extension so the extension stays independently buildable.
-// swiftlint:disable no_raw_urlsession no_raw_urlrequest
-
 enum WidgetMarketError: Error, Equatable {
     case invalidURL
     case invalidResponse
@@ -20,46 +15,24 @@ enum WidgetMarketError: Error, Equatable {
     case unapprovedImageURL
 }
 
-enum WidgetMarketEndpoint {
-    private static let proxyBaseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3")
+enum WidgetMarketAPI: TargetType {
+    case marketData(query: WidgetMarketQuery, currency: String)
+    case search(query: String)
+    case icon(URL)
+
+    private static let proxyBaseURL: URL = {
+        guard let url = URL(string: "https://api.vultisig.com") else {
+            preconditionFailure("Invalid Vultisig API base URL")
+        }
+        return url
+    }()
     private static let approvedImageHost = "coin-images.coingecko.com"
 
-    static func url(query: WidgetMarketQuery, currency: String) throws -> URL {
-        guard let baseURL = proxyBaseURL?.appendingPathComponent("coins/markets"),
-              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
-            throw WidgetMarketError.invalidURL
+    static func markets(query: WidgetMarketQuery, currency: String) throws -> Self {
+        if case .ids = query, query.normalizedIDs.isEmpty {
+            throw WidgetMarketError.emptySelection
         }
-
-        var items = [
-            URLQueryItem(name: "vs_currency", value: currency.lowercased()),
-            URLQueryItem(name: "order", value: "market_cap_desc"),
-            URLQueryItem(name: "per_page", value: String(query.limit)),
-            URLQueryItem(name: "page", value: "1"),
-            URLQueryItem(name: "sparkline", value: query.includesSparkline ? "true" : "false")
-        ]
-
-        if query.includesSparkline {
-            items.append(URLQueryItem(name: "price_change_percentage", value: "24h"))
-        }
-
-        if case .ids = query {
-            guard !query.normalizedIDs.isEmpty else { throw WidgetMarketError.emptySelection }
-            items.append(URLQueryItem(name: "ids", value: query.normalizedIDs.joined(separator: ",")))
-        }
-
-        components.queryItems = items
-        guard let url = components.url else { throw WidgetMarketError.invalidURL }
-        return url
-    }
-
-    static func searchURL(query: String) throws -> URL {
-        guard let baseURL = proxyBaseURL?.appendingPathComponent("search"),
-              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
-            throw WidgetMarketError.invalidURL
-        }
-        components.queryItems = [URLQueryItem(name: "query", value: query)]
-        guard let url = components.url else { throw WidgetMarketError.invalidURL }
-        return url
+        return .marketData(query: query, currency: currency.lowercased())
     }
 
     static func validatedImageURL(_ url: URL) throws -> URL {
@@ -71,6 +44,67 @@ enum WidgetMarketEndpoint {
             throw WidgetMarketError.unapprovedImageURL
         }
         return url
+    }
+
+    static func validatedIcon(_ url: URL) throws -> Self {
+        .icon(try validatedImageURL(url))
+    }
+
+    var baseURL: URL {
+        switch self {
+        case .marketData, .search:
+            Self.proxyBaseURL
+        case .icon(let url):
+            url
+        }
+    }
+
+    var path: String {
+        switch self {
+        case .marketData:
+            "/coingeicko/api/v3/coins/markets"
+        case .search:
+            "/coingeicko/api/v3/search"
+        case .icon:
+            ""
+        }
+    }
+
+    var method: HTTPMethod {
+        .get
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .marketData(let query, let currency):
+            var parameters: [String: Any] = [
+                "vs_currency": currency,
+                "order": "market_cap_desc",
+                "per_page": query.limit,
+                "page": 1,
+                "sparkline": query.includesSparkline
+            ]
+            if query.includesSparkline {
+                parameters["price_change_percentage"] = "24h"
+            }
+            if case .ids = query {
+                parameters["ids"] = query.normalizedIDs.joined(separator: ",")
+            }
+            return .requestParameters(parameters, .urlEncoding)
+        case .search(let query):
+            return .requestParameters(["query": query], .urlEncoding)
+        case .icon:
+            return .requestPlain
+        }
+    }
+
+    var timeoutInterval: TimeInterval {
+        switch self {
+        case .marketData:
+            12
+        case .search, .icon:
+            8
+        }
     }
 }
 
@@ -92,35 +126,29 @@ protocol WidgetMarketRemote: Sendable {
 protocol WidgetMarketLookup: WidgetMarketRemote, WidgetAssetSearching {}
 
 final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
-    private let session: URLSession
+    private let httpClient: any HTTPClientProtocol
     private let decoder: JSONDecoder
     private let maximumIconByteCount: Int
 
     init(
-        session: URLSession = .shared,
+        httpClient: any HTTPClientProtocol = HTTPClient(),
         decoder: JSONDecoder = JSONDecoder(),
         maximumIconByteCount: Int = 64 * 1_024
     ) {
-        self.session = session
+        self.httpClient = httpClient
         self.decoder = decoder
         self.maximumIconByteCount = maximumIconByteCount
     }
 
     func markets(query: WidgetMarketQuery, currency: String) async throws -> [WidgetMarketAsset] {
-        let url = try WidgetMarketEndpoint.url(query: query, currency: currency)
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 12
-        let (data, response) = try await session.data(for: request)
-        try Self.validate(response)
-        return try Self.decode(data: data, query: query, decoder: decoder)
+        let target = try WidgetMarketAPI.markets(query: query, currency: currency)
+        let response = try await httpClient.request(target)
+        return try Self.decode(data: response.data, query: query, decoder: decoder)
     }
 
     func iconData(from url: URL) async throws -> Data {
-        let approvedURL = try WidgetMarketEndpoint.validatedImageURL(url)
-        var request = URLRequest(url: approvedURL)
-        request.timeoutInterval = 8
-        let (data, response) = try await session.data(for: request)
-        try Self.validate(response)
+        let response = try await httpClient.request(WidgetMarketAPI.validatedIcon(url))
+        let data = response.data
         guard !data.isEmpty else { throw WidgetMarketError.emptyResponse }
         guard data.count <= maximumIconByteCount else { throw WidgetMarketError.imageTooLarge }
         return data
@@ -129,13 +157,8 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else { return [] }
-        let url = try WidgetMarketEndpoint.searchURL(query: trimmedQuery)
-
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 8
-        let (data, response) = try await session.data(for: request)
-        try Self.validate(response)
-        let responseBody = try decoder.decode(RemoteSearchResponse.self, from: data)
+        let response = try await httpClient.request(WidgetMarketAPI.search(query: trimmedQuery))
+        let responseBody = try decoder.decode(RemoteSearchResponse.self, from: response.data)
         return responseBody.coins.prefix(20).map {
             WidgetAssetIdentity(id: $0.id.lowercased(), symbol: $0.symbol.uppercased(), name: $0.name)
         }
@@ -160,15 +183,6 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
             return assets.sorted {
                 positions[$0.id, default: .max] < positions[$1.id, default: .max]
             }
-        }
-    }
-
-    private static func validate(_ response: URLResponse) throws {
-        guard let response = response as? HTTPURLResponse else {
-            throw WidgetMarketError.invalidResponse
-        }
-        guard (200..<300).contains(response.statusCode) else {
-            throw WidgetMarketError.httpStatus(response.statusCode)
         }
     }
 }
@@ -212,7 +226,7 @@ private struct RemoteMarketAsset: Decodable {
             id: id.lowercased(),
             symbol: symbol.uppercased(),
             name: name,
-            imageURL: image.flatMap { try? WidgetMarketEndpoint.validatedImageURL($0) },
+            imageURL: image.flatMap { try? WidgetMarketAPI.validatedImageURL($0) },
             iconData: nil,
             currentPrice: currentPrice,
             priceChangePercentage24h: priceChangePercentage24h,
@@ -221,5 +235,3 @@ private struct RemoteMarketAsset: Decodable {
         )
     }
 }
-
-// swiftlint:enable no_raw_urlsession no_raw_urlrequest
