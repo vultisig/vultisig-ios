@@ -47,6 +47,19 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertFalse(items.keys.contains("ids"))
     }
 
+    func testCatalogRequestSupportsSettingsAssetListWithoutChangingWidgetCap() throws {
+        let catalogURL = try WidgetMarketEndpoint.url(query: .catalog(limit: 100), currency: "USD")
+        let catalogComponents = try XCTUnwrap(URLComponents(url: catalogURL, resolvingAgainstBaseURL: false))
+        let catalogItems = Dictionary(
+            uniqueKeysWithValues: (catalogComponents.queryItems ?? []).map { ($0.name, $0.value) }
+        )
+
+        XCTAssertEqual(catalogItems["per_page"], "50")
+        XCTAssertEqual(catalogItems["sparkline"], "false")
+        XCTAssertNil(catalogItems["price_change_percentage"])
+        XCTAssertEqual(WidgetMarketQuery.top(limit: 100).limit, 5)
+    }
+
     func testSelectedAssetRequestNormalizesIDsAndPreservesSelectionOrder() throws {
         let query = WidgetMarketQuery.ids([" Ethereum ", "BITCOIN"])
         let url = try WidgetMarketEndpoint.url(query: query, currency: "eur")
@@ -103,6 +116,37 @@ final class WidgetMarketDataTests: XCTestCase {
             ["bitcoin", "ethereum", "solana", "tether", "usd-coin"]
         )
         XCTAssertEqual(query.limit, 5)
+    }
+
+    func testWatchlistStoragePreservesEnableOrderDeduplicatesAndCapsAtFive() throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let assets = [
+            watchlistAsset(id: "bitcoin", symbol: "btc"),
+            watchlistAsset(id: "ethereum", symbol: "eth"),
+            watchlistAsset(id: "bitcoin", symbol: "BTC"),
+            watchlistAsset(id: "solana", symbol: "sol"),
+            watchlistAsset(id: "tether", symbol: "usdt"),
+            watchlistAsset(id: "usd-coin", symbol: "usdc"),
+            watchlistAsset(id: "dogecoin", symbol: "doge")
+        ]
+
+        WidgetSharedStorage.setWatchlistAssets(assets, in: defaults)
+        let stored = WidgetSharedStorage.watchlistAssets(in: defaults)
+
+        XCTAssertEqual(stored.map(\.id), ["bitcoin", "ethereum", "solana", "tether", "usd-coin"])
+        XCTAssertEqual(stored.map(\.symbol), ["BTC", "ETH", "SOL", "USDT", "USDC"])
+    }
+
+    func testWatchlistStorageRejectsCorruptPayload() throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(Data("not-json".utf8), forKey: WidgetSharedStorage.watchlistKey)
+
+        XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
     }
 
     func testSparklineSamplerKeepsEndpointsAndRequestedCount() {
@@ -289,6 +333,10 @@ final class WidgetMarketDataTests: XCTestCase {
             guard let imageURL = asset.imageURL else { return false }
             return asset.iconData == Data(imageURL.absoluteString.utf8)
         })
+    }
+
+    private func watchlistAsset(id: String, symbol: String) -> WidgetWatchlistAsset {
+        WidgetWatchlistAsset(id: id, symbol: symbol, name: id.capitalized, imageURL: nil)
     }
 }
 

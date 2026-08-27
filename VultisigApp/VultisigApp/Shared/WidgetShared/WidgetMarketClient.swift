@@ -35,9 +35,12 @@ enum WidgetMarketEndpoint {
             URLQueryItem(name: "order", value: "market_cap_desc"),
             URLQueryItem(name: "per_page", value: String(query.limit)),
             URLQueryItem(name: "page", value: "1"),
-            URLQueryItem(name: "sparkline", value: "true"),
-            URLQueryItem(name: "price_change_percentage", value: "24h")
+            URLQueryItem(name: "sparkline", value: query.includesSparkline ? "true" : "false")
         ]
+
+        if query.includesSparkline {
+            items.append(URLQueryItem(name: "price_change_percentage", value: "24h"))
+        }
 
         if case .ids = query {
             guard !query.normalizedIDs.isEmpty else { throw WidgetMarketError.emptySelection }
@@ -148,7 +151,7 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
         guard !assets.isEmpty else { throw WidgetMarketError.emptyResponse }
 
         switch query {
-        case .top:
+        case .top, .catalog:
             return Array(assets.prefix(query.limit))
         case .ids:
             let positions = Dictionary(
