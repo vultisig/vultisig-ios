@@ -1821,7 +1821,7 @@
 "widgetWatchlistAssets" = "Asset";
 "widgetWatchlistDescription" = "Scegli fino a cinque asset per i widget Watchlist. Appariranno nell’ordine in cui li attivi.";
 "widgetWatchlistLoadError" = "Impossibile caricare gli asset di mercato. Controlla la connessione e riprova.";
-"widgetWatchlistSelectionCount" = "%d di %d selezionati";
+"widgetWatchlistSelectionCount" = "Selezione: %d di %d";
 "withdraw" = "Preleva";
 "withdrawAmount" = "Preleva %@";
 "withdrawBelowMinimum" = "Importo troppo piccolo — preleva almeno %@ %@";
