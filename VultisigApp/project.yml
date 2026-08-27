@@ -100,6 +100,8 @@ packages:
   # ---- Local SPM package ----
   Mediator:
     path: ../Mediator
+  VultisigUIResources:
+    path: ../VultisigUIResources
 
 targets:
   # ========================================================================
@@ -249,6 +251,8 @@ targets:
       # ---- Local SPM ----
       - package: Mediator
         product: Mediator
+      - package: VultisigUIResources
+        product: VultisigUIResources
 
     # SwiftPM build-tool plugin (runs before compile).
     buildToolPlugins:
@@ -287,8 +291,6 @@ targets:
         group: VultisigApp/Components/ImageView
       - path: VultisigApp/Components/ImageView/CachedAsyncImage.swift
         group: VultisigApp/Components/ImageView
-      - path: VultisigApp/Shared/WidgetShared/MarketWidgetAssets.xcassets
-        group: VultisigApp/Shared/WidgetShared
 
     settings:
       base:
@@ -308,6 +310,10 @@ targets:
         SWIFT_EMIT_LOC_STRINGS: YES
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_EXTENSION"
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+    dependencies:
+      - package: VultisigUIResources
+        product: VultisigUIResources
 
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin

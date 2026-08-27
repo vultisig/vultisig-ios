@@ -7,6 +7,7 @@ import SwiftData
 import SwiftUI
 import WalletCore
 import OSLog
+import VultisigUIResources
 
 @main
 struct VultisigApp: App {
@@ -32,6 +33,8 @@ struct VultisigApp: App {
     @StateObject var pushNotificationManager = PushNotificationManager.shared
 
     init() {
+        VultisigResources.registerFonts()
+
 #if os(macOS)
         // Check for --version flag
         if CommandLine.arguments.contains("--version") {

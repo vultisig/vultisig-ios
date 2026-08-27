@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>ATSApplicationFontsPath</key>
-	<string>.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -89,16 +87,6 @@
 		<string>_http._tcp.</string>
 		<string>_bonjour._tcp</string>
 		<string>_lnp._tcp.</string>
-	</array>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Brockmann-SemiBold.otf</string>
-		<string>Satoshi-Medium.otf</string>
-		<string>Brockmann-Regular.otf</string>
-		<string>Brockmann-Medium.otf</string>
-		<string>Brockmann-Bold.otf</string>
-		<string>Montserrat-Italic.ttf</string>
-		<string>Montserrat.ttf</string>
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>

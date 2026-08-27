@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import VultisigUIResources
 
 extension URLCache {
     static let imageCache = URLCache(memoryCapacity: 100_000_000, diskCapacity: 500_000_000)
@@ -114,16 +115,22 @@ struct AsyncImageView: View {
 
     func imageContainer(_ logoName: String) -> some View {
         ZStack {
-        #if os(iOS)
-            if let image = UIImage(named: logoName) {
-                Image(uiImage: image)
+            if let image = VultisigImage(rawValue: logoName) {
+                image.image
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: size.width, height: size.height)
             } else {
-                fallbackText
-            }
-            #else
+                #if os(iOS)
+                if let image = UIImage(named: logoName) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: size.width, height: size.height)
+                } else {
+                    fallbackText
+                }
+                #else
                 if let image = NSImage(named: logoName) {
                     Image(nsImage: image)
                         .resizable()
@@ -132,7 +139,8 @@ struct AsyncImageView: View {
                 } else {
                     fallbackText
                 }
-            #endif
+                #endif
+            }
         }
     }
 

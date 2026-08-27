@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 enum WidgetTheme {
     static let background = Color(red: 2 / 255, green: 18 / 255, blue: 43 / 255)
@@ -16,11 +17,11 @@ enum WidgetTheme {
     static let iconFallbackBackground = primaryText
 
     static func labelFont(size: CGFloat) -> Font {
-        .custom("Brockmann-Medium", size: size)
+        VultisigFont.brockmannMedium.font(size: size)
     }
 
     static func priceFont(size: CGFloat) -> Font {
-        .custom("Satoshi-Medium", size: size).monospacedDigit()
+        VultisigFont.satoshiMedium.font(size: size).monospacedDigit()
     }
 
     static func iconFont(size: CGFloat, weight: Font.Weight = .medium) -> Font {
