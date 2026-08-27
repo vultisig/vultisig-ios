@@ -149,6 +149,58 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
     }
 
+    func testWatchlistStorageDistinguishesDefaultFromExplicitlyEmptySelection() throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        XCTAssertFalse(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
+
+        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
+
+        XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
+        XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
+    }
+
+    @MainActor
+    func testWatchlistSettingsSeedsTopFiveOnlyWithoutStoredSelection() async throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let assets = (1...6).map { index in
+            WidgetMarketAsset(
+                id: "asset-\(index)",
+                symbol: "A\(index)",
+                name: "Asset \(index)",
+                imageURL: nil,
+                iconData: nil,
+                currentPrice: Double(index),
+                priceChangePercentage24h: nil,
+                marketCapRank: index,
+                sparkline: []
+            )
+        }
+        let remote = WidgetMarketListStub(assets: assets)
+
+        let defaultViewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            defaults: defaults
+        )
+        await defaultViewModel.load()
+
+        XCTAssertEqual(defaultViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+        XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
+
+        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
+        let clearedViewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            defaults: defaults
+        )
+        await clearedViewModel.load()
+
+        XCTAssertTrue(clearedViewModel.selectedAssets.isEmpty)
+    }
+
     func testSparklineSamplerKeepsEndpointsAndRequestedCount() {
         let source = (0..<100).map(Double.init)
         let sampled = WidgetSparklineSampler.resample(source, to: 28)
@@ -360,5 +412,21 @@ private actor WidgetMarketRemoteStub: WidgetMarketRemote {
 
     func iconData(from url: URL) throws -> Data {
         Data(url.absoluteString.utf8)
+    }
+}
+
+private actor WidgetMarketListStub: WidgetMarketRemote {
+    let assets: [WidgetMarketAsset]
+
+    init(assets: [WidgetMarketAsset]) {
+        self.assets = assets
+    }
+
+    func markets(query _: WidgetMarketQuery, currency _: String) -> [WidgetMarketAsset] {
+        assets
+    }
+
+    func iconData(from _: URL) -> Data {
+        Data()
     }
 }

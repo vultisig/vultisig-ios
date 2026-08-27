@@ -34,7 +34,7 @@ struct SettingsMainScreen: View {
         ]
 
         #if os(iOS)
-        generalOptions.append(.widgetWatchlist)
+        generalOptions.append(.widgets)
         #endif
         generalOptions.append(.addressBook)
 
@@ -172,6 +172,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.language)
         case .currency:
             router.navigate(to: SettingsRoute.currency)
+        case .widgets:
+            router.navigate(to: SettingsRoute.widgets)
         case .widgetWatchlist:
             router.navigate(to: SettingsRoute.widgetWatchlist)
         case .notifications:

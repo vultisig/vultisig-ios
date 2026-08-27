@@ -28,6 +28,7 @@ enum SettingsOption: String, Identifiable {
     case vultDiscountTiers
     case language
     case currency
+    case widgets
     case widgetWatchlist
     case notifications
     case addressBook
@@ -55,8 +56,10 @@ enum SettingsOption: String, Identifiable {
             return "language"
         case .currency:
             return "currency"
+        case .widgets:
+            return "widgets"
         case .widgetWatchlist:
-            return "widgetWatchlist"
+            return "watchlist"
         case .notifications:
             return "notifications"
         case .addressBook:
@@ -100,6 +103,8 @@ enum SettingsOption: String, Identifiable {
             return .language
         case .currency:
             return .circleDollar
+        case .widgets:
+            return .gridPlus
         case .widgetWatchlist:
             return .eye
         case .notifications:
@@ -139,6 +144,7 @@ enum SettingsOption: String, Identifiable {
         switch self {
         case .language: return AccessibilityID.Settings.languageCell
         case .currency: return AccessibilityID.Settings.currencyCell
+        case .widgets: return AccessibilityID.Settings.widgetsCell
         case .widgetWatchlist: return AccessibilityID.Settings.widgetWatchlistCell
         case .vaultSettings: return AccessibilityID.Settings.vaultSettingsCell
         case .faq: return AccessibilityID.Settings.faqCell

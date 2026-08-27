@@ -19,7 +19,8 @@ struct WidgetWatchlistSettingsScreen: View {
                 }
             }
         }
-        .screenTitle("widgetWatchlist".localized)
+        .screenTitle("watchlist".localized)
+        .withLoading(isLoading: $viewModel.isLoading)
         .task { await viewModel.load() }
     }
 
@@ -78,12 +79,7 @@ struct WidgetWatchlistSettingsScreen: View {
 
     @ViewBuilder
     private var statusView: some View {
-        if viewModel.isLoading {
-            ProgressView()
-                .tint(Theme.colors.primaryAccent4)
-                .frame(maxWidth: .infinity)
-                .padding(24)
-        } else if viewModel.loadFailed {
+        if viewModel.loadFailed {
             VStack(spacing: 12) {
                 Text("widgetWatchlistLoadError".localized)
                     .font(Theme.fonts.bodySRegular)

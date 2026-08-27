@@ -49,9 +49,10 @@ struct CryptoWatchlistProvider: TimelineProvider {
 
     private func loadEntry() async -> CryptoWatchlistEntry {
         let selection = WidgetSharedStorage.watchlistAssets()
+        let hasStoredSelection = WidgetSharedStorage.hasStoredWatchlist()
         let currency = WidgetSharedStorage.currencyCode
 
-        guard !selection.isEmpty else {
+        guard !hasStoredSelection || !selection.isEmpty else {
             return CryptoWatchlistEntry(
                 date: Date(),
                 assets: [],
@@ -62,7 +63,10 @@ struct CryptoWatchlistProvider: TimelineProvider {
         }
 
         do {
-            let result = try await service.load(query: .ids(selection.map(\.id)), currency: currency)
+            let query: WidgetMarketQuery = hasStoredSelection
+            ? .ids(selection.map(\.id))
+            : .top(limit: WidgetSharedStorage.maximumWatchlistAssets)
+            let result = try await service.load(query: query, currency: currency)
             return CryptoWatchlistEntry(
                 date: result.updatedAt,
                 assets: result.assets,
@@ -169,14 +173,15 @@ struct CryptoWatchlistEntryView: View {
     }
 
     private var unavailableContent: some View {
-        VStack(alignment: .leading) {
+        VStack {
             Spacer()
             Text(unavailableKey)
                 .font(WidgetTheme.labelFont(size: 12))
                 .foregroundStyle(WidgetTheme.secondaryText)
+                .multilineTextAlignment(.center)
             Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .accessibilityLabel(Text(unavailableAccessibilityKey))
     }
 

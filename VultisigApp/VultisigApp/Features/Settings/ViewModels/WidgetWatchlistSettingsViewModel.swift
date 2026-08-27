@@ -10,12 +10,13 @@ import WidgetKit
 final class WidgetWatchlistSettingsViewModel: ObservableObject {
     @Published private(set) var selectedAssets: [WidgetWatchlistAsset]
     @Published private(set) var catalogAssets: [WidgetWatchlistAsset] = []
-    @Published private(set) var isLoading = false
+    @Published var isLoading = false
     @Published private(set) var loadFailed = false
 
     private let marketClient: any WidgetMarketRemote
     private let defaults: UserDefaults?
     private var hasLoaded = false
+    private var hasStoredSelection: Bool
 
     init(
         marketClient: any WidgetMarketRemote = WidgetMarketClient(),
@@ -24,6 +25,7 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         self.marketClient = marketClient
         self.defaults = defaults
         self.selectedAssets = WidgetSharedStorage.watchlistAssets(in: defaults)
+        self.hasStoredSelection = WidgetSharedStorage.hasStoredWatchlist(in: defaults)
     }
 
     var assets: [WidgetWatchlistAsset] {
@@ -58,7 +60,10 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
             let refreshedSelection = selectedAssets.map { fetchedByID[$0.id] ?? $0 }
 
             catalogAssets = fetched
-            if refreshedSelection != selectedAssets {
+            if !hasStoredSelection {
+                selectedAssets = Array(fetched.prefix(WidgetSharedStorage.maximumWatchlistAssets))
+                persistSelection(reloadWidget: true)
+            } else if refreshedSelection != selectedAssets {
                 selectedAssets = refreshedSelection
                 persistSelection(reloadWidget: false)
             }
@@ -84,6 +89,7 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
 
     private func persistSelection(reloadWidget: Bool) {
         WidgetSharedStorage.setWatchlistAssets(selectedAssets, in: defaults)
+        hasStoredSelection = true
         guard reloadWidget else { return }
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharedStorage.watchlistWidgetKind)
     }
