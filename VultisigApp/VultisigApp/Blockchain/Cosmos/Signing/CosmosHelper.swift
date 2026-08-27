@@ -13,7 +13,6 @@ import VultisigCommonData
 enum CosmosHelper {
     case gaiaChain
     case dydx
-    case kujira
     case osmosis
     case terra
     case terraClassic
@@ -29,8 +28,6 @@ enum CosmosHelper {
             return .gaiaChain
         case .dydx:
             return .dydx
-        case .kujira:
-            return .kujira
         case .osmosis:
             return .osmosis
         case .terra:
@@ -61,8 +58,6 @@ enum CosmosHelper {
             return .gaiaChain
         case .dydx:
             return .dydx
-        case .kujira:
-            return .kujira
         case .osmosis:
             return .osmosis
         case .terra:

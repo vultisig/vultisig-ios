@@ -42,8 +42,6 @@ struct CosmosServiceConfig {
             return URL(string: "https://cosmos-rest.publicnode.com")
         case .dydx:
             return URL(string: "https://dydx-rest.publicnode.com")
-        case .kujira:
-            return URL(string: "https://kujira-api.polkachu.com")
         case .osmosis:
             return URL(string: "https://osmosis-rest.publicnode.com")
         case .terra:
@@ -77,7 +75,7 @@ struct CosmosServiceConfig {
         resolver: RPCEndpointResolving = CustomRPCStore.shared
     ) throws -> CosmosServiceConfig {
         switch chain {
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .gaiaChain, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             return CosmosServiceConfig(chain: chain, resolver: resolver)
         default:
             throw CosmosServiceError.unsupportedChain

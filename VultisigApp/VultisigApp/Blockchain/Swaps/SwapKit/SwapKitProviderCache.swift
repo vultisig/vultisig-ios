@@ -180,7 +180,6 @@ enum SwapKitChainIDMapper {
         case .sui: return "sui"
         case .ripple: return "ripple"
         case .gaiaChain: return "cosmoshub-4"
-        case .kujira: return "kaiyo-1"
         case .mayaChain: return "mayachain-mainnet-v1"
         case .thorChain, .thorChainChainnet, .thorChainStagenet: return "thorchain-1"
         default: return ""
@@ -232,7 +231,6 @@ enum SwapKitChainIDMapper {
         case "SUI": return .sui
         case "XRP": return .ripple
         case "ATOM": return .gaiaChain
-        case "KUJI": return .kujira
         case "HOOD": return .robinhood
         case "HYPEREVM": return .hyperliquid
         // HyperCore is a separate venue and is deliberately out of scope.

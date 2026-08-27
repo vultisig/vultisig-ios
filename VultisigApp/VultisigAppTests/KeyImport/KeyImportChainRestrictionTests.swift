@@ -33,9 +33,10 @@ final class KeyImportChainRestrictionTests: XCTestCase {
         XCTAssertEqual(vault.availableChains, [.thorChain])
     }
 
-    func testAvailableChains_dklsVault_returnsAllChains() {
+    func testAvailableChainsDklsVaultReturnsSupportedChains() {
         let vault = Vault(name: "DKLS", libType: .DKLS)
-        XCTAssertEqual(vault.availableChains.count, Chain.allCases.count)
+        XCTAssertEqual(vault.availableChains, Chain.supportedCases)
+        XCTAssertFalse(vault.availableChains.contains(.kujira))
     }
 
     func testAvailableChains_keyImportLegacyVault_fallsBackToCoinDerivedChains() {

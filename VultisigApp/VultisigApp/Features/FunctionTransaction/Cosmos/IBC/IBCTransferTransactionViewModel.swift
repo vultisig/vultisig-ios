@@ -95,10 +95,9 @@ final class IBCTransferTransactionViewModel: ObservableObject, Form {
         }
     }
 
-    /// True when this asset has no IBC route at all — an unconnected chain, or
-    /// Kujira LVN, which the legacy form also refused to transfer. Drives the
-    /// notice and the hard-disabled Continue: no field edit can satisfy it,
-    /// which is exactly what `FormScreen.isContinueDisabled` is for.
+    /// True when this asset has no IBC route at all. Drives the notice and the
+    /// hard-disabled Continue: no field edit can satisfy it, which is exactly
+    /// what `FormScreen.isContinueDisabled` is for.
     var hasNoDestinations: Bool { destinations.isEmpty }
 
     /// The ceiling the amount validator and the percentage buttons share.
@@ -236,9 +235,9 @@ final class IBCTransferTransactionViewModel: ObservableObject, Form {
 
     // MARK: - Address
 
-    /// Validators for the *destination* chain, not the source. A `kujira1…`
-    /// address in a transfer to Gaia names an account that chain has never
-    /// heard of; the funds land in the void on arrival.
+    /// Validators for the *destination* chain, not the source. An address from
+    /// another Cosmos chain may be syntactically valid but cannot name an
+    /// account on the selected destination.
     private func applyAddressValidators() {
         var validators: [FormFieldValidator] = [
             RequiredValidator(errorMessage: "emptyAddressField".localized)

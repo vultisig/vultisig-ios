@@ -44,7 +44,6 @@ enum CustomRPCSupportedChains {
         // Cosmos
         .gaiaChain,
         .dydx,
-        .kujira,
         .osmosis,
         .terra,
         .terraClassic,

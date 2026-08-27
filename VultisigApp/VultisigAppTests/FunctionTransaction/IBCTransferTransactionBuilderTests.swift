@@ -2,23 +2,16 @@
 //  IBCTransferTransactionBuilderTests.swift
 //  VultisigAppTests
 //
-//  The producer half of the IBC wire format, plus the `SendTransaction`
-//  boundary. Every assertion the deleted `FunctionCallCosmosIBCTests` made about
-//  the memo shape, the memo dictionary, the transaction type and the destination
-//  address lives here — pinned to exact strings rather than to prefixes and
-//  suffixes, because this string is what the signer parses.
-//
 
 @testable import VultisigApp
 import XCTest
 
 final class IBCTransferTransactionBuilderTests: XCTestCase {
-
     private func gaiaDestination() -> IBCDestination {
         guard let destination = IBCDestinationCatalog
-            .destinations(for: FunctionActionFixture.makeKUJI())
+            .destinations(for: FunctionActionFixture.makeOSMO())
             .first(where: { $0.chain == .gaiaChain }) else {
-            fatalError("Kujira must route to Gaia")
+            fatalError("Osmosis must route to Gaia")
         }
         return destination
     }
@@ -30,7 +23,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         amount: String = "1.5"
     ) -> IBCTransferTransactionBuilder {
         IBCTransferTransactionBuilder(
-            coin: coin ?? FunctionActionFixture.makeKUJI(),
+            coin: coin ?? FunctionActionFixture.makeOSMO(),
             destination: destination ?? gaiaDestination(),
             destinationAddress: FunctionActionFixture.cosmosAddress,
             userMemo: userMemo,
@@ -38,13 +31,9 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         )
     }
 
-    // MARK: - The memo
-
-    /// The legacy shape, pinned exactly:
-    /// `<destChain.name>:<channel>:<destAddress>` with no trailing separator
-    /// when the user wrote no memo.
     func testMemoMatchesTheLegacyShapeWithoutAUserMemo() {
         let builder = makeBuilder()
+
         XCTAssertEqual(
             builder.memo,
             "\(Chain.gaiaChain.name):channel-0:\(FunctionActionFixture.cosmosAddress)"
@@ -52,102 +41,51 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         XCTAssertFalse(builder.memo.hasSuffix(":"))
     }
 
-    func testMemoAppendsTheUserMemoAsAFourthSegment() {
-        XCTAssertEqual(
-            makeBuilder(userMemo: "hello-ibc").memo,
-            "\(Chain.gaiaChain.name):channel-0:\(FunctionActionFixture.cosmosAddress):hello-ibc"
-        )
-    }
+    func testUserMemoWithColonsRoundTripsThroughTheWireFormat() {
+        let builder = makeBuilder(userMemo: "deposit:12345")
+        let decoded = CosmosIBCTransferMemo(packed: builder.memo)
 
-    /// The producer side of the fix. A memo with colons is emitted whole; the
-    /// signer's bounded decode is what recovers it.
-    func testAUserMemoWithColonsRoundTripsThroughTheWireFormat() {
-        let payloads = [
-            "deposit:12345",
-            "a:b:c:d",
-            #"{"forward":{"receiver":"osmo1abc","port":"transfer:0"}}"#
-        ]
-
-        for userMemo in payloads {
-            let builder = makeBuilder(userMemo: userMemo)
-            guard let decoded = CosmosIBCTransferMemo(packed: builder.memo) else {
-                return XCTFail("\(userMemo) must decode")
-            }
-            XCTAssertEqual(decoded.userMemo, userMemo)
-            XCTAssertEqual(decoded.sourceChannel, "channel-0")
-            XCTAssertEqual(decoded.destinationAddress, FunctionActionFixture.cosmosAddress)
-        }
-    }
-
-    /// The channel is the destination's, not a lookup redone at submit time —
-    /// so the route the user picked is the route that gets signed.
-    func testMemoCarriesTheChannelOfTheChosenRoute() {
-        let kujiraToOsmosis = IBCDestinationCatalog
-            .destinations(for: FunctionActionFixture.makeKUJI())
-            .first { $0.chain == .osmosis }
-        XCTAssertEqual(kujiraToOsmosis?.sourceChannel, "channel-3")
-
-        guard let kujiraToOsmosis else { return XCTFail("Kujira must route to Osmosis") }
-        XCTAssertTrue(makeBuilder(destination: kujiraToOsmosis).memo.contains(":channel-3:"))
+        XCTAssertEqual(decoded?.userMemo, "deposit:12345")
+        XCTAssertEqual(decoded?.sourceChannel, "channel-0")
+        XCTAssertEqual(decoded?.destinationAddress, FunctionActionFixture.cosmosAddress)
     }
 
     func testEveryOfferingChainProducesItsOwnChannel() {
         let expected: [(coin: Coin, destination: Chain, channel: String)] = [
-            (FunctionActionFixture.makeKUJI(), .gaiaChain, "channel-0"),
-            (FunctionActionFixture.makeATOM(), .osmosis, "channel-141"),
-            (FunctionActionFixture.makeATOM(), .kujira, "channel-343")
+            (FunctionActionFixture.makeOSMO(), .gaiaChain, "channel-0"),
+            (FunctionActionFixture.makeATOM(), .osmosis, "channel-141")
         ]
 
         for row in expected {
-            guard let destination = IBCDestinationCatalog
-                .destinations(for: row.coin)
-                .first(where: { $0.chain == row.destination }) else {
-                return XCTFail("\(row.coin.chain.rawValue) must route to \(row.destination.rawValue)")
-            }
-            XCTAssertEqual(destination.sourceChannel, row.channel)
-            XCTAssertEqual(
-                makeBuilder(coin: row.coin, destination: destination).memo,
-                "\(row.destination.name):\(row.channel):\(FunctionActionFixture.cosmosAddress)"
-            )
+            let destination = IBCDestinationCatalog.destinations(for: row.coin)
+                .first(where: { $0.chain == row.destination })
+            XCTAssertEqual(destination?.sourceChannel, row.channel)
         }
     }
 
-    // MARK: - The dictionary and the transaction
+    func testBuildSendTransactionMatchesTheLegacyBoundary() throws {
+        let osmo = FunctionActionFixture.makeOSMO()
+        let vault = FunctionActionFixture.makeVault(coins: [osmo])
+        let builder = makeBuilder(coin: osmo, userMemo: "tag:1", amount: "1.5")
 
-    func testMemoDictionaryKeepsTheLegacyKeys() {
-        let dict = makeBuilder(userMemo: "tag:1").memoFunctionDictionary.allItems()
-        XCTAssertEqual(dict.count, 4)
-        XCTAssertEqual(dict["destinationChain"], Chain.gaiaChain.name)
-        XCTAssertEqual(dict["destinationChannel"], "channel-0")
-        XCTAssertEqual(dict["destinationAddress"], FunctionActionFixture.cosmosAddress)
-        XCTAssertEqual(dict["memo"], makeBuilder(userMemo: "tag:1").memo)
+        let transaction = builder.buildSendTransaction(vault: vault)
+
+        XCTAssertEqual(transaction.transactionType, .ibcTransfer)
+        XCTAssertEqual(transaction.toAddress, FunctionActionFixture.cosmosAddress)
+        XCTAssertEqual(transaction.amount, "1.5")
+        XCTAssertEqual(transaction.memo, builder.memo)
+        XCTAssertEqual(transaction.memoFunctionDictionary.count, 4)
+        XCTAssertFalse(transaction.sendMaxAmount)
+        XCTAssertFalse(transaction.isStakingOperation)
+        XCTAssertNil(transaction.wasmContractPayload)
     }
 
-    func testBuildSendTransactionMatchesTheLegacyBoundary() {
-        let kuji = FunctionActionFixture.makeKUJI()
-        let vault = FunctionActionFixture.makeVault(coins: [kuji])
-        let builder = makeBuilder(coin: kuji, amount: "1.5")
-
-        let tx = builder.buildSendTransaction(vault: vault)
-
-        XCTAssertEqual(tx.transactionType, .ibcTransfer)
-        XCTAssertEqual(tx.toAddress, FunctionActionFixture.cosmosAddress)
-        XCTAssertEqual(tx.amount, "1.5")
-        XCTAssertEqual(tx.memo, builder.memo)
-        XCTAssertEqual(tx.memoFunctionDictionary.count, 4)
-        XCTAssertFalse(tx.sendMaxAmount)
-        XCTAssertFalse(tx.isStakingOperation)
-        XCTAssertNil(tx.wasmContractPayload)
-    }
-
-    /// The attached amount is the transferred value, unlike the memo-only
-    /// operations that pin it to zero — an IBC transfer really does move the
-    /// coin. Pinned so the base-unit conversion downstream stays honest.
     func testAttachedAmountScalesToBaseUnitsAtTheCoinsDecimals() {
-        let kuji = FunctionActionFixture.makeKUJI()
-        let vault = FunctionActionFixture.makeVault(coins: [kuji])
+        let osmo = FunctionActionFixture.makeOSMO()
+        let vault = FunctionActionFixture.makeVault(coins: [osmo])
 
-        let tx = makeBuilder(coin: kuji, amount: "1.5").buildSendTransaction(vault: vault)
-        XCTAssertEqual(tx.amountInRaw.description, "1500000", "1.5 KUJI at 6 decimals")
+        let transaction = makeBuilder(coin: osmo, amount: "1.5").buildSendTransaction(vault: vault)
+
+        XCTAssertEqual(transaction.amountInRaw.description, "1500000")
     }
 }

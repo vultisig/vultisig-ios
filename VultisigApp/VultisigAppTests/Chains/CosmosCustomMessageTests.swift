@@ -68,4 +68,21 @@ final class CosmosCustomMessageTests: XCTestCase {
 
         XCTAssertNotEqual(payload.keysignMessages, [sha256Digest])
     }
+
+    func testRetiredKujiraPayloadKeepsLegacyHashButCannotResolveForSigning() {
+        let message = "historical kujira payload"
+        let expected = Data(message.utf8).sha256().hexString
+        let payload = makePayload(method: "sign", message: message, chain: "Kujira")
+
+        XCTAssertEqual(payload.keysignMessages, [expected])
+        XCTAssertThrowsError(try payload.resolveSigningChain()) { error in
+            XCTAssertEqual(error as? CustomMessagePayloadError, .unsupportedChain("Kujira"))
+        }
+    }
+
+    func testUnknownCustomMessageChainRetainsEthereumFallback() throws {
+        let payload = makePayload(method: "personal_sign", message: "hello", chain: "Unknown Extension Chain")
+
+        XCTAssertEqual(try payload.resolveSigningChain(), .ethereum)
+    }
 }

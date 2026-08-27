@@ -116,7 +116,6 @@ enum ChainHelperFixture: String, CaseIterable {
     case dot
     case evm
     case evmChainMatrix = "evm-chain-matrix"
-    case kujira
     case lifiswap
     case maya
     case mayaswap
@@ -157,7 +156,6 @@ enum ChainHelperFixture: String, CaseIterable {
         case .dot: return 1
         case .evm: return 2
         case .evmChainMatrix: return 8
-        case .kujira: return 3
         case .lifiswap: return 2
         case .maya: return 3
         case .mayaswap: return 2
@@ -215,7 +213,6 @@ final class ChainHelperTests: XCTestCase {
     func testDotFixture() throws { try runFixture(.dot) }
     func testEvmFixture() throws { try runFixture(.evm) }
     func testEvmChainMatrixFixture() throws { try runFixture(.evmChainMatrix) }
-    func testKujiraFixture() throws { try runFixture(.kujira) }
     func testLifiswapFixture() throws { try runFixture(.lifiswap) }
     func testMayaFixture() throws { try runFixture(.maya) }
     func testMayaswapFixture() throws { try runFixture(.mayaswap) }
@@ -506,9 +503,11 @@ final class ChainHelperTests: XCTestCase {
             result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ripple:
             result += try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .terra, .terraClassic, .gaiaChain, .kujira, .osmosis, .dydx, .noble, .akash, .qbtc:
+        case .terra, .terraClassic, .gaiaChain, .osmosis, .dydx, .noble, .akash, .qbtc:
             let helper = try CosmosHelper.getHelper(forChain: chain)
             result += try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .kujira:
+            throw HelperError.runtimeError("Unsupported Cosmos chain: \(chain)")
         case .ton:
             result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:

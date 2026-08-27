@@ -102,7 +102,8 @@ struct AppMigrationService {
             PromoBannerDismissalMigration(),
             RujiAutoCompoundPositionMigration(),
             TonGramDefiPositionsMigration(),
-            StakePositionCeilingMigration()
+            StakePositionCeilingMigration(),
+            RemoveKujiraMigration()
         ]
     }
 }

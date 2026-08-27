@@ -50,6 +50,19 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case qbtc
     case bittensor
 
+    /// Chains the app can actively create, add, scan, or transact on.
+    ///
+    /// `.kujira` deliberately remains an enum case because `Chain` is encoded
+    /// directly in historical SwiftData and JSON vault records. Removing that
+    /// identity would make those records undecodable before a migration could
+    /// clean them up. Active product surfaces must use this roster instead of
+    /// `allCases`.
+    static let supportedCases = allCases.filter(\.isSupported)
+
+    var isSupported: Bool {
+        self != .kujira
+    }
+
     /// Maps removed chain raw values to their replacement chain.
     /// This prevents SwiftData from crashing when decoding legacy persisted data.
     private static let removedChainMigrations: [String: Chain] = [
@@ -111,7 +124,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .thorChainStagenet,
              .mayaChain,
              .gaiaChain,
-             .kujira,
              .bitcoin,
              .dogecoin,
              .bitcoinCash,
@@ -149,7 +161,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .ethereumSepolia,
              .sei,
              .qbtc,
-             .bittensor:
+             .bittensor,
+             .kujira:
             return false
         }
     }
@@ -158,12 +171,12 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     /// no on-ramp provider, so Buy is hidden; every other chain keeps the
     /// existing behaviour.
     var isBuyAvailable: Bool {
-        self != .qbtc
+        isSupported && self != .qbtc
     }
 
     /// Cosmos-SDK native staking via delegate / undelegate / redelegate /
     /// claim-rewards. Only the LUNA / LUNC chains today; other Cosmos
-    /// chains (gaia / kujira / osmosis / etc.) are out of scope for the
+    /// chains (gaia / osmosis / etc.) are out of scope for the
     /// in-app staking UI.
     var isCosmosStakingChain: Bool {
         switch self {
@@ -214,9 +227,9 @@ extension Chain {
     /// broadcast (this gates `BlockChainService.shouldUseCache` / `setCacheIfAllowed`).
     var supportsPendingTransactions: Bool {
         switch self {
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
-        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor:
+        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor, .kujira:
             return false
         }
     }
@@ -245,7 +258,7 @@ extension Chain {
     }
 
     static var keyImportEnabledChains: [Chain] {
-        allCases.filter {
+        supportedCases.filter {
             switch $0 {
             case .cardano, .thorChainChainnet, .thorChainStagenet, .polygonV2, .qbtc:
                 return false

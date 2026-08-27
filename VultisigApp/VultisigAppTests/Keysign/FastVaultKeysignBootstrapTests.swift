@@ -45,13 +45,13 @@ final class FastVaultKeysignBootstrapTests: XCTestCase {
         return vault
     }
 
-    private func makeCustomMessagePayload(for vault: Vault) -> CustomMessagePayload {
+    private func makeCustomMessagePayload(for vault: Vault, chain: Chain = .ethereum) -> CustomMessagePayload {
         CustomMessagePayload(
             method: "personal_sign",
             message: "0xdeadbeef",
             vaultPublicKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID,
-            chain: Chain.ethereum.name,
+            chain: chain.name,
             decodedMessage: nil
         )
     }
@@ -139,6 +139,28 @@ final class FastVaultKeysignBootstrapTests: XCTestCase {
         } catch let error as FastVaultKeysignBootstrapError {
             XCTAssertEqual(error, .missingPayload)
             XCTAssertTrue(mock.calls.map(\.name).allSatisfy { $0 == "newSession" })
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+
+    func testRetiredKujiraPayloadIsRejectedBeforeSessionCreation() async {
+        let mock = MockFastVaultSessionProvider(session: Self.session, participants: Self.participants)
+        let vault = makeVaultWithEthereum()
+        let payload = makeCustomMessagePayload(for: vault, chain: .kujira)
+        let bootstrap = FastVaultKeysignBootstrap(sessionService: mock)
+
+        do {
+            _ = try await bootstrap.makeKeysignInput(
+                vault: vault,
+                keysignPayload: nil,
+                customMessagePayload: payload,
+                fastVaultPassword: "hunter2"
+            )
+            XCTFail("Expected retired Kujira signing to be rejected")
+        } catch let error as CustomMessagePayloadError {
+            XCTAssertEqual(error, .unsupportedChain(Chain.kujira.name))
+            XCTAssertTrue(mock.calls.isEmpty)
         } catch {
             XCTFail("Unexpected error type: \(error)")
         }

@@ -164,14 +164,14 @@ final class FunctionActionCatalogTests: XCTestCase {
         XCTAssertNil(node, "The list is entered cold — there is no previous form to inherit a node address from")
     }
 
-    /// The constraint made concrete. Kujira and Osmosis each offer exactly one
-    /// operation and that operation is now migrated — the shape
+    /// The constraint made concrete. Osmosis offers exactly one operation and
+    /// that operation is now migrated — the shape
     /// `testASingleMigratedActionRoutesStraightToItsOwnScreen` describes with a
-    /// synthetic case list, here on the real chains that have it. Under the
-    /// selection-change seam these two were unmigratable: a lone case is also
+    /// synthetic case list, here on the real chain that has it. Under the
+    /// selection-change seam it was unmigratable: a lone case is also
     /// the chain's default, and a default never publishes a change.
     func testTheSingleActionChainsPassThroughToTheIbcScreen() {
-        for chain in [Chain.kujira, Chain.osmosis] {
+        for chain in [Chain.osmosis] {
             let coin = Self.makeCoin(chain)
             XCTAssertEqual(
                 FunctionAction.offered(on: coin),

@@ -328,7 +328,7 @@ final class Vault: ObservableObject, Codable {
 
     var chains: [Chain] {
         coins
-            .filter { $0.isNativeToken }
+            .filter { $0.isNativeToken && $0.chain.isSupported }
             .map { $0.chain }
             .uniqueBy { $0 }
     }
@@ -336,7 +336,7 @@ final class Vault: ObservableObject, Codable {
     var availableChains: [Chain] {
         switch libType {
         case .GG20, .DKLS, nil:
-            Chain.allCases
+            Chain.supportedCases
         case .KeyImport:
             // KeyImport vaults can only operate on chains whose per-chain TSS
             // keyshares were derived during import. `coins` may temporarily
@@ -344,7 +344,7 @@ final class Vault: ObservableObject, Codable {
             // `chainPublicKeys` as the authoritative source. Legacy JSON
             // backups predate `chainPublicKeys` persistence — fall back to the
             // coin-derived list so a restored vault stays usable.
-            chainPublicKeys.isEmpty ? chains : chainPublicKeys.map(\.chain)
+            chainPublicKeys.isEmpty ? chains : chainPublicKeys.map(\.chain).filter(\.isSupported)
         }
     }
 
@@ -387,7 +387,7 @@ final class Vault: ObservableObject, Codable {
     }
 
     var chainsWithCoins: [Chain] {
-        coins.map { $0.chain }.uniqueBy { $0 }
+        coins.map(\.chain).filter(\.isSupported).uniqueBy { $0 }
     }
 
     /// The usable key share for a public key, opened if it is stored sealed.

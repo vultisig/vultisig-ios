@@ -8,6 +8,17 @@
 import Foundation
 import WalletCore
 
+enum CustomMessagePayloadError: LocalizedError, Equatable {
+    case unsupportedChain(String)
+
+    var errorDescription: String? {
+        switch self {
+        case let .unsupportedChain(chain):
+            return "Custom-message signing is unavailable for \(chain)."
+        }
+    }
+}
+
 struct CustomMessagePayload: Codable, Hashable {
     let method: String
     let message: String
@@ -75,8 +86,24 @@ struct CustomMessagePayload: Codable, Hashable {
         }
     }
 
+    /// Resolves the chain used for key derivation while refusing known retired chains.
+    /// Unknown names retain the historical Ethereum fallback used by extension payloads.
+    func resolveSigningChain() throws -> Chain {
+        guard let resolved = Chain.allCases.first(where: {
+            $0.name.caseInsensitiveCompare(chain) == .orderedSame
+        }) else {
+            return .ethereum
+        }
+        guard resolved.isSupported else {
+            throw CustomMessagePayloadError.unsupportedChain(resolved.name)
+        }
+        return resolved
+    }
+
     /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),
-    /// which sign the sha256 of the custom message rather than keccak256.
+    /// which sign the sha256 of the custom message rather than keccak256. Compatibility
+    /// identities remain classified here so historical payloads decode deterministically;
+    /// `resolveSigningChain()` rejects them before a signing ceremony starts.
     private var isCosmosFamily: Bool {
         guard let resolved = Chain.allCases.first(where: {
             $0.name.caseInsensitiveCompare(chain) == .orderedSame

@@ -68,7 +68,7 @@ struct AddressService {
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
             // Map CoinType to Vultisig Chain
-            guard let chain = Chain.allCases.first(where: { $0.coinType == coinType }) else { continue }
+            guard let chain = Chain.supportedCases.first(where: { $0.coinType == coinType }) else { continue }
             guard validateRecipientAddress(address: address, chain: chain) else { continue }
             // Only return if chain exists in vault with native token
             if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {

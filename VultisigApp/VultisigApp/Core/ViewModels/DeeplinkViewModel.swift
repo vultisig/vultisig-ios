@@ -150,7 +150,7 @@ struct DeeplinkLogic {
         }
 
         let chainString = assetChain.lowercased()
-        guard let chain = Chain.allCases.first(where: { $0.rawValue.lowercased() == chainString }) else {
+        guard let chain = Chain.supportedCases.first(where: { $0.rawValue.lowercased() == chainString }) else {
             return nil
         }
 
