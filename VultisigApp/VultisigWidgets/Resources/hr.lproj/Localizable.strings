@@ -8,11 +8,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "nedostupno";
 "widget.changeUnavailableDisplay" = "— 24H";
+"widget.cryptocurrency" = "Kriptovaluta";
 "widget.cryptoMarketDataUnavailable" = "Podaci kripto tržišta privremeno nisu dostupni";
 "widget.cryptoTicker" = "Kripto ticker";
 "widget.cryptoTicker.choose" = "Odaberite kriptovalutu prikazanu u ovom widgetu.";
 "widget.cryptoTicker.description" = "Pratite cijenu i sedmodnevni trend kriptovalute.";
-"widget.cryptocurrency" = "Kriptovaluta";
 "widget.down" = "palo";
 "widget.marketCap" = "Tržišna kapitalizacija";
 "widget.marketData" = "Tržišni podaci";
@@ -26,3 +26,7 @@
 "widget.up" = "poraslo";
 "widget.updatedData" = "ažurirani podaci";
 "widget.valueUnavailableDisplay" = "—";
+"widget.watchlist" = "Popis za praćenje";
+"widget.watchlist.configure" = "Odaberi imovinu u postavkama Vultisiga";
+"widget.watchlist.description" = "Prati do pet kriptovaluta odabranih u Vultisigu.";
+"widget.watchlist.marketDataUnavailable" = "Tržišni podaci popisa privremeno nisu dostupni";

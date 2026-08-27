@@ -8,11 +8,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "사용 불가";
 "widget.changeUnavailableDisplay" = "— 24H";
+"widget.cryptocurrency" = "암호화폐";
 "widget.cryptoMarketDataUnavailable" = "암호화폐 시장 데이터를 일시적으로 사용할 수 없습니다";
 "widget.cryptoTicker" = "암호화폐 티커";
 "widget.cryptoTicker.choose" = "이 위젯에 표시할 암호화폐를 선택하세요.";
 "widget.cryptoTicker.description" = "암호화폐의 가격과 7일 추세를 확인하세요.";
-"widget.cryptocurrency" = "암호화폐";
 "widget.down" = "하락";
 "widget.marketCap" = "시가총액";
 "widget.marketData" = "시장 데이터";
@@ -26,3 +26,7 @@
 "widget.up" = "상승";
 "widget.updatedData" = "업데이트된 데이터";
 "widget.valueUnavailableDisplay" = "—";
+"widget.watchlist" = "관심 목록";
+"widget.watchlist.configure" = "Vultisig 설정에서 자산을 선택하세요";
+"widget.watchlist.description" = "Vultisig에서 선택한 암호화폐를 최대 5개 추적하세요.";
+"widget.watchlist.marketDataUnavailable" = "관심 목록 시장 데이터를 일시적으로 사용할 수 없습니다";
