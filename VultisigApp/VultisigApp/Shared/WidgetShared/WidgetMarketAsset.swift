@@ -56,6 +56,7 @@ struct WidgetMarketResult: Equatable, Sendable {
 
 enum WidgetMarketQuery: Hashable, Sendable {
     case top(limit: Int)
+    case catalog(limit: Int)
     case ids([String])
 
     var normalizedIDs: [String] {
@@ -75,15 +76,24 @@ enum WidgetMarketQuery: Hashable, Sendable {
         switch self {
         case .top(let limit):
             return min(5, max(1, limit))
+        case .catalog(let limit):
+            return min(50, max(1, limit))
         case .ids:
             return min(5, max(1, normalizedIDs.count))
         }
+    }
+
+    var includesSparkline: Bool {
+        guard case .catalog = self else { return true }
+        return false
     }
 
     var cacheKey: String {
         switch self {
         case .top:
             return "top-\(limit)"
+        case .catalog:
+            return "catalog-\(limit)"
         case .ids:
             return "ids-\(normalizedIDs.joined(separator: ","))"
         }
