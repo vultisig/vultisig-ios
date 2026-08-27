@@ -1814,6 +1814,11 @@
 "weJustSentYourBackupShare" = "Upravo smo poslali vašu sigurnosnu kopiju u vašu e -poštu. Ako ga ne vidite, provjerite mapu neželjene pošte.";
 "whereDoYouMigrateFrom" = "Odakle migrirate?";
 "whitespaceNotAllowed" = "Karakter bijelog prostora nije dopušten";
+"widgetWatchlist" = "Popis za praćenje widgeta";
+"widgetWatchlistAssets" = "Imovina";
+"widgetWatchlistDescription" = "Odaberi do pet stavki za widgete popisa za praćenje. Prikazuju se redoslijedom kojim ih uključiš.";
+"widgetWatchlistLoadError" = "Nije moguće učitati tržišnu imovinu. Provjeri vezu i pokušaj ponovno.";
+"widgetWatchlistSelectionCount" = "Odabrano %d od %d";
 "withdraw" = "Povuci";
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowMinimum" = "Iznos je premalen — podignite barem %@ %@";
