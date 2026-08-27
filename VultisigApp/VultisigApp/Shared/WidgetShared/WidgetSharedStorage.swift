@@ -38,6 +38,12 @@ enum WidgetSharedStorage {
         return normalizedWatchlist(assets)
     }
 
+    static func hasStoredWatchlist(
+        in defaults: UserDefaults? = WidgetSharedStorage.defaults
+    ) -> Bool {
+        defaults?.object(forKey: watchlistKey) != nil
+    }
+
     static func setWatchlistAssets(
         _ assets: [WidgetWatchlistAsset],
         in defaults: UserDefaults? = WidgetSharedStorage.defaults

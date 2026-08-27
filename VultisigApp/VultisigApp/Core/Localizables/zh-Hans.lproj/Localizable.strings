@@ -1811,9 +1811,11 @@
 "walletBalanceExceededError" = "总金额和费用超过您钱包的余额。请重试";
 "wantToCreateVaultPrivately" = "想要私密创建保险库？";
 "wantToSignPrivately" = "想要私密签名？";
+"watchlist" = "关注列表";
 "weJustSentYourBackupShare" = "我们刚刚将您的备份份额发送到您的电子邮件。如果您没有看到它，请检查您的垃圾邮件文件夹";
 "whereDoYouMigrateFrom" = "您从哪里迁移？";
 "whitespaceNotAllowed" = "不允许空格字符";
+"widgets" = "小组件";
 "widgetWatchlist" = "小组件关注列表";
 "widgetWatchlistAssets" = "资产";
 "widgetWatchlistDescription" = "为关注列表小组件选择最多五项资产。资产将按启用顺序显示。";
