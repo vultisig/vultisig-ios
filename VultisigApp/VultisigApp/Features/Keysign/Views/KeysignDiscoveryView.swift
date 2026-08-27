@@ -343,6 +343,11 @@ struct KeysignDiscoveryView: View {
     func startKeysign() {
         if viewModel.isValidPeers(vault: vault) {
             guard let keysignInput = viewModel.startKeysign(vault: vault) else { return }
+            if fastVaultPassword == nil {
+                AppReviewService.shared.record(
+                    .devicePairingCompleted(sessionID: keysignInput.sessionID)
+                )
+            }
             onKeysignInput(keysignInput)
         }
     }

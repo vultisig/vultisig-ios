@@ -2,28 +2,24 @@
 //  AppReviewServiceTests.swift
 //  VultisigAppTests
 //
-//  Persistence + idempotency coverage for the review throttle's state
-//  layer. Each test gets its own `UserDefaults` suite so nothing touches
-//  `.standard`, and the clock is injected so the 7-day / 120-day windows
-//  are crossed by moving a variable, never by sleeping.
-//
 
 import XCTest
 @testable import VultisigApp
 
 @MainActor
 final class AppReviewServiceTests: XCTestCase {
-
     private let day: TimeInterval = 24 * 60 * 60
     private var suiteName = ""
     private var defaults = UserDefaults.standard
     private var clock = Date(timeIntervalSince1970: 1_700_000_000)
+    private var version: String? = "1.2.3"
 
     override func setUp() async throws {
         try await super.setUp()
         suiteName = "AppReviewServiceTests-\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)!
         clock = Date(timeIntervalSince1970: 1_700_000_000)
+        version = "1.2.3"
     }
 
     override func tearDown() async throws {
@@ -32,22 +28,27 @@ final class AppReviewServiceTests: XCTestCase {
     }
 
     private func makeService() -> AppReviewService {
-        AppReviewService(defaults: defaults, now: { [unowned self] in self.clock })
+        AppReviewService(
+            defaults: defaults,
+            now: { [unowned self] in self.clock },
+            bundleVersion: { [unowned self] in self.version }
+        )
     }
 
     private func advance(days: Double) {
         clock = clock.addingTimeInterval(days * day)
     }
 
-    // MARK: - Install date seeding
-
-    func testSeedInstallDateStoresTheCurrentDate() {
+    private func makeEligibleService() -> AppReviewService {
         let service = makeService()
         service.seedInstallDateIfNeeded()
-        XCTAssertEqual(service.state.installDate, clock)
+        service.record(.vaultBackupCompleted(vaultID: "vault-a"))
+        service.record(.devicePairingCompleted(sessionID: "session-a"))
+        advance(days: 7)
+        return service
     }
 
-    func testSeedInstallDateIsWrittenOnlyOnce() {
+    func testSeedInstallDateStoresCurrentDateOnce() {
         let service = makeService()
         service.seedInstallDateIfNeeded()
         let seeded = clock
@@ -58,240 +59,301 @@ final class AppReviewServiceTests: XCTestCase {
         XCTAssertEqual(service.state.installDate, seeded)
     }
 
-    func testInstallDateIsNilBeforeSeeding() {
-        XCTAssertNil(makeService().state.installDate)
-    }
-
-    func testInstallDateSurvivesANewServiceInstance() {
-        let first = makeService()
-        first.seedInstallDateIfNeeded()
-
-        advance(days: 5)
-        let second = makeService()
-        second.seedInstallDateIfNeeded()
-
-        XCTAssertEqual(second.state.installDate, first.state.installDate)
-    }
-
-    // MARK: - Counting
-
-    func testRecordingIncrementsTheCount() {
+    func testEachDistinctEventIncrementsCount() {
         let service = makeService()
-        XCTAssertTrue(service.recordConfirmedTransaction(id: "hash-a"))
-        XCTAssertTrue(service.recordConfirmedTransaction(id: "hash-b"))
-        XCTAssertEqual(service.state.confirmedTransactionCount, 2)
+        XCTAssertTrue(service.record(.confirmedOutboundTransaction(id: "hash-a")))
+        XCTAssertTrue(service.record(.confirmedIncomingTransaction(id: "hash-b")))
+        XCTAssertTrue(service.record(.vaultBackupCompleted(vaultID: "vault-a")))
+        XCTAssertTrue(service.record(.vaultRestoreCompleted(vaultID: "vault-b")))
+        XCTAssertTrue(service.record(.devicePairingCompleted(sessionID: "session-a")))
+        XCTAssertEqual(service.state.qualifyingEventCount, 5)
     }
 
-    /// The main correctness risk: the done screen can observe the same
-    /// `.confirmed` status repeatedly, so re-recording one hash must be inert.
-    func testRepeatedObservationsOfTheSameTransactionCountOnce() {
+    func testRepeatedEventCountsOnceAcrossInstances() {
+        XCTAssertTrue(makeService().record(.vaultBackupCompleted(vaultID: "vault-a")))
+        XCTAssertFalse(makeService().record(.vaultBackupCompleted(vaultID: "vault-a")))
+        XCTAssertEqual(makeService().state.qualifyingEventCount, 1)
+    }
+
+    func testSameIdentityInDifferentNamespacesCountsSeparately() {
         let service = makeService()
-        XCTAssertTrue(service.recordConfirmedTransaction(id: "hash-a"))
-        XCTAssertFalse(service.recordConfirmedTransaction(id: "hash-a"))
-        XCTAssertFalse(service.recordConfirmedTransaction(id: "hash-a"))
-        XCTAssertEqual(service.state.confirmedTransactionCount, 1)
+        XCTAssertTrue(service.record(.confirmedOutboundTransaction(id: "same")))
+        XCTAssertTrue(service.record(.confirmedIncomingTransaction(id: "same")))
+        XCTAssertEqual(service.state.qualifyingEventCount, 2)
     }
 
-    /// A remount builds a fresh service against the same defaults; the
-    /// duplicate check has to survive that, not just live in memory.
-    func testDuplicateSuppressionSurvivesANewServiceInstance() {
-        makeService().recordConfirmedTransaction(id: "hash-a")
-        let remounted = makeService()
-
-        XCTAssertFalse(remounted.recordConfirmedTransaction(id: "hash-a"))
-        XCTAssertEqual(remounted.state.confirmedTransactionCount, 1)
-    }
-
-    func testEmptyTransactionIDIsNotCounted() {
+    func testBlankEventIdentityIsNotCounted() {
         let service = makeService()
-        XCTAssertFalse(service.recordConfirmedTransaction(id: ""))
-        XCTAssertFalse(service.recordConfirmedTransaction(id: ""))
-        XCTAssertEqual(service.state.confirmedTransactionCount, 0)
+        XCTAssertFalse(service.record(.confirmedOutboundTransaction(id: "")))
+        XCTAssertFalse(service.record(.devicePairingCompleted(sessionID: "   ")))
+        XCTAssertEqual(service.state.qualifyingEventCount, 0)
     }
 
-    func testCountedTransactionIDsAreBounded() {
+    func testCountedEventIDsAreBounded() {
         let service = makeService()
-        let overflow = AppReviewService.countedTransactionIDLimit + 10
+        let overflow = AppReviewService.countedEventIDLimit + 10
         for index in 0..<overflow {
-            XCTAssertTrue(service.recordConfirmedTransaction(id: "hash-\(index)"))
+            XCTAssertTrue(service.record(.confirmedOutboundTransaction(id: "hash-\(index)")))
         }
 
-        XCTAssertEqual(service.state.confirmedTransactionCount, overflow)
-        let stored = defaults.stringArray(forKey: "appReview.countedTransactionIDs") ?? []
-        XCTAssertEqual(stored.count, AppReviewService.countedTransactionIDLimit)
-        // Oldest hashes are evicted first; the most recent ones stay guarded.
-        XCTAssertFalse(stored.contains("hash-0"))
-        XCTAssertTrue(stored.contains("hash-\(overflow - 1)"))
+        XCTAssertEqual(service.state.qualifyingEventCount, overflow)
+        let stored = defaults.stringArray(forKey: "appReview.countedEventIDs") ?? []
+        XCTAssertEqual(stored.count, AppReviewService.countedEventIDLimit)
+        XCTAssertFalse(stored.contains("outbound:hash-0"))
+        XCTAssertTrue(stored.contains("outbound:hash-\(overflow - 1)"))
     }
 
-    func testCountSurvivesANewServiceInstance() {
-        makeService().recordConfirmedTransaction(id: "hash-a")
-        makeService().recordConfirmedTransaction(id: "hash-b")
-        XCTAssertEqual(makeService().state.confirmedTransactionCount, 2)
-    }
-
-    // MARK: - Prompt recording
-
-    func testRecordPromptShownStoresTheCurrentDate() {
+    func testLegacyTransactionStateMigratesWithoutLosingCountOrDedupe() {
+        defaults.set(2, forKey: "appReview.confirmedTransactionCount")
+        defaults.set(["hash-a", "hash-b"], forKey: "appReview.countedTransactionIDs")
         let service = makeService()
-        XCTAssertNil(service.state.lastPromptDate)
 
-        service.recordPromptShown()
+        XCTAssertEqual(service.state.qualifyingEventCount, 2)
+        XCTAssertFalse(service.record(.confirmedOutboundTransaction(id: "hash-a")))
+        XCTAssertTrue(service.record(.vaultBackupCompleted(vaultID: "vault-a")))
+        XCTAssertEqual(service.state.qualifyingEventCount, 3)
+    }
+
+    func testLegacyPromptOlderThanFourteenDaysCanClaimCurrentVersion() {
+        defaults.set(2, forKey: "appReview.confirmedTransactionCount")
+        defaults.set(clock.addingTimeInterval(-30 * day).timeIntervalSince1970, forKey: "appReview.installDate")
+        defaults.set(clock.addingTimeInterval(-15 * day).timeIntervalSince1970, forKey: "appReview.lastPromptDate")
+
+        let service = makeService()
+        XCTAssertNil(service.state.lastPromptedVersion)
+        XCTAssertTrue(service.claimReviewPrompt())
+        XCTAssertEqual(service.state.lastPromptedVersion, "1.2.3")
+    }
+
+    func testClaimPersistsVersionDateAndInstrumentation() {
+        let service = makeEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt())
+
         XCTAssertEqual(service.state.lastPromptDate, clock)
-    }
-
-    func testRecordPromptShownOverwritesThePreviousDate() {
-        let service = makeService()
-        service.recordPromptShown()
-
-        advance(days: 200)
-        service.recordPromptShown()
-
-        XCTAssertEqual(service.state.lastPromptDate, clock)
-    }
-
-    // MARK: - End-to-end throttle
-
-    func testDoesNotAskBeforeTheThresholdsAreMet() {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-
-        service.recordConfirmedTransaction(id: "hash-a")
-        service.recordConfirmedTransaction(id: "hash-b")
-        advance(days: 10)
-        XCTAssertFalse(service.shouldRequestReview(), "two transactions is below the threshold")
-
-        service.recordConfirmedTransaction(id: "hash-c")
-        XCTAssertTrue(service.shouldRequestReview())
-    }
-
-    func testDoesNotAskWithinTheFirstWeek() {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-
-        for id in ["hash-a", "hash-b", "hash-c"] {
-            service.recordConfirmedTransaction(id: id)
-        }
-
-        advance(days: 6)
-        XCTAssertFalse(service.shouldRequestReview())
-
-        advance(days: 1)
-        XCTAssertTrue(service.shouldRequestReview())
-    }
-
-    func testAskingClosesTheWindowForOneHundredTwentyDays() {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-        for id in ["hash-a", "hash-b", "hash-c"] {
-            service.recordConfirmedTransaction(id: id)
-        }
-        advance(days: 7)
-        XCTAssertTrue(service.shouldRequestReview())
-
-        service.recordPromptShown()
-        XCTAssertFalse(service.shouldRequestReview())
-
-        advance(days: 119)
-        service.recordConfirmedTransaction(id: "hash-d")
-        XCTAssertFalse(service.shouldRequestReview())
-
-        advance(days: 1)
-        XCTAssertTrue(service.shouldRequestReview())
-    }
-
-    /// Re-observing the same three hashes must not push a two-transaction
-    /// user over the threshold.
-    func testRepeatedObservationsDoNotUnlockThePromptEarly() {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-        advance(days: 30)
-
-        for _ in 0..<5 {
-            service.recordConfirmedTransaction(id: "hash-a")
-            service.recordConfirmedTransaction(id: "hash-b")
-        }
-
-        XCTAssertEqual(service.state.confirmedTransactionCount, 2)
-        XCTAssertFalse(service.shouldRequestReview())
-    }
-
-    // MARK: - Claiming the ask
-
-    /// Brings a service to the point where only a fresh transaction is
-    /// missing: seeded, past the 7-day wait, two transactions counted.
-    private func makeAlmostEligibleService() -> AppReviewService {
-        let service = makeService()
-        service.seedInstallDateIfNeeded()
-        service.recordConfirmedTransaction(id: "hash-a")
-        service.recordConfirmedTransaction(id: "hash-b")
-        advance(days: 30)
-        return service
-    }
-
-    func testClaimingAsksOnceTheThirdTransactionConfirms() {
-        let service = makeAlmostEligibleService()
-        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
-        XCTAssertEqual(service.state.lastPromptDate, clock)
-    }
-
-    /// The ask must follow a *newly counted* transaction. Re-observing a hash
-    /// that already counted has no transaction behind it, so it must not ask
-    /// even when every throttle rule is otherwise satisfied.
-    func testClaimingRequiresANewlyCountedTransaction() {
-        let service = makeAlmostEligibleService()
-        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
-
-        advance(days: 200)
-        XCTAssertFalse(
-            service.claimReviewPrompt(forConfirmedTransaction: "hash-c"),
-            "a repeat observation of an already-counted hash must not ask again"
+        XCTAssertEqual(service.state.lastPromptedVersion, "1.2.3")
+        XCTAssertEqual(
+            service.instrumentation,
+            AppReviewInstrumentation(policyEvaluationCount: 1, promptClaimCount: 1)
         )
     }
 
-    /// The custom-message signing flow renders the done screen already
-    /// `.confirmed` with an empty hash. Signing a message is not a
-    /// transaction, so it must never spend an ask.
-    func testClaimingWithAnEmptyIDNeverAsks() {
-        let service = makeAlmostEligibleService()
-        service.recordConfirmedTransaction(id: "hash-c")
-
-        XCTAssertTrue(service.shouldRequestReview(), "the throttle is otherwise satisfied")
-        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: ""))
-        XCTAssertNil(service.state.lastPromptDate)
-    }
-
-    func testClaimingDoesNotSpendTheAskWhenTheThrottleRefuses() {
+    func testRefusedClaimStillIncrementsPolicyEvaluationOnly() {
         let service = makeService()
-        service.seedInstallDateIfNeeded()
-
-        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: "hash-a"))
-        XCTAssertNil(service.state.lastPromptDate)
-        XCTAssertEqual(service.state.confirmedTransactionCount, 1, "the transaction still counts")
+        XCTAssertFalse(service.claimReviewPrompt())
+        XCTAssertEqual(
+            service.instrumentation,
+            AppReviewInstrumentation(policyEvaluationCount: 1, promptClaimCount: 0)
+        )
     }
 
-    func testClaimingClosesTheWindowForOneHundredTwentyDays() {
-        let service = makeAlmostEligibleService()
-        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
+    func testClaimCannotRepeatForSameVersion() {
+        let service = makeEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt())
+        advance(days: 100)
+        XCTAssertFalse(service.claimReviewPrompt())
+        XCTAssertEqual(
+            service.instrumentation,
+            AppReviewInstrumentation(policyEvaluationCount: 2, promptClaimCount: 1)
+        )
+    }
 
-        advance(days: 119)
-        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: "hash-d"))
+    func testNewVersionWaitsFourteenDays() {
+        let service = makeEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt())
+        version = "1.2.4"
 
+        advance(days: 13)
+        XCTAssertFalse(service.claimReviewPrompt())
         advance(days: 1)
-        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-e"))
+        XCTAssertTrue(service.claimReviewPrompt())
+    }
+
+    func testMissingVersionFailsClosed() {
+        let service = makeEligibleService()
+        version = nil
+        XCTAssertFalse(service.claimReviewPrompt())
+        XCTAssertNil(service.state.lastPromptDate)
+        XCTAssertNil(service.state.lastPromptedVersion)
+    }
+
+    func testPricedIncomingBalanceIncreaseMustClearFiatFloor() {
+        XCTAssertNotNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "btc-address",
+                previousRawBalance: "100000000",
+                currentRawBalance: "300000000",
+                decimals: 8,
+                fiatRate: 1,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "btc-address",
+                previousRawBalance: "100000000",
+                currentRawBalance: "150000000",
+                decimals: 8,
+                fiatRate: 1,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
+    }
+
+    func testUnpricedIncomingRequiresNativeAmountAboveDust() {
+        XCTAssertEqual(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "native-address",
+                previousRawBalance: "0",
+                currentRawBalance: "100",
+                decimals: 8,
+                fiatRate: nil,
+                isNativeToken: true,
+                minimumRawAmount: 100,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            ),
+            "native-address:100"
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "token-address",
+                previousRawBalance: "0",
+                currentRawBalance: "1000000",
+                decimals: 6,
+                fiatRate: nil,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
+    }
+
+    func testIncomingBalancePresentAtEntryRecordsAfterDwell() async {
+        let candidate = AppReviewIncomingBalancePolicy.eventID(
+            coinID: "coin-address",
+            previousRawBalance: "0",
+            currentRawBalance: "2000000",
+            decimals: 6,
+            fiatRate: 1,
+            isNativeToken: false,
+            minimumRawAmount: 1,
+            isLikelySpam: false,
+            refreshSucceeded: true
+        )
+
+        let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell(
+            candidate,
+            dwell: {}
+        )
+
+        XCTAssertEqual(eventID, "coin-address:2000000")
+    }
+
+    func testIncomingSameBalanceRepeatDoesNotCreateCandidate() {
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "coin-address",
+                previousRawBalance: "2000000",
+                currentRawBalance: "2000000",
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
+    }
+
+    func testIncomingFailedRefreshDoesNotCreateCandidate() {
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: "coin-address",
+                previousRawBalance: "0",
+                currentRawBalance: "2000000",
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: false
+            )
+        )
+    }
+
+    func testIncomingTaskCancellationBeforeDwellDoesNotRecord() async {
+        let service = makeService()
+        let task = Task {
+            let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell("coin-address:2000000") {
+                try await Task.sleep(for: .seconds(60))
+            }
+            guard let eventID else { return }
+            service.record(.confirmedIncomingTransaction(id: eventID))
+        }
+
+        task.cancel()
+        await task.value
+
+        XCTAssertEqual(service.state.qualifyingEventCount, 0)
+    }
+
+    func testIncomingRejectsSpamAndInvalidBalances() {
+        let validArguments = (
+            coinID: "coin-address",
+            previous: "0",
+            current: "2000000"
+        )
+
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: validArguments.previous,
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: true,
+                refreshSucceeded: true
+            )
+        )
+        XCTAssertNil(
+            AppReviewIncomingBalancePolicy.eventID(
+                coinID: validArguments.coinID,
+                previousRawBalance: "",
+                currentRawBalance: validArguments.current,
+                decimals: 6,
+                fiatRate: 1,
+                isNativeToken: false,
+                minimumRawAmount: 1,
+                isLikelySpam: false,
+                refreshSucceeded: true
+            )
+        )
     }
 
     func testStateIsIsolatedPerDefaultsSuite() {
         let service = makeService()
         service.seedInstallDateIfNeeded()
-        service.recordConfirmedTransaction(id: "hash-a")
+        service.record(.vaultBackupCompleted(vaultID: "vault-a"))
 
         let otherSuiteName = "AppReviewServiceTests-other-\(UUID().uuidString)"
         let otherDefaults = UserDefaults(suiteName: otherSuiteName)!
         defer { otherDefaults.removePersistentDomain(forName: otherSuiteName) }
-        let other = AppReviewService(defaults: otherDefaults, now: { [unowned self] in self.clock })
+        let other = AppReviewService(
+            defaults: otherDefaults,
+            now: { [unowned self] in self.clock },
+            bundleVersion: { "1.2.3" }
+        )
 
-        XCTAssertEqual(other.state.confirmedTransactionCount, 0)
+        XCTAssertEqual(other.state.qualifyingEventCount, 0)
         XCTAssertNil(other.state.installDate)
     }
 }

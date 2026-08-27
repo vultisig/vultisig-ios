@@ -209,6 +209,7 @@ extension VultisigApp {
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
             .environmentObject(pushNotificationManager)
+            .appReviewPromptHost()
             .onChange(of: scenePhase) { previousPhase, newPhase in
                 switch newPhase {
                 case .active:

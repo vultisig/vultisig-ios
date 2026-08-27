@@ -416,7 +416,7 @@ struct PeerDiscoveryScreen: View {
     var bottomButton: some View {
         if !isFixedDeviceMode {
             PrimaryButton(title: continueButtonTitle) {
-                viewModel.startKeygen()
+                startKeygenAndRecordPairing()
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
@@ -450,7 +450,15 @@ struct PeerDiscoveryScreen: View {
 
     func autoStartKeygenIfReady() {
         guard viewModel.shouldAutoStartKeygen(totalDeviceCount: totalDeviceCount) else { return }
+        startKeygenAndRecordPairing()
+    }
+
+    func startKeygenAndRecordPairing() {
         viewModel.startKeygen()
+        guard selectedTab.hasOtherDevices, viewModel.keygenCommittee.count > 1 else { return }
+        AppReviewService.shared.record(
+            .devicePairingCompleted(sessionID: viewModel.sessionID)
+        )
     }
 
     var showWaitingOnDevice: Bool {

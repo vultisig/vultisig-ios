@@ -24,9 +24,6 @@
 //
 
 import SwiftUI
-#if os(iOS)
-import StoreKit
-#endif
 
 struct DoneScreen<
     TokenContent: View,
@@ -38,13 +35,12 @@ struct DoneScreen<
     @StateObject private var statusService: DoneStatusService
 
     #if os(iOS)
-    @Environment(\.requestReview) private var requestReview
-
     /// Flipped once the arrival animation has actually finished. The review
-    /// sheet waits on this rather than on `isExpanded`, which only says the
+    /// event waits on this rather than on `isExpanded`, which only says the
     /// spring has been *scheduled* — it flips synchronously inside
     /// `withAnimation`, half a second before the hero has arrived.
     @State private var hasSettled = false
+    @State private var didOfferReviewOpportunity = false
     #endif
 
     /// Nav-bar title for the screen. Defaults to "Done"; the initiator
@@ -76,7 +72,7 @@ struct DoneScreen<
     private let revealDelay: UInt64 = 1_150_000_000 // ≈ 0.35s crossfade + 0.8s hold
 
     /// Response of the settle spring, and so roughly how long the hero takes
-    /// to arrive. Named rather than inlined because the review prompt has to
+    /// to arrive. Named rather than inlined because the review event has to
     /// wait it out, and a second literal would drift away from the animation.
     private let settleResponse: Double = 0.55
 
@@ -201,24 +197,25 @@ struct DoneScreen<
     }
 
     #if os(iOS)
-    /// Counts a confirmed transaction and, if the throttle allows, asks for an
-    /// App Store review.
+    /// Records a confirmed outbound transaction as a positive review event.
     ///
     /// Deliberately safe to call repeatedly: this is the one place in the app
     /// where "confirmed" is decided for every flow, and the view is not
     /// guaranteed to observe it once — a re-render, a re-entry, or the poller
     /// re-reporting a terminal status all land here again. `AppReviewService`
-    /// keys everything on the transaction hash, so the extra calls are inert
-    /// and, importantly, cannot spend an ask on a transaction already counted.
+    /// keys everything on the transaction hash, so the extra calls are inert.
     ///
     /// Waiting for `hasSettled` keeps the system sheet from landing on top of
     /// the hero settle animation.
     private func handleConfirmedTransactionIfNeeded() {
-        guard statusService.status == .confirmed, hasSettled else { return }
-        guard AppReviewService.shared.claimReviewPrompt(forConfirmedTransaction: input.hash) else {
+        guard statusService.status == .confirmed,
+              hasSettled,
+              !didOfferReviewOpportunity else {
             return
         }
-        requestReview()
+        didOfferReviewOpportunity = true
+        AppReviewService.shared.record(.confirmedOutboundTransaction(id: input.hash))
+        AppReviewService.shared.requestPromptEvaluation()
     }
     #endif
 }

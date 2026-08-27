@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 29/09/2025.
 //
 
+import BigInt
 import SwiftUI
 
 struct CoinDetailScreen: View {
@@ -164,8 +165,8 @@ struct CoinDetailScreen: View {
         .overlay(bottomFade)
         .task {
             viewModel.setup()
+            await refreshAndRecordIncomingAfterDwell()
         }
-        .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)
         .overlay(
             NotificationBannerView(
@@ -258,23 +259,51 @@ struct CoinDetailScreen: View {
 }
 
 private extension CoinDetailScreen {
-    func onAppear() {
-        Task {
-            await refresh()
-        }
-    }
-
     func onRefreshButton() {
         Task {
             await refresh()
         }
     }
 
-    func refresh() async {
-        await BalanceService.shared.updateBalance(for: coin)
+    @discardableResult
+    func refresh() async -> Bool {
+        let didRefreshBalance = await BalanceService.shared.updateBalance(for: coin)
         if viewModel.isTron {
             await MainActor.run { viewModel.tronLoader?.load() }
         }
+        return didRefreshBalance
+    }
+
+    func refreshAndRecordIncomingAfterDwell() async {
+        // `rawBalance` is the persisted result of the last successful live
+        // refresh. Capture it before refreshing so funds that arrived while
+        // this screen was closed are recognized on their first live sighting.
+        let previouslyObservedRawBalance = coin.rawBalance
+        let refreshSucceeded = await refresh()
+        let coinPrice = coin.price
+        let candidateEventID = AppReviewIncomingBalancePolicy.eventID(
+            coinID: coin.id,
+            previousRawBalance: previouslyObservedRawBalance,
+            currentRawBalance: coin.rawBalance,
+            decimals: coin.decimals,
+            fiatRate: coinPrice.isFinite && coinPrice > 0 ? Decimal(coinPrice) : nil,
+            isNativeToken: coin.isNativeToken,
+            minimumRawAmount: BigInt(coin.coinType.getFixedDustThreshold()),
+            isLikelySpam: CoinService.isLikelySpam(coin.toCoinMeta()),
+            refreshSucceeded: refreshSucceeded
+        )
+
+        // The live confirmed balance is already persisted by `refresh()`. Only
+        // the review event waits: SwiftUI cancels this task if the sheet
+        // disappears before the user has dwelled on the visible balance.
+        guard let eventID = await AppReviewIncomingBalancePolicy.eventIDAfterDwell(candidateEventID) else {
+            return
+        }
+
+        AppReviewService.shared.record(
+            .confirmedIncomingTransaction(id: eventID)
+        )
+        AppReviewService.shared.requestPromptEvaluation()
     }
 
     func onExplorer() {
