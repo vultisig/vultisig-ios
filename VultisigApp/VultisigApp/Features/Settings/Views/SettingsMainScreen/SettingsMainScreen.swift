@@ -26,13 +26,17 @@ struct SettingsMainScreen: View {
     @State var showReferralBannerSheet = false
 
     var groups: [SettingsOptionGroup] {
-        let generalOptions: [SettingsOption] = [
+        var generalOptions: [SettingsOption] = [
             .notifications,
             .referralCode,
             .language,
-            .currency,
-            .addressBook
+            .currency
         ]
+
+        #if os(iOS)
+        generalOptions.append(.widgetWatchlist)
+        #endif
+        generalOptions.append(.addressBook)
 
         // Hidden until a tester opts in from Settings → Advanced, so merging
         // this layer does not put the feature in front of anyone. Shown anyway
@@ -168,6 +172,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.language)
         case .currency:
             router.navigate(to: SettingsRoute.currency)
+        case .widgetWatchlist:
+            router.navigate(to: SettingsRoute.widgetWatchlist)
         case .notifications:
             router.navigate(to: SettingsRoute.notifications)
         case .addressBook:

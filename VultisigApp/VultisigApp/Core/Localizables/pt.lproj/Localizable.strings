@@ -1815,6 +1815,11 @@
 "weJustSentYourBackupShare" = "Acabamos de enviar seu compartilhamento de backup para o seu e -mail. Se você não vir, verifique sua pasta de spam.";
 "whereDoYouMigrateFrom" = "De onde você está migrando?";
 "whitespaceNotAllowed" = "Caracteres de espaço não são permitidos.";
+"widgetWatchlist" = "Lista de acompanhamento do widget";
+"widgetWatchlistAssets" = "Ativos";
+"widgetWatchlistDescription" = "Escolha até cinco ativos para os widgets da sua lista. Eles aparecem na ordem em que forem ativados.";
+"widgetWatchlistLoadError" = "Não foi possível carregar os ativos do mercado. Verifique a conexão e tente novamente.";
+"widgetWatchlistSelectionCount" = "%d de %d selecionados";
 "withdraw" = "Sacar";
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowMinimum" = "Valor muito pequeno — retire pelo menos %@ %@";

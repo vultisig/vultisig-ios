@@ -1815,6 +1815,11 @@
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "whereDoYouMigrateFrom" = "Where do you migrate from";
 "whitespaceNotAllowed" = "Whitespace character is not allowed";
+"widgetWatchlist" = "Widget Watchlist";
+"widgetWatchlistAssets" = "Assets";
+"widgetWatchlistDescription" = "Choose up to five assets for your Watchlist widgets. They appear in the order you enable them.";
+"widgetWatchlistLoadError" = "Couldn’t load market assets. Check your connection and try again.";
+"widgetWatchlistSelectionCount" = "%d of %d selected";
 "withdraw" = "Withdraw";
 "withdrawAmount" = "Withdraw %@";
 "withdrawBelowMinimum" = "Amount too small — withdraw at least %@ %@";
