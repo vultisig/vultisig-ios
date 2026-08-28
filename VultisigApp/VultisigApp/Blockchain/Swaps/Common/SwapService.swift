@@ -974,17 +974,12 @@ extension SwapService {
         return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
     }
 
-    /// Jupiter failures that reach the picker are "no usable Jupiter route",
-    /// never a raw `JupiterError` NSError (code 4 was `feeAccountNotProvisioned`).
-    static func mapJupiterError(_ error: JupiterError) -> SwapError {
-        switch error {
-        case .invalidQuote, .quoteFailed, .swapFailed, .feeAccountUnavailable, .feeAccountNotProvisioned:
-            return .routeUnavailable
-        }
+    /// Any leftover `JupiterError` is a no-route, never a raw NSError (code 4).
+    static func mapJupiterError(_: JupiterError) -> SwapError {
+        .routeUnavailable
     }
 
-    /// LiFi's "no available quotes for the requested transfer" is a no-route
-    /// verdict. Other LiFi bodies stay as `LiFiSwapError` for the log.
+    /// LiFi "no available quotes…" is a no-route; other LiFi bodies stay typed for the log.
     static func mapLiFiError(_ error: LiFiSwapError) -> Error {
         if error.message.lowercased().contains("no available quotes") {
             return SwapError.routeUnavailable

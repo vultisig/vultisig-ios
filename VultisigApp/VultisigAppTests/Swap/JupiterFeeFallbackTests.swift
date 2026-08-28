@@ -134,6 +134,8 @@ private struct StubSolanaAccounts: SolanaAccountChecking {
     var isToken2022 = false
     var feeAtaExists: Bool
 
+    // Protocol requires `async`; the body is synchronous.
+    // swiftlint:disable:next async_without_await
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
         if address == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" {
             return (mintExists, isToken2022)
@@ -152,6 +154,8 @@ private final class JupiterScriptedHTTPClient: HTTPClientProtocol, @unchecked Se
         self.quoteScript = quoteScript
     }
 
+    // Protocol requires `async`; the body is synchronous.
+    // swiftlint:disable:next async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         guard let api = target as? JupiterAPI else {
             throw HTTPError.invalidURL

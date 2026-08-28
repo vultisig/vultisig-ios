@@ -53,11 +53,7 @@ struct JupiterService {
     /// (Solana) network fee (unknown at quote time → `nil`), and the affiliate
     /// platform fee in `toCoin` units (subtracted in ranking).
     ///
-    /// Affiliate fee is provisioned OFF the signed path: we derive the fee ATA,
-    /// do a read-only existence pre-check, and pass `platformFeeBps` + `feeAccount`
-    /// to Jupiter. We never inject an ATA-create instruction (WalletCore + ALTs
-    /// reject that with `AccountLoadedTwice`). If the ATA isn't provisioned, we
-    /// quote Jupiter without the affiliate fee so the swap still routes.
+    /// Fee ATA is a pre-check only — WalletCore cannot inject create-ATA (ALT AccountLoadedTwice). Missing ATA → quote without the affiliate fee.
     func fetchQuote(
         fromCoin: Coin,
         toCoin: Coin,
@@ -275,7 +271,6 @@ enum JupiterError: Error, Equatable {
     /// The output mint could not be resolved on-chain (Token-2022 detection /
     /// ATA derivation failed).
     case feeAccountUnavailable
-    /// The affiliate fee ATA for the output mint is not yet provisioned
-    /// on-chain. `fetchQuote` catches this and requotes without a platform fee.
+    /// Fee ATA missing; `fetchQuote` requotes without a platform fee.
     case feeAccountNotProvisioned
 }
