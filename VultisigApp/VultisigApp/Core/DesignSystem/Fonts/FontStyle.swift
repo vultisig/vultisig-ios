@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 enum FontStyle: String, CaseIterable {
     case brockmanBold
@@ -15,27 +16,31 @@ enum FontStyle: String, CaseIterable {
     case satoshiMedium
 
     func size(_ size: CGFloat) -> Font {
-        return Font.custom(fontName, size: size)
+        font.font(size: size)
     }
 
     #if os(iOS)
     func uiFont(_ size: CGFloat) -> UIFont {
-        UIFont(name: fontName, size: size) ?? .systemFont(ofSize: size)
+        font.uiFont(size: size)
     }
     #endif
 
     var fontName: String {
+        font.postScriptName
+    }
+
+    private var font: VultisigFont {
         switch self {
         case .brockmanBold:
-            "Brockmann-Bold"
+            .brockmannBold
         case .brockmanMedium:
-            "Brockmann-Medium"
+            .brockmannMedium
         case .brockmanRegular:
-            "Brockmann-Regular"
+            .brockmannRegular
         case .brockmanSemibold:
-            "Brockmann-Semibold"
+            .brockmannSemibold
         case .satoshiMedium:
-            "Satoshi-Medium"
+            .satoshiMedium
         }
     }
 }

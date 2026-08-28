@@ -1,10 +1,3 @@
-//
-//  FontSystem.swift
-//  DesignSystem
-//
-//  Created by Gaston Mazzeo on 01/08/2025.
-//
-
 import SwiftUI
 
 public protocol FontSystemProtocol {
@@ -43,20 +36,9 @@ public protocol FontSystemProtocol {
     var priceFootnote: Font { get }
     var priceCaption: Font { get }
 
-    /// The passcode keypad, and the one place this scale leaves the brand faces
-    /// on purpose.
-    ///
-    /// The control exists to read as *the system passcode keypad* — same
-    /// numerals, same weight, same rounded face the platform uses — so that
-    /// entering a passcode here feels like entering one anywhere else on the
-    /// device. Brockman would be more consistent with the rest of the app and
-    /// less consistent with the thing this is imitating.
-    ///
-    /// Named here rather than spelled at the call site so the deviation is a
-    /// recorded decision in the design system instead of a magic number in a
-    /// view.
+    /// The passcode keypad deliberately uses the platform's rounded system
+    /// face so it reads like a native keypad rather than branded content.
     var keypadDigit: Font { get }
-    /// The keypad's backspace glyph, smaller than a digit the way the platform's
-    /// own keypad draws it.
+    /// The keypad's backspace glyph is smaller than its digits.
     var keypadGlyph: Font { get }
 }

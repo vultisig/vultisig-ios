@@ -1,12 +1,5 @@
-//
-//  Theme.swift
-//  DesignSystem
-//
-//  Created by Gaston Mazzeo on 01/08/2025.
-//
+import VultisigDesignSystem
 
-enum Theme {
-    static let fonts: FontSystemProtocol = FontSystem()
-    static let colors: ColorSystemProtocol = ColorSystem()
-    static let radius: CornerRadiusSystemProtocol = CornerRadiusSystem()
-}
+/// Keeps existing app call sites source-compatible while the shared package
+/// owns the actual theme implementation.
+typealias Theme = VultisigDesignSystem.Theme

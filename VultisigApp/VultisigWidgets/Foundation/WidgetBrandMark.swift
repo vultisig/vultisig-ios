@@ -4,12 +4,13 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct WidgetBrandMark: View {
     let size: CGFloat
 
     var body: some View {
-        Image("logo-outline")
+        VultisigImage.logoOutline.image
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
