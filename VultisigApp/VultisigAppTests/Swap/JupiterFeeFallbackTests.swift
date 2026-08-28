@@ -80,6 +80,29 @@ final class JupiterFeeFallbackTests: XCTestCase {
         XCTAssertEqual(result.quote.dstAmount, "1500000")
     }
 
+    func testFeeFreeRetryIgnoresPlatformFeeInRetryJSON() async throws {
+        let accounts = StubSolanaAccounts(feeAtaExists: true)
+        let http = JupiterScriptedHTTPClient(
+            quoteScript: [
+                (400, #"{"error":"The token is not tradable"}"#),
+                (200, quoteJSON(input: wsol, output: usdc, feeAmount: "7500"))
+            ]
+        )
+        let service = JupiterService(httpClient: http, solanaService: accounts)
+
+        let result = try await service.fetchQuote(
+            fromCoin: makeSOL(),
+            toCoin: makeUSDC(),
+            fromAmount: 1_000_000_000,
+            vultTierDiscount: 0,
+            slippageBps: 50
+        )
+
+        XCTAssertEqual(http.quotedFeeBps, [50, nil])
+        XCTAssertFalse(http.swapRequestedFeeAccount, "retry did not request a fee, so /swap must not send feeAccount")
+        XCTAssertEqual(result.platformFee, 0)
+    }
+
     private func makeSOL() -> Coin {
         makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true)
     }

@@ -82,7 +82,7 @@ struct JupiterService {
             platformFeeBps: feeAccount != nil ? platformFeeBps : nil
         )
 
-        let quoteData = try await fetchQuoteData(params: params)
+        let (quoteData, chargedFee) = try await fetchQuoteData(params: params)
         let quoteResponse = try JSONDecoder().decode(JupiterQuoteResponse.self, from: quoteData)
 
         // Reject a response that quoted a different pair than requested — a
@@ -95,7 +95,7 @@ struct JupiterService {
         }
 
         let quotedFee = BigInt(quoteResponse.platformFee?.amount ?? "0") ?? 0
-        let swapFeeAccount = quotedFee > 0 ? feeAccount : nil
+        let swapFeeAccount = chargedFee && quotedFee > 0 ? feeAccount : nil
         let swapBase64 = try await fetchSwapTransaction(
             quoteData: quoteData,
             userPublicKey: fromCoin.address,
@@ -110,7 +110,9 @@ struct JupiterService {
         // output-mint fee (Ultimate tier) is a real 0, shown as a $0.00 row.
         // Ranking uses `outAmount` (already net of the fee) regardless.
         let feeOnInput = feeMint != outputMint
-        let platformFee: Decimal = feeOnInput ? .zero : (platformFeeDecimal(from: quoteResponse, toCoin: toCoin) ?? .zero)
+        let platformFee: Decimal = (!chargedFee || feeOnInput)
+            ? .zero
+            : (platformFeeDecimal(from: quoteResponse, toCoin: toCoin) ?? .zero)
 
         let evmQuote = EVMQuote(
             dstAmount: quoteResponse.outAmount,
@@ -205,11 +207,13 @@ private extension JupiterService {
         return toCoin.decimal(for: amount)
     }
 
-    func fetchQuoteData(params: JupiterQuoteParams) async throws -> Data {
+    func fetchQuoteData(params: JupiterQuoteParams) async throws -> (data: Data, chargedFee: Bool) {
+        let chargedFee = (params.platformFeeBps ?? 0) > 0
         do {
-            return try await httpClient.request(JupiterAPI.quote(params)).data
+            let data = try await httpClient.request(JupiterAPI.quote(params)).data
+            return (data, chargedFee)
         } catch HTTPError.statusCode(let code, _) {
-            if (400..<500).contains(code), code != 429, let bps = params.platformFeeBps, bps > 0 {
+            if (400..<500).contains(code), code != 429, chargedFee {
                 logger.info("[jupiter] fee-bearing quote HTTP \(code, privacy: .public) → retry without affiliate fee")
                 let retry = JupiterQuoteParams(
                     inputMint: params.inputMint,

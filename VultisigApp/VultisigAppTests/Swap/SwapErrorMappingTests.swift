@@ -238,6 +238,18 @@ final class SwapErrorMappingTests: XCTestCase {
         XCTAssertEqual(SwapService.mapJupiterError(.feeAccountUnavailable), .routeUnavailable)
         XCTAssertEqual(SwapService.mapJupiterError(.invalidQuote), .routeUnavailable)
         XCTAssertEqual(SwapService.mapJupiterError(.quoteFailed(statusCode: 400)), .routeUnavailable)
+        XCTAssertEqual(SwapService.mapJupiterError(.swapFailed(statusCode: 404)), .routeUnavailable)
+    }
+
+    func testJupiter5xxMapsToServerErrorSoHaltRetryCanRerunIt() {
+        XCTAssertEqual(
+            SwapService.mapJupiterError(.quoteFailed(statusCode: 500)),
+            .serverError(message: "Jupiter HTTP 500")
+        )
+        XCTAssertEqual(
+            SwapService.mapJupiterError(.swapFailed(statusCode: 503)),
+            .serverError(message: "Jupiter HTTP 503")
+        )
     }
 
     func testMappedJupiterErrorIsNotTitledUnexpectedError() {

@@ -974,9 +974,16 @@ extension SwapService {
         return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
     }
 
-    /// Any leftover `JupiterError` is a no-route, never a raw NSError (code 4).
-    static func mapJupiterError(_: JupiterError) -> SwapError {
-        .routeUnavailable
+    /// 4xx / invalid / missing-ATA → no route. 5xx stays `.serverError` so
+    /// `isTransientAggregatorError` can still retry Jupiter when a native provider is halted.
+    static func mapJupiterError(_ error: JupiterError) -> SwapError {
+        switch error {
+        case .quoteFailed(let code) where code >= 500,
+             .swapFailed(let code) where code >= 500:
+            return .serverError(message: "Jupiter HTTP \(code)")
+        case .quoteFailed, .swapFailed, .invalidQuote, .feeAccountUnavailable, .feeAccountNotProvisioned:
+            return .routeUnavailable
+        }
     }
 
     /// LiFi "no available quotes…" is a no-route; other LiFi bodies stay typed for the log.
