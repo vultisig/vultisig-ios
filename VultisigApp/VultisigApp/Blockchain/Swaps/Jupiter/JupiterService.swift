@@ -38,9 +38,12 @@ struct JupiterService {
     static let computeUnitPriceMicroLamports = 150_000
 
     private let httpClient: HTTPClientProtocol
-    private let solanaService: SolanaService
+    private let solanaService: any SolanaAccountChecking
 
-    init(httpClient: HTTPClientProtocol = HTTPClient(), solanaService: SolanaService = .shared) {
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        solanaService: any SolanaAccountChecking = SolanaService.shared
+    ) {
         self.httpClient = httpClient
         self.solanaService = solanaService
     }
@@ -50,12 +53,11 @@ struct JupiterService {
     /// (Solana) network fee (unknown at quote time → `nil`), and the affiliate
     /// platform fee in `toCoin` units (subtracted in ranking).
     ///
-    /// Affiliate fee is provisioned OFF the signed path (see the plan): we derive
-    /// the fee ATA address, do a read-only on-chain existence pre-check, and pass
-    /// `platformFeeBps` + `feeAccount` to Jupiter. We NEVER build or inject an
-    /// ATA-create instruction. If the fee ATA isn't provisioned yet, Jupiter is
-    /// dropped for this pair (the quote throws) and LiFi — which also collects
-    /// the affiliate fee — serves it instead.
+    /// Affiliate fee is provisioned OFF the signed path: we derive the fee ATA,
+    /// do a read-only existence pre-check, and pass `platformFeeBps` + `feeAccount`
+    /// to Jupiter. We never inject an ATA-create instruction (WalletCore + ALTs
+    /// reject that with `AccountLoadedTwice`). If the ATA isn't provisioned, we
+    /// quote Jupiter without the affiliate fee so the swap still routes.
     func fetchQuote(
         fromCoin: Coin,
         toCoin: Coin,
@@ -72,10 +74,8 @@ struct JupiterService {
 
         let feeMint = Self.feeMint(inputMint: inputMint, outputMint: outputMint)
 
-        // Derive + verify the fee ATA off the signed path. Skip entirely when
-        // there's no fee to collect (fully-discounted user).
         let feeAccount = platformFeeBps > 0
-            ? try await resolveFeeAccount(mint: feeMint)
+            ? await provisionedFeeAccount(mint: feeMint)
             : nil
 
         let params = JupiterQuoteParams(
@@ -83,7 +83,7 @@ struct JupiterService {
             outputMint: outputMint,
             amount: String(fromAmount),
             slippageBps: slippageBps ?? Self.defaultSlippageBps,
-            platformFeeBps: platformFeeBps > 0 ? platformFeeBps : nil
+            platformFeeBps: feeAccount != nil ? platformFeeBps : nil
         )
 
         let quoteData = try await fetchQuoteData(params: params)
@@ -98,10 +98,12 @@ struct JupiterService {
             throw JupiterError.invalidQuote
         }
 
+        let quotedFee = BigInt(quoteResponse.platformFee?.amount ?? "0") ?? 0
+        let swapFeeAccount = quotedFee > 0 ? feeAccount : nil
         let swapBase64 = try await fetchSwapTransaction(
             quoteData: quoteData,
             userPublicKey: fromCoin.address,
-            feeAccount: feeAccount
+            feeAccount: swapFeeAccount
         )
 
         // `platformFee` is denominated in the fee mint. It's surfaceable in
@@ -151,18 +153,31 @@ struct JupiterService {
     }
 }
 
+/// Read-only mint / ATA existence probe used by Jupiter's affiliate-fee path.
+protocol SolanaAccountChecking: Sendable {
+    func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool)
+}
+
+extension SolanaService: SolanaAccountChecking {}
+
 private extension JupiterService {
+
+    /// Nil when the fee ATA isn't usable — caller quotes Jupiter without a platform fee.
+    func provisionedFeeAccount(mint: String) async -> String? {
+        do {
+            return try await resolveFeeAccount(mint: mint)
+        } catch {
+            logger.info("[jupiter] fee ATA not usable for \(mint, privacy: .public) → quote without affiliate fee")
+            return nil
+        }
+    }
 
     /// Derive the fee owner's ATA for the fee mint and verify it exists
     /// on-chain (read-only, off the signed path). Token-2022 mints derive a
     /// different ATA, detected by inspecting the mint account's owning program.
-    /// Throws `feeAccountNotProvisioned` when the ATA isn't seeded yet so the
-    /// fan-out drops Jupiter and LiFi serves the pair.
     func resolveFeeAccount(mint: String) async throws -> String {
-        // The mint account's owner program tells us whether it's Token-2022.
         let (mintExists, isToken2022) = try await solanaService.checkAccountExists(address: mint)
         guard mintExists else {
-            logger.info("[jupiter] fee mint \(mint, privacy: .public) not found on-chain → drop Jupiter")
             throw JupiterError.feeAccountUnavailable
         }
 
@@ -176,11 +191,8 @@ private extension JupiterService {
             throw JupiterError.feeAccountUnavailable
         }
 
-        // Read-only existence pre-check: never route to Jupiter unless we can
-        // collect the fee into an already-provisioned ATA.
         let (feeAtaExists, _) = try await solanaService.checkAccountExists(address: feeAccount)
         guard feeAtaExists else {
-            logger.info("[jupiter] fee ATA \(feeAccount, privacy: .public) not provisioned → drop Jupiter, fall back to LiFi")
             throw JupiterError.feeAccountNotProvisioned
         }
         return feeAccount
@@ -201,6 +213,17 @@ private extension JupiterService {
         do {
             return try await httpClient.request(JupiterAPI.quote(params)).data
         } catch HTTPError.statusCode(let code, _) {
+            if (400..<500).contains(code), code != 429, let bps = params.platformFeeBps, bps > 0 {
+                logger.info("[jupiter] fee-bearing quote HTTP \(code, privacy: .public) → retry without affiliate fee")
+                let retry = JupiterQuoteParams(
+                    inputMint: params.inputMint,
+                    outputMint: params.outputMint,
+                    amount: params.amount,
+                    slippageBps: params.slippageBps,
+                    platformFeeBps: nil
+                )
+                return try await fetchQuoteData(params: retry)
+            }
             throw JupiterError.quoteFailed(statusCode: code)
         }
     }
@@ -253,8 +276,6 @@ enum JupiterError: Error, Equatable {
     /// ATA derivation failed).
     case feeAccountUnavailable
     /// The affiliate fee ATA for the output mint is not yet provisioned
-    /// on-chain. Jupiter is dropped for this pair so LiFi (which also collects
-    /// the affiliate fee) serves it instead. Provisioning is a backend
-    /// responsibility (see the plan); this is expected, not a failure.
+    /// on-chain. `fetchQuote` catches this and requotes without a platform fee.
     case feeAccountNotProvisioned
 }

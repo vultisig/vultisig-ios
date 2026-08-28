@@ -220,7 +220,7 @@ struct SwapService {
 
         if let liFiError = error as? LiFiSwapError {
             let message = liFiError.message.lowercased()
-            return ["no route", "not found", "not supported", "unsupported"].contains {
+            return ["no route", "not found", "not supported", "unsupported", "no available quotes"].contains {
                 message.contains($0)
             }
         }
@@ -717,14 +717,18 @@ private extension SwapService {
         slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let response = try await service.fetchQuotes(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount,
-            slippageBps: slippageBps
-        )
-        return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
+        do {
+            let response = try await service.fetchQuotes(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: fromAmount,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
+            )
+            return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
+        } catch let error as LiFiSwapError {
+            throw Self.mapLiFiError(error)
+        }
     }
 
     func fetchSwapKitQuote(
@@ -801,14 +805,18 @@ private extension SwapService {
         slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let (quote, fee, platformFee, feeOnInput) = try await service.fetchQuote(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount,
-            slippageBps: slippageBps
-        )
-        return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+        do {
+            let (quote, fee, platformFee, feeOnInput) = try await service.fetchQuote(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: fromAmount,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
+            )
+            return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+        } catch let error as JupiterError {
+            throw Self.mapJupiterError(error)
+        }
     }
 }
 
@@ -964,6 +972,24 @@ extension SwapService {
             return .tradingHalted
         }
         return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
+    }
+
+    /// Jupiter failures that reach the picker are "no usable Jupiter route",
+    /// never a raw `JupiterError` NSError (code 4 was `feeAccountNotProvisioned`).
+    static func mapJupiterError(_ error: JupiterError) -> SwapError {
+        switch error {
+        case .invalidQuote, .quoteFailed, .swapFailed, .feeAccountUnavailable, .feeAccountNotProvisioned:
+            return .routeUnavailable
+        }
+    }
+
+    /// LiFi's "no available quotes for the requested transfer" is a no-route
+    /// verdict. Other LiFi bodies stay as `LiFiSwapError` for the log.
+    static func mapLiFiError(_ error: LiFiSwapError) -> Error {
+        if error.message.lowercased().contains("no available quotes") {
+            return SwapError.routeUnavailable
+        }
+        return error
     }
 }
 

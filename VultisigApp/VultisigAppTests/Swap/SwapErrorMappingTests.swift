@@ -230,4 +230,35 @@ final class SwapErrorMappingTests: XCTestCase {
         )
         XCTAssertNotEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
     }
+
+    // MARK: - Jupiter / LiFi aggregator mapping
+
+    func testJupiterFeeAccountErrorsMapToRouteUnavailable() {
+        XCTAssertEqual(SwapService.mapJupiterError(.feeAccountNotProvisioned), .routeUnavailable)
+        XCTAssertEqual(SwapService.mapJupiterError(.feeAccountUnavailable), .routeUnavailable)
+        XCTAssertEqual(SwapService.mapJupiterError(.invalidQuote), .routeUnavailable)
+        XCTAssertEqual(SwapService.mapJupiterError(.quoteFailed(statusCode: 400)), .routeUnavailable)
+    }
+
+    func testMappedJupiterErrorIsNotTitledUnexpectedError() {
+        let mapped = SwapService.mapJupiterError(.feeAccountNotProvisioned)
+        XCTAssertNotEqual(
+            SwapErrorPresentation.title(for: mapped),
+            SwapCryptoLogic.Errors.unexpectedError.errorTitle
+        )
+        XCTAssertEqual(
+            SwapErrorPresentation.title(for: mapped),
+            "swapErrorRouteUnavailableTitle".localized
+        )
+    }
+
+    func testLiFiNoAvailableQuotesMapsToRouteUnavailable() {
+        let error = LiFiSwapError(message: "No available quotes for the requested transfer")
+        XCTAssertEqual(SwapService.mapLiFiError(error) as? SwapError, .routeUnavailable)
+    }
+
+    func testLiFiOtherBodiesStayLiFiSwapError() {
+        let error = LiFiSwapError(message: "rate limited")
+        XCTAssertTrue(SwapService.mapLiFiError(error) is LiFiSwapError)
+    }
 }
