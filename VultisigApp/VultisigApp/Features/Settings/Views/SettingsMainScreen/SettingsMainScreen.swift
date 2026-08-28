@@ -64,6 +64,7 @@ struct SettingsMainScreen: View {
                 .faq,
                 .checkForUpdates,
                 .education,
+                .rateApp,
                 .shareApp
             ]
         ),

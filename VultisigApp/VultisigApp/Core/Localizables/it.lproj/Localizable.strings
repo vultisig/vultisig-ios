@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "Le chiavi classiche possono essere violate dai computer quantistici. Per abilitare QBTC è necessario generare una nuova coppia di chiavi.";
 "quantumSecurityIntroTitle" = "Nuova sicurezza quantistica";
 "quotedWithdrawalVerifyTitle" = "Stai prelevando";
+"rateTheApp" = "Valuta l'App";
 "rawPayload" = "Dati grezzi";
 "ready" = "Pronto";
 "Rebond" = "Rebond";

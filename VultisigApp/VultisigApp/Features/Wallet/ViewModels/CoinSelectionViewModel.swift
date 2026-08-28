@@ -82,7 +82,7 @@ class CoinSelectionViewModel: ObservableObject {
         let defaults = UserDefaults.standard
         let hasMLDSAKey = !(vault.publicKeyMLDSA44 ?? "").isEmpty
 
-        let filteredAssets: [CoinMeta] = Chain.allCases.flatMap { chain -> [CoinMeta] in
+        let filteredAssets: [CoinMeta] = Chain.supportedCases.flatMap { chain -> [CoinMeta] in
             if chain.signingKeyType == .MLDSA, !(hasMLDSAKey || showMldsaChainsWithoutKey) {
                 return []
             }

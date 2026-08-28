@@ -11,9 +11,6 @@ extension TokensStore {
         static var baseEth: CoinMeta {
             CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
-        static var kujiraLVN: CoinMeta {
-            CoinMeta(chain: Chain.kujira, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/B64A07C006C0F5E260A8AD50BD53568F1FD4A0D75B7A9F8765C81BEAFDA62053", isNativeToken: false)
-        }
         static var suiSUI: CoinMeta {
             CoinMeta(chain: Chain.sui, ticker: "SUI", logo: "sui", decimals: 9, priceProviderId: "sui", contractAddress: "", isNativeToken: true)
         }

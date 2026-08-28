@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "Chaves clássicas podem ser quebradas por computadores quânticos. Ativar QBTC requer gerar um novo par de chaves.";
 "quantumSecurityIntroTitle" = "Nova segurança quântica";
 "quotedWithdrawalVerifyTitle" = "Você está retirando";
+"rateTheApp" = "Avalie o app";
 "rawPayload" = "Dados brutos";
 "ready" = "Pronto";
 "Rebond" = "Rebond";

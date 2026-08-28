@@ -643,7 +643,7 @@ class BalanceService {
             let service = try EvmService.getService(forChain: coin.chain)
             return .init(rawBalance: try await service.getBalance(coin: coin, address: address))
 
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .gaiaChain, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             let cosmosService = try CosmosService.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin, address: address)
 
@@ -657,6 +657,9 @@ class BalanceService {
             }
 
             return .init(rawBalance: balances.balance(denom: denom, coin: coin))
+
+        case .kujira:
+            throw CosmosServiceError.unsupportedChain
 
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(address)

@@ -130,9 +130,11 @@ struct KeysignMessageFactory {
             return try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
         case .sui:
             return try SuiHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .noble, .dydx, .akash, .qbtc:
+        case .gaiaChain, .osmosis, .terra, .terraClassic, .noble, .dydx, .akash, .qbtc:
             let helper = try CosmosHelper.getHelper(forChain: payload.coin.chain)
             return try helper.getPreSignedImageHash(keysignPayload: payload)
+        case .kujira:
+            throw HelperError.runtimeError("Unsupported Cosmos chain: \(payload.coin.chain)")
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .bittensor:

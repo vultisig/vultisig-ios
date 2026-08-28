@@ -346,6 +346,18 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
+        do {
+            if let chain = keysignPayload?.coin.chain, !chain.isSupported {
+                throw CustomMessagePayloadError.unsupportedChain(chain.name)
+            }
+            _ = try customMessagePayload?.resolveSigningChain()
+        } catch {
+            logger.error("Refusing keysign for unsupported chain: \(error.localizedDescription, privacy: .public)")
+            keysignError = error.localizedDescription
+            setStatus(.KeysignFailed)
+            return
+        }
+
         // Snapshot the (message-count-scaled) budget before entering the group
         // so the non-isolated sleeper closure stays Sendable-clean.
         let stageTimeout = keysignStageTimeout
@@ -479,15 +491,8 @@ class KeysignViewModel: ObservableObject {
                 chainPath = keysignPayload.coin.coinType.derivationPath()
                 publicKey = self.vault.chainPublicKeys.first(where: { $0.chain == keysignPayload.coin.chain })?.publicKeyHex
             } else if let customMessagePayload = self.customMessagePayload {
-                var targetChain: Chain = .ethereum // Default to Ethereum
-                // Get chain from customMessagePayload and use its coinType (case-insensitive match)
-                if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
-                    chainPath = chain.coinType.derivationPath()
-                    targetChain = chain
-                } else {
-                    // Fallback to Ethereum if chain name cannot be parsed
-                    chainPath = TokensStore.Token.ethereum.coinType.derivationPath()
-                }
+                let targetChain = try customMessagePayload.resolveSigningChain()
+                chainPath = targetChain.coinType.derivationPath()
                 publicKey = Self.customMessagePublicKey(for: targetChain,
                                                         in: self.vault.chainPublicKeys,
                                                         isImport: isImport)
@@ -1034,7 +1039,7 @@ class KeysignViewModel: ObservableObject {
                     } catch {
                         await self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
-                case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
+                case .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
                     let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
                     let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
@@ -1053,6 +1058,8 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         throw err
                     }
+                case .kujira:
+                    throw CosmosServiceError.unsupportedChain
                 case .solana:
                     self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:

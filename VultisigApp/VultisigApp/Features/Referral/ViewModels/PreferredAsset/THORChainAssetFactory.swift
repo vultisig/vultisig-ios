@@ -25,7 +25,7 @@ enum THORChainAssetFactory {
             }
         }
 
-        let appChain = Chain.allCases.first { $0.swapAsset == chain }
+        let appChain = Chain.supportedCases.first { $0.swapAsset == chain }
         guard let appChain else { return nil }
 
         let coinMeta = TokensStore.TokenSelectionAssets

@@ -323,7 +323,6 @@ final class CosmosIBCTransferMemoTests: XCTestCase {
     func testParityHoldsOnEveryChainThatOffersIbc() throws {
         let fixtures: [(chain: Chain, ticker: String, decimals: Int)] = [
             (.gaiaChain, "ATOM", 6),
-            (.kujira, "KUJI", 6),
             (.osmosis, "OSMO", 6)
         ]
 
@@ -388,8 +387,8 @@ final class CosmosIBCTransferMemoTests: XCTestCase {
     /// The channel is no longer read positionally out of a split, so it must be
     /// pinned explicitly: a memo with colons must not shift it.
     func testTheChannelIsResolvedFromTheChannelFieldNotByPosition() throws {
-        let chain = Chain.kujira
-        let coin = makeCoin(chain: chain, ticker: "KUJI", decimals: 6)
+        let chain = Chain.gaiaChain
+        let coin = makeCoin(chain: chain, ticker: "ATOM", decimals: 6)
         let payload = makePayload(
             coin: coin,
             memo: "Cosmos:channel-118:\(Self.destinationAddress):route:channel-999:swap"

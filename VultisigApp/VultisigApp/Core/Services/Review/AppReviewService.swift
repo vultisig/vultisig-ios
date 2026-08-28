@@ -2,67 +2,93 @@
 //  AppReviewService.swift
 //  VultisigApp
 //
-//  Owns the persisted inputs to `AppReviewPolicy`: when the app was
-//  installed, how many distinct transactions the user has watched
-//  confirm, and when we last asked for a review.
-//
-//  Stored in `UserDefaults` rather than SwiftData on purpose — this is
-//  preference-shaped device state, not model data. It must survive
-//  independently of any vault, since a user can delete every vault and
-//  restore another one without that resetting how often we may ask.
-//
-//  Idempotency is the whole point of `recordConfirmedTransaction(id:)`.
-//  The done screen can observe the same `.confirmed` status more than
-//  once — a re-render, a re-entry, or the poller re-reporting a terminal
-//  status — so the tally is keyed on the transaction hash and a bounded
-//  ring of already-counted hashes is kept alongside it. Counting per
-//  observation would inflate the tally and fire the prompt early, which
-//  on a 120-day cooldown is not a cheap mistake.
-//
 
+import BigInt
 import Foundation
+
+/// A positive event that can contribute to App Store review eligibility.
+///
+/// Associated values are stable identities, not display values. Persisting the
+/// namespaced identity makes every producer safe to call repeatedly across
+/// rerenders, navigation re-entry, and app launches.
+enum AppReviewEvent: Equatable {
+    case confirmedOutboundTransaction(id: String)
+    case confirmedIncomingTransaction(id: String)
+    case vaultBackupCompleted(vaultID: String)
+    case vaultRestoreCompleted(vaultID: String)
+    case devicePairingCompleted(sessionID: String)
+
+    fileprivate var storageID: String? {
+        let namespace: String
+        let identity: String
+
+        switch self {
+        case .confirmedOutboundTransaction(let id):
+            namespace = "outbound"
+            identity = id
+        case .confirmedIncomingTransaction(let id):
+            namespace = "incoming"
+            identity = id
+        case .vaultBackupCompleted(let vaultID):
+            namespace = "backup"
+            identity = vaultID
+        case .vaultRestoreCompleted(let vaultID):
+            namespace = "restore"
+            identity = vaultID
+        case .devicePairingCompleted(let sessionID):
+            namespace = "pairing"
+            identity = sessionID
+        }
+
+        guard let normalized = identity.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty else {
+            return nil
+        }
+        return "\(namespace):\(normalized)"
+    }
+}
 
 @MainActor
 final class AppReviewService {
     static let shared = AppReviewService()
 
-    /// How many recently-counted transaction hashes are retained for the
-    /// duplicate check. The ring only has to be long enough that a hash is
-    /// still remembered while the same done screen can re-report it, so a
-    /// session's worth of transactions is already generous; the bound exists
-    /// so the key cannot grow without limit over the lifetime of the install.
-    /// Once the ring does wrap, the tally is necessarily far past the
-    /// 3-transaction threshold, where an extra increment changes nothing.
-    static let countedTransactionIDLimit = 100
+    /// Bounds only the duplicate-check identities. The lifetime count remains
+    /// monotonic after older identities roll off.
+    static let countedEventIDLimit = 100
 
     private enum Key {
         static let installDate = "appReview.installDate"
-        static let confirmedTransactionCount = "appReview.confirmedTransactionCount"
+        static let qualifyingEventCount = "appReview.qualifyingEventCount"
+        static let countedEventIDs = "appReview.countedEventIDs"
         static let lastPromptDate = "appReview.lastPromptDate"
-        static let countedTransactionIDs = "appReview.countedTransactionIDs"
+        static let lastPromptedVersion = "appReview.lastPromptedVersion"
+        static let policyEvaluationCount = "appReview.policyEvaluationCount"
+        static let promptClaimCount = "appReview.promptClaimCount"
+
+        // v1.43.69 compatibility. Upgraders keep both their earned count and
+        // transaction dedupe identities when the event model broadens.
+        static let legacyConfirmedTransactionCount = "appReview.confirmedTransactionCount"
+        static let legacyCountedTransactionIDs = "appReview.countedTransactionIDs"
     }
 
     private let defaults: UserDefaults
     private let now: () -> Date
+    private let bundleVersion: () -> String?
     private let logger = Log.app.service
 
-    /// `now` is injected so tests can pin the 7-day / 120-day boundaries
-    /// without sleeping; production callers take the default.
-    init(defaults: UserDefaults = .standard, now: @escaping () -> Date = { Date() }) {
+    init(
+        defaults: UserDefaults = .standard,
+        now: @escaping () -> Date = { Date() },
+        bundleVersion: @escaping () -> String? = {
+            Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        }
+    ) {
         self.defaults = defaults
         self.now = now
+        self.bundleVersion = bundleVersion
     }
 
     // MARK: - Install date
 
-    /// Stamps the install date the first time it is called and never again.
-    ///
-    /// Users upgrading into the first build that ships this are stamped with
-    /// the upgrade date, not their real install date, so they serve the full
-    /// 7-day wait. That is deliberate: the alternative — backdating so the
-    /// rule is already satisfied — would fire the prompt at the entire
-    /// existing base within days of the release, which is exactly the
-    /// audience whose ratings we least want to spend on a rushed ask.
     func seedInstallDateIfNeeded() {
         guard defaults.object(forKey: Key.installDate) == nil else { return }
         defaults.set(now().timeIntervalSince1970, forKey: Key.installDate)
@@ -71,87 +97,103 @@ final class AppReviewService {
 
     // MARK: - Recording
 
-    /// Counts a confirmed transaction towards the review threshold, at most
-    /// once per transaction hash.
-    ///
-    /// - Parameter id: the transaction hash. An empty id carries no identity,
-    ///   so it cannot be de-duplicated and is not counted — undercounting is
-    ///   the safe direction here.
-    /// - Returns: whether this call actually incremented the tally.
+    /// Records a qualifying event once for its stable identity.
     @discardableResult
-    func recordConfirmedTransaction(id: String) -> Bool {
-        guard !id.isEmpty else { return false }
+    func record(_ event: AppReviewEvent) -> Bool {
+        guard let eventID = event.storageID else { return false }
 
-        var counted = countedTransactionIDs
-        guard !counted.contains(id) else { return false }
+        var counted = countedEventIDs
+        guard !counted.contains(eventID) else { return false }
 
-        counted.append(id)
-        if counted.count > Self.countedTransactionIDLimit {
-            counted.removeFirst(counted.count - Self.countedTransactionIDLimit)
+        counted.append(eventID)
+        if counted.count > Self.countedEventIDLimit {
+            counted.removeFirst(counted.count - Self.countedEventIDLimit)
         }
-        defaults.set(counted, forKey: Key.countedTransactionIDs)
+        defaults.set(counted, forKey: Key.countedEventIDs)
 
-        let updatedCount = confirmedTransactionCount + 1
-        defaults.set(updatedCount, forKey: Key.confirmedTransactionCount)
-        logger.info("[AppReview] Confirmed transaction count is now \(updatedCount, privacy: .public)")
+        let updatedCount = qualifyingEventCount + 1
+        defaults.set(updatedCount, forKey: Key.qualifyingEventCount)
+        logger.info("[AppReview] Qualifying event count is now \(updatedCount, privacy: .public)")
         return true
     }
 
-    /// Records that the review sheet was requested.
-    ///
-    /// Called whenever `requestReview` is invoked, even though StoreKit may
-    /// silently decline to show anything — the API reports nothing back, so
-    /// the only safe assumption is that the ask was spent.
-    func recordPromptShown() {
+    /// Tells the app-level StoreKit host that the current visible surface can
+    /// safely consume a claim. Recording and presentation are separate so a
+    /// pairing event can navigate into signing without presenting over it.
+    func requestPromptEvaluation() {
+        NotificationCenter.default.post(name: .appReviewPromptOpportunity, object: nil)
+    }
+
+    // MARK: - Decision and atomic claim
+
+    /// Evaluates and atomically consumes the current marketing-version ask.
+    /// StoreKit reports no display result, so a successful claim is persisted
+    /// before the caller invokes `requestReview()`.
+    func claimReviewPrompt() -> Bool {
+        let evaluationCount = policyEvaluationCount + 1
+        defaults.set(evaluationCount, forKey: Key.policyEvaluationCount)
+
+        let version = bundleVersion()?.nilIfEmpty
+        let eligible = AppReviewPolicy.shouldRequestReview(
+            state: state,
+            now: now(),
+            currentVersion: version
+        )
+        logger.info(
+            "[AppReview] Policy evaluated eligible=\(eligible, privacy: .public) count=\(evaluationCount, privacy: .public)"
+        )
+        guard eligible, let version else { return false }
+
         defaults.set(now().timeIntervalSince1970, forKey: Key.lastPromptDate)
-        logger.info("[AppReview] Recorded review prompt request")
-    }
+        defaults.set(version, forKey: Key.lastPromptedVersion)
 
-    // MARK: - Decision
-
-    /// Records a just-confirmed transaction and reports whether this is the
-    /// moment to show the review sheet, consuming the ask when it is.
-    ///
-    /// Returns `true` only when the call counted a *new* transaction **and**
-    /// the throttle allows an ask. Requiring a new count is what stops an ask
-    /// being spent without a transaction behind it — a repeat observation of
-    /// a hash already counted, or a done screen that carries no hash of its
-    /// own, as custom-message signing does. Both otherwise arrive at a
-    /// throttle that is already satisfied from earlier transactions and would
-    /// pass.
-    ///
-    /// Composed here rather than at the call site so the ordering — count
-    /// first, then decide, then spend — is covered by unit tests instead of
-    /// living in a view.
-    func claimReviewPrompt(forConfirmedTransaction id: String) -> Bool {
-        guard recordConfirmedTransaction(id: id) else { return false }
-        guard shouldRequestReview() else { return false }
-        recordPromptShown()
+        let claimCount = promptClaimCount + 1
+        defaults.set(claimCount, forKey: Key.promptClaimCount)
+        logger.info(
+            "[AppReview] Prompt claimed for version \(version, privacy: .public) claimCount=\(claimCount, privacy: .public)"
+        )
         return true
     }
 
-    /// Whether the throttle currently allows asking for a review.
-    func shouldRequestReview() -> Bool {
-        AppReviewPolicy.shouldRequestReview(state: state, now: now())
-    }
-
-    /// Current persisted snapshot, as the policy sees it.
     var state: AppReviewState {
         AppReviewState(
-            confirmedTransactionCount: confirmedTransactionCount,
+            qualifyingEventCount: qualifyingEventCount,
             installDate: date(forKey: Key.installDate),
-            lastPromptDate: date(forKey: Key.lastPromptDate)
+            lastPromptDate: date(forKey: Key.lastPromptDate),
+            lastPromptedVersion: defaults.string(forKey: Key.lastPromptedVersion)
+        )
+    }
+
+    var instrumentation: AppReviewInstrumentation {
+        AppReviewInstrumentation(
+            policyEvaluationCount: policyEvaluationCount,
+            promptClaimCount: promptClaimCount
         )
     }
 
     // MARK: - Storage
 
-    private var confirmedTransactionCount: Int {
-        defaults.integer(forKey: Key.confirmedTransactionCount)
+    private var qualifyingEventCount: Int {
+        if defaults.object(forKey: Key.qualifyingEventCount) != nil {
+            return defaults.integer(forKey: Key.qualifyingEventCount)
+        }
+        return defaults.integer(forKey: Key.legacyConfirmedTransactionCount)
     }
 
-    private var countedTransactionIDs: [String] {
-        defaults.stringArray(forKey: Key.countedTransactionIDs) ?? []
+    private var countedEventIDs: [String] {
+        if defaults.object(forKey: Key.countedEventIDs) != nil {
+            return defaults.stringArray(forKey: Key.countedEventIDs) ?? []
+        }
+        return (defaults.stringArray(forKey: Key.legacyCountedTransactionIDs) ?? [])
+            .map { "outbound:\($0)" }
+    }
+
+    private var policyEvaluationCount: Int {
+        defaults.integer(forKey: Key.policyEvaluationCount)
+    }
+
+    private var promptClaimCount: Int {
+        defaults.integer(forKey: Key.promptClaimCount)
     }
 
     private func date(forKey key: String) -> Date? {
@@ -159,3 +201,144 @@ final class AppReviewService {
         return Date(timeIntervalSince1970: defaults.double(forKey: key))
     }
 }
+
+struct AppReviewInstrumentation: Equatable {
+    let policyEvaluationCount: Int
+    let promptClaimCount: Int
+}
+
+extension Notification.Name {
+    static let appReviewPromptOpportunity = Notification.Name("appReviewPromptOpportunity")
+}
+
+/// Conservative balance-delta qualification for the coin detail surface.
+/// A spendable increase comes from a confirmed balance; pending balance is not
+/// an input. Priced assets must clear a fiat floor, while an unpriced asset is
+/// accepted only when it is native and clears its chain dust floor.
+enum AppReviewIncomingBalancePolicy {
+    static let dwellDuration: Duration = .seconds(3)
+    static let minimumFiatValue = Decimal(1)
+
+    static func eventID(
+        coinID: String,
+        previousRawBalance: String,
+        currentRawBalance: String,
+        decimals: Int,
+        fiatRate: Decimal?,
+        isNativeToken: Bool,
+        minimumRawAmount: BigInt,
+        isLikelySpam: Bool,
+        refreshSucceeded: Bool
+    ) -> String? {
+        guard refreshSucceeded,
+              !isLikelySpam,
+              (0...38).contains(decimals),
+              let previous = BigInt(previousRawBalance),
+              let current = BigInt(currentRawBalance),
+              previous >= 0,
+              current > previous else {
+            return nil
+        }
+
+        let delta = current - previous
+        if let fiatRate, fiatRate > 0 {
+            guard let rawDecimal = Decimal(
+                string: delta.description,
+                locale: Locale(identifier: "en_US_POSIX")
+            ) else {
+                return nil
+            }
+            let decimalDelta = rawDecimal / pow(Decimal(10), decimals)
+            guard decimalDelta * fiatRate >= minimumFiatValue else { return nil }
+        } else {
+            guard isNativeToken, delta >= max(minimumRawAmount, 1) else { return nil }
+        }
+
+        guard let normalizedCoinID = coinID.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty else {
+            return nil
+        }
+        return "\(normalizedCoinID):\(current)"
+    }
+
+    static func eventIDAfterDwell(
+        _ eventID: String?,
+        dwell: () async throws -> Void = {
+            try await Task.sleep(for: dwellDuration)
+        }
+    ) async -> String? {
+        guard let eventID else { return nil }
+
+        do {
+            try await dwell()
+        } catch {
+            return nil
+        }
+
+        guard !Task.isCancelled else { return nil }
+        return eventID
+    }
+}
+
+#if os(iOS)
+import StoreKit
+import SwiftUI
+
+private struct AppReviewPromptHost: ViewModifier {
+    @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
+
+    @State private var hasPendingEvaluation = false
+    @State private var evaluationGeneration = 0
+    @State private var isSceneActive = false
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: .appReviewPromptOpportunity)) { _ in
+                scheduleEvaluation()
+            }
+            .onAppear {
+                isSceneActive = scenePhase == .active
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                isSceneActive = newPhase == .active
+                guard hasPendingEvaluation else { return }
+                // Cancel an armed task on every phase transition. In
+                // particular, `.inactive` must cancel before a stale active
+                // environment snapshot can consume the version claim.
+                evaluationGeneration += 1
+            }
+            .task(id: evaluationGeneration) {
+                await evaluateAfterNavigationSettles()
+            }
+    }
+
+    private func scheduleEvaluation() {
+        hasPendingEvaluation = true
+        evaluationGeneration += 1
+    }
+
+    private func evaluateAfterNavigationSettles() async {
+        guard hasPendingEvaluation else { return }
+
+        do {
+            try await Task.sleep(for: .seconds(2))
+        } catch {
+            return
+        }
+
+        // Keep the pending bit set so returning to an active scene retries on a
+        // visible surface instead of spending an ask while the app is inactive.
+        guard isSceneActive else { return }
+        hasPendingEvaluation = false
+
+        guard AppReviewService.shared.claimReviewPrompt() else { return }
+        requestReview()
+    }
+}
+
+extension View {
+    func appReviewPromptHost() -> some View {
+        modifier(AppReviewPromptHost())
+    }
+}
+#endif

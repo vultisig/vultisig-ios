@@ -14,6 +14,8 @@ struct ImportVaultShareScreen: View {
     @StateObject var backupViewModel = EncryptedBackupViewModel()
 
     @State var isUploading: Bool = false
+    @State private var startedWithoutVaults = false
+    @State private var didCaptureInitialVaultState = false
 
     @Query var vaults: [Vault]
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
@@ -33,6 +35,12 @@ struct ImportVaultShareScreen: View {
         }
         .onChange(of: backupViewModel.isVaultImported) { _, isVaultImported in
             guard isVaultImported else { return }
+            if startedWithoutVaults, let restoredVault = backupViewModel.selectedVault {
+                AppReviewService.shared.record(
+                    .vaultRestoreCompleted(vaultID: restoredVault.pubKeyECDSA)
+                )
+                AppReviewService.shared.requestPromptEvaluation()
+            }
             appViewModel.showOnboarding = false
             appViewModel.set(selectedVault: backupViewModel.selectedVault)
         }
@@ -97,6 +105,10 @@ struct ImportVaultShareScreen: View {
     }
 
     private func setData() {
+        if !didCaptureInitialVaultState {
+            startedWithoutVaults = vaults.isEmpty
+            didCaptureInitialVaultState = true
+        }
         resetData()
 
         if let data = vultExtensionViewModel.documentData, let url = data.fileURL {

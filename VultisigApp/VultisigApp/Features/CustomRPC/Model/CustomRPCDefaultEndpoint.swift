@@ -23,7 +23,7 @@ enum CustomRPCDefaultEndpoint {
         }
 
         switch chain {
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .gaiaChain, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return CosmosServiceConfig(chain: chain, resolver: NoOverrideResolver()).baseURL?.absoluteString
         case .thorChain:
             return ThorchainMainnetAPI.defaultLCDHost.absoluteString

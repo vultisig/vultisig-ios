@@ -1178,6 +1178,7 @@
 "quantumSecurityIntroDescription" = "Klassische Schlüssel können von Quantencomputern geknackt werden. Um QBTC zu aktivieren, muss ein neues Schlüsselpaar erzeugt werden.";
 "quantumSecurityIntroTitle" = "Neue Quantensicherheit";
 "quotedWithdrawalVerifyTitle" = "Du hebst ab";
+"rateTheApp" = "App bewerten";
 "rawPayload" = "Rohdaten";
 "ready" = "Bereit";
 "Rebond" = "Rebond";

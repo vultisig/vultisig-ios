@@ -16,23 +16,13 @@ extension Chain {
 
     var ibcTo: [IBCInfo] {
         switch self {
-        case .kujira:
-            return [
-                IBCInfo(sourceChannel: "channel-0", destinationChain: .gaiaChain),
-                IBCInfo(sourceChannel: "channel-64", destinationChain: .akash),
-                IBCInfo(sourceChannel: "channel-118", destinationChain: .dydx),
-                IBCInfo(sourceChannel: "channel-62", destinationChain: .noble),
-                IBCInfo(sourceChannel: "channel-3", destinationChain: .osmosis)
-            ]
         case .osmosis:
             return [
-                IBCInfo(sourceChannel: "channel-0", destinationChain: .gaiaChain),
-                IBCInfo(sourceChannel: "channel-259", destinationChain: .kujira)
+                IBCInfo(sourceChannel: "channel-0", destinationChain: .gaiaChain)
             ]
         case .gaiaChain:
             return [
-                IBCInfo(sourceChannel: "channel-141", destinationChain: .osmosis),
-                IBCInfo(sourceChannel: "channel-343", destinationChain: .kujira)
+                IBCInfo(sourceChannel: "channel-141", destinationChain: .osmosis)
             ]
         default:
             return []

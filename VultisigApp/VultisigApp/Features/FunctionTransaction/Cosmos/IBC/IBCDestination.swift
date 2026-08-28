@@ -25,14 +25,8 @@ enum IBCDestinationCatalog {
 
     /// Every chain `coin` can IBC to, in the order `Chain.ibcTo` lists them.
     ///
-    /// Empty for a coin with no routes — which includes Kujira LVN. The legacy
-    /// form expressed that carve-out as a `continue` inside its chain loop whose
-    /// condition did not depend on the loop variable, so it skipped *every*
-    /// destination: LVN has never been IBC-transferable. Same outcome, said once
-    /// and where it can be read.
+    /// Empty for a coin with no routes.
     static func destinations(for coin: Coin) -> [IBCDestination] {
-        guard !isRouteless(coin) else { return [] }
-
         return coin.chain.ibcTo.compactMap { info in
             guard let asset = nativeAsset(for: info.destinationChain) else { return nil }
             return IBCDestination(
@@ -41,10 +35,6 @@ enum IBCDestinationCatalog {
                 asset: asset
             )
         }
-    }
-
-    private static func isRouteless(_ coin: Coin) -> Bool {
-        coin.chain == .kujira && coin.ticker == TokensStore.Token.kujiraLVN.ticker
     }
 
     private static func nativeAsset(for chain: Chain) -> CoinMeta? {

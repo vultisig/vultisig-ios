@@ -90,6 +90,11 @@ struct FastVaultKeysignBootstrap {
         customMessagePayload: CustomMessagePayload?,
         fastVaultPassword: String
     ) async throws -> KeysignInput {
+        if let chain = keysignPayload?.coin.chain, !chain.isSupported {
+            throw CustomMessagePayloadError.unsupportedChain(chain.name)
+        }
+        let customMessageChain = try customMessagePayload?.resolveSigningChain()
+
         let session = try sessionService.newSession(vault: vault, serviceName: nil)
 
         // Resolve the signing coin + pre-signed messages. Mirrors the
@@ -111,7 +116,8 @@ struct FastVaultKeysignBootstrap {
             coin = workingPayload.coin
         } else if let customMessagePayload {
             keysignMessages = customMessagePayload.keysignMessages
-            guard let resolved = vault.nativeCoin(for: Chain(name: customMessagePayload.chain) ?? .ethereum) else {
+            guard let customMessageChain,
+                  let resolved = vault.nativeCoin(for: customMessageChain) else {
                 throw FastVaultKeysignBootstrapError.missingSigningCoin
             }
             coin = resolved

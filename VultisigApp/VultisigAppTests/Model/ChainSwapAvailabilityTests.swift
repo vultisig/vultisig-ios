@@ -29,7 +29,6 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .thorChainStagenet: true,
         .mayaChain: true,
         .gaiaChain: true,
-        .kujira: true,
         .bitcoin: true,
         .dogecoin: true,
         .bitcoinCash: true,
@@ -69,6 +68,7 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .sei: false,
         .qbtc: false,
         .bittensor: false,
+        .kujira: false,
     ]
 
     // MARK: - Per-chain assertions

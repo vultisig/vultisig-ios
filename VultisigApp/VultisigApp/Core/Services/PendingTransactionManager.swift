@@ -209,9 +209,11 @@ class PendingTransactionManager {
         case .mayaChain:
             // Use nonce-based checking for MayaChain
             return try await checkMayaChainNonceChanged(transaction: tx)
-        case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
+        case .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             // Use nonce-based checking for other Cosmos chains
             return try await checkCosmosNonceChanged(transaction: tx, chain: chain)
+        case .kujira:
+            return false
         default:
             return false
         }

@@ -40,8 +40,6 @@ enum CosmosTransactionStatusAPI: TargetType {
         switch chain {
         case .gaiaChain:
             return "https://cosmos-rest.publicnode.com"
-        case .kujira:
-            return "https://kujira-api.polkachu.com"
         case .osmosis:
             return "https://osmosis-rest.publicnode.com"
         case .terra:

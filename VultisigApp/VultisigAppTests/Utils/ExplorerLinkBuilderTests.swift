@@ -273,7 +273,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     /// but a forgotten arm could return the empty string and ship without
     /// complaint.
     func testGetExplorerURLProducesNonEmptyURLForEveryChain() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             let url = ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: txHash)
             XCTAssertFalse(
                 url.isEmpty,
@@ -291,7 +291,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
 
     func testGetExplorerByAddressURLProducesNonEmptyURLForEveryChain() {
         let address = "test-address"
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             let url = ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address)
             XCTAssertNotNil(url, "Chain \(chain.rawValue) returned nil for address URL")
             XCTAssertFalse(
@@ -340,7 +340,6 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         .ethereumSepolia: .init(tx: "https://sepolia.etherscan.io/tx/0xDEADBEEF", address: "https://sepolia.etherscan.io/address/ADDR", token: "https://sepolia.etherscan.io/token/CONTRACT"),
         .gaiaChain: .init(tx: "https://www.mintscan.io/cosmos/tx/0xDEADBEEF", address: "https://www.mintscan.io/cosmos/address/ADDR", token: "https://www.mintscan.io/cosmos/address/ADDR"),
         .dydx: .init(tx: "https://www.mintscan.io/dydx/tx/0xDEADBEEF", address: "https://www.mintscan.io/dydx/address/ADDR", token: "https://www.mintscan.io/dydx/address/ADDR"),
-        .kujira: .init(tx: "https://finder.kujira.network/kaiyo-1/tx/0xDEADBEEF", address: "https://finder.kujira.network/kaiyo-1/address/ADDR", token: "https://finder.kujira.network/kaiyo-1/address/ADDR"),
         .avalanche: .init(tx: "https://snowtrace.io/tx/0xDEADBEEF", address: "https://snowtrace.io/address/ADDR", token: "https://snowtrace.io/token/CONTRACT"),
         .bscChain: .init(tx: "https://bscscan.com/tx/0xDEADBEEF", address: "https://bscscan.com/address/ADDR", token: "https://bscscan.com/token/CONTRACT"),
         .mayaChain: .init(tx: "https://www.explorer.mayachain.info/tx/0xDEADBEEF", address: "https://www.explorer.mayachain.info/address/ADDR", token: "https://www.explorer.mayachain.info/address/ADDR"),
@@ -388,7 +387,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     /// below actually cover every chain and the registry never falls through to
     /// the empty-string fallback in `getExplorerURL`.
     func testExpectationsCoverEveryChain() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             XCTAssertNotNil(
                 Self.expectations[chain],
                 "Missing expected explorer URLs for \(chain.rawValue)"
@@ -401,7 +400,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     }
 
     func testEveryChainTransactionURLMatchesPreRefactorOutput() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             guard let expected = Self.expectations[chain] else { continue }
             XCTAssertEqual(
                 ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: Self.sampleTx),
@@ -412,7 +411,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     }
 
     func testEveryChainAddressURLMatchesPreRefactorOutput() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             guard let expected = Self.expectations[chain] else { continue }
             XCTAssertEqual(
                 ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: Self.sampleAddress),
@@ -423,7 +422,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     }
 
     func testEveryChainTokenURLMatchesPreRefactorOutput() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             guard let expected = Self.expectations[chain] else { continue }
             let coin = makeNonNativeCoin(chain: chain)
             XCTAssertEqual(
@@ -439,7 +438,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
     /// pins the Bitcoin Cash consistency fix — it previously drifted onto
     /// `explorer.bitcoin.com/bch`).
     func testAddressURLByGroupMatchesAddressURLForEveryChain() {
-        for chain in Chain.allCases {
+        for chain in Chain.supportedCases {
             XCTAssertEqual(
                 Endpoint.getExplorerByAddressURLByGroup(chain: chain, address: Self.sampleAddress),
                 ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: Self.sampleAddress),

@@ -347,7 +347,7 @@ final class SecuredWithdrawTransactionViewModel: ObservableObject, Form {
         // address pre-fill, which would look entirely valid.
         let l1Chain = l1ChainCode.caseInsensitiveCompare(Chain.thorChain.swapAsset) == .orderedSame
             ? nil
-            : Chain.allCases.first { $0.swapAsset.caseInsensitiveCompare(l1ChainCode) == .orderedSame }
+            : Chain.supportedCases.first { $0.swapAsset.caseInsensitiveCompare(l1ChainCode) == .orderedSame }
         destinationChain = l1Chain
 
         guard let l1Chain else {

@@ -115,12 +115,13 @@ final class CosmosGasEstimatorTests: XCTestCase {
 
     func testShouldSimulateCoversSimulatableCosmosChainsOnly() {
         // Enabled for every Cosmos chain that WalletCore can simulate...
-        for chain: Chain in [.akash, .osmosis, .gaiaChain, .kujira, .noble, .dydx, .terra, .terraClassic] {
+        for chain: Chain in [.akash, .osmosis, .gaiaChain, .noble, .dydx, .terra, .terraClassic] {
             XCTAssertTrue(CosmosGasEstimationConfig.shouldSimulate(chain: chain),
                           "\(chain) should be simulatable")
         }
         // ...except QBTC, which signs with ML-DSA via a bespoke builder...
         XCTAssertFalse(CosmosGasEstimationConfig.shouldSimulate(chain: .qbtc))
+        XCTAssertFalse(CosmosGasEstimationConfig.shouldSimulate(chain: .kujira))
         // ...and never for non-Cosmos chains.
         XCTAssertFalse(CosmosGasEstimationConfig.shouldSimulate(chain: .ethereum))
         XCTAssertFalse(CosmosGasEstimationConfig.shouldSimulate(chain: .thorChain))

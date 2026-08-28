@@ -44,6 +44,6 @@ enum CosmosGasEstimationConfig {
 
     /// Whether the initiator should simulate gas for `chain` on a native send.
     static func shouldSimulate(chain: Chain) -> Bool {
-        chain.chainType == .Cosmos && !nonSimulatableChains.contains(chain)
+        chain.isSupported && chain.chainType == .Cosmos && !nonSimulatableChains.contains(chain)
     }
 }
