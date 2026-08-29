@@ -220,7 +220,7 @@ struct SwapService {
 
         if let liFiError = error as? LiFiSwapError {
             let message = liFiError.message.lowercased()
-            return ["no route", "not found", "not supported", "unsupported", "no available quotes"].contains {
+            return ["no route", "not found", "not supported", "unsupported"].contains {
                 message.contains($0)
             }
         }
@@ -267,9 +267,7 @@ struct SwapService {
             switch jupiterError {
             case .quoteFailed(let code), .swapFailed(let code):
                 return code >= 500
-            case .invalidQuote:
-                return true
-            case .feeAccountUnavailable, .feeAccountNotProvisioned:
+            case .invalidQuote, .feeAccountUnavailable, .feeAccountNotProvisioned:
                 return false
             }
         }
