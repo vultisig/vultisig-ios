@@ -28,7 +28,7 @@ struct SwapCoinPickerView: View {
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State var searchBarFocused: Bool = false
+    @State private var searchBarFocused: Bool = false
     @State private var reloadTask: Task<Void, Never>?
     @State private var showCustomToken = false
 
