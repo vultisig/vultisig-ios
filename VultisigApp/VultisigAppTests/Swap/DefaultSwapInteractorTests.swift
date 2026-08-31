@@ -190,7 +190,7 @@ final class DefaultSwapInteractorTests: XCTestCase {
     /// Ties the fix to the observable symptom: a Gold vault must send
     /// `affiliate_bps = 30`, not the undiscounted 50. Mayanode's
     /// `recommended_min_amount_in` is inversely proportional to the affiliate
-    /// bps, so sending 50 raised the minimum the reporter's route was measured
+    /// bps, so sending 50 lowered the minimum the reporter's route was measured
     /// against and changed which routes were offered.
     func testGoldTierYieldsThirtyAffiliateBps() async throws {
         let tierResolver = MockDiscountTierResolver(tier: .gold)
