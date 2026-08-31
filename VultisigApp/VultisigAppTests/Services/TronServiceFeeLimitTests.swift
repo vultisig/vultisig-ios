@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Pins the simulation-based `fee_limit` math behind the TRC20 / swap
-//  OUT_OF_ENERGY fix (issue/PR #4131). The bug being addressed:
+//  OUT_OF_ENERGY fix. The bug being addressed:
 //  `Vault.fee_limit` is a strict upper bound on the energy budget the TVM
 //  is willing to use for a contract call (`max_energy = fee_limit /
 //  energy_unit_price`). The pre-fix code returned a 1 TRX / 18 TRX / 36 TRX
@@ -19,6 +19,7 @@
 @testable import VultisigApp
 import XCTest
 import BigInt
+import WalletCore
 
 @MainActor
 final class TronServiceFeeLimitTests: XCTestCase {
@@ -43,14 +44,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertGreaterThan(withSafety, bare)
     }
 
-    /// `defaultContractFeeLimit` returns the docs-backed fallback budget
-    /// used when simulation isn't possible. 50,000,000 energy × 420 sun =
-    /// 21,000,000,000 sun (21 TRX). Mirrors the Android
-    /// `TronFeeService.DEFAULT_MAX_ENERGY_USED` reference.
-    func testDefaultContractFeeLimit_returnsTwentyOneTrxAtCurrentEnergyPrice() {
+    /// `defaultContractFeeLimit` returns the opaque-swap estimate used before
+    /// pre-built transaction bytes reach the fee layer. 50,000 energy × 420 sun =
+    /// 21,000,000 sun (21 TRX).
+    func testDefaultContractFeeLimitReturnsTwentyOneTrxAt420Sun() {
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 420),
-            BigInt(21_000_000_000)
+            BigInt(21_000_000)
         )
     }
 
@@ -60,38 +60,143 @@ final class TronServiceFeeLimitTests: XCTestCase {
     func testDefaultContractFeeLimit_scalesWithEnergyPrice() {
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 100),
-            BigInt(5_000_000_000)
+            BigInt(5_000_000)
         )
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 1_000),
-            BigInt(50_000_000_000)
+            BigInt(50_000_000)
+        )
+    }
+
+    func testEnergyFeePriceFallsBackToCurrentBaselineWhenParameterMissing() throws {
+        let response = try JSONDecoder().decode(
+            TronChainParametersResponse.self,
+            from: Data(#"{"chainParameter":[]}"#.utf8)
+        )
+
+        XCTAssertEqual(response.energyFeePrice, 100)
+        XCTAssertEqual(response.dynamicEnergyMaxFactor, 34_000)
+        XCTAssertEqual(response.maxFeeLimit, 15_000_000_000)
+    }
+
+    func testEnergyFeePriceFallsBackToCurrentBaselineWhenParameterInvalid() throws {
+        let response = try JSONDecoder().decode(
+            TronChainParametersResponse.self,
+            from: Data(#"{"chainParameter":[{"key":"getEnergyFee","value":0}]}"#.utf8)
+        )
+
+        XCTAssertEqual(response.energyFeePrice, 100)
+    }
+
+    func testTrc20FallbackUsesMaximumDynamicEnergyFactor() {
+        let observedTransferWithHeadroom = TronService.contractFeeLimit(
+            energyUsed: 130_285,
+            energyPrice: 100
+        )
+        let fallback = TronService.defaultTrc20FeeLimit(
+            energyPrice: 100,
+            dynamicEnergyMaxFactor: 34_000,
+            maxFeeLimit: 15_000_000_000
+        )
+
+        XCTAssertEqual(
+            fallback,
+            BigInt(28_600_000)
+        )
+        XCTAssertGreaterThan(fallback, observedTransferWithHeadroom)
+    }
+
+    func testContractFeeLimitNeverExceedsChainMaximum() {
+        XCTAssertEqual(
+            TronService.cappedFeeLimit(BigInt(21_000_000_000), maxFeeLimit: 15_000_000_000),
+            BigInt(15_000_000_000)
         )
     }
 
     // MARK: - Dispatch (TronService.getBlockInfo)
 
-    /// Happy path: TRC20 transfer to an existing address with a successful
-    /// simulation. `gasFeeEstimation` should be derived from the simulated
-    /// energy_used (not the previous fixed 1 / 18 / 36 TRX ladder).
+    /// A successful simulation keeps two figures: the user's staked Energy
+    /// reduces the displayed burn to zero, while the signed ceiling remains the
+    /// gross simulated total plus headroom.
     func testGetBlockInfo_trc20Transfer_usesSimulationResult() async throws {
         let stub = TronStubHTTPClient()
-        stub.stubDefaults(energyUsed: 65_000)
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
         let service = TronService(httpClient: stub)
 
         let coin = makeTrc20Coin()
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
-        let gasFee = extractGasFee(result)
 
-        // 65,000 × 1.3 × 420 = 35,490,000 sun. memo and activation are 0
-        // in this scenario (no memo, destination account "exists" per the
-        // stub's getaccount response).
-        XCTAssertEqual(gasFee, 35_490_000)
+        XCTAssertEqual(extractGasFee(result), 0)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
+    }
+
+    func testPenaltyPortionRemainsInGrossAndDisplayedEnergy() async throws {
+        let stub = TronStubHTTPClient()
+        // Official TRON semantics: energy_used is the 65k TOTAL and
+        // energy_penalty is the 50k Dynamic Energy subset inside it. The fee
+        // must use 65k, not the 15k base and not a double-counted 115k.
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.setAvailableEnergy(0)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 27_300_000)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
+    }
+
+    func testFullStakedEnergyOnlyDiscountsDisplayedBurn() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.setAvailableEnergy(65_000)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 0)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
+    }
+
+    func testPartialStakedEnergyOnlyDiscountsUncoveredBurn() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.setAvailableEnergy(30_000)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 14_700_000)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
+    }
+
+    func testResourceFetchFailureShowsFullBurnWithoutLoweringCeiling() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.errors["/wallet/getaccountresource"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 27_300_000)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
     /// Simulation throws (network error / TRON gateway 5xx). Old behavior
     /// fell through to `BYTES_PER_CONTRACT_TX * 1000` (~0.345 TRX), which
     /// silently re-introduced OUT_OF_ENERGY. New behavior: fall back to
-    /// the safe default budget (~21 TRX).
+    /// the max-factor fallback (120.12 TRX at the test chain price).
     func testGetBlockInfo_trc20Transfer_fallsBackOnSimulationError() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000)
@@ -102,7 +207,14 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
         let gasFee = extractGasFee(result)
 
-        XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+        XCTAssertEqual(
+            gasFee,
+            UInt64(TronService.defaultTrc20FeeLimit(
+                energyPrice: 420,
+                dynamicEnergyMaxFactor: 34_000,
+                maxFeeLimit: 15_000_000_000
+            ))
+        )
     }
 
     /// Simulation returns `result.result = false` (e.g. insufficient TRC20
@@ -120,13 +232,135 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
         let gasFee = extractGasFee(result)
 
-        XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+        XCTAssertEqual(
+            gasFee,
+            UInt64(TronService.defaultTrc20FeeLimit(
+                energyPrice: 420,
+                dynamicEnergyMaxFactor: 34_000,
+                maxFeeLimit: 15_000_000_000
+            ))
+        )
     }
 
-    /// Native TRX swap (`isSwap == true`). We don't yet have the contract
-    /// function selector + parameter at fee-calc time, so use the default
-    /// budget — better than the prior bandwidth-only fee that would
-    /// trigger OUT_OF_ENERGY on the swap's `triggerSmartContract` path.
+    func testSuccessfulSimulationWithMessageFallsBack() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 10, energyPenalty: 0)
+        stub.setResponse(path: "/wallet/triggerconstantcontract", json: """
+        {"result":{"result":true,"message":"REVERT opcode executed"},"energy_used":10,"energy_penalty":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+        let fallback = UInt64(TronService.defaultTrc20FeeLimit(
+            energyPrice: 420,
+            dynamicEnergyMaxFactor: 34_000,
+            maxFeeLimit: 15_000_000_000
+        ))
+
+        XCTAssertEqual(extractGasFee(result), fallback)
+        XCTAssertEqual(extractFeeLimit(result), fallback)
+    }
+
+    func testDisplayedAndSignedFeesRespectChainMaximum() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.setAvailableEnergy(0)
+        stub.setResponse(path: "/wallet/getchainparameters", json: """
+        {"chainParameter":[
+            {"key":"getEnergyFee","value":420},
+            {"key":"getTransactionFee","value":1000},
+            {"key":"getDynamicEnergyMaxFactor","value":34000},
+            {"key":"getMaxFeeLimit","value":10000000}
+        ]}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 10_000_000)
+        XCTAssertEqual(extractFeeLimit(result), 10_000_000)
+    }
+
+    func testProtoKeepsGrossCeilingWithoutNewWireField() throws {
+        let local = makeTronSpecific(displayFee: 1_000_000, feeLimit: 35_490_000)
+        guard case .tronSpecific(let proto) = local.mapToProtobuff() else {
+            return XCTFail("expected tron proto")
+        }
+
+        XCTAssertEqual(local.gas, 1_000_000)
+        XCTAssertEqual(local.tronFeeLimit, 35_490_000)
+        XCTAssertEqual(proto.gasEstimation, 35_490_000)
+
+        let legacy = makeTronSpecific(displayFee: 35_490_000)
+        guard case .tronSpecific(let legacyProto) = legacy.mapToProtobuff() else {
+            return XCTFail("expected legacy tron proto")
+        }
+        XCTAssertEqual(proto, legacyProto)
+
+        let peer = try BlockChainSpecific(proto: .tronSpecific(proto))
+        XCTAssertEqual(peer.gas, 35_490_000)
+        XCTAssertEqual(peer.tronFeeLimit, local.tronFeeLimit)
+    }
+
+    func testLocalAndProtoRoundTripSignIdenticalGrossFeeLimit() throws {
+        let localSpecific = makeTronSpecific(displayFee: 1_000_000, feeLimit: 35_490_000)
+        guard case .tronSpecific(let proto) = localSpecific.mapToProtobuff() else {
+            return XCTFail("expected tron proto")
+        }
+        let peerSpecific = try BlockChainSpecific(proto: .tronSpecific(proto))
+        let coin = SigningGoldenFactory.coin(
+            chain: .tron,
+            ticker: "USDT",
+            decimals: 6,
+            contractAddress: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+            isNativeToken: false,
+            curve: .secp256k1,
+            uncompressedSecp: true
+        )
+        let recipient = SigningGoldenFactory.recipient(.tron)
+        let localPayload = SigningGoldenFactory.payload(
+            coin: coin,
+            toAddress: recipient,
+            toAmount: 1,
+            chainSpecific: localSpecific
+        )
+        let peerPayload = SigningGoldenFactory.payload(
+            coin: coin,
+            toAddress: recipient,
+            toAmount: 1,
+            chainSpecific: peerSpecific
+        )
+
+        let localBytes = try TronHelper.getPreSignedInputData(keysignPayload: localPayload)
+        let peerBytes = try TronHelper.getPreSignedInputData(keysignPayload: peerPayload)
+        let localInput = try TronSigningInput(serializedBytes: localBytes)
+        let peerInput = try TronSigningInput(serializedBytes: peerBytes)
+
+        XCTAssertEqual(localInput.transaction.feeLimit, 35_490_000)
+        XCTAssertEqual(peerInput.transaction.feeLimit, 35_490_000)
+        XCTAssertEqual(localBytes, peerBytes)
+    }
+
+    func testLegacyTronSpecificCodableWithoutFeeLimitStillDecodes() throws {
+        let legacy = makeTronSpecific(displayFee: 35_490_000)
+        let encoded = try JSONEncoder().encode(legacy)
+        let json = try XCTUnwrap(String(data: encoded, encoding: .utf8))
+
+        XCTAssertFalse(json.contains("feeLimit"))
+
+        let decoded = try JSONDecoder().decode(BlockChainSpecific.self, from: encoded)
+        XCTAssertEqual(decoded.gas, 35_490_000)
+        XCTAssertEqual(decoded.tronFeeLimit, 35_490_000)
+    }
+
+    /// Opaque native TRX swap (`isSwap == true`). The pre-built transaction
+    /// reaches the signer later, so this layer uses its smaller UI estimate.
     func testGetBlockInfo_nativeSwap_usesDefaultContractBudget() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 0)
@@ -137,6 +371,37 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let gasFee = extractGasFee(result)
 
         XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+    }
+
+    func testNativeSwapUsesCurrentFallbackWhenChainParametersUnavailable() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.errors["/wallet/getchainparameters"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeNativeCoin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+            memo: nil,
+            isSwap: true
+        )
+
+        XCTAssertEqual(extractGasFee(result), 5_000_000)
+    }
+
+    func testTrc20SimulationFailureNeverUsesOpaqueSwapEstimate() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.errors["/wallet/getchainparameters"] = HTTPError.invalidResponse
+        stub.errors["/wallet/triggerconstantcontract"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 28_600_000)
     }
 
     /// Native TRX transfer with sufficient bandwidth — the daily free-net
@@ -180,6 +445,26 @@ final class TronServiceFeeLimitTests: XCTestCase {
         )
 
         XCTAssertEqual(extractGasFee(result), 0)
+    }
+
+    func testFreezeAndUnfreezeDoNotChargeRoutingMemoFee() async throws {
+        for memo in ["FREEZE:BANDWIDTH", "FREEZE:ENERGY", "UNFREEZE:BANDWIDTH", "UNFREEZE:ENERGY"] {
+            let stub = TronStubHTTPClient()
+            stub.stubDefaults(energyUsed: 0)
+            stub.setResponse(path: "/wallet/getaccountresource", json: """
+            {"freeNetUsed":0,"freeNetLimit":600,"NetUsed":0,"NetLimit":10000,"EnergyUsed":0,"EnergyLimit":0}
+            """)
+            let service = TronService(httpClient: stub)
+            let coin = makeNativeCoin()
+
+            let result = try await service.getBlockInfo(
+                coin: coin,
+                to: coin.address,
+                memo: memo
+            )
+
+            XCTAssertEqual(extractGasFee(result), 0, "Unexpected memo fee for \(memo)")
+        }
     }
 
     /// A real memo still pays the chain's getMemoFee parameter; the routing-
@@ -260,11 +545,34 @@ final class TronServiceFeeLimitTests: XCTestCase {
     }
 
     private func extractGasFee(_ specific: BlockChainSpecific) -> UInt64 {
-        guard case .Tron(_, _, _, _, _, _, _, _, let gasFee) = specific else {
+        guard case .Tron(_, _, _, _, _, _, _, _, let gasFee, _) = specific else {
             XCTFail("expected .Tron, got \(specific)")
             return 0
         }
         return gasFee
+    }
+
+    private func extractFeeLimit(_ specific: BlockChainSpecific) -> UInt64 {
+        guard let feeLimit = specific.tronFeeLimit else {
+            XCTFail("expected .Tron, got \(specific)")
+            return 0
+        }
+        return feeLimit
+    }
+
+    private func makeTronSpecific(displayFee: UInt64, feeLimit: UInt64? = nil) -> BlockChainSpecific {
+        .Tron(
+            timestamp: 1,
+            expiration: 2,
+            blockHeaderTimestamp: 3,
+            blockHeaderNumber: 4,
+            blockHeaderVersion: 5,
+            blockHeaderTxTrieRoot: String(repeating: "06", count: 32),
+            blockHeaderParentHash: String(repeating: "07", count: 32),
+            blockHeaderWitnessAddress: "41" + String(repeating: "08", count: 20),
+            gasFeeEstimation: displayFee,
+            feeLimit: feeLimit
+        )
     }
 }
 
@@ -325,12 +633,17 @@ private final class TronStubHTTPClient: HTTPClientProtocol {
 
     /// Wires up a baseline of valid responses for every endpoint the fee
     /// path touches. Individual tests override specific entries.
-    func stubDefaults(energyUsed: Int) {
+    func stubDefaults(energyUsed: Int, energyPenalty: Int = 0) {
         setResponse(path: "/wallet/getnowblock", json: """
         {"block_header":{"raw_data":{"timestamp":1700000000,"number":1,"version":0,"txTrieRoot":"00","parentHash":"00","witness_address":"00"}}}
         """)
         setResponse(path: "/wallet/getchainparameters", json: """
-        {"chainParameter":[{"key":"getEnergyFee","value":420},{"key":"getTransactionFee","value":1000}]}
+        {"chainParameter":[
+            {"key":"getEnergyFee","value":420},
+            {"key":"getTransactionFee","value":1000},
+            {"key":"getDynamicEnergyMaxFactor","value":34000},
+            {"key":"getMaxFeeLimit","value":15000000000}
+        ]}
         """)
         setResponse(path: "/wallet/getaccountresource", json: """
         {"freeNetUsed":0,"freeNetLimit":0,"NetUsed":0,"NetLimit":0,"EnergyUsed":0,"EnergyLimit":1000000}
@@ -340,7 +653,13 @@ private final class TronStubHTTPClient: HTTPClientProtocol {
         {"address":"TGexisting","balance":1}
         """)
         setResponse(path: "/wallet/triggerconstantcontract", json: """
-        {"result":{"result":true},"energy_used":\(energyUsed)}
+        {"result":{"result":true},"energy_used":\(energyUsed),"energy_penalty":\(energyPenalty)}
+        """)
+    }
+
+    func setAvailableEnergy(_ energy: Int64) {
+        setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":0,"NetUsed":0,"NetLimit":0,"EnergyUsed":0,"EnergyLimit":\(energy)}
         """)
     }
 }

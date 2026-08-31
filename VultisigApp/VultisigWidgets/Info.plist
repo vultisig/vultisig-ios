@@ -23,10 +23,5 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Brockmann-Medium.otf</string>
-		<string>Satoshi-Medium.otf</string>
-	</array>
 </dict>
 </plist>

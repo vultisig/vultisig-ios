@@ -1,10 +1,3 @@
-//
-//  ColorSystem.swift
-//  DesignSystem
-//
-//  Created by Gaston Mazzeo on 01/08/2025.
-//
-
 import SwiftUI
 
 public protocol ColorSystemProtocol {
@@ -12,7 +5,6 @@ public protocol ColorSystemProtocol {
     var bgButtonSecondary: Color { get }
     var bgButtonTertiary: Color { get }
 
-    // Hover on Figma
     var bgButtonPrimaryPressed: Color { get }
     var bgButtonSecondaryPressed: Color { get }
     var bgButtonTertiaryPressed: Color { get }
@@ -57,8 +49,6 @@ public protocol ColorSystemProtocol {
     var alertInfo: Color { get }
 
     var turquoise: Color { get }
-
-    // Devices-selection blue glow (onboarding + reshare)
     var devicesSelectionGlow: Color { get }
 
     // Promotional banner gradient endpoints from the 2026 banner system.
