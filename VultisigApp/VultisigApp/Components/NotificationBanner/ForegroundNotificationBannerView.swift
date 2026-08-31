@@ -13,29 +13,36 @@ struct ForegroundNotificationBannerView: View {
     @State private var dragOffset: CGFloat = 0
 
     var body: some View {
-        ZStack {
-            bannerBackground
+        ZStack(alignment: .bottom) {
+            Theme.colors.bgPrimary
+                .offset(y: 25)
+                .frame(height: 100)
+                .blur(radius: 10)
+
+            ZStack {
+                bannerBackground
                 // Off the scale on purpose. This is a full-bleed banner that
                 // drops from under the status bar and ignores the safe area; its
                 // bottom curve is drawn against the device's own screen corners,
                 // not against the app's card geometry, and 24 reads as a card
                 // stuck to the top of the screen.
-                .clipShape(
-                    UnevenRoundedRectangle(
-                        bottomLeadingRadius: 40, // swiftlint:disable:this no_raw_corner_radius
-                        bottomTrailingRadius: 40 // swiftlint:disable:this no_raw_corner_radius
+                    .clipShape(
+                        UnevenRoundedRectangle(
+                            bottomLeadingRadius: 40, // swiftlint:disable:this no_raw_corner_radius
+                            bottomTrailingRadius: 40 // swiftlint:disable:this no_raw_corner_radius
+                        )
                     )
-                )
-            VStack(spacing: 11) {
-                iconCircle
-                titleLabel
-                vaultPill
-                descriptionLabel
+                VStack(spacing: 11) {
+                    iconCircle
+                    titleLabel
+                    vaultPill
+                    descriptionLabel
+                }
+                .padding(.bottom, 24)
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity)
+                .offset(y: 32)
             }
-            .padding(.bottom, 24)
-            .padding(.horizontal, 24)
-            .frame(maxWidth: .infinity)
-            .offset(y: 32)
         }
         .offset(y: dragOffset)
         .gesture(swipeUpGesture)
