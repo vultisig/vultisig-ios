@@ -269,6 +269,26 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(extractGasFee(result), 0)
     }
 
+    func testFreezeAndUnfreezeDoNotChargeRoutingMemoFee() async throws {
+        for memo in ["FREEZE:BANDWIDTH", "FREEZE:ENERGY", "UNFREEZE:BANDWIDTH", "UNFREEZE:ENERGY"] {
+            let stub = TronStubHTTPClient()
+            stub.stubDefaults(energyUsed: 0)
+            stub.setResponse(path: "/wallet/getaccountresource", json: """
+            {"freeNetUsed":0,"freeNetLimit":600,"NetUsed":0,"NetLimit":10000,"EnergyUsed":0,"EnergyLimit":0}
+            """)
+            let service = TronService(httpClient: stub)
+            let coin = makeNativeCoin()
+
+            let result = try await service.getBlockInfo(
+                coin: coin,
+                to: coin.address,
+                memo: memo
+            )
+
+            XCTAssertEqual(extractGasFee(result), 0, "Unexpected memo fee for \(memo)")
+        }
+    }
+
     /// A real memo still pays the chain's getMemoFee parameter; the routing-
     /// marker exception above must not weaken ordinary TRON fee estimation.
     func testNativeTransferRealMemoStillChargesMemoFee() async throws {
