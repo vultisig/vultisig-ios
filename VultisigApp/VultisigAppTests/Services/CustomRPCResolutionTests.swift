@@ -205,7 +205,7 @@ final class CustomRPCResolutionTests: XCTestCase {
     func test_tronAPI_default_usesProxyHostAndWalletPaths() {
         let api = TronAPI(.getNowBlock)
         XCTAssertEqual(api.baseURL, TronAPI.defaultHost)
-        XCTAssertEqual(api.baseURL.absoluteString, "https://api.vultisig.com/tron-rest")
+        XCTAssertEqual(api.baseURL.absoluteString, "https://api.vultisig.com/tron")
         XCTAssertEqual(api.path, "/wallet/getnowblock")
     }
 
@@ -218,10 +218,11 @@ final class CustomRPCResolutionTests: XCTestCase {
 
     func test_tronEvmRpc_ignoresTronOverride_keepsProxy() throws {
         // The `.tron` override is a TronGrid REST endpoint, NOT an EVM JSON-RPC
-        // node, so the EVM-side tron-rpc host must stay on the proxy default.
+        // node, so the EVM-side JSON-RPC host must stay on the proxy default.
         let resolver = FakeRPCResolver(overrides: [.tron: "https://my-trongrid.example"])
         let config = try EvmServiceConfig.getConfig(forChain: .tron, resolver: resolver)
         XCTAssertEqual(config.rpcEndpoint, Endpoint.tronEvmServiceRpc)
+        XCTAssertEqual(config.rpcEndpoint, "https://api.vultisig.com/tron/jsonrpc")
     }
 
     // MARK: - Ton (proxy default; override swaps host, keeps /ton/v2|v3 paths)
@@ -311,9 +312,9 @@ final class CustomRPCResolutionTests: XCTestCase {
         // Bittensor (proxy/onfinality default baked at init)
         XCTAssertEqual(BittensorService.rpcEndpoint, "https://bittensor-finney.api.onfinality.io/public")
         XCTAssertEqual(Endpoint.bittensorServiceRpc, "https://bittensor-finney.api.onfinality.io/public")
-        // Tron REST proxy default + EVM-rpc proxy default
-        XCTAssertEqual(TronAPI.defaultHost.absoluteString, "https://api.vultisig.com/tron-rest")
-        XCTAssertEqual(Endpoint.tronEvmServiceRpc, "https://api.vultisig.com/tron-rpc")
+        // Tron REST proxy default + JSON-RPC proxy default
+        XCTAssertEqual(TronAPI.defaultHost.absoluteString, "https://api.vultisig.com/tron")
+        XCTAssertEqual(Endpoint.tronEvmServiceRpc, "https://api.vultisig.com/tron/jsonrpc")
         // Ton proxy default
         XCTAssertEqual(TonAPI.defaultHost.absoluteString, "https://api.vultisig.com")
         // Polkadot proxy default baked at init

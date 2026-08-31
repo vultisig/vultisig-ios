@@ -157,9 +157,9 @@ struct EvmServiceConfig {
         }
         // `.tron` is special: the custom-RPC override the user configures is a
         // TronGrid-compatible REST endpoint (`/wallet/*`) consumed by `TronAPI`,
-        // not an EVM JSON-RPC node. Applying it to this EVM-rpc proxy host would
+        // not an EVM JSON-RPC node. Applying it to the JSON-RPC proxy would
         // POST `eth_*` calls to a REST surface and break the TVM contract path,
-        // so the EVM-rpc host stays on its default proxy regardless of override.
+        // so the JSON-RPC host stays on its default proxy regardless of override.
         guard chain != .tron, let override = resolver.url(for: chain) else {
             return config
         }
