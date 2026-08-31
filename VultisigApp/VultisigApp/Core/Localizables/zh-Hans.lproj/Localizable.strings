@@ -11,6 +11,7 @@
 "addChain" = "添加链";
 "addCoinLP" = "添加 %@ LP";
 "addCustomChains" = "添加自定义链";
+"addCustomToken" = "+ 添加自定义代币";
 "addDestinationTag" = "添加目标标签";
 "addFolder" = "添加文件夹";
 "addFriendsReferral" = "添加好友推荐";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "通知已禁用";
 "notificationSentSuccessfully" = "通知已成功发送！";
 "notNow" = "暂时不用";
+"noTokenFound" = "未找到代币";
 "noTokensFound" = "未选择代币";
 "noTokensFoundSubtitle" = "您已禁用所有代币。确保您要查找的代币已启用";
 "noTransactionsYet" = "暂无交易记录";

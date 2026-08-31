@@ -14,6 +14,7 @@ struct CustomTokenScreen: View {
     let chain: Chain
     @Binding var isPresented: Bool
     var onClose: () -> Void
+    var onTokenAdded: ((CoinMeta) -> Void)?
 
     @StateObject private var viewModel: CustomTokenViewModel
     @StateObject private var tokenViewModel = TokenSelectionViewModel()
@@ -21,11 +22,18 @@ struct CustomTokenScreen: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(vault: Vault, chain: Chain, isPresented: Binding<Bool>, onClose: @escaping () -> Void) {
+    init(
+        vault: Vault,
+        chain: Chain,
+        isPresented: Binding<Bool>,
+        onClose: @escaping () -> Void,
+        onTokenAdded: ((CoinMeta) -> Void)? = nil
+    ) {
         self.vault = vault
         self.chain = chain
         self._isPresented = isPresented
         self.onClose = onClose
+        self.onTokenAdded = onTokenAdded
         self._viewModel = StateObject(wrappedValue: CustomTokenViewModel(vault: vault, chain: chain))
     }
 
@@ -156,9 +164,14 @@ struct CustomTokenScreen: View {
     /// Persists the resolved custom token to the vault and dismisses the screen.
     /// Shows an "adding token" loading indicator while the save is in progress.
     private func saveAssets() {
+        guard case .found(let token) = viewModel.searchState else { return }
         Task {
             if await viewModel.saveAssets(coinSelectionViewModel: coinViewModel) {
-                dismiss()
+                if let onTokenAdded {
+                    onTokenAdded(token)
+                } else {
+                    dismiss()
+                }
             }
         }
     }

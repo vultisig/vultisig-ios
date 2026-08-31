@@ -38,6 +38,25 @@ extension CustomTokenResolver {
 /// Classic share the CW20 seam, Solana and Sui have chain-specific metadata lookups,
 /// and every other chain falls through to the shared EVM/Tron/TON metadata lookup.
 enum CustomTokenResolverFactory {
+    /// Whether the existing custom-token flow can resolve metadata for `chain`.
+    ///
+    /// Keep this boundary beside ``make(chain:suiMetadataProvider:)`` so callers
+    /// never expose the flow for a chain that would fall through to an inert
+    /// resolver (for example Bitcoin or an unsupported Cosmos chain).
+    static func supports(chain: Chain) -> Bool {
+        switch chain {
+        case .thorChain, .cardano, .terra, .terraClassic, .solana, .sui, .ripple:
+            return true
+        default:
+            switch chain.chainType {
+            case .EVM, .Tron, .Ton:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+
     /// - Parameter chain: The chain the custom-token screen is scoped to.
     static func make(
         chain: Chain,

@@ -11,6 +11,7 @@
 "addChain" = "Kette hinzufügen";
 "addCoinLP" = "%@ LP hinzufügen";
 "addCustomChains" = "Benutzerdefinierte Chains hinzufügen";
+"addCustomToken" = "+ Benutzerdefinierten Token hinzufügen";
 "addDestinationTag" = "Destination Tag hinzufügen";
 "addFolder" = "Ordner hinzufügen";
 "addFriendsReferral" = "Freunde-Empfehlung hinzufügen";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "Benachrichtigungen deaktiviert";
 "notificationSentSuccessfully" = "Benachrichtigung wurde erfolgreich gesendet!";
 "notNow" = "Nicht jetzt";
+"noTokenFound" = "Kein Token gefunden";
 "noTokensFound" = "Keine Token gefunden";
 "noTokensFoundSubtitle" = "Sie haben alle Tokens deaktiviert. Stellen Sie sicher, dass der gesuchte Token aktiviert ist.";
 "noTransactionsYet" = "Noch keine Transaktionen";

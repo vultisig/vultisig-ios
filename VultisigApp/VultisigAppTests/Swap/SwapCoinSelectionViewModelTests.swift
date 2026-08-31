@@ -144,6 +144,34 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         XCTAssertFalse(vm.tokens.isEmpty, "The unfiltered list did load")
     }
 
+    func testForceRefreshAfterCustomTokenAddedPublishesNewVaultCoinForActiveQuery() async {
+        let registry = DestinationTokenRegistry()
+        let vault = makeVault()
+        SwapTokenListCache.shared.setCached([meta("USDC")], for: .ethereum)
+
+        let vm = SwapCoinSelectionViewModel(
+            vault: vault,
+            selectedCoin: makeCoin("ETH", isNative: true),
+            isDestination: true,
+            registry: registry
+        )
+        vm.searchText = "CSTM"
+
+        await vm.fetchCoins(chain: .ethereum, forceRefresh: true)
+        XCTAssertTrue(vm.filteredTokens.isEmpty, "Precondition: the token has not been added yet")
+
+        let customToken = meta("CSTM", contract: "0x000000000000000000000000000000000000c57a")
+        vault.coins.append(Coin(asset: customToken, address: "test-address-CSTM", hexPublicKey: ""))
+
+        await vm.fetchCoins(chain: .ethereum, forceRefresh: true)
+
+        XCTAssertEqual(
+            vm.filteredTokens.map(\.uniqueId),
+            [customToken.uniqueId],
+            "A forced picker reload must re-read vault coins and preserve the active token query"
+        )
+    }
+
     // MARK: - Destination picker publishes before providers return
 
     func testDestinationPickerPublishesLocalListBeforeProvidersReturn() async throws {

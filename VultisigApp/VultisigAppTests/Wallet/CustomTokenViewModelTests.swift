@@ -101,6 +101,40 @@ final class CustomTokenViewModelTests: XCTestCase {
 
     // MARK: - Validation guard
 
+    func testResolverFactorySupportsOnlyResolvableChains() {
+        let expected: Set<Chain> = [
+            .thorChain,
+            .solana,
+            .ethereum,
+            .avalanche,
+            .base,
+            .blast,
+            .arbitrum,
+            .polygon,
+            .polygonV2,
+            .optimism,
+            .bscChain,
+            .cardano,
+            .cronosChain,
+            .sui,
+            .zksync,
+            .ton,
+            .terra,
+            .terraClassic,
+            .ripple,
+            .tron,
+            .ethereumSepolia,
+            .mantle,
+            .hyperliquid,
+            .sei,
+            .robinhood
+        ]
+
+        let supported = Set(Chain.allCases.filter { CustomTokenResolverFactory.supports(chain: $0) })
+
+        XCTAssertEqual(supported, expected)
+    }
+
     /// An input that fails address validation short-circuits to an error without a
     /// network call and replaces any prior state.
     func testInvalidAddressGuardProducesInvalidState() async {

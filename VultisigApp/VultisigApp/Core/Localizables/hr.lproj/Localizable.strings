@@ -11,6 +11,7 @@
 "addChain" = "Dodajte lanac";
 "addCoinLP" = "Dodaj %@ LP";
 "addCustomChains" = "Dodaj prilagođene chainove";
+"addCustomToken" = "+ Dodaj prilagođeni token";
 "addDestinationTag" = "Dodaj oznaku odredišta";
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "Obavijesti onemogućene";
 "notificationSentSuccessfully" = "Obavijest je uspješno poslana!";
 "notNow" = "Ne sada";
+"noTokenFound" = "Token nije pronađen";
 "noTokensFound" = "Nema pronađenih tokena";
 "noTokensFoundSubtitle" = "Dodajte tokene u postavkama";
 "noTransactionsYet" = "Još nema transakcija";
