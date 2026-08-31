@@ -41,11 +41,10 @@ class TronService {
     /// Energy budget used as the `fee_limit` cap when contract simulation
     /// isn't available (network error, native-TRX swap path where we don't
     /// have the function selector + parameter at fee-calc time, etc.).
-    /// At ~420 sun/energy this works out to ~21 TRX — generous enough for
-    /// any typical TRC20 or swap, while still being a real number derived
-    /// from chain parameters rather than a magic constant. Mirrors
-    /// `vultisig-android` `TronFeeService.DEFAULT_MAX_ENERGY_USED`.
-    private static let DEFAULT_MAX_ENERGY_USED: Int64 = 50_000_000
+    /// At 420 sun/energy this works out to 21 TRX; at the current 100-sun
+    /// fallback price it is 5 TRX. This is a spending cap, not an upfront
+    /// charge; successful calls consume only the resources they use.
+    private static let DEFAULT_MAX_ENERGY_USED: Int64 = 50_000
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.apiService = TronAPIService(httpClient: httpClient)
@@ -168,7 +167,7 @@ class TronService {
     /// safety multiplier, translate to sun via the on-chain `energyFeePrice`.
     /// Replaces the prior fixed 1 TRX / 18 TRX / 36 TRX ladder that
     /// triggered `OUT_OF_ENERGY` whenever the actual energy cost exceeded
-    /// `fee_limit / energy_price` (see issue/PR #4131).
+    /// `fee_limit / energy_price`.
     ///
     /// **Native swap** (`triggerSmartContract` from a TRX coin) — we don't
     /// yet have the function selector + calldata at this layer, so fall
@@ -181,7 +180,7 @@ class TronService {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
         let chainParams = try? await getCachedChainParameters()
-        let energyPrice = chainParams?.energyFeePrice ?? 420
+        let energyPrice = chainParams?.energyFeePrice ?? TronChainParametersResponse.defaultEnergyFeePrice
 
         let transactionFee: BigInt
         if coin.isNativeToken {

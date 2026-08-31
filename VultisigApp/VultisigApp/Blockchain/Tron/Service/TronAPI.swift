@@ -217,6 +217,8 @@ struct TronAccountResourceResponse: Codable {
 }
 
 struct TronChainParametersResponse: Codable {
+    static let defaultEnergyFeePrice: Int64 = 100
+
     let chainParameter: [TronChainParameter]
 
     struct TronChainParameter: Codable {
@@ -228,13 +230,13 @@ struct TronChainParametersResponse: Codable {
         chainParameter.first { $0.key == "getTransactionFee" }?.value ?? 1000
     }
 
-    /// Sun per energy unit (≈420 sun/energy at the time of writing). Used to
+    /// Sun per energy unit. Used to
     /// translate an energy budget into a `fee_limit` value via
     /// `feeLimit = energyBudget * energyFeePrice`.
     /// See https://developers.tron.network/docs/resource-model#dynamic-energy-model.
     var energyFeePrice: Int64 {
         let value = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
-        return value > 0 ? value : 420
+        return value > 0 ? value : Self.defaultEnergyFeePrice
     }
 
     var memoFeeEstimate: Int64 {
