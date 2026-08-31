@@ -218,6 +218,8 @@ struct TronAccountResourceResponse: Codable {
 
 struct TronChainParametersResponse: Codable {
     static let defaultEnergyFeePrice: Int64 = 100
+    static let defaultDynamicEnergyMaxFactor: Int64 = 34_000
+    static let defaultMaxFeeLimit: Int64 = 15_000_000_000
 
     let chainParameter: [TronChainParameter]
 
@@ -237,6 +239,22 @@ struct TronChainParametersResponse: Codable {
     var energyFeePrice: Int64 {
         let value = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
         return value > 0 ? value : Self.defaultEnergyFeePrice
+    }
+
+    /// Maximum additional Dynamic Energy penalty, scaled by 10,000.
+    /// A value of 34,000 means base energy may grow by up to 3.4×, for a
+    /// total ceiling of 4.4× base energy.
+    var dynamicEnergyMaxFactor: Int64 {
+        guard let value = chainParameter.first(where: { $0.key == "getDynamicEnergyMaxFactor" })?.value,
+              value >= 0 else {
+            return Self.defaultDynamicEnergyMaxFactor
+        }
+        return value
+    }
+
+    var maxFeeLimit: Int64 {
+        let value = chainParameter.first { $0.key == "getMaxFeeLimit" }?.value ?? 0
+        return value > 0 ? value : Self.defaultMaxFeeLimit
     }
 
     var memoFeeEstimate: Int64 {
