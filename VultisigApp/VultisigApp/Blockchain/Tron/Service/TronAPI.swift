@@ -11,10 +11,10 @@ import Foundation
 /// The host is baked in at construction by the API service (see
 /// `TronAPIService.api`); this value never consults global state.
 ///
-/// The default host is the Vultisig proxy (`api.vultisig.com/tron-rest`), so
-/// when no override is set behavior is byte-identical to before. An override
-/// only swaps the host while keeping the TronGrid-compatible `/wallet/*` paths
-/// unchanged, so a real public TRON node (TronGrid scheme) works as-is.
+/// The default host is the shared Vultisig TRON proxy
+/// (`api.vultisig.com/tron`). An override only swaps the host while keeping the
+/// TronGrid-compatible `/wallet/*` paths unchanged, so a real public TRON node
+/// (TronGrid scheme) works as-is.
 struct TronAPI: TargetType {
     enum Endpoint {
         case getNowBlock
@@ -26,7 +26,7 @@ struct TronAPI: TargetType {
     }
 
     /// Default TRON REST host (Vultisig proxy).
-    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron-rest")
+    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron")
 
     let endpoint: Endpoint
     /// The resolved TRON REST host (override-aware), baked in by the API service.
