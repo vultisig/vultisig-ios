@@ -31,9 +31,10 @@ enum TronHelper {
             throw HelperError.runtimeError("coin is not TRX")
         }
 
-        guard case .Tron(let timestamp, let expiration, let blockHeaderTimestamp, let blockHeaderNumber, let blockHeaderVersion, let blockHeaderTxTrieRoot, let blockHeaderParentHash, let blockHeaderWitnessAddress, let gasEstimation) = keysignPayload.chainSpecific else {
+        guard case .Tron(let timestamp, let expiration, let blockHeaderTimestamp, let blockHeaderNumber, let blockHeaderVersion, let blockHeaderTxTrieRoot, let blockHeaderParentHash, let blockHeaderWitnessAddress, let gasEstimation, let feeLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Tron chain specific")
         }
+        let signedFeeLimit = feeLimit ?? gasEstimation
 
         guard Data(hexString: keysignPayload.coin.hexPublicKey) != nil else {
             throw HelperError.runtimeError("invalid hex public key")
@@ -54,7 +55,7 @@ enum TronHelper {
         if let smartContractPayload = keysignPayload.tronTriggerSmartContractPayload {
             return try buildTronSmartContractInput(
                 payload: smartContractPayload,
-                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress,
@@ -65,7 +66,7 @@ enum TronHelper {
         if let assetPayload = keysignPayload.tronTransferAssetContractPayload {
             return try buildTronTransferAssetInput(
                 payload: assetPayload,
-                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress,
@@ -82,7 +83,7 @@ enum TronHelper {
                 ownerAddress: keysignPayload.coin.address,
                 frozenBalance: keysignPayload.toAmount,
                 resource: resourceString,
-                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
@@ -99,7 +100,7 @@ enum TronHelper {
                 ownerAddress: keysignPayload.coin.address,
                 unfreezeBalance: keysignPayload.toAmount,
                 resource: resourceString,
-                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
@@ -167,7 +168,7 @@ enum TronHelper {
 
             let input = try TronSigningInput.with {
                 $0.transaction = try TronTransaction.with {
-                    $0.feeLimit = Int64(gasEstimation)
+                    $0.feeLimit = Int64(signedFeeLimit)
                     $0.transferTrc20Contract = contract
                     $0.timestamp = Int64(timestamp)
                     $0.blockHeader = try buildBlockHeader(

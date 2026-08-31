@@ -214,6 +214,10 @@ struct TronAccountResourceResponse: Codable {
         let netBandwidthAvailable = NetLimit - NetUsed
         return freeBandwidthAvailable + netBandwidthAvailable
     }
+
+    func calculateAvailableEnergy() -> Int64 {
+        max(EnergyLimit - EnergyUsed, 0)
+    }
 }
 
 struct TronChainParametersResponse: Codable {
