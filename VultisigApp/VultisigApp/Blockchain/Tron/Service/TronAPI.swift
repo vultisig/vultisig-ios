@@ -11,10 +11,10 @@ import Foundation
 /// The host is baked in at construction by the API service (see
 /// `TronAPIService.api`); this value never consults global state.
 ///
-/// The default host is the Vultisig proxy (`api.vultisig.com/tron-rest`), so
-/// when no override is set behavior is byte-identical to before. An override
-/// only swaps the host while keeping the TronGrid-compatible `/wallet/*` paths
-/// unchanged, so a real public TRON node (TronGrid scheme) works as-is.
+/// The default host is the shared Vultisig TRON proxy
+/// (`api.vultisig.com/tron`). An override only swaps the host while keeping the
+/// TronGrid-compatible `/wallet/*` paths unchanged, so a real public TRON node
+/// (TronGrid scheme) works as-is.
 struct TronAPI: TargetType {
     enum Endpoint {
         case getNowBlock
@@ -26,7 +26,7 @@ struct TronAPI: TargetType {
     }
 
     /// Default TRON REST host (Vultisig proxy).
-    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron-rest")
+    static let defaultHost = URL(staticString: "https://api.vultisig.com/tron")
 
     let endpoint: Endpoint
     /// The resolved TRON REST host (override-aware), baked in by the API service.
@@ -217,6 +217,10 @@ struct TronAccountResourceResponse: Codable {
 }
 
 struct TronChainParametersResponse: Codable {
+    static let defaultEnergyFeePrice: Int64 = 100
+    static let defaultDynamicEnergyMaxFactor: Int64 = 34_000
+    static let defaultMaxFeeLimit: Int64 = 15_000_000_000
+
     let chainParameter: [TronChainParameter]
 
     struct TronChainParameter: Codable {
@@ -228,13 +232,29 @@ struct TronChainParametersResponse: Codable {
         chainParameter.first { $0.key == "getTransactionFee" }?.value ?? 1000
     }
 
-    /// Sun per energy unit (≈420 sun/energy at the time of writing). Used to
+    /// Sun per energy unit. Used to
     /// translate an energy budget into a `fee_limit` value via
     /// `feeLimit = energyBudget * energyFeePrice`.
     /// See https://developers.tron.network/docs/resource-model#dynamic-energy-model.
     var energyFeePrice: Int64 {
         let value = chainParameter.first { $0.key == "getEnergyFee" }?.value ?? 0
-        return value > 0 ? value : 420
+        return value > 0 ? value : Self.defaultEnergyFeePrice
+    }
+
+    /// Maximum additional Dynamic Energy penalty, scaled by 10,000.
+    /// A value of 34,000 means base energy may grow by up to 3.4×, for a
+    /// total ceiling of 4.4× base energy.
+    var dynamicEnergyMaxFactor: Int64 {
+        guard let value = chainParameter.first(where: { $0.key == "getDynamicEnergyMaxFactor" })?.value,
+              value >= 0 else {
+            return Self.defaultDynamicEnergyMaxFactor
+        }
+        return value
+    }
+
+    var maxFeeLimit: Int64 {
+        let value = chainParameter.first { $0.key == "getMaxFeeLimit" }?.value ?? 0
+        return value > 0 ? value : Self.defaultMaxFeeLimit
     }
 
     var memoFeeEstimate: Int64 {

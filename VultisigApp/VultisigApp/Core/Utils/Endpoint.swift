@@ -135,7 +135,7 @@ class Endpoint {
     /// `/qbtc/v1/params/{name}`, `/cosmos/tx/v1beta1/txs`. See `QBTCChainAPI`.
     static let qbtcRestBaseURL = "https://api.vultisig.com/qbtc-rpc"
 
-    static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
+    static let tronEvmServiceRpc = "https://api.vultisig.com/tron/jsonrpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
 
     static func getExplorerByCoinURL(coin: Coin) -> String? {

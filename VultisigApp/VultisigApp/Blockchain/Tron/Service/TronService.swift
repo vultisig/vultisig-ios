@@ -32,20 +32,26 @@ class TronService {
     private static let BYTES_PER_CONTRACT_TX: Int64 = 345
 
     /// Headroom multiplier applied to the simulated `energy_used` when
-    /// computing the on-chain `fee_limit` cap. 30% covers the contract's
-    /// per-call dynamic `energy_factor` surge during congested windows. See
+    /// computing the on-chain `fee_limit` cap. The margin covers ordinary
+    /// drift between simulation and broadcast; the max-factor fallback below
+    /// handles cases where simulation is unavailable. See
     /// https://developers.tron.network/docs/resource-model#dynamic-energy-model.
     private static let ENERGY_SAFETY_NUMERATOR: Int64 = 13
     private static let ENERGY_SAFETY_DENOMINATOR: Int64 = 10
 
-    /// Energy budget used as the `fee_limit` cap when contract simulation
-    /// isn't available (network error, native-TRX swap path where we don't
-    /// have the function selector + parameter at fee-calc time, etc.).
-    /// At ~420 sun/energy this works out to ~21 TRX — generous enough for
-    /// any typical TRC20 or swap, while still being a real number derived
-    /// from chain parameters rather than a magic constant. Mirrors
-    /// `vultisig-android` `TronFeeService.DEFAULT_MAX_ENERGY_USED`.
-    private static let DEFAULT_MAX_ENERGY_USED: Int64 = 50_000_000
+    /// Base-energy estimate for a common high-volume TRC20 transfer. When
+    /// simulation is unavailable, this is multiplied by the chain's maximum
+    /// Dynamic Energy factor instead of sharing the much smaller opaque-swap
+    /// estimate below.
+    private static let DEFAULT_TRC20_BASE_ENERGY_USED: Int64 = 65_000
+    private static let DYNAMIC_ENERGY_FACTOR_SCALE: Int64 = 10_000
+
+    /// Energy estimate used for an opaque native-TRX contract swap when the
+    /// transaction bytes have not reached the fee layer yet.
+    /// At 420 sun/energy this works out to 21 TRX; at the current 100-sun
+    /// fallback price it is 5 TRX. This is a spending cap, not an upfront
+    /// charge; successful calls consume only the resources they use.
+    private static let DEFAULT_MAX_ENERGY_USED: Int64 = 50_000
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.apiService = TronAPIService(httpClient: httpClient)
@@ -168,25 +174,29 @@ class TronService {
     /// safety multiplier, translate to sun via the on-chain `energyFeePrice`.
     /// Replaces the prior fixed 1 TRX / 18 TRX / 36 TRX ladder that
     /// triggered `OUT_OF_ENERGY` whenever the actual energy cost exceeded
-    /// `fee_limit / energy_price` (see issue/PR #4131).
+    /// `fee_limit / energy_price`.
     ///
-    /// **Native swap** (`triggerSmartContract` from a TRX coin) — we don't
-    /// yet have the function selector + calldata at this layer, so fall
-    /// back to a generous default budget (`DEFAULT_MAX_ENERGY_USED ×
-    /// energyFeePrice`) — same approach `vultisig-android` takes in
-    /// `TronFeeService.calculateDefaultFees`.
+    /// **Opaque native swap** — pre-built transaction bytes arrive after this
+    /// layer and cannot be simulated from the `isSwap` flag alone, so use the
+    /// smaller UI estimate (`DEFAULT_MAX_ENERGY_USED × energyFeePrice`).
     ///
     /// See https://developers.tron.network/docs/set-feelimit.
     private func calculateTronFee(coin: Coin, to: String?, memo: String?, isSwap: Bool) async throws -> BigInt {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
         let chainParams = try? await getCachedChainParameters()
-        let energyPrice = chainParams?.energyFeePrice ?? 420
+        let energyPrice = chainParams?.energyFeePrice ?? TronChainParametersResponse.defaultEnergyFeePrice
+        let dynamicEnergyMaxFactor = chainParams?.dynamicEnergyMaxFactor
+            ?? TronChainParametersResponse.defaultDynamicEnergyMaxFactor
+        let maxFeeLimit = chainParams?.maxFeeLimit ?? TronChainParametersResponse.defaultMaxFeeLimit
 
         let transactionFee: BigInt
         if coin.isNativeToken {
             if isSwap {
-                transactionFee = Self.defaultContractFeeLimit(energyPrice: energyPrice)
+                transactionFee = Self.cappedFeeLimit(
+                    Self.defaultContractFeeLimit(energyPrice: energyPrice),
+                    maxFeeLimit: maxFeeLimit
+                )
             } else {
                 // A *successfully computed* 0 means sufficient bandwidth — a
                 // genuinely free transfer, surfaced as 0. But a thrown error
@@ -197,10 +207,20 @@ class TronService {
                 transactionFee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
             }
         } else {
-            transactionFee = await calculateTrc20FeeLimit(coin: coin, to: to, energyPrice: energyPrice)
+            transactionFee = await calculateTrc20FeeLimit(
+                coin: coin,
+                to: to,
+                energyPrice: energyPrice,
+                dynamicEnergyMaxFactor: dynamicEnergyMaxFactor,
+                maxFeeLimit: maxFeeLimit
+            )
         }
 
-        return transactionFee + memoFee + activationFee
+        let totalFee = transactionFee + memoFee + activationFee
+        if isSwap || !coin.isNativeToken {
+            return Self.cappedFeeLimit(totalFee, maxFeeLimit: maxFeeLimit)
+        }
+        return totalFee
     }
 
     private func calculateNativeTrxFee(coin: Coin) async throws -> BigInt {
@@ -212,9 +232,20 @@ class TronService {
         )
     }
 
-    private func calculateTrc20FeeLimit(coin: Coin, to: String?, energyPrice: Int64) async -> BigInt {
+    private func calculateTrc20FeeLimit(
+        coin: Coin,
+        to: String?,
+        energyPrice: Int64,
+        dynamicEnergyMaxFactor: Int64,
+        maxFeeLimit: Int64
+    ) async -> BigInt {
+        let fallback = Self.defaultTrc20FeeLimit(
+            energyPrice: energyPrice,
+            dynamicEnergyMaxFactor: dynamicEnergyMaxFactor,
+            maxFeeLimit: maxFeeLimit
+        )
         guard let to, !to.isEmpty, !coin.contractAddress.isEmpty else {
-            return Self.defaultContractFeeLimit(energyPrice: energyPrice)
+            return fallback
         }
 
         let simulation: TronTriggerConstantResponse
@@ -225,29 +256,49 @@ class TronService {
                 toAddress: to
             )
         } catch {
-            return Self.defaultContractFeeLimit(energyPrice: energyPrice)
+            return fallback
         }
 
         guard simulation.result?.result == true,
               let energyUsed = simulation.energy_used, energyUsed > 0 else {
-            return Self.defaultContractFeeLimit(energyPrice: energyPrice)
+            return fallback
         }
 
-        return Self.contractFeeLimit(energyUsed: Int64(energyUsed), energyPrice: energyPrice)
+        return Self.cappedFeeLimit(
+            Self.contractFeeLimit(energyUsed: Int64(energyUsed), energyPrice: energyPrice),
+            maxFeeLimit: maxFeeLimit
+        )
     }
 
-    /// Conservative fallback budget for contract-execution paths whenever
-    /// simulation isn't possible or fails. Used so a transient RPC error
-    /// doesn't silently reintroduce `OUT_OF_ENERGY`. Operands are widened to
-    /// `BigInt` before multiplying so anomalous chain-parameter values can't
-    /// overflow `Int64`.
+    /// Opaque native-swap estimate. TRC20 simulation failures deliberately use
+    /// the larger max-factor budget below so this 50,000-energy value is never
+    /// written as a TRC20 `fee_limit`.
     static func defaultContractFeeLimit(energyPrice: Int64) -> BigInt {
         BigInt(DEFAULT_MAX_ENERGY_USED) * BigInt(energyPrice)
     }
 
+    /// Simulation-error budget for TRC20 transfers. TRON documents the
+    /// maximum Dynamic Energy factor as an additional multiplier scaled by
+    /// 10,000, so the total ceiling is `base × (1 + maxFactor)`.
+    static func defaultTrc20FeeLimit(
+        energyPrice: Int64,
+        dynamicEnergyMaxFactor: Int64,
+        maxFeeLimit: Int64
+    ) -> BigInt {
+        let safeMaxFactor = max(dynamicEnergyMaxFactor, 0)
+        let maxEnergyUnits = BigInt(DEFAULT_TRC20_BASE_ENERGY_USED)
+            * (BigInt(DYNAMIC_ENERGY_FACTOR_SCALE) + BigInt(safeMaxFactor))
+            / BigInt(DYNAMIC_ENERGY_FACTOR_SCALE)
+        return cappedFeeLimit(maxEnergyUnits * BigInt(energyPrice), maxFeeLimit: maxFeeLimit)
+    }
+
+    static func cappedFeeLimit(_ feeLimit: BigInt, maxFeeLimit: Int64) -> BigInt {
+        min(max(feeLimit, .zero), BigInt(max(maxFeeLimit, 0)))
+    }
+
     /// Translates a simulated `energy_used` into a `fee_limit` cap (in sun),
-    /// applying the documented 30% safety multiplier for dynamic-energy
-    /// surges. Pulled out so the math is testable in isolation. All
+    /// applying a 30% margin against estimate drift. Pulled out so the math
+    /// is testable in isolation. All
     /// multiplications are performed in `BigInt` so an unexpectedly large
     /// `energy_used` or `energyPrice` can't overflow `Int64` mid-calculation.
     static func contractFeeLimit(energyUsed: Int64, energyPrice: Int64) -> BigInt {

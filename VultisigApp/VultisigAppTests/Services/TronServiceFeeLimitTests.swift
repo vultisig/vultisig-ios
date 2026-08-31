@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Pins the simulation-based `fee_limit` math behind the TRC20 / swap
-//  OUT_OF_ENERGY fix (issue/PR #4131). The bug being addressed:
+//  OUT_OF_ENERGY fix. The bug being addressed:
 //  `Vault.fee_limit` is a strict upper bound on the energy budget the TVM
 //  is willing to use for a contract call (`max_energy = fee_limit /
 //  energy_unit_price`). The pre-fix code returned a 1 TRX / 18 TRX / 36 TRX
@@ -43,14 +43,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertGreaterThan(withSafety, bare)
     }
 
-    /// `defaultContractFeeLimit` returns the docs-backed fallback budget
-    /// used when simulation isn't possible. 50,000,000 energy × 420 sun =
-    /// 21,000,000,000 sun (21 TRX). Mirrors the Android
-    /// `TronFeeService.DEFAULT_MAX_ENERGY_USED` reference.
-    func testDefaultContractFeeLimit_returnsTwentyOneTrxAtCurrentEnergyPrice() {
+    /// `defaultContractFeeLimit` returns the opaque-swap estimate used before
+    /// pre-built transaction bytes reach the fee layer. 50,000 energy × 420 sun =
+    /// 21,000,000 sun (21 TRX).
+    func testDefaultContractFeeLimitReturnsTwentyOneTrxAt420Sun() {
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 420),
-            BigInt(21_000_000_000)
+            BigInt(21_000_000)
         )
     }
 
@@ -60,11 +59,56 @@ final class TronServiceFeeLimitTests: XCTestCase {
     func testDefaultContractFeeLimit_scalesWithEnergyPrice() {
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 100),
-            BigInt(5_000_000_000)
+            BigInt(5_000_000)
         )
         XCTAssertEqual(
             TronService.defaultContractFeeLimit(energyPrice: 1_000),
-            BigInt(50_000_000_000)
+            BigInt(50_000_000)
+        )
+    }
+
+    func testEnergyFeePriceFallsBackToCurrentBaselineWhenParameterMissing() throws {
+        let response = try JSONDecoder().decode(
+            TronChainParametersResponse.self,
+            from: Data(#"{"chainParameter":[]}"#.utf8)
+        )
+
+        XCTAssertEqual(response.energyFeePrice, 100)
+        XCTAssertEqual(response.dynamicEnergyMaxFactor, 34_000)
+        XCTAssertEqual(response.maxFeeLimit, 15_000_000_000)
+    }
+
+    func testEnergyFeePriceFallsBackToCurrentBaselineWhenParameterInvalid() throws {
+        let response = try JSONDecoder().decode(
+            TronChainParametersResponse.self,
+            from: Data(#"{"chainParameter":[{"key":"getEnergyFee","value":0}]}"#.utf8)
+        )
+
+        XCTAssertEqual(response.energyFeePrice, 100)
+    }
+
+    func testTrc20FallbackUsesMaximumDynamicEnergyFactor() {
+        let observedTransferWithHeadroom = TronService.contractFeeLimit(
+            energyUsed: 130_285,
+            energyPrice: 100
+        )
+        let fallback = TronService.defaultTrc20FeeLimit(
+            energyPrice: 100,
+            dynamicEnergyMaxFactor: 34_000,
+            maxFeeLimit: 15_000_000_000
+        )
+
+        XCTAssertEqual(
+            fallback,
+            BigInt(28_600_000)
+        )
+        XCTAssertGreaterThan(fallback, observedTransferWithHeadroom)
+    }
+
+    func testContractFeeLimitNeverExceedsChainMaximum() {
+        XCTAssertEqual(
+            TronService.cappedFeeLimit(BigInt(21_000_000_000), maxFeeLimit: 15_000_000_000),
+            BigInt(15_000_000_000)
         )
     }
 
@@ -91,7 +135,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
     /// Simulation throws (network error / TRON gateway 5xx). Old behavior
     /// fell through to `BYTES_PER_CONTRACT_TX * 1000` (~0.345 TRX), which
     /// silently re-introduced OUT_OF_ENERGY. New behavior: fall back to
-    /// the safe default budget (~21 TRX).
+    /// the max-factor fallback (120.12 TRX at the test chain price).
     func testGetBlockInfo_trc20Transfer_fallsBackOnSimulationError() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000)
@@ -102,7 +146,14 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
         let gasFee = extractGasFee(result)
 
-        XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+        XCTAssertEqual(
+            gasFee,
+            UInt64(TronService.defaultTrc20FeeLimit(
+                energyPrice: 420,
+                dynamicEnergyMaxFactor: 34_000,
+                maxFeeLimit: 15_000_000_000
+            ))
+        )
     }
 
     /// Simulation returns `result.result = false` (e.g. insufficient TRC20
@@ -120,13 +171,18 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
         let gasFee = extractGasFee(result)
 
-        XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+        XCTAssertEqual(
+            gasFee,
+            UInt64(TronService.defaultTrc20FeeLimit(
+                energyPrice: 420,
+                dynamicEnergyMaxFactor: 34_000,
+                maxFeeLimit: 15_000_000_000
+            ))
+        )
     }
 
-    /// Native TRX swap (`isSwap == true`). We don't yet have the contract
-    /// function selector + parameter at fee-calc time, so use the default
-    /// budget — better than the prior bandwidth-only fee that would
-    /// trigger OUT_OF_ENERGY on the swap's `triggerSmartContract` path.
+    /// Opaque native TRX swap (`isSwap == true`). The pre-built transaction
+    /// reaches the signer later, so this layer uses its smaller UI estimate.
     func testGetBlockInfo_nativeSwap_usesDefaultContractBudget() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 0)
@@ -137,6 +193,37 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let gasFee = extractGasFee(result)
 
         XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
+    }
+
+    func testNativeSwapUsesCurrentFallbackWhenChainParametersUnavailable() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.errors["/wallet/getchainparameters"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeNativeCoin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+            memo: nil,
+            isSwap: true
+        )
+
+        XCTAssertEqual(extractGasFee(result), 5_000_000)
+    }
+
+    func testTrc20SimulationFailureNeverUsesOpaqueSwapEstimate() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.errors["/wallet/getchainparameters"] = HTTPError.invalidResponse
+        stub.errors["/wallet/triggerconstantcontract"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), 28_600_000)
     }
 
     /// Native TRX transfer with sufficient bandwidth — the daily free-net
@@ -330,7 +417,12 @@ private final class TronStubHTTPClient: HTTPClientProtocol {
         {"block_header":{"raw_data":{"timestamp":1700000000,"number":1,"version":0,"txTrieRoot":"00","parentHash":"00","witness_address":"00"}}}
         """)
         setResponse(path: "/wallet/getchainparameters", json: """
-        {"chainParameter":[{"key":"getEnergyFee","value":420},{"key":"getTransactionFee","value":1000}]}
+        {"chainParameter":[
+            {"key":"getEnergyFee","value":420},
+            {"key":"getTransactionFee","value":1000},
+            {"key":"getDynamicEnergyMaxFactor","value":34000},
+            {"key":"getMaxFeeLimit","value":15000000000}
+        ]}
         """)
         setResponse(path: "/wallet/getaccountresource", json: """
         {"freeNetUsed":0,"freeNetLimit":0,"NetUsed":0,"NetLimit":0,"EnergyUsed":0,"EnergyLimit":1000000}

@@ -8,9 +8,8 @@
 import Foundation
 
 /// Tron Transaction Status Logic:
-/// - receipt.result is ONLY present when transaction fails
-/// - If receipt exists but receipt.result is nil → SUCCESS
-/// - If receipt.result exists → FAILED (contains error like "OUT_OF_ENERGY", "REVERT", etc.)
+/// - If receipt.result is nil or "SUCCESS" → SUCCESS
+/// - Any other receipt.result → FAILED (contains error like "OUT_OF_ENERGY", "REVERT", etc.)
 /// - Top-level result field may also indicate "FAILED" with resMessage
 struct TronTransactionStatusProvider: TransactionStatusProvider {
     private let httpClient: HTTPClientProtocol
@@ -49,8 +48,8 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
 
             // Check receipt
             if let receipt = response.data.receipt {
-                // If receipt.result is present, transaction failed
-                if let receiptResult = receipt.result {
+                if let receiptResult = receipt.result,
+                   receiptResult.caseInsensitiveCompare("SUCCESS") != .orderedSame {
                     let failureReason = buildFailureReason(
                         receiptResult: receiptResult,
                         resMessage: response.data.resMessage
@@ -62,7 +61,6 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
                     )
                 }
 
-                // receipt exists but receipt.result is nil → SUCCESS
                 return TransactionStatusResult(
                     status: .confirmed,
                     blockNumber: blockNumber,
