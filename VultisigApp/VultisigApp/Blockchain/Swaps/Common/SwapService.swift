@@ -625,9 +625,12 @@ private extension SwapService {
                 throw SwapError.swapAmountTooSmall
             }
 
-            if let minSwapAmountDecimal = Decimal(string: rapidQuote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+            if let belowMinimum = Self.belowRecommendedMinimumError(
+                normalizedAmount: normalizedAmount,
+                recommendedMinAmountIn: rapidQuote.recommendedMinAmountIn,
+                fromCoin: fromCoin
+            ) {
+                throw belowMinimum
             }
 
             let quote = await maybeUpgradeToStreaming(
@@ -809,6 +812,33 @@ private extension SwapService {
             slippageBps: slippageBps
         )
         return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+    }
+}
+
+// MARK: - Recommended-minimum guard
+
+extension SwapService {
+    /// The per-candidate "below the node's own recommended floor" verdict for a
+    /// native THORChain/MAYAChain quote, or `nil` when the amount clears it.
+    ///
+    /// The comparison stays in node fixed-point units. The multiplier comes from
+    /// the source coin's native scale (1e10 for CACAO), while off-chain assets
+    /// use THORChain's 1e8 scale. The same multiplier converts the node's floor
+    /// back to a user-facing amount.
+    ///
+    /// A present but malformed floor fails open. An omitted floor fails quote
+    /// decoding earlier because `recommendedMinAmountIn` is required.
+    static func belowRecommendedMinimumError(
+        normalizedAmount: Decimal,
+        recommendedMinAmountIn: String,
+        fromCoin: Coin
+    ) -> SwapError? {
+        guard let minimum = Decimal(string: recommendedMinAmountIn),
+              normalizedAmount < minimum else {
+            return nil
+        }
+        let recommendedAmount = "\(minimum / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+        return .lessThenMinSwapAmount(amount: recommendedAmount)
     }
 }
 
