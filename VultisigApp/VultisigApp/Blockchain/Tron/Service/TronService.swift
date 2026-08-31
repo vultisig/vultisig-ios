@@ -288,11 +288,10 @@ class TronService {
             return BigInt.zero
         }
 
-        // This marker selects a local WalletCore system-contract builder; it
-        // is deliberately omitted from the transaction's `data` field. A TRON
-        // memo fee is charged only for data that actually reaches the wire, so
-        // adding getMemoFee here would show a fee the claim cannot incur.
-        guard memo != TronHelper.withdrawExpireUnfreezeMemo else {
+        // System-contract routing markers are omitted from the transaction's
+        // `data` field. A TRON memo fee applies only to data that reaches the
+        // wire, so these local instructions must not add getMemoFee.
+        guard !TronHelper.isSystemContractRoutingMemo(memo) else {
             return BigInt.zero
         }
 

@@ -13,12 +13,23 @@ import OSLog
 
 enum TronHelper {
 
+    static let freezeMemoPrefix = "FREEZE:"
+    static let unfreezeMemoPrefix = "UNFREEZE:"
+
     /// Memo that routes a self-addressed native TRX payload to
     /// `WithdrawExpireUnfreezeContract` — the Stake 2.0 claim that moves every
     /// expired `UnfreezeBalanceV2` entry back into the spendable balance.
     /// Matched exactly (no argument: the contract takes none) and named after
     /// the TRON contract so co-signing platforms can mirror the convention.
     static let withdrawExpireUnfreezeMemo = "WITHDRAW_EXPIRE_UNFREEZE"
+
+    /// These app-local markers select WalletCore system-contract builders and
+    /// are never serialized into the transaction data field.
+    static func isSystemContractRoutingMemo(_ memo: String) -> Bool {
+        memo == withdrawExpireUnfreezeMemo
+            || memo.hasPrefix(freezeMemoPrefix)
+            || memo.hasPrefix(unfreezeMemoPrefix)
+    }
 
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // For TRX swaps, we use the same logic as regular transactions but with swap memo
@@ -73,8 +84,8 @@ enum TronHelper {
             )
         }
         // FreezeBalanceV2 (Stake 2.0) - detect from memo
-        if let memo = keysignPayload.memo, memo.hasPrefix("FREEZE:") {
-            let resourceString = String(memo.dropFirst("FREEZE:".count))
+        if let memo = keysignPayload.memo, memo.hasPrefix(freezeMemoPrefix) {
+            let resourceString = String(memo.dropFirst(freezeMemoPrefix.count))
             guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
                 throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
             }
@@ -90,8 +101,8 @@ enum TronHelper {
         }
 
         // UnfreezeBalanceV2 (Stake 2.0) - detect from memo
-        if let memo = keysignPayload.memo, memo.hasPrefix("UNFREEZE:") {
-            let resourceString = String(memo.dropFirst("UNFREEZE:".count))
+        if let memo = keysignPayload.memo, memo.hasPrefix(unfreezeMemoPrefix) {
+            let resourceString = String(memo.dropFirst(unfreezeMemoPrefix.count))
             guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
                 throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
             }
