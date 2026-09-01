@@ -57,6 +57,26 @@ final class JupiterFeeFallbackTests: XCTestCase {
         XCTAssertGreaterThan(result.platformFee, 0)
     }
 
+    func testProvisionedFeeAtaStillSendsFeeAccountWhenQuotedFeeRoundsToZero() async throws {
+        let accounts = StubSolanaAccounts(feeAtaExists: true)
+        let http = JupiterScriptedHTTPClient(
+            quoteScript: [(200, quoteJSON(input: wsol, output: usdc, feeAmount: "0"))]
+        )
+        let service = JupiterService(httpClient: http, solanaService: accounts)
+
+        let result = try await service.fetchQuote(
+            fromCoin: makeSOL(),
+            toCoin: makeUSDC(),
+            fromAmount: 1,
+            vultTierDiscount: 0,
+            slippageBps: 50
+        )
+
+        XCTAssertEqual(http.quotedFeeBps, [50])
+        XCTAssertTrue(http.swapRequestedFeeAccount)
+        XCTAssertEqual(result.platformFee, 0)
+    }
+
     func testFeeBearingQuote4xxRetriesWithoutFee() async throws {
         let accounts = StubSolanaAccounts(feeAtaExists: true)
         let http = JupiterScriptedHTTPClient(

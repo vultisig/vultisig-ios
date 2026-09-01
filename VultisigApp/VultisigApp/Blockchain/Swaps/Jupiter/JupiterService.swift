@@ -94,8 +94,7 @@ struct JupiterService {
             throw JupiterError.invalidQuote
         }
 
-        let quotedFee = BigInt(quoteResponse.platformFee?.amount ?? "0") ?? 0
-        let swapFeeAccount = chargedFee && quotedFee > 0 ? feeAccount : nil
+        let swapFeeAccount = chargedFee ? feeAccount : nil
         let swapBase64 = try await fetchSwapTransaction(
             quoteData: quoteData,
             userPublicKey: fromCoin.address,
