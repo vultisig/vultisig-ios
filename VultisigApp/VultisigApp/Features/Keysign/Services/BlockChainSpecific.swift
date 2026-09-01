@@ -58,7 +58,13 @@ enum BlockChainSpecific: Codable, Hashable {
         blockHeaderTxTrieRoot: String,
         blockHeaderParentHash: String,
         blockHeaderWitnessAddress: String,
-        gasFeeEstimation: UInt64
+        gasFeeEstimation: UInt64,
+        /// Gross ceiling written into the transaction. Local-only: the existing
+        /// protobuf `gas_estimation` field carries this value to co-signers, so
+        /// no wire/schema change is required. A decoded peer payload leaves this
+        /// nil and falls back to `gasFeeEstimation`, which is then the relayed
+        /// gross ceiling on that device.
+        feeLimit: UInt64? = nil
     )
 
     /// Return a copy with the EVM gas limit replaced. No-op for non-EVM cases
@@ -109,9 +115,20 @@ enum BlockChainSpecific: Codable, Hashable {
             return jettonAddress.isEmpty ? TonHelper.defaultFee : TonHelper.defaultJettonFee
         case .Ripple(_, let gas, _, _, _):
             return gas.description.toBigInt()
-        case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
+        case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation, _):
             return gasFeeEstimation.description.toBigInt()
         }
+    }
+
+    /// The gross TRON fee ceiling that every signer must put into the same
+    /// transaction bytes. Initiators keep a smaller post-resource display fee
+    /// beside it; peers receive this ceiling through the existing protobuf
+    /// `gas_estimation` field and therefore use the fallback.
+    var tronFeeLimit: UInt64? {
+        guard case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation, let feeLimit) = self else {
+            return nil
+        }
+        return feeLimit ?? gasFeeEstimation
     }
 
     var fee: BigInt {

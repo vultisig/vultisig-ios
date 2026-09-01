@@ -11,6 +11,11 @@ import WalletCore
 
 class TronService {
 
+    private struct FeeEstimate {
+        let displayFee: BigInt
+        let feeLimit: BigInt
+    }
+
     static let shared = TronService()
 
     private let apiService: TronAPIService
@@ -83,8 +88,7 @@ class TronService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
 
-        let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo, isSwap: isSwap)
-        let estimation = String(calculatedFee)
+        let estimate = try await calculateTronFee(coin: coin, to: to, memo: memo, isSwap: isSwap)
 
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
@@ -95,7 +99,8 @@ class TronService {
             blockHeaderTxTrieRoot: response.block_header?.raw_data?.txTrieRoot ?? "",
             blockHeaderParentHash: response.block_header?.raw_data?.parentHash ?? "",
             blockHeaderWitnessAddress: response.block_header?.raw_data?.witness_address ?? "",
-            gasFeeEstimation: UInt64(estimation) ?? 0
+            gasFeeEstimation: UInt64(estimate.displayFee.description) ?? 0,
+            feeLimit: UInt64(estimate.feeLimit.description) ?? 0
         )
     }
 
@@ -161,9 +166,8 @@ class TronService {
 
     // MARK: - Private Helpers
 
-    /// Returns the value that becomes both `gasFeeEstimation` (displayed in the
-    /// UI as "Fees") and `$0.feeLimit` for the signed transaction on
-    /// contract paths.
+    /// Returns both the user-visible fee estimate and the gross ceiling written
+    /// as `$0.feeLimit` on contract paths.
     ///
     /// **Native TRX transfer** — bandwidth-only fee. Signing path doesn't
     /// write `$0.feeLimit` for plain `transfer` contracts, so this number
@@ -181,7 +185,12 @@ class TronService {
     /// smaller UI estimate (`DEFAULT_MAX_ENERGY_USED × energyFeePrice`).
     ///
     /// See https://developers.tron.network/docs/set-feelimit.
-    private func calculateTronFee(coin: Coin, to: String?, memo: String?, isSwap: Bool) async throws -> BigInt {
+    private func calculateTronFee(
+        coin: Coin,
+        to: String?,
+        memo: String?,
+        isSwap: Bool
+    ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
         let chainParams = try? await getCachedChainParameters()
@@ -190,13 +199,14 @@ class TronService {
             ?? TronChainParametersResponse.defaultDynamicEnergyMaxFactor
         let maxFeeLimit = chainParams?.maxFeeLimit ?? TronChainParametersResponse.defaultMaxFeeLimit
 
-        let transactionFee: BigInt
+        let transactionEstimate: FeeEstimate
         if coin.isNativeToken {
             if isSwap {
-                transactionFee = Self.cappedFeeLimit(
+                let feeLimit = Self.cappedFeeLimit(
                     Self.defaultContractFeeLimit(energyPrice: energyPrice),
                     maxFeeLimit: maxFeeLimit
                 )
+                transactionEstimate = FeeEstimate(displayFee: feeLimit, feeLimit: feeLimit)
             } else {
                 // A *successfully computed* 0 means sufficient bandwidth — a
                 // genuinely free transfer, surfaced as 0. But a thrown error
@@ -204,10 +214,11 @@ class TronService {
                 // is indistinguishable from that once collapsed to `.zero`,
                 // which would render a real transfer as falsely free. Fall back
                 // to the coin's conservative static fee only on that error path.
-                transactionFee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
+                let fee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
+                transactionEstimate = FeeEstimate(displayFee: fee, feeLimit: fee)
             }
         } else {
-            transactionFee = await calculateTrc20FeeLimit(
+            transactionEstimate = await calculateTrc20Fee(
                 coin: coin,
                 to: to,
                 energyPrice: energyPrice,
@@ -216,11 +227,15 @@ class TronService {
             )
         }
 
-        let totalFee = transactionFee + memoFee + activationFee
+        let displayFee = transactionEstimate.displayFee + memoFee + activationFee
+        let feeLimit = transactionEstimate.feeLimit + memoFee + activationFee
         if isSwap || !coin.isNativeToken {
-            return Self.cappedFeeLimit(totalFee, maxFeeLimit: maxFeeLimit)
+            return FeeEstimate(
+                displayFee: Self.cappedFeeLimit(displayFee, maxFeeLimit: maxFeeLimit),
+                feeLimit: Self.cappedFeeLimit(feeLimit, maxFeeLimit: maxFeeLimit)
+            )
         }
-        return totalFee
+        return FeeEstimate(displayFee: displayFee, feeLimit: feeLimit)
     }
 
     private func calculateNativeTrxFee(coin: Coin) async throws -> BigInt {
@@ -232,20 +247,21 @@ class TronService {
         )
     }
 
-    private func calculateTrc20FeeLimit(
+    private func calculateTrc20Fee(
         coin: Coin,
         to: String?,
         energyPrice: Int64,
         dynamicEnergyMaxFactor: Int64,
         maxFeeLimit: Int64
-    ) async -> BigInt {
+    ) async -> FeeEstimate {
         let fallback = Self.defaultTrc20FeeLimit(
             energyPrice: energyPrice,
             dynamicEnergyMaxFactor: dynamicEnergyMaxFactor,
             maxFeeLimit: maxFeeLimit
         )
+        let fallbackEstimate = FeeEstimate(displayFee: fallback, feeLimit: fallback)
         guard let to, !to.isEmpty, !coin.contractAddress.isEmpty else {
-            return fallback
+            return fallbackEstimate
         }
 
         let simulation: TronTriggerConstantResponse
@@ -256,18 +272,44 @@ class TronService {
                 toAddress: to
             )
         } catch {
-            return fallback
+            return fallbackEstimate
         }
 
-        guard simulation.result?.result == true,
-              let energyUsed = simulation.energy_used, energyUsed > 0 else {
-            return fallback
+        let simulationMessage = simulation.result?.message?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard simulation.result?.result == true, simulationMessage.isEmpty,
+              let energyUsed = simulation.energy_used,
+              let totalEnergyUsed = Self.simulatedTotalEnergy(
+                energyUsed: energyUsed,
+                energyPenalty: simulation.energy_penalty
+              ) else {
+            return fallbackEstimate
         }
 
-        return Self.cappedFeeLimit(
-            Self.contractFeeLimit(energyUsed: Int64(energyUsed), energyPrice: energyPrice),
+        let availableEnergy: Int64
+        do {
+            let accountResource = try await apiService.getAccountResource(address: coin.address)
+            availableEnergy = accountResource.calculateAvailableEnergy()
+        } catch {
+            // Unknown resources must never turn into a misleading zero-fee
+            // estimate. Assuming no staked Energy shows the full simulated burn
+            // while leaving the independently-computed signed ceiling intact.
+            availableEnergy = 0
+        }
+
+        let feeLimit = Self.cappedFeeLimit(
+            Self.contractFeeLimit(energyUsed: totalEnergyUsed, energyPrice: energyPrice),
             maxFeeLimit: maxFeeLimit
         )
+        let displayFee = Self.cappedFeeLimit(
+            Self.trc20DisplayFee(
+                totalEnergyUsed: totalEnergyUsed,
+                availableEnergy: availableEnergy,
+                energyPrice: energyPrice
+            ),
+            maxFeeLimit: maxFeeLimit
+        )
+        return FeeEstimate(displayFee: displayFee, feeLimit: feeLimit)
     }
 
     /// Opaque native-swap estimate. TRC20 simulation failures deliberately use
@@ -294,6 +336,31 @@ class TronService {
 
     static func cappedFeeLimit(_ feeLimit: BigInt, maxFeeLimit: Int64) -> BigInt {
         min(max(feeLimit, .zero), BigInt(max(maxFeeLimit, 0)))
+    }
+
+    /// `triggerconstantcontract.energy_used` is already the total Energy, and
+    /// `energy_penalty` is the Dynamic Energy portion inside that total. Rebuild
+    /// the total from base + penalty to make that relationship explicit and to
+    /// reject malformed responses where the reported subset exceeds the total.
+    /// See https://developers.tron.network/docs/set-feelimit#estimating-energy-before-broadcasting.
+    static func simulatedTotalEnergy(energyUsed: Int, energyPenalty: Int?) -> Int64? {
+        guard let total = Int64(exactly: energyUsed), total > 0 else { return nil }
+        guard let penalty = Int64(exactly: energyPenalty ?? 0), penalty >= 0, penalty <= total else {
+            return nil
+        }
+        let baseEnergy = total - penalty
+        return baseEnergy + penalty
+    }
+
+    /// Estimated TRX burn after applying the sender's currently available
+    /// staked Energy. This value is display-only; it never lowers `fee_limit`.
+    static func trc20DisplayFee(
+        totalEnergyUsed: Int64,
+        availableEnergy: Int64,
+        energyPrice: Int64
+    ) -> BigInt {
+        let energyToBurn = max(BigInt(totalEnergyUsed) - BigInt(max(availableEnergy, 0)), .zero)
+        return energyToBurn * BigInt(max(energyPrice, 0))
     }
 
     /// Translates a simulated `energy_used` into a `fee_limit` cap (in sun),
@@ -339,11 +406,10 @@ class TronService {
             return BigInt.zero
         }
 
-        // This marker selects a local WalletCore system-contract builder; it
-        // is deliberately omitted from the transaction's `data` field. A TRON
-        // memo fee is charged only for data that actually reaches the wire, so
-        // adding getMemoFee here would show a fee the claim cannot incur.
-        guard memo != TronHelper.withdrawExpireUnfreezeMemo else {
+        // System-contract routing markers are omitted from the transaction's
+        // `data` field. A TRON memo fee applies only to data that reaches the
+        // wire, so these local instructions must not add getMemoFee.
+        guard !TronHelper.isSystemContractRoutingMemo(memo) else {
             return BigInt.zero
         }
 

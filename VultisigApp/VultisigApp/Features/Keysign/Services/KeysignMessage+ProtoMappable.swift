@@ -674,7 +674,8 @@ extension BlockChainSpecific {
             let blockHeaderTxTrieRoot,
             let blockHeaderParentHash,
             let blockHeaderWitnessAddress,
-            let gasEstimation
+            let gasEstimation,
+            let feeLimit
         ):
             return .tronSpecific(.with {
                 $0.timestamp = timestamp
@@ -685,7 +686,10 @@ extension BlockChainSpecific {
                 $0.blockHeaderParentHash = blockHeaderParentHash
                 $0.blockHeaderTxTrieRoot = blockHeaderTxTrieRoot
                 $0.blockHeaderWitnessAddress = blockHeaderWitnessAddress
-                $0.gasEstimation = gasEstimation
+                // Keep the wire contract unchanged: `gas_estimation` has always
+                // been the value signers write as `fee_limit`. The initiating
+                // device's post-stake display estimate is deliberately local.
+                $0.gasEstimation = feeLimit ?? gasEstimation
             })
         }
     }

@@ -267,9 +267,7 @@ struct SwapService {
             switch jupiterError {
             case .quoteFailed(let code), .swapFailed(let code):
                 return code >= 500
-            case .invalidQuote:
-                return true
-            case .feeAccountUnavailable, .feeAccountNotProvisioned:
+            case .invalidQuote, .feeAccountUnavailable, .feeAccountNotProvisioned:
                 return false
             }
         }
@@ -625,9 +623,12 @@ private extension SwapService {
                 throw SwapError.swapAmountTooSmall
             }
 
-            if let minSwapAmountDecimal = Decimal(string: rapidQuote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+            if let belowMinimum = Self.belowRecommendedMinimumError(
+                normalizedAmount: normalizedAmount,
+                recommendedMinAmountIn: rapidQuote.recommendedMinAmountIn,
+                fromCoin: fromCoin
+            ) {
+                throw belowMinimum
             }
 
             let quote = await maybeUpgradeToStreaming(
@@ -717,14 +718,18 @@ private extension SwapService {
         slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let response = try await service.fetchQuotes(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount,
-            slippageBps: slippageBps
-        )
-        return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
+        do {
+            let response = try await service.fetchQuotes(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: fromAmount,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
+            )
+            return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
+        } catch let error as LiFiSwapError {
+            throw Self.mapLiFiError(error)
+        }
     }
 
     func fetchSwapKitQuote(
@@ -801,14 +806,45 @@ private extension SwapService {
         slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let (quote, fee, platformFee, feeOnInput) = try await service.fetchQuote(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            vultTierDiscount: vultTierDiscount,
-            slippageBps: slippageBps
-        )
-        return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+        do {
+            let (quote, fee, platformFee, feeOnInput) = try await service.fetchQuote(
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                fromAmount: fromAmount,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
+            )
+            return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+        } catch let error as JupiterError {
+            throw Self.mapJupiterError(error)
+        }
+    }
+}
+
+// MARK: - Recommended-minimum guard
+
+extension SwapService {
+    /// The per-candidate "below the node's own recommended floor" verdict for a
+    /// native THORChain/MAYAChain quote, or `nil` when the amount clears it.
+    ///
+    /// The comparison stays in node fixed-point units. The multiplier comes from
+    /// the source coin's native scale (1e10 for CACAO), while off-chain assets
+    /// use THORChain's 1e8 scale. The same multiplier converts the node's floor
+    /// back to a user-facing amount.
+    ///
+    /// A present but malformed floor fails open. An omitted floor fails quote
+    /// decoding earlier because `recommendedMinAmountIn` is required.
+    static func belowRecommendedMinimumError(
+        normalizedAmount: Decimal,
+        recommendedMinAmountIn: String,
+        fromCoin: Coin
+    ) -> SwapError? {
+        guard let minimum = Decimal(string: recommendedMinAmountIn),
+              normalizedAmount < minimum else {
+            return nil
+        }
+        let recommendedAmount = "\(minimum / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+        return .lessThenMinSwapAmount(amount: recommendedAmount)
     }
 }
 
@@ -964,6 +1000,26 @@ extension SwapService {
             return .tradingHalted
         }
         return classifyNativeQuoteError(error.error) ?? .serverError(message: error.error)
+    }
+
+    /// 4xx / invalid / missing-ATA → no route. 5xx stays `.serverError` so
+    /// `isTransientAggregatorError` can still retry Jupiter when a native provider is halted.
+    static func mapJupiterError(_ error: JupiterError) -> SwapError {
+        switch error {
+        case .quoteFailed(let code) where code >= 500,
+             .swapFailed(let code) where code >= 500:
+            return .serverError(message: "Jupiter HTTP \(code)")
+        case .quoteFailed, .swapFailed, .invalidQuote, .feeAccountUnavailable, .feeAccountNotProvisioned:
+            return .routeUnavailable
+        }
+    }
+
+    /// LiFi "no available quotes…" is a no-route; other LiFi bodies stay typed for the log.
+    static func mapLiFiError(_ error: LiFiSwapError) -> Error {
+        if error.message.lowercased().contains("no available quotes") {
+            return SwapError.routeUnavailable
+        }
+        return error
     }
 }
 

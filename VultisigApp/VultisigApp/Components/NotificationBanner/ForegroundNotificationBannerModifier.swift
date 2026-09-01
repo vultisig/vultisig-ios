@@ -16,7 +16,9 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
     @State private var showBackground: Bool = false
 
     func body(content: Content) -> some View {
-        VStack(spacing: 12) {
+        ZStack(alignment: .top) {
+            content
+
             if isVisible, let data = currentData {
                 ForegroundNotificationBannerView(
                     data: data,
@@ -27,10 +29,9 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
                         dismiss()
                     }
                 )
+                .zIndex(1)
                 .transition(.move(edge: .top))
             }
-
-            content
         }
         .background(showBackground ? Theme.colors.bgPrimary.ignoresSafeArea() : nil)
         .onReceive(pushNotificationManager.$foregroundNotification) { newValue in
