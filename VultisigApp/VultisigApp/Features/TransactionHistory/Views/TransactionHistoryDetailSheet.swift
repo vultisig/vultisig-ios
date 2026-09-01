@@ -311,7 +311,8 @@ struct TransactionHistoryDetailSheet: View {
         }
     }
 
-    /// Raw on-chain text, shown only for a genuine failure.
+    /// The presented on-chain reason, including actionable guidance for known
+    /// failures, shown only for a genuine failure.
     ///
     /// A limit row must not use the coarse `.error` status for this: the row
     /// storage collapses refunded / expired / cancelled into `.error` too, and
