@@ -73,6 +73,10 @@ class KeysignViewModel: ObservableObject {
     /// production singleton so runtime behaviour is unchanged.
     var transactionStatusChecker: TransactionStatusChecking = TransactionStatusService.shared
 
+    /// Runs the quoted EVM aggregator calldata against current chain state on
+    /// every participating device before MPC work starts.
+    var evmSwapPreflight: EVMSwapPreflightChecking = EVMSwapPreflight()
+
     /// Per-message stage budget. Each message's inbound poll already caps at
     /// 60s per attempt (see the DKLS/Schnorr/Dilithium `pullInboundMessages`
     /// loops); this adds headroom for the setup-message round-trips so a single
@@ -358,6 +362,9 @@ class KeysignViewModel: ObservableObject {
             return
         }
 
+        guard await validateEVMSwapPreflight() else { return }
+        guard !Task.isCancelled else { return }
+
         // Snapshot the (message-count-scaled) budget before entering the group
         // so the non-isolated sleeper closure stays Sendable-clean.
         let stageTimeout = keysignStageTimeout
@@ -399,6 +406,26 @@ class KeysignViewModel: ObservableObject {
             setStatus(.KeysignRetryRequested)
         } catch {
             logger.error("keysign stage race exited unexpectedly: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    func validateEVMSwapPreflight() async -> Bool {
+        guard let keysignPayload else { return true }
+        do {
+            try await evmSwapPreflight.validate(
+                keysignPayload,
+                localCoinAddress: vault.address(for: keysignPayload.coin.chain)
+            )
+            return true
+        } catch {
+            if Task.isCancelled || Self.isCancellation(error) {
+                logger.info("EVM swap preflight cancelled before keysign")
+                return false
+            }
+            logger.error("EVM swap preflight failed: \(error.localizedDescription, privacy: .private)")
+            keysignError = error.localizedDescription.redactingEndpointCredentials()
+            setStatus(.KeysignFailed)
+            return false
         }
     }
 

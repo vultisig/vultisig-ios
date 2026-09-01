@@ -209,6 +209,27 @@ struct EvmServiceStruct {
         return try await rpcService.strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
 
+    func simulateSwap(_ call: EVMSwapPreflightCall) async throws {
+        let transaction = Self.swapSimulationTransaction(call)
+        do {
+            _ = try await rpcService.strRpcCall(method: "eth_call", params: [transaction, "latest"])
+        } catch let RpcServiceError.rpcError(code, message) {
+            guard EVMSwapPreflightError.isExecutionRevert(code: code, message: message) else {
+                throw RpcServiceError.rpcError(code: code, message: message)
+            }
+            throw EVMSwapPreflightError.reverted(detail: message)
+        }
+    }
+
+    static func swapSimulationTransaction(_ call: EVMSwapPreflightCall) -> [String: String] {
+        [
+            "from": call.from,
+            "to": call.to,
+            "data": call.data,
+            "value": call.valueHex
+        ]
+    }
+
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         // Convert the memo to hex (if present). Assume memo is a String.
         let memoDataHex = memo?.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""

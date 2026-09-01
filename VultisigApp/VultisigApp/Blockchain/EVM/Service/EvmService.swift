@@ -177,6 +177,10 @@ enum EvmService {
         return try await (try service).broadcastTransaction(hex: hex)
     }
 
+    func simulateSwap(_ call: EVMSwapPreflightCall) async throws {
+        return try await (try service).simulateSwap(call)
+    }
+
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         return try await (try service).estimateGasForEthTransaction(senderAddress: senderAddress, recipientAddress: recipientAddress, value: value, memo: memo)
     }
