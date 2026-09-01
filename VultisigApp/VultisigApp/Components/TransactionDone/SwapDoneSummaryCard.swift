@@ -259,6 +259,8 @@ struct SwapDoneSummaryCard: View {
             // Gross list-rate Vultisig fee. Discounts below reconcile this row
             // to the net affiliate component retained in Total Fees.
             if transaction.showAffiliateFeeRow {
+                // `swapFeeLabel` is already localized and embeds the percentage;
+                // unknown-key localization intentionally echoes it unchanged.
                 getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
             }
             // Protocol Fee (native THOR/Maya outbound).
@@ -295,7 +297,7 @@ struct SwapDoneSummaryCard: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
                 .font(Theme.fonts.bodySMedium)
-                .padding(.vertical)
+                .padding(.vertical, 8)
             }
 
             if !transaction.referralDiscount.isEmpty {
@@ -309,7 +311,7 @@ struct SwapDoneSummaryCard: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
                 .font(Theme.fonts.bodySMedium)
-                .padding(.vertical)
+                .padding(.vertical, 8)
             }
         }
     }

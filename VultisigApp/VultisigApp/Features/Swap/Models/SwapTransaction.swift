@@ -311,8 +311,8 @@ extension SwapTransaction {
 
     /// Whether an expandable fee breakdown has any itemized rows to show, so the
     /// "Total fee" chevron is only offered when expanding reveals something.
-    /// Mirrors the itemized rows the Done breakdown emits (network gas, the
-    /// Vultisig affiliate row, the protocol/outbound row).
+    /// Mirrors the itemized rows the Done breakdown emits: network gas, gross
+    /// affiliate fee, protocol fee, applied discounts, and price impact.
     var hasFeeBreakdown: Bool {
         showGas || showAffiliateFeeRow || showProtocolFeeRow || hasAppliedDiscounts || !priceImpactString.isEmpty
     }

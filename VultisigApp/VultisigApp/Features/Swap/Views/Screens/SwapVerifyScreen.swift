@@ -171,7 +171,7 @@ struct SwapVerifyScreen: View {
                     priceImpactRow
                 }
 
-                // Total Fee — reconciles to Network + Vultisig + Protocol.
+                // Net Total Fee after subtracting the applied discounts above.
                 if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
