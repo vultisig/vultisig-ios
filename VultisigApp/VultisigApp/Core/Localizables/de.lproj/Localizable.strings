@@ -1077,8 +1077,8 @@
 "passcodeDisableNavTitle" = "Passcode entfernen";
 "passcodeDisableSubtitle" = "Ihre Key-Shares werden wieder entschlüsselt und dieses Gerät kehrt in den Zustand vor dem Passcode zurück.";
 "passcodeDisableTitle" = "Passcode eingeben";
-"passcodeEnterSubtitle" = "Vultisig ist gesperrt.";
-"passcodeEnterTitle" = "Passcode eingeben";
+"passcodeEnterSubtitle" = "Gib deinen Passcode ein, um fortzufahren.";
+"passcodeEnterTitle" = "App gesperrt";
 "passcodeGenericError" = "Etwas ist schiefgelaufen. Versuchen Sie es erneut.";
 "passcodeIncorrect" = "Falscher Passcode.";
 "passcodeInvalidLength" = "Geben Sie alle 6 Ziffern ein.";
@@ -1091,6 +1091,7 @@
 "passcodeSealedSharesWithoutKey" = "Ihre Vaults sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel, der sie öffnet, kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
 "passcodeSetTitle" = "Passcode festlegen";
 "passcodeStorageError" = "Der Passcode konnte auf diesem Gerät nicht gelesen werden. Stellen Sie Ihren Vault aus einem Backup wieder her.";
+"passcodeUseFaceID" = "Face ID verwenden";
 "password" = "Passwort";
 "PasswordCannotBeReset" = "Passwort kann nicht zurückgesetzt oder wiederhergestellt werden";
 "passwordHint" = "Passwort-Hinweis";

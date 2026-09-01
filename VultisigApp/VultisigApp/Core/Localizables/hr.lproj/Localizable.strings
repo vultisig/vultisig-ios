@@ -1077,8 +1077,8 @@
 "passcodeDisableNavTitle" = "Ukloni zaporku";
 "passcodeDisableSubtitle" = "Vaši key shareovi ponovno se dešifriraju i uređaj se vraća u stanje prije zaporke.";
 "passcodeDisableTitle" = "Unesite zaporku";
-"passcodeEnterSubtitle" = "Vultisig je zaključan.";
-"passcodeEnterTitle" = "Unesite zaporku";
+"passcodeEnterSubtitle" = "Unesite zaporku za nastavak.";
+"passcodeEnterTitle" = "Aplikacija je zaključana";
 "passcodeGenericError" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "passcodeIncorrect" = "Netočna zaporka.";
 "passcodeInvalidLength" = "Unesite svih 6 znamenki.";
@@ -1091,6 +1091,7 @@
 "passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
+"passcodeUseFaceID" = "Upotrijebi Face ID";
 "password" = "Lozinka";
 "PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
 "passwordHint" = "Nagovještaj lozinke";

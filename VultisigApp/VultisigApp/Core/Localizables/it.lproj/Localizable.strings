@@ -1077,8 +1077,8 @@
 "passcodeDisableNavTitle" = "Rimuovi codice";
 "passcodeDisableSubtitle" = "I tuoi key share vengono decifrati di nuovo e questo dispositivo torna com'era prima del codice.";
 "passcodeDisableTitle" = "Inserisci il codice";
-"passcodeEnterSubtitle" = "Vultisig è bloccato.";
-"passcodeEnterTitle" = "Inserisci il codice";
+"passcodeEnterSubtitle" = "Inserisci il codice per continuare.";
+"passcodeEnterTitle" = "App bloccata";
 "passcodeGenericError" = "Qualcosa è andato storto. Riprova.";
 "passcodeIncorrect" = "Codice errato.";
 "passcodeInvalidLength" = "Inserisci tutte e 6 le cifre.";
@@ -1091,6 +1091,7 @@
 "passcodeSealedSharesWithoutKey" = "I tuoi vault sono già cifrati su questo dispositivo, ma la chiave che li apre non è leggibile. Ripristinali da un backup.";
 "passcodeSetTitle" = "Imposta codice";
 "passcodeStorageError" = "Non è stato possibile leggere il codice su questo dispositivo. Ripristina il vault da un backup.";
+"passcodeUseFaceID" = "Usa Face ID";
 "password" = "Password";
 "PasswordCannotBeReset" = "La password non può essere reimpostata o recuperata";
 "passwordHint" = "Suggerimento password";

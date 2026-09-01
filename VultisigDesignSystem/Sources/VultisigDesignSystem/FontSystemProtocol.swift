@@ -41,4 +41,6 @@ public protocol FontSystemProtocol {
     var keypadDigit: Font { get }
     /// The keypad's backspace glyph is smaller than its digits.
     var keypadGlyph: Font { get }
+    var lockKeypadDigit: Font { get }
+    var lockKeypadLetters: Font { get }
 }

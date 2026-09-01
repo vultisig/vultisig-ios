@@ -1077,8 +1077,8 @@
 "passcodeDisableNavTitle" = "Remove passcode";
 "passcodeDisableSubtitle" = "Your key shares are decrypted again and this device goes back to how it was before the passcode.";
 "passcodeDisableTitle" = "Enter your passcode";
-"passcodeEnterSubtitle" = "Vultisig is locked.";
-"passcodeEnterTitle" = "Enter passcode";
+"passcodeEnterSubtitle" = "Enter your passcode to continue.";
+"passcodeEnterTitle" = "App Locked";
 "passcodeGenericError" = "Something went wrong. Try again.";
 "passcodeIncorrect" = "Incorrect passcode.";
 "passcodeInvalidLength" = "Enter all 6 digits.";
@@ -1091,6 +1091,7 @@
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
+"passcodeUseFaceID" = "Use face ID";
 "password" = "Password";
 "PasswordCannotBeReset" = "Password cannot be reset or recovered";
 "passwordHint" = "Password Hint";

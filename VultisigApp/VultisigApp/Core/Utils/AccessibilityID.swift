@@ -48,7 +48,7 @@ enum AccessibilityID {
         static let dots = "passcode.dots"
         static let deleteKey = "passcode.deleteKey"
         static let enterScreen = "passcode.enterScreen"
-        static let awaitingBiometrics = "passcode.awaitingBiometrics"
+        static let useBiometricsButton = "passcode.useBiometricsButton"
         static let keyshareRecoveryScreen = "passcode.keyshareRecoveryScreen"
         static let keyshareRecoveryImportButton = "passcode.keyshareRecoveryImportButton"
         static let keyshareRecoveryNoBackupToggle = "passcode.keyshareRecoveryNoBackupToggle"
