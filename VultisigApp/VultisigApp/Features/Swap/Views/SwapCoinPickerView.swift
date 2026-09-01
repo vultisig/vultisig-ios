@@ -27,8 +27,10 @@ struct SwapCoinPickerView: View {
 
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @State var searchBarFocused: Bool = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var searchBarFocused: Bool = false
     @State private var reloadTask: Task<Void, Never>?
+    @State private var showCustomToken = false
 
     var showSelectChainHeader: Bool {
         #if os(macOS)
@@ -62,7 +64,23 @@ struct SwapCoinPickerView: View {
     }
 
     var body: some View {
-        content.sheetContainer()
+        content
+            .sheetContainer()
+            .crossPlatformSheet(isPresented: $showCustomToken) {
+                if let selectedChain {
+                    CustomTokenScreen(
+                        vault: vault,
+                        chain: selectedChain,
+                        isPresented: $showCustomToken,
+                        onClose: { showCustomToken = false },
+                        onTokenAdded: onTokenAdded
+                    )
+                    .environmentObject(coinSelectionViewModel)
+                    .background(Theme.colors.bgPrimary)
+                    .applySheetSize()
+                    .sheetStyle(padding: 0)
+                }
+            }
     }
 
     var content: some View {
@@ -73,12 +91,16 @@ struct SwapCoinPickerView: View {
                     VStack(spacing: 12) {
                         if viewModel.isLoading {
                             loadingView
+                                .transition(contentTransition)
                         } else if !viewModel.filteredTokens.isEmpty {
                             list
+                                .transition(contentTransition)
                         } else {
                             emptyMessage
+                                .transition(contentTransition)
                         }
                     }
+                    .animation(contentAnimation, value: contentState)
                     .padding(.bottom, 80)
                 }
             }
@@ -134,6 +156,27 @@ struct SwapCoinPickerView: View {
         .sheetStyle()
     }
 
+    private enum ContentState: Equatable {
+        case loading
+        case results
+        case empty
+    }
+
+    private var contentState: ContentState {
+        if viewModel.isLoading {
+            return .loading
+        }
+        return viewModel.filteredTokens.isEmpty ? .empty : .results
+    }
+
+    private var contentAnimation: Animation? {
+        reduceMotion ? nil : .easeInOut(duration: 0.22)
+    }
+
+    private var contentTransition: AnyTransition {
+        reduceMotion ? .identity : .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
+    }
+
     var loadingView: some View {
         VStack(spacing: 16) {
             SpinningLineLoader()
@@ -171,8 +214,39 @@ struct SwapCoinPickerView: View {
     }
 
     var emptyMessage: some View {
-        ErrorMessage(text: "noResultFound")
-            .padding(.top, 48)
+        VStack(spacing: 16) {
+            VStack(spacing: 12) {
+                Icon(.circleDashed2, color: Theme.colors.primaryAccent4, size: 24)
+
+                Text("noTokenFound".localized)
+                    .font(Theme.fonts.title3)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 32)
+            .frame(maxWidth: .infinity)
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
+
+            Button {
+                showCustomToken = true
+            } label: {
+                Text("addCustomToken".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.alertInfo)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+            .showIf(shouldOfferCustomToken)
+        }
+        .padding(.top, 4)
+    }
+
+    private var shouldOfferCustomToken: Bool {
+        guard !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let selectedChain else {
+            return false
+        }
+        return CustomTokenResolverFactory.supports(chain: selectedChain)
     }
 
     var searchBar: some View {
@@ -292,6 +366,12 @@ struct SwapCoinPickerView: View {
         }
         selectedCoin = newCoin
         showSheet = false
+    }
+
+    private func onTokenAdded(_ token: CoinMeta) {
+        showCustomToken = false
+        viewModel.searchText = token.ticker
+        reloadCoins(forceRefresh: true)
     }
 }
 

@@ -11,6 +11,7 @@
 "addChain" = "Aggiungi catena";
 "addCoinLP" = "Aggiungi %@ LP";
 "addCustomChains" = "Aggiungi chain personalizzate";
+"addCustomToken" = "+ Aggiungi token personalizzato";
 "addDestinationTag" = "Aggiungi destination tag";
 "addFolder" = "Aggiungi cartella";
 "addFriendsReferral" = "Aggiungi un referral di amici";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "Notifiche disabilitate";
 "notificationSentSuccessfully" = "Notifica inviata con successo!";
 "notNow" = "Non ora";
+"noTokenFound" = "Nessun token trovato";
 "noTokensFound" = "Nessun token trovato";
 "noTokensFoundSubtitle" = "Non sono stati trovati token per questa selezione.";
 "noTransactionsYet" = "Nessuna transazione";

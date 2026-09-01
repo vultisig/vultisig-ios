@@ -11,6 +11,7 @@
 "addChain" = "체인 추가";
 "addCoinLP" = "%@ LP 추가";
 "addCustomChains" = "커스텀 체인 추가";
+"addCustomToken" = "+ 커스텀 토큰 추가";
 "addDestinationTag" = "목적지 태그 추가";
 "addFolder" = "폴더 추가";
 "addFriendsReferral" = "친구 추천 코드 추가";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "알림 비활성화됨";
 "notificationSentSuccessfully" = "알림이 성공적으로 전송되었습니다!";
 "notNow" = "나중에";
+"noTokenFound" = "토큰을 찾을 수 없음";
 "noTokensFound" = "선택된 토큰 없음";
 "noTokensFoundSubtitle" = "모든 토큰을 비활성화했습니다. 찾고 있는 토큰이 활성화되어 있는지 확인하세요.";
 "noTransactionsYet" = "아직 트랜잭션 없음";

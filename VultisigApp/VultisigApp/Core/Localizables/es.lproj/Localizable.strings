@@ -11,6 +11,7 @@
 "addChain" = "Agregar cadena";
 "addCoinLP" = "Agregar %@ LP";
 "addCustomChains" = "Agregar chains personalizadas";
+"addCustomToken" = "+ Agregar token personalizado";
 "addDestinationTag" = "Agregar etiqueta de destino";
 "addFolder" = "Agregar carpeta";
 "addFriendsReferral" = "Agregar una referencia de amigos";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "Notificaciones desactivadas";
 "notificationSentSuccessfully" = "¡Notificación enviada con éxito!";
 "notNow" = "Ahora no";
+"noTokenFound" = "No se encontró ningún token";
 "noTokensFound" = "No se encontraron tokens";
 "noTokensFoundSubtitle" = "Agrega tokens para verlos aquí.";
 "noTransactionsYet" = "Sin transacciones aún";

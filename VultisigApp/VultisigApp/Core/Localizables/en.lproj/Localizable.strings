@@ -11,6 +11,7 @@
 "addChain" = "Add Chain";
 "addCoinLP" = "Add %@ LP";
 "addCustomChains" = "Add custom chains";
+"addCustomToken" = "+ Add custom token";
 "addDestinationTag" = "Add Destination Tag";
 "addFolder" = "Add folder";
 "addFriendsReferral" = "Add a Friends Referral";
@@ -999,6 +1000,7 @@
 "notificationsDisabledTitle" = "Notifications Disabled";
 "notificationSentSuccessfully" = "Notification was successfully sent!";
 "notNow" = "Not now";
+"noTokenFound" = "No token found";
 "noTokensFound" = "No tokens selected";
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
 "noTransactionsYet" = "No transactions yet";
