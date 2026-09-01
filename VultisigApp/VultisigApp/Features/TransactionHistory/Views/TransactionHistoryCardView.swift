@@ -21,6 +21,10 @@ struct TransactionHistoryCardView: View {
             && (transaction.type != .limit || transaction.toCoinTicker != nil)
     }
 
+    private var failureReasonText: String? {
+        TransactionHistoryFailureReasonPresentation.displayText(for: transaction.errorMessage)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topRow
@@ -157,7 +161,7 @@ struct TransactionHistoryCardView: View {
         let display = LimitOrderStatusDisplay.make(
             uiStatus: transaction.swapTrackingUiStatus,
             details: limitOrder,
-            errorMessage: transaction.errorMessage
+            errorMessage: failureReasonText
         )
 
         VStack(alignment: .trailing, spacing: 4) {
@@ -224,7 +228,7 @@ struct TransactionHistoryCardView: View {
             case .error:
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("error".localized)
-                    if let errorMessage = transaction.errorMessage {
+                    if let errorMessage = failureReasonText {
                         Text(errorMessage)
                     }
                 }
