@@ -220,6 +220,15 @@ class Coin: ObservableObject, Codable, Hashable {
         }
     }
 
+    /// Whether this coin's send signer carries a user-entered memo on-chain.
+    /// ERC-20 transfers encode only `transfer(to, amount)`, while native EVM
+    /// transfers put the memo in transaction data. Other token signers follow
+    /// their chain-level memo capability.
+    var supportsMemo: Bool {
+        guard chain.supportsMemo else { return false }
+        return chainType != .EVM || isNativeToken
+    }
+
     var feeDefault: String {
         switch self.chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
