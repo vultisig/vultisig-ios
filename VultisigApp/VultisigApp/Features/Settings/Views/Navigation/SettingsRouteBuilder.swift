@@ -34,11 +34,6 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildWidgetsScreen() -> some View {
-        WidgetsSettingsScreen()
-    }
-
-    @ViewBuilder
     func buildWidgetWatchlistScreen() -> some View {
         WidgetWatchlistSettingsScreen()
     }

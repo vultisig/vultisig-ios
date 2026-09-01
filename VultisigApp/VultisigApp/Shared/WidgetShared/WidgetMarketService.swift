@@ -20,13 +20,33 @@ actor WidgetMarketService {
         self.now = now
     }
 
-    func load(query: WidgetMarketQuery, currency: String) async throws -> WidgetMarketResult {
-        let key = "\(currency.lowercased())-\(query.cacheKey)"
+    func cachedResult(query: WidgetMarketQuery, currency: String) async -> WidgetMarketResult? {
+        guard let cached = await cache.entry(for: cacheKey(query: query, currency: currency)) else {
+            return nil
+        }
+        return WidgetMarketResult(
+            assets: cached.assets,
+            updatedAt: cached.updatedAt,
+            isStale: true
+        )
+    }
+
+    func load(
+        query: WidgetMarketQuery,
+        currency: String,
+        downloadsIcons: Bool = true
+    ) async throws -> WidgetMarketResult {
+        let key = cacheKey(query: query, currency: currency)
         let cached = await cache.entry(for: key)
 
         do {
             let remoteAssets = try await remote.markets(query: query, currency: currency)
-            let assets = await addingIcons(to: remoteAssets, cached: cached?.assets ?? [])
+            let assets: [WidgetMarketAsset]
+            if downloadsIcons {
+                assets = await addingIcons(to: remoteAssets, cached: cached?.assets ?? [])
+            } else {
+                assets = remoteAssets
+            }
             let updatedAt = now()
             try? await cache.store(assets, updatedAt: updatedAt, for: key)
             return WidgetMarketResult(assets: assets, updatedAt: updatedAt, isStale: false)
@@ -38,6 +58,10 @@ actor WidgetMarketService {
             guard let cached else { throw error }
             return WidgetMarketResult(assets: cached.assets, updatedAt: cached.updatedAt, isStale: true)
         }
+    }
+
+    private func cacheKey(query: WidgetMarketQuery, currency: String) -> String {
+        "\(currency.lowercased())-\(query.cacheKey)"
     }
 
     private func addingIcons(

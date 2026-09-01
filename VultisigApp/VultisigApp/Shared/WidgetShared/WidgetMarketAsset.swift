@@ -17,6 +17,10 @@ struct WidgetMarketAsset: Codable, Equatable, Sendable, Identifiable {
     let sparkline: [Double]
 
     var iconLogo: String {
+        Self.localIconLogo(for: id)
+    }
+
+    static func localIconLogo(for id: String) -> String {
         switch id {
         case "bitcoin":
             return "btc"

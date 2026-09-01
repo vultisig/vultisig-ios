@@ -13,16 +13,17 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published private(set) var loadFailed = false
 
-    private let marketClient: any WidgetMarketRemote
+    private let marketService: WidgetMarketService
     private let defaults: UserDefaults?
     private var hasLoaded = false
     private var hasStoredSelection: Bool
 
     init(
         marketClient: any WidgetMarketRemote = WidgetMarketClient(),
+        marketCache: WidgetMarketCache = WidgetMarketCache(),
         defaults: UserDefaults? = WidgetSharedStorage.defaults
     ) {
-        self.marketClient = marketClient
+        self.marketService = WidgetMarketService(remote: marketClient, cache: marketCache)
         self.defaults = defaults
         self.selectedAssets = WidgetSharedStorage.watchlistAssets(in: defaults)
         self.hasStoredSelection = WidgetSharedStorage.hasStoredWatchlist(in: defaults)
@@ -46,27 +47,29 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
     func load(force: Bool = false) async {
         guard force || !hasLoaded else { return }
         hasLoaded = true
-        isLoading = true
+        let query = WidgetMarketQuery.catalog(limit: 50)
+        let currency = WidgetSharedStorage.currencyCode
+
+        isLoading = assets.isEmpty
         loadFailed = false
         defer { isLoading = false }
 
-        do {
-            let marketAssets = try await marketClient.markets(
-                query: .catalog(limit: 50),
-                currency: WidgetSharedStorage.currencyCode
-            )
-            let fetched = marketAssets.map(WidgetWatchlistAsset.init)
-            let fetchedByID = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })
-            let refreshedSelection = selectedAssets.map { fetchedByID[$0.id] ?? $0 }
+        async let cachedResult = marketService.cachedResult(query: query, currency: currency)
+        async let refreshedResult = marketService.load(
+            query: query,
+            currency: currency,
+            downloadsIcons: false
+        )
 
-            catalogAssets = fetched
-            if !hasStoredSelection {
-                selectedAssets = Array(fetched.prefix(WidgetSharedStorage.maximumWatchlistAssets))
-                persistSelection(reloadWidget: true)
-            } else if refreshedSelection != selectedAssets {
-                selectedAssets = refreshedSelection
-                persistSelection(reloadWidget: false)
-            }
+        if let cachedResult = await cachedResult {
+            apply(cachedResult.assets)
+            isLoading = false
+        }
+
+        do {
+            let refreshedResult = try await refreshedResult
+            apply(refreshedResult.assets)
+            loadFailed = refreshedResult.isStale
         } catch is CancellationError {
             return
         } catch let error as URLError where error.code == .cancelled {
@@ -92,5 +95,20 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         hasStoredSelection = true
         guard reloadWidget else { return }
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharedStorage.watchlistWidgetKind)
+    }
+
+    private func apply(_ marketAssets: [WidgetMarketAsset]) {
+        let fetched = marketAssets.map(WidgetWatchlistAsset.init)
+        let fetchedByID = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })
+        let refreshedSelection = selectedAssets.map { fetchedByID[$0.id] ?? $0 }
+
+        catalogAssets = fetched
+        if !hasStoredSelection {
+            selectedAssets = Array(fetched.prefix(WidgetSharedStorage.maximumWatchlistAssets))
+            persistSelection(reloadWidget: true)
+        } else if refreshedSelection != selectedAssets {
+            selectedAssets = refreshedSelection
+            persistSelection(reloadWidget: false)
+        }
     }
 }

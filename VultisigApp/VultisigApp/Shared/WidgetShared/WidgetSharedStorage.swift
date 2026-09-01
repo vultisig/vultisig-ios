@@ -41,7 +41,8 @@ enum WidgetSharedStorage {
     static func hasStoredWatchlist(
         in defaults: UserDefaults? = WidgetSharedStorage.defaults
     ) -> Bool {
-        defaults?.object(forKey: watchlistKey) != nil
+        guard let data = defaults?.data(forKey: watchlistKey) else { return false }
+        return (try? JSONDecoder().decode([WidgetWatchlistAsset].self, from: data)) != nil
     }
 
     static func setWatchlistAssets(
@@ -100,14 +101,6 @@ struct WidgetWatchlistAsset: Codable, Equatable, Identifiable, Sendable {
         if let imageURL {
             return imageURL.absoluteString
         }
-
-        switch id {
-        case "bitcoin": return "btc"
-        case "ethereum": return "eth"
-        case "tether": return "usdt"
-        case "binancecoin": return "bsc"
-        case "solana": return "solana"
-        default: return ""
-        }
+        return WidgetMarketAsset.localIconLogo(for: id)
     }
 }

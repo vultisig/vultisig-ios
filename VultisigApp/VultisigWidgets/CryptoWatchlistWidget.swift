@@ -79,7 +79,7 @@ struct CryptoWatchlistProvider: TimelineProvider {
                 date: Date(),
                 assets: [],
                 currency: currency,
-                hasSelection: true,
+                hasSelection: hasStoredSelection,
                 isStale: false
             )
         }

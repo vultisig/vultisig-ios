@@ -168,6 +168,7 @@ final class WidgetMarketDataTests: XCTestCase {
         defaults.set(Data("not-json".utf8), forKey: WidgetSharedStorage.watchlistKey)
 
         XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
+        XCTAssertFalse(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
     }
 
     func testWatchlistStorageDistinguishesDefaultFromExplicitlyEmptySelection() throws {
@@ -205,6 +206,7 @@ final class WidgetMarketDataTests: XCTestCase {
 
         let defaultViewModel = WidgetWatchlistSettingsViewModel(
             marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
             defaults: defaults
         )
         await defaultViewModel.load()
@@ -215,11 +217,96 @@ final class WidgetMarketDataTests: XCTestCase {
         WidgetSharedStorage.setWatchlistAssets([], in: defaults)
         let clearedViewModel = WidgetWatchlistSettingsViewModel(
             marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
             defaults: defaults
         )
         await clearedViewModel.load()
 
         XCTAssertTrue(clearedViewModel.selectedAssets.isEmpty)
+
+        defaults.set(Data("not-json".utf8), forKey: WidgetSharedStorage.watchlistKey)
+        let corruptViewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults
+        )
+        await corruptViewModel.load()
+
+        XCTAssertEqual(corruptViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+    }
+
+    @MainActor
+    func testWatchlistSettingsShowsCacheWhileRemoteRefreshIsInFlight() async throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cache = WidgetMarketCache(fileURL: directory.appendingPathComponent("cache.json"))
+        let query = WidgetMarketQuery.catalog(limit: 50)
+        let currency = WidgetSharedStorage.currencyCode
+        let cachedAsset = marketAsset(id: "cached", symbol: "OLD")
+        let freshAsset = marketAsset(id: "fresh", symbol: "NEW")
+        try await cache.store(
+            [cachedAsset],
+            updatedAt: Date(timeIntervalSince1970: 1_700_000_000),
+            for: "\(currency.lowercased())-\(query.cacheKey)"
+        )
+        let remote = WidgetMarketGateStub(assets: [freshAsset])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: cache,
+            defaults: defaults
+        )
+
+        let loadTask = Task { await viewModel.load() }
+        await remote.waitUntilStarted()
+        for _ in 0..<100 where viewModel.assets.isEmpty {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertFalse(viewModel.isLoading)
+
+        await remote.resume()
+        await loadTask.value
+
+        XCTAssertEqual(viewModel.assets.map(\.id), ["fresh"])
+        XCTAssertFalse(viewModel.loadFailed)
+    }
+
+    @MainActor
+    func testWatchlistSettingsRetainsCachedAssetsWhenRefreshFails() async throws {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cache = WidgetMarketCache(fileURL: directory.appendingPathComponent("cache.json"))
+        let query = WidgetMarketQuery.catalog(limit: 50)
+        let currency = WidgetSharedStorage.currencyCode
+        let cachedAsset = marketAsset(id: "cached", symbol: "OLD")
+        try await cache.store(
+            [cachedAsset],
+            updatedAt: Date(timeIntervalSince1970: 1_700_000_000),
+            for: "\(currency.lowercased())-\(query.cacheKey)"
+        )
+        let remote = WidgetMarketRemoteStub()
+        await remote.setShouldFail(true)
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: cache,
+            defaults: defaults
+        )
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertTrue(viewModel.loadFailed)
     }
 
     func testSparklineSamplerKeepsEndpointsAndRequestedCount() {
@@ -412,6 +499,20 @@ final class WidgetMarketDataTests: XCTestCase {
         WidgetWatchlistAsset(id: id, symbol: symbol, name: id.capitalized, imageURL: nil)
     }
 
+    private func marketAsset(id: String, symbol: String) -> WidgetMarketAsset {
+        WidgetMarketAsset(
+            id: id,
+            symbol: symbol,
+            name: id.capitalized,
+            imageURL: nil,
+            iconData: nil,
+            currentPrice: 1,
+            priceChangePercentage24h: nil,
+            marketCapRank: nil,
+            sparkline: []
+        )
+    }
+
     private func requestParameters(from target: WidgetMarketAPI) throws -> [String: String] {
         guard case .requestParameters(let parameters, .urlEncoding) = target.task else {
             throw WidgetMarketError.invalidResponse
@@ -524,5 +625,36 @@ private actor WidgetMarketListStub: WidgetMarketRemote {
 
     func iconData(from _: URL) -> Data {
         Data()
+    }
+}
+
+private actor WidgetMarketGateStub: WidgetMarketRemote {
+    let assets: [WidgetMarketAsset]
+    private var started = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    init(assets: [WidgetMarketAsset]) {
+        self.assets = assets
+    }
+
+    func markets(query _: WidgetMarketQuery, currency _: String) async -> [WidgetMarketAsset] {
+        started = true
+        await withCheckedContinuation { continuation = $0 }
+        return assets
+    }
+
+    func iconData(from _: URL) -> Data {
+        Data()
+    }
+
+    func waitUntilStarted() async {
+        while !started {
+            await Task.yield()
+        }
+    }
+
+    func resume() {
+        continuation?.resume()
+        continuation = nil
     }
 }
