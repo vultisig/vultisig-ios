@@ -17,9 +17,7 @@ struct SendDetailsAdditionalSection: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            // Memo input is gated by `Chain.supportsMemo` so per-chain
-            // capability lives in the model, not scattered across UI.
-            if viewModel.coin.chain.supportsMemo {
+            if viewModel.coin.supportsMemo {
                 addMemoField
             }
             if viewModel.coin.chain.supportsDestinationTag {
