@@ -72,8 +72,9 @@ final class LiFiSlippageTests: XCTestCase {
         XCTAssertEqual(fraction(bps: 5001), "0.5")
     }
 
-    func testNegativeValueClampsToZero() {
-        XCTAssertEqual(fraction(bps: -100), "0")
+    func testNonPositiveExplicitValuesFallBackToAutoTier() {
+        XCTAssertEqual(fraction(bps: 0, from: "ETH", to: "USDC"), "0.01")
+        XCTAssertEqual(fraction(bps: -100, from: "USDC", to: "USDT"), "0.003")
     }
 
     func testFractionUsesDotDecimalSeparator() {
