@@ -1492,6 +1492,7 @@
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
 "swap" = "Tausch";
+"swap.applied_discounts" = "Angewandte Rabatte:";
 "swap.duration.instant" = "Sofort";
 "swap.included_in_rate" = "im angebotenen Kurs enthalten";
 "swap.outbound_fee" = "Ausgangsgebühr";

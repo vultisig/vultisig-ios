@@ -314,7 +314,7 @@ extension SwapTransaction {
     /// Mirrors the itemized rows the Done breakdown emits (network gas, the
     /// Vultisig affiliate row, the protocol/outbound row).
     var hasFeeBreakdown: Bool {
-        showGas || showAffiliateFeeRow || showProtocolFeeRow
+        showGas || showAffiliateFeeRow || showProtocolFeeRow || hasAppliedDiscounts || !priceImpactString.isEmpty
     }
 
     var swapGasString: String {

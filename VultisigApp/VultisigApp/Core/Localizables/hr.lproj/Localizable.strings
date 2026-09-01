@@ -1492,6 +1492,7 @@
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
+"swap.applied_discounts" = "Primijenjeni popusti:";
 "swap.duration.instant" = "Trenutno";
 "swap.included_in_rate" = "uključeno u ponuđeni tečaj";
 "swap.outbound_fee" = "Izlazna naknada";

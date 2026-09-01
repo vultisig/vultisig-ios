@@ -19,8 +19,7 @@ struct SwapDetailsSummary: View {
         vm.showGas ||
         vm.showAffiliateFeeRow ||
         vm.showProtocolFeeRow ||
-        !vm.vultDiscount.isEmpty ||
-        !vm.referralDiscount.isEmpty ||
+        vm.hasAppliedDiscounts ||
         !vm.priceImpactString.isEmpty
     }
 
@@ -128,12 +127,8 @@ struct SwapDetailsSummary: View {
                 outboundFee
             }
 
-            if !vm.vultDiscount.isEmpty {
-                vultDiscount
-            }
-
-            if !vm.referralDiscount.isEmpty {
-                referralDiscount
+            if vm.hasAppliedDiscounts {
+                appliedDiscounts
             }
 
             if !vm.priceImpactString.isEmpty {
@@ -165,6 +160,22 @@ struct SwapDetailsSummary: View {
                 .foregroundStyle(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.caption12)
+    }
+
+    var appliedDiscounts: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("swap.applied_discounts".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            if !vm.vultDiscount.isEmpty {
+                vultDiscount
+            }
+
+            if !vm.referralDiscount.isEmpty {
+                referralDiscount
+            }
+        }
     }
 
     var vultDiscount: some View {

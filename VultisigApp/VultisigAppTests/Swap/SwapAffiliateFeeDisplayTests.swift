@@ -59,9 +59,9 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(THORChainSwaps.effectiveAffiliateFeeBps(discountBps: .max, isReferred: true), referrer)     // 10 (ultimate keeps the referrer share)
     }
 
-    // MARK: - Display bps equals the request builder's sent bps
+    // MARK: - Wire bps matches the request builder
 
-    func testDisplayBpsMatchesThorchainRequestBuilderNonReferred() {
+    func testWireBpsMatchesThorchainRequestBuilderNonReferred() {
         for discount in [0, 5, 35] {
             let (_, bpsStr) = ThorchainService.affiliateParams(referredCode: "", discountBps: discount)
             let sent = Int(bpsStr ?? "") ?? -1
@@ -69,7 +69,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         }
     }
 
-    func testDisplayBpsMatchesThorchainRequestBuilderReferred() {
+    func testWireBpsMatchesThorchainRequestBuilderReferred() {
         for discount in [0, 5, 35] {
             let (_, bpsStr) = ThorchainService.affiliateParams(referredCode: "code", discountBps: discount)
             // Referred builder sends "referrer/vultisig"; the total charged is the sum.
@@ -457,6 +457,13 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             )
         )
         XCTAssertTrue(transaction.hasAppliedDiscounts)
+
+        let undiscounted = makeNativeThorchainTransaction(
+            quote: makeThorQuote(affiliate: "500000"),
+            vultDiscountBps: 0,
+            referralDiscountBps: 0
+        )
+        XCTAssertFalse(undiscounted.hasAppliedDiscounts)
     }
 
     // MARK: - Display-only invariant: signed payload unchanged

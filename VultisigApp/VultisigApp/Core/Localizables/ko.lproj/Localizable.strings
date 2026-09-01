@@ -1492,6 +1492,7 @@
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
 "swap" = "스왑";
+"swap.applied_discounts" = "적용된 할인:";
 "swap.duration.instant" = "즉시";
 "swap.included_in_rate" = "제시된 환율에 포함됨";
 "swap.outbound_fee" = "아웃바운드 수수료";

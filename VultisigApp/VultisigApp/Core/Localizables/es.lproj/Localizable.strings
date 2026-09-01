@@ -1492,6 +1492,7 @@
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
 "swap" = "Intercambio";
+"swap.applied_discounts" = "Descuentos aplicados:";
 "swap.duration.instant" = "Instantáneo";
 "swap.included_in_rate" = "incluido en la tarifa cotizada";
 "swap.outbound_fee" = "Tarifa de Salida";

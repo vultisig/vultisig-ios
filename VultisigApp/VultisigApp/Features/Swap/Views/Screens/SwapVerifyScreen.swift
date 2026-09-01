@@ -142,9 +142,8 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                // Vultisig Fee (affiliate component only). The label carries the
-                // effective affiliate %, the value the fiat amount — sourced from
-                // `fees.affiliate`, never THORChain's composite `fees.total`.
+                // Gross list-rate Vultisig fee. Applied savings are itemized in
+                // the discount group below; Total Fees remains the net charge.
                 if currentTransaction.showAffiliateFeeRow {
                     separator
                     affiliateFeeRow
@@ -161,16 +160,9 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                // VULT tier saving (with the tier badge).
-                if !currentTransaction.vultDiscount.isEmpty {
+                if currentTransaction.hasAppliedDiscounts {
                     separator
-                    vultDiscountRow
-                }
-
-                // Referral saving.
-                if !currentTransaction.referralDiscount.isEmpty {
-                    separator
-                    referralDiscountRow
+                    appliedDiscountsSection
                 }
 
                 // Price Impact (only when the provider reports slippage).
@@ -449,6 +441,23 @@ struct SwapVerifyScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var appliedDiscountsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("swap.applied_discounts".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            if !currentTransaction.vultDiscount.isEmpty {
+                vultDiscountRow
+            }
+
+            if !currentTransaction.referralDiscount.isEmpty {
+                referralDiscountRow
+            }
+        }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
