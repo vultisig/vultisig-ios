@@ -240,7 +240,6 @@ final class WidgetMarketDataTests: XCTestCase {
         let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
 
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -268,12 +267,16 @@ final class WidgetMarketDataTests: XCTestCase {
         }
 
         XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertTrue(viewModel.selectedAssets.isEmpty)
+        XCTAssertFalse(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.isLoading)
 
         await remote.resume()
         await loadTask.value
 
         XCTAssertEqual(viewModel.assets.map(\.id), ["fresh"])
+        XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["fresh"])
+        XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.loadFailed)
     }
 

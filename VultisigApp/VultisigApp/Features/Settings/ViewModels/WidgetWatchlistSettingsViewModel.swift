@@ -62,13 +62,16 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         )
 
         if let cachedResult = await cachedResult {
-            apply(cachedResult.assets)
+            apply(cachedResult.assets, seedDefaultSelection: false)
             isLoading = false
         }
 
         do {
             let refreshedResult = try await refreshedResult
-            apply(refreshedResult.assets)
+            apply(
+                refreshedResult.assets,
+                seedDefaultSelection: !refreshedResult.isStale
+            )
             loadFailed = refreshedResult.isStale
         } catch is CancellationError {
             return
@@ -97,13 +100,16 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharedStorage.watchlistWidgetKind)
     }
 
-    private func apply(_ marketAssets: [WidgetMarketAsset]) {
+    private func apply(
+        _ marketAssets: [WidgetMarketAsset],
+        seedDefaultSelection: Bool
+    ) {
         let fetched = marketAssets.map(WidgetWatchlistAsset.init)
         let fetchedByID = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })
         let refreshedSelection = selectedAssets.map { fetchedByID[$0.id] ?? $0 }
 
         catalogAssets = fetched
-        if !hasStoredSelection {
+        if seedDefaultSelection && !hasStoredSelection {
             selectedAssets = Array(fetched.prefix(WidgetSharedStorage.maximumWatchlistAssets))
             persistSelection(reloadWidget: true)
         } else if refreshedSelection != selectedAssets {
