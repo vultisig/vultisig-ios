@@ -9,10 +9,9 @@
 //  the row-visibility gate, and the display-only invariant that none of this
 //  touches the signed keysign payload.
 //
-//  DEBUG note: `THORChainSwaps.affiliateFeeRateBp` is 0 in test builds, so
-//  non-referred native percentages read 0.00% here — that matches what the
-//  request builder sends in DEBUG. Base-50 tier math is asserted directly on
-//  the pure `discountedAffiliateBps` helper so it's independent of the build.
+//  DEBUG note: `THORChainSwaps.affiliateFeeRateBp` is 0 in test builds, while
+//  the display deliberately stays at the shipping 0.50% list rate. Wire math
+//  and Base-50 display math are therefore asserted separately.
 //
 
 import BigInt
