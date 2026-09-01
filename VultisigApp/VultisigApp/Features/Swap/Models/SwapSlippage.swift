@@ -2,15 +2,15 @@
 //  SwapSlippage.swift
 //  VultisigApp
 //
-//  User-selectable slippage tolerance for a swap. `Auto` preserves each
-//  provider's existing default (no caller override); the explicit cases carry a
-//  basis-points value threaded into every provider's quote/tx request.
+//  User-selectable slippage tolerance for a swap. `Auto` asks each provider
+//  path to resolve its own default; the explicit cases carry a basis-points
+//  value threaded into every provider's quote/tx request.
 //
 
 import Foundation
 
 enum SwapSlippage: Equatable, Hashable {
-    /// Keep today's per-provider default — no caller-supplied slippage.
+    /// Resolve the provider-path default (LI.FI uses pair-aware Auto tiers).
     case auto
     /// A preset slippage in basis points (e.g. 50 = 0.5%, 100 = 1%, 300 = 3%).
     case preset(bps: Int)
@@ -32,7 +32,7 @@ enum SwapSlippage: Equatable, Hashable {
         min(max(bps, 0), maxCustomBps)
     }
 
-    /// Basis points to send to providers, or `nil` for `Auto` (keep the default).
+    /// Basis points to send to providers, or `nil` for provider-path Auto resolution.
     var bps: Int? {
         switch self {
         case .auto:

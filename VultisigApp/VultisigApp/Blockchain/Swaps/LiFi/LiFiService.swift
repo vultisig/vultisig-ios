@@ -12,6 +12,10 @@ struct LiFiService {
 
     static let shared = LiFiService()
     static let integratorFeeBps: Int = 50
+    static let stableTickers: Set<String> = [
+        "USDC", "USDT", "DAI", "BUSD", "TUSD", "FRAX",
+        "USDP", "GUSD", "LUSD", "USDD", "FDUSD", "PYUSD"
+    ]
 
     private let integratorName: String = "vultisig-ios"
     private let httpClient: HTTPClientProtocol = HTTPClient()
@@ -46,7 +50,11 @@ struct LiFiService {
             toAddress: toCoin.address,
             integrator: integrator,
             fee: integratorFeeString,
-            slippage: Self.lifiSlippageFraction(bps: slippageBps)
+            slippage: Self.lifiSlippageFraction(
+                bps: slippageBps,
+                fromTicker: fromCoin.ticker,
+                toTicker: toCoin.ticker
+            )
         )
 
         let response: LifiQuoteResponse
@@ -117,18 +125,26 @@ struct LiFiService {
 
     /// Convert a user slippage in basis points to the decimal fraction in
     /// [0,1] that LI.FI's `slippage` query param expects (50 bps → "0.005",
-    /// 100 bps → "0.01", 300 bps → "0.03"). `nil` (Auto) returns `nil` so the
-    /// param is omitted and LI.FI applies its own default — never "0".
+    /// 100 bps → "0.01", 300 bps → "0.03"). Auto uses the same pair-aware
+    /// tiers as the SDK: 30 bps for stable-to-stable pairs, 100 bps otherwise.
     ///
     /// The bps value is clamped to 0–5000 (0–50%) before conversion, mirroring
     /// the 1inch path, so a bogus custom value can't produce an out-of-range
     /// fraction. Rendered with a C-locale `%`-format (always a dot separator),
     /// so it is locale-independent and never emits a comma.
-    static func lifiSlippageFraction(bps: Int?) -> String? {
-        guard let bps else { return nil }
-        let clamped = min(max(bps, 0), 5000)
+    static func lifiSlippageFraction(
+        bps: Int?,
+        fromTicker: String,
+        toTicker: String
+    ) -> String {
+        let resolvedBps = bps ?? (isStablePair(fromTicker: fromTicker, toTicker: toTicker) ? 30 : 100)
+        let clamped = min(max(resolvedBps, 0), 5000)
         let fraction = Double(clamped) / 10_000
         return String(format: "%g", fraction)
+    }
+
+    private static func isStablePair(fromTicker: String, toTicker: String) -> Bool {
+        stableTickers.contains(fromTicker.uppercased()) && stableTickers.contains(toTicker.uppercased())
     }
 }
 
