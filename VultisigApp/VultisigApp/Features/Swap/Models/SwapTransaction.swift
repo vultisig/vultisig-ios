@@ -366,14 +366,15 @@ extension SwapTransaction {
     }
 
     var baseAffiliateFee: String {
-        SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
     }
 
     var swapFeeLabel: String {
-        SwapCryptoLogic.swapFeeLabel(
-            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps, isReferred: isReferred
-        )
+        SwapCryptoLogic.swapFeeLabel(quote: quote)
     }
 
     var outboundFeeString: String {
@@ -401,6 +402,10 @@ extension SwapTransaction {
             fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
+    }
+
+    var hasAppliedDiscounts: Bool {
+        !vultDiscount.isEmpty || !referralDiscount.isEmpty
     }
 
     var priceImpactString: String {
