@@ -790,43 +790,47 @@ final class PasscodeGateWiringTests: XCTestCase {
         XCTAssertTrue(sut.isPasscodeLocked, "the app did leave, and the interval is immediate")
     }
 
-    // MARK: - The lock screen's opening move
+    // MARK: - The lock screen's biometric shortcut
 
-    /// The reported flash: with the shortcut enabled, the lock screen appeared
-    /// and dismissed itself a moment later, because the keypad rendered while
-    /// the automatic biometric attempt was still running. The keypad now waits
-    /// until that question is settled.
-    func testTheKeypadIsHiddenUntilTheBiometricAttemptResolves() async throws {
-        let viewModel = PasscodeViewModel(service: service)
-
-        XCTAssertFalse(
-            viewModel.shouldPresentEntry,
-            "a keypad on screen during the attempt is the flash this fixes"
-        )
-
-        await viewModel.beginUnlock(biometricReason: "reason")
-
-        XCTAssertTrue(viewModel.shouldPresentEntry)
-    }
-
-    /// And it reveals on *every* path, including the one where the shortcut was
-    /// offered and did not open the app. A missed reveal is a lock screen with
-    /// no keypad, which no passcode can get past.
-    func testTheKeypadIsRevealedAfterAnOfferedShortcutFailsToOpenTheApp() async throws {
+    func testRefreshingBiometricAvailabilityDoesNotAttemptAnUnlock() async throws {
         try await service.setPasscode(passcode)
         try await service.enableBiometricUnlock()
-        // The copy is present, so the shortcut is offered — and the wrapper it
-        // is bound to is about to stop being the one on disk, so the attempt
-        // runs and refuses rather than being skipped.
-        try await service.changePasscode(current: passcode, new: "654321")
+        service.lock()
+
+        let viewModel = PasscodeViewModel(service: service)
+        await viewModel.refreshBiometricAvailability()
+
+        XCTAssertTrue(viewModel.isBiometricUnlockAvailable)
+        XCTAssertFalse(viewModel.didFinish)
+        XCTAssertFalse(service.isSessionUnlocked)
+    }
+
+    func testExplicitBiometricUnlockOpensTheApp() async throws {
+        try await service.setPasscode(passcode)
+        try await service.enableBiometricUnlock()
+        service.lock()
+
+        let viewModel = PasscodeViewModel(service: service)
+        await viewModel.refreshBiometricAvailability()
+        await viewModel.unlockWithBiometrics(reason: "reason")
+
+        XCTAssertTrue(viewModel.didFinish)
+        XCTAssertTrue(service.isSessionUnlocked)
+    }
+
+    func testFailedExplicitBiometricUnlockLeavesPasscodeEntryAvailable() async throws {
+        try await service.setPasscode(passcode)
+        try await service.enableBiometricUnlock()
         biometricKeychain.failsRead = true
         service.lock()
 
         let viewModel = PasscodeViewModel(service: service)
-        await viewModel.beginUnlock(biometricReason: "reason")
+        await viewModel.refreshBiometricAvailability()
+        await viewModel.unlockWithBiometrics(reason: "reason")
 
-        XCTAssertFalse(viewModel.didFinish, "precondition: the shortcut did not open the app")
-        XCTAssertTrue(viewModel.shouldPresentEntry, "the passcode must still be reachable")
+        XCTAssertFalse(viewModel.didFinish)
+        XCTAssertTrue(viewModel.isBiometricUnlockAvailable)
+        XCTAssertFalse(viewModel.isBusy)
     }
 
     // MARK: - What the app is allowed to raise while the gate is up

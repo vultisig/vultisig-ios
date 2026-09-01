@@ -293,12 +293,10 @@ struct ContentView: View {
     /// Exactly one of these mounts an interactive lock screen, and which one is
     /// the host's to say.
     ///
-    /// ``EnterPasscodeScreen`` starts a biometric attempt from its `.task`, so a
-    /// second live copy is a second Face ID prompt. When the window is carrying
-    /// the lock, this draws the brand screen instead — the same pixels the lock
-    /// screen itself shows while that attempt runs, so nothing moves if the two
-    /// are ever seen in sequence — and it is only there to stop the wallet being
-    /// visible underneath.
+    /// A second live copy would have its own passcode entry and biometric control
+    /// over the same session. When the window is carrying the lock, this draws
+    /// the brand screen instead so the inactive copy cannot accept input and the
+    /// wallet stays covered underneath.
     @ViewBuilder
     private var gateContent: some View {
         if appLockHost.hostsLockScreen {

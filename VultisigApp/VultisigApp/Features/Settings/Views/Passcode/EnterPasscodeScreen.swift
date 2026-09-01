@@ -6,7 +6,7 @@
 import SwiftUI
 
 /// The lock screen. Presented over everything when the app is locked, with no
-/// navigation bar and no way past it other than the passcode.
+/// navigation bar and no way past it other than an explicit authentication.
 struct EnterPasscodeScreen: View {
 
     @StateObject private var viewModel = PasscodeViewModel()
@@ -22,10 +22,10 @@ struct EnterPasscodeScreen: View {
     let onAttemptFailed: () -> Void
 
     var body: some View {
-        content
+        entry
             .accessibilityIdentifier(AccessibilityID.Passcode.enterScreen)
             .task {
-                await viewModel.beginUnlock(biometricReason: "passcodeBiometricReason".localized)
+                await viewModel.refreshBiometricAvailability()
             }
             .onChange(of: viewModel.didFinish) { _, finished in
                 guard finished else { return }
@@ -33,41 +33,26 @@ struct EnterPasscodeScreen: View {
             }
     }
 
-    /// Two screens, not one screen with two states — and the difference is
-    /// structural rather than cosmetic. The waiting half is
-    /// ``VultisigBrandScreen`` at the **top level**: putting it inside `Screen`
-    /// like the keypad would inset it for the safe area and move the logo up the
-    /// display relative to the privacy cover it takes over from, which is a jump
-    /// exactly where there should be no seam at all.
-    @ViewBuilder
-    private var content: some View {
-        if viewModel.shouldPresentEntry {
-            entry
-        } else {
-            VultisigBrandScreen()
-                .accessibilityIdentifier(AccessibilityID.Passcode.awaitingBiometrics)
-        }
-    }
-
     private var entry: some View {
-        Screen {
-            PasscodeEntryView(
-                title: "passcodeEnterTitle".localized,
-                subtitle: "passcodeEnterSubtitle".localized,
-                errorMessage: viewModel.errorMessage,
-                isBusy: viewModel.isBusy,
-                showsLogo: true,
-                passcode: $viewModel.entry,
-                onComplete: { _ in
-                    Task {
-                        await viewModel.unlock()
-                        guard !viewModel.didFinish else { return }
-                        onAttemptFailed()
-                    }
+        LockPasscodeEntryView(
+            errorMessage: viewModel.errorMessage,
+            isBusy: viewModel.isBusy,
+            isBiometricUnlockAvailable: viewModel.isBiometricUnlockAvailable,
+            passcode: $viewModel.entry,
+            onComplete: { _ in
+                Task {
+                    await viewModel.unlock()
+                    guard !viewModel.didFinish else { return }
+                    onAttemptFailed()
                 }
-            )
-        }
-        .screenNavigationBarHidden(true)
-        .screenBackground(.gradient)
+            },
+            onBiometricUnlock: {
+                Task {
+                    await viewModel.unlockWithBiometrics(
+                        reason: "passcodeBiometricReason".localized
+                    )
+                }
+            }
+        )
     }
 }
