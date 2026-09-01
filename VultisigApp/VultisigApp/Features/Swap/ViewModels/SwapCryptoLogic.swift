@@ -418,7 +418,6 @@ enum SwapCryptoLogic {
         let referral: Decimal
 
         var total: Decimal { vult + referral }
-        var hasDiscounts: Bool { total > 0 }
     }
 
     static func showGas(gas: BigInt) -> Bool {
@@ -622,8 +621,23 @@ enum SwapCryptoLogic {
 
     /// List-rate label. Discounts are itemized separately and never reduce this
     /// percentage, regardless of the effective bps sent to a provider.
-    static func swapFeeLabel(quote: SwapQuote?) -> String {
+    static func swapFeeLabel(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        vultDiscountBps: Int
+    ) -> String {
         guard quote != nil else { return "vultisigFee".localized }
+        switch quote {
+        case .oneinch, .kyberswap, .lifi, .jupiter:
+            let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            if net <= 0, vultDiscountBps != Int.max {
+                return "vultisigFee".localized
+            }
+        default:
+            break
+        }
         return String(format: "vultisigFeePercentage".localized, Double(affiliateListFeeBps) / 100.0)
     }
 
@@ -741,15 +755,6 @@ enum SwapCryptoLogic {
             }
         }
 
-        let vult: Decimal
-        if vultDiscountBps == Int.max {
-            let listFee = inputFiat * Decimal(affiliateListFeeBps) / 10000
-            vult = max(listFee - net, 0)
-        } else {
-            let appliedBps = max(0, min(vultDiscountBps, affiliateListFeeBps))
-            vult = inputFiat * Decimal(appliedBps) / 10000
-        }
-
         let appliesReferralDiscount: Bool
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
@@ -759,11 +764,20 @@ enum SwapCryptoLogic {
         }
 
         let referral: Decimal
-        if appliesReferralDiscount, vultDiscountBps != Int.max {
+        if appliesReferralDiscount {
             let appliedBps = max(0, min(referralDiscountBps, affiliateListFeeBps))
             referral = inputFiat * Decimal(appliedBps) / 10000
         } else {
             referral = 0
+        }
+
+        let vult: Decimal
+        if vultDiscountBps == Int.max {
+            let listFee = inputFiat * Decimal(affiliateListFeeBps) / 10000
+            vult = max(listFee - net - referral, 0)
+        } else {
+            let appliedBps = max(0, min(vultDiscountBps, affiliateListFeeBps))
+            vult = inputFiat * Decimal(appliedBps) / 10000
         }
 
         return AffiliateDiscountBreakdown(vult: vult, referral: referral)

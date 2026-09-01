@@ -621,7 +621,10 @@ extension SwapDetailsViewModel {
     }
 
     var swapFeeLabel: String {
-        SwapCryptoLogic.swapFeeLabel(quote: quote)
+        SwapCryptoLogic.swapFeeLabel(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            vultDiscountBps: vultDiscountBps
+        )
     }
 
     var outboundFeeString: String {
