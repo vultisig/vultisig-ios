@@ -33,6 +33,7 @@ enum AccessibilityID {
         static let container = "settings.container"
         static let languageCell = "settings.languageCell"
         static let currencyCell = "settings.currencyCell"
+        static let widgetWatchlistCell = "settings.widgetWatchlistCell"
         static let vaultSettingsCell = "settings.vaultSettingsCell"
         static let faqCell = "settings.faqCell"
         static let managePasscodeCell = "settings.managePasscodeCell"
