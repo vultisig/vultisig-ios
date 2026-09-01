@@ -540,9 +540,9 @@ enum SwapCryptoLogic {
         fromCoin: Coin,
         toCoin: Coin,
         feeCoin: Coin,
-        fromAmount: String = .empty,
-        vultDiscountBps: Int = 0,
-        referralDiscountBps: Int = 0
+        fromAmount: String,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
     ) -> String {
         guard let quote else { return .empty }
         if case .swapkit = quote {
@@ -731,10 +731,19 @@ enum SwapCryptoLogic {
         let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
         guard inputFiat > 0 else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
 
+        let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
+            break
+        default:
+            guard net > 0 || vultDiscountBps == Int.max else {
+                return AffiliateDiscountBreakdown(vult: 0, referral: 0)
+            }
+        }
+
         let vult: Decimal
         if vultDiscountBps == Int.max {
             let listFee = inputFiat * Decimal(affiliateListFeeBps) / 10000
-            let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
             vult = max(listFee - net, 0)
         } else {
             let appliedBps = max(0, min(vultDiscountBps, affiliateListFeeBps))

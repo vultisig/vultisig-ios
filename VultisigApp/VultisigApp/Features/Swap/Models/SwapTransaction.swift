@@ -79,14 +79,6 @@ struct SwapTransaction: Hashable {
     let vultDiscountBps: Int
     let referralDiscountBps: Int
 
-    /// Whether a referral code was active when this quote was fetched. Used by
-    /// the route-aware affiliate-percentage label to reproduce the exact
-    /// `affiliate_bps` the request builder sent — a clean bit, because
-    /// `referralDiscountBps` collapses to 0 in DEBUG (base rate 0) even when
-    /// referred. `var` with a default so the memberwise init stays source-
-    /// compatible; set once at construction, never mutated (immutable hand-off).
-    var isReferred: Bool = false
-
     /// Source-chain broadcast-gas ESTIMATE for a placed LIMIT order, in the fee
     /// coin's smallest units. A dedicated field — NOT the market `thorchainFee`,
     /// whose meaning is the THORChain protocol/outbound fee that feeds
@@ -162,8 +154,7 @@ extension SwapTransaction {
         gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
         vultDiscountBps: Int? = nil,
-        referralDiscountBps: Int? = nil,
-        isReferred: Bool? = nil
+        referralDiscountBps: Int? = nil
     ) -> SwapTransaction {
         SwapTransaction(
             fromCoin: fromCoin,
@@ -181,7 +172,6 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
-            isReferred: isReferred ?? self.isReferred,
             networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
             advancedSettings: advancedSettings

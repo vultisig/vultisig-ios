@@ -158,6 +158,23 @@ final class DefaultSwapInteractorTests: XCTestCase {
         XCTAssertEqual(quoteService.lastVultTierDiscount, VultDiscountTier.gold.bpsDiscount)
     }
 
+    func testReferralDisplayDiscountUsesShippingListRateInDebug() async throws {
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService)
+
+        let result = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: "friend",
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+
+        XCTAssertEqual(result?.referralDiscountBps, 5)
+    }
+
     /// The first resolution saw a VULT balance of zero — a failed or
     /// not-yet-landed fetch — and produced no tier. The tier must be re-resolved
     /// for the next quote, not pinned: a pinned nil silently overcharged the user

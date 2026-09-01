@@ -96,11 +96,6 @@ final class SwapDetailsViewModel {
     var gasLimit: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
-    /// Whether a referral code is active for the current quote. Route-aware
-    /// affiliate-% display keys off this clean bit (not `referralDiscountBps`,
-    /// which is 0 in DEBUG even when referred).
-    var isReferred: Bool = false
-
     // MARK: - UI state (details-screen-only)
 
     var error: Error?
@@ -422,7 +417,6 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            isReferred: isReferred,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings
         )
@@ -706,7 +700,6 @@ private extension SwapDetailsViewModel {
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
-            isReferred = false
             error = nil
             isLoadingQuotes = false
             isLoadingFees = false
@@ -729,7 +722,6 @@ private extension SwapDetailsViewModel {
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
-            isReferred = false
         }
         error = nil
         isLoadingQuotes = true
@@ -787,7 +779,6 @@ private extension SwapDetailsViewModel {
             quotedAmount = fromAmount
             vultDiscountBps = 0
             referralDiscountBps = 0
-            isReferred = false
             return
         }
 
@@ -815,7 +806,6 @@ private extension SwapDetailsViewModel {
                 quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
-                isReferred = result.isReferred
             }
         } catch {
             // Ignore cancellation from a superseding amount edit — surfacing it
