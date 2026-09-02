@@ -483,7 +483,7 @@ struct PeerDiscoveryScreen: View {
             vault: viewModel.vault,
             tssType: tssType,
             keygenCommittee: viewModel.keygenCommittee,
-            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0) },
+            vaultOldCommittee: viewModel.vaultOldCommittee,
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",

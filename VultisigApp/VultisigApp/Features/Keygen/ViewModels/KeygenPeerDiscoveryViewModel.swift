@@ -48,6 +48,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
     @Published var keygenCommittee = [String]()
+    @Published private(set) var vaultOldCommittee = [String]()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
         didSet {
@@ -368,8 +369,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     func startKeygen() {
         guard status == .WaitingForDevices, !isStartingKeygen else { return }
         isStartingKeygen = true
+        // Both committees are fixed here: discovery keeps auto-selecting peers
+        // while the POST is in flight, and the ceremony must use what was sent.
         let committee = orderedCommittee(allParticipants: self.selections.map { $0 })
         self.keygenCommittee = committee
+        self.vaultOldCommittee = vault.signers.filter { selections.contains($0) }
         kickoffTask = Task { @MainActor [weak self] in
             guard let self else { return }
             defer { self.isStartingKeygen = false }

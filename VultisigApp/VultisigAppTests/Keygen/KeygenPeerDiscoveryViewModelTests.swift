@@ -210,6 +210,22 @@ final class KeygenPeerDiscoveryViewModelTests: XCTestCase {
         XCTAssertEqual(vm.status, .WaitingForDevices)
         XCTAssertTrue(vm.errorMessage.isEmpty)
     }
+
+    func testCommitteesAreFixedWhenTheKickoffStarts() async {
+        let http = KickoffHTTPClient()
+        http.delay = .milliseconds(200)
+        let vm = makeKickoffVM(http: http)
+        vm.vault.signers = ["iPhone-Local", "Peer-1", "Peer-2"]
+
+        vm.startKeygen()
+        vm.autoSelectPeer("Peer-2")
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(vm.status, .Keygen)
+        XCTAssertEqual(vm.keygenCommittee.sorted(), ["Peer-1", "iPhone-Local"])
+        XCTAssertEqual(vm.vaultOldCommittee, ["iPhone-Local", "Peer-1"])
+        XCTAssertEqual(http.kickoffs.first?.participants.sorted(), ["Peer-1", "iPhone-Local"])
+    }
 }
 
 private final class KickoffHTTPClient: HTTPClientProtocol, @unchecked Sendable {
