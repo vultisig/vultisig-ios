@@ -1556,7 +1556,7 @@
 "swapOverview" = "交换概览";
 "swapRecipientRouteNotAvailable" = "此交易对没有可用的外部接收方路由。请移除接收方或选择其他交易对。";
 "swapRecipientVerificationFailed" = "无法确认此交换会发送至你选择的接收方，已在签名前停止。请重试。";
-"swapReferralDiscount" = "推荐: %@";
+"swapReferralDiscount" = "推荐：%@";
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
@@ -1569,8 +1569,8 @@
 "swapVerifyCheckbox1Description" = "交换金额正确";
 "swapVerifyCheckbox2Description" = "我同意我将收到的最小金额";
 "swapVerifyCheckbox3Description" = "我同意为确切的交换金额提供 ERC20 授权";
-"swapVultDiscount" = "VULT %@: %d%%";
-"swapVultDiscountFallback" = "VULT: %d%%";
+"swapVultDiscount" = "VULT %@：%d%%";
+"swapVultDiscountFallback" = "VULT：%d%%";
 "switchBackToInternetMode" = "不想使用本地模式？切换回去。";
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
