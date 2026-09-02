@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "de vários dispositivos";
 "keygenInstructionsCar7DescriptionPart3" = ", aumentando a flexibilidade sem comprometer a segurança.";
 "keygenInstructionsCar7Title" = "Destaque de recursos";
+"keygenKickoffFailed" = "Falha ao iniciar a geração de chave. Tente novamente.";
 "keys" = "Chaves";
 "keyshareRecoveryBackupMessage" = "A sua cópia de segurança .vult é o caminho de volta. Importe-a e estes vaults voltam a funcionar.";
 "keyshareRecoveryImportButton" = "Importar cópia .vult";

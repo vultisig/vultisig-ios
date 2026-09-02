@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "여러 기기에서";
 "keygenInstructionsCar7DescriptionPart3" = " Vultisig 볼트에 액세스하여 보안을 유지하면서 유연성을 높입니다.";
 "keygenInstructionsCar7Title" = "기능 하이라이트";
+"keygenKickoffFailed" = "키 생성을 시작하지 못했습니다. 다시 시도해 주세요.";
 "keys" = "키";
 "keyshareRecoveryBackupMessage" = ".vult 백업이 돌아가는 길입니다. 백업을 가져오면 이 볼트를 다시 사용할 수 있습니다.";
 "keyshareRecoveryImportButton" = ".vult 백업 가져오기";

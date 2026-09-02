@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "s više uređaja";
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "keygenInstructionsCar7Title" = "Istaknuta značajka";
+"keygenKickoffFailed" = "Pokretanje generiranja ključa nije uspjelo. Molimo pokušajte ponovno.";
 "keys" = "Ključ";
 "keyshareRecoveryBackupMessage" = "Vaša .vult sigurnosna kopija je put natrag. Uvezite je i ovi će vaultovi ponovno raditi.";
 "keyshareRecoveryImportButton" = "Uvezi .vult kopiju";

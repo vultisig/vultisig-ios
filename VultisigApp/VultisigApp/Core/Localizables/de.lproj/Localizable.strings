@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "von mehreren Geräten";
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "keygenInstructionsCar7Title" = "Funktionshighlight";
+"keygenKickoffFailed" = "Schlüsselgenerierung konnte nicht gestartet werden. Bitte erneut versuchen.";
 "keys" = "Schlüssel";
 "keyshareRecoveryBackupMessage" = "Ihr .vult-Backup ist der Weg zurück. Importieren Sie es, und diese Vaults funktionieren wieder.";
 "keyshareRecoveryImportButton" = ".vult-Backup importieren";

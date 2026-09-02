@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "from multiple devices";
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
 "keygenInstructionsCar7Title" = "Feature Highlight";
+"keygenKickoffFailed" = "Failed to start key generation. Please try again.";
 "keys" = "Keys";
 "keyshareRecoveryBackupMessage" = "Your .vult backup is the way back. Import it and these vaults work again.";
 "keyshareRecoveryImportButton" = "Import .vult backup";

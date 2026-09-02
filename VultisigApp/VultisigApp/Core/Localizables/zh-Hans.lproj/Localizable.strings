@@ -739,6 +739,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "多个设备";
 "keygenInstructionsCar7DescriptionPart3" = "访问您的 Vultisig 保险库，在不影响安全性的情况下增强灵活性";
 "keygenInstructionsCar7Title" = "功能亮点";
+"keygenKickoffFailed" = "无法启动密钥生成，请重试。";
 "keys" = "密钥";
 "keyshareRecoveryBackupMessage" = "您的 .vult 备份就是找回的途径。导入备份后，这些 vault 即可恢复使用。";
 "keyshareRecoveryImportButton" = "导入 .vult 备份";

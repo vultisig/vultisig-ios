@@ -415,7 +415,7 @@ struct PeerDiscoveryScreen: View {
     @ViewBuilder
     var bottomButton: some View {
         if !isFixedDeviceMode {
-            PrimaryButton(title: continueButtonTitle) {
+            PrimaryButton(title: continueButtonTitle, isLoading: viewModel.isStartingKeygen) {
                 startKeygenAndRecordPairing()
             }
             .padding(.horizontal, 16)
@@ -425,7 +425,7 @@ struct PeerDiscoveryScreen: View {
 #else
             .padding(.bottom, 10)
 #endif
-            .disabled(continueButtonDisabled)
+            .disabled(continueButtonDisabled || viewModel.isStartingKeygen)
             .animation(.easeInOut(duration: 0.2), value: continueButtonDisabled)
         }
     }

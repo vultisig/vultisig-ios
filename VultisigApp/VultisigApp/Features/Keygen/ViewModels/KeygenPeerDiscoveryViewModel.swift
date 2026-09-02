@@ -56,12 +56,15 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     @Published var isLoading: Bool = false
+    @Published private(set) var isStartingKeygen = false
 
     private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
+    private let httpClient: HTTPClientProtocol
 
-    init() {
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
         self.tssType = .Keygen
         self.vault = Vault(name: "Main Vault")
         self.status = .WaitingForDevices
@@ -331,7 +334,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     func shouldAutoStartKeygen(totalDeviceCount: Int) -> Bool {
         guard tssType != .Reshare else { return false }
         guard totalDeviceCount <= 3 else { return false }
-        guard status == .WaitingForDevices else { return false }
+        guard status == .WaitingForDevices, !isStartingKeygen else { return false }
         return selections.count >= totalDeviceCount
     }
 
@@ -362,9 +365,37 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
 
     func startKeygen() {
-        self.startKeygen(allParticipants: self.selections.map { $0 })
-        self.status = .Keygen
-        self.participantDiscovery?.stop()
+        guard !isStartingKeygen else { return }
+        isStartingKeygen = true
+        let committee = orderedCommittee(allParticipants: self.selections.map { $0 })
+        self.keygenCommittee = committee
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { self.isStartingKeygen = false }
+            do {
+                try await self.kickoffKeygen(participants: committee)
+                self.status = .Keygen
+                self.participantDiscovery?.stop()
+            } catch {
+                self.logger.error("keygen kickoff failed: \(error.localizedDescription, privacy: .public)")
+                self.errorMessage = "keygenKickoffFailed".localized
+                self.status = .Failure
+            }
+        }
+    }
+
+    /// Joiners poll `GET /start` for this list; the ceremony must not begin
+    /// locally until the relay has acknowledged it.
+    private func kickoffKeygen(participants: [String]) async throws {
+        guard let baseURL = URL(string: serverAddr) else {
+            throw HTTPError.invalidURL
+        }
+        let body = try JSONEncoder().encode(participants)
+        _ = try await httpClient.request(RelayServerAPI(
+            baseURL: baseURL,
+            endpoint: .startSession(sessionID: sessionID, body: body)
+        ))
+        logger.info("kicked off keygen, session:\(self.sessionID, privacy: .public), participants:\(participants.count)")
     }
 
     func stopMediator() {
@@ -387,9 +418,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
 
-    private func startKeygen(allParticipants: [String]) {
-        let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-
+    private func orderedCommittee(allParticipants: [String]) -> [String] {
         // Enforce deterministic order (assumes calling device is the initiator): local device first, then peers by discovery order
         var sortedParticipants = [String]()
 
@@ -414,11 +443,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
 
-        self.keygenCommittee = sortedParticipants
-
-        Utils.sendRequest(urlString: urlString, method: "POST", headers: nil, body: sortedParticipants) { _ in
-            self.logger.info("kicked off keygen successfully")
-        }
+        return sortedParticipants
     }
 
     func getQRCodeData(size: CGFloat, displayScale: CGFloat) -> (String, Image)? {
