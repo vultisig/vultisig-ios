@@ -19,6 +19,7 @@ struct LockPasscodeEntryView: View {
     @State private var shakeTravel: CGFloat = 0
     #if os(iOS)
     @FocusState private var isPasscodeFieldFocused: Bool
+    @State private var shouldRestorePasscodeFieldFocus = false
     #endif
 
     private var digitCount: Int { PasscodeService.passcodeLength }
@@ -169,6 +170,7 @@ struct LockPasscodeEntryView: View {
 
     private func startBiometricUnlock() {
         #if os(iOS)
+        shouldRestorePasscodeFieldFocus = true
         isPasscodeFieldFocused = false
         #endif
         onBiometricUnlock()
@@ -197,16 +199,16 @@ private extension LockPasscodeEntryView {
             .clipped()
             .accessibilityHidden(true)
             .task(id: isBusy) { @MainActor in
-                if isBusy {
-                    isPasscodeFieldFocused = false
-                    return
-                }
+                guard !isBusy else { return }
 
-                // Re-focusing while the previous keyboard dismissal is still
-                // animating is ignored. This task is cancelled if busy changes
-                // again or the lock screen leaves the hierarchy.
-                try? await Task.sleep(for: .milliseconds(300))
-                guard !Task.isCancelled else { return }
+                if shouldRestorePasscodeFieldFocus {
+                    // Re-focusing while the biometric sheet is still dismissing
+                    // is ignored. This task is cancelled if busy changes again
+                    // or the lock screen leaves the hierarchy.
+                    try? await Task.sleep(for: .milliseconds(300))
+                    guard !Task.isCancelled else { return }
+                    shouldRestorePasscodeFieldFocus = false
+                }
                 isPasscodeFieldFocused = true
             }
     }
