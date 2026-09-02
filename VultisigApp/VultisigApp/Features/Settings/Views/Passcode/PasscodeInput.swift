@@ -29,11 +29,16 @@ enum PasscodeInputRules {
         }
         return candidate
     }
+
+    static func acceptsNativeEntry(_ value: String) -> Bool {
+        value.count <= PasscodeService.passcodeLength
+            && value.allSatisfy { $0.isASCII && $0.isNumber }
+    }
 }
 
 /// Owns passcode input behavior while leaving each flow free to present its own
-/// dots and keypad. Settings keeps its circular keypad, while app lock follows
-/// the dedicated lock-screen design without duplicating input rules.
+/// dots and input surface. Settings keeps its circular keypad, while app lock
+/// uses the native iOS number pad without duplicating input rules.
 struct PasscodeInput<Content: View>: View {
     @Binding var passcode: String
     let isBusy: Bool

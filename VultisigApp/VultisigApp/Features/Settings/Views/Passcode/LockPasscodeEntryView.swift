@@ -4,6 +4,9 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 struct LockPasscodeEntryView: View {
     var errorMessage: String?
@@ -21,12 +24,26 @@ struct LockPasscodeEntryView: View {
     var body: some View {
         ZStack {
             LockScreenBackground()
+                .ignoresSafeArea()
 
             PasscodeInput(
                 passcode: $passcode,
                 isBusy: isBusy,
                 onComplete: onComplete
             ) { actions in
+                #if os(iOS)
+                lockContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .padding(.bottom, 26)
+                    .overlay(alignment: .topLeading) {
+                        NativeNumberPadPasscodeField(
+                            passcode: $passcode,
+                            isBusy: isBusy
+                        )
+                        .frame(width: 1, height: 1)
+                        .accessibilityHidden(true)
+                    }
+                #else
                 VStack(spacing: 0) {
                     lockContent
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -38,9 +55,14 @@ struct LockPasscodeEntryView: View {
                     )
                     .frame(height: 310)
                 }
+                #endif
             }
         }
+        #if os(iOS)
+        .ignoresSafeArea(.container)
+        #else
         .ignoresSafeArea()
+        #endif
         .onChange(of: errorMessage) { _, message in
             guard message?.isEmpty == false else { return }
             reactToError()
@@ -157,6 +179,86 @@ struct LockPasscodeEntryView: View {
     }
 }
 
+#if os(iOS)
+struct NativeNumberPadPasscodeField: UIViewRepresentable {
+    @Binding var passcode: String
+    let isBusy: Bool
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func makeUIView(context: Context) -> UITextField {
+        let textField = Self.makeTextField()
+        textField.delegate = context.coordinator
+        return textField
+    }
+
+    func updateUIView(_ textField: UITextField, context: Context) {
+        context.coordinator.parent = self
+        if textField.text != passcode {
+            textField.text = passcode
+        }
+
+        guard !textField.isFirstResponder else { return }
+        DispatchQueue.main.async { [weak textField] in
+            guard textField?.window != nil else { return }
+            textField?.becomeFirstResponder()
+        }
+    }
+
+    static func dismantleUIView(_ textField: UITextField, coordinator _: Coordinator) {
+        textField.resignFirstResponder()
+    }
+
+    static func makeTextField() -> UITextField {
+        let textField = NativeNumberPadTextField(frame: .zero)
+        textField.keyboardType = .numberPad
+        textField.isSecureTextEntry = true
+        textField.textColor = .clear
+        textField.tintColor = .clear
+        textField.backgroundColor = .clear
+        return textField
+    }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: NativeNumberPadPasscodeField
+
+        init(parent: NativeNumberPadPasscodeField) {
+            self.parent = parent
+        }
+
+        func textField(
+            _ textField: UITextField,
+            shouldChangeCharactersIn range: NSRange,
+            replacementString string: String
+        ) -> Bool {
+            guard !parent.isBusy,
+                  let current = textField.text,
+                  let swiftRange = Range(range, in: current) else {
+                return false
+            }
+
+            let candidate = current.replacingCharacters(in: swiftRange, with: string)
+            guard PasscodeInputRules.acceptsNativeEntry(candidate) else { return false }
+            parent.passcode = candidate
+            return true
+        }
+    }
+}
+
+private final class NativeNumberPadTextField: UITextField {
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.becomeFirstResponder()
+        }
+    }
+}
+#endif
+
 private struct LockScreenBackground: View {
     var body: some View {
         ZStack(alignment: .top) {
@@ -177,6 +279,7 @@ private struct LockScreenBackground: View {
     }
 }
 
+#if os(macOS)
 private struct LockPasscodeKeypad: View {
     private struct Key: Identifiable {
         let id: String
@@ -284,6 +387,7 @@ private struct LockPasscodeKeyStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
+#endif
 
 private struct LockShakeEffect: GeometryEffect {
     var amplitude: CGFloat = 9

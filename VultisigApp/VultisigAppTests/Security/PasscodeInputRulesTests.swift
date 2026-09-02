@@ -5,6 +5,9 @@
 
 import XCTest
 @testable import VultisigApp
+#if os(iOS)
+import UIKit
+#endif
 
 final class PasscodeInputRulesTests: XCTestCase {
     func testAppendStopsAtThePasscodeLength() {
@@ -23,4 +26,22 @@ final class PasscodeInputRulesTests: XCTestCase {
         XCTAssertNil(PasscodeInputRules.pastedEntry(from: "12-34"))
         XCTAssertNil(PasscodeInputRules.pastedEntry(from: "１２３４５６"))
     }
+
+    func testNativeEntryAcceptsOnlyUpToSixAsciiDigits() {
+        XCTAssertTrue(PasscodeInputRules.acceptsNativeEntry(""))
+        XCTAssertTrue(PasscodeInputRules.acceptsNativeEntry("123456"))
+        XCTAssertFalse(PasscodeInputRules.acceptsNativeEntry("1234567"))
+        XCTAssertFalse(PasscodeInputRules.acceptsNativeEntry("12-34"))
+        XCTAssertFalse(PasscodeInputRules.acceptsNativeEntry("１２３４５６"))
+    }
+
+    #if os(iOS)
+    @MainActor
+    func testNativePasscodeFieldUsesSecureSystemNumberPad() {
+        let textField = NativeNumberPadPasscodeField.makeTextField()
+
+        XCTAssertEqual(textField.keyboardType, .numberPad)
+        XCTAssertTrue(textField.isSecureTextEntry)
+    }
+    #endif
 }
