@@ -17,6 +17,9 @@ struct LockPasscodeEntryView: View {
     let onBiometricUnlock: () -> Void
 
     @State private var shakeTravel: CGFloat = 0
+    #if os(iOS)
+    @FocusState private var isPasscodeFieldFocused: Bool
+    #endif
 
     private var digitCount: Int { PasscodeService.passcodeLength }
     private var hasError: Bool { errorMessage?.isEmpty == false }
@@ -36,12 +39,7 @@ struct LockPasscodeEntryView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .padding(.bottom, 26)
                     .overlay(alignment: .topLeading) {
-                        NativeNumberPadPasscodeField(
-                            passcode: $passcode,
-                            isBusy: isBusy
-                        )
-                        .frame(width: 1, height: 1)
-                        .accessibilityHidden(true)
+                        nativePasscodeField
                     }
                 #else
                 VStack(spacing: 0) {
@@ -149,7 +147,7 @@ struct LockPasscodeEntryView: View {
     }
 
     private var biometricButton: some View {
-        Button(action: onBiometricUnlock) {
+        Button(action: startBiometricUnlock) {
             HStack(spacing: 8) {
                 Image("passcode-face-id")
                     .resizable()
@@ -169,6 +167,13 @@ struct LockPasscodeEntryView: View {
         .accessibilityIdentifier(AccessibilityID.Passcode.useBiometricsButton)
     }
 
+    private func startBiometricUnlock() {
+        #if os(iOS)
+        isPasscodeFieldFocused = false
+        #endif
+        onBiometricUnlock()
+    }
+
     private func reactToError() {
         withAnimation(.linear(duration: 0.4)) {
             shakeTravel += 1
@@ -180,81 +185,43 @@ struct LockPasscodeEntryView: View {
 }
 
 #if os(iOS)
-struct NativeNumberPadPasscodeField: UIViewRepresentable {
-    @Binding var passcode: String
-    let isBusy: Bool
+private extension LockPasscodeEntryView {
+    var nativePasscodeField: some View {
+        SecureField("", text: nativePasscode)
+            .keyboardType(.numberPad)
+            .textFieldStyle(.plain)
+            .foregroundStyle(.clear)
+            .tint(.clear)
+            .focused($isPasscodeFieldFocused)
+            .frame(width: 1, height: 1)
+            .clipped()
+            .accessibilityHidden(true)
+            .task(id: isBusy) { @MainActor in
+                if isBusy {
+                    isPasscodeFieldFocused = false
+                    return
+                }
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
-    }
-
-    func makeUIView(context: Context) -> UITextField {
-        let textField = Self.makeTextField()
-        textField.delegate = context.coordinator
-        return textField
-    }
-
-    func updateUIView(_ textField: UITextField, context: Context) {
-        context.coordinator.parent = self
-        if textField.text != passcode {
-            textField.text = passcode
-        }
-
-        guard !textField.isFirstResponder else { return }
-        DispatchQueue.main.async { [weak textField] in
-            guard textField?.window != nil else { return }
-            textField?.becomeFirstResponder()
-        }
-    }
-
-    static func dismantleUIView(_ textField: UITextField, coordinator _: Coordinator) {
-        textField.resignFirstResponder()
-    }
-
-    static func makeTextField() -> UITextField {
-        let textField = NativeNumberPadTextField(frame: .zero)
-        textField.keyboardType = .numberPad
-        textField.isSecureTextEntry = true
-        textField.textColor = .clear
-        textField.tintColor = .clear
-        textField.backgroundColor = .clear
-        return textField
-    }
-
-    final class Coordinator: NSObject, UITextFieldDelegate {
-        var parent: NativeNumberPadPasscodeField
-
-        init(parent: NativeNumberPadPasscodeField) {
-            self.parent = parent
-        }
-
-        func textField(
-            _ textField: UITextField,
-            shouldChangeCharactersIn range: NSRange,
-            replacementString string: String
-        ) -> Bool {
-            guard !parent.isBusy,
-                  let current = textField.text,
-                  let swiftRange = Range(range, in: current) else {
-                return false
+                // Re-focusing while the previous keyboard dismissal is still
+                // animating is ignored. This task is cancelled if busy changes
+                // again or the lock screen leaves the hierarchy.
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                isPasscodeFieldFocused = true
             }
-
-            let candidate = current.replacingCharacters(in: swiftRange, with: string)
-            guard PasscodeInputRules.acceptsNativeEntry(candidate) else { return false }
-            parent.passcode = candidate
-            return true
-        }
     }
-}
 
-private final class NativeNumberPadTextField: UITextField {
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        guard window != nil else { return }
-
-        DispatchQueue.main.async { [weak self] in
-            self?.becomeFirstResponder()
-        }
+    var nativePasscode: Binding<String> {
+        Binding(
+            get: { passcode },
+            set: { candidate in
+                guard !isBusy,
+                      PasscodeInputRules.acceptsNativeEntry(candidate) else {
+                    return
+                }
+                passcode = candidate
+            }
+        )
     }
 }
 #endif
