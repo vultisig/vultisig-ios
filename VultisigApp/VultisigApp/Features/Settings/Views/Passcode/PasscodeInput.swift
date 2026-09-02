@@ -139,7 +139,6 @@ struct PasscodeInput<Content: View>: View {
     private func enqueue(_ edit: (String) -> String?) -> KeyPress.Result {
         let base = keyboard.expected ?? passcode
         guard !isBusy,
-              base.count < PasscodeService.passcodeLength,
               let next = edit(base) else {
             return .handled
         }

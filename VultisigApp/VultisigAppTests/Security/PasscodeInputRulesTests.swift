@@ -14,6 +14,7 @@ final class PasscodeInputRulesTests: XCTestCase {
 
     func testDeleteRemovesOnlyTheLastDigit() {
         XCTAssertEqual(PasscodeInputRules.deletingLast(from: "123"), "12")
+        XCTAssertEqual(PasscodeInputRules.deletingLast(from: "123456"), "12345")
         XCTAssertNil(PasscodeInputRules.deletingLast(from: ""))
     }
 
