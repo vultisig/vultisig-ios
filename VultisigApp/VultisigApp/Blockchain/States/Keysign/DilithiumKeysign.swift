@@ -35,6 +35,7 @@ final class DilithiumKeysign {
     let publicKey: String
     var messenger: DKLSMessenger?
     var cache = NSCache<NSString, AnyObject>()
+    var stallClock = CeremonyStallClock()
     var signatures = [String: DilithiumKeysignResponse]()
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
     private let httpClient: HTTPClientProtocol
@@ -190,6 +191,7 @@ final class DilithiumKeysign {
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
+                stallClock.markProgress()
             }
         } while 1 > 0
 
@@ -202,7 +204,7 @@ final class DilithiumKeysign {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        stallClock.reset()
         repeat {
             // Cooperative cancellation: honour cancelAll() from the stage-level
             // timeout so a stalled poll stops instead of running to completion
@@ -233,11 +235,7 @@ final class DilithiumKeysign {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
+            if stallClock.isStalled {
                 throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
             }
         } while !isFinished
@@ -275,6 +273,7 @@ final class DilithiumKeysign {
             }
 
             self.cache.setObject(NSObject(), forKey: key)
+            stallClock.markProgress()
             try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processDilithiumOutboundMessage(handle: handle)
             // local party keysign finished

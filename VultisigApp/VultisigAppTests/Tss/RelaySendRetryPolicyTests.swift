@@ -36,7 +36,7 @@ final class RelaySendRetryPolicyTests: XCTestCase {
 
     func testWorstCaseBudgetStaysUnderTheCeremonyStall() {
         XCTAssertEqual(RelaySendRetryPolicy.worstCaseBudget, .seconds(39))
-        XCTAssertLessThan(RelaySendRetryPolicy.worstCaseBudget, .seconds(60))
+        XCTAssertLessThan(RelaySendRetryPolicy.worstCaseBudget, CeremonyStallClock.defaultLimit)
     }
 
     func testOnlyTheMessagePostUsesTheShortTimeout() {

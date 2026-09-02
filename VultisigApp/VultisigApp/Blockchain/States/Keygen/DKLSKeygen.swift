@@ -55,6 +55,7 @@ final class DKLSKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
+    var stallClock = CeremonyStallClock()
     var setupMessage: [UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
@@ -213,6 +214,7 @@ final class DKLSKeygen {
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                stallClock.markProgress()
             }
         } while 1 > 0
     }
@@ -224,7 +226,7 @@ final class DKLSKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        stallClock.reset()
         repeat {
             let response: HTTPResponse<Data>
             do {
@@ -249,11 +251,7 @@ final class DKLSKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
+            if stallClock.isStalled {
                 throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
             }
         } while !isFinished
@@ -301,6 +299,7 @@ final class DKLSKeygen {
                 logger.debug("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public), from:\(msg.from, privacy: .public), to:\(msg.to, privacy: .public) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
+            stallClock.markProgress()
             try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDKLSOutboundMessage(handle: handle)

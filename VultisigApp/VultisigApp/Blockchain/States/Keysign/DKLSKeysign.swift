@@ -26,6 +26,7 @@ final class DKLSKeysign {
     let publicKeyECDSA: String
     var messenger: DKLSMessenger? = nil
     var cache = NSCache<NSString, AnyObject>()
+    var stallClock = CeremonyStallClock()
     var signatures = [String: TssKeysignResponse]()
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
     // LIB_ABORT_PROTOCOL_AND_BAN_PARTY_1...10 (godkls.h): the library aborted
@@ -218,6 +219,7 @@ final class DKLSKeysign {
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
+                stallClock.markProgress()
             }
         } while 1 > 0
 
@@ -230,7 +232,7 @@ final class DKLSKeysign {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        stallClock.reset()
         repeat {
             // Cooperative cancellation: honour cancelAll() from the stage-level
             // timeout so a stalled poll stops instead of running to completion
@@ -261,11 +263,7 @@ final class DKLSKeysign {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
+            if stallClock.isStalled {
                 throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
             }
         } while !isFinished
@@ -304,6 +302,7 @@ final class DKLSKeysign {
             }
 
             self.cache.setObject(NSObject(), forKey: key)
+            stallClock.markProgress()
             try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processDKLSOutboundMessage(handle: handle)
             // local party keysign finished

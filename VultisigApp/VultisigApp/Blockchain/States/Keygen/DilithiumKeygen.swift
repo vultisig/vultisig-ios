@@ -29,6 +29,7 @@ final class DilithiumKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
+    var stallClock = CeremonyStallClock()
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
@@ -126,6 +127,7 @@ final class DilithiumKeygen {
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                stallClock.markProgress()
             }
         } while 1 > 0
     }
@@ -137,7 +139,7 @@ final class DilithiumKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        stallClock.reset()
         repeat {
             let response: HTTPResponse<Data>
             do {
@@ -162,10 +164,7 @@ final class DilithiumKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            if elapsedTimeInSeconds > 60 {
+            if stallClock.isStalled {
                 throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
             }
         } while !isFinished
@@ -205,6 +204,7 @@ final class DilithiumKeygen {
                 logger.debug("successfully applied inbound message to mldsa, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public), from:\(msg.from, privacy: .public), to:\(msg.to, privacy: .public) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
+            stallClock.markProgress()
             try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDilithiumOutboundMessage(handle: handle)
@@ -287,6 +287,8 @@ final class DilithiumKeygen {
                 logger.debug("keyId: \(keyIdBytes.toHexString(), privacy: .public)")
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {

@@ -33,6 +33,7 @@ final class SchnorrKeysign {
     let publicKeyEdDSA: String
     var messenger: DKLSMessenger? = nil
     var cache = NSCache<NSString, AnyObject>()
+    var stallClock = CeremonyStallClock()
     var signatures = [String: TssKeysignResponse]()
     var keyshare: [UInt8] = []
     private let httpClient: HTTPClientProtocol
@@ -192,6 +193,7 @@ final class SchnorrKeysign {
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
+                stallClock.markProgress()
             }
         } while 1 > 0
 
@@ -204,7 +206,7 @@ final class SchnorrKeysign {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        stallClock.reset()
         repeat {
             // Cooperative cancellation: honour cancelAll() from the stage-level
             // timeout so a stalled poll stops instead of running to completion
@@ -235,11 +237,7 @@ final class SchnorrKeysign {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
+            if stallClock.isStalled {
                 throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
             }
         } while !isFinished
@@ -287,6 +285,7 @@ final class SchnorrKeysign {
                 throw HelperError.runtimeError("fail to apply message to schnorr session, error code: \(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
+            stallClock.markProgress()
             try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processSchnorrOutboundMessage(handle: handle)
             // local party keysign finished
