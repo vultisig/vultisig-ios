@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "Definir código";
 "passcodeStorageError" = "Não foi possível ler o código neste dispositivo. Restaure o seu vault a partir de uma cópia de segurança.";
 "passcodeUseFaceID" = "Usar Face ID";
+"passcodeUseTouchID" = "Usar Touch ID";
 "password" = "Senha";
 "PasswordCannotBeReset" = "A senha não pode ser redefinida ou recuperada";
 "passwordHint" = "Dica de senha";

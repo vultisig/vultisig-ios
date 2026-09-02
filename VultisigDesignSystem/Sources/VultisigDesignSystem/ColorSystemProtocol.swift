@@ -24,8 +24,6 @@ public protocol ColorSystemProtocol {
     var bgSurface12: Color { get }
 
     var lockPasscodeField: Color { get }
-    var lockKeypadBackground: Color { get }
-    var lockKeypadKey: Color { get }
 
     var bgSuccess: Color { get }
     var bgAlert: Color { get }

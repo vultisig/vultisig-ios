@@ -39,6 +39,4 @@ struct FontSystem: FontSystemProtocol {
 
     var keypadDigit: Font { .system(size: 32, weight: .regular, design: .rounded) }
     var keypadGlyph: Font { .system(size: 24, weight: .regular) }
-    var lockKeypadDigit: Font { .system(size: 24, weight: .regular) }
-    var lockKeypadLetters: Font { .system(size: 10, weight: .medium) }
 }

@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "设置密码";
 "passcodeStorageError" = "无法在本设备上读取密码。请从备份恢复您的 vault。";
 "passcodeUseFaceID" = "使用面容 ID";
+"passcodeUseTouchID" = "使用触控 ID";
 "password" = "密码";
 "PasswordCannotBeReset" = "密码无法重置或恢复";
 "passwordHint" = "密码提示";

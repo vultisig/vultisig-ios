@@ -34,7 +34,7 @@ struct LockPasscodeEntryView: View {
                 passcode: $passcode,
                 isBusy: isBusy,
                 onComplete: onComplete
-            ) { actions in
+            ) { _ in
                 #if os(iOS)
                 lockContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -43,17 +43,8 @@ struct LockPasscodeEntryView: View {
                         nativePasscodeField
                     }
                 #else
-                VStack(spacing: 0) {
-                    lockContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                        .padding(.bottom, 26)
-
-                    LockPasscodeKeypad(
-                        isBusy: isBusy,
-                        actions: actions
-                    )
-                    .frame(height: 310)
-                }
+                lockContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 #endif
             }
         }
@@ -150,11 +141,12 @@ struct LockPasscodeEntryView: View {
     private var biometricButton: some View {
         Button(action: startBiometricUnlock) {
             HStack(spacing: 8) {
-                Image("passcode-face-id")
+                biometricIcon
                     .resizable()
+                    .scaledToFit()
                     .frame(width: 20, height: 20)
 
-                Text("passcodeUseFaceID".localized)
+                Text(biometricTitle)
                     .font(Theme.fonts.buttonSMedium)
                     .foregroundStyle(Theme.colors.alertInfo)
                     .frame(height: 18)
@@ -166,6 +158,22 @@ struct LockPasscodeEntryView: View {
         .opacity(isBiometricUnlockAvailable ? 1 : 0)
         .accessibilityHidden(!isBiometricUnlockAvailable)
         .accessibilityIdentifier(AccessibilityID.Passcode.useBiometricsButton)
+    }
+
+    private var biometricIcon: Image {
+        #if os(iOS)
+        Image("passcode-face-id")
+        #else
+        Image(systemName: "touchid")
+        #endif
+    }
+
+    private var biometricTitle: String {
+        #if os(iOS)
+        "passcodeUseFaceID".localized
+        #else
+        "passcodeUseTouchID".localized
+        #endif
     }
 
     private func startBiometricUnlock() {
@@ -247,116 +255,6 @@ private struct LockScreenBackground: View {
         }
     }
 }
-
-#if os(macOS)
-private struct LockPasscodeKeypad: View {
-    private struct Key: Identifiable {
-        let id: String
-        let digit: String?
-        let letters: String?
-
-        static func digit(_ digit: String, letters: String? = nil) -> Self {
-            Self(id: digit, digit: digit, letters: letters)
-        }
-
-        static let blank = Self(id: "blank", digit: nil, letters: nil)
-        static let delete = Self(id: "delete", digit: nil, letters: nil)
-    }
-
-    private static let keys: [Key] = [
-        .digit("1"), .digit("2", letters: "A B C"), .digit("3", letters: "D E F"),
-        .digit("4", letters: "G H I"), .digit("5", letters: "J K L"), .digit("6", letters: "M N O"),
-        .digit("7", letters: "P Q R S"), .digit("8", letters: "T U V"), .digit("9", letters: "W X Y Z"),
-        .blank, .digit("0"), .delete
-    ]
-
-    let isBusy: Bool
-    let actions: PasscodeInputActions
-
-    var body: some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3),
-            spacing: 6
-        ) {
-            ForEach(Self.keys) { key in
-                keyView(key)
-                    .frame(height: 46)
-            }
-        }
-        .padding(.horizontal, 7)
-        .padding(.top, 25)
-        .frame(maxWidth: 393, maxHeight: .infinity, alignment: .top)
-        .background(Theme.colors.lockKeypadBackground)
-        .clipShape(
-            UnevenRoundedRectangle(
-                topLeadingRadius: Theme.radius.xl.points,
-                topTrailingRadius: Theme.radius.xl.points
-            )
-        )
-        .disabled(isBusy)
-        .opacity(isBusy ? 0.65 : 1)
-        .animation(.easeInOut(duration: 0.15), value: isBusy)
-    }
-
-    @ViewBuilder
-    private func keyView(_ key: Key) -> some View {
-        if let digit = key.digit {
-            Button {
-                actions.append(digit)
-            } label: {
-                VStack(spacing: -2) {
-                    Text(digit)
-                        .font(Theme.fonts.lockKeypadDigit)
-
-                    if let letters = key.letters {
-                        Text(letters)
-                            .font(Theme.fonts.lockKeypadLetters)
-                    }
-                }
-                .foregroundStyle(Color.white)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .buttonStyle(LockPasscodeKeyStyle(hasFill: true))
-            .accessibilityIdentifier(AccessibilityID.Passcode.digitKey(digit))
-        } else if key.id == "delete" {
-            Button(action: actions.deleteLast) {
-                Image(systemName: "delete.left")
-                    .font(Theme.fonts.keypadGlyph)
-                    .foregroundStyle(Color.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .buttonStyle(LockPasscodeKeyStyle(hasFill: false))
-            .accessibilityIdentifier(AccessibilityID.Passcode.deleteKey)
-            .accessibilityLabel("delete".localized)
-        } else {
-            Color.clear
-        }
-    }
-}
-
-private struct LockPasscodeKeyStyle: ButtonStyle {
-    let hasFill: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background {
-                if hasFill {
-                    Theme.radius.sm.shape
-                        .fill(Theme.colors.lockKeypadKey)
-                }
-            }
-            .overlay {
-                if configuration.isPressed {
-                    Theme.radius.sm.shape
-                        .fill(Color.white.opacity(0.2))
-                }
-            }
-            .clipShape(Theme.radius.sm.shape)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
-#endif
 
 private struct LockShakeEffect: GeometryEffect {
     var amplitude: CGFloat = 9

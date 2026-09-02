@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "패스코드 설정";
 "passcodeStorageError" = "이 기기에서 패스코드를 읽을 수 없습니다. 백업에서 볼트를 복원하세요.";
 "passcodeUseFaceID" = "Face ID 사용";
+"passcodeUseTouchID" = "Touch ID 사용";
 "password" = "비밀번호";
 "PasswordCannotBeReset" = "비밀번호는 재설정하거나 복구할 수 없습니다";
 "passwordHint" = "비밀번호 힌트";

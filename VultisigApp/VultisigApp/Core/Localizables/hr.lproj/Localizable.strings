@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "passcodeUseFaceID" = "Upotrijebi Face ID";
+"passcodeUseTouchID" = "Upotrijebi Touch ID";
 "password" = "Lozinka";
 "PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
 "passwordHint" = "Nagovještaj lozinke";

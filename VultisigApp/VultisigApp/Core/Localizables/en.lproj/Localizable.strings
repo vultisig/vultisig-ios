@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
 "passcodeUseFaceID" = "Use face ID";
+"passcodeUseTouchID" = "Use Touch ID";
 "password" = "Password";
 "PasswordCannotBeReset" = "Password cannot be reset or recovered";
 "passwordHint" = "Password Hint";

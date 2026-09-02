@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "Imposta codice";
 "passcodeStorageError" = "Non è stato possibile leggere il codice su questo dispositivo. Ripristina il vault da un backup.";
 "passcodeUseFaceID" = "Usa Face ID";
+"passcodeUseTouchID" = "Usa Touch ID";
 "password" = "Password";
 "PasswordCannotBeReset" = "La password non può essere reimpostata o recuperata";
 "passwordHint" = "Suggerimento password";

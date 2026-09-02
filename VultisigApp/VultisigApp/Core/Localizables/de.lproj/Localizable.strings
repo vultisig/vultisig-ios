@@ -1092,6 +1092,7 @@
 "passcodeSetTitle" = "Passcode festlegen";
 "passcodeStorageError" = "Der Passcode konnte auf diesem Gerät nicht gelesen werden. Stellen Sie Ihren Vault aus einem Backup wieder her.";
 "passcodeUseFaceID" = "Face ID verwenden";
+"passcodeUseTouchID" = "Touch ID verwenden";
 "password" = "Passwort";
 "PasswordCannotBeReset" = "Passwort kann nicht zurückgesetzt oder wiederhergestellt werden";
 "passwordHint" = "Passwort-Hinweis";
