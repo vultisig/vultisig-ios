@@ -12,23 +12,28 @@ import CryptoKit
 
 private let logger = Log.tss.network
 final class DKLSMessenger {
+    typealias Sleeper = @Sendable (Duration) async throws -> Void
+
     let mediatorURL: String
     let sessionID: String
     var messageID: String?
     let encryptionKeyHex: String
     var counter: Int64 = 1
     private let httpClient: HTTPClientProtocol
+    private let sleep: Sleeper
 
     init(mediatorUrl: String,
          sessionID: String,
          messageID: String?,
          encryptionKeyHex: String,
-         httpClient: HTTPClientProtocol = HTTPClient()) {
+         httpClient: HTTPClientProtocol = HTTPClient(),
+         sleep: @escaping Sleeper = { try await Task.sleep(for: $0) }) {
         self.mediatorURL = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
         self.encryptionKeyHex = encryptionKeyHex
         self.httpClient = httpClient
+        self.sleep = sleep
     }
 
     /// Uploads a setup message to the relay server.
@@ -108,26 +113,22 @@ final class DKLSMessenger {
 
     func send(_ fromParty: String?, to: String?, body: String?) async throws {
         guard let fromParty else {
-            logger.error("from is nil")
-            return
+            throw RelaySendError.invalidMessage("from is nil")
         }
         guard let to else {
-            logger.error("to is nil")
-            return
+            throw RelaySendError.invalidMessage("to is nil")
         }
         guard let body else {
-            logger.error("body is nil")
-            return
+            throw RelaySendError.invalidMessage("body is nil")
         }
         guard let baseURL = URL(string: mediatorURL) else {
-            logger.error("invalid mediator URL: \(self.mediatorURL)")
-            return
+            throw RelaySendError.invalidMessage("invalid mediator URL: \(mediatorURL)")
         }
-
         guard let encryptedBody = body.aesEncryptGCM(key: self.encryptionKeyHex) else {
-            logger.error("fail to encrypt message body")
-            return
+            throw RelaySendError.invalidMessage("fail to encrypt message body")
         }
+        // Built once: every retry must carry the same hash and sequence number
+        // so the relay and the receiver dedupe it instead of applying it twice.
         let msg = Message(session_id: sessionID,
                           from: fromParty,
                           to: [to],
@@ -135,25 +136,35 @@ final class DKLSMessenger {
                           hash: Utils.getMessageBodyHash(msg: body),
                           sequenceNo: self.counter)
         self.counter += 1
+        let target = TssRelayAPI(
+            baseURL: baseURL,
+            endpoint: .sendMessage(
+                sessionID: sessionID,
+                message: msg,
+                messageID: messageID,
+                addLegacyKeygenHeader: false
+            )
+        )
 
-        for _ in 0...3 {
+        var attempt = 1
+        while true {
             do {
-                _ = try await httpClient.request(TssRelayAPI(
-                    baseURL: baseURL,
-                    endpoint: .sendMessage(
-                        sessionID: sessionID,
-                        message: msg,
-                        messageID: messageID,
-                        addLegacyKeygenHeader: false
-                    )
-                ))
+                _ = try await httpClient.request(target)
                 logger.info("send message (\(msg.hash) to (\(msg.to)) successfully, sequenceNo:\(msg.sequence_no)")
                 return
-            } catch let HTTPError.statusCode(code, _) {
-                logger.error("fail to send message to relay server,status:\(code)")
-                continue
             } catch {
-                logger.error("fail to send message,error:\(error.localizedDescription)")
+                guard RelaySendRetryPolicy.isRetryable(error) else {
+                    if case HTTPError.statusCode(let code, _) = error {
+                        throw RelaySendError.rejected(status: code)
+                    }
+                    throw error
+                }
+                guard attempt < RelaySendRetryPolicy.maxAttempts else {
+                    throw RelaySendError.exhausted(attempts: attempt, lastError: error)
+                }
+                logger.warning("fail to send message \(msg.hash), attempt \(attempt)/\(RelaySendRetryPolicy.maxAttempts): \(error.localizedDescription)")
+                try await sleep(RelaySendRetryPolicy.backoff(afterAttempt: attempt))
+                attempt += 1
             }
         }
     }

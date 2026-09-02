@@ -103,6 +103,21 @@ struct TssRelayAPI: TargetType {
         return result
     }
 
+    static let defaultTimeout: TimeInterval = 60
+
+    /// Only the message POST is shortened: it is the one call that is retried,
+    /// and its whole retry budget has to fit inside the ceremony stall limit.
+    var timeoutInterval: TimeInterval {
+        switch endpoint {
+        case .sendMessage:
+            return RelaySendRetryPolicy.requestTimeout
+        case .uploadSetupMessage, .downloadSetupMessage,
+             .pollInboundMessages, .deleteMessage,
+             .checkKeygenStarted:
+            return Self.defaultTimeout
+        }
+    }
+
     var validationType: ValidationType {
         switch endpoint {
         case .checkKeygenStarted:
