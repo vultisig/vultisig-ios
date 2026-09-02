@@ -409,6 +409,17 @@ enum SwapCryptoLogic {
 
     // MARK: - Display: fees
 
+    /// Public list rate shown on swap fee surfaces. This is intentionally
+    /// independent of the DEBUG-only wire affiliate configuration.
+    static let affiliateListFeeBps = 50
+
+    struct AffiliateDiscountBreakdown: Equatable {
+        let vult: Decimal
+        let referral: Decimal
+
+        var total: Decimal { vult + referral }
+    }
+
     static func showGas(gas: BigInt) -> Bool {
         !gas.isZero
     }
@@ -518,21 +529,35 @@ enum SwapCryptoLogic {
         return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
 
-    /// Trailing value for the "Vultisig Fee" affiliate row. The affiliate
-    /// component ONLY, sourced per route from `affiliateFeeFiat` — never the
-    /// composite `fees.total`. Returns `$0.00` (not empty) for a real affiliate
-    /// route charging zero, so the Ultimate/100%-waiver user still sees the row;
-    /// SwapKit's flat 0.50% is baked into the quoted rate, so it shows an
-    /// "included in quoted rate" note instead of a separate amount. `.empty`
-    /// only when there is no quote — row visibility is gated by
-    /// `showAffiliateFeeRow`, not by this string being empty.
-    static func baseAffiliateFee(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> String {
+    /// Gross list-rate amount shown on the "Vultisig Fee" row. The quote
+    /// exposes the net charged affiliate amount, so adding the exact displayed
+    /// discounts reconstructs the undiscounted amount while `totalFeeString`
+    /// deliberately remains net. SwapKit's affiliate is embedded in the quoted
+    /// rate and therefore stays a note rather than a fabricated line-item value.
+    static func baseAffiliateFee(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: String,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
         guard let quote else { return .empty }
         if case .swapkit = quote {
             return "swap.included_in_rate".localized
         }
-        return affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
-            .formatToFiat(includeCurrencySymbol: true)
+        let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        let discounts = affiliateDiscountBreakdown(
+            quote: quote,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            feeCoin: feeCoin,
+            fromAmount: fromAmount,
+            vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+        return (net + discounts.total).formatToFiat(includeCurrencySymbol: true)
     }
 
     /// Whether the "Vultisig Fee" affiliate row should render. Every real market
@@ -594,55 +619,26 @@ enum SwapCryptoLogic {
         }
     }
 
-    /// Label for the "Vultisig Fee (X.XX%)" affiliate row. The percentage source
-    /// depends on the route:
-    /// - Native THOR/Maya: derived from the effective affiliate bps actually sent
-    ///   on the quote request (`THORChainSwaps.effectiveAffiliateFeeBps`), so the
-    ///   shown % equals what the node charged — and reconciles with `fees.affiliate`
-    ///   by construction, rather than a lossy `fee/input` fiat division.
-    /// - SwapKit: a flat 0.50% baked into the quoted rate (no per-tx fee field).
-    /// - EVM aggregators / Jupiter: the affiliate amount comes from a route field
-    ///   (`tx.swapFee` / `platformFee`), so the % is derived from that amount and
-    ///   matches the amount shown for the route.
+    /// List-rate label. Discounts are itemized separately and never reduce this
+    /// percentage, regardless of the effective bps sent to a provider.
     static func swapFeeLabel(
         quote: SwapQuote?,
         fromCoin: Coin,
         toCoin: Coin,
         feeCoin: Coin,
-        fromAmount: String,
-        vultDiscountBps: Int,
-        isReferred: Bool
+        vultDiscountBps: Int
     ) -> String {
-        guard let quote else { return "vultisigFee".localized }
-
+        guard quote != nil else { return "vultisigFee".localized }
         switch quote {
-        case .thorchain, .thorchainChainnet, .thorchainStagenet:
-            // All three THORChain services build affiliate params via
-            // `ThorchainService.affiliateParams`, which applies the referred
-            // split whenever a code is present.
-            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
-                discountBps: vultDiscountBps,
-                isReferred: isReferred
-            )
-            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
-        case .mayachain:
-            // MayaChain's affiliate params ignore the referral code entirely
-            // (`MayachainService.affiliateParams(referredCode _:)`), so it always
-            // sends the single standard rate — never the referred split.
-            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
-                discountBps: vultDiscountBps,
-                isReferred: false
-            )
-            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
-        case .swapkit:
-            return String(format: "vultisigFeePercentage".localized, Double(THORChainSwaps.swapKitAffiliateFeeBps) / 100.0)
         case .oneinch, .kyberswap, .lifi, .jupiter:
-            let feeFiat = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
-            let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
-            guard inputFiat > 0 else { return "vultisigFee".localized }
-            let percentage = (feeFiat / inputFiat) * 100
-            return String(format: "vultisigFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
+            let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            if net <= 0, vultDiscountBps != Int.max {
+                return "vultisigFee".localized
+            }
+        default:
+            break
         }
+        return String(format: "vultisigFeePercentage".localized, Double(affiliateListFeeBps) / 100.0)
     }
 
     /// Protocol outbound-fee component in fiat (denominated in the output asset),
@@ -682,14 +678,22 @@ enum SwapCryptoLogic {
     // MARK: - Discounts
 
     static func vultDiscountLabel(vultDiscountBps: Int) -> String {
-        if vultDiscountBps == Int.max {
-            return "swap.vult_waiver".localized
+        guard let tier = VultDiscountTier.from(bpsDiscount: vultDiscountBps) else {
+            return String(format: "swapVultDiscountFallback".localized, vultDiscountBps)
         }
-        return String(format: "swap.vult_discount".localized, vultDiscountBps)
+        let percentage = tier == .ultimate ? 100 : tier.bpsDiscount
+        return String(
+            format: "swapVultDiscount".localized,
+            tier.name.localized,
+            percentage
+        )
     }
 
     static func referralDiscountLabel(referralDiscountBps: Int) -> String {
-        String(format: "swap.referral_discount".localized, referralDiscountBps)
+        String(
+            format: "swapReferralDiscount".localized,
+            SwapSlippage.format(bps: referralDiscountBps)
+        )
     }
 
     static func vultDiscount(
@@ -698,17 +702,19 @@ enum SwapCryptoLogic {
         toCoin: Coin,
         feeCoin: Coin,
         fromAmount: String,
-        vultDiscountBps: Int
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
     ) -> String {
-        getDiscountString(
+        let breakdown = affiliateDiscountBreakdown(
             quote: quote,
             fromCoin: fromCoin,
             toCoin: toCoin,
             feeCoin: feeCoin,
             fromAmount: fromAmount,
             vultDiscountBps: vultDiscountBps,
-            shareBps: vultDiscountBps
+            referralDiscountBps: referralDiscountBps
         )
+        return formatDiscount(breakdown.vult)
     }
 
     static func referralDiscount(
@@ -720,82 +726,78 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
-        getDiscountString(
+        let breakdown = affiliateDiscountBreakdown(
             quote: quote,
             fromCoin: fromCoin,
             toCoin: toCoin,
             feeCoin: feeCoin,
             fromAmount: fromAmount,
             vultDiscountBps: vultDiscountBps,
-            shareBps: referralDiscountBps
+            referralDiscountBps: referralDiscountBps
         )
+        return formatDiscount(breakdown.referral)
     }
 
-    private static func getDiscountString(
+    static func affiliateDiscountBreakdown(
         quote: SwapQuote?,
         fromCoin: Coin,
         toCoin: Coin,
         feeCoin: Coin,
         fromAmount: String,
         vultDiscountBps: Int,
-        shareBps: Int
-    ) -> String {
-        guard shareBps > 0 else { return .empty }
-
-        // Ultimate tier (Int.max) ⇒ 100% waiver, return total saving.
-        if shareBps == Int.max {
-            let totalSaving = calculateTotalSaving(
-                quote: quote,
-                fromCoin: fromCoin,
-                toCoin: toCoin,
-                feeCoin: feeCoin,
-                fromAmount: fromAmount
-            )
-            guard totalSaving > 0 else { return .empty }
-            return "-" + totalSaving.formatToFiat(includeCurrencySymbol: true)
+        referralDiscountBps: Int
+    ) -> AffiliateDiscountBreakdown {
+        guard let quote else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
+        if case let .jupiter(_, _, _, feeOnInput) = quote, feeOnInput {
+            return AffiliateDiscountBreakdown(vult: 0, referral: 0)
         }
-
-        // Referral discount not applicable when Ultimate VULT tier
-        if vultDiscountBps == Int.max {
-            return .empty
-        }
-
         let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
-        let saving = inputFiat * Decimal(shareBps) / 10000
+        guard inputFiat > 0 else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
 
-        guard saving > 0 else { return .empty }
-
-        if saving < 0.01 {
-            return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
-        }
-
-        return "-" + saving.formatToFiat(includeCurrencySymbol: true)
-    }
-
-    private static func calculateTotalSaving(
-        quote: SwapQuote?,
-        fromCoin: Coin,
-        toCoin: Coin,
-        feeCoin: Coin,
-        fromAmount: String
-    ) -> Decimal {
-        let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
-
-        // Theoretical Base Fee (0.50%)
-        let baseFeeFiat = inputFiat * 0.0050
-
-        // Actual fee from quote
-        var actualFeeFiat = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) ?? 0
-        if actualFeeFiat == 0, let quote {
-            switch quote {
-            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-                actualFeeFiat = toCoin.fiat(decimal: feeAmt)
-            default: break
+        let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
+            break
+        default:
+            guard net > 0 || vultDiscountBps == Int.max else {
+                return AffiliateDiscountBreakdown(vult: 0, referral: 0)
             }
         }
 
-        return max(baseFeeFiat - actualFeeFiat, 0)
+        let appliesReferralDiscount: Bool
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            appliesReferralDiscount = true
+        default:
+            appliesReferralDiscount = false
+        }
+
+        let referral: Decimal
+        if appliesReferralDiscount {
+            let appliedBps = max(0, min(referralDiscountBps, affiliateListFeeBps))
+            referral = inputFiat * Decimal(appliedBps) / 10000
+        } else {
+            referral = 0
+        }
+
+        let vult: Decimal
+        if vultDiscountBps == Int.max {
+            let listFee = inputFiat * Decimal(affiliateListFeeBps) / 10000
+            vult = max(listFee - net - referral, 0)
+        } else {
+            let appliedBps = max(0, min(vultDiscountBps, affiliateListFeeBps))
+            vult = inputFiat * Decimal(appliedBps) / 10000
+        }
+
+        return AffiliateDiscountBreakdown(vult: vult, referral: referral)
+    }
+
+    private static func formatDiscount(_ saving: Decimal) -> String {
+        guard saving > 0 else { return .empty }
+        if saving < 0.01 {
+            return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
+        }
+        return "-" + saving.formatToFiat(includeCurrencySymbol: true)
     }
 
     // MARK: - Price impact

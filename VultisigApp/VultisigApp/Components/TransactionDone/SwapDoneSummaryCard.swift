@@ -256,16 +256,72 @@ struct SwapDoneSummaryCard: View {
                     value: "\(transaction.swapGasString)(\(transaction.approveFeeString))"
                 )
             }
-            // Vultisig Fee (affiliate only) — matches the reconciled Total, so the
-            // breakdown no longer shows THORChain's composite as the swap fee. The
-            // label is already localized (embeds the %), so it's used verbatim.
+            // Gross list-rate Vultisig fee. Discounts below reconcile this row
+            // to the net affiliate component retained in Total Fees.
             if transaction.showAffiliateFeeRow {
+                // `swapFeeLabel` is already localized and embeds the percentage;
+                // unknown-key localization intentionally echoes it unchanged.
                 getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
             }
             // Protocol Fee (native THOR/Maya outbound).
             if transaction.showProtocolFeeRow {
                 getCell(title: "swap.protocol_fee", value: transaction.outboundFeeString)
             }
+            if transaction.hasAppliedDiscounts {
+                appliedDiscounts(transaction)
+            }
+            if !transaction.priceImpactString.isEmpty {
+                getCell(
+                    title: "swap.price_impact",
+                    value: transaction.priceImpactString,
+                    valueColor: transaction.priceImpactColor
+                )
+            }
+        }
+    }
+
+    private func appliedDiscounts(_ transaction: SwapTransaction) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("swapAppliedDiscounts".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .padding(.vertical, 8)
+
+            if !transaction.vultDiscount.isEmpty {
+                HStack(spacing: 4) {
+                    vultTierIcon(transaction)
+                    Text(transaction.vultDiscountLabel)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+                .font(Theme.fonts.bodySMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+            }
+
+            if !transaction.referralDiscount.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "megaphone.fill")
+                        .foregroundStyle(Theme.colors.primaryAccent4)
+                    Text(transaction.referralDiscountLabel)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+                .font(Theme.fonts.bodySMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func vultTierIcon(_ transaction: SwapTransaction) -> some View {
+        if let tier = VultDiscountTier.from(bpsDiscount: transaction.vultDiscountBps) {
+            Image(tier.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: "star.circle.fill")
+                .foregroundStyle(Theme.colors.turquoise)
         }
     }
 
@@ -313,7 +369,8 @@ struct SwapDoneSummaryCard: View {
         bracketValue: String? = nil,
         valueMaxWidth: CGFloat? = nil,
         bracketMaxWidth: CGFloat? = nil,
-        showCopyButton: Bool = false
+        showCopyButton: Bool = false,
+        valueColor: Color = Theme.colors.textPrimary
     ) -> some View {
         HStack {
             Text(title.localized)
@@ -324,7 +381,7 @@ struct SwapDoneSummaryCard: View {
             Text(value)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(valueColor)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
 
             if let bracketValue {

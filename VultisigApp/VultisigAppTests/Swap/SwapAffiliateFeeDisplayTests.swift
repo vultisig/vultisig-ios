@@ -3,16 +3,15 @@
 //  VultisigAppTests
 //
 //  First real coverage for the affiliate-fee display helpers exercised by the
-//  Verify / Details / Done screens (#4859): the shared effective-affiliate-bps
-//  function, the bps-derived percentage label, per-route affiliate amounts, the
+//  Verify / Details / Done screens: provider request bps, the fixed list-rate
+//  label, per-route gross/net affiliate amounts and discounts, the
 //  Total-fee reconciliation (which drops the fees.total liquidity component),
 //  the row-visibility gate, and the display-only invariant that none of this
 //  touches the signed keysign payload.
 //
-//  DEBUG note: `THORChainSwaps.affiliateFeeRateBp` is 0 in test builds, so
-//  non-referred native percentages read 0.00% here — that matches what the
-//  request builder sends in DEBUG. Base-50 tier math is asserted directly on
-//  the pure `discountedAffiliateBps` helper so it's independent of the build.
+//  DEBUG note: `THORChainSwaps.affiliateFeeRateBp` is 0 in test builds, while
+//  the display deliberately stays at the shipping 0.50% list rate. Wire math
+//  and Base-50 display math are therefore asserted separately.
 //
 
 import BigInt
@@ -59,9 +58,9 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(THORChainSwaps.effectiveAffiliateFeeBps(discountBps: .max, isReferred: true), referrer)     // 10 (ultimate keeps the referrer share)
     }
 
-    // MARK: - Display bps equals the request builder's sent bps
+    // MARK: - Wire bps matches the request builder
 
-    func testDisplayBpsMatchesThorchainRequestBuilderNonReferred() {
+    func testWireBpsMatchesThorchainRequestBuilderNonReferred() {
         for discount in [0, 5, 35] {
             let (_, bpsStr) = ThorchainService.affiliateParams(referredCode: "", discountBps: discount)
             let sent = Int(bpsStr ?? "") ?? -1
@@ -69,7 +68,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         }
     }
 
-    func testDisplayBpsMatchesThorchainRequestBuilderReferred() {
+    func testWireBpsMatchesThorchainRequestBuilderReferred() {
         for discount in [0, 5, 35] {
             let (_, bpsStr) = ThorchainService.affiliateParams(referredCode: "code", discountBps: discount)
             // Referred builder sends "referrer/vultisig"; the total charged is the sum.
@@ -78,55 +77,222 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         }
     }
 
-    // MARK: - swapFeeLabel percentage per route
+    // MARK: - Gross list-rate display
 
-    func testSwapFeeLabelNativeThorchainDerivesFromBps() {
-        let btc = makeCoin(.bitcoin, ticker: "BTCLBL", decimals: 8, isNative: true)
-        let label = SwapCryptoLogic.swapFeeLabel(
-            quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: false
-        )
-        let expectedBps = THORChainSwaps.effectiveAffiliateFeeBps(discountBps: 0, isReferred: false)
-        XCTAssertEqual(label, String(format: "vultisigFeePercentage".localized, Double(expectedBps) / 100.0))
+    func testSwapFeeLabelAlwaysShowsShippingListRate() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCLABEL", decimals: 8, isNative: true)
+        let expected = String(format: "vultisigFeePercentage".localized, 0.50)
+        func label(_ quote: SwapQuote) -> String {
+            SwapCryptoLogic.swapFeeLabel(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc, vultDiscountBps: 0
+            )
+        }
+        XCTAssertEqual(label(.thorchain(makeThorQuote())), expected)
+        XCTAssertEqual(label(.mayachain(makeThorQuote())), expected)
+        XCTAssertEqual(label(makeSwapKitQuote()), expected)
+        XCTAssertEqual(SwapCryptoLogic.affiliateListFeeBps, 50)
     }
 
-    func testSwapFeeLabelThorchainReferredShowsReferredSplit() {
+    func testDiscountLabelsUseFigmaPercentageFormatForEveryTier() {
+        let expectedLabels: [(VultDiscountTier, String)] = [
+            (.bronze, "VULT Bronze: 5%"),
+            (.silver, "VULT Silver: 10%"),
+            (.gold, "VULT Gold: 20%"),
+            (.platinum, "VULT Platinum: 25%"),
+            (.diamond, "VULT Diamond: 35%"),
+            (.ultimate, "VULT Ultimate: 100%")
+        ]
+
+        for (tier, expectedLabel) in expectedLabels {
+            XCTAssertEqual(
+                SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: tier.bpsDiscount),
+                expectedLabel
+            )
+        }
+        XCTAssertEqual(
+            SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: 15),
+            "VULT: 15%"
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: 5),
+            "Referral: 0.05%"
+        )
+    }
+
+    func testGoldGrossFeeAddsDiscountBackToNet() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCGOLD", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "300000"))
+
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 0
+        )
+        let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
+
+        XCTAssertEqual(net, 3)
+        XCTAssertEqual(breakdown.vult, 2)
+        XCTAssertEqual(net + breakdown.total, 5)
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                referralDiscountBps: 0
+            ),
+            Decimal(5).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testAggregatorGoldGrossFeeAddsDiscountBackToNet() {
+        let eth = makeCoin(.ethereum, ticker: "ETHAGG", decimals: 6, isNative: true)
+        setPrice(1000, for: eth)
+        let quote = makeOneInchQuote(swapFee: "3000")
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: eth, toCoin: eth, feeCoin: eth,
+            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 5
+        )
+        let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: eth, toCoin: eth, feeCoin: eth)
+
+        XCTAssertEqual(net, 3)
+        XCTAssertEqual(breakdown, .init(vult: 2, referral: 0))
+        XCTAssertEqual(net + breakdown.total, 5)
+    }
+
+    func testUnchargedAggregatorDoesNotFabricateFeeOrDiscount() {
+        let sol = makeCoin(.solana, ticker: "SOLNOFEE", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCNOFEE", decimals: 6, isNative: false)
+        setPrice(1000, for: sol)
+        setPrice(1, for: usdc)
+        let quote = makeJupiterQuote(platformFee: 0, feeOnInput: false)
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 5
+        )
+
+        XCTAssertEqual(breakdown, .init(vult: 0, referral: 0))
+        XCTAssertEqual(
+            SwapCryptoLogic.swapFeeLabel(
+                quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+                vultDiscountBps: VultDiscountTier.gold.bpsDiscount
+            ),
+            "vultisigFee".localized
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                referralDiscountBps: 5
+            ),
+            Decimal(0).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testGoldAndReferralDiscountsExactlyReconcileGrossAndNet() {
         let btc = makeCoin(.bitcoin, ticker: "BTCREF", decimals: 8, isNative: true)
-        let label = SwapCryptoLogic.swapFeeLabel(
-            quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: true
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "250000"))
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 5
         )
-        // 10 (referrer) + 35 (discounted base 35) = 45 bps, even in DEBUG.
-        XCTAssertEqual(label, String(format: "vultisigFeePercentage".localized, 0.45))
+        let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
+
+        XCTAssertEqual(net, Decimal(string: "2.5") ?? 0)
+        XCTAssertEqual(breakdown.vult, 2)
+        XCTAssertEqual(breakdown.referral, Decimal(string: "0.5") ?? 0)
+        XCTAssertEqual(net + breakdown.total, 5)
     }
 
-    func testSwapFeeLabelMayaIgnoresReferralSplit() {
-        let btc = makeCoin(.bitcoin, ticker: "BTCMAYA", decimals: 8, isNative: true)
-        let mayaReferred = SwapCryptoLogic.swapFeeLabel(
+    func testNoDiscountKeepsGrossEqualToNet() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCNONE", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "500000"))
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+        )
+
+        XCTAssertEqual(breakdown, .init(vult: 0, referral: 0))
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+            ),
+            Decimal(5).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testUltimateWaiverReconstructsFullListFee() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCULTGROSS", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "0"))
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
+        )
+
+        XCTAssertEqual(breakdown.vult, 5)
+        XCTAssertEqual(breakdown.referral, 0)
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 5
+            ),
+            Decimal(5).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testUltimateReferredKeepsReferralDiscountSeparate() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCULTREF", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "100000"))
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 5
+        )
+        let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
+
+        XCTAssertEqual(net, 1)
+        XCTAssertEqual(breakdown.vult, Decimal(string: "3.5") ?? 0)
+        XCTAssertEqual(breakdown.referral, Decimal(string: "0.5") ?? 0)
+        XCTAssertEqual(net + breakdown.total, 5)
+    }
+
+    func testReferralDiscountOnlyAppearsOnThorchainNestedAffiliateRoutes() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCROUTE", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let thor = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
+        )
+        let maya = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: .mayachain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: true
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
         )
-        let thorReferred = SwapCryptoLogic.swapFeeLabel(
-            quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: true
+        let swapKit = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
         )
-        let thorNonReferred = SwapCryptoLogic.swapFeeLabel(
-            quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: false
-        )
-        // Maya never applies the referral split → it must match the standard
-        // (non-referred) rate, not the THORChain referred rate.
-        XCTAssertEqual(mayaReferred, thorNonReferred)
-        XCTAssertNotEqual(mayaReferred, thorReferred)
+
+        XCTAssertEqual(thor.referral, Decimal(string: "0.5") ?? 0)
+        XCTAssertEqual(maya.referral, 0)
+        XCTAssertEqual(swapKit.referral, 0)
     }
 
-    func testSwapFeeLabelSwapKitStaticHalfPercent() {
-        let btc = makeCoin(.bitcoin, ticker: "BTCSK", decimals: 8, isNative: true)
-        let label = SwapCryptoLogic.swapFeeLabel(
-            quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, isReferred: false
+    func testJupiterFeeOnInputSuppressesUnreconcilableDiscountRows() {
+        let sol = makeCoin(.solana, ticker: "SOLINPUT", decimals: 9, isNative: true)
+        let quote = makeJupiterQuote(platformFee: 0, feeOnInput: true)
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: sol, toCoin: sol, feeCoin: sol,
+            fromAmount: "1", vultDiscountBps: 20, referralDiscountBps: 5
         )
-        XCTAssertEqual(label, String(format: "vultisigFeePercentage".localized, 0.50))
+
+        XCTAssertEqual(breakdown, .init(vult: 0, referral: 0))
+        XCTAssertFalse(SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: .standard))
     }
 
     // MARK: - baseAffiliateFee amount per route
@@ -136,24 +302,34 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         setPrice(1000, for: btc)
         // affiliate 0.01 BTC → $10; total (composite) 0.09 BTC would be $90.
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "1000000", outbound: "0", total: "9000000"))
-        let value = SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
+        let value = SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+        )
         XCTAssertEqual(value, Decimal(10).formatToFiat(includeCurrencySymbol: true))
         XCTAssertNotEqual(value, Decimal(90).formatToFiat(includeCurrencySymbol: true))
     }
 
-    func testBaseAffiliateFeeUltimateShowsZeroNotEmpty() {
+    func testBaseAffiliateFeeUltimateShowsGrossListFee() {
         let btc = makeCoin(.bitcoin, ticker: "BTCULT", decimals: 8, isNative: true)
         setPrice(1000, for: btc)
-        // Ultimate/100% waiver → node charges 0 affiliate; the row stays at $0.00.
+        // Ultimate/100% waiver → node charges 0 affiliate, while the gross row
+        // shows the undiscounted list amount and the discount row removes it.
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "0", outbound: "0", total: "0"))
-        let value = SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
+        let value = SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
+        )
         XCTAssertFalse(value.isEmpty)
-        XCTAssertEqual(value, Decimal(0).formatToFiat(includeCurrencySymbol: true))
+        XCTAssertEqual(value, Decimal(5).formatToFiat(includeCurrencySymbol: true))
     }
 
     func testBaseAffiliateFeeSwapKitIncludedInRate() {
         let btc = makeCoin(.bitcoin, ticker: "BTCSK2", decimals: 8, isNative: true)
-        let value = SwapCryptoLogic.baseAffiliateFee(quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc)
+        let value = SwapCryptoLogic.baseAffiliateFee(
+            quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc,
+            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+        )
         XCTAssertEqual(value, "swap.included_in_rate".localized)
     }
 
@@ -164,7 +340,10 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         // platformFee 0.02 USDC × $2 = $0.04 (hardcoded so a silent rate-seeding
         // failure would fail the test rather than pass at $0.00 on both sides).
         let quote = makeJupiterQuote(platformFee: Decimal(2) / Decimal(100), feeOnInput: false)
-        let value = SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol)
+        let value = SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+            fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+        )
         XCTAssertEqual(value, (Decimal(4) / Decimal(100)).formatToFiat(includeCurrencySymbol: true))
     }
 
@@ -201,14 +380,16 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertTrue(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), mode: .standard))
     }
 
-    func testBaseAffiliateFeeUltimateTokenJupiterShowsZero() {
+    func testBaseAffiliateFeeUltimateTokenJupiterShowsGrossListFee() {
         let sol = makeCoin(.solana, ticker: "SOLJUP0", decimals: 9, isNative: true)
         let usdc = makeCoin(.solana, ticker: "USDCJUP0", decimals: 6, isNative: false)
+        setPrice(1000, for: sol)
         setPrice(2, for: usdc)
         let value = SwapCryptoLogic.baseAffiliateFee(
-            quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), fromCoin: sol, toCoin: usdc, feeCoin: sol
+            quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), fromCoin: sol, toCoin: usdc, feeCoin: sol,
+            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
         )
-        XCTAssertEqual(value, Decimal(0).formatToFiat(includeCurrencySymbol: true))
+        XCTAssertEqual(value, Decimal(5).formatToFiat(includeCurrencySymbol: true))
     }
 
     func testAffiliateFeeFiatLifiSolanaUsesIntegratorFee() {
@@ -220,14 +401,46 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         // row and the Total (network 0 + affiliate 0.5 + outbound 0).
         let quote = makeLiFiSolanaQuote(integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000")
         let expected = (Decimal(5) / Decimal(10)).formatToFiat(includeCurrencySymbol: true)
-        XCTAssertEqual(SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol), expected)
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+                fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+            ),
+            expected
+        )
         XCTAssertEqual(
             SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol, fee: .zero),
             expected
         )
         // NOT $0.00 — the old evmSwapFeeBigInt-only path dropped the integrator fee.
-        XCTAssertNotEqual(SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol),
-                          Decimal(0).formatToFiat(includeCurrencySymbol: true))
+        XCTAssertNotEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+                fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+            ),
+            Decimal(0).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testLiFiSolanaGoldDiscountReconcilesGrossAndNet() {
+        let sol = makeCoin(.solana, ticker: "SOLLIFIGOLD", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCLIFIGOLD", decimals: 6, isNative: false)
+        setPrice(100, for: sol)
+        setPrice(1, for: usdc)
+        let quote = makeLiFiSolanaQuote(
+            integratorFee: Decimal(3) / Decimal(1000),
+            dstAmount: "100000000"
+        )
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
+            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 5
+        )
+        let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol)
+
+        XCTAssertEqual(net, Decimal(string: "0.3") ?? 0)
+        XCTAssertEqual(breakdown, .init(vult: Decimal(string: "0.2") ?? 0, referral: 0))
+        XCTAssertEqual(net + breakdown.total, Decimal(string: "0.5") ?? 0)
     }
 
     func testShowProtocolFeeRowFalseForSecuredMint() {
@@ -273,6 +486,115 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertNotEqual(total, Decimal(100).formatToFiat(includeCurrencySymbol: true))
     }
 
+    func testDiscountedBreakdownKeepsTotalFeeNet() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCNET", decimals: 8, isNative: true)
+        setPrice(1000, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "300000"))
+
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                referralDiscountBps: 0
+            ),
+            Decimal(5).formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.totalFeeString(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc, fee: .zero
+            ),
+            Decimal(3).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testVerifyAndDoneTransactionUsesSharedGrossDisplayHelpers() {
+        let quote = makeThorQuote(affiliate: "250000")
+        let transaction = makeNativeThorchainTransaction(
+            quote: quote,
+            vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            referralDiscountBps: 5
+        )
+        setPrice(1000, for: transaction.fromCoin)
+        setPrice(1000, for: transaction.toCoin)
+        let wrappedQuote = SwapQuote.thorchain(quote)
+
+        XCTAssertEqual(
+            transaction.swapFeeLabel,
+            SwapCryptoLogic.swapFeeLabel(
+                quote: wrappedQuote,
+                fromCoin: transaction.fromCoin,
+                toCoin: transaction.toCoin,
+                feeCoin: transaction.feeCoin,
+                vultDiscountBps: transaction.vultDiscountBps
+            )
+        )
+        XCTAssertEqual(
+            transaction.baseAffiliateFee,
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: wrappedQuote,
+                fromCoin: transaction.fromCoin,
+                toCoin: transaction.toCoin,
+                feeCoin: transaction.feeCoin,
+                fromAmount: transaction.fromAmount.description,
+                vultDiscountBps: transaction.vultDiscountBps,
+                referralDiscountBps: transaction.referralDiscountBps
+            )
+        )
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: wrappedQuote,
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            feeCoin: transaction.feeCoin,
+            fromAmount: transaction.fromAmount.description,
+            vultDiscountBps: transaction.vultDiscountBps,
+            referralDiscountBps: transaction.referralDiscountBps
+        )
+        XCTAssertEqual(
+            transaction.vultDiscount,
+            "-" + breakdown.vult.formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            transaction.referralDiscount,
+            "-" + breakdown.referral.formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertTrue(transaction.hasAppliedDiscounts)
+
+        let ultimateQuote = makeThorQuote(affiliate: "100000")
+        let ultimate = makeNativeThorchainTransaction(
+            quote: ultimateQuote,
+            vultDiscountBps: Int.max,
+            referralDiscountBps: 5
+        )
+        setPrice(1000, for: ultimate.fromCoin)
+        setPrice(1000, for: ultimate.toCoin)
+        let ultimateBreakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: .thorchain(ultimateQuote),
+            fromCoin: ultimate.fromCoin,
+            toCoin: ultimate.toCoin,
+            feeCoin: ultimate.feeCoin,
+            fromAmount: ultimate.fromAmount.description,
+            vultDiscountBps: ultimate.vultDiscountBps,
+            referralDiscountBps: ultimate.referralDiscountBps
+        )
+        XCTAssertEqual(ultimateBreakdown.vult, Decimal(string: "3.5"))
+        XCTAssertEqual(ultimateBreakdown.referral, Decimal(string: "0.5"))
+        XCTAssertEqual(
+            ultimate.vultDiscount,
+            "-" + ultimateBreakdown.vult.formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            ultimate.referralDiscount,
+            "-" + ultimateBreakdown.referral.formatToFiat(includeCurrencySymbol: true)
+        )
+
+        let undiscounted = makeNativeThorchainTransaction(
+            quote: makeThorQuote(affiliate: "500000"),
+            vultDiscountBps: 0,
+            referralDiscountBps: 0
+        )
+        XCTAssertFalse(undiscounted.hasAppliedDiscounts)
+    }
+
     // MARK: - Display-only invariant: signed payload unchanged
 
     func testDisplayFeeInputsDoNotAlterSignedPayload() async throws {
@@ -281,8 +603,8 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
 
         // Baseline (no tier, no referral) vs. a heavily-discounted referred user:
         // only the DISPLAY fee inputs differ — the signed artifact must not.
-        let baseline = makeNativeThorchainTransaction(quote: quote, vultDiscountBps: 0, referralDiscountBps: 0, isReferred: false)
-        let discounted = makeNativeThorchainTransaction(quote: quote, vultDiscountBps: 35, referralDiscountBps: 5, isReferred: true)
+        let baseline = makeNativeThorchainTransaction(quote: quote, vultDiscountBps: 0, referralDiscountBps: 0)
+        let discounted = makeNativeThorchainTransaction(quote: quote, vultDiscountBps: 35, referralDiscountBps: 5)
 
         let p1 = try await SwapCryptoLogic.buildSwapKeysignPayload(transaction: baseline, chainSpecific: cosmosChainSpecific(), vault: vault)
         let p2 = try await SwapCryptoLogic.buildSwapKeysignPayload(transaction: discounted, chainSpecific: cosmosChainSpecific(), vault: vault)
@@ -354,6 +676,17 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         return .jupiter(evm, fee: nil, platformFee: platformFee, feeOnInput: feeOnInput)
     }
 
+    private func makeOneInchQuote(swapFee: String) -> SwapQuote {
+        let evm = EVMQuote(
+            dstAmount: "1000000",
+            tx: EVMQuote.Transaction(
+                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0,
+                swapFee: swapFee, swapFeeTokenContract: ""
+            )
+        )
+        return .oneinch(evm, fee: nil)
+    }
+
     /// LiFi-Solana quote fixture: `swapFee` is "0" and the affiliate fee is
     /// carried as `integratorFee` (a fraction of the output amount), mirroring
     /// `LiFiService`'s Solana branch.
@@ -388,8 +721,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
     private func makeNativeThorchainTransaction(
         quote: ThorchainSwapQuote,
         vultDiscountBps: Int,
-        referralDiscountBps: Int,
-        isReferred: Bool
+        referralDiscountBps: Int
     ) -> SwapTransaction {
         let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
@@ -403,7 +735,6 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
-            isReferred: isReferred,
             feeCoin: rune,
             advancedSettings: .default
         )

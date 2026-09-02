@@ -116,12 +116,12 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         vm.selectProvider(alt)
 
         vm.fromAmount = ""
-        vm.updateFromAmount(vault: makeVault(), referredCode: "")
+        vm.updateFromAmount(vault: makeVault())
 
         XCTAssertNil(vm.quote, "Emptying the amount clears the active quote")
         XCTAssertNil(vm.selectedQuote, "Emptying the amount clears the manual override")
@@ -171,7 +171,7 @@ final class SwapProviderSelectionTests: XCTestCase {
             vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         }
         if vm.fromAmount.isEmpty { vm.fromAmount = "1" }
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
     }
 

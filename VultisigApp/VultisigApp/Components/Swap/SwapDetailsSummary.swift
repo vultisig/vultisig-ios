@@ -19,8 +19,7 @@ struct SwapDetailsSummary: View {
         vm.showGas ||
         vm.showAffiliateFeeRow ||
         vm.showProtocolFeeRow ||
-        !vm.vultDiscount.isEmpty ||
-        !vm.referralDiscount.isEmpty ||
+        vm.hasAppliedDiscounts ||
         !vm.priceImpactString.isEmpty
     }
 
@@ -128,12 +127,8 @@ struct SwapDetailsSummary: View {
                 outboundFee
             }
 
-            if !vm.vultDiscount.isEmpty {
-                vultDiscount
-            }
-
-            if !vm.referralDiscount.isEmpty {
-                referralDiscount
+            if vm.hasAppliedDiscounts {
+                appliedDiscounts
             }
 
             if !vm.priceImpactString.isEmpty {
@@ -167,20 +162,31 @@ struct SwapDetailsSummary: View {
         .font(Theme.fonts.caption12)
     }
 
+    var appliedDiscounts: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("swapAppliedDiscounts".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            if !vm.vultDiscount.isEmpty {
+                vultDiscount
+            }
+
+            if !vm.referralDiscount.isEmpty {
+                referralDiscount
+            }
+        }
+    }
+
     var vultDiscount: some View {
-        HStack {
+        HStack(spacing: 4) {
             vultTierIcon
 
             Text(vm.vultDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-
-            Spacer()
-
-            Text(vm.vultDiscount)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.caption12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -205,7 +211,7 @@ struct SwapDetailsSummary: View {
     }
 
     var referralDiscount: some View {
-        HStack {
+        HStack(spacing: 4) {
             Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.primaryAccent4)
@@ -213,13 +219,8 @@ struct SwapDetailsSummary: View {
             Text(vm.referralDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-
-            Spacer()
-
-            Text(vm.referralDiscount)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.caption12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var priceImpact: some View {

@@ -57,7 +57,7 @@ struct DefaultSwapInteractor: SwapInteractor {
             ? 0
             : max(
                 0,
-                THORChainSwaps.affiliateFeeRateBp
+                SwapCryptoLogic.affiliateListFeeBps
                     - THORChainSwaps.referredAffiliateFeeRateBp
                     - (Int(THORChainSwaps.referredUserFeeRateBp) ?? 0)
             )
@@ -77,8 +77,7 @@ struct DefaultSwapInteractor: SwapInteractor {
             quote: fetched.best,
             allQuotes: fetched.ranked,
             vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps,
-            isReferred: !referredCode.isEmpty
+            referralDiscountBps: referralDiscountBps
         )
     }
 

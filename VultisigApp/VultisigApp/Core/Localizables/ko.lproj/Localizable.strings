@@ -1502,15 +1502,14 @@
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
 "swap.protocol_fee" = "프로토콜 수수료";
-"swap.referral_discount" = "추천 (-%d bps)";
 "swap.tab.limit" = "지정가";
 "swap.tab.market" = "시장";
-"swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% 면제)";
 "swapAdvancedSettingsLockedSubtitle" = "모든 스왑에 대해 슬리피지, 가스, 경로, 수신자를 세밀하게 조정하세요.";
 "swapAdvancedSettingsLockedTitle" = "고급 스왑 설정";
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
+"swapAppliedDiscounts" = "적용된 할인:";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";
 "swapErrorAmountTooSmallTitle" = "금액이 너무 작음";
 "swapErrorInboundAddressDescription" = "인바운드 주소가 유효하지 않습니다. 다시 시도하세요.";
@@ -1559,6 +1558,7 @@
 "swapOverview" = "스왑 개요";
 "swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
 "swapRecipientVerificationFailed" = "스왑이 선택한 수신자에게 전달되는지 확인할 수 없어 서명 전에 중단되었습니다. 다시 시도해 주세요.";
+"swapReferralDiscount" = "추천: %@";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swaps" = "스왑";
@@ -1571,6 +1571,8 @@
 "swapVerifyCheckbox1Description" = "스왑 금액이 올바릅니다";
 "swapVerifyCheckbox2Description" = "받을 최소 금액에 동의합니다";
 "swapVerifyCheckbox3Description" = "정확한 스왑 금액에 대한 ERC20 허용량 제공에 동의합니다";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "로컬을 사용하지 않으시겠습니까? 다시 전환하세요.";
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";

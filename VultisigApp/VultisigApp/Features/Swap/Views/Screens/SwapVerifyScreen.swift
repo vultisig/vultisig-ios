@@ -11,7 +11,6 @@ struct SwapVerifyScreen: View {
     let vault: Vault
 
     @State private var verifyViewModel: SwapVerifyViewModel
-    @StateObject private var referredViewModel = ReferredViewModel()
 
     @State private var fastPasswordPresented = false
     @State private var fastVaultPassword: String = .empty
@@ -64,11 +63,10 @@ struct SwapVerifyScreen: View {
         )
         .swapRefreshTick {
             Task {
-                await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
+                await verifyViewModel.updateTimer(vault: vault)
             }
         }
         .onLoad {
-            referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
                 await verifyViewModel.scan()
@@ -142,9 +140,8 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                // Vultisig Fee (affiliate component only). The label carries the
-                // effective affiliate %, the value the fiat amount — sourced from
-                // `fees.affiliate`, never THORChain's composite `fees.total`.
+                // Gross list-rate Vultisig fee. Applied savings are itemized in
+                // the discount group below; Total Fees remains the net charge.
                 if currentTransaction.showAffiliateFeeRow {
                     separator
                     affiliateFeeRow
@@ -161,16 +158,9 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                // VULT tier saving (with the tier badge).
-                if !currentTransaction.vultDiscount.isEmpty {
+                if currentTransaction.hasAppliedDiscounts {
                     separator
-                    vultDiscountRow
-                }
-
-                // Referral saving.
-                if !currentTransaction.referralDiscount.isEmpty {
-                    separator
-                    referralDiscountRow
+                    appliedDiscountsSection
                 }
 
                 // Price Impact (only when the provider reports slippage).
@@ -179,7 +169,7 @@ struct SwapVerifyScreen: View {
                     priceImpactRow
                 }
 
-                // Total Fee — reconciles to Network + Vultisig + Protocol.
+                // Net Total Fee after subtracting the applied discounts above.
                 if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
@@ -362,10 +352,7 @@ struct SwapVerifyScreen: View {
         retryBannerText = reason.userFacingMessage
         retrySignal.pendingRetryReason = nil
         Task {
-            await verifyViewModel.refreshData(
-                vault: vault,
-                referredCode: referredViewModel.savedReferredCode
-            )
+            await verifyViewModel.refreshData(vault: vault)
         }
     }
 
@@ -452,17 +439,29 @@ struct SwapVerifyScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var appliedDiscountsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("swapAppliedDiscounts".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            if !currentTransaction.vultDiscount.isEmpty {
+                vultDiscountRow
+            }
+
+            if !currentTransaction.referralDiscount.isEmpty {
+                referralDiscountRow
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var vultDiscountRow: some View {
         HStack(spacing: 4) {
             vultTierIcon
 
             Text(currentTransaction.vultDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
-
-            Spacer()
-
-            Text(currentTransaction.vultDiscount)
-                .foregroundStyle(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -490,11 +489,6 @@ struct SwapVerifyScreen: View {
 
             Text(currentTransaction.referralDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
-
-            Spacer()
-
-            Text(currentTransaction.referralDiscount)
-                .foregroundStyle(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)

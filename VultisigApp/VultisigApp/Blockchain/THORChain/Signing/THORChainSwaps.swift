@@ -26,27 +26,18 @@ class THORChainSwaps {
 
     static let affiliateFeeAddress = "vi"
 
-    /// SwapKit's affiliate share is set on the partner dashboard, not sent per
-    /// transaction, so it's a fixed 0.50% baked into the quoted rate regardless
-    /// of build (the DEBUG toggle on `affiliateFeeRateBp` only affects the
-    /// native `affiliate_bps` we send ourselves).
-    static let swapKitAffiliateFeeBps = 50
-
     /// Effective per-affiliate bps after applying the VULT tier discount,
-    /// clamped at zero. Single source of truth consumed by BOTH the quote
-    /// request builders (the `affiliate_bps` query param) and the fee-percentage
-    /// display, so the shown % equals the bps actually sent by construction.
+    /// clamped at zero. Quote request builders use this for the wire
+    /// `affiliate_bps`; display surfaces separately show the gross list rate.
     static func discountedAffiliateBps(baseBps: Int, discountBps: Int) -> Int {
         max(0, baseBps - discountBps)
     }
 
     /// Total affiliate bps the protocol charges for a swap — the sum of every
-    /// affiliate entry the request sends. The node computes `fees.affiliate`
-    /// from this, so it is the number behind the "Vultisig Fee (X.XX%)"
-    /// percentage and reconciles with the shown affiliate amount by
-    /// construction. `isReferred` mirrors the request builder's
+    /// affiliate entry the request sends. `isReferred` mirrors the request builder's
     /// `!referredCode.isEmpty` branch: a referred swap splits the fee into the
-    /// referrer's fixed share plus the discounted Vultisig share.
+    /// referrer's fixed share plus the discounted Vultisig share. This helper is
+    /// wire-focused; the UI itemizes gross fee and discounts separately.
     static func effectiveAffiliateFeeBps(discountBps: Int, isReferred: Bool) -> Int {
         if isReferred {
             let referrerBps = Int(referredUserFeeRateBp) ?? 0

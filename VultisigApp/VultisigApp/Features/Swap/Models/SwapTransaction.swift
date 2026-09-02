@@ -79,14 +79,6 @@ struct SwapTransaction: Hashable {
     let vultDiscountBps: Int
     let referralDiscountBps: Int
 
-    /// Whether a referral code was active when this quote was fetched. Used by
-    /// the route-aware affiliate-percentage label to reproduce the exact
-    /// `affiliate_bps` the request builder sent — a clean bit, because
-    /// `referralDiscountBps` collapses to 0 in DEBUG (base rate 0) even when
-    /// referred. `var` with a default so the memberwise init stays source-
-    /// compatible; set once at construction, never mutated (immutable hand-off).
-    var isReferred: Bool = false
-
     /// Source-chain broadcast-gas ESTIMATE for a placed LIMIT order, in the fee
     /// coin's smallest units. A dedicated field — NOT the market `thorchainFee`,
     /// whose meaning is the THORChain protocol/outbound fee that feeds
@@ -162,8 +154,7 @@ extension SwapTransaction {
         gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
         vultDiscountBps: Int? = nil,
-        referralDiscountBps: Int? = nil,
-        isReferred: Bool? = nil
+        referralDiscountBps: Int? = nil
     ) -> SwapTransaction {
         SwapTransaction(
             fromCoin: fromCoin,
@@ -181,7 +172,6 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
-            isReferred: isReferred ?? self.isReferred,
             networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
             advancedSettings: advancedSettings
@@ -321,10 +311,10 @@ extension SwapTransaction {
 
     /// Whether an expandable fee breakdown has any itemized rows to show, so the
     /// "Total fee" chevron is only offered when expanding reveals something.
-    /// Mirrors the itemized rows the Done breakdown emits (network gas, the
-    /// Vultisig affiliate row, the protocol/outbound row).
+    /// Mirrors the itemized rows the Done breakdown emits: network gas, gross
+    /// affiliate fee, protocol fee, applied discounts, and price impact.
     var hasFeeBreakdown: Bool {
-        showGas || showAffiliateFeeRow || showProtocolFeeRow
+        showGas || showAffiliateFeeRow || showProtocolFeeRow || hasAppliedDiscounts || !priceImpactString.isEmpty
     }
 
     var swapGasString: String {
@@ -366,13 +356,17 @@ extension SwapTransaction {
     }
 
     var baseAffiliateFee: String {
-        SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
     }
 
     var swapFeeLabel: String {
         SwapCryptoLogic.swapFeeLabel(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps, isReferred: isReferred
+            vultDiscountBps: vultDiscountBps
         )
     }
 
@@ -391,7 +385,8 @@ extension SwapTransaction {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
         )
     }
 
@@ -401,6 +396,10 @@ extension SwapTransaction {
             fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
+    }
+
+    var hasAppliedDiscounts: Bool {
+        !vultDiscount.isEmpty || !referralDiscount.isEmpty
     }
 
     var priceImpactString: String {

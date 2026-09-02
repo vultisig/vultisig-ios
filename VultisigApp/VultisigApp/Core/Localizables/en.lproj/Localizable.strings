@@ -1502,15 +1502,14 @@
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
 "swap.protocol_fee" = "Protocol Fee";
-"swap.referral_discount" = "Referral (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Market";
-"swap.vult_discount" = "VULT (-%d bps)";
 "swap.vult_waiver" = "VULT (100% waiver)";
 "swapAdvancedSettingsLockedSubtitle" = "Fine-tune slippage, gas, routing, and recipient for every swap.";
 "swapAdvancedSettingsLockedTitle" = "Advanced Swap Settings";
 "swapAmountTooSmall" = "Swap amount too small";
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
+"swapAppliedDiscounts" = "Applied Discounts:";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
 "swapErrorAmountTooSmallTitle" = "Amount Too Small";
 "swapErrorInboundAddressDescription" = "The inbound address is invalid. Please try again.";
@@ -1559,6 +1558,7 @@
 "swapOverview" = "Swap overview";
 "swapRecipientRouteNotAvailable" = "No route to an external recipient is available for this pair. Remove the recipient or choose a different pair.";
 "swapRecipientVerificationFailed" = "The swap could not be confirmed to deliver to your chosen recipient and was stopped before signing. Please try again.";
+"swapReferralDiscount" = "Referral: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
@@ -1571,6 +1571,8 @@
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
 "swapVerifyCheckbox2Description" = "I agree with the min. amount I'll receive";
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "Not want to use local? Switch back.";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
