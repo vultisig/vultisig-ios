@@ -13,6 +13,9 @@ import Mediator
 struct TssRelayAPI: TargetType {
     let baseURL: URL
     let endpoint: Endpoint
+    /// A caller that retries its request opts into a shorter budget; the GG20
+    /// messenger and every poll keep the default.
+    var timeoutInterval: TimeInterval = Self.defaultTimeout
 
     enum Endpoint {
         /// POST /setup-message/{sessionID}. `body` is already-encrypted UTF-8 bytes.
@@ -104,19 +107,6 @@ struct TssRelayAPI: TargetType {
     }
 
     static let defaultTimeout: TimeInterval = 60
-
-    /// Only the message POST is shortened: it is the one call that is retried,
-    /// and its whole retry budget has to fit inside the ceremony stall limit.
-    var timeoutInterval: TimeInterval {
-        switch endpoint {
-        case .sendMessage:
-            return RelaySendRetryPolicy.requestTimeout
-        case .uploadSetupMessage, .downloadSetupMessage,
-             .pollInboundMessages, .deleteMessage,
-             .checkKeygenStarted:
-            return Self.defaultTimeout
-        }
-    }
 
     var validationType: ValidationType {
         switch endpoint {

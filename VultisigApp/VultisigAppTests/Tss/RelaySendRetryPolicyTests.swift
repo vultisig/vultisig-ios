@@ -39,28 +39,27 @@ final class RelaySendRetryPolicyTests: XCTestCase {
         XCTAssertLessThan(RelaySendRetryPolicy.worstCaseBudget, CeremonyStallClock.defaultLimit)
     }
 
-    func testOnlyTheMessagePostUsesTheShortTimeout() {
+    func testTheShortTimeoutIsOptInPerRequest() {
         let base = URL(string: "https://relay.example.com")!
-        func api(_ endpoint: TssRelayAPI.Endpoint) -> TssRelayAPI {
-            TssRelayAPI(baseURL: base, endpoint: endpoint)
-        }
         let message = Message(session_id: "s", from: "a", to: ["b"], body: "body", hash: "hash", sequenceNo: 0)
+        let send = TssRelayAPI.Endpoint.sendMessage(sessionID: "s", message: message, messageID: nil, addLegacyKeygenHeader: false)
 
         XCTAssertEqual(RelaySendRetryPolicy.requestTimeout, 8)
         XCTAssertEqual(
-            api(.sendMessage(sessionID: "s", message: message, messageID: nil, addLegacyKeygenHeader: false)).timeoutInterval,
+            TssRelayAPI(baseURL: base, endpoint: send, timeoutInterval: RelaySendRetryPolicy.requestTimeout).timeoutInterval,
             RelaySendRetryPolicy.requestTimeout
         )
 
-        let unchanged: [TssRelayAPI.Endpoint] = [
+        let defaults: [TssRelayAPI.Endpoint] = [
+            send,
             .uploadSetupMessage(sessionID: "s", body: Data(), messageID: nil, additionalHeader: nil),
             .downloadSetupMessage(sessionID: "s", messageID: nil, additionalHeader: nil),
             .pollInboundMessages(sessionID: "s", localPartyID: "p", messageID: nil),
             .deleteMessage(sessionID: "s", localPartyID: "p", hash: "h", messageID: nil),
             .checkKeygenStarted(sessionID: "s")
         ]
-        for endpoint in unchanged {
-            XCTAssertEqual(api(endpoint).timeoutInterval, 60, "\(endpoint)")
+        for endpoint in defaults {
+            XCTAssertEqual(TssRelayAPI(baseURL: base, endpoint: endpoint).timeoutInterval, 60, "\(endpoint)")
         }
     }
 }

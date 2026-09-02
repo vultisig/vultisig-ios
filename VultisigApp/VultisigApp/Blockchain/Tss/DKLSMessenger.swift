@@ -143,7 +143,8 @@ final class DKLSMessenger {
                 message: msg,
                 messageID: messageID,
                 addLegacyKeygenHeader: false
-            )
+            ),
+            timeoutInterval: RelaySendRetryPolicy.requestTimeout
         )
 
         var attempt = 1
