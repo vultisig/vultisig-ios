@@ -21,7 +21,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         vm.advancedSettings.slippage = .custom(bps: 300)
 
         let before = interactor.fetchQuoteCallCount
-        vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
         await vm.waitForQuoteTask()
 
         XCTAssertEqual(interactor.fetchQuoteCallCount, before + 1, "A slippage change must re-fetch on close")
@@ -33,7 +33,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         vm.advancedSettings.gasLimit = 300_000
 
         let before = interactor.fetchQuoteCallCount
-        vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
         await vm.waitForQuoteTask()
 
         XCTAssertEqual(interactor.fetchQuoteCallCount, before + 1, "A gas-limit change must re-fetch on close")
@@ -45,7 +45,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         vm.advancedSettings.externalRecipient = "0xExternalRecipient"
 
         let before = interactor.fetchQuoteCallCount
-        vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
         await vm.waitForQuoteTask()
 
         XCTAssertEqual(interactor.fetchQuoteCallCount, before + 1, "An external-recipient change must re-fetch on close (it changes provider eligibility)")
@@ -57,7 +57,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         // Nothing changes while the sheet is open.
 
         let before = interactor.fetchQuoteCallCount
-        vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
 
         // `fetchQuotes` flips `isLoadingQuotes` true synchronously before it
         // spawns its task, so a re-fetch — debounced or not — is observable
@@ -81,7 +81,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         vm.selectProvider(alt)
 
         let before = interactor.fetchQuoteCallCount
-        vm.advancedSettingsSheetDidClose(vault: makeVault(), referredCode: "")
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
 
         // Route selection isn't part of `advancedSettings`, so the close path's
         // no-change guard returns synchronously — `isLoadingQuotes` would be true

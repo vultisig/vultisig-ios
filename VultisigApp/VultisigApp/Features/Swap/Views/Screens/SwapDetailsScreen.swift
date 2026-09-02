@@ -11,7 +11,6 @@ struct SwapDetailsScreen: View {
     let vault: Vault
 
     @State private var detailsViewModel = SwapDetailsViewModel()
-    @StateObject private var referredViewModel = ReferredViewModel()
     @StateObject private var keyboardObserver = KeyboardObserver()
 
     @State private var showErrorTooltip = false
@@ -130,7 +129,7 @@ struct SwapDetailsScreen: View {
             // re-assignment afterwards or `onChange` would re-fire the quote fetch.
             detailsViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault)
             detailsViewModel.warmDiscountTier(vault: vault)
-            setData()
+            setInitialChains()
         }
         .onDisappear {
             #if os(iOS)
@@ -138,13 +137,13 @@ struct SwapDetailsScreen: View {
             #endif
         }
         .swapRefreshTick {
-            detailsViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateTimer(vault: vault)
         }
         .onChange(of: detailsViewModel.fromCoin) { _, _ in
-            detailsViewModel.updateFromCoin(coin: detailsViewModel.fromCoin, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateFromCoin(coin: detailsViewModel.fromCoin, vault: vault)
         }
         .onChange(of: detailsViewModel.toCoin) { _, _ in
-            detailsViewModel.updateToCoin(coin: detailsViewModel.toCoin, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.updateToCoin(coin: detailsViewModel.toCoin, vault: vault)
         }
         .onChange(of: detailsViewModel.fromChain) { _, _ in
             detailsViewModel.handleFromChainUpdate(vault: vault)
@@ -159,8 +158,7 @@ struct SwapDetailsScreen: View {
             // part of the compared settings so it never triggers a re-fetch.
             if wasPresented && !isPresented {
                 detailsViewModel.advancedSettingsSheetDidClose(
-                    vault: vault,
-                    referredCode: referredViewModel.savedReferredCode
+                    vault: vault
                 )
             }
         }
@@ -382,7 +380,7 @@ struct SwapDetailsScreen: View {
         }
         #if os(iOS)
         .refreshable {
-            detailsViewModel.refreshData(vault: vault, referredCode: referredViewModel.savedReferredCode)
+            detailsViewModel.refreshData(vault: vault)
         }
         .toolbar {
             if detailsViewModel.showPercentageButtons {
@@ -418,15 +416,14 @@ struct SwapDetailsScreen: View {
         #endif
     }
 
-    private func setData() {
-        referredViewModel.setData()
+    private func setInitialChains() {
         detailsViewModel.fromChain = detailsViewModel.fromCoin.chain
         detailsViewModel.toChain = detailsViewModel.toCoin.chain
     }
 
     private func handleSwapTap() {
         detailsViewModel.error = nil
-        detailsViewModel.switchCoins(vault: vault, referredCode: referredViewModel.savedReferredCode)
+        detailsViewModel.switchCoins(vault: vault)
         let fromChain = detailsViewModel.fromChain
         detailsViewModel.fromChain = detailsViewModel.toChain
         detailsViewModel.toChain = fromChain
@@ -444,7 +441,7 @@ extension SwapDetailsScreen {
         ) else { return }
 
         detailsViewModel.fromAmount = amount
-        detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
+        detailsViewModel.updateFromAmount(vault: vault, immediate: true)
     }
 
     // MARK: - Market / Limit tabs

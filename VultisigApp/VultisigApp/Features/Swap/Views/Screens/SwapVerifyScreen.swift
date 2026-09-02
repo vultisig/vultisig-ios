@@ -11,7 +11,6 @@ struct SwapVerifyScreen: View {
     let vault: Vault
 
     @State private var verifyViewModel: SwapVerifyViewModel
-    @StateObject private var referredViewModel = ReferredViewModel()
 
     @State private var fastPasswordPresented = false
     @State private var fastVaultPassword: String = .empty
@@ -64,11 +63,10 @@ struct SwapVerifyScreen: View {
         )
         .swapRefreshTick {
             Task {
-                await verifyViewModel.updateTimer(vault: vault, referredCode: referredViewModel.savedReferredCode)
+                await verifyViewModel.updateTimer(vault: vault)
             }
         }
         .onLoad {
-            referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
                 await verifyViewModel.scan()
@@ -354,10 +352,7 @@ struct SwapVerifyScreen: View {
         retryBannerText = reason.userFacingMessage
         retrySignal.pendingRetryReason = nil
         Task {
-            await verifyViewModel.refreshData(
-                vault: vault,
-                referredCode: referredViewModel.savedReferredCode
-            )
+            await verifyViewModel.refreshData(vault: vault)
         }
     }
 

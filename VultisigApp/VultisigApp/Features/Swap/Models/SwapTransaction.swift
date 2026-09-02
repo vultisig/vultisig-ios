@@ -385,7 +385,8 @@ extension SwapTransaction {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
         )
     }
 

@@ -62,7 +62,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromAmount = "1"
 
         // First fetch: no prior quote → leading-edge skeleton should be on.
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         XCTAssertTrue(vm.showsQuoteSkeleton, "First quote of a pair must show the skeleton")
 
         await vm.waitForQuoteTask()
@@ -78,12 +78,12 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromAmount = "1"
 
         // Land a firm quote first.
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         XCTAssertNotNil(vm.quote)
 
         // Auto-refresh on the same pair: the prior quote stays, so no skeleton.
-        vm.refreshData(vault: makeVault(), referredCode: "")
+        vm.refreshData(vault: makeVault())
         XCTAssertTrue(vm.isLoadingQuotes, "A refresh is in flight")
         XCTAssertFalse(
             vm.showsQuoteSkeleton,
@@ -100,7 +100,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromAmount = "1"
 
         // Land a firm quote first.
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         XCTAssertNotNil(vm.quote)
 
@@ -109,7 +109,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         // "to" field falls back to the indicative estimate and the summary
         // shows its skeleton — stale-while-revalidate is for auto-refresh only.
         vm.fromAmount = "2"
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         XCTAssertNil(vm.quote, "Quote must clear on an amount change")
         XCTAssertTrue(vm.showsQuoteSkeleton, "An amount change must show the skeleton, not the stale summary")
         await vm.waitForQuoteTask()
@@ -122,14 +122,14 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
 
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         XCTAssertNotNil(vm.quote)
 
         // Change the destination coin: the held quote is now meaningless and must
         // be cleared so a different-pair quote can't show through.
         vm.toCoin = makeCoin(.ethereum, ticker: "ETH")
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         XCTAssertNil(vm.quote, "Quote must be cleared on a pair change")
         XCTAssertTrue(vm.showsQuoteSkeleton, "A new pair with no prior quote must show the skeleton")
         await vm.waitForQuoteTask()
@@ -141,12 +141,12 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         XCTAssertNotNil(vm.quote)
 
         vm.fromAmount = ""
-        vm.updateFromAmount(vault: makeVault(), referredCode: "")
+        vm.updateFromAmount(vault: makeVault())
         XCTAssertNil(vm.quote, "Emptying the amount must clear the quote")
         XCTAssertFalse(vm.showsQuoteSkeleton)
         XCTAssertFalse(vm.isLoadingQuotes)
@@ -162,7 +162,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.fromAmount = "1"
 
         let start = Date()
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
         let elapsed = Date().timeIntervalSince(start)
 
@@ -180,7 +180,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
 
         // Default (typing) path is debounced — the network shouldn't be hit
         // before the debounce window elapses.
-        vm.updateFromAmount(vault: makeVault(), referredCode: "")
+        vm.updateFromAmount(vault: makeVault())
         try? await Task.sleep(for: .milliseconds(100))
         XCTAssertEqual(interactor.fetchQuoteCallCount, 0, "Debounced path must not fetch before the debounce")
 
@@ -197,13 +197,55 @@ final class SwapDetailsViewModelTests: XCTestCase {
 
         // Start a debounced (typing) fetch, then supersede it immediately with a
         // percentage tap — the pending one must be cancelled, only one fetch runs.
-        vm.updateFromAmount(vault: makeVault(), referredCode: "")
+        vm.updateFromAmount(vault: makeVault())
         vm.fromAmount = "2"
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
 
         XCTAssertEqual(interactor.fetchQuoteCallCount, 1, "The superseded debounced fetch must be cancelled")
         XCTAssertNotNil(vm.quote)
+    }
+
+    // MARK: - Vault-owned referral code
+
+    func testDetailsQuoteUsesReferralCodeFromVault() async {
+        let interactor = MockSwapInteractor(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
+        let vm = makeVM(interactor: interactor)
+        let vault = makeVault(referredCode: "FRIEND")
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+
+        vm.updateFromAmount(vault: vault, immediate: true)
+        await vm.waitForQuoteTask()
+
+        XCTAssertEqual(interactor.lastReferredCode, "FRIEND")
+    }
+
+    func testVerifyRefreshUsesReferralCodeFromVault() async {
+        let quote = makeThorQuote(expectedAmountOut: "100000000")
+        let interactor = MockSwapInteractor(quote: .thorchain(quote))
+        let vault = makeVault(referredCode: "FRIEND")
+        let rune = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        let btc = makeCoin(.bitcoin, ticker: "BTC")
+        let transaction = SwapTransaction(
+            fromCoin: rune,
+            toCoin: btc,
+            fromAmount: 1,
+            kind: .market(.thorchain(quote)),
+            gas: .zero,
+            gasLimit: .zero,
+            thorchainFee: .zero,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: rune,
+            advancedSettings: .default
+        )
+        let vm = SwapVerifyViewModel(transaction: transaction, interactor: interactor)
+
+        await vm.refreshData(vault: vault)
+
+        XCTAssertEqual(interactor.lastReferredCode, "FRIEND")
     }
 
     // MARK: - Advanced-settings reset is TOKEN-driven, not chain-driven (leak prevention)
@@ -225,7 +267,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         // Empty amount keeps `fetchQuotes` from touching the network.
-        vm.switchCoins(vault: makeVault(), referredCode: "")
+        vm.switchCoins(vault: makeVault())
 
         XCTAssertEqual(vm.advancedSettings, .default, "Flipping the pair must reset advanced settings")
     }
@@ -240,7 +282,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         // Picking a new source token resets — empty amount keeps it off-network.
-        vm.updateFromCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault(), referredCode: "")
+        vm.updateFromCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault())
 
         XCTAssertEqual(vm.advancedSettings, .default, "Picking a new source token must reset advanced settings")
     }
@@ -254,7 +296,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertNotEqual(vm.advancedSettings, .default, "Precondition: settings are non-default")
 
         // Picking a new destination token resets.
-        vm.updateToCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault(), referredCode: "")
+        vm.updateToCoin(coin: makeCoin(.thorChain, ticker: "RUNE"), vault: makeVault())
 
         XCTAssertEqual(vm.advancedSettings, .default, "Picking a new destination token must reset advanced settings")
     }
@@ -338,7 +380,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
 
-        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
 
         XCTAssertNotNil(vm.quote, "Precondition: the quote must resolve so updateFees runs")
@@ -352,8 +394,8 @@ final class SwapDetailsViewModelTests: XCTestCase {
         SwapDetailsViewModel(interactor: interactor ?? MockSwapInteractor(quote: nil))
     }
 
-    private func makeVault() -> Vault {
-        Vault(
+    private func makeVault(referredCode: String? = nil) -> Vault {
+        let vault = Vault(
             name: "Test Vault",
             signers: [],
             pubKeyECDSA: "test-pub-ecdsa",
@@ -364,6 +406,10 @@ final class SwapDetailsViewModelTests: XCTestCase {
             resharePrefix: nil,
             libType: .DKLS
         )
+        if let referredCode {
+            vault.referredCode = ReferredCode(code: referredCode, vault: vault)
+        }
+        return vault
     }
 
     private func makeCoin(_ chain: Chain, ticker: String, balance: String = "0") -> Coin {
@@ -427,6 +473,7 @@ private final class MockSwapInteractor: SwapInteractor {
     private let stubbedQuote: SwapQuote?
     private let computeFeeError: Error?
     private(set) var fetchQuoteCallCount = 0
+    private(set) var lastReferredCode: String?
 
     init(quote: SwapQuote?, computeFeeError: Error? = nil) {
         self.stubbedQuote = quote
@@ -443,6 +490,7 @@ private final class MockSwapInteractor: SwapInteractor {
         recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
+        lastReferredCode = referredCode
         guard let stubbedQuote else { return nil }
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }

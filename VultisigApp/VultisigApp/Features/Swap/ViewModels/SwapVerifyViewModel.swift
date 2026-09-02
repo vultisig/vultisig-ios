@@ -76,15 +76,15 @@ final class SwapVerifyViewModel {
         return !securityScannerState.shouldShowWarning
     }
 
-    func updateTimer(vault: Vault, referredCode: String) async {
+    func updateTimer(vault: Vault) async {
         timer -= 1
         if timer < 1 {
-            await refreshData(vault: vault, referredCode: referredCode)
+            await refreshData(vault: vault)
             timer = 59
         }
     }
 
-    func refreshData(vault: Vault, referredCode: String) async {
+    func refreshData(vault: Vault) async {
         // Limit orders have no market quote to refresh — fetching one here
         // would attach a market quote to a limit transaction and break the
         // `quote == nil` limit invariant (the signed artifact is the pre-built
@@ -105,7 +105,7 @@ final class SwapVerifyViewModel {
                     fromCoin: transaction.fromCoin,
                     toCoin: transaction.toCoin,
                     vault: vault,
-                    referredCode: referredCode,
+                    referredCode: vault.referredCode?.code ?? .empty,
                     slippageBps: transaction.advancedSettings.slippage.bps,
                     recipientAddress: transaction.advancedSettings.externalRecipient
                 )

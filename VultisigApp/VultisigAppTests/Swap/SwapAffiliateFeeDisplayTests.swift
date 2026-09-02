@@ -514,7 +514,52 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
                 referralDiscountBps: transaction.referralDiscountBps
             )
         )
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: wrappedQuote,
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            feeCoin: transaction.feeCoin,
+            fromAmount: transaction.fromAmount.description,
+            vultDiscountBps: transaction.vultDiscountBps,
+            referralDiscountBps: transaction.referralDiscountBps
+        )
+        XCTAssertEqual(
+            transaction.vultDiscount,
+            "-" + breakdown.vult.formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            transaction.referralDiscount,
+            "-" + breakdown.referral.formatToFiat(includeCurrencySymbol: true)
+        )
         XCTAssertTrue(transaction.hasAppliedDiscounts)
+
+        let ultimateQuote = makeThorQuote(affiliate: "100000")
+        let ultimate = makeNativeThorchainTransaction(
+            quote: ultimateQuote,
+            vultDiscountBps: Int.max,
+            referralDiscountBps: 5
+        )
+        setPrice(1000, for: ultimate.fromCoin)
+        setPrice(1000, for: ultimate.toCoin)
+        let ultimateBreakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: .thorchain(ultimateQuote),
+            fromCoin: ultimate.fromCoin,
+            toCoin: ultimate.toCoin,
+            feeCoin: ultimate.feeCoin,
+            fromAmount: ultimate.fromAmount.description,
+            vultDiscountBps: ultimate.vultDiscountBps,
+            referralDiscountBps: ultimate.referralDiscountBps
+        )
+        XCTAssertEqual(ultimateBreakdown.vult, Decimal(string: "3.5"))
+        XCTAssertEqual(ultimateBreakdown.referral, Decimal(string: "0.5"))
+        XCTAssertEqual(
+            ultimate.vultDiscount,
+            "-" + ultimateBreakdown.vult.formatToFiat(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            ultimate.referralDiscount,
+            "-" + ultimateBreakdown.referral.formatToFiat(includeCurrencySymbol: true)
+        )
 
         let undiscounted = makeNativeThorchainTransaction(
             quote: makeThorQuote(affiliate: "500000"),

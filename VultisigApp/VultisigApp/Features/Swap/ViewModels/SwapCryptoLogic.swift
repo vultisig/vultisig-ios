@@ -694,7 +694,8 @@ enum SwapCryptoLogic {
         toCoin: Coin,
         feeCoin: Coin,
         fromAmount: String,
-        vultDiscountBps: Int
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
     ) -> String {
         let breakdown = affiliateDiscountBreakdown(
             quote: quote,
@@ -703,7 +704,7 @@ enum SwapCryptoLogic {
             feeCoin: feeCoin,
             fromAmount: fromAmount,
             vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: 0
+            referralDiscountBps: referralDiscountBps
         )
         return formatDiscount(breakdown.vult)
     }

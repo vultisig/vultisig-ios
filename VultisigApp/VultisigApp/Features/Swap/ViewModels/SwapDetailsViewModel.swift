@@ -265,15 +265,15 @@ final class SwapDetailsViewModel {
     /// selection (`selectedQuote`) is not part of `advancedSettings`, so picking a
     /// route never reaches here — it only chooses among the quotes already fetched.
     /// No-op when nothing relevant changed (byte-identical to no interaction).
-    func advancedSettingsSheetDidClose(vault: Vault, referredCode: String) {
+    func advancedSettingsSheetDidClose(vault: Vault) {
         guard advancedSettings != advancedSettingsSnapshot else { return }
         advancedSettingsSnapshot = advancedSettings
-        fetchQuotes(vault: vault, referredCode: referredCode, immediate: true)
+        fetchQuotes(vault: vault, immediate: true)
     }
 
     // MARK: - User actions
 
-    func switchCoins(vault: Vault, referredCode: String) {
+    func switchCoins(vault: Vault) {
         // Flipping the pair is a new swap — a custom slippage / gas limit /
         // external recipient must never leak across it. In particular the
         // recipient was validated for the OLD destination chain, which is now the
@@ -287,18 +287,18 @@ final class SwapDetailsViewModel {
         // source — re-resolve so `toCoins` matches the new `fromCoin` and
         // `toCoin` lands on a valid pair before the quote fetch runs.
         updateCoinLists()
-        fetchQuotes(vault: vault, referredCode: referredCode)
+        fetchQuotes(vault: vault)
         prefetchSwapTokens()
     }
 
     /// `immediate: true` skips the keystroke debounce — used for discrete actions
     /// (percentage buttons, paste) that set a final value in one shot. Free typing
     /// stays debounced.
-    func updateFromAmount(vault: Vault, referredCode: String, immediate: Bool = false) {
-        fetchQuotes(vault: vault, referredCode: referredCode, immediate: immediate)
+    func updateFromAmount(vault: Vault, immediate: Bool = false) {
+        fetchQuotes(vault: vault, immediate: immediate)
     }
 
-    func updateFromCoin(coin: Coin, vault: Vault, referredCode: String) {
+    func updateFromCoin(coin: Coin, vault: Vault) {
         // A new source pair starts fresh — a custom slippage / gas limit /
         // recipient must never stick across swaps (Phase 5 reset semantics).
         resetAdvancedSettings()
@@ -307,18 +307,18 @@ final class SwapDetailsViewModel {
         // `toCoins` reflected the previous source's valid destinations —
         // recompute so `fetchQuotes` runs against the current valid pair.
         updateCoinLists()
-        fetchQuotes(vault: vault, referredCode: referredCode)
+        fetchQuotes(vault: vault)
         updateBalance(for: coin)
         prefetchSwapTokens()
     }
 
-    func updateToCoin(coin: Coin, vault: Vault, referredCode: String) {
+    func updateToCoin(coin: Coin, vault: Vault) {
         // A new destination invalidates a chain-specific external recipient and
         // resets the rest of the advanced settings (Phase 5 reset semantics).
         resetAdvancedSettings()
         toCoin = coin
         toChain = coin.chain
-        fetchQuotes(vault: vault, referredCode: referredCode)
+        fetchQuotes(vault: vault)
         updateBalance(for: coin)
         prefetchSwapTokens()
     }
@@ -336,24 +336,24 @@ final class SwapDetailsViewModel {
         quote != nil
     }
 
-    func updateTimer(vault: Vault, referredCode: String) {
+    func updateTimer(vault: Vault) {
         guard showRefreshCounter else {
             timer = 59
             return
         }
         timer -= 1
         if timer < 1 {
-            restartTimer(vault: vault, referredCode: referredCode)
+            restartTimer(vault: vault)
         }
     }
 
-    func restartTimer(vault: Vault, referredCode: String) {
-        refreshData(vault: vault, referredCode: referredCode)
+    func restartTimer(vault: Vault) {
+        refreshData(vault: vault)
         timer = 59
     }
 
-    func refreshData(vault: Vault, referredCode: String) {
-        fetchQuotes(vault: vault, referredCode: referredCode)
+    func refreshData(vault: Vault) {
+        fetchQuotes(vault: vault)
     }
 
     func handleFromChainUpdate(vault: Vault) {
@@ -642,7 +642,8 @@ extension SwapDetailsViewModel {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
         )
     }
 
@@ -688,7 +689,7 @@ private extension SwapDetailsViewModel {
         allQuotes = []
     }
 
-    func fetchQuotes(vault: Vault, referredCode: String, immediate: Bool = false) {
+    func fetchQuotes(vault: Vault, immediate: Bool = false) {
         updateQuoteTask?.cancel()
 
         // Empty or non-positive amount: drop any leftover quote/fee/discount
@@ -748,7 +749,7 @@ private extension SwapDetailsViewModel {
             // as a preview, but a fee you can't pay would surface the UTXO
             // `notEnoughUTXO` / `insufficientGas` fee errors. Insufficiency is
             // reflected only on the disabled Continue button, never as a fee error.
-            await self.updateQuotes(vault: vault, referredCode: referredCode)
+            await self.updateQuotes(vault: vault)
             if self.balanceError == nil, self.error == nil, self.quote != nil {
                 await self.updateFees(vault: vault)
             }
@@ -763,7 +764,7 @@ private extension SwapDetailsViewModel {
         }
     }
 
-    func updateQuotes(vault: Vault, referredCode: String) async {
+    func updateQuotes(vault: Vault) async {
         // Don't clear `quote` here: stale-while-revalidate keeps the previous
         // quote (and its summary) on screen until the fresh one lands. The pair
         // change in `fetchQuotes` already cleared it when it would be misleading.
@@ -791,7 +792,7 @@ private extension SwapDetailsViewModel {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
-                referredCode: referredCode,
+                referredCode: vault.referredCode?.code ?? .empty,
                 slippageBps: advancedSettings.slippage.bps,
                 recipientAddress: advancedSettings.externalRecipient
             )

@@ -24,8 +24,6 @@ struct SwapFromToField: View {
     @Bindable var detailsViewModel: SwapDetailsViewModel
     let handlePercentageSelection: ((Int) -> Void)?
 
-    @StateObject var referredViewModel = ReferredViewModel()
-
     private var isFromField: Bool { title == "from" }
 
     var body: some View {
@@ -54,9 +52,6 @@ struct SwapFromToField: View {
         // typing isn't animated.
         .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: amount)
         .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: fiatAmount)
-        .onLoad {
-            referredViewModel.setData()
-        }
     }
 
     private func handleAmountEdit(oldValue: String, newValue: String) {
@@ -66,7 +61,6 @@ struct SwapFromToField: View {
         let immediate = abs(newValue.count - oldValue.count) > 1
         detailsViewModel.updateFromAmount(
             vault: vault,
-            referredCode: referredViewModel.savedReferredCode,
             immediate: immediate
         )
         detailsViewModel.showAllPercentageButtons = true

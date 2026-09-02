@@ -37,7 +37,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
         // bond (0.001) — the old order validated pre-oracle and let it pass.
         let vm = makeVerifyVM(balanceWei: "500000000000000")
 
-        await vm.refreshData(vault: makeVault(), referredCode: "")
+        await vm.refreshData(vault: makeVault())
 
         XCTAssertEqual(
             vm.error as? SwapCryptoLogic.Errors,
@@ -49,7 +49,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
     func testRefreshPassesWhenBalanceCoversReconciledBond() async {
         let vm = makeVerifyVM(balanceWei: "2000000000000000") // 0.002 ETH ≥ amount + bond
 
-        await vm.refreshData(vault: makeVault(), referredCode: "")
+        await vm.refreshData(vault: makeVault())
 
         XCTAssertNil(vm.error)
         XCTAssertEqual(vm.transaction.gas, maxFeePerGasWei, "Oracle maxFeePerGas must be committed")
@@ -63,7 +63,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
         // and the fetch error surfaces exactly as it used to.
         let vm = makeVerifyVM(balanceWei: "500000000000000", chainSpecificError: TestOracleError())
 
-        await vm.refreshData(vault: makeVault(), referredCode: "")
+        await vm.refreshData(vault: makeVault())
 
         XCTAssertTrue(vm.error is TestOracleError, "The oracle fetch error must surface, not a gas error")
         XCTAssertNotEqual(vm.error as? SwapCryptoLogic.Errors, .insufficientGas)
@@ -75,7 +75,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
         // pre-bond gate already blocked this, and it must keep blocking.
         let vm = makeVerifyVM(balanceWei: "200000000000000", chainSpecificError: TestOracleError())
 
-        await vm.refreshData(vault: makeVault(), referredCode: "")
+        await vm.refreshData(vault: makeVault())
 
         XCTAssertEqual(vm.error as? SwapCryptoLogic.Errors, .insufficientGas)
     }
