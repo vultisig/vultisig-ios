@@ -128,7 +128,7 @@ final class AppLockPanelHost: ObservableObject {
 
         // A window that has been closed or minimised since the last raise takes
         // its panel with it. Left behind, a hidden panel keeps a live lock screen
-        // — and so a second biometric attempt and a second unlock state.
+        // — and so a second passcode entry and a second unlock state.
         discardPanelsNotCovering(hosts)
 
         // Overtakes any fade still running, so a panel put back up here is not
@@ -139,9 +139,8 @@ final class AppLockPanelHost: ObservableObject {
             hostsLockScreen = true
         }
 
-        // One interactive lock screen, as on iOS: ``EnterPasscodeScreen`` starts a
-        // biometric attempt from its `.task`, so one per window would be one Touch
-        // ID prompt per window.
+        // One interactive lock screen, as on iOS. One per window would create
+        // independent passcode entries and biometric controls over one session.
         let interactive = hosts.first { $0 === interactiveWindow }
             ?? hosts.first { $0.isMainWindow }
             ?? hosts.first

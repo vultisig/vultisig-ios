@@ -25,6 +25,8 @@ struct ColorSystem: ColorSystemProtocol {
     var bgSurface2: Color { .vultisig(hex: "11284A") }
     var bgSurface12: Color { .vultisig(hex: "0D2240") }
 
+    var lockPasscodeField: Color { .vultisig(hex: "1B3F73").opacity(0.1) }
+
     var bgSuccess: Color { .vultisig(hex: "042436") }
     var bgAlert: Color { .vultisig(hex: "362B17") }
     var bgError: Color { .vultisig(hex: "2B1111") }

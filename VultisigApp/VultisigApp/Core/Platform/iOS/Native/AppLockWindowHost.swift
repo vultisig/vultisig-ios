@@ -48,10 +48,10 @@ final class AppLockWindowHost: ObservableObject {
     /// It starts `true` — **assumed, not observed**, and that is the only
     /// ordering that works. A raise happens on the view's first appearance, one
     /// step after its first body; starting `false` would have the overlay mount
-    /// an interactive lock screen for that step, and that screen starts a
-    /// biometric attempt from its `.task`. Two live copies is two Face ID prompts
-    /// racing on every gated cold start. So the window is assumed to work and
-    /// corrected when a raise actually fails, rather than the other way round.
+    /// an interactive lock screen for that step. Two live copies means two
+    /// independent passcode entries and two biometric controls over one session.
+    /// So the window is assumed to work and corrected when a raise actually
+    /// fails, rather than the other way round.
     @Published private(set) var hostsLockScreen = true
 
     private var windows: [ObjectIdentifier: AppLockWindow] = [:]
@@ -159,9 +159,9 @@ final class AppLockWindowHost: ObservableObject {
             hostsLockScreen = true
         }
 
-        // Exactly one scene gets the interactive lock screen. `EnterPasscodeScreen`
-        // starts a biometric attempt from its `.task`, so one per scene would be
-        // one Face ID prompt per scene; the others are covered instead.
+        // Exactly one scene gets the interactive lock screen. One per scene would
+        // create independent passcode entries and biometric controls over the same
+        // session; the others are covered instead.
         //
         // The scene already carrying it wins, and that is not an optimisation:
         // `connectedScenes` is a `Set`, so on an iPad with two foreground-active
@@ -196,12 +196,10 @@ final class AppLockWindowHost: ObservableObject {
     /// Makes the window for `scene` visible — and key, for a gate — **before**
     /// mounting the real screen into it.
     ///
-    /// The order matters: ``EnterPasscodeScreen`` starts a biometric attempt from
-    /// its `.task`, so building it into a window that is not on screen yet races
-    /// the Face ID prompt against the window the prompt is supposed to appear
-    /// over. A new window opens on the brand screen instead, which is exactly
-    /// what the lock screen itself draws while that attempt runs, so there is no
-    /// seam between the two.
+    /// The order matters: the passcode entry and its biometric control must belong
+    /// to the visible key window before they become interactive. A new window
+    /// opens on the brand screen first, leaving no uncovered frame while the real
+    /// lock screen mounts.
     /// `requested` is what the *app* concluded; `presentation` is what this
     /// particular scene gets, which is not always the same thing — only one
     /// scene may carry an interactive screen, and the rest are covered instead.

@@ -1077,8 +1077,8 @@
 "passcodeDisableNavTitle" = "패스코드 삭제";
 "passcodeDisableSubtitle" = "키 셰어가 다시 복호화되며, 이 기기는 패스코드를 설정하기 전 상태로 돌아갑니다.";
 "passcodeDisableTitle" = "패스코드 입력";
-"passcodeEnterSubtitle" = "Vultisig이 잠겨 있습니다.";
-"passcodeEnterTitle" = "패스코드 입력";
+"passcodeEnterSubtitle" = "계속하려면 패스코드를 입력하세요.";
+"passcodeEnterTitle" = "앱 잠김";
 "passcodeGenericError" = "문제가 발생했습니다. 다시 시도하세요.";
 "passcodeIncorrect" = "패스코드가 올바르지 않습니다.";
 "passcodeInvalidLength" = "6자리를 모두 입력하세요.";
@@ -1091,6 +1091,8 @@
 "passcodeSealedSharesWithoutKey" = "이 기기의 볼트는 이미 암호화되어 있지만 이를 여는 키를 읽을 수 없습니다. 백업에서 복원하세요.";
 "passcodeSetTitle" = "패스코드 설정";
 "passcodeStorageError" = "이 기기에서 패스코드를 읽을 수 없습니다. 백업에서 볼트를 복원하세요.";
+"passcodeUseFaceID" = "Face ID 사용";
+"passcodeUseTouchID" = "Touch ID 사용";
 "password" = "비밀번호";
 "PasswordCannotBeReset" = "비밀번호는 재설정하거나 복구할 수 없습니다";
 "passwordHint" = "비밀번호 힌트";

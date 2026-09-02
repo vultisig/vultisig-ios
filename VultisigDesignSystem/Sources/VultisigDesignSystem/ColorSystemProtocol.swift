@@ -23,6 +23,8 @@ public protocol ColorSystemProtocol {
     var bgSurface2: Color { get }
     var bgSurface12: Color { get }
 
+    var lockPasscodeField: Color { get }
+
     var bgSuccess: Color { get }
     var bgAlert: Color { get }
     var bgError: Color { get }
