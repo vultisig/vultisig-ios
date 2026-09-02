@@ -391,6 +391,8 @@ final class SchnorrKeysign {
             logger.error("Failed to sign message (\(messageToSign, privacy: .public)), error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+            } else {
+                throw error
             }
         }
     }

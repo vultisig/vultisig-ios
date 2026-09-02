@@ -310,10 +310,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
 
-    var isLookingForDevices: Bool {
-        return status == .WaitingForDevices && selections.count < 2
-    }
-
     func startKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()

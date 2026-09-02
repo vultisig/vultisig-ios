@@ -251,11 +251,7 @@ struct PeerDiscoveryScreen: View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
             case (.WaitingForDevices, false):
-                if viewModel.isLookingForDevices {
-                    lookingForDevices
-                } else {
-                    keygenView
-                }
+                lookingForDevices
             case (.WaitingForDevices, true):
                 waitingForDevices
             case (.Keygen, _):
