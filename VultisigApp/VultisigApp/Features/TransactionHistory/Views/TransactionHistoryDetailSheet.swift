@@ -299,7 +299,7 @@ struct TransactionHistoryDetailSheet: View {
             let display = LimitOrderStatusDisplay.make(
                 uiStatus: transaction.swapTrackingUiStatus,
                 details: limitOrder,
-                errorMessage: transaction.errorMessage
+                errorMessage: presentedFailureReason
             )
             detailRow(
                 title: "status".localized,
@@ -311,18 +311,23 @@ struct TransactionHistoryDetailSheet: View {
         }
     }
 
-    /// Raw on-chain text, shown only for a genuine failure.
+    /// The presented on-chain reason, including actionable guidance for known
+    /// failures, shown only for a genuine failure.
     ///
     /// A limit row must not use the coarse `.error` status for this: the row
     /// storage collapses refunded / expired / cancelled into `.error` too, and
     /// an expired order is not a failure with a reason to report.
     private var failureReasonText: String? {
-        guard let message = transaction.errorMessage?.nilIfEmpty else { return nil }
+        guard let message = presentedFailureReason else { return nil }
         if isLimit {
             guard transaction.swapTrackingUiStatus == .failed else { return nil }
             return message
         }
         return transaction.status == .error ? message : nil
+    }
+
+    private var presentedFailureReason: String? {
+        TransactionHistoryFailureReasonPresentation.displayText(for: transaction.errorMessage)
     }
 
     // MARK: - Limit Order Rows
