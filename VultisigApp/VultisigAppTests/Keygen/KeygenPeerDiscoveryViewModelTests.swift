@@ -183,6 +183,33 @@ final class KeygenPeerDiscoveryViewModelTests: XCTestCase {
 
         XCTAssertEqual(vm.status, .Keygen)
     }
+
+    func testStartKeygenIsIgnoredOutsideWaitingForDevices() async {
+        let http = KickoffHTTPClient()
+        let vm = makeKickoffVM(http: http)
+        vm.status = .Failure
+
+        vm.startKeygen()
+        await waitForKickoff(vm)
+
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertEqual(vm.status, .Failure)
+        XCTAssertTrue(http.kickoffs.isEmpty)
+    }
+
+    func testCancellingAnInFlightKickoffLeavesTheStateUntouched() async {
+        let http = KickoffHTTPClient()
+        http.delay = .milliseconds(200)
+        let vm = makeKickoffVM(http: http)
+
+        vm.startKeygen()
+        vm.cancelKickoff()
+        await waitForKickoff(vm)
+
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertEqual(vm.status, .WaitingForDevices)
+        XCTAssertTrue(vm.errorMessage.isEmpty)
+    }
 }
 
 private final class KickoffHTTPClient: HTTPClientProtocol, @unchecked Sendable {

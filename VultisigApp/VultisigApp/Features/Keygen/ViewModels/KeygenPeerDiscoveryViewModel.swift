@@ -57,6 +57,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     @Published var isLoading: Bool = false
     @Published private(set) var isStartingKeygen = false
+    private var kickoffTask: Task<Void, Never>?
 
     private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
@@ -365,17 +366,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
 
     func startKeygen() {
-        guard !isStartingKeygen else { return }
+        guard status == .WaitingForDevices, !isStartingKeygen else { return }
         isStartingKeygen = true
         let committee = orderedCommittee(allParticipants: self.selections.map { $0 })
         self.keygenCommittee = committee
-        Task { @MainActor [weak self] in
+        kickoffTask = Task { @MainActor [weak self] in
             guard let self else { return }
             defer { self.isStartingKeygen = false }
             do {
                 try await self.kickoffKeygen(participants: committee)
                 self.status = .Keygen
                 self.participantDiscovery?.stop()
+            } catch is CancellationError {
+                // Leaving the screen cancels the kickoff; there is nothing to report.
             } catch {
                 self.logger.error("keygen kickoff failed: \(error.localizedDescription, privacy: .public)")
                 self.errorMessage = "keygenKickoffFailed".localized
@@ -398,8 +401,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         logger.info("kicked off keygen, session:\(self.sessionID, privacy: .public), participants:\(participants.count)")
     }
 
+    func cancelKickoff() {
+        kickoffTask?.cancel()
+        kickoffTask = nil
+    }
+
     func stopMediator() {
         self.logger.info("mediator server stopped")
+        cancelKickoff()
         self.participantDiscovery?.stop()
         self.mediator.stop()
     }

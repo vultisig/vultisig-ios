@@ -173,7 +173,7 @@ struct PeerDiscoveryScreen: View {
             }
             .screenTitle("pair".localized)
             .screenNavigationBarHidden(!selectedTab.hasOtherDevices)
-            .screenBackButtonHidden(hideBackButton)
+            .screenBackButtonHidden(hideBackButton || viewModel.isStartingKeygen)
             .screenToolbar {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
@@ -375,6 +375,7 @@ struct PeerDiscoveryScreen: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
+        .disabled(viewModel.isStartingKeygen)
         .frame(maxWidth: .infinity)
 #if os(iOS)
         .padding(.horizontal, idiom == .pad ? 24 : 16)
@@ -432,7 +433,7 @@ struct PeerDiscoveryScreen: View {
 
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
-            .disabled(viewModel.isLoading)
+            .disabled(viewModel.isLoading || viewModel.isStartingKeygen)
 #if os(iOS)
             .padding(.bottom, idiom == .phone ? 10 : 30)
 #else
