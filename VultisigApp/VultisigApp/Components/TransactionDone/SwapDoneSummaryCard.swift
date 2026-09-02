@@ -292,11 +292,9 @@ struct SwapDoneSummaryCard: View {
                     vultTierIcon(transaction)
                     Text(transaction.vultDiscountLabel)
                         .foregroundStyle(Theme.colors.textTertiary)
-                    Spacer()
-                    Text(transaction.vultDiscount)
-                        .foregroundStyle(Theme.colors.textPrimary)
                 }
                 .font(Theme.fonts.bodySMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 8)
             }
 
@@ -306,11 +304,9 @@ struct SwapDoneSummaryCard: View {
                         .foregroundStyle(Theme.colors.primaryAccent4)
                     Text(transaction.referralDiscountLabel)
                         .foregroundStyle(Theme.colors.textTertiary)
-                    Spacer()
-                    Text(transaction.referralDiscount)
-                        .foregroundStyle(Theme.colors.textPrimary)
                 }
                 .font(Theme.fonts.bodySMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 8)
             }
         }

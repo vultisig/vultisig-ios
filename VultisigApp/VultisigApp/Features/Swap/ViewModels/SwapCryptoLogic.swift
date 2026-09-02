@@ -678,14 +678,22 @@ enum SwapCryptoLogic {
     // MARK: - Discounts
 
     static func vultDiscountLabel(vultDiscountBps: Int) -> String {
-        if vultDiscountBps == Int.max {
-            return "swap.vult_waiver".localized
+        guard let tier = VultDiscountTier.from(bpsDiscount: vultDiscountBps) else {
+            return "VULT: \(vultDiscountBps)%"
         }
-        return String(format: "swap.vult_discount".localized, vultDiscountBps)
+        let percentage = tier == .ultimate ? 100 : tier.bpsDiscount
+        return String(
+            format: "swap.vult_discount".localized,
+            tier.name.localized,
+            percentage
+        )
     }
 
     static func referralDiscountLabel(referralDiscountBps: Int) -> String {
-        String(format: "swap.referral_discount".localized, referralDiscountBps)
+        String(
+            format: "swap.referral_discount".localized,
+            SwapSlippage.format(bps: referralDiscountBps)
+        )
     }
 
     static func vultDiscount(

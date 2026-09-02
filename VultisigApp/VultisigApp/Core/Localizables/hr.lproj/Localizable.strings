@@ -1501,10 +1501,10 @@
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
 "swap.protocol_fee" = "Naknada protokola";
-"swap.referral_discount" = "Preporuka (-%d bps)";
+"swap.referral_discount" = "Preporuka: %@";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Tržište";
-"swap.vult_discount" = "VULT (-%d bps)";
+"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% oslobođenje)";
 "swapAdvancedSettingsLockedSubtitle" = "Precizno podesite slippage, gas, rutu i primatelja za svaku zamjenu.";
 "swapAdvancedSettingsLockedTitle" = "Napredne postavke zamjene";

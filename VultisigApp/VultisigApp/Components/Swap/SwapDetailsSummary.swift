@@ -179,19 +179,14 @@ struct SwapDetailsSummary: View {
     }
 
     var vultDiscount: some View {
-        HStack {
+        HStack(spacing: 4) {
             vultTierIcon
 
             Text(vm.vultDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-
-            Spacer()
-
-            Text(vm.vultDiscount)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.caption12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -216,7 +211,7 @@ struct SwapDetailsSummary: View {
     }
 
     var referralDiscount: some View {
-        HStack {
+        HStack(spacing: 4) {
             Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.primaryAccent4)
@@ -224,13 +219,8 @@ struct SwapDetailsSummary: View {
             Text(vm.referralDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-
-            Spacer()
-
-            Text(vm.referralDiscount)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.caption12)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var priceImpact: some View {

@@ -1501,10 +1501,10 @@
 "swap.price_impact.good" = "Bom";
 "swap.price_impact.high" = "Alto";
 "swap.protocol_fee" = "Taxa de protocolo";
-"swap.referral_discount" = "Indicação (-%d bps)";
+"swap.referral_discount" = "Indicação: %@";
 "swap.tab.limit" = "Limite";
 "swap.tab.market" = "Mercado";
-"swap.vult_discount" = "VULT (-%d bps)";
+"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% isento)";
 "swapAdvancedSettingsLockedSubtitle" = "Ajuste slippage, gas, rota e destinatário em cada swap.";
 "swapAdvancedSettingsLockedTitle" = "Configurações avançadas de swap";

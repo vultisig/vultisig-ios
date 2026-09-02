@@ -1501,10 +1501,10 @@
 "swap.price_impact.good" = "良好";
 "swap.price_impact.high" = "较高";
 "swap.protocol_fee" = "协议费用";
-"swap.referral_discount" = "推荐 (-%d bps)";
+"swap.referral_discount" = "推荐: %@";
 "swap.tab.limit" = "限价";
 "swap.tab.market" = "市场";
-"swap.vult_discount" = "VULT (-%d bps)";
+"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% 豁免)";
 "swapAdvancedSettingsLockedSubtitle" = "为每次兑换精细调整滑点、Gas、路由和收款人。";
 "swapAdvancedSettingsLockedTitle" = "高级兑换设置";

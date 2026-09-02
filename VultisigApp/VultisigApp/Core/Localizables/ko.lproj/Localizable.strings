@@ -1501,10 +1501,10 @@
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
 "swap.protocol_fee" = "프로토콜 수수료";
-"swap.referral_discount" = "추천 (-%d bps)";
+"swap.referral_discount" = "추천: %@";
 "swap.tab.limit" = "지정가";
 "swap.tab.market" = "시장";
-"swap.vult_discount" = "VULT (-%d bps)";
+"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% 면제)";
 "swapAdvancedSettingsLockedSubtitle" = "모든 스왑에 대해 슬리피지, 가스, 경로, 수신자를 세밀하게 조정하세요.";
 "swapAdvancedSettingsLockedTitle" = "고급 스왑 설정";

@@ -462,11 +462,6 @@ struct SwapVerifyScreen: View {
 
             Text(currentTransaction.vultDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
-
-            Spacer()
-
-            Text(currentTransaction.vultDiscount)
-                .foregroundStyle(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -494,11 +489,6 @@ struct SwapVerifyScreen: View {
 
             Text(currentTransaction.referralDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
-
-            Spacer()
-
-            Text(currentTransaction.referralDiscount)
-                .foregroundStyle(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)

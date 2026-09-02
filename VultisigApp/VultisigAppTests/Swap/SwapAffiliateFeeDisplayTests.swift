@@ -93,6 +93,28 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(SwapCryptoLogic.affiliateListFeeBps, 50)
     }
 
+    func testDiscountLabelsUseFigmaPercentageFormatForEveryTier() {
+        let expectedLabels: [(VultDiscountTier, String)] = [
+            (.bronze, "VULT Bronze: 5%"),
+            (.silver, "VULT Silver: 10%"),
+            (.gold, "VULT Gold: 20%"),
+            (.platinum, "VULT Platinum: 25%"),
+            (.diamond, "VULT Diamond: 35%"),
+            (.ultimate, "VULT Ultimate: 100%")
+        ]
+
+        for (tier, expectedLabel) in expectedLabels {
+            XCTAssertEqual(
+                SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: tier.bpsDiscount),
+                expectedLabel
+            )
+        }
+        XCTAssertEqual(
+            SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: 5),
+            "Referral: 0.05%"
+        )
+    }
+
     func testGoldGrossFeeAddsDiscountBackToNet() {
         let btc = makeCoin(.bitcoin, ticker: "BTCGOLD", decimals: 8, isNative: true)
         setPrice(1000, for: btc)
