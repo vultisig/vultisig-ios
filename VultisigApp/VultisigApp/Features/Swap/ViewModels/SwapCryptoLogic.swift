@@ -679,11 +679,11 @@ enum SwapCryptoLogic {
 
     static func vultDiscountLabel(vultDiscountBps: Int) -> String {
         guard let tier = VultDiscountTier.from(bpsDiscount: vultDiscountBps) else {
-            return "VULT: \(vultDiscountBps)%"
+            return String(format: "swapVultDiscountFallback".localized, vultDiscountBps)
         }
         let percentage = tier == .ultimate ? 100 : tier.bpsDiscount
         return String(
-            format: "swap.vult_discount".localized,
+            format: "swapVultDiscount".localized,
             tier.name.localized,
             percentage
         )
@@ -691,7 +691,7 @@ enum SwapCryptoLogic {
 
     static func referralDiscountLabel(referralDiscountBps: Int) -> String {
         String(
-            format: "swap.referral_discount".localized,
+            format: "swapReferralDiscount".localized,
             SwapSlippage.format(bps: referralDiscountBps)
         )
     }

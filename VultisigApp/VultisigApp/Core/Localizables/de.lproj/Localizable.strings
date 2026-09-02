@@ -1492,7 +1492,6 @@
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
 "swap" = "Tausch";
-"swap.applied_discounts" = "Angewandte Rabatte:";
 "swap.duration.instant" = "Sofort";
 "swap.included_in_rate" = "im angebotenen Kurs enthalten";
 "swap.outbound_fee" = "Ausgangsgebühr";
@@ -1501,15 +1500,14 @@
 "swap.price_impact.good" = "Gut";
 "swap.price_impact.high" = "Hoch";
 "swap.protocol_fee" = "Protokollgebühr";
-"swap.referral_discount" = "Empfehlung: %@";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Markt";
-"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% Erlass)";
 "swapAdvancedSettingsLockedSubtitle" = "Feinabstimmung von Slippage, Gas, Routing und Empfänger für jeden Swap.";
 "swapAdvancedSettingsLockedTitle" = "Erweiterte Swap-Einstellungen";
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
+"swapAppliedDiscounts" = "Angewandte Rabatte:";
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
 "swapErrorAmountTooSmallTitle" = "Betrag zu klein";
 "swapErrorInboundAddressDescription" = "Die Eingangsadresse ist ungültig. Bitte versuchen Sie es erneut.";
@@ -1558,6 +1556,7 @@
 "swapOverview" = "Tauschübersicht";
 "swapRecipientRouteNotAvailable" = "Für dieses Paar ist keine Route zu einem externen Empfänger verfügbar. Entfernen Sie den Empfänger oder wählen Sie ein anderes Paar.";
 "swapRecipientVerificationFailed" = "Es konnte nicht bestätigt werden, dass der Swap an den gewählten Empfänger geht; er wurde vor dem Signieren gestoppt. Bitte versuchen Sie es erneut.";
+"swapReferralDiscount" = "Empfehlung: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swaps" = "Swaps";
@@ -1570,6 +1569,8 @@
 "swapVerifyCheckbox1Description" = "Der Tauschbetrag ist korrekt";
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalten werde";
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Genehmigung für den genauen Tauschbetrag zu erteilen";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "Kein lokaler Modus gewünscht? Zurückwechseln.";
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";

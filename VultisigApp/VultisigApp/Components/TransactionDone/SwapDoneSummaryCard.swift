@@ -282,7 +282,7 @@ struct SwapDoneSummaryCard: View {
 
     private func appliedDiscounts(_ transaction: SwapTransaction) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("swap.applied_discounts".localized)
+            Text("swapAppliedDiscounts".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .padding(.vertical, 8)

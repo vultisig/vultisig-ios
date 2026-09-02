@@ -1492,7 +1492,6 @@
 "support" = "Suporte";
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak, .vult & .zip";
 "swap" = "Troca";
-"swap.applied_discounts" = "Descontos aplicados:";
 "swap.duration.instant" = "Instantâneo";
 "swap.included_in_rate" = "incluída na taxa cotada";
 "swap.outbound_fee" = "Taxa de Saída";
@@ -1501,15 +1500,14 @@
 "swap.price_impact.good" = "Bom";
 "swap.price_impact.high" = "Alto";
 "swap.protocol_fee" = "Taxa de protocolo";
-"swap.referral_discount" = "Indicação: %@";
 "swap.tab.limit" = "Limite";
 "swap.tab.market" = "Mercado";
-"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% isento)";
 "swapAdvancedSettingsLockedSubtitle" = "Ajuste slippage, gas, rota e destinatário em cada swap.";
 "swapAdvancedSettingsLockedTitle" = "Configurações avançadas de swap";
 "swapAmountTooSmall" = "Valor da troca muito pequeno";
 "swapAmountTooSmallRecommended" = "Valor da troca muito pequeno. Valor recomendado %@";
+"swapAppliedDiscounts" = "Descontos aplicados:";
 "swapErrorAmountTooSmallDescription" = "O valor da troca é muito pequeno. Por favor, aumente o valor.";
 "swapErrorAmountTooSmallTitle" = "Valor Muito Pequeno";
 "swapErrorInboundAddressDescription" = "O endereço de entrada é inválido. Por favor, tente novamente.";
@@ -1558,6 +1556,7 @@
 "swapOverview" = "Visão geral da troca";
 "swapRecipientRouteNotAvailable" = "Nenhuma rota para um destinatário externo está disponível para este par. Remova o destinatário ou escolha outro par.";
 "swapRecipientVerificationFailed" = "Não foi possível confirmar que a troca seria entregue ao destinatário escolhido e ela foi interrompida antes da assinatura. Tente novamente.";
+"swapReferralDiscount" = "Indicação: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";
@@ -1570,6 +1569,8 @@
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
 "swapVerifyCheckbox3Description" = "Concordo em fornecer permissão ERC20 para o valor exato da troca";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "Não quer usar o modo local? Voltar.";
 "switchToLocalMode" = "Mudar para modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";

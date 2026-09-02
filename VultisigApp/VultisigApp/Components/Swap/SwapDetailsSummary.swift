@@ -164,7 +164,7 @@ struct SwapDetailsSummary: View {
 
     var appliedDiscounts: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("swap.applied_discounts".localized)
+            Text("swapAppliedDiscounts".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
 

@@ -110,6 +110,10 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             )
         }
         XCTAssertEqual(
+            SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: 15),
+            "VULT: 15%"
+        )
+        XCTAssertEqual(
             SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: 5),
             "Referral: 0.05%"
         )

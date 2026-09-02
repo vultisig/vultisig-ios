@@ -1492,7 +1492,6 @@
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
-"swap.applied_discounts" = "Primijenjeni popusti:";
 "swap.duration.instant" = "Trenutno";
 "swap.included_in_rate" = "uključeno u ponuđeni tečaj";
 "swap.outbound_fee" = "Izlazna naknada";
@@ -1501,15 +1500,14 @@
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
 "swap.protocol_fee" = "Naknada protokola";
-"swap.referral_discount" = "Preporuka: %@";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Tržište";
-"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% oslobođenje)";
 "swapAdvancedSettingsLockedSubtitle" = "Precizno podesite slippage, gas, rutu i primatelja za svaku zamjenu.";
 "swapAdvancedSettingsLockedTitle" = "Napredne postavke zamjene";
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
+"swapAppliedDiscounts" = "Primijenjeni popusti:";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorAmountTooSmallTitle" = "Iznos Premali";
 "swapErrorInboundAddressDescription" = "Ulazna adresa je nevažeća. Molimo pokušajte ponovo.";
@@ -1558,6 +1556,7 @@
 "swapOverview" = "Pregled zamjene";
 "swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
 "swapRecipientVerificationFailed" = "Nije se moglo potvrditi da će zamjena biti isporučena odabranom primatelju te je zaustavljena prije potpisivanja. Pokušajte ponovno.";
+"swapReferralDiscount" = "Preporuka: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
@@ -1570,6 +1569,8 @@
 "swapVerifyCheckbox1Description" = "Iznos zamjene je točan";
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dopuštenje za točan iznos zamjene";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";

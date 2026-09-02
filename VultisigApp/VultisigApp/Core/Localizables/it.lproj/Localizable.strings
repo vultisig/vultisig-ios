@@ -1492,7 +1492,6 @@
 "support" = "Supporto";
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";
 "swap" = "Scambio";
-"swap.applied_discounts" = "Sconti applicati:";
 "swap.duration.instant" = "Istantaneo";
 "swap.included_in_rate" = "incluso nel tasso quotato";
 "swap.outbound_fee" = "Commissione in Uscita";
@@ -1501,15 +1500,14 @@
 "swap.price_impact.good" = "Buono";
 "swap.price_impact.high" = "Alto";
 "swap.protocol_fee" = "Commissione di protocollo";
-"swap.referral_discount" = "Referral: %@";
 "swap.tab.limit" = "Limite";
 "swap.tab.market" = "Mercato";
-"swap.vult_discount" = "VULT %@: %d%%";
 "swap.vult_waiver" = "VULT (100% esenzione)";
 "swapAdvancedSettingsLockedSubtitle" = "Regola slippage, gas, percorso e destinatario per ogni swap.";
 "swapAdvancedSettingsLockedTitle" = "Impostazioni avanzate dello swap";
 "swapAmountTooSmall" = "Importo dello scambio troppo piccolo";
 "swapAmountTooSmallRecommended" = "Importo dello scambio troppo piccolo. Importo raccomandato %@";
+"swapAppliedDiscounts" = "Sconti applicati:";
 "swapErrorAmountTooSmallDescription" = "L'importo dello scambio è troppo piccolo. Per favore aumenta l'importo.";
 "swapErrorAmountTooSmallTitle" = "Importo Troppo Piccolo";
 "swapErrorInboundAddressDescription" = "L'indirizzo in entrata non è valido. Per favore riprova.";
@@ -1558,6 +1556,7 @@
 "swapOverview" = "Panoramica dello scambio";
 "swapRecipientRouteNotAvailable" = "Nessun percorso verso un destinatario esterno è disponibile per questa coppia. Rimuovi il destinatario o scegli un'altra coppia.";
 "swapRecipientVerificationFailed" = "Non è stato possibile confermare che lo swap venga consegnato al destinatario scelto ed è stato interrotto prima della firma. Riprova.";
+"swapReferralDiscount" = "Referral: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
@@ -1570,6 +1569,8 @@
 "swapVerifyCheckbox1Description" = "L'importo dello scambio è corretto";
 "swapVerifyCheckbox2Description" = "Accetto l'importo minimo che riceverò";
 "swapVerifyCheckbox3Description" = "Accetto di fornire l'autorizzazione ERC20 per l'importo esatto dello scambio";
+"swapVultDiscount" = "VULT %@: %d%%";
+"swapVultDiscountFallback" = "VULT: %d%%";
 "switchBackToInternetMode" = "Non vuoi usare la modalità locale? Torna indietro.";
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";

@@ -441,7 +441,7 @@ struct SwapVerifyScreen: View {
 
     private var appliedDiscountsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("swap.applied_discounts".localized)
+            Text("swapAppliedDiscounts".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
 
