@@ -153,6 +153,27 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(amount, BigInt("2000000000"))
     }
 
+    func testParseSolanaTransferRecognizesNativeSolFromDiffAssetType() {
+        let asset = BlockaidSolanaSimulationJson.Asset(
+            type: nil,
+            name: "Solana",
+            symbol: "SOL",
+            address: nil,
+            decimals: 9,
+            logo: nil
+        )
+        let info = BlockaidSimulationParser.parseSolana(
+            response: response(with: [diff(asset: asset, assetType: "SOL", out: balance("2000000000"))])
+        )
+
+        guard case let .transfer(coin, amount) = info else {
+            return XCTFail("expected native SOL transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(coin.address, BlockaidSimulationParser.wrappedSolMint)
+        XCTAssertEqual(amount, BigInt("2000000000"))
+    }
+
     /// Native SOL must render the chain's own logo, not the wrapped-SOL
     /// (WSOL) metadata that `TokensStore` returns for the wrapped-SOL mint,
     /// and not the Blockaid per-request CDN URL (which isn't hot-linkable).
@@ -221,10 +242,10 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(toAmount, BigInt("5000000000"))
     }
 
-    /// When Blockaid returns three diffs and one is native SOL, the parser
-    /// filters the SOL diff (treated as tx fee) and parses the remaining two as
-    /// a swap. Regression guard for parity with `parseBlockaidSolanaSimulation`.
-    func test_parseSolana_swap_withNativeSolFee_filtersSolDiff() {
+    /// The response does not identify which outflow is the transaction fee.
+    /// Dropping the smaller/native leg by shape or magnitude could instead
+    /// hide a real principal spend, so two net outflows fail closed.
+    func testParseSolanaThreeDiffsWithTwoNetOutflowsReturnsNil() {
         let usdc = token(symbol: "USDC", address: "Usdc1111", decimals: 6)
         let bonk = token(symbol: "BONK", address: "Bonk1111", decimals: 5)
         let sol = native(symbol: "SOL", decimals: 9)
@@ -234,13 +255,80 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
             diff(asset: sol, out: balance("5000")), // fee leg
             diff(asset: bonk, in: balance("5000000000"))
         ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
+    /// A wrapped-SOL withdrawal can report native SOL in, a WSOL residual out,
+    /// and a receipt token out. Native SOL and WSOL must net together; deleting
+    /// the native leg would reverse the approval direction into a WSOL send.
+    func testParseSolanaThreeDiffWithdrawKeepsNativeSolAsDestination() {
+        let receipt = token(symbol: "kSOL", address: "ReceiptMint1111", decimals: 6)
+        let diffs = [
+            diff(asset: native(symbol: "SOL", decimals: 9), in: balance("61474280")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                out: balance("2039280")
+            ),
+            diff(asset: receipt, out: balance("50000000"))
+        ]
+
         let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
 
-        guard case let .swap(fromCoin, toCoin, _, _) = info else {
-            return XCTFail("expected .swap after SOL-fee filter, got \(String(describing: info))")
+        guard case let .swap(fromCoin, toCoin, fromAmount, toAmount) = info else {
+            return XCTFail("expected receipt-to-SOL swap, got \(String(describing: info))")
         }
-        XCTAssertEqual(fromCoin.ticker, "USDC")
-        XCTAssertEqual(toCoin.ticker, "BONK")
+        XCTAssertEqual(fromCoin.ticker, "kSOL")
+        XCTAssertEqual(toCoin.ticker, "SOL")
+        XCTAssertEqual(fromAmount, BigInt("50000000"))
+        XCTAssertEqual(toAmount, BigInt("59435000"), "61474280 in - 2039280 out")
+    }
+
+    /// The reverse shape is a deposit: native SOL out, a WSOL residual in, and
+    /// the receipt token in. The same complete netting must preserve the actual
+    /// destination while removing only same-mint wrapping noise.
+    func testParseSolanaThreeDiffDepositKeepsReceiptAsDestination() {
+        let receipt = token(symbol: "kSOL", address: "ReceiptMint1111", decimals: 6)
+        let diffs = [
+            diff(asset: receipt, in: balance("50000000")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                in: balance("2039280")
+            ),
+            diff(asset: native(symbol: "SOL", decimals: 9), out: balance("61474280"))
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .swap(fromCoin, toCoin, fromAmount, toAmount) = info else {
+            return XCTFail("expected SOL-to-receipt swap, got \(String(describing: info))")
+        }
+        XCTAssertEqual(fromCoin.ticker, "SOL")
+        XCTAssertEqual(toCoin.ticker, "kSOL")
+        XCTAssertEqual(fromAmount, BigInt("59435000"), "61474280 out - 2039280 in")
+        XCTAssertEqual(toAmount, BigInt("50000000"))
+    }
+
+    func testParseSolanaThreeDiffWithdrawIsIndependentOfDiffOrder() {
+        let receipt = token(symbol: "kSOL", address: "ReceiptMint1111", decimals: 6)
+        let diffs = [
+            diff(asset: receipt, out: balance("50000000")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                out: balance("2039280")
+            ),
+            diff(asset: native(symbol: "SOL", decimals: 9), in: balance("61474280"))
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .swap(fromCoin, toCoin, fromAmount, toAmount) = info else {
+            return XCTFail("expected receipt-to-SOL swap, got \(String(describing: info))")
+        }
+        XCTAssertEqual(fromCoin.ticker, "kSOL")
+        XCTAssertEqual(toCoin.ticker, "SOL")
+        XCTAssertEqual(fromAmount, BigInt("50000000"))
+        XCTAssertEqual(toAmount, BigInt("59435000"))
     }
 
     /// A genuine swap out of native SOL must survive the same-mint netting:
@@ -357,10 +445,10 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
     }
 
-    /// The three-diff native-SOL fee filter runs first, so a same-mint pair can
-    /// still be what is left afterwards — here two wSOL accounts either side of
-    /// a separate native-SOL fee leg. The netting must apply to the survivors.
-    func test_parseSolana_threeDiffs_afterSolFeeFilter_netsSameMintPair() {
+    /// Every same-mint leg participates in the total, including a native-SOL
+    /// outflow. This avoids silently treating a small principal movement as a
+    /// fee while preserving the canonical SOL/WSOL net.
+    func testParseSolanaThreeDiffsNetEverySameMintLeg() {
         let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
         let diffs = [
             diff(asset: wsol, out: balance("5000000")),
@@ -373,8 +461,8 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         guard case let .transfer(coin, amount) = info else {
             return XCTFail("expected netted .transfer, got \(String(describing: info))")
         }
-        XCTAssertEqual(coin.ticker, "WSOL")
-        XCTAssertEqual(amount, BigInt("4000000"), "5000000 out - 1000000 in")
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(amount, BigInt("4005000"), "5000000 + 5000 out - 1000000 in")
     }
 
     /// `raw_value` decodes a signed integer even though Blockaid states each
@@ -413,18 +501,24 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(amount, BigInt("3000000"), "5000000 out - 2000000 in")
     }
 
-    /// The same collapse, but the skipped diff spends a second asset. Netting
-    /// here would headline an authoritative inflow while never looking at the
-    /// USDC leaving, so the parser declines and the caller falls back to the
-    /// generic title.
-    func test_parseSolana_sameMint_collapsedSources_returnsNil_whenOtherDiffCarriesBalance() {
+    /// Complete aggregation accounts for both the same-mint net inflow and the
+    /// second asset outflow, so the result is an honest USDC-to-WSOL swap.
+    func testParseSolanaSameMintNetAndOtherSpendBecomeSwap() {
         let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
         let diffs = [
             diff(asset: wsol, in: balance("61474280"), out: balance("2039280")),
             diff(asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6), out: balance("100000000"))
         ]
 
-        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .swap(fromCoin, toCoin, fromAmount, toAmount) = info else {
+            return XCTFail("expected USDC-to-WSOL swap, got \(String(describing: info))")
+        }
+        XCTAssertEqual(fromCoin.ticker, "USDC")
+        XCTAssertEqual(toCoin.ticker, "WSOL")
+        XCTAssertEqual(fromAmount, BigInt("100000000"))
+        XCTAssertEqual(toAmount, BigInt("59435000"))
     }
 
     /// An explicit zero leg moves nothing, so it is not a balance change the
@@ -499,13 +593,9 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
     }
 
-    /// The legs need not collapse onto one diff for a leg to go unread. Here
-    /// the netting takes its out side from the SOL diff and its in side from
-    /// the WSOL diff, so the WSOL diff's own out leg is never looked at: the
-    /// hero would headline 57395720 (59435000 - 2039280) when the true net is
-    /// 57895720, understating what leaves the vault by the ignored 500000.
-    /// Decline instead.
-    func testParseSolanaSameMintDistinctSourcesReturnsNilWhenInSourceAlsoSpends() {
+    /// Both sides of every diff participate in the group total. The extra WSOL
+    /// outflow therefore increases the displayed net instead of being ignored.
+    func testParseSolanaSameMintDistinctSourcesIncludesInSourceOutflow() {
         let diffs = [
             diff(asset: native(symbol: "SOL", decimals: 9), out: balance("59435000")),
             diff(
@@ -515,13 +605,17 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
             )
         ]
 
-        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .transfer(coin, amount) = info else {
+            return XCTFail("expected complete net transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(amount, BigInt("57895720"), "59435000 + 500000 out - 2039280 in")
     }
 
-    /// The mirror: the out-side diff carries an in leg of its own, which the
-    /// netting drops because the in side is taken from the other diff. The
-    /// same understatement, in the receive direction.
-    func testParseSolanaSameMintDistinctSourcesReturnsNilWhenOutSourceAlsoReceives() {
+    /// The mirror includes the extra incoming leg in the receive total.
+    func testParseSolanaSameMintDistinctSourcesIncludesOutSourceInflow() {
         let diffs = [
             diff(
                 asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
@@ -529,6 +623,33 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
                 out: balance("2039280")
             ),
             diff(asset: native(symbol: "SOL", decimals: 9), in: balance("61474280"))
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .receive(coin, amount) = info else {
+            return XCTFail("expected complete net receive, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(amount, BigInt("59935000"), "61474280 + 500000 in - 2039280 out")
+    }
+
+    func testParseSolanaSameMintWithInconsistentDecimalsReturnsNil() {
+        let diffs = [
+            diff(asset: native(symbol: "SOL", decimals: 9), out: balance("59435000")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 8),
+                in: balance("2039280")
+            )
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
+    func testParseSolanaMultipleDistinctNetSpendsReturnNil() {
+        let diffs = [
+            diff(asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6), out: balance("1000000")),
+            diff(asset: token(symbol: "BONK", address: "Bonk1111", decimals: 5), out: balance("500000"))
         ]
 
         XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
@@ -572,12 +693,13 @@ private extension BlockaidSolanaSimulationParserTests {
 
     func diff(
         asset: BlockaidSolanaSimulationJson.Asset,
+        assetType: String? = nil,
         in inBalance: BlockaidSolanaSimulationJson.BalanceChange? = nil,
         out: BlockaidSolanaSimulationJson.BalanceChange? = nil
     ) -> BlockaidSolanaSimulationJson.AccountAssetDiff {
         BlockaidSolanaSimulationJson.AccountAssetDiff(
             asset: asset,
-            assetType: asset.type,
+            assetType: assetType ?? asset.type,
             in: inBalance,
             out: out
         )
