@@ -627,17 +627,40 @@ extension VSTronTransferAssetContractPayload: @retroactive Codable {
     }
 }
 
+extension VSCardanoTokenAsset: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case policyID = "policy_id"
+        case assetNameHex = "asset_name_hex"
+        case amount
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(policyID, forKey: .policyID)
+        try container.encode(assetNameHex, forKey: .assetNameHex)
+        try container.encode(amount, forKey: .amount)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        policyID = try container.decode(String.self, forKey: .policyID)
+        assetNameHex = try container.decode(String.self, forKey: .assetNameHex)
+        amount = try container.decode(String.self, forKey: .amount)
+    }
+}
+
 extension VSUtxoInfo: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case hash
         case amount
         case index
+        case cardanoTokens = "cardano_tokens"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(hash, forKey: .hash)
         try container.encode(amount, forKey: .amount)
         try container.encode(index, forKey: .index)
+        try container.encode(cardanoTokens, forKey: .cardanoTokens)
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -645,6 +668,7 @@ extension VSUtxoInfo: @retroactive Codable {
         hash = try container.decode(String.self, forKey: .hash)
         amount = try container.decode(Int64.self, forKey: .amount)
         index = try container.decode(UInt32.self, forKey: .index)
+        cardanoTokens = try container.decodeIfPresent([VSCardanoTokenAsset].self, forKey: .cardanoTokens) ?? []
     }
 }
 

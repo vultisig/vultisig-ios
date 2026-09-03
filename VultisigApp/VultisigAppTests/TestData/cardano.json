@@ -68,5 +68,48 @@
       "lib_type": "DKLS"
     },
     "expected_image_hash": ["c2a0b05a7a8cc1746555b54d136810f10d4c1609c6897f70a009a1807fc7c9b9"]
+  },
+  {
+    "name": "Send SNEK - native token",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Cardano",
+        "ticker": "SNEK",
+        "address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+        "decimals": 0,
+        "price_provider_id": "snek",
+        "contract_address": "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f.534e454b",
+        "is_native_token": false,
+        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+        "logo": "snek.png"
+      },
+      "to_address": "addr1v9g9wnzsutrxt7vcg4efdfwhagwh3x2f6hjwykk7acdpsfgyt4h2j",
+      "to_amount": "1000000",
+      "BlockchainSpecific": {
+        "Cardano": {
+          "byte_fee": 200000,
+          "send_max_amount": false,
+          "ttl": 190000000
+        }
+      },
+      "utxo_info": [
+        {
+          "hash": "f074134aabbfb13b8aec7cf5465b1e5a862d1cadc175d431c1d9339150db8a1d",
+          "amount": 10000000,
+          "index": 0,
+          "cardano_tokens": [
+            {
+              "policy_id": "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f",
+              "asset_name_hex": "534e454b",
+              "amount": "2500000"
+            }
+          ]
+        }
+      ],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["5ad62be071e80c4e617487831d35be6f1fc0fff46aeca43b41164ccc36190c8a"]
   }
 ]
