@@ -403,6 +403,8 @@ final class DKLSKeysign {
                 self.signatures[messageToSign] = resp
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.

@@ -289,6 +289,8 @@ final class DilithiumKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {

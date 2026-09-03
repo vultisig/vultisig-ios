@@ -485,6 +485,8 @@ final class DKLSKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
@@ -658,6 +660,8 @@ final class DKLSKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to reshare key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry

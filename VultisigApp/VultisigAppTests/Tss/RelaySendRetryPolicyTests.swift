@@ -62,4 +62,28 @@ final class RelaySendRetryPolicyTests: XCTestCase {
             XCTAssertEqual(TssRelayAPI(baseURL: base, endpoint: endpoint).timeoutInterval, 60, "\(endpoint)")
         }
     }
+
+    func testKeygenKickoffCanOptIntoShortTimeoutWhileSessionRequestsDefaultToSixtySeconds() {
+        let base = URL(string: "https://relay.example.com")!
+        let start = RelayServerAPI.Endpoint.startSession(sessionID: "s", body: Data())
+
+        XCTAssertEqual(
+            RelayServerAPI(
+                baseURL: base,
+                endpoint: start,
+                timeoutInterval: RelaySendRetryPolicy.requestTimeout
+            ).timeoutInterval,
+            RelaySendRetryPolicy.requestTimeout
+        )
+
+        let defaults: [RelayServerAPI.Endpoint] = [
+            .getParticipants(sessionID: "s"),
+            .registerAsParticipant(sessionID: "s", body: Data()),
+            start,
+            .pollSessionStart(sessionID: "s")
+        ]
+        for endpoint in defaults {
+            XCTAssertEqual(RelayServerAPI(baseURL: base, endpoint: endpoint).timeoutInterval, 60, "\(endpoint)")
+        }
+    }
 }

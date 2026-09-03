@@ -384,6 +384,8 @@ final class SchnorrKeysign {
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
                 self.signatures[messageToSign] = resp
             }
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.

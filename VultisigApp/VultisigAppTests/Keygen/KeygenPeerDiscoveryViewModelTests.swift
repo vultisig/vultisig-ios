@@ -126,6 +126,12 @@ final class KeygenPeerDiscoveryViewModelTests: XCTestCase {
         }
     }
 
+    private func waitForKickoffRequest(_ http: KickoffHTTPClient) async {
+        for _ in 0..<500 where http.kickoffs.isEmpty {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
     func testStartKeygenAwaitsTheKickoffThenEntersKeygen() async {
         let http = KickoffHTTPClient()
         let vm = makeKickoffVM(http: http)
@@ -203,6 +209,8 @@ final class KeygenPeerDiscoveryViewModelTests: XCTestCase {
         let vm = makeKickoffVM(http: http)
 
         vm.startKeygen()
+        await waitForKickoffRequest(http)
+        XCTAssertEqual(http.kickoffs.count, 1)
         vm.cancelKickoff()
         await waitForKickoff(vm)
 
@@ -236,12 +244,19 @@ private final class KickoffHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     var result: Result<Void, Error> = .success(())
     var delay: Duration = .zero
-    private(set) var kickoffs: [Kickoff] = []
+    private let lock = NSLock()
+    private var recordedKickoffs: [Kickoff] = []
+
+    var kickoffs: [Kickoff] {
+        lock.withLock { recordedKickoffs }
+    }
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         if let relay = target as? RelayServerAPI, case .startSession(let sessionID, let body) = relay.endpoint {
             let participants = (try? JSONDecoder().decode([String].self, from: body)) ?? []
-            kickoffs.append(Kickoff(sessionID: sessionID, participants: participants))
+            lock.withLock {
+                recordedKickoffs.append(Kickoff(sessionID: sessionID, participants: participants))
+            }
         }
         if delay > .zero {
             try await Task.sleep(for: delay)

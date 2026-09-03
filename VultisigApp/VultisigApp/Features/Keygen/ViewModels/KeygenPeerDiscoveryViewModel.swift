@@ -396,7 +396,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         let body = try JSONEncoder().encode(participants)
         _ = try await httpClient.request(RelayServerAPI(
             baseURL: baseURL,
-            endpoint: .startSession(sessionID: sessionID, body: body)
+            endpoint: .startSession(sessionID: sessionID, body: body),
+            timeoutInterval: RelaySendRetryPolicy.requestTimeout
         ))
         logger.info("kicked off keygen, session:\(self.sessionID, privacy: .public), participants:\(participants.count)")
     }
