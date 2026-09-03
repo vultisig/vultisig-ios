@@ -18,7 +18,7 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    increment_build_number(build_number:"72",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"73",xcodeproj: "VultisigApp.xcodeproj")
     build_app(scheme: "VultisigApp",
               destination: "generic/platform=iOS",
               xcargs: "-allowProvisioningUpdates")
@@ -33,12 +33,13 @@ end
 platform :mac do
   desc "Build the macOS app and package it into a .dmg file"
   lane :build do
-    increment_build_number(build_number:"72",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"73",xcodeproj: "VultisigApp.xcodeproj")
     build_mac_app(scheme: "VultisigApp",
               destination: "generic/platform=macOS",
               export_team_id: ENV['APPLE_TEAM_ID'],
               configuration: "Release",
-              export_method: "app-store")
+              export_method: "app-store",
+              xcargs: "-allowProvisioningUpdates")
     
   end
   lane :upload do
@@ -57,13 +58,14 @@ platform :mac do
               export_team_id: ENV['APPLE_TEAM_ID'],
               output_directory: "./pkgroot/Applications",
               include_symbols: false,
+              xcargs: "-allowProvisioningUpdates",
               clean: true,
               skip_package_pkg: false)
 
     # remove the dSYM file
     sh "rm -f ../pkgroot/Applications/VultisigApp.app.dSYM.zip"
 
-    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.45.72' --install-location / '../VultisigApp.pkg'"
+    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.46.73' --install-location / '../VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
