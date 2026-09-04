@@ -54,6 +54,7 @@ enum RelaySendError: Error, LocalizedError {
     case invalidMessage(String)
     case rejected(status: Int)
     case exhausted(attempts: Int, lastError: Error)
+    case ceremonyDeadlineExceeded
 
     var errorDescription: String? {
         switch self {
@@ -63,6 +64,8 @@ enum RelaySendError: Error, LocalizedError {
             return "relay rejected message, status: \(status)"
         case .exhausted(let attempts, let lastError):
             return "fail to send message after \(attempts) attempts: \(lastError.localizedDescription)"
+        case .ceremonyDeadlineExceeded:
+            return "timeout: ceremony deadline exceeded while sending relay message"
         }
     }
 }

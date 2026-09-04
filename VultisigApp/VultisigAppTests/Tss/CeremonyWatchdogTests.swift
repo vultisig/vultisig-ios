@@ -1,5 +1,5 @@
 //
-//  CeremonyStallClockTests.swift
+//  CeremonyWatchdogTests.swift
 //  VultisigAppTests
 //
 
@@ -8,7 +8,7 @@ import godkls
 import XCTest
 
 @MainActor
-final class CeremonyStallClockTests: XCTestCase {
+final class CeremonyWatchdogTests: XCTestCase {
 
     private final class FakeClock {
         private(set) var instant = ContinuousClock.now
@@ -18,47 +18,86 @@ final class CeremonyStallClockTests: XCTestCase {
         }
     }
 
-    func testIdleUnderTheLimitIsNotStalled() {
+    func testPeerWaitUnderTheLimitDoesNotExpire() throws {
         let fake = FakeClock()
-        let clock = CeremonyStallClock { fake.instant }
+        let watchdog = CeremonyWatchdog(now: { fake.instant })
         fake.advance(.seconds(59))
-        XCTAssertFalse(clock.isStalled)
+        XCTAssertNoThrow(try watchdog.checkExpired())
     }
 
-    func testIdleOverTheLimitIsStalled() {
+    func testPeerWaitExpiresAfterTheLimit() {
         let fake = FakeClock()
-        let clock = CeremonyStallClock { fake.instant }
+        let watchdog = CeremonyWatchdog(now: { fake.instant })
         fake.advance(.seconds(61))
-        XCTAssertTrue(clock.isStalled)
+        XCTAssertThrowsError(try watchdog.checkExpired()) { error in
+            XCTAssertEqual(error as? CeremonyTimeoutError, .peerUnresponsive)
+        }
     }
 
-    func testProgressRestartsTheWait() {
+    func testBeginningANewPeerWaitRestartsOnlyTheIdleWindow() throws {
         let fake = FakeClock()
-        var clock = CeremonyStallClock { fake.instant }
+        var watchdog = CeremonyWatchdog(now: { fake.instant })
         fake.advance(.seconds(50))
-        clock.markProgress()
+        watchdog.beginWaitingForPeer()
         fake.advance(.seconds(50))
-        XCTAssertFalse(clock.isStalled)
+        XCTAssertNoThrow(try watchdog.checkExpired())
         fake.advance(.seconds(11))
-        XCTAssertTrue(clock.isStalled)
+        XCTAssertThrowsError(try watchdog.checkExpired()) { error in
+            XCTAssertEqual(error as? CeremonyTimeoutError, .peerUnresponsive)
+        }
     }
 
-    func testResetClearsTheElapsedTime() {
+    func testNewAttemptsNeverMoveTheHardDeadline() {
         let fake = FakeClock()
-        var clock = CeremonyStallClock { fake.instant }
-        fake.advance(.seconds(61))
-        XCTAssertTrue(clock.isStalled)
-        clock.reset()
-        XCTAssertFalse(clock.isStalled)
+        var watchdog = CeremonyWatchdog(
+            peerWaitLimit: .seconds(60),
+            hardLimit: .seconds(240),
+            now: { fake.instant }
+        )
+
+        for _ in 0..<4 {
+            fake.advance(.seconds(59))
+            watchdog.beginAttempt()
+        }
+        fake.advance(.seconds(5))
+
+        XCTAssertThrowsError(try watchdog.checkExpired()) { error in
+            XCTAssertEqual(error as? CeremonyTimeoutError, .overallDeadlineExceeded)
+        }
     }
 
-    func testDefaultLimitIsSixtySeconds() {
-        XCTAssertEqual(CeremonyStallClock.defaultLimit, .seconds(60))
-        XCTAssertEqual(CeremonyStallClock().limit, CeremonyStallClock.defaultLimit)
+    func testPollBudgetUsesTheEarlierPeerDeadline() throws {
+        let fake = FakeClock()
+        let watchdog = CeremonyWatchdog(now: { fake.instant })
+        fake.advance(.seconds(50))
+
+        let budget = try watchdog.pollRequestBudget()
+
+        XCTAssertEqual(budget.timeoutInterval, 10, accuracy: 0.001)
+        XCTAssertEqual(budget.timeoutError, .peerUnresponsive)
     }
 
-    func testSendRetryBudgetFitsInsideTheStallLimit() {
-        XCTAssertLessThan(RelaySendRetryPolicy.worstCaseBudget, CeremonyStallClock.defaultLimit)
+    func testPollBudgetUsesTheEarlierHardDeadline() throws {
+        let fake = FakeClock()
+        let watchdog = CeremonyWatchdog(
+            peerWaitLimit: .seconds(60),
+            hardLimit: .seconds(20),
+            now: { fake.instant }
+        )
+
+        let budget = try watchdog.pollRequestBudget()
+
+        XCTAssertEqual(budget.timeoutInterval, 20, accuracy: 0.001)
+        XCTAssertEqual(budget.timeoutError, .overallDeadlineExceeded)
+    }
+
+    func testDefaultLimitsPreserveTheRetryEnvelope() {
+        XCTAssertEqual(CeremonyWatchdog.defaultPeerWaitLimit, .seconds(60))
+        XCTAssertEqual(CeremonyWatchdog.defaultHardLimit, .seconds(240))
+        XCTAssertLessThan(
+            RelaySendRetryPolicy.worstCaseBudget,
+            CeremonyWatchdog.defaultPeerWaitLimit
+        )
     }
 
     // MARK: - The poll loops consult the clock
@@ -78,7 +117,10 @@ final class CeremonyStallClockTests: XCTestCase {
             publicKeyECDSA: "ECDSAKey",
             httpClient: EmptyPollingHTTPClient()
         )
-        keysign.stallClock = CeremonyStallClock(limit: .milliseconds(300))
+        keysign.ceremonyWatchdog = CeremonyWatchdog(
+            peerWaitLimit: .milliseconds(300),
+            hardLimit: .seconds(1)
+        )
 
         do {
             _ = try await keysign.pullInboundMessages(handle: godkls.Handle(), messageID: "msg")
@@ -103,7 +145,10 @@ final class CeremonyStallClockTests: XCTestCase {
             localUI: nil,
             httpClient: EmptyPollingHTTPClient()
         )
-        keygen.stallClock = CeremonyStallClock(limit: .milliseconds(300))
+        keygen.ceremonyWatchdog = CeremonyWatchdog(
+            peerWaitLimit: .milliseconds(300),
+            hardLimit: .seconds(1)
+        )
 
         do {
             _ = try await keygen.pullInboundMessages(handle: godkls.Handle())

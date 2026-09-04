@@ -13,8 +13,8 @@ import Mediator
 struct TssRelayAPI: TargetType {
     let baseURL: URL
     let endpoint: Endpoint
-    /// A caller that retries its request opts into a shorter budget; the GG20
-    /// messenger and every poll keep the default.
+    /// Callers opt into a shorter request budget when retry or ceremony
+    /// deadlines require it; otherwise every endpoint keeps this default.
     var timeoutInterval: TimeInterval = Self.defaultTimeout
 
     enum Endpoint {

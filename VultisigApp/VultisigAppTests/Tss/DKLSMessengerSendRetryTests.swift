@@ -135,6 +135,102 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
 
         XCTAssertEqual(http.timeouts, [RelaySendRetryPolicy.requestTimeout])
     }
+
+    func testExpiredCeremonyDeadlinePreventsTheRequest() async {
+        let http = ScriptedHTTPClient()
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        do {
+            try await messenger.send(
+                "a",
+                to: "b",
+                body: "round-1",
+                hardDeadline: ContinuousClock.now
+            )
+            XCTFail("expected the ceremony deadline to stop the send")
+        } catch RelaySendError.ceremonyDeadlineExceeded {
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
+
+        XCTAssertEqual(http.requestCount, 0)
+    }
+
+    func testRequestTimeoutIsClippedToTheCeremonyDeadline() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.send(
+            "a",
+            to: "b",
+            body: "round-1",
+            hardDeadline: ContinuousClock.now.advanced(by: .seconds(4))
+        )
+
+        let timeout = try XCTUnwrap(http.timeouts.first)
+        XCTAssertGreaterThan(timeout, 0)
+        XCTAssertLessThanOrEqual(timeout, 4)
+    }
+
+    func testRetryStopsWhenBackoffWouldCrossTheCeremonyDeadline() async {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.failure(HTTPError.statusCode(503, nil)))
+        let sleeper = RecordingSleeper()
+        let messenger = makeMessenger(http: http, sleeper: sleeper)
+
+        do {
+            try await messenger.send(
+                "a",
+                to: "b",
+                body: "round-1",
+                hardDeadline: ContinuousClock.now.advanced(by: .milliseconds(500))
+            )
+            XCTFail("expected the ceremony deadline to stop retry backoff")
+        } catch RelaySendError.ceremonyDeadlineExceeded {
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
+
+        XCTAssertEqual(http.requestCount, 1)
+        XCTAssertTrue(sleeper.durations.isEmpty)
+    }
+
+    func testSetupUploadTimeoutIsClippedToTheCeremonyDeadline() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.uploadSetupMessage(
+            message: "setup",
+            nil,
+            hardDeadline: ContinuousClock.now.advanced(by: .seconds(4))
+        )
+
+        let timeout = try XCTUnwrap(http.timeouts.first)
+        XCTAssertGreaterThan(timeout, 0)
+        XCTAssertLessThanOrEqual(timeout, 4)
+    }
+
+    func testExpiredCeremonyDeadlineStopsSetupDownloadRetries() async {
+        let http = ScriptedHTTPClient()
+        let sleeper = RecordingSleeper()
+        let messenger = makeMessenger(http: http, sleeper: sleeper)
+
+        do {
+            _ = try await messenger.downloadSetupMessageWithRetry(
+                nil,
+                hardDeadline: ContinuousClock.now
+            )
+            XCTFail("expected the ceremony deadline to stop setup download")
+        } catch RelaySendError.ceremonyDeadlineExceeded {
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
+
+        XCTAssertEqual(http.requestCount, 0)
+        XCTAssertTrue(sleeper.durations.isEmpty)
+    }
 }
 
 private final class RecordingSleeper: @unchecked Sendable {

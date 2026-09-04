@@ -33,7 +33,7 @@ final class SchnorrKeygen {
     let localPartyID: String
     var setupMessage: [UInt8]
     var cache = NSCache<NSString, AnyObject>()
-    var stallClock = CeremonyStallClock()
+    var ceremonyWatchdog = CeremonyWatchdog()
     var keyshare: DKLSKeyshare?
     let publicKeyEdDSA: String
     let localPrivateSecret: String?
@@ -172,8 +172,13 @@ final class SchnorrKeygen {
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public)")
-                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
-                stallClock.markProgress()
+                try await self.messenger.send(
+                    self.localPartyID,
+                    to: receiverString,
+                    body: encodedOutboundMessage,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
 
@@ -186,8 +191,9 @@ final class SchnorrKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        stallClock.reset()
+        ceremonyWatchdog.beginAttempt()
         repeat {
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -196,8 +202,11 @@ final class SchnorrKeygen {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messenger.messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -211,9 +220,7 @@ final class SchnorrKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            if stallClock.isStalled {
-                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -257,14 +264,15 @@ final class SchnorrKeygen {
                 logger.debug("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public) ,sequence_no:\(msg.sequence_no), from: \(msg.from, privacy: .public) , to: \(msg.to, privacy: .public) , size: \(decodedMsg.count) ")
             }
             self.cache.setObject(NSObject(), forKey: key)
-            stallClock.markProgress()
             try await Task.sleep(for: .milliseconds(50))
             try await self.processSchnorrOutboundMessage(handle: handle)
             try await deleteMessageFromServer(hash: msg.hash)
+            try ceremonyWatchdog.checkHardDeadline()
             // local party keygen finished
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -290,7 +298,10 @@ final class SchnorrKeygen {
     /// Setup message routing is independent of exchange message routing (messenger.messageID),
     /// so passing nil downloads from the default namespace where DKLSKeygen uploaded.
     private func downloadSharedSetupMessage() async throws -> [UInt8] {
-        let strSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
+        let strSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+            nil,
+            hardDeadline: ceremonyWatchdog.hardDeadline
+        )
         return Array(base64: strSetupMsg)
     }
 
@@ -330,10 +341,14 @@ final class SchnorrKeygen {
             handler = initiatorHandle
             try await messenger.uploadSetupMessage(
                 message: Data(keygenSetupMsg).base64EncodedString(),
-                keyImportSetupId
+                keyImportSetupId,
+                hardDeadline: ceremonyWatchdog.hardDeadline
             )
         } else {
-            let strSetupMsg = try await messenger.downloadSetupMessageWithRetry(keyImportSetupId)
+            let strSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                keyImportSetupId,
+                hardDeadline: ceremonyWatchdog.hardDeadline
+            )
             let keygenSetupMsg = Array(base64: strSetupMsg)
             self.setupMessage = keygenSetupMsg
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
@@ -406,9 +421,16 @@ final class SchnorrKeygen {
                             throw HelperError.runtimeError("can't import , local private key is empty")
                         }
                         (keygenSetupMsg, handler) = try getKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
-                        try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), keyImportSetupId)
+                        try await messenger.uploadSetupMessage(
+                            message: Data(keygenSetupMsg).base64EncodedString(),
+                            keyImportSetupId,
+                            hardDeadline: ceremonyWatchdog.hardDeadline
+                        )
                     } else {
-                        let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(keyImportSetupId)
+                        let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                            keyImportSetupId,
+                            hardDeadline: ceremonyWatchdog.hardDeadline
+                        )
                         keygenSetupMsg = Array(base64: strReshareSetupMsg)
                         var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
                         let result = schnorr_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
@@ -446,6 +468,8 @@ final class SchnorrKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
         } catch let error as RelaySendError {
             throw error
         } catch {
@@ -561,12 +585,19 @@ final class SchnorrKeygen {
             var reshareSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), setupId)
+                try await messenger.uploadSetupMessage(
+                    message: Data(reshareSetupMsg).base64EncodedString(),
+                    setupId,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
             } else {
                 // download the setup message from relay server
                 // backoff for 500ms so the initiate device will upload the setup message correctly
                 try await Task.sleep(for: .milliseconds(500))
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(setupId)
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                    setupId,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
@@ -607,6 +638,8 @@ final class SchnorrKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
         } catch let error as RelaySendError {
             throw error
         } catch {

@@ -29,7 +29,7 @@ final class DilithiumKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
-    var stallClock = CeremonyStallClock()
+    var ceremonyWatchdog = CeremonyWatchdog()
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
@@ -126,8 +126,13 @@ final class DilithiumKeygen {
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
-                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
-                stallClock.markProgress()
+                try await self.messenger.send(
+                    self.localPartyID,
+                    to: receiverString,
+                    body: encodedOutboundMessage,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
     }
@@ -139,8 +144,9 @@ final class DilithiumKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        stallClock.reset()
+        ceremonyWatchdog.beginAttempt()
         repeat {
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -149,8 +155,11 @@ final class DilithiumKeygen {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messenger.messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -164,9 +173,7 @@ final class DilithiumKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            if stallClock.isStalled {
-                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -204,13 +211,14 @@ final class DilithiumKeygen {
                 logger.debug("successfully applied inbound message to mldsa, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public), from:\(msg.from, privacy: .public), to:\(msg.to, privacy: .public) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
-            stallClock.markProgress()
             try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDilithiumOutboundMessage(handle: handle)
+            try ceremonyWatchdog.checkHardDeadline()
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -239,9 +247,16 @@ final class DilithiumKeygen {
             if self.isInitiateDevice && attempt == 0 {
                 keygenSetupMsg = try getDilithiumSetupMessage()
                 self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), nil)
+                try await messenger.uploadSetupMessage(
+                    message: Data(keygenSetupMsg).base64EncodedString(),
+                    nil,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
             } else {
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                    nil,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -289,6 +304,8 @@ final class DilithiumKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
         } catch let error as RelaySendError {
             throw error
         } catch {
