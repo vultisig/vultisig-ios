@@ -148,7 +148,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .arb: return 1
         case .bittensor: return 1
         case .bsc: return 2
-        case .cardano: return 2
+        case .cardano: return 3
         case .cosmos: return 4
         case .cosmosChainMatrix: return 5
         case .cosmosSdkSignAmino: return 2
