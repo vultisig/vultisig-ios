@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
 "backupSaveButton" = "保存备份";
 "backupSaveCheckbox" = "我了解如何保存此备份";
+"backupSaved" = "备份已保存";
 "backupsDescription" = "您的保险库不是由单个助记词保护，而是由多个设备保护。每个设备都有自己的备份。单个备份无法转移资金。备份仅用于恢复。";
 "backupsDescriptionVault" = "备份是您保险库的核心。每个设备都有自己的备份。单个备份无法转移资金，仅用于恢复。导入并恢复任何丢失的设备";
 "backupsDescriptionVaultHighlight" = "自己的";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "立即备份";
 "passcodeBackupPromptHasBackup" = "我已有备份";
 "passcodeBackupPromptSubtitle" = "密码会使用保存在本设备上的密钥加密您的 key share。如果该密钥丢失，您的 .vult 备份是唯一的恢复途径——密码本身无法找回。";
-"passcodeBackupPromptTitle" = "设置密码前请先备份";
+"passcodeBackupPromptTitle" = "请先备份您的保险库";
 "passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
 "passcodeBiometricEnableFailed" = "无法开启生物识别解锁。密码仍然可用。";
 "passcodeBiometricNotAvailable" = "本设备无法使用生物识别解锁。";

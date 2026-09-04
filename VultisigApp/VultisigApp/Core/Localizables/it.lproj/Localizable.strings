@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";
 "backupSaveButton" = "Salva backup";
 "backupSaveCheckbox" = "Capisco come salvare questo backup";
+"backupSaved" = "Backup salvato";
 "backupsDescription" = "Invece di una singola frase seed, il tuo vault è protetto da più dispositivi. Ogni dispositivo ha il proprio backup. Un backup da solo non può spostare fondi. I backup sono solo per il recupero.";
 "backupsDescriptionVault" = "I backup alimentano il tuo vault. Ogni dispositivo ha il proprio backup. Un backup da solo non può spostare fondi, serve solo per il recupero. Importa e recupera qualsiasi dispositivo perso";
 "backupsDescriptionVaultHighlight" = "proprio";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Fai il backup ora";
 "passcodeBackupPromptHasBackup" = "Ho già un backup";
 "passcodeBackupPromptSubtitle" = "Un codice cifra i tuoi key share con una chiave conservata su questo dispositivo. Se quella chiave va persa, il tuo backup .vult è l'unico modo per recuperarli: il codice stesso non può essere recuperato.";
-"passcodeBackupPromptTitle" = "Fai un backup prima di impostare un codice";
+"passcodeBackupPromptTitle" = "Prima esegui il backup del vault";
 "passcodeBiometricDisableFailed" = "Non è stato possibile disattivare lo sblocco con la biometria. Riprova.";
 "passcodeBiometricEnableFailed" = "Non è stato possibile attivare lo sblocco con la biometria. Il codice continua a funzionare.";
 "passcodeBiometricNotAvailable" = "Questo dispositivo non può usare lo sblocco con la biometria.";

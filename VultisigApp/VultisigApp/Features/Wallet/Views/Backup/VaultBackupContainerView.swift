@@ -16,6 +16,7 @@ struct VaultBackupContainerView<Content: View>: View {
     let tssType: TssType
     let backupType: VaultBackupType
     let isNewVault: Bool
+    let origin: VaultBackupOrigin
     var content: () -> Content
 
     @Environment(\.router) var router
@@ -58,7 +59,14 @@ struct VaultBackupContainerView<Content: View>: View {
 
     func dismissView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if isNewVault && tssType == .Migrate {
+            if origin == .appLockSettings {
+                router.navigateBack { destination in
+                    (destination as? SettingsRoute) == .managePasscode
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    NotificationCenter.default.post(name: .appLockBackupCompleted, object: nil)
+                }
+            } else if isNewVault && tssType == .Migrate {
                 appViewModel.set(selectedVault: backupType.vault)
             } else if isNewVault {
                 router.navigate(to: VaultRoute.backupSuccess(
@@ -70,4 +78,8 @@ struct VaultBackupContainerView<Content: View>: View {
             }
         }
     }
+}
+
+extension Notification.Name {
+    static let appLockBackupCompleted = Notification.Name("appLockBackupCompleted")
 }

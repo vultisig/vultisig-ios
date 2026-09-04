@@ -28,6 +28,7 @@ struct ManagePasscodeScreen: View {
     @State private var activePasscodeFlow: PasscodeFlow?
     @State private var isPasscodeOperationInFlight = false
     @State private var autoLockInterval: AutoLockInterval = .default
+    @State private var bannerText: String?
 
     private let service: PasscodeService
     private let lockService: AppLockService
@@ -64,6 +65,7 @@ struct ManagePasscodeScreen: View {
         }
         .screenTitle("security".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .withBanner(text: $bannerText)
         .crossPlatformSheet(
             isPresented: isPasscodeFlowPresented,
             isDismissable: !isPasscodeOperationInFlight
@@ -115,6 +117,9 @@ struct ManagePasscodeScreen: View {
         .onChange(of: activePasscodeFlow) { _, flow in
             guard flow == nil else { return }
             Task { await refresh() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .appLockBackupCompleted)) { _ in
+            bannerText = "backupSaved".localized
         }
     }
 
@@ -333,7 +338,10 @@ struct ManagePasscodeScreen: View {
                 activePasscodeFlow = .set
                 return
             }
-            router.navigate(to: VaultRoute.backupSelection(vault: vault))
+            router.navigate(to: VaultRoute.backupSelection(
+                vault: vault,
+                origin: .appLockSettings
+            ))
         case .alreadyHasBackup:
             // Taken at face value deliberately: `Vault.isBackedUp` is set by any
             // export or import and never cleared when the vault changes

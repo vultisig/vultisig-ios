@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
 "backupSaveButton" = "Save backup";
 "backupSaveCheckbox" = "I understand how to save this backup";
+"backupSaved" = "Backup saved";
 "backupsDescription" = "Instead of a single seed phrase, your vault is secured by multiple devices. Each device has its own backup. A backup on its own can't move funds. Backups are only for recovery.";
 "backupsDescriptionVault" = "Backups power your vault. Each device has its own backup. A backup alone can't move funds, it's only for recovery. Import and recover any lost device";
 "backupsDescriptionVaultHighlight" = "own";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Back up now";
 "passcodeBackupPromptHasBackup" = "I already have a backup";
 "passcodeBackupPromptSubtitle" = "A passcode encrypts your key shares with a key held on this device. If that key is ever lost, your .vult backup is the only way back — the passcode itself cannot be recovered.";
-"passcodeBackupPromptTitle" = "Back up before you set a passcode";
+"passcodeBackupPromptTitle" = "Back up your vault first";
 "passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
 "passcodeBiometricEnableFailed" = "Biometric unlock could not be turned on. Your passcode still works.";
 "passcodeBiometricNotAvailable" = "This device cannot use biometric unlock.";

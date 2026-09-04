@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
 "backupSaveButton" = "Sicherung speichern";
 "backupSaveCheckbox" = "Ich verstehe, wie ich diese Sicherung speichere";
+"backupSaved" = "Backup gespeichert";
 "backupsDescription" = "Anstelle einer einzelnen Seed-Phrase ist Ihr Tresor durch mehrere Geräte gesichert. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen. Backups sind nur für die Wiederherstellung.";
 "backupsDescriptionVault" = "Backups sind die Grundlage Ihres Tresors. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen, es dient nur der Wiederherstellung. Importieren und stellen Sie jedes verlorene Gerät wieder her";
 "backupsDescriptionVaultHighlight" = "eigenes";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Jetzt sichern";
 "passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
 "passcodeBackupPromptSubtitle" = "Ein Passcode verschlüsselt Ihre Key-Shares mit einem Schlüssel, der auf diesem Gerät liegt. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück – der Passcode selbst lässt sich nicht wiederherstellen.";
-"passcodeBackupPromptTitle" = "Erstellen Sie ein Backup, bevor Sie einen Passcode festlegen";
+"passcodeBackupPromptTitle" = "Sichern Sie zuerst Ihren Tresor";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
 "passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
 "passcodeBiometricNotAvailable" = "Dieses Gerät kann die biometrische Entsperrung nicht verwenden.";

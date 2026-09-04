@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "다른 기기의 볼트 공유를 같은 위치에 저장하지 마세요";
 "backupSaveButton" = "백업 저장";
 "backupSaveCheckbox" = "이 백업을 저장하는 방법을 이해합니다";
+"backupSaved" = "백업이 저장되었습니다";
 "backupsDescription" = "단일 시드 문구 대신 볼트는 여러 기기로 보호됩니다. 각 기기에는 자체 백업이 있습니다. 백업 하나만으로는 자금을 이동할 수 없습니다. 백업은 복구 목적으로만 사용됩니다.";
 "backupsDescriptionVault" = "백업이 볼트를 지원합니다. 각 기기에는 자체 백업이 있습니다. 백업만으로는 자금을 이동할 수 없으며 복구 목적으로만 사용됩니다. 분실된 기기를 가져와 복구하세요";
 "backupsDescriptionVaultHighlight" = "자체";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "지금 백업";
 "passcodeBackupPromptHasBackup" = "이미 백업이 있습니다";
 "passcodeBackupPromptSubtitle" = "패스코드는 이 기기에 보관된 키로 키 셰어를 암호화합니다. 그 키를 잃어버리면 .vult 백업이 유일한 복구 방법이며, 패스코드 자체는 복구할 수 없습니다.";
-"passcodeBackupPromptTitle" = "패스코드를 설정하기 전에 백업하세요";
+"passcodeBackupPromptTitle" = "먼저 볼트를 백업하세요";
 "passcodeBiometricDisableFailed" = "생체 인식 잠금 해제를 끄지 못했습니다. 다시 시도하세요.";
 "passcodeBiometricEnableFailed" = "생체 인식 잠금 해제를 켜지 못했습니다. 패스코드는 계속 사용할 수 있습니다.";
 "passcodeBiometricNotAvailable" = "이 기기에서는 생체 인식 잠금 해제를 사용할 수 없습니다.";

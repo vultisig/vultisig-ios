@@ -117,6 +117,7 @@
 "backupPasswordDisclaimer" = "Nunca armazene ações do Vault de diferentes dispositivos no mesmo local";
 "backupSaveButton" = "Salvar backup";
 "backupSaveCheckbox" = "Eu entendo como salvar este backup";
+"backupSaved" = "Cópia de segurança guardada";
 "backupsDescription" = "Em vez de uma única frase semente, seu cofre é protegido por vários dispositivos. Cada dispositivo tem seu próprio backup. Um backup sozinho não pode mover fundos. Backups são apenas para recuperação.";
 "backupsDescriptionVault" = "Os backups sustentam seu cofre. Cada dispositivo tem seu próprio backup. Um backup sozinho não pode mover fundos, serve apenas para recuperação. Importe e recupere qualquer dispositivo perdido";
 "backupsDescriptionVaultHighlight" = "próprio";
@@ -1067,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Fazer cópia agora";
 "passcodeBackupPromptHasBackup" = "Já tenho uma cópia de segurança";
 "passcodeBackupPromptSubtitle" = "Um código encripta os seus key shares com uma chave guardada neste dispositivo. Se essa chave se perder, a sua cópia .vult é a única forma de os recuperar — o próprio código não pode ser recuperado.";
-"passcodeBackupPromptTitle" = "Faça uma cópia de segurança antes de definir um código";
+"passcodeBackupPromptTitle" = "Primeiro, faça uma cópia do seu cofre";
 "passcodeBiometricDisableFailed" = "Não foi possível desativar o desbloqueio biométrico. Tente novamente.";
 "passcodeBiometricEnableFailed" = "Não foi possível ativar o desbloqueio biométrico. O seu código continua a funcionar.";
 "passcodeBiometricNotAvailable" = "Este dispositivo não pode usar o desbloqueio biométrico.";

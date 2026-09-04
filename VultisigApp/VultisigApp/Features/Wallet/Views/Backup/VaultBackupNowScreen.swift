@@ -43,7 +43,8 @@ struct VaultBackupScreen: View {
             backupViewModel: backupViewModel,
             tssType: tssType,
             backupType: backupType,
-            isNewVault: isNewVault
+            isNewVault: isNewVault,
+            origin: .standard
         ) {
             Screen {
                 VStack(spacing: 32) {

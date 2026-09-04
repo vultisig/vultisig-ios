@@ -37,10 +37,32 @@ struct BackUpBeforePasscodeScreen: View {
 
     var body: some View {
         Screen {
-            VStack(spacing: 24) {
-                Spacer()
+            VStack(spacing: 0) {
+                Spacer(minLength: 44)
+
+                Image("AppLockBackupIllustration")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 286)
+                    .frame(height: 190)
+
+                Spacer(minLength: 46)
+
+                Circle()
+                    .fill(Theme.colors.bgSurface1)
+                    .frame(width: 40, height: 40)
+                    .overlay {
+                        Icon(.cloudUpload, color: Theme.colors.primaryAccent4, size: 18)
+                    }
+                    .overlay {
+                        Circle().stroke(Theme.colors.borderLight, lineWidth: 1)
+                    }
+
                 header
-                Spacer()
+                    .padding(.top, 28)
+
+                Spacer(minLength: 24)
+
                 buttons
             }
         }
@@ -53,23 +75,23 @@ struct BackUpBeforePasscodeScreen: View {
                 }
             }
         }
-        .applySheetSize(650, 400)
+        .applySheetSize(650, 786)
         .sheetStyle()
-        .presentationDetents([.height(325)])
     }
 
     var header: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Text("passcodeBackupPromptTitle".localized)
-                .font(Theme.fonts.title2)
+                .font(Theme.fonts.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
 
             Text("passcodeBackupPromptSubtitle".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .multilineTextAlignment(.center)
+        .frame(maxWidth: 330)
     }
 
     var buttons: some View {
