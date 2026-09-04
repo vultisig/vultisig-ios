@@ -63,7 +63,9 @@ struct VaultBackupContainerView<Content: View>: View {
                 router.navigateBack { destination in
                     (destination as? SettingsRoute) == .managePasscode
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(100))
+                    guard !Task.isCancelled else { return }
                     NotificationCenter.default.post(name: .appLockBackupCompleted, object: nil)
                 }
             } else if isNewVault && tssType == .Migrate {
