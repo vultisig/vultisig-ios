@@ -227,15 +227,22 @@ final class DilithiumKeygen {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
-        _ = try await httpClient.request(TssRelayAPI(
-            baseURL: baseURL,
-            endpoint: .deleteMessage(
-                sessionID: sessionID,
-                localPartyID: localPartyID,
-                hash: hash,
-                messageID: messenger.messageID
-            )
-        ))
+        let timeout = try ceremonyWatchdog.hardRequestTimeout(maximum: TssRelayAPI.defaultTimeout)
+        do {
+            _ = try await httpClient.request(TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .deleteMessage(
+                    sessionID: sessionID,
+                    localPartyID: localPartyID,
+                    hash: hash,
+                    messageID: messenger.messageID
+                ),
+                timeoutInterval: timeout
+            ))
+        } catch HTTPError.timeout {
+            try ceremonyWatchdog.checkHardDeadline()
+            throw HTTPError.timeout
+        }
     }
 
     func DilithiumKeygenWithRetry(attempt: UInt8) async throws {

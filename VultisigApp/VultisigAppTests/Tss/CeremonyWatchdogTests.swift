@@ -91,6 +91,23 @@ final class CeremonyWatchdogTests: XCTestCase {
         XCTAssertEqual(budget.timeoutError, .overallDeadlineExceeded)
     }
 
+    func testLocalRequestTimeoutIsClippedOnlyByTheHardDeadline() throws {
+        let fake = FakeClock()
+        var watchdog = CeremonyWatchdog(
+            peerWaitLimit: .seconds(2),
+            hardLimit: .seconds(20),
+            now: { fake.instant }
+        )
+        fake.advance(.seconds(10))
+        watchdog.beginWaitingForPeer()
+
+        XCTAssertEqual(
+            try watchdog.hardRequestTimeout(maximum: 60),
+            10,
+            accuracy: 0.001
+        )
+    }
+
     func testDefaultLimitsPreserveTheRetryEnvelope() {
         XCTAssertEqual(CeremonyWatchdog.defaultPeerWaitLimit, .seconds(60))
         XCTAssertEqual(CeremonyWatchdog.defaultHardLimit, .seconds(240))

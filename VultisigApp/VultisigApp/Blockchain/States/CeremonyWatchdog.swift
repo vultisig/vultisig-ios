@@ -67,6 +67,17 @@ struct CeremonyWatchdog {
         }
     }
 
+    /// Clips non-polling relay work to the remaining hard ceremony budget.
+    /// Peer waiting does not apply while this party is completing local work.
+    func hardRequestTimeout(maximum: TimeInterval) throws -> TimeInterval {
+        try checkHardDeadline()
+        guard let hardDeadline else {
+            return maximum
+        }
+        let remaining = Self.timeInterval(now().duration(to: hardDeadline))
+        return min(maximum, max(remaining, 0.001))
+    }
+
     /// Gives a relay poll the exact time remaining until the first ceremony
     /// deadline. If the request itself times out, `timeoutError` identifies the
     /// deadline that won instead of leaking a transport-level timeout.

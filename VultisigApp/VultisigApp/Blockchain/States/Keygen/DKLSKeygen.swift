@@ -323,15 +323,22 @@ final class DKLSKeygen {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
-        _ = try await httpClient.request(TssRelayAPI(
-            baseURL: baseURL,
-            endpoint: .deleteMessage(
-                sessionID: sessionID,
-                localPartyID: localPartyID,
-                hash: hash,
-                messageID: messenger.messageID
-            )
-        ))
+        let timeout = try ceremonyWatchdog.hardRequestTimeout(maximum: TssRelayAPI.defaultTimeout)
+        do {
+            _ = try await httpClient.request(TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .deleteMessage(
+                    sessionID: sessionID,
+                    localPartyID: localPartyID,
+                    hash: hash,
+                    messageID: messenger.messageID
+                ),
+                timeoutInterval: timeout
+            ))
+        } catch HTTPError.timeout {
+            try ceremonyWatchdog.checkHardDeadline()
+            throw HTTPError.timeout
+        }
     }
     /// Phase 1 of batch key import: uploads setup message to the relay (initiator)
     /// or downloads it (follower), and creates the key-import session handle.
