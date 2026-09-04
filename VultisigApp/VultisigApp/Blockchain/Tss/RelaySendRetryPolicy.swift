@@ -59,13 +59,17 @@ enum RelaySendError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidMessage(let reason):
-            return "fail to send message: \(reason)"
+            return String(format: "relaySendInvalidMessage".localized, reason)
         case .rejected(let status):
-            return "relay rejected message, status: \(status)"
+            return String(format: "relaySendRejected".localized, status)
         case .exhausted(let attempts, let lastError):
-            return "fail to send message after \(attempts) attempts: \(lastError.localizedDescription)"
+            return String(
+                format: "relaySendExhausted".localized,
+                attempts,
+                lastError.localizedDescription
+            )
         case .ceremonyDeadlineExceeded:
-            return "timeout: ceremony deadline exceeded while sending relay message"
+            return "relaySendCeremonyDeadlineExceeded".localized
         }
     }
 }

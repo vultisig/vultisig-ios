@@ -117,6 +117,16 @@ final class CeremonyWatchdogTests: XCTestCase {
         )
     }
 
+    func testTimeoutErrorsResolveLocalizedDescriptions() {
+        for (error, key) in [
+            (CeremonyTimeoutError.peerUnresponsive, "ceremonyPeerUnresponsive"),
+            (CeremonyTimeoutError.overallDeadlineExceeded, "ceremonyOverallDeadlineExceeded")
+        ] {
+            XCTAssertFalse(error.localizedDescription.isEmpty)
+            XCTAssertNotEqual(error.localizedDescription, key)
+        }
+    }
+
     // MARK: - The poll loops consult the clock
 
     func testDKLSKeysignPollLoopThrowsWhenTheClockStalls() async {

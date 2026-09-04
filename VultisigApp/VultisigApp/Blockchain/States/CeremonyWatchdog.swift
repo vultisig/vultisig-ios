@@ -114,9 +114,9 @@ enum CeremonyTimeoutError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .peerUnresponsive:
-            return "timeout: no response from another participant within 60 seconds"
+            return "ceremonyPeerUnresponsive".localized
         case .overallDeadlineExceeded:
-            return "timeout: ceremony exceeded 240 seconds"
+            return "ceremonyOverallDeadlineExceeded".localized
         }
     }
 }

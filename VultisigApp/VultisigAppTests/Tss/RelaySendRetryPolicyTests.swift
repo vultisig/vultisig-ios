@@ -89,4 +89,24 @@ final class RelaySendRetryPolicyTests: XCTestCase {
             XCTAssertEqual(RelayServerAPI(baseURL: base, endpoint: endpoint).timeoutInterval, 60, "\(endpoint)")
         }
     }
+
+    func testRelaySendErrorsResolveLocalizedDescriptionsAndArguments() {
+        let invalid = RelaySendError.invalidMessage("recipient missing").localizedDescription
+        XCTAssertTrue(invalid.contains("recipient missing"))
+        XCTAssertFalse(invalid.contains("relaySendInvalidMessage"))
+
+        let rejected = RelaySendError.rejected(status: 409).localizedDescription
+        XCTAssertTrue(rejected.contains("409"))
+        XCTAssertFalse(rejected.contains("relaySendRejected"))
+
+        let exhausted = RelaySendError.exhausted(
+            attempts: 4,
+            lastError: HTTPError.timeout
+        ).localizedDescription
+        XCTAssertTrue(exhausted.contains("4"))
+        XCTAssertFalse(exhausted.contains("relaySendExhausted"))
+
+        let deadline = RelaySendError.ceremonyDeadlineExceeded.localizedDescription
+        XCTAssertFalse(deadline.contains("relaySendCeremonyDeadlineExceeded"))
+    }
 }
