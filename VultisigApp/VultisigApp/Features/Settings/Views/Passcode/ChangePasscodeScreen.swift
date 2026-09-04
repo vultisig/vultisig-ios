@@ -11,27 +11,46 @@ import SwiftUI
 struct ChangePasscodeScreen: View {
 
     @StateObject private var viewModel = PasscodeViewModel(stage: .current)
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
+    @Binding var isOperationInFlight: Bool
+    @State private var dismissTask: Task<Void, Never>?
+
+    init(
+        isPresented: Binding<Bool>,
+        isOperationInFlight: Binding<Bool>
+    ) {
+        _isPresented = isPresented
+        _isOperationInFlight = isOperationInFlight
+    }
 
     var body: some View {
         Screen {
             PasscodeEntryView(
                 title: title,
                 subtitle: subtitle,
+                completedPasscode: viewModel.stage == .confirm ? viewModel.firstEntry : nil,
+                activePrompt: viewModel.stage == .confirm ? "passcodeConfirmSheetTitle".localized : nil,
                 errorMessage: viewModel.errorMessage,
                 isBusy: viewModel.isBusy,
+                isSuccess: viewModel.completion == .success,
                 passcode: $viewModel.entry,
                 onComplete: { _ in
                     Task { await viewModel.submitForChange() }
                 }
             )
         }
-        .screenTitle("passcodeChangeTitle".localized)
-        .screenBackground(.gradient)
+        .passcodeSheetChrome(
+            isPresented: $isPresented,
+            isBusy: $isOperationInFlight
+        )
+        .onChange(of: viewModel.isBusy) { _, isBusy in
+            isOperationInFlight = isBusy
+        }
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }
-            dismiss()
+            finishPresentation()
         }
+        .onDisappear { dismissTask?.cancel() }
     }
 
     private var title: String {
@@ -41,7 +60,7 @@ struct ChangePasscodeScreen: View {
         case .new:
             return "passcodeNewTitle".localized
         case .confirm:
-            return "passcodeConfirmTitle".localized
+            return "passcodeNewTitle".localized
         }
     }
 
@@ -52,7 +71,16 @@ struct ChangePasscodeScreen: View {
         case .new:
             return "passcodeChooseSubtitle".localized
         case .confirm:
-            return "passcodeConfirmSubtitle".localized
+            return "passcodeChooseGuidance".localized
+        }
+    }
+
+    private func finishPresentation() {
+        dismissTask?.cancel()
+        dismissTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            isPresented = false
         }
     }
 }

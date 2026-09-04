@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "La cantidad no puede ser cero";
 "amountExceeded" = "La cantidad no puede exceder el saldo";
 "amountToWithdraw" = "Amount to Withdraw";
+"appLockPasscodeTitle" = "Código de bloqueo de la app";
 "apply" = "Aplicar";
 "applyReferral" = "Aplicar referido";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
@@ -140,6 +141,7 @@
 "beforeYouStart" = "Antes de comenzar...";
 "belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
+"biometricUnlockTitle" = "Desbloqueo biométrico";
 "bond" = "Vincular";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "No se pudieron cargar tus posiciones LP vinculables. Comprueba tu conexión e inténtalo de nuevo.";
@@ -483,6 +485,7 @@
 "expirationDate" = "Fecha de expiración";
 "expiresOn" = "Vencer";
 "extendExpiration(inYears)" = "Extender el vencimiento (en años)";
+"faceIDUnlockTitle" = "Desbloqueo con Face ID";
 "failedToDecodePeerDiscoveryMessage" = "Error al decodificar el mensaje de descubrimiento de pares";
 "failedToLoadFileData" = "Error al cargar los datos del archivo";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -894,6 +897,7 @@
 "loadingPools" = "Loading pools...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Modo local, esperando dispositivos...";
+"lockAfterTitle" = "Bloquear después de";
 "loginUsingFaceID" = "Iniciar sesión usando Face ID";
 "loginUsingOpticID" = "Iniciar sesión con Optic ID";
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
@@ -1073,8 +1077,10 @@
 "passcodeBiometricUnavailable" = "El desbloqueo biométrico ya no está disponible en este dispositivo. Introduce tu código.";
 "passcodeBusy" = "Hay otra operación en curso. Espera a que termine e inténtalo de nuevo.";
 "passcodeChangeTitle" = "Cambiar código";
+"passcodeChooseGuidance" = "Elige un código de 6 dígitos. Evita dígitos repetidos o secuenciales.";
 "passcodeChooseSubtitle" = "6 dígitos. Lo necesitarás para abrir la app.";
 "passcodeChooseTitle" = "Elige un código";
+"passcodeConfirmSheetTitle" = "Confirmar código";
 "passcodeConfirmSubtitle" = "Introdúcelo una vez más.";
 "passcodeConfirmTitle" = "Confirma tu código";
 "passcodeCurrentSubtitle" = "Confirma que eres tú antes de elegir uno nuevo.";
@@ -1094,6 +1100,7 @@
 "passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus vaults ya están cifrados en este dispositivo, pero no se puede leer la clave que los abre. Restáuralos desde una copia de seguridad.";
+"passcodeSetSheetTitle" = "Establecer código";
 "passcodeSetTitle" = "Establecer código";
 "passcodeStorageError" = "No se pudo leer el código en este dispositivo. Restaura tu vault desde una copia de seguridad.";
 "passcodeUseFaceID" = "Usar Face ID";
@@ -1611,6 +1618,7 @@
 "tonUnstakeFullWithdrawalNotice" = "Los pools de nominadores de TON solo admiten el retiro total. Se retirará todo tu staking.";
 "tonWithdrawalPendingMessage" = "Retiro en curso. Tu %@ se desbloqueará alrededor del %@.";
 "totalFee" = "Comisión total";
+"touchIDUnlockTitle" = "Desbloqueo con Touch ID";
 "track" = "Rastrear";
 "transaction" = "Transacción";
 "transactionBroadcasted" = "Transacción difundida";

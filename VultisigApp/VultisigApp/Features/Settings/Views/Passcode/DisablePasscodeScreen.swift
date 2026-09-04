@@ -33,7 +33,8 @@ struct DisablePasscodeScreen: View {
     /// it only means the settings list refreshes while the passcode is still
     /// there and never hears that it went, so it goes on offering to change a
     /// passcode that no longer exists.
-    @Binding var isRemoving: Bool
+    @Binding var isOperationInFlight: Bool
+    @State private var dismissTask: Task<Void, Never>?
 
     var body: some View {
         Screen {
@@ -42,37 +43,32 @@ struct DisablePasscodeScreen: View {
                 subtitle: "passcodeDisableSubtitle".localized,
                 errorMessage: viewModel.errorMessage,
                 isBusy: viewModel.isBusy,
+                isSuccess: viewModel.completion == .success,
                 passcode: $viewModel.entry,
                 onComplete: { _ in
                     Task { await viewModel.submitForDisable() }
                 }
             )
         }
-        .screenTitle("passcodeDisableNavTitle".localized)
-        .screenBackground(.gradient)
-        // A sheet is not a place you go back from. macOS would otherwise draw
-        // `Screen`'s own back chevron here, which offers to return to a screen
-        // that is still sitting behind this one; iOS has only the swipe, which
-        // is invisible. Both get the close instead.
-        //
-        // It goes through `Screen`'s toolbar rather than a second
-        // `.crossPlatformToolbar`, because `Screen` already renders one on
-        // macOS and an outer toolbar stacks another row above it rather than
-        // replacing it.
-        .screenBackButtonHidden()
-        .screenToolbar {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: .xmark) {
-                    isPresented = false
-                }
-                .disabled(viewModel.isBusy)
-            }
-        }
+        .passcodeSheetChrome(
+            isPresented: $isPresented,
+            isBusy: $isOperationInFlight
+        )
         .onChange(of: viewModel.isBusy) { _, isBusy in
-            isRemoving = isBusy
+            isOperationInFlight = isBusy
         }
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }
+            finishPresentation()
+        }
+        .onDisappear { dismissTask?.cancel() }
+    }
+
+    private func finishPresentation() {
+        dismissTask?.cancel()
+        dismissTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
             isPresented = false
         }
     }

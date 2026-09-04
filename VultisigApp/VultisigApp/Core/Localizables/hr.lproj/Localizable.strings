@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "Iznos ne može biti nula";
 "amountExceeded" = "Iznos ne može premašiti saldo";
 "amountToWithdraw" = "Iznos za povlačenje";
+"appLockPasscodeTitle" = "Zaporka za zaključavanje aplikacije";
 "apply" = "Primijeni";
 "applyReferral" = "Primijeni preporuku";
 "approvalRequiredMessageLP" = "Ovaj ERC20 token zahtijeva odobrenje prije dodavanja u bazen likvidnosti. Potpisat će se dvije transakcije:";
@@ -140,6 +141,7 @@
 "beforeYouStart" = "Prije nego započnete...";
 "belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
+"biometricUnlockTitle" = "Biometrijsko otključavanje";
 "bond" = "Veži";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "Nije moguće učitati vaše LP pozicije koje se mogu bondati. Provjerite vezu i pokušajte ponovo.";
@@ -483,6 +485,7 @@
 "expirationDate" = "Datum isteka";
 "expiresOn" = "Ističe na";
 "extendExpiration(inYears)" = "Produžite istek (u godinama)";
+"faceIDUnlockTitle" = "Otključavanje Face ID-jem";
 "failedToDecodePeerDiscoveryMessage" = "Neuspjeh u dekodiranju poruke otkrivanja vršnjaka";
 "failedToLoadFileData" = "Greška pri učitavanju podataka datoteke";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -894,6 +897,7 @@
 "loadingPools" = "Učitavanje bazena...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
+"lockAfterTitle" = "Zaključaj nakon";
 "loginUsingFaceID" = "Prijava pomoću Face ID";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
@@ -1073,8 +1077,10 @@
 "passcodeBiometricUnavailable" = "Otključavanje biometrijom više nije dostupno na ovom uređaju. Unesite zaporku.";
 "passcodeBusy" = "Druga radnja je još u tijeku. Pričekajte da završi pa pokušajte ponovno.";
 "passcodeChangeTitle" = "Promijeni zaporku";
+"passcodeChooseGuidance" = "Odaberite zaporku od 6 znamenki. Izbjegavajte ponavljajuće ili uzastopne znamenke.";
 "passcodeChooseSubtitle" = "6 znamenki. Trebat će vam za otvaranje aplikacije.";
 "passcodeChooseTitle" = "Odaberite zaporku";
+"passcodeConfirmSheetTitle" = "Potvrdite zaporku";
 "passcodeConfirmSubtitle" = "Unesite je još jednom.";
 "passcodeConfirmTitle" = "Potvrdite zaporku";
 "passcodeCurrentSubtitle" = "Potvrdite identitet prije odabira nove.";
@@ -1094,6 +1100,7 @@
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
+"passcodeSetSheetTitle" = "Postavi zaporku";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "passcodeUseFaceID" = "Upotrijebi Face ID";
@@ -1611,6 +1618,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
 "tonWithdrawalPendingMessage" = "Povlačenje u tijeku. Vaš %@ bit će otključan oko %@.";
 "totalFee" = "Ukupna naknada";
+"touchIDUnlockTitle" = "Otključavanje Touch ID-jem";
 "track" = "Prati";
 "transaction" = "Transakcija";
 "transactionBroadcasted" = "Transakcija odaslana";

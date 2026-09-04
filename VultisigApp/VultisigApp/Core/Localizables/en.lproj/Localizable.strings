@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "Amount cannot be zero";
 "amountExceeded" = "Amount cannot exceed balance";
 "amountToWithdraw" = "Amount to Withdraw";
+"appLockPasscodeTitle" = "App Lock Passcode";
 "apply" = "Apply";
 "applyReferral" = "Apply referral";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
@@ -140,6 +141,7 @@
 "beforeYouStart" = "Before you start...";
 "belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
+"biometricUnlockTitle" = "Biometric Unlock";
 "bond" = "Bond";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "Couldn't load your bondable LP positions. Check your connection and try again.";
@@ -483,6 +485,7 @@
 "expirationDate" = "Expiration date";
 "expiresOn" = "Expires on";
 "extendExpiration(inYears)" = "Extend Expiration (in years)";
+"faceIDUnlockTitle" = "Face ID Unlock";
 "failedToDecodePeerDiscoveryMessage" = "Failed to decode peer discovery message";
 "failedToLoadFileData" = "Failed to load file data";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -894,6 +897,7 @@
 "loadingPools" = "Loading pools...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Local mode, waiting on devices...";
+"lockAfterTitle" = "Lock after";
 "loginUsingFaceID" = "Login using Face ID";
 "loginUsingOpticID" = "Login using Optic ID";
 "loginUsingTouchID" = "Login using Touch ID";
@@ -1073,8 +1077,10 @@
 "passcodeBiometricUnavailable" = "Biometric unlock is no longer available on this device. Enter your passcode.";
 "passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
 "passcodeChangeTitle" = "Change passcode";
+"passcodeChooseGuidance" = "Choose a 6-digit passcode. Avoid repeating or sequential digits.";
 "passcodeChooseSubtitle" = "6 digits. You will need it to open the app.";
 "passcodeChooseTitle" = "Choose a passcode";
+"passcodeConfirmSheetTitle" = "Confirm passcode";
 "passcodeConfirmSubtitle" = "Enter it once more.";
 "passcodeConfirmTitle" = "Confirm your passcode";
 "passcodeCurrentSubtitle" = "Confirm it is you before choosing a new one.";
@@ -1094,6 +1100,7 @@
 "passcodeMismatch" = "Those did not match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
+"passcodeSetSheetTitle" = "Set Passcode";
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
 "passcodeUseFaceID" = "Use face ID";
@@ -1611,6 +1618,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON nominator pools support full withdrawal only. Your entire stake will be unstaked.";
 "tonWithdrawalPendingMessage" = "Withdrawal in progress. Your %@ will be unlocked around %@.";
 "totalFee" = "Total Fee";
+"touchIDUnlockTitle" = "Touch ID Unlock";
 "track" = "Track";
 "transaction" = "Transaction";
 "transactionBroadcasted" = "Transaction broadcasted";

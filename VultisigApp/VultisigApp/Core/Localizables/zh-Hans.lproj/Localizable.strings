@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "金额不能为零";
 "amountExceeded" = "金额不能超过余额";
 "amountToWithdraw" = "提取金额";
+"appLockPasscodeTitle" = "应用锁密码";
 "apply" = "应用";
 "applyReferral" = "应用推荐";
 "approvalRequiredMessageLP" = "添加到流动性池前需要批准此 ERC20 代币。将签署两笔交易：";
@@ -140,6 +141,7 @@
 "beforeYouStart" = "开始之前...";
 "belowExistentialDepositError" = "此次转账后您账户中的余额将低于最低留存额（生存性存款），网络将拒绝该交易。请减少金额或转出全部余额。";
 "biometricsFastSigning" = "生物识别快速签名";
+"biometricUnlockTitle" = "生物识别解锁";
 "bond" = "绑定";
 "Bond" = "绑定";
 "bondableAssetsLoadFailed" = "无法加载您可绑定的 LP 仓位。请检查网络连接后重试。";
@@ -483,6 +485,7 @@
 "expirationDate" = "到期日期";
 "expiresOn" = "到期于";
 "extendExpiration(inYears)" = "延长到期时间（年）";
+"faceIDUnlockTitle" = "面容 ID 解锁";
 "failedToDecodePeerDiscoveryMessage" = "无法解码对等发现消息";
 "failedToLoadFileData" = "加载文件数据失败";
 "failedToLoadPools" = "加载资金池失败。请检查您的连接并重试。";
@@ -894,6 +897,7 @@
 "loadingPools" = "加载资金池中...";
 "loadingSecuredAssets" = "加载担保资产中...";
 "localModeWaitingOnDevices" = "本地模式，等待设备...";
+"lockAfterTitle" = "自动锁定时间";
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";
@@ -1073,8 +1077,10 @@
 "passcodeBiometricUnavailable" = "本设备已无法使用生物识别解锁。请输入密码。";
 "passcodeBusy" = "另一项操作仍在进行中。请等待其完成后重试。";
 "passcodeChangeTitle" = "修改密码";
+"passcodeChooseGuidance" = "请选择一个 6 位密码。避免使用重复或连续的数字。";
 "passcodeChooseSubtitle" = "6 位数字。打开应用时需要输入。";
 "passcodeChooseTitle" = "选择密码";
+"passcodeConfirmSheetTitle" = "确认密码";
 "passcodeConfirmSubtitle" = "请再输入一次。";
 "passcodeConfirmTitle" = "确认密码";
 "passcodeCurrentSubtitle" = "选择新密码前请先验证身份。";
@@ -1094,6 +1100,7 @@
 "passcodeMismatch" = "两次输入不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
 "passcodeSealedSharesWithoutKey" = "本设备上的 vault 已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
+"passcodeSetSheetTitle" = "设置密码";
 "passcodeSetTitle" = "设置密码";
 "passcodeStorageError" = "无法在本设备上读取密码。请从备份恢复您的 vault。";
 "passcodeUseFaceID" = "使用面容 ID";
@@ -1611,6 +1618,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON 提名人矿池仅支持全额提取。您的全部质押将被取消质押。";
 "tonWithdrawalPendingMessage" = "提现进行中。您的 %@ 将在 %@ 左右解锁。";
 "totalFee" = "总费用";
+"touchIDUnlockTitle" = "触控 ID 解锁";
 "track" = "跟踪";
 "transaction" = "交易";
 "transactionBroadcasted" = "交易已广播";
