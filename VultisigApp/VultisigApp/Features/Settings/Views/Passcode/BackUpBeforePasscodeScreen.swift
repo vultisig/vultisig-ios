@@ -37,31 +37,14 @@ struct BackUpBeforePasscodeScreen: View {
 
     var body: some View {
         Screen {
-            VStack(spacing: 0) {
-                Spacer(minLength: 44)
+            VStack(spacing: 32) {
+                VaultBackupContent(title: "passcodeBackupPromptTitle".localized) {
+                    Text("passcodeBackupPromptSubtitle".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
 
-                Image("AppLockBackupIllustration")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 286)
-                    .frame(height: 190)
-
-                Spacer(minLength: 46)
-
-                Circle()
-                    .fill(Theme.colors.bgSurface1)
-                    .frame(width: 40, height: 40)
-                    .overlay {
-                        Icon(.cloudUpload, color: Theme.colors.primaryAccent4, size: 18)
-                    }
-                    .overlay {
-                        Circle().stroke(Theme.colors.borderLight, lineWidth: 1)
-                    }
-
-                header
-                    .padding(.top, 28)
-
-                Spacer(minLength: 24)
+                Spacer()
 
                 buttons
             }
@@ -77,21 +60,7 @@ struct BackUpBeforePasscodeScreen: View {
         }
         .applySheetSize(650, 786)
         .sheetStyle()
-    }
-
-    var header: some View {
-        VStack(spacing: 10) {
-            Text("passcodeBackupPromptTitle".localized)
-                .font(Theme.fonts.title3)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Text("passcodeBackupPromptSubtitle".localized)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: 330)
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
     }
 
     var buttons: some View {

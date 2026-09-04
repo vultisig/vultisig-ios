@@ -14,7 +14,6 @@ struct VaultBackupScreen: View {
     var isNewVault = false
 
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var animation: RiveViewModel?
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var presentFileExporter = false
     @State private var checkboxChecked = false
@@ -48,13 +47,7 @@ struct VaultBackupScreen: View {
         ) {
             Screen {
                 VStack(spacing: 32) {
-                    animation?.view()
-                    VaultSetupStepIcon(
-                        state: .active,
-                        icon: .cloudUpload
-                    )
-                    VStack(spacing: 16) {
-                        titleView
+                    VaultBackupContent(title: titleText) {
                         subtitleView
                     }
 
@@ -75,13 +68,6 @@ struct VaultBackupScreen: View {
     }
 
     // MARK: - Title & Subtitle
-
-    private var titleView: some View {
-        Text(titleText)
-            .font(Theme.fonts.title2)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .multilineTextAlignment(.center)
-    }
 
     private var subtitleView: some View {
         VStack(spacing: 0) {
@@ -135,7 +121,6 @@ struct VaultBackupScreen: View {
 
     func onLoad() {
         FileManager.default.clearTmpDirectory()
-        animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
 
         Task { @MainActor in
             if vault.isFastVault, isNewVault {
@@ -159,6 +144,41 @@ struct VaultBackupScreen: View {
         }
 
         presentFileExporter = true
+    }
+}
+
+/// Shared backup education content used by the standard backup flow and the
+/// App Lock preflight. Keeping the animation, step icon, spacing and typography
+/// here prevents the two backup entry points from drifting apart.
+struct VaultBackupContent<Subtitle: View>: View {
+    let title: String
+    @ViewBuilder let subtitle: () -> Subtitle
+
+    @State private var animation: RiveViewModel?
+
+    var body: some View {
+        VStack(spacing: 32) {
+            animation?.view()
+
+            VaultSetupStepIcon(
+                state: .active,
+                icon: .cloudUpload
+            )
+
+            VStack(spacing: 16) {
+                Text(title)
+                    .font(Theme.fonts.title2)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                subtitle()
+            }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 321)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .onLoad {
+            animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
+        }
     }
 }
 
