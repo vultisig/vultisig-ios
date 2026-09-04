@@ -18,7 +18,8 @@ final class AppLockService {
 
     private enum Keys {
         static let mode = "appLockMode"
-        static let interval = "autoLockIntervalMinutes"
+        static let intervalSeconds = "autoLockIntervalSeconds"
+        static let legacyIntervalMinutes = "autoLockIntervalMinutes"
         /// Shared with the pre-existing implementation so the stored timestamp
         /// carries across an upgrade rather than starting empty.
         static let lastRecordedTime = "lastRecordedTime"
@@ -55,14 +56,36 @@ final class AppLockService {
 
     var autoLockInterval: AutoLockInterval {
         get {
-            guard let raw = defaults.object(forKey: Keys.interval) as? Int,
-                  let interval = AutoLockInterval(rawValue: raw) else {
+            if let raw = defaults.object(forKey: Keys.intervalSeconds) as? Int {
+                return AutoLockInterval(rawValue: raw) ?? .default
+            }
+
+            guard let legacyMinutes = defaults.object(forKey: Keys.legacyIntervalMinutes) as? Int else {
                 return .default
             }
-            return interval
+
+            return Self.intervalMigrated(fromMinutes: legacyMinutes) ?? .default
         }
         set {
-            defaults.set(newValue.rawValue, forKey: Keys.interval)
+            defaults.set(newValue.rawValue, forKey: Keys.intervalSeconds)
+
+            if let legacyMinutes = newValue.legacyMinutes {
+                defaults.set(legacyMinutes, forKey: Keys.legacyIntervalMinutes)
+            } else {
+                defaults.removeObject(forKey: Keys.legacyIntervalMinutes)
+            }
+        }
+    }
+
+    private static func intervalMigrated(fromMinutes minutes: Int) -> AutoLockInterval? {
+        switch minutes {
+        case 0: .immediate
+        case 1: .oneMinute
+        case 5: .fiveMinutes
+        case 10: .tenMinutes
+        case 15: .fifteenMinutes
+        case 30: .thirtyMinutes
+        default: nil
         }
     }
 
@@ -186,7 +209,14 @@ final class AppLockService {
             return false
         }
 
-        guard autoLockInterval != .immediate else { return true }
+        switch autoLockInterval {
+        case .immediate:
+            return true
+        case .never:
+            return false
+        default:
+            break
+        }
 
         let elapsed = now.timeIntervalSince(backgroundedAt)
 
@@ -200,5 +230,19 @@ final class AppLockService {
 
         // Strictly greater, matching the behaviour this replaced.
         return elapsed > autoLockInterval.duration
+    }
+}
+
+private extension AutoLockInterval {
+    var legacyMinutes: Int? {
+        switch self {
+        case .immediate: 0
+        case .oneMinute: 1
+        case .fiveMinutes: 5
+        case .tenMinutes: 10
+        case .fifteenMinutes: 15
+        case .thirtyMinutes: 30
+        case .fifteenSeconds, .thirtySeconds, .never: nil
+        }
     }
 }

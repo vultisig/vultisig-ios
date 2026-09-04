@@ -16,13 +16,21 @@ struct AutoLockScreen: View {
         _selection = State(initialValue: lockService.autoLockInterval)
     }
 
-    private var intervals: [AutoLockInterval] { AutoLockInterval.allCases }
+    /// Keep a migrated legacy choice visible until the user replaces it, so the
+    /// selected policy is never hidden or silently rewritten by the redesign.
+    private var intervals: [AutoLockInterval] {
+        AutoLockInterval.pickerCases(current: selection)
+    }
 
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: .zero) {
-                    ForEach(Array(intervals.enumerated()), id: \.element) { index, interval in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("autoLockDescription".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textSecondary)
+
+                    ForEach(intervals) { interval in
                         Button {
                             select(interval)
                         } label: {
@@ -31,19 +39,20 @@ struct AutoLockScreen: View {
                                 isSelected: interval == selection
                             )
                         }
-                        .commonListItemContainer(index: index, itemsCount: intervals.count)
+                        .background(Theme.colors.bgSurface1)
+                        .clipShape(Theme.radius.md.shape)
                     }
                 }
-                .commonListContainer()
             }
         }
-        .screenTitle("passcodeAutoLockTitle".localized)
-        .screenBackground(.gradient)
+        .screenTitle("autoLockScreenTitle".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
     }
 
     private func select(_ interval: AutoLockInterval) {
-        selection = interval
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selection = interval
+        }
         lockService.autoLockInterval = interval
     }
 }
