@@ -26,7 +26,7 @@ struct SetPasscodeScreen: View {
         Screen {
             PasscodeEntryView(
                 title: "passcodeSetSheetTitle".localized,
-                subtitle: "passcodeChooseGuidance".localized,
+                subtitle: viewModel.stage == .confirm ? nil : "passcodeChooseGuidance".localized,
                 completedPasscode: viewModel.stage == .confirm ? viewModel.firstEntry : nil,
                 activePrompt: viewModel.stage == .confirm ? "passcodeConfirmSheetTitle".localized : nil,
                 errorMessage: viewModel.errorMessage,

@@ -223,20 +223,20 @@ extension View {
 
 struct PasscodeBackground: View {
     var body: some View {
-        ZStack(alignment: .top) {
-            Theme.colors.bgPrimary
+        GeometryReader { proxy in
+            ZStack {
+                Theme.colors.bgPrimary
 
-            EllipticalGradient(
-                colors: [
-                    Theme.colors.primaryAccent2.opacity(0.9),
-                    Theme.colors.bgPrimary.opacity(0)
-                ],
-                center: .top
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 360)
-            .offset(y: -80)
-            .blur(radius: 30)
+                Ellipse()
+                    .fill(Theme.colors.primaryAccent4)
+                    .frame(width: 304, height: 338)
+                    .blur(radius: 127)
+                    .opacity(0.2)
+                    .position(
+                        x: proxy.size.width / 2,
+                        y: proxy.size.height / 2
+                    )
+            }
         }
     }
 }

@@ -8,9 +8,9 @@ import Foundation
 /// How long the app may sit in the background before it re-locks.
 ///
 /// Stored in seconds so short intervals can be represented without rounding.
-/// `immediate` and `fifteenMinutes` remain valid migration-only values: earlier
-/// app versions exposed both, and silently replacing either would change an
-/// existing user's security policy. New selections come from ``selectableCases``.
+/// `fifteenMinutes` remains a valid migration-only value because earlier app
+/// versions exposed it, and silently replacing it would change an existing
+/// user's security policy. New selections come from ``selectableCases``.
 enum AutoLockInterval: Int, CaseIterable, Identifiable {
     case immediate = 0
     case fifteenSeconds = 15
@@ -25,6 +25,7 @@ enum AutoLockInterval: Int, CaseIterable, Identifiable {
     static let `default`: AutoLockInterval = .fiveMinutes
 
     static let selectableCases: [AutoLockInterval] = [
+        .immediate,
         .fifteenSeconds,
         .thirtySeconds,
         .oneMinute,
@@ -33,10 +34,6 @@ enum AutoLockInterval: Int, CaseIterable, Identifiable {
         .thirtyMinutes,
         .never
     ]
-
-    static func pickerCases(current: AutoLockInterval) -> [AutoLockInterval] {
-        selectableCases.contains(current) ? selectableCases : [current] + selectableCases
-    }
 
     var id: Int { rawValue }
 

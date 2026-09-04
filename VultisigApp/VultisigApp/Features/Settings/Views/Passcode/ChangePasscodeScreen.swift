@@ -64,14 +64,14 @@ struct ChangePasscodeScreen: View {
         }
     }
 
-    private var subtitle: String {
+    private var subtitle: String? {
         switch viewModel.stage {
         case .current:
             return "passcodeCurrentSubtitle".localized
         case .new:
             return "passcodeChooseSubtitle".localized
         case .confirm:
-            return "passcodeChooseGuidance".localized
+            return nil
         }
     }
 

@@ -125,21 +125,22 @@ final class AppLockServiceTests: XCTestCase {
         XCTAssertEqual(AutoLockInterval.never.duration, .infinity)
     }
 
-    func testPickerCasesContainOnlyNewOptionsForANewSelection() {
+    func testSelectableCasesMatchTheFixedLockTimeList() {
         XCTAssertEqual(
-            AutoLockInterval.pickerCases(current: .fiveMinutes),
-            AutoLockInterval.selectableCases
+            AutoLockInterval.selectableCases,
+            [
+                .immediate,
+                .fifteenSeconds,
+                .thirtySeconds,
+                .oneMinute,
+                .fiveMinutes,
+                .tenMinutes,
+                .thirtyMinutes,
+                .never
+            ]
         )
         XCTAssertTrue(AutoLockInterval.selectableCases.contains(.default))
-        XCTAssertFalse(AutoLockInterval.selectableCases.contains(.immediate))
         XCTAssertFalse(AutoLockInterval.selectableCases.contains(.fifteenMinutes))
-    }
-
-    func testPickerCasesKeepMigratedLegacySelectionVisible() {
-        XCTAssertEqual(
-            AutoLockInterval.pickerCases(current: .fifteenMinutes),
-            [.fifteenMinutes] + AutoLockInterval.selectableCases
-        )
     }
 
     func testMigratesEveryPreviouslySelectableIntervalExactly() {

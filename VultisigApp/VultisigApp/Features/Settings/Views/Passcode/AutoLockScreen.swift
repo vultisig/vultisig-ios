@@ -16,12 +16,6 @@ struct AutoLockScreen: View {
         _selection = State(initialValue: lockService.autoLockInterval)
     }
 
-    /// Keep a migrated legacy choice visible until the user replaces it, so the
-    /// selected policy is never hidden or silently rewritten by the redesign.
-    private var intervals: [AutoLockInterval] {
-        AutoLockInterval.pickerCases(current: selection)
-    }
-
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
@@ -30,7 +24,7 @@ struct AutoLockScreen: View {
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
 
-                    ForEach(intervals) { interval in
+                    ForEach(AutoLockInterval.selectableCases) { interval in
                         Button {
                             select(interval)
                         } label: {
