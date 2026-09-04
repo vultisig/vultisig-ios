@@ -53,25 +53,30 @@ struct PasscodeEntryView: View {
 
     private var content: some View {
         VStack(spacing: 24) {
-            Icon(.lockPassword, color: Theme.colors.textPrimary, size: 46)
+            Icon(.lockPassword, color: Theme.colors.primaryAccent4, size: 46)
 
             VStack(spacing: 14) {
                 Text(title)
                     .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textPrimary)
+                    .id(title)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
 
                 if let subtitle {
                     Text(subtitle)
                         .font(Theme.fonts.bodySRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
+                        .id(subtitle)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .multilineTextAlignment(.center)
-            .frame(maxWidth: 304)
+            .frame(maxWidth: 285)
 
             if let completedPasscode {
                 dots(for: completedPasscode, hasError: false, isSuccess: false)
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
 
             VStack(spacing: 16) {
@@ -79,6 +84,7 @@ struct PasscodeEntryView: View {
                     Text(activePrompt)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
                 dots(for: passcode, hasError: hasError, isSuccess: isSuccess)
@@ -93,7 +99,12 @@ struct PasscodeEntryView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(.top, 69)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .animation(.easeInOut(duration: 0.28), value: title)
+        .animation(.easeInOut(duration: 0.28), value: subtitle)
+        .animation(.easeInOut(duration: 0.28), value: completedPasscode)
+        .animation(.easeInOut(duration: 0.28), value: activePrompt)
+        .animation(.easeInOut(duration: 0.2), value: isSuccess)
     }
 
     private func dots(for value: String, hasError: Bool, isSuccess: Bool) -> some View {
@@ -180,6 +191,11 @@ private struct PasscodeSheetChrome: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .screenBackground(.clear)
+            .background {
+                PasscodeBackground()
+                    .ignoresSafeArea()
+            }
             .screenBackButtonHidden()
             .screenIgnoresTopEdge()
             .screenToolbar {
@@ -202,6 +218,26 @@ extension View {
         isBusy: Binding<Bool>
     ) -> some View {
         modifier(PasscodeSheetChrome(isPresented: isPresented, isBusy: isBusy))
+    }
+}
+
+struct PasscodeBackground: View {
+    var body: some View {
+        ZStack(alignment: .top) {
+            Theme.colors.bgPrimary
+
+            EllipticalGradient(
+                colors: [
+                    Theme.colors.primaryAccent2.opacity(0.9),
+                    Theme.colors.bgPrimary.opacity(0)
+                ],
+                center: .top
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 360)
+            .offset(y: -80)
+            .blur(radius: 30)
+        }
     }
 }
 
