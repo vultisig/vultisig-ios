@@ -32,17 +32,22 @@ struct PasscodeEntryView: View {
     private var hasError: Bool { errorMessage?.isEmpty == false }
 
     var body: some View {
-        PasscodeInput(
-            passcode: $passcode,
-            isBusy: isBusy,
-            onComplete: onComplete
-        ) { _ in
-            content
-                #if os(iOS)
-                .overlay(alignment: .topLeading) {
-                    nativePasscodeField
-                }
-                #endif
+        ZStack {
+            PasscodeBackground()
+                .ignoresSafeArea()
+
+            PasscodeInput(
+                passcode: $passcode,
+                isBusy: isBusy,
+                onComplete: onComplete
+            ) { _ in
+                content
+                    #if os(iOS)
+                    .overlay(alignment: .topLeading) {
+                        nativePasscodeField
+                    }
+                    #endif
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onChange(of: errorMessage) { _, message in
@@ -191,11 +196,6 @@ private struct PasscodeSheetChrome: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .screenBackground(.clear)
-            .background {
-                PasscodeBackground()
-                    .ignoresSafeArea()
-            }
             .screenBackButtonHidden()
             .screenIgnoresTopEdge()
             .screenToolbar {
