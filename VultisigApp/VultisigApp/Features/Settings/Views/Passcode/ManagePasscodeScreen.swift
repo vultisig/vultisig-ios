@@ -25,36 +25,31 @@ struct ManagePasscodeScreen: View {
     @State private var isBiometricEnabled: Bool = false
     @State private var biometricAvailability: BiometricAvailability = .available
     @State private var biometricError: String?
-    @State private var showDisable = false
-    /// Raised while the remove flow is actually rewriting key material, which is
-    /// the one stretch the sheet must not be dismissable over.
-    @State private var isRemoving = false
+    @State private var activePasscodeFlow: PasscodeFlow?
+    @State private var isPasscodeOperationInFlight = false
+    @State private var autoLockInterval: AutoLockInterval = .default
+    @State private var bannerText: String?
 
     private let service: PasscodeService
+    private let lockService: AppLockService
 
-    init(service: PasscodeService = .shared) {
+    init(
+        service: PasscodeService = .shared,
+        lockService: AppLockService = .shared
+    ) {
         self.service = service
-    }
-
-    /// The rows on offer, which depend on whether a passcode exists. Kept as an
-    /// array rather than branching in the view body so each row can tell the
-    /// shared list container where it sits, which is what rounds the end rows
-    /// and draws the separators between them.
-    private var rows: [Row] {
-        isSet ? [.change, .autoLock, .biometrics, .disable] : [.set]
+        self.lockService = lockService
     }
 
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(spacing: .zero) {
-                        ForEach(Array(rows.enumerated()), id: \.element) { index, row in
-                            rowView(for: row)
-                                .commonListItemContainer(index: index, itemsCount: rows.count)
-                        }
+                VStack(alignment: .leading, spacing: 14) {
+                    passcodeGroup
+
+                    if isSet {
+                        biometricAndTimingGroup
                     }
-                    .commonListContainer()
 
                     if let biometricNote {
                         Text(biometricNote)
@@ -65,19 +60,19 @@ struct ManagePasscodeScreen: View {
                             .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockNote)
                     }
 
-                    explanation
                 }
             }
         }
-        .screenTitle("passcodeManageTitle".localized)
+        .screenTitle("security".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        // Not dismissable mid-removal. The swipe and the backdrop tap are
-        // refused for the same reason the close button is disabled: leaving does
-        // not stop the transition, it only means this list re-reads the passcode
-        // while it is still there and never hears that it went.
-        .crossPlatformSheet(isPresented: $showDisable, isDismissable: !isRemoving) {
-            DisablePasscodeScreen(isPresented: $showDisable, isRemoving: $isRemoving)
-                .presentationDragIndicator(.visible)
+        .withBanner(text: $bannerText)
+        .crossPlatformSheet(
+            isPresented: isPasscodeFlowPresented,
+            isDismissable: !isPasscodeOperationInFlight
+        ) {
+            if let activePasscodeFlow {
+                passcodeScreen(for: activePasscodeFlow)
+            }
         }
         // Dismissable on purpose. Backing out of it is backing out of setting a
         // passcode at all, which leaves the key shares exactly as they are — the
@@ -119,9 +114,144 @@ struct ManagePasscodeScreen: View {
             Task { await refresh() }
         }
         #endif
-        .onChange(of: showDisable) { _, isShowing in
-            guard !isShowing else { return }
+        .onChange(of: activePasscodeFlow) { _, flow in
+            guard flow == nil else { return }
             Task { await refresh() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .appLockBackupCompleted)) { _ in
+            bannerText = "backupSaved".localized
+        }
+    }
+
+    private var passcodeGroup: some View {
+        VStack(spacing: 0) {
+            toggleRow(
+                title: "appLockPasscodeTitle".localized,
+                isOn: Binding(
+                    get: { isSet },
+                    set: { requestedValue in
+                        if requestedValue {
+                            backupPrompt = BackupPrompt()
+                        } else {
+                            activePasscodeFlow = .disable
+                        }
+                    }
+                )
+            )
+
+            if isSet {
+                divider
+                actionRow(title: "passcodeChangeTitle".localized) {
+                    activePasscodeFlow = .change
+                }
+            }
+        }
+        .background(Theme.colors.bgSurface1)
+        .clipShape(Theme.radius.xl.shape)
+    }
+
+    private var biometricAndTimingGroup: some View {
+        VStack(spacing: 0) {
+            toggleRow(
+                title: biometricTitle,
+                isOn: Binding(
+                    get: { isBiometricEnabled },
+                    set: { newValue in Task { await setBiometric(enabled: newValue) } }
+                )
+            )
+            .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockToggle)
+
+            divider
+
+            actionRow(
+                title: "lockAfterTitle".localized,
+                trailingTitle: autoLockInterval.titleKey.localized
+            ) {
+                router.navigate(to: SettingsRoute.autoLock)
+            }
+        }
+        .background(Theme.colors.bgSurface1)
+        .clipShape(Theme.radius.xl.shape)
+    }
+
+    private func toggleRow(title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            Text(title)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            Spacer()
+
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(Theme.colors.primaryAccent4)
+                .fixedSize()
+        }
+        .padding(16)
+        .contentShape(Rectangle())
+    }
+
+    private func actionRow(
+        title: String,
+        trailingTitle: String? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                Spacer()
+
+                if let trailingTitle {
+                    Text(trailingTitle)
+                        .font(Theme.fonts.bodyMRegular)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                } else {
+                    Icon(.chevronRightSmall, color: Theme.colors.textSecondary, size: 16)
+                }
+            }
+            .padding(16)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Theme.colors.borderLight)
+            .frame(height: 1)
+    }
+
+    private var isPasscodeFlowPresented: Binding<Bool> {
+        Binding(
+            get: { activePasscodeFlow != nil },
+            set: { isPresented in
+                guard !isPresented else { return }
+                activePasscodeFlow = nil
+            }
+        )
+    }
+
+    @ViewBuilder
+    private func passcodeScreen(for flow: PasscodeFlow) -> some View {
+        switch flow {
+        case .set:
+            SetPasscodeScreen(
+                isPresented: isPasscodeFlowPresented,
+                isOperationInFlight: $isPasscodeOperationInFlight
+            )
+        case .change:
+            ChangePasscodeScreen(
+                isPresented: isPasscodeFlowPresented,
+                isOperationInFlight: $isPasscodeOperationInFlight
+            )
+        case .disable:
+            DisablePasscodeScreen(
+                isPresented: isPasscodeFlowPresented,
+                isOperationInFlight: $isPasscodeOperationInFlight
+            )
         }
     }
 
@@ -134,7 +264,7 @@ struct ManagePasscodeScreen: View {
     /// it, because that one is about what just happened.
     private var biometricNote: String? {
         if let biometricError { return biometricError }
-        guard rows.contains(.biometrics) else { return nil }
+        guard isSet else { return nil }
 
         switch biometricAvailability {
         case .available:
@@ -144,18 +274,6 @@ struct ManagePasscodeScreen: View {
         case .unavailable:
             return "passcodeBiometricNotAvailable".localized
         }
-    }
-
-    /// States plainly what the passcode does and does not do. Encryption is what
-    /// the passcode buys — with none set the key shares sit in the clear, and
-    /// removing it puts them back — and it is still not a backup, which a user
-    /// who believes otherwise may relax their habits over.
-    private var explanation: some View {
-        Text("passcodeManageExplanation".localized)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Presence is what presents the backup prompt; it carries nothing, because
@@ -169,73 +287,25 @@ struct ManagePasscodeScreen: View {
         case alreadyHasBackup
     }
 
-    enum Row: Hashable {
+    enum PasscodeFlow: Equatable {
         case set
         case change
-        case autoLock
-        case biometrics
         case disable
-
-        /// The localization key rather than the localized string:
-        /// `SettingToggleCell` localizes its own title, so the key is what has
-        /// to travel for the biometric row.
-        var titleKey: String {
-            switch self {
-            case .set: "passcodeSetTitle"
-            case .change: "passcodeChangeTitle"
-            case .autoLock: "passcodeAutoLockTitle"
-            case .biometrics: "passcodeBiometricToggle"
-            case .disable: "passcodeDisableNavTitle"
-            }
-        }
     }
 
-    /// Biometrics is a toggle rather than a destination, so it renders as the
-    /// app's standard toggle row instead of a navigation cell. Both go through
-    /// the same list container, which is what keeps the separators and the
-    /// rounded end rows consistent across the group.
-    @ViewBuilder
-    private func rowView(for row: Row) -> some View {
-        switch row {
-        case .biometrics:
-            // A shortcut past the passcode, not a replacement — the passcode
-            // always works, and turning this off never locks anyone out.
-            SettingToggleCell(
-                title: row.titleKey,
-                icon: "faceid",
-                isEnabled: Binding(
-                    get: { isBiometricEnabled },
-                    set: { newValue in Task { await setBiometric(enabled: newValue) } }
-                )
-            )
-            .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockToggle)
-        default:
-            Button {
-                handle(row)
-            } label: {
-                SettingsCommonOptionView(
-                    icon: .lockPassword,
-                    title: row.titleKey.localized,
-                    type: .normal
-                )
-            }
+    private var biometricTitle: String {
+        #if os(macOS)
+        return "touchIDUnlockTitle".localized
+        #else
+        switch appViewModel.authenticationType {
+        case .FaceID:
+            return "faceIDUnlockTitle".localized
+        case .TouchID:
+            return "touchIDUnlockTitle".localized
+        case .OpticID, .None:
+            return "biometricUnlockTitle".localized
         }
-    }
-
-    private func handle(_ row: Row) {
-        switch row {
-        case .set:
-            backupPrompt = BackupPrompt()
-        case .change:
-            router.navigate(to: SettingsRoute.changePasscode)
-        case .autoLock:
-            router.navigate(to: SettingsRoute.autoLock)
-        case .disable:
-            showDisable = true
-        case .biometrics:
-            // Rendered as a toggle, never as a tappable destination.
-            break
-        }
+        #endif
     }
 
     /// Records the answer and closes the sheet. Acting on it waits for
@@ -265,17 +335,20 @@ struct ManagePasscodeScreen: View {
                 // No vault means nothing to export and nothing to lose, so the
                 // prompt has nothing to offer. Falling through to the passcode
                 // screen beats a button that does nothing.
-                router.navigate(to: SettingsRoute.setPasscode)
+                activePasscodeFlow = .set
                 return
             }
-            router.navigate(to: VaultRoute.backupSelection(vault: vault))
+            router.navigate(to: VaultRoute.backupSelection(
+                vault: vault,
+                origin: .appLockSettings
+            ))
         case .alreadyHasBackup:
             // Taken at face value deliberately: `Vault.isBackedUp` is set by any
             // export or import and never cleared when the vault changes
             // afterwards, so it can neither confirm this answer nor contradict
             // it. Recording it as if it could would put a claim in the store
             // that later code might trust.
-            router.navigate(to: SettingsRoute.setPasscode)
+            activePasscodeFlow = .set
         }
     }
 
@@ -337,5 +410,7 @@ struct ManagePasscodeScreen: View {
         isSet = await service.isSet
         isBiometricEnabled = await service.isBiometricUnlockEnabled
         biometricAvailability = await service.biometricAvailability
+        autoLockInterval = lockService.autoLockInterval
+        appViewModel.getBiometricType()
     }
 }

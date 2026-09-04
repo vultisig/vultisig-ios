@@ -15,10 +15,15 @@ import SwiftUI
 final class PasscodeViewModel: ObservableObject {
 
     /// Which entry a multi-step flow is currently collecting.
-    enum Stage {
+    enum Stage: Equatable {
         case current
         case new
         case confirm
+    }
+
+    enum Completion: Equatable {
+        case success
+        case cancelledByLock
     }
 
     @Published var entry: String = "" {
@@ -33,10 +38,11 @@ final class PasscodeViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isBusy: Bool = false
     @Published private(set) var stage: Stage
-    @Published var didFinish: Bool = false
+    @Published private(set) var didFinish: Bool = false
+    @Published private(set) var completion: Completion?
 
     private let service: PasscodeService
-    private var firstEntry: String?
+    @Published private(set) var firstEntry: String?
 
     init(service: PasscodeService = .shared, stage: Stage = .current) {
         self.service = service
@@ -65,7 +71,9 @@ final class PasscodeViewModel: ObservableObject {
             // screen. Confirming the session still holds the key means a later
             // lock always wins rather than being cleared by an unlock that had
             // already been overtaken.
-            didFinish = service.isSessionUnlocked
+            if service.isSessionUnlocked {
+                finish(with: .success)
+            }
         } catch {
             errorMessage = Self.biometricMessage(for: error)
         }
@@ -120,6 +128,7 @@ final class PasscodeViewModel: ObservableObject {
         // screen comes down over a session that no longer holds the key.
         if didFinish, !service.isSessionUnlocked {
             didFinish = false
+            completion = nil
             entry = ""
         }
     }
@@ -164,7 +173,7 @@ final class PasscodeViewModel: ObservableObject {
     private func closeIfThePasscodeIsAlreadyDurable(after failure: Error?) {
         guard (failure as? PasscodeError) == .cancelledByLock else { return }
         errorMessage = nil
-        didFinish = true
+        finish(with: .cancelledByLock)
     }
 
     // MARK: - Change (current, then new, then confirm)
@@ -213,8 +222,6 @@ final class PasscodeViewModel: ObservableObject {
     }
 
     private func failWithMismatch() {
-        firstEntry = nil
-        stage = .new
         entry = ""
         errorMessage = "passcodeMismatch".localized
     }
@@ -240,7 +247,7 @@ final class PasscodeViewModel: ObservableObject {
             if let next {
                 advance(to: next)
             } else {
-                didFinish = true
+                finish(with: .success)
             }
             return nil
         } catch PasscodeError.cancelledByLock {
@@ -254,6 +261,11 @@ final class PasscodeViewModel: ObservableObject {
             fail(with: Self.message(for: error))
             return error
         }
+    }
+
+    private func finish(with completion: Completion) {
+        self.completion = completion
+        didFinish = true
     }
 
     static func message(for error: Error) -> String {

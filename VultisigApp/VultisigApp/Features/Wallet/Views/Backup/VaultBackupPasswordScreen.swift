@@ -11,6 +11,7 @@ struct VaultBackupPasswordScreen: View {
     let tssType: TssType
     let backupType: VaultBackupType
     var isNewVault = false
+    var origin: VaultBackupOrigin = .standard
 
     @State var verifyPassword: String = ""
 
@@ -30,7 +31,8 @@ struct VaultBackupPasswordScreen: View {
             backupViewModel: backupViewModel,
             tssType: tssType,
             backupType: backupType,
-            isNewVault: isNewVault
+            isNewVault: isNewVault,
+            origin: origin
         ) {
             Screen {
                 VStack {

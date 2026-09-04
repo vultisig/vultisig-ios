@@ -27,7 +27,7 @@ struct LockPasscodeEntryView: View {
 
     var body: some View {
         ZStack {
-            LockScreenBackground()
+            PasscodeBackground()
                 .ignoresSafeArea()
 
             PasscodeInput(
@@ -235,26 +235,6 @@ private extension LockPasscodeEntryView {
     }
 }
 #endif
-
-private struct LockScreenBackground: View {
-    var body: some View {
-        ZStack(alignment: .top) {
-            Theme.colors.bgPrimary
-
-            EllipticalGradient(
-                colors: [
-                    Theme.colors.primaryAccent2.opacity(0.9),
-                    Theme.colors.bgPrimary.opacity(0)
-                ],
-                center: .top
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 360)
-            .offset(y: -80)
-            .blur(radius: 30)
-        }
-    }
-}
 
 private struct LockShakeEffect: GeometryEffect {
     var amplitude: CGFloat = 9

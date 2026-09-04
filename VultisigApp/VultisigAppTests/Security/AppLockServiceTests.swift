@@ -92,6 +92,81 @@ final class AppLockServiceTests: XCTestCase {
         XCTAssertEqual(sut.autoLockInterval, .fiveMinutes)
     }
 
+    func testUnrecognisedSecondsValueDoesNotResurrectLegacyChoice() {
+        defaults.set(123, forKey: "autoLockIntervalSeconds")
+        defaults.set(15, forKey: "autoLockIntervalMinutes")
+
+        XCTAssertEqual(sut.autoLockInterval, .fiveMinutes)
+    }
+
+    func testPersistsShortIntervalsInSeconds() {
+        sut.autoLockInterval = .fifteenSeconds
+
+        XCTAssertEqual(defaults.integer(forKey: "autoLockIntervalSeconds"), 15)
+        XCTAssertEqual(AppLockService(defaults: defaults).autoLockInterval, .fifteenSeconds)
+        XCTAssertNil(defaults.object(forKey: "autoLockIntervalMinutes"))
+    }
+
+    func testMirrorsCompatibleSelectionsForDowngradeSafety() {
+        sut.autoLockInterval = .tenMinutes
+
+        XCTAssertEqual(defaults.integer(forKey: "autoLockIntervalMinutes"), 10)
+    }
+
+    func testNeverRemovesLegacySelectionForDowngradeSafety() {
+        defaults.set(15, forKey: "autoLockIntervalMinutes")
+
+        sut.autoLockInterval = .never
+
+        XCTAssertNil(defaults.object(forKey: "autoLockIntervalMinutes"))
+    }
+
+    func testNeverDurationCannotBeMistakenForAnExpiredInterval() {
+        XCTAssertEqual(AutoLockInterval.never.duration, .infinity)
+    }
+
+    func testSelectableCasesMatchTheFixedLockTimeList() {
+        XCTAssertEqual(
+            AutoLockInterval.selectableCases,
+            [
+                .immediate,
+                .fifteenSeconds,
+                .thirtySeconds,
+                .oneMinute,
+                .fiveMinutes,
+                .tenMinutes,
+                .thirtyMinutes,
+                .never
+            ]
+        )
+        XCTAssertTrue(AutoLockInterval.selectableCases.contains(.default))
+        XCTAssertFalse(AutoLockInterval.selectableCases.contains(.fifteenMinutes))
+    }
+
+    func testMigratesEveryPreviouslySelectableIntervalExactly() {
+        let legacyValues: [(minutes: Int, expected: AutoLockInterval)] = [
+            (0, .immediate),
+            (1, .oneMinute),
+            (5, .fiveMinutes),
+            (10, .tenMinutes),
+            (15, .fifteenMinutes),
+            (30, .thirtyMinutes)
+        ]
+
+        for value in legacyValues {
+            defaults.removeObject(forKey: "autoLockIntervalSeconds")
+            defaults.set(value.minutes, forKey: "autoLockIntervalMinutes")
+            XCTAssertEqual(sut.autoLockInterval, value.expected)
+        }
+    }
+
+    func testSecondsValueWinsOverLegacyMinutes() {
+        defaults.set(30, forKey: "autoLockIntervalSeconds")
+        defaults.set(15, forKey: "autoLockIntervalMinutes")
+
+        XCTAssertEqual(sut.autoLockInterval, .thirtySeconds)
+    }
+
     // MARK: - Relock decision
 
     func testDoesNotRelockBeforeTheIntervalElapses() {
@@ -122,6 +197,14 @@ final class AppLockServiceTests: XCTestCase {
         XCTAssertTrue(foreground(after: 61))
     }
 
+    func testHonoursFifteenSecondInterval() {
+        sut.autoLockInterval = .fifteenSeconds
+        recordBackgrounded()
+
+        XCTAssertFalse(foreground(after: 15))
+        XCTAssertTrue(foreground(after: 16))
+    }
+
     func testHonoursALongerInterval() {
         sut.autoLockInterval = .thirtyMinutes
         recordBackgrounded()
@@ -135,6 +218,26 @@ final class AppLockServiceTests: XCTestCase {
         recordBackgrounded()
 
         XCTAssertTrue(foreground(after: 0))
+    }
+
+    func testNeverDoesNotRelockAfterBackgrounding() {
+        sut.autoLockInterval = .never
+        recordBackgrounded()
+
+        XCTAssertFalse(foreground(after: 100_000_000))
+    }
+
+    func testMovingTheClockBackwardsRelocks() {
+        recordBackgrounded()
+
+        XCTAssertTrue(foreground(after: -1))
+    }
+
+    func testNeverIgnoresMovingTheClockBackwards() {
+        sut.autoLockInterval = .never
+        recordBackgrounded()
+
+        XCTAssertFalse(foreground(after: -1))
     }
 
     func testNeverRelocksWhenTheLockIsOff() {

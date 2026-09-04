@@ -27,30 +27,34 @@ struct VaultRouteBuilder {
     func buildBackupPasswordOptionsScreen(
         tssType: TssType,
         backupType: VaultBackupType,
-        isNewVault: Bool
+        isNewVault: Bool,
+        origin: VaultBackupOrigin
     ) -> some View {
         VaultBackupPasswordOptionsScreen(
             tssType: tssType,
             backupType: backupType,
-            isNewVault: isNewVault
+            isNewVault: isNewVault,
+            origin: origin
         )
     }
 
     @ViewBuilder
-    func buildBackupSelectionScreen(vault: Vault) -> some View {
-        VaultBackupSelectionScreen(selectedVault: vault)
+    func buildBackupSelectionScreen(vault: Vault, origin: VaultBackupOrigin) -> some View {
+        VaultBackupSelectionScreen(selectedVault: vault, origin: origin)
     }
 
     @ViewBuilder
     func buildBackupPasswordScreen(
         tssType: TssType,
         backupType: VaultBackupType,
-        isNewVault: Bool
+        isNewVault: Bool,
+        origin: VaultBackupOrigin
     ) -> some View {
         VaultBackupPasswordScreen(
             tssType: tssType,
             backupType: backupType,
-            isNewVault: isNewVault
+            isNewVault: isNewVault,
+            origin: origin
         )
     }
 

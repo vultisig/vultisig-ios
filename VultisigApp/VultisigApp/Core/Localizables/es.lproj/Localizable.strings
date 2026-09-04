@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "La cantidad no puede ser cero";
 "amountExceeded" = "La cantidad no puede exceder el saldo";
 "amountToWithdraw" = "Amount to Withdraw";
+"appLockPasscodeTitle" = "Código de bloqueo de la app";
 "apply" = "Aplicar";
 "applyReferral" = "Aplicar referido";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
@@ -77,12 +78,17 @@
 "atLeastOneDeviceSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
 "auto" = "Auto";
 "autocompounderInfo" = "Información del Auto-Compounder";
-"autoLockFifteenMinutes" = "Tras 15 minutos";
-"autoLockFiveMinutes" = "Tras 5 minutos";
+"autoLockDescription" = "Bloquear Vultisig automáticamente después de...";
+"autoLockFifteenMinutes" = "15 minutos";
+"autoLockFifteenSeconds" = "15 segundos";
+"autoLockFiveMinutes" = "5 minutos";
 "autoLockImmediately" = "Inmediatamente";
-"autoLockOneMinute" = "Tras 1 minuto";
-"autoLockTenMinutes" = "Tras 10 minutos";
-"autoLockThirtyMinutes" = "Tras 30 minutos";
+"autoLockNever" = "Nunca";
+"autoLockOneMinute" = "1 minuto";
+"autoLockScreenTitle" = "Tiempo de bloqueo";
+"autoLockTenMinutes" = "10 minutos";
+"autoLockThirtyMinutes" = "30 minutos";
+"autoLockThirtySeconds" = "30 segundos";
 "available" = "Disponible";
 "availableLPUnits" = "Unidades LP Disponibles";
 "availableNodes" = "Nodos Disponibles";
@@ -111,6 +117,7 @@
 "backupPasswordDisclaimer" = "Nunca almacene las partes del Vault de diferentes dispositivos en la misma ubicación";
 "backupSaveButton" = "Guardar respaldo";
 "backupSaveCheckbox" = "Entiendo cómo guardar este respaldo";
+"backupSaved" = "Copia de seguridad guardada";
 "backupsDescription" = "En lugar de una sola frase semilla, tu bóveda está asegurada por múltiples dispositivos. Cada dispositivo tiene su propio respaldo. Un respaldo solo no puede mover fondos. Los respaldos son solo para recuperación.";
 "backupsDescriptionVault" = "Los respaldos son la base de tu bóveda. Cada dispositivo tiene su propio respaldo. Un respaldo solo no puede mover fondos, es solo para recuperación. Importa y recupera cualquier dispositivo perdido";
 "backupsDescriptionVaultHighlight" = "propio";
@@ -135,6 +142,7 @@
 "beforeYouStart" = "Antes de comenzar...";
 "belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
+"biometricUnlockTitle" = "Desbloqueo biométrico";
 "bond" = "Vincular";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "No se pudieron cargar tus posiciones LP vinculables. Comprueba tu conexión e inténtalo de nuevo.";
@@ -478,6 +486,7 @@
 "expirationDate" = "Fecha de expiración";
 "expiresOn" = "Vencer";
 "extendExpiration(inYears)" = "Extender el vencimiento (en años)";
+"faceIDUnlockTitle" = "Desbloqueo con Face ID";
 "failedToDecodePeerDiscoveryMessage" = "Error al decodificar el mensaje de descubrimiento de pares";
 "failedToLoadFileData" = "Error al cargar los datos del archivo";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -889,6 +898,7 @@
 "loadingPools" = "Loading pools...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Modo local, esperando dispositivos...";
+"lockAfterTitle" = "Bloquear después de";
 "loginUsingFaceID" = "Iniciar sesión usando Face ID";
 "loginUsingOpticID" = "Iniciar sesión con Optic ID";
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
@@ -1058,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Crear copia ahora";
 "passcodeBackupPromptHasBackup" = "Ya tengo una copia de seguridad";
 "passcodeBackupPromptSubtitle" = "Un código cifra tus key shares con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia .vult es la única forma de recuperarlos: el código en sí no se puede recuperar.";
-"passcodeBackupPromptTitle" = "Haz una copia de seguridad antes de establecer un código";
+"passcodeBackupPromptTitle" = "Primero haz una copia de tu bóveda";
 "passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
 "passcodeBiometricEnableFailed" = "No se pudo activar el desbloqueo biométrico. Tu código sigue funcionando.";
 "passcodeBiometricNotAvailable" = "Este dispositivo no puede usar el desbloqueo biométrico.";
@@ -1068,8 +1078,10 @@
 "passcodeBiometricUnavailable" = "El desbloqueo biométrico ya no está disponible en este dispositivo. Introduce tu código.";
 "passcodeBusy" = "Hay otra operación en curso. Espera a que termine e inténtalo de nuevo.";
 "passcodeChangeTitle" = "Cambiar código";
+"passcodeChooseGuidance" = "Elige un código de 6 dígitos. Evita dígitos repetidos o secuenciales.";
 "passcodeChooseSubtitle" = "6 dígitos. Lo necesitarás para abrir la app.";
 "passcodeChooseTitle" = "Elige un código";
+"passcodeConfirmSheetTitle" = "Confirmar código";
 "passcodeConfirmSubtitle" = "Introdúcelo una vez más.";
 "passcodeConfirmTitle" = "Confirma tu código";
 "passcodeCurrentSubtitle" = "Confirma que eres tú antes de elegir uno nuevo.";
@@ -1089,6 +1101,7 @@
 "passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus vaults ya están cifrados en este dispositivo, pero no se puede leer la clave que los abre. Restáuralos desde una copia de seguridad.";
+"passcodeSetSheetTitle" = "Establecer código";
 "passcodeSetTitle" = "Establecer código";
 "passcodeStorageError" = "No se pudo leer el código en este dispositivo. Restaura tu vault desde una copia de seguridad.";
 "passcodeUseFaceID" = "Usar Face ID";
@@ -1606,6 +1619,7 @@
 "tonUnstakeFullWithdrawalNotice" = "Los pools de nominadores de TON solo admiten el retiro total. Se retirará todo tu staking.";
 "tonWithdrawalPendingMessage" = "Retiro en curso. Tu %@ se desbloqueará alrededor del %@.";
 "totalFee" = "Comisión total";
+"touchIDUnlockTitle" = "Desbloqueo con Touch ID";
 "track" = "Rastrear";
 "transaction" = "Transacción";
 "transactionBroadcasted" = "Transacción difundida";

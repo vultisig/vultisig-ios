@@ -37,9 +37,8 @@ enum PasscodeInputRules {
 }
 
 /// Owns passcode input behavior while leaving each flow free to present its own
-/// dots and input surface. Settings keeps its circular keypad, while app lock
-/// uses the native iOS number pad or macOS hardware keyboard without duplicating
-/// input rules.
+/// dots and input surface. Both Settings and app lock use the native iOS number
+/// pad or macOS hardware keyboard without duplicating input rules.
 struct PasscodeInput<Content: View>: View {
     @Binding var passcode: String
     let isBusy: Bool

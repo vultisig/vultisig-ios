@@ -22,7 +22,5 @@ enum SettingsRoute: Hashable {
     case checkForUpdates
     case advancedSettings
     case managePasscode
-    case setPasscode
-    case changePasscode
     case autoLock
 }

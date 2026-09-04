@@ -38,6 +38,7 @@ struct VaultBackupSelectionScreen: View {
     @Environment(\.router) var router
 
     let selectedVault: Vault
+    var origin: VaultBackupOrigin = .standard
 
     var vaultsToShow: Int { 5 }
     var moreVaultsCount: Int { vaults.count - vaultsToShow }
@@ -71,7 +72,8 @@ struct VaultBackupSelectionScreen: View {
             router.navigate(to: VaultRoute.backupPasswordOptions(
                 tssType: .Keygen,
                 backupType: type,
-                isNewVault: false
+                isNewVault: false,
+                origin: origin
             ))
         } label: {
             backupTypeRow(type: type)

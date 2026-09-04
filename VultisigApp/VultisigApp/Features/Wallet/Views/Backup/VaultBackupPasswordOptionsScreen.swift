@@ -11,6 +11,7 @@ struct VaultBackupPasswordOptionsScreen: View {
     let tssType: TssType
     let backupType: VaultBackupType
     var isNewVault = false
+    var origin: VaultBackupOrigin = .standard
 
     @State var isLoading = false
     @State var presentFileExporter = false
@@ -25,7 +26,8 @@ struct VaultBackupPasswordOptionsScreen: View {
             backupViewModel: backupViewModel,
             tssType: tssType,
             backupType: backupType,
-            isNewVault: isNewVault
+            isNewVault: isNewVault,
+            origin: origin
         ) {
             Screen {
                 VStack(spacing: 36) {
@@ -99,7 +101,8 @@ struct VaultBackupPasswordOptionsScreen: View {
             router.navigate(to: VaultRoute.backupPasswordScreen(
                 tssType: tssType,
                 backupType: backupType,
-                isNewVault: isNewVault
+                isNewVault: isNewVault,
+                origin: origin
             ))
         }
     }

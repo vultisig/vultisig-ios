@@ -37,10 +37,15 @@ struct BackUpBeforePasscodeScreen: View {
 
     var body: some View {
         Screen {
-            VStack(spacing: 24) {
+            VStack(spacing: 32) {
+                VaultBackupContent(title: "passcodeBackupPromptTitle".localized) {
+                    Text("passcodeBackupPromptSubtitle".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+
                 Spacer()
-                header
-                Spacer()
+
                 buttons
             }
         }
@@ -53,23 +58,9 @@ struct BackUpBeforePasscodeScreen: View {
                 }
             }
         }
-        .applySheetSize(650, 400)
+        .applySheetSize(650, 786)
         .sheetStyle()
-        .presentationDetents([.height(325)])
-    }
-
-    var header: some View {
-        VStack(spacing: 12) {
-            Text("passcodeBackupPromptTitle".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Text("passcodeBackupPromptSubtitle".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .multilineTextAlignment(.center)
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
     }
 
     var buttons: some View {

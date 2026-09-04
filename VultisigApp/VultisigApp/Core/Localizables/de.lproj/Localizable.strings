@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "Betrag darf nicht null sein";
 "amountExceeded" = "Betrag darf das Guthaben nicht überschreiten";
 "amountToWithdraw" = "Amount to Withdraw";
+"appLockPasscodeTitle" = "App-Sperrcode";
 "apply" = "Anwenden";
 "applyReferral" = "Empfehlung anwenden";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
@@ -77,12 +78,17 @@
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
 "auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder-Info";
-"autoLockFifteenMinutes" = "Nach 15 Minuten";
-"autoLockFiveMinutes" = "Nach 5 Minuten";
+"autoLockDescription" = "Vultisig automatisch sperren nach ...";
+"autoLockFifteenMinutes" = "15 Minuten";
+"autoLockFifteenSeconds" = "15 Sekunden";
+"autoLockFiveMinutes" = "5 Minuten";
 "autoLockImmediately" = "Sofort";
-"autoLockOneMinute" = "Nach 1 Minute";
-"autoLockTenMinutes" = "Nach 10 Minuten";
-"autoLockThirtyMinutes" = "Nach 30 Minuten";
+"autoLockNever" = "Nie";
+"autoLockOneMinute" = "1 Minute";
+"autoLockScreenTitle" = "Sperrzeit";
+"autoLockTenMinutes" = "10 Minuten";
+"autoLockThirtyMinutes" = "30 Minuten";
+"autoLockThirtySeconds" = "30 Sekunden";
 "available" = "Verfügbar";
 "availableLPUnits" = "Verfügbare LP-Einheiten";
 "availableNodes" = "Verfügbare Knoten";
@@ -111,6 +117,7 @@
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
 "backupSaveButton" = "Sicherung speichern";
 "backupSaveCheckbox" = "Ich verstehe, wie ich diese Sicherung speichere";
+"backupSaved" = "Backup gespeichert";
 "backupsDescription" = "Anstelle einer einzelnen Seed-Phrase ist Ihr Tresor durch mehrere Geräte gesichert. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen. Backups sind nur für die Wiederherstellung.";
 "backupsDescriptionVault" = "Backups sind die Grundlage Ihres Tresors. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen, es dient nur der Wiederherstellung. Importieren und stellen Sie jedes verlorene Gerät wieder her";
 "backupsDescriptionVaultHighlight" = "eigenes";
@@ -135,6 +142,7 @@
 "beforeYouStart" = "Bevor Sie beginnen...";
 "belowExistentialDepositError" = "Diese Überweisung würde weniger als das Mindestguthaben (Existenzminimum) auf Ihrem Konto belassen, sodass das Netzwerk sie ablehnen würde. Verringern Sie den Betrag oder senden Sie das gesamte Guthaben.";
 "biometricsFastSigning" = "Biometrie schnell unterschreiben";
+"biometricUnlockTitle" = "Biometrische Entsperrung";
 "bond" = "Binden";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "Ihre bondfähigen LP-Positionen konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
@@ -478,6 +486,7 @@
 "expirationDate" = "Ablaufdatum";
 "expiresOn" = "Läuft ab";
 "extendExpiration(inYears)" = "Ausweitung des Ablaufs (in Jahren)";
+"faceIDUnlockTitle" = "Entsperren mit Face ID";
 "failedToDecodePeerDiscoveryMessage" = "Fehler beim Dekodieren der Peer-Discovery-Nachricht";
 "failedToLoadFileData" = "Fehler beim Laden der Dateidaten";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -889,6 +898,7 @@
 "loadingPools" = "Loading pools...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
+"lockAfterTitle" = "Sperren nach";
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";
@@ -1058,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Jetzt sichern";
 "passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
 "passcodeBackupPromptSubtitle" = "Ein Passcode verschlüsselt Ihre Key-Shares mit einem Schlüssel, der auf diesem Gerät liegt. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück – der Passcode selbst lässt sich nicht wiederherstellen.";
-"passcodeBackupPromptTitle" = "Erstellen Sie ein Backup, bevor Sie einen Passcode festlegen";
+"passcodeBackupPromptTitle" = "Sichern Sie zuerst Ihren Tresor";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
 "passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
 "passcodeBiometricNotAvailable" = "Dieses Gerät kann die biometrische Entsperrung nicht verwenden.";
@@ -1068,8 +1078,10 @@
 "passcodeBiometricUnavailable" = "Die biometrische Entsperrung ist auf diesem Gerät nicht mehr verfügbar. Geben Sie Ihren Passcode ein.";
 "passcodeBusy" = "Ein anderer Vorgang läuft noch. Warten Sie, bis er abgeschlossen ist, und versuchen Sie es erneut.";
 "passcodeChangeTitle" = "Passcode ändern";
+"passcodeChooseGuidance" = "Wählen Sie einen 6-stelligen Passcode. Vermeiden Sie Wiederholungen oder Zahlenfolgen.";
 "passcodeChooseSubtitle" = "6 Ziffern. Sie benötigen ihn, um die App zu öffnen.";
 "passcodeChooseTitle" = "Passcode wählen";
+"passcodeConfirmSheetTitle" = "Passcode bestätigen";
 "passcodeConfirmSubtitle" = "Geben Sie ihn noch einmal ein.";
 "passcodeConfirmTitle" = "Passcode bestätigen";
 "passcodeCurrentSubtitle" = "Bestätigen Sie sich, bevor Sie einen neuen wählen.";
@@ -1089,6 +1101,7 @@
 "passcodeMismatch" = "Die Eingaben stimmen nicht überein. Erneut versuchen.";
 "passcodeNewTitle" = "Neuen Passcode wählen";
 "passcodeSealedSharesWithoutKey" = "Ihre Vaults sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel, der sie öffnet, kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
+"passcodeSetSheetTitle" = "Passcode festlegen";
 "passcodeSetTitle" = "Passcode festlegen";
 "passcodeStorageError" = "Der Passcode konnte auf diesem Gerät nicht gelesen werden. Stellen Sie Ihren Vault aus einem Backup wieder her.";
 "passcodeUseFaceID" = "Face ID verwenden";
@@ -1606,6 +1619,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON-Nominator-Pools unterstützen nur die vollständige Auszahlung. Dein gesamter Einsatz wird entstaked.";
 "tonWithdrawalPendingMessage" = "Abhebung läuft. Dein %@ wird etwa am %@ freigegeben.";
 "totalFee" = "Gesamtgebühr";
+"touchIDUnlockTitle" = "Entsperren mit Touch ID";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
 "transactionBroadcasted" = "Transaktion übertragen";

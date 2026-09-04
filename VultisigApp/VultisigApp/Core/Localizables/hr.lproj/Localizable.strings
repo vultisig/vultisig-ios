@@ -51,6 +51,7 @@
 "amountCannotBeZero" = "Iznos ne može biti nula";
 "amountExceeded" = "Iznos ne može premašiti saldo";
 "amountToWithdraw" = "Iznos za povlačenje";
+"appLockPasscodeTitle" = "Zaporka za zaključavanje aplikacije";
 "apply" = "Primijeni";
 "applyReferral" = "Primijeni preporuku";
 "approvalRequiredMessageLP" = "Ovaj ERC20 token zahtijeva odobrenje prije dodavanja u bazen likvidnosti. Potpisat će se dvije transakcije:";
@@ -77,12 +78,17 @@
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
 "auto" = "Auto";
 "autocompounderInfo" = "Auto-Compounder informacije";
-"autoLockFifteenMinutes" = "Nakon 15 minuta";
-"autoLockFiveMinutes" = "Nakon 5 minuta";
+"autoLockDescription" = "Automatski zaključaj Vultisig nakon...";
+"autoLockFifteenMinutes" = "15 minuta";
+"autoLockFifteenSeconds" = "15 sekundi";
+"autoLockFiveMinutes" = "5 minuta";
 "autoLockImmediately" = "Odmah";
-"autoLockOneMinute" = "Nakon 1 minute";
-"autoLockTenMinutes" = "Nakon 10 minuta";
-"autoLockThirtyMinutes" = "Nakon 30 minuta";
+"autoLockNever" = "Nikad";
+"autoLockOneMinute" = "1 minuta";
+"autoLockScreenTitle" = "Vrijeme zaključavanja";
+"autoLockTenMinutes" = "10 minuta";
+"autoLockThirtyMinutes" = "30 minuta";
+"autoLockThirtySeconds" = "30 sekundi";
 "available" = "Dostupno";
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";
@@ -111,6 +117,7 @@
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
 "backupSaveButton" = "Spremi sigurnosnu kopiju";
 "backupSaveCheckbox" = "Razumijem kako spremiti ovu sigurnosnu kopiju";
+"backupSaved" = "Sigurnosna kopija spremljena";
 "backupsDescription" = "Umjesto jedne seed fraze, vaš trezor je osiguran s više uređaja. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva. Sigurnosne kopije su samo za oporavak.";
 "backupsDescriptionVault" = "Sigurnosne kopije pokreću vaš trezor. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva, služi samo za oporavak. Uvezite i oporavite bilo koji izgubljeni uređaj";
 "backupsDescriptionVaultHighlight" = "svoju";
@@ -135,6 +142,7 @@
 "beforeYouStart" = "Prije nego započnete...";
 "belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
+"biometricUnlockTitle" = "Biometrijsko otključavanje";
 "bond" = "Veži";
 "Bond" = "Bond";
 "bondableAssetsLoadFailed" = "Nije moguće učitati vaše LP pozicije koje se mogu bondati. Provjerite vezu i pokušajte ponovo.";
@@ -478,6 +486,7 @@
 "expirationDate" = "Datum isteka";
 "expiresOn" = "Ističe na";
 "extendExpiration(inYears)" = "Produžite istek (u godinama)";
+"faceIDUnlockTitle" = "Otključavanje Face ID-jem";
 "failedToDecodePeerDiscoveryMessage" = "Neuspjeh u dekodiranju poruke otkrivanja vršnjaka";
 "failedToLoadFileData" = "Greška pri učitavanju podataka datoteke";
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
@@ -889,6 +898,7 @@
 "loadingPools" = "Učitavanje bazena...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
+"lockAfterTitle" = "Zaključaj nakon";
 "loginUsingFaceID" = "Prijava pomoću Face ID";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
@@ -1058,7 +1068,7 @@
 "passcodeBackupPromptBackUpNow" = "Napravi kopiju sada";
 "passcodeBackupPromptHasBackup" = "Već imam sigurnosnu kopiju";
 "passcodeBackupPromptSubtitle" = "Zaporka šifrira vaše key shareove ključem koji se nalazi na ovom uređaju. Ako se taj ključ izgubi, vaša .vult sigurnosna kopija jedini je način povratka — sama zaporka ne može se vratiti.";
-"passcodeBackupPromptTitle" = "Napravite sigurnosnu kopiju prije postavljanja zaporke";
+"passcodeBackupPromptTitle" = "Najprije napravite sigurnosnu kopiju trezora";
 "passcodeBiometricDisableFailed" = "Otključavanje biometrijom nije se moglo isključiti. Pokušajte ponovno.";
 "passcodeBiometricEnableFailed" = "Otključavanje biometrijom nije se moglo uključiti. Vaša zaporka i dalje radi.";
 "passcodeBiometricNotAvailable" = "Ovaj uređaj ne može koristiti otključavanje biometrijom.";
@@ -1068,8 +1078,10 @@
 "passcodeBiometricUnavailable" = "Otključavanje biometrijom više nije dostupno na ovom uređaju. Unesite zaporku.";
 "passcodeBusy" = "Druga radnja je još u tijeku. Pričekajte da završi pa pokušajte ponovno.";
 "passcodeChangeTitle" = "Promijeni zaporku";
+"passcodeChooseGuidance" = "Odaberite zaporku od 6 znamenki. Izbjegavajte ponavljajuće ili uzastopne znamenke.";
 "passcodeChooseSubtitle" = "6 znamenki. Trebat će vam za otvaranje aplikacije.";
 "passcodeChooseTitle" = "Odaberite zaporku";
+"passcodeConfirmSheetTitle" = "Potvrdite zaporku";
 "passcodeConfirmSubtitle" = "Unesite je još jednom.";
 "passcodeConfirmTitle" = "Potvrdite zaporku";
 "passcodeCurrentSubtitle" = "Potvrdite identitet prije odabira nove.";
@@ -1089,6 +1101,7 @@
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
+"passcodeSetSheetTitle" = "Postavi zaporku";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "passcodeUseFaceID" = "Upotrijebi Face ID";
@@ -1606,6 +1619,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
 "tonWithdrawalPendingMessage" = "Povlačenje u tijeku. Vaš %@ bit će otključan oko %@.";
 "totalFee" = "Ukupna naknada";
+"touchIDUnlockTitle" = "Otključavanje Touch ID-jem";
 "track" = "Prati";
 "transaction" = "Transakcija";
 "transactionBroadcasted" = "Transakcija odaslana";

@@ -82,16 +82,6 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildSetPasscodeScreen() -> some View {
-        SetPasscodeScreen()
-    }
-
-    @ViewBuilder
-    func buildChangePasscodeScreen() -> some View {
-        ChangePasscodeScreen()
-    }
-
-    @ViewBuilder
     func buildAutoLockScreen() -> some View {
         AutoLockScreen()
     }

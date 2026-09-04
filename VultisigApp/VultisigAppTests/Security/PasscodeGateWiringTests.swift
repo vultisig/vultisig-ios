@@ -174,6 +174,27 @@ final class PasscodeGateWiringTests: XCTestCase {
         sut.revokeAuth()
     }
 
+    // MARK: - Settings confirmation
+
+    func testSetConfirmationMismatchKeepsTheOriginalEntryVisible() async {
+        let sut = PasscodeViewModel(service: service, stage: .new)
+        sut.entry = "123456"
+
+        await sut.submitForSet()
+
+        XCTAssertEqual(sut.stage, .confirm)
+        XCTAssertEqual(sut.firstEntry, "123456")
+
+        sut.entry = "654321"
+        await sut.submitForSet()
+
+        XCTAssertEqual(sut.stage, .confirm)
+        XCTAssertEqual(sut.firstEntry, "123456")
+        XCTAssertEqual(sut.entry, "")
+        XCTAssertEqual(sut.errorMessage, "passcodeMismatch".localized)
+        XCTAssertFalse(sut.didFinish)
+    }
+
     // MARK: - Raising
 
     func testAForegroundRelockRaisesTheGateWhileAPasscodeIsSet() async throws {

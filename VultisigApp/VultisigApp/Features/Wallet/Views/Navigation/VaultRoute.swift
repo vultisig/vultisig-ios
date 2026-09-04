@@ -5,12 +5,27 @@
 //  Created by Gaston Mazzeo on 15/12/2025.
 //
 
+enum VaultBackupOrigin: Hashable {
+    case standard
+    case appLockSettings
+}
+
 enum VaultRoute: Hashable {
     case upgradeVault(vault: Vault, isFastVault: Bool)
     case serverBackup(vault: Vault)
-    case backupPasswordOptions(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
-    case backupSelection(vault: Vault)
-    case backupPasswordScreen(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
+    case backupPasswordOptions(
+        tssType: TssType,
+        backupType: VaultBackupType,
+        isNewVault: Bool,
+        origin: VaultBackupOrigin = .standard
+    )
+    case backupSelection(vault: Vault, origin: VaultBackupOrigin = .standard)
+    case backupPasswordScreen(
+        tssType: TssType,
+        backupType: VaultBackupType,
+        isNewVault: Bool,
+        origin: VaultBackupOrigin = .standard
+    )
     case backupSuccess(tssType: TssType, vault: Vault)
     case createVault(showBackButton: Bool)
     case swap(fromCoin: Coin?, toCoin: Coin?, vault: Vault)

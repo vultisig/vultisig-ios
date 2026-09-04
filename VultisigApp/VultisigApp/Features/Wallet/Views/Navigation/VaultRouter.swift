@@ -17,19 +17,21 @@ struct VaultRouter {
             viewBuilder.buildUpgradeVaultScreen(vault: vault, isFastVault: isFastVault)
         case .serverBackup(let vault):
             viewBuilder.buildServerBackupScreen(vault: vault)
-        case .backupPasswordOptions(let tssType, let backupType, let isNewVault):
+        case .backupPasswordOptions(let tssType, let backupType, let isNewVault, let origin):
             viewBuilder.buildBackupPasswordOptionsScreen(
                 tssType: tssType,
                 backupType: backupType,
-                isNewVault: isNewVault
+                isNewVault: isNewVault,
+                origin: origin
             )
-        case .backupSelection(let vault):
-            viewBuilder.buildBackupSelectionScreen(vault: vault)
-        case .backupPasswordScreen(let tssType, let backupType, let isNewVault):
+        case .backupSelection(let vault, let origin):
+            viewBuilder.buildBackupSelectionScreen(vault: vault, origin: origin)
+        case .backupPasswordScreen(let tssType, let backupType, let isNewVault, let origin):
             viewBuilder.buildBackupPasswordScreen(
                 tssType: tssType,
                 backupType: backupType,
-                isNewVault: isNewVault
+                isNewVault: isNewVault,
+                origin: origin
             )
         case .backupSuccess(let tssType, let vault):
             viewBuilder.buildBackupSuccessScreen(tssType: tssType, vault: vault)

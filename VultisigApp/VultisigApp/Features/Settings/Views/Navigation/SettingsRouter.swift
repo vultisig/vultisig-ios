@@ -41,10 +41,6 @@ struct SettingsRouter {
             viewBuilder.buildAdvancedSettingsScreen()
         case .managePasscode:
             viewBuilder.buildManagePasscodeScreen()
-        case .setPasscode:
-            viewBuilder.buildSetPasscodeScreen()
-        case .changePasscode:
-            viewBuilder.buildChangePasscodeScreen()
         case .autoLock:
             viewBuilder.buildAutoLockScreen()
         }
