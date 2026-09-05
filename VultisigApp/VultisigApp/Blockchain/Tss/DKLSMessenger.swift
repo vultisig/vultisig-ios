@@ -12,29 +12,36 @@ import CryptoKit
 
 private let logger = Log.tss.network
 final class DKLSMessenger {
+    typealias Sleeper = @Sendable (Duration) async throws -> Void
+
     let mediatorURL: String
     let sessionID: String
     var messageID: String?
     let encryptionKeyHex: String
     var counter: Int64 = 1
     private let httpClient: HTTPClientProtocol
+    private let sleep: Sleeper
 
     init(mediatorUrl: String,
          sessionID: String,
          messageID: String?,
          encryptionKeyHex: String,
-         httpClient: HTTPClientProtocol = HTTPClient()) {
+         httpClient: HTTPClientProtocol = HTTPClient(),
+         sleep: @escaping Sleeper = { try await Task.sleep(for: $0) }) {
         self.mediatorURL = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
         self.encryptionKeyHex = encryptionKeyHex
         self.httpClient = httpClient
+        self.sleep = sleep
     }
 
     /// Uploads a setup message to the relay server.
     /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
     /// so callers can route a setup message into a different namespace than the TSS exchange.
-    func uploadSetupMessage(message: String, _ additionalHeader: String?) async throws {
+    func uploadSetupMessage(message: String,
+                            _ additionalHeader: String?,
+                            hardDeadline: ContinuousClock.Instant? = nil) async throws {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
@@ -44,6 +51,10 @@ final class DKLSMessenger {
             throw HelperError.runtimeError("fail to encrypt message body")
         }
 
+        let timeout = try requestTimeout(
+            maximum: TssRelayAPI.defaultTimeout,
+            hardDeadline: hardDeadline
+        )
         do {
             _ = try await httpClient.request(TssRelayAPI(
                 baseURL: baseURL,
@@ -52,21 +63,35 @@ final class DKLSMessenger {
                     body: bodyData,
                     messageID: messageID,
                     additionalHeader: additionalHeader
-                )
+                ),
+                timeoutInterval: timeout
             ))
+            try checkHardDeadline(hardDeadline)
+        } catch HTTPError.timeout {
+            try checkHardDeadline(hardDeadline)
+            throw HTTPError.timeout
         } catch let HTTPError.statusCode(code, _) {
             throw HelperError.runtimeError("fail to setup message to relay server,status:\(code)")
         }
     }
 
-    func downloadSetupMessageWithRetry(_ additionalHeader: String?) async throws -> String {
+    func downloadSetupMessageWithRetry(
+        _ additionalHeader: String?,
+        hardDeadline: ContinuousClock.Instant? = nil
+    ) async throws -> String {
         var attempt = 0
         repeat {
             do {
-                return try await downloadSetupMessage(additionalHeader)
+                return try await downloadSetupMessage(
+                    additionalHeader,
+                    hardDeadline: hardDeadline
+                )
+            } catch RelaySendError.ceremonyDeadlineExceeded {
+                throw RelaySendError.ceremonyDeadlineExceeded
             } catch {
                 logger.error("fail to download setup message, error \(error.localizedDescription), attempt: \(attempt)")
                 // backoff 1s
+                try ensureBackoffFits(.seconds(1), hardDeadline: hardDeadline)
                 try await Task.sleep(for: .seconds(1))
             }
             attempt = attempt + 1
@@ -78,11 +103,18 @@ final class DKLSMessenger {
     /// Downloads a setup message from the relay server.
     /// `self.messageID` is applied first; when `additionalHeader` is provided it overrides the header
     /// so callers can route a setup message into a different namespace than the TSS exchange.
-    func downloadSetupMessage(_ additionalHeader: String?) async throws -> String {
+    func downloadSetupMessage(
+        _ additionalHeader: String?,
+        hardDeadline: ContinuousClock.Instant? = nil
+    ) async throws -> String {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
 
+        let timeout = try requestTimeout(
+            maximum: TssRelayAPI.defaultTimeout,
+            hardDeadline: hardDeadline
+        )
         let response: HTTPResponse<Data>
         do {
             response = try await httpClient.request(TssRelayAPI(
@@ -91,8 +123,13 @@ final class DKLSMessenger {
                     sessionID: sessionID,
                     messageID: messageID,
                     additionalHeader: additionalHeader
-                )
+                ),
+                timeoutInterval: timeout
             ))
+            try checkHardDeadline(hardDeadline)
+        } catch HTTPError.timeout {
+            try checkHardDeadline(hardDeadline)
+            throw HTTPError.timeout
         } catch let HTTPError.statusCode(code, _) {
             throw HelperError.runtimeError("fail to download setup message from relay server,status:\(code)")
         }
@@ -106,28 +143,27 @@ final class DKLSMessenger {
         throw HelperError.runtimeError("fail to decrypt setup message")
     }
 
-    func send(_ fromParty: String?, to: String?, body: String?) async throws {
+    func send(_ fromParty: String?,
+              to: String?,
+              body: String?,
+              hardDeadline: ContinuousClock.Instant? = nil) async throws {
         guard let fromParty else {
-            logger.error("from is nil")
-            return
+            throw RelaySendError.invalidMessage("from is nil")
         }
         guard let to else {
-            logger.error("to is nil")
-            return
+            throw RelaySendError.invalidMessage("to is nil")
         }
         guard let body else {
-            logger.error("body is nil")
-            return
+            throw RelaySendError.invalidMessage("body is nil")
         }
         guard let baseURL = URL(string: mediatorURL) else {
-            logger.error("invalid mediator URL: \(self.mediatorURL)")
-            return
+            throw RelaySendError.invalidMessage("invalid mediator URL: \(mediatorURL)")
         }
-
         guard let encryptedBody = body.aesEncryptGCM(key: self.encryptionKeyHex) else {
-            logger.error("fail to encrypt message body")
-            return
+            throw RelaySendError.invalidMessage("fail to encrypt message body")
         }
+        // Built once: every retry must carry the same hash and sequence number
+        // so the relay and the receiver dedupe it instead of applying it twice.
         let msg = Message(session_id: sessionID,
                           from: fromParty,
                           to: [to],
@@ -135,26 +171,77 @@ final class DKLSMessenger {
                           hash: Utils.getMessageBodyHash(msg: body),
                           sequenceNo: self.counter)
         self.counter += 1
-
-        for _ in 0...3 {
+        var attempt = 1
+        while true {
+            let requestTimeout = try requestTimeout(
+                maximum: RelaySendRetryPolicy.requestTimeout,
+                hardDeadline: hardDeadline
+            )
+            let target = TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .sendMessage(
+                    sessionID: sessionID,
+                    message: msg,
+                    messageID: messageID,
+                    addLegacyKeygenHeader: false
+                ),
+                timeoutInterval: requestTimeout
+            )
             do {
-                _ = try await httpClient.request(TssRelayAPI(
-                    baseURL: baseURL,
-                    endpoint: .sendMessage(
-                        sessionID: sessionID,
-                        message: msg,
-                        messageID: messageID,
-                        addLegacyKeygenHeader: false
-                    )
-                ))
+                _ = try await httpClient.request(target)
                 logger.info("send message (\(msg.hash) to (\(msg.to)) successfully, sequenceNo:\(msg.sequence_no)")
                 return
-            } catch let HTTPError.statusCode(code, _) {
-                logger.error("fail to send message to relay server,status:\(code)")
-                continue
             } catch {
-                logger.error("fail to send message,error:\(error.localizedDescription)")
+                try checkHardDeadline(hardDeadline)
+                guard RelaySendRetryPolicy.isRetryable(error) else {
+                    if case HTTPError.statusCode(let code, _) = error {
+                        throw RelaySendError.rejected(status: code)
+                    }
+                    throw error
+                }
+                guard attempt < RelaySendRetryPolicy.maxAttempts else {
+                    throw RelaySendError.exhausted(attempts: attempt, lastError: error)
+                }
+                logger.warning("fail to send message \(msg.hash), attempt \(attempt)/\(RelaySendRetryPolicy.maxAttempts): \(error.localizedDescription)")
+                let backoff = RelaySendRetryPolicy.backoff(afterAttempt: attempt)
+                try ensureBackoffFits(backoff, hardDeadline: hardDeadline)
+                try await sleep(backoff)
+                attempt += 1
             }
         }
+    }
+
+    private func requestTimeout(
+        maximum: TimeInterval,
+        hardDeadline: ContinuousClock.Instant?
+    ) throws -> TimeInterval {
+        guard let hardDeadline else {
+            return maximum
+        }
+        let remaining = ContinuousClock.now.duration(to: hardDeadline)
+        guard remaining > .zero else {
+            throw RelaySendError.ceremonyDeadlineExceeded
+        }
+        return min(maximum, Self.timeInterval(remaining))
+    }
+
+    private func checkHardDeadline(_ hardDeadline: ContinuousClock.Instant?) throws {
+        if let hardDeadline, ContinuousClock.now >= hardDeadline {
+            throw RelaySendError.ceremonyDeadlineExceeded
+        }
+    }
+
+    private func ensureBackoffFits(_ backoff: Duration,
+                                   hardDeadline: ContinuousClock.Instant?) throws {
+        guard let hardDeadline else { return }
+        if ContinuousClock.now.advanced(by: backoff) >= hardDeadline {
+            throw RelaySendError.ceremonyDeadlineExceeded
+        }
+    }
+
+    private static func timeInterval(_ duration: Duration) -> TimeInterval {
+        let components = duration.components
+        return TimeInterval(components.seconds)
+            + TimeInterval(components.attoseconds) / 1_000_000_000_000_000_000
     }
 }

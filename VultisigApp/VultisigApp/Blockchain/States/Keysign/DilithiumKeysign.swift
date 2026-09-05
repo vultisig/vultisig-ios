@@ -35,6 +35,7 @@ final class DilithiumKeysign {
     let publicKey: String
     var messenger: DKLSMessenger?
     var cache = NSCache<NSString, AnyObject>()
+    var ceremonyWatchdog = CeremonyWatchdog(hardLimit: nil)
     var signatures = [String: DilithiumKeysignResponse]()
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
     private let httpClient: HTTPClientProtocol
@@ -189,7 +190,9 @@ final class DilithiumKeysign {
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
-                                         body: encodedOutboundMessage)
+                                         body: encodedOutboundMessage,
+                                         hardDeadline: ceremonyWatchdog.hardDeadline)
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
 
@@ -202,12 +205,13 @@ final class DilithiumKeysign {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        ceremonyWatchdog.beginAttempt()
         repeat {
             // Cooperative cancellation: honour cancelAll() from the stage-level
             // timeout so a stalled poll stops instead of running to completion
             // and broadcasting an abandoned ceremony.
             try Task.checkCancellation()
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -216,8 +220,11 @@ final class DilithiumKeysign {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -233,13 +240,7 @@ final class DilithiumKeysign {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
-                throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -277,10 +278,12 @@ final class DilithiumKeysign {
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processDilithiumOutboundMessage(handle: handle)
+            try ceremonyWatchdog.checkHardDeadline()
             // local party keysign finished
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -369,6 +372,8 @@ final class DilithiumKeysign {
                 self.signatures[messageToSign] = resp
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.

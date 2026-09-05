@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
 "cardanoMinimumSendAmountError" = "Der Mindestsendebetrag beträgt %@ ADA. Cardano benötigt dies, damit das Netzwerk deine Transaktion nicht verwirft.";
 "cardanoOutputBelowMinAda" = "Nicht genug ADA, um die Netzwerkgebühr und Cardanos Mindest-UTXO-Anforderung (~1,4 ADA pro Output) zu decken. Sende zuerst mehr ADA in dieses Vault.";
+"ceremonyOverallDeadlineExceeded" = "Zeitüberschreitung: Die Zeremonie hat 240 Sekunden überschritten";
+"ceremonyPeerUnresponsive" = "Zeitüberschreitung: Innerhalb von 60 Sekunden kam keine Antwort von einem anderen Teilnehmer";
 "chain" = "Blockchain";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";
 "chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "von mehreren Geräten";
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "keygenInstructionsCar7Title" = "Funktionshighlight";
+"keygenKickoffFailed" = "Schlüsselgenerierung konnte nicht gestartet werden. Bitte erneut versuchen.";
 "keys" = "Schlüssel";
 "keyshareRecoveryBackupMessage" = "Ihr .vult-Backup ist der Weg zurück. Importieren Sie es, und diese Vaults funktionieren wieder.";
 "keyshareRecoveryImportButton" = ".vult-Backup importieren";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "Keine Prämien verpassen";
 "referredSaveOnSwaps" = "Speichern Sie %@ bei Swaps - Fügen Sie eine Empfehlung hinzu";
 "registrationFee" = "Registrierungsgebühr";
+"relaySendCeremonyDeadlineExceeded" = "Zeitüberschreitung: Das Zeitlimit der Zeremonie wurde beim Senden einer Relay-Nachricht überschritten";
+"relaySendExhausted" = "Die Nachricht konnte nach %d Versuchen nicht gesendet werden: %@";
+"relaySendInvalidMessage" = "Die Nachricht konnte nicht gesendet werden: %@";
+"relaySendRejected" = "Der Relay-Server hat die Nachricht abgelehnt (Status %d)";
 "remove" = "Entfernen";
 "removeCoinLP" = "%@ LP entfernen";
 "removeLPDustAmountError" = "Sie benötigen mindestens %@, um Gebühren zu decken";

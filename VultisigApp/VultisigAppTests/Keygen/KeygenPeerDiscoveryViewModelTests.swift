@@ -8,6 +8,7 @@
 //  vultisig-ios#4374.
 //
 
+import Combine
 import XCTest
 @testable import VultisigApp
 
@@ -106,5 +107,165 @@ final class KeygenPeerDiscoveryViewModelTests: XCTestCase {
         let vm = makeVM(selectionCount: 1)
         vm.selections.removeAll()
         XCTAssertFalse(vm.shouldAutoStartKeygen(totalDeviceCount: 2))
+    }
+
+    // MARK: - Kickoff
+
+    private func makeKickoffVM(http: KickoffHTTPClient) -> KeygenPeerDiscoveryViewModel {
+        let vm = KeygenPeerDiscoveryViewModel(httpClient: http)
+        vm.localPartyID = "iPhone-Local"
+        vm.sessionID = "session-1"
+        vm.serverAddr = "https://relay.invalid"
+        vm.selections = ["Peer-1", "iPhone-Local"]
+        return vm
+    }
+
+    private func waitForKickoff(_ vm: KeygenPeerDiscoveryViewModel) async {
+        for _ in 0..<500 where vm.isStartingKeygen {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
+    private func waitForKickoffRequest(_ http: KickoffHTTPClient) async {
+        for _ in 0..<500 where http.kickoffs.isEmpty {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
+    func testStartKeygenAwaitsTheKickoffThenEntersKeygen() async {
+        let http = KickoffHTTPClient()
+        let vm = makeKickoffVM(http: http)
+
+        vm.startKeygen()
+        XCTAssertTrue(vm.isStartingKeygen)
+        XCTAssertEqual(vm.status, .WaitingForDevices)
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(vm.status, .Keygen)
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertEqual(vm.keygenCommittee.first, "iPhone-Local")
+        XCTAssertEqual(http.kickoffs.count, 1)
+        XCTAssertEqual(http.kickoffs.first?.sessionID, "session-1")
+        XCTAssertEqual(http.kickoffs.first?.participants, vm.keygenCommittee)
+    }
+
+    func testKickoffFailureSurfacesAnErrorInsteadOfStartingKeygen() async {
+        let http = KickoffHTTPClient()
+        http.result = .failure(HTTPError.statusCode(500, nil))
+        let vm = makeKickoffVM(http: http)
+        var statuses: [PeerDiscoveryStatus] = []
+        let cancellable = vm.$status.sink { statuses.append($0) }
+        defer { cancellable.cancel() }
+
+        vm.startKeygen()
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(vm.status, .Failure)
+        XCTAssertEqual(vm.errorMessage, "keygenKickoffFailed".localized)
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertFalse(statuses.contains(.Keygen))
+    }
+
+    func testSecondStartWhileInFlightSendsASingleKickoff() async {
+        let http = KickoffHTTPClient()
+        let vm = makeKickoffVM(http: http)
+
+        vm.startKeygen()
+        vm.startKeygen()
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(http.kickoffs.count, 1)
+        XCTAssertEqual(vm.status, .Keygen)
+    }
+
+    func testShouldNotAutoStartWhileTheKickoffIsInFlight() async {
+        let http = KickoffHTTPClient()
+        http.delay = .milliseconds(200)
+        let vm = makeKickoffVM(http: http)
+
+        vm.startKeygen()
+        XCTAssertFalse(vm.shouldAutoStartKeygen(totalDeviceCount: 2))
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(vm.status, .Keygen)
+    }
+
+    func testStartKeygenIsIgnoredOutsideWaitingForDevices() async {
+        let http = KickoffHTTPClient()
+        let vm = makeKickoffVM(http: http)
+        vm.status = .Failure
+
+        vm.startKeygen()
+        await waitForKickoff(vm)
+
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertEqual(vm.status, .Failure)
+        XCTAssertTrue(http.kickoffs.isEmpty)
+    }
+
+    func testCancellingAnInFlightKickoffLeavesTheStateUntouched() async {
+        let http = KickoffHTTPClient()
+        http.delay = .milliseconds(200)
+        let vm = makeKickoffVM(http: http)
+
+        vm.startKeygen()
+        await waitForKickoffRequest(http)
+        XCTAssertEqual(http.kickoffs.count, 1)
+        vm.cancelKickoff()
+        await waitForKickoff(vm)
+
+        XCTAssertFalse(vm.isStartingKeygen)
+        XCTAssertEqual(vm.status, .WaitingForDevices)
+        XCTAssertTrue(vm.errorMessage.isEmpty)
+    }
+
+    func testCommitteesAreFixedWhenTheKickoffStarts() async {
+        let http = KickoffHTTPClient()
+        http.delay = .milliseconds(200)
+        let vm = makeKickoffVM(http: http)
+        vm.vault.signers = ["iPhone-Local", "Peer-1", "Peer-2"]
+
+        vm.startKeygen()
+        vm.autoSelectPeer("Peer-2")
+        await waitForKickoff(vm)
+
+        XCTAssertEqual(vm.status, .Keygen)
+        XCTAssertEqual(vm.keygenCommittee.sorted(), ["Peer-1", "iPhone-Local"])
+        XCTAssertEqual(vm.vaultOldCommittee, ["iPhone-Local", "Peer-1"])
+        XCTAssertEqual(http.kickoffs.first?.participants.sorted(), ["Peer-1", "iPhone-Local"])
+    }
+}
+
+private final class KickoffHTTPClient: HTTPClientProtocol, @unchecked Sendable {
+    struct Kickoff {
+        let sessionID: String
+        let participants: [String]
+    }
+
+    var result: Result<Void, Error> = .success(())
+    var delay: Duration = .zero
+    private let lock = NSLock()
+    private var recordedKickoffs: [Kickoff] = []
+
+    var kickoffs: [Kickoff] {
+        lock.withLock { recordedKickoffs }
+    }
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        if let relay = target as? RelayServerAPI, case .startSession(let sessionID, let body) = relay.endpoint {
+            let participants = (try? JSONDecoder().decode([String].self, from: body)) ?? []
+            lock.withLock {
+                recordedKickoffs.append(Kickoff(sessionID: sessionID, participants: participants))
+            }
+        }
+        if delay > .zero {
+            try await Task.sleep(for: delay)
+        } else {
+            await Task.yield()
+        }
+        try result.get()
+        let url = URL(string: "https://relay.invalid")!
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return HTTPResponse(data: Data(), response: response)
     }
 }

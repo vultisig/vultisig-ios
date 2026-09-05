@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "Soy consciente de que puedo perder fondos.";
 "cardanoMinimumSendAmountError" = "El importe mínimo de envío es %@ ADA. Cardano lo exige para evitar que la red descarte tu transacción.";
 "cardanoOutputBelowMinAda" = "No hay suficiente ADA para cubrir la tarifa de red y el requisito mínimo de UTXO de Cardano (~1,4 ADA por salida). Envía más ADA a este vault primero.";
+"ceremonyOverallDeadlineExceeded" = "Tiempo de espera agotado: la ceremonia superó los 240 segundos";
+"ceremonyPeerUnresponsive" = "Tiempo de espera agotado: no se recibió respuesta de otro participante en 60 segundos";
 "chain" = "Cadena";
 "chainNotAdded" = "Cadena No Añadida";
 "chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "desde múltiples dispositivos";
 "keygenInstructionsCar7DescriptionPart3" = ", mejorando la flexibilidad sin comprometer la seguridad.";
 "keygenInstructionsCar7Title" = "Destacado de funciones";
+"keygenKickoffFailed" = "No se pudo iniciar la generación de clave. Por favor, inténtalo de nuevo.";
 "keys" = "Llaves";
 "keyshareRecoveryBackupMessage" = "Tu copia de seguridad .vult es el camino de vuelta. Impórtala y estos vaults volverán a funcionar.";
 "keyshareRecoveryImportButton" = "Importar copia .vult";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "No te pierdas las recompensas";
 "referredSaveOnSwaps" = "Guardar %@ en swaps - agregue una referencia";
 "registrationFee" = "Tarifa de registro";
+"relaySendCeremonyDeadlineExceeded" = "Tiempo de espera agotado: venció el plazo de la ceremonia al enviar un mensaje al relay";
+"relaySendExhausted" = "No se pudo enviar el mensaje después de %d intentos: %@";
+"relaySendInvalidMessage" = "No se pudo enviar el mensaje: %@";
+"relaySendRejected" = "El relay rechazó el mensaje (estado %d)";
 "remove" = "Eliminar";
 "removeCoinLP" = "Eliminar %@ LP";
 "removeLPDustAmountError" = "Necesitas al menos %@ para cubrir las tarifas";

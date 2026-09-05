@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "Sono consapevole che posso perdere fondi";
 "cardanoMinimumSendAmountError" = "L'importo minimo di invio è %@ ADA. Cardano lo richiede per evitare che la rete scarti la tua transazione.";
 "cardanoOutputBelowMinAda" = "ADA insufficienti per coprire la commissione di rete e il requisito minimo UTXO di Cardano (~1,4 ADA per output). Invia prima più ADA a questo vault.";
+"ceremonyOverallDeadlineExceeded" = "Timeout: la cerimonia ha superato i 240 secondi";
+"ceremonyPeerUnresponsive" = "Timeout: nessuna risposta da un altro partecipante entro 60 secondi";
 "chain" = "Catena";
 "chainNotAdded" = "Catena Non Aggiunta";
 "chainNotAddedMessage" = "La blockchain %@ non è aggiunta a questo caveau. Per favore, aggiungila manualmente dalle impostazioni del caveau.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "da più dispositivi";
 "keygenInstructionsCar7DescriptionPart3" = ", migliorando la flessibilità senza compromettere la sicurezza.";
 "keygenInstructionsCar7Title" = "In evidenza";
+"keygenKickoffFailed" = "Impossibile avviare la generazione della chiave. Riprova.";
 "keys" = "Chiavi";
 "keyshareRecoveryBackupMessage" = "Il tuo backup .vult è la via del ritorno. Importalo e questi vault torneranno a funzionare.";
 "keyshareRecoveryImportButton" = "Importa backup .vult";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "Non perdere i premi";
 "referredSaveOnSwaps" = "Risparmia %@ sugli swap - Aggiungi un referral";
 "registrationFee" = "Costo di registrazione";
+"relaySendCeremonyDeadlineExceeded" = "Timeout: il tempo limite della cerimonia è scaduto durante l'invio di un messaggio al relay";
+"relaySendExhausted" = "Impossibile inviare il messaggio dopo %d tentativi: %@";
+"relaySendInvalidMessage" = "Impossibile inviare il messaggio: %@";
+"relaySendRejected" = "Il relay ha rifiutato il messaggio (stato %d)";
 "remove" = "Rimuovi";
 "removeCoinLP" = "Rimuovi %@ LP";
 "removeLPDustAmountError" = "Hai bisogno di almeno %@ per coprire le commissioni";

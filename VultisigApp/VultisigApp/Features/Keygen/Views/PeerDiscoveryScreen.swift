@@ -173,7 +173,7 @@ struct PeerDiscoveryScreen: View {
             }
             .screenTitle("pair".localized)
             .screenNavigationBarHidden(!selectedTab.hasOtherDevices)
-            .screenBackButtonHidden(hideBackButton)
+            .screenBackButtonHidden(hideBackButton || viewModel.isStartingKeygen)
             .screenToolbar {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
@@ -251,11 +251,7 @@ struct PeerDiscoveryScreen: View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
             case (.WaitingForDevices, false):
-                if viewModel.isLookingForDevices {
-                    lookingForDevices
-                } else {
-                    keygenView
-                }
+                lookingForDevices
             case (.WaitingForDevices, true):
                 waitingForDevices
             case (.Keygen, _):
@@ -375,6 +371,7 @@ struct PeerDiscoveryScreen: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
+        .disabled(viewModel.isStartingKeygen)
         .frame(maxWidth: .infinity)
 #if os(iOS)
         .padding(.horizontal, idiom == .pad ? 24 : 16)
@@ -415,7 +412,7 @@ struct PeerDiscoveryScreen: View {
     @ViewBuilder
     var bottomButton: some View {
         if !isFixedDeviceMode {
-            PrimaryButton(title: continueButtonTitle) {
+            PrimaryButton(title: continueButtonTitle, isLoading: viewModel.isStartingKeygen) {
                 startKeygenAndRecordPairing()
             }
             .padding(.horizontal, 16)
@@ -425,14 +422,14 @@ struct PeerDiscoveryScreen: View {
 #else
             .padding(.bottom, 10)
 #endif
-            .disabled(continueButtonDisabled)
+            .disabled(continueButtonDisabled || viewModel.isStartingKeygen)
             .animation(.easeInOut(duration: 0.2), value: continueButtonDisabled)
         }
     }
 
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
-            .disabled(viewModel.isLoading)
+            .disabled(viewModel.isLoading || viewModel.isStartingKeygen)
 #if os(iOS)
             .padding(.bottom, idiom == .phone ? 10 : 30)
 #else
@@ -482,7 +479,7 @@ struct PeerDiscoveryScreen: View {
             vault: viewModel.vault,
             tssType: tssType,
             keygenCommittee: viewModel.keygenCommittee,
-            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0) },
+            vaultOldCommittee: viewModel.vaultOldCommittee,
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",

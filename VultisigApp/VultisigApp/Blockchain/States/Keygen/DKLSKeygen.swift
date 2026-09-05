@@ -55,6 +55,7 @@ final class DKLSKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
+    var ceremonyWatchdog = CeremonyWatchdog()
     var setupMessage: [UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
@@ -212,7 +213,13 @@ final class DKLSKeygen {
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
-                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                try await self.messenger.send(
+                    self.localPartyID,
+                    to: receiverString,
+                    body: encodedOutboundMessage,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
     }
@@ -224,8 +231,9 @@ final class DKLSKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        ceremonyWatchdog.beginAttempt()
         repeat {
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -234,8 +242,11 @@ final class DKLSKeygen {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messenger.messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -249,13 +260,7 @@ final class DKLSKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
-                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -304,10 +309,12 @@ final class DKLSKeygen {
             try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDKLSOutboundMessage(handle: handle)
+            try ceremonyWatchdog.checkHardDeadline()
             // local party keygen finished
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -316,15 +323,22 @@ final class DKLSKeygen {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
-        _ = try await httpClient.request(TssRelayAPI(
-            baseURL: baseURL,
-            endpoint: .deleteMessage(
-                sessionID: sessionID,
-                localPartyID: localPartyID,
-                hash: hash,
-                messageID: messenger.messageID
-            )
-        ))
+        let timeout = try ceremonyWatchdog.hardRequestTimeout(maximum: TssRelayAPI.defaultTimeout)
+        do {
+            _ = try await httpClient.request(TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .deleteMessage(
+                    sessionID: sessionID,
+                    localPartyID: localPartyID,
+                    hash: hash,
+                    messageID: messenger.messageID
+                ),
+                timeoutInterval: timeout
+            ))
+        } catch HTTPError.timeout {
+            try ceremonyWatchdog.checkHardDeadline()
+            throw HTTPError.timeout
+        }
     }
     /// Phase 1 of batch key import: uploads setup message to the relay (initiator)
     /// or downloads it (follower), and creates the key-import session handle.
@@ -352,10 +366,14 @@ final class DKLSKeygen {
             handler = initiatorHandle
             try await messenger.uploadSetupMessage(
                 message: Data(keygenSetupMsg).base64EncodedString(),
-                routing.setupMessageId
+                routing.setupMessageId,
+                hardDeadline: ceremonyWatchdog.hardDeadline
             )
         } else {
-            let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
+            let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                routing.setupMessageId,
+                hardDeadline: ceremonyWatchdog.hardDeadline
+            )
             let keygenSetupMsg = Array(base64: strKeygenSetupMsg)
             self.setupMessage = keygenSetupMsg
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
@@ -400,10 +418,17 @@ final class DKLSKeygen {
                         (keygenSetupMsg, handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                     }
                     self.setupMessage = keygenSetupMsg
-                    try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), routing.setupMessageId)
+                    try await messenger.uploadSetupMessage(
+                        message: Data(keygenSetupMsg).base64EncodedString(),
+                        routing.setupMessageId,
+                        hardDeadline: ceremonyWatchdog.hardDeadline
+                    )
                 } else {
                     // download the setup message from relay server
-                    let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
+                    let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                        routing.setupMessageId,
+                        hardDeadline: ceremonyWatchdog.hardDeadline
+                    )
                     keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                     self.setupMessage = keygenSetupMsg
                 }
@@ -486,6 +511,10 @@ final class DKLSKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
@@ -607,10 +636,17 @@ final class DKLSKeygen {
             var reshareSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), routing.setupMessageId)
+                try await messenger.uploadSetupMessage(
+                    message: Data(reshareSetupMsg).base64EncodedString(),
+                    routing.setupMessageId,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
             } else {
                 // download the setup message from relay server
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(routing.setupMessageId)
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                    routing.setupMessageId,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
                 self.setupMessage = reshareSetupMsg
             }
@@ -659,6 +695,10 @@ final class DKLSKeygen {
             }
         } catch is CancellationError {
             throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to reshare key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry

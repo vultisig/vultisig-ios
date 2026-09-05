@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "Svjestan sam da mogu izgubiti sredstva";
 "cardanoMinimumSendAmountError" = "Najmanji iznos za slanje je %@ ADA. Cardano to zahtijeva kako mreža ne bi odbacila tvoju transakciju.";
 "cardanoOutputBelowMinAda" = "Nema dovoljno ADA za pokrivanje mrežne naknade i Cardanovog minimalnog UTXO zahtjeva (~1,4 ADA po izlazu). Najprije pošalji više ADA u ovaj vault.";
+"ceremonyOverallDeadlineExceeded" = "Istek vremena: ceremonija je premašila 240 sekundi";
+"ceremonyPeerUnresponsive" = "Istek vremena: nema odgovora drugog sudionika unutar 60 sekundi";
 "chain" = "Lanac";
 "chainNotAdded" = "Lanac Nije Dodan";
 "chainNotAddedMessage" = "Blockchain %@ nije dodan u ovaj trezor. Molimo dodajte ga ručno iz postavki trezora.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "s više uređaja";
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "keygenInstructionsCar7Title" = "Istaknuta značajka";
+"keygenKickoffFailed" = "Pokretanje generiranja ključa nije uspjelo. Molimo pokušajte ponovno.";
 "keys" = "Ključ";
 "keyshareRecoveryBackupMessage" = "Vaša .vult sigurnosna kopija je put natrag. Uvezite je i ovi će vaultovi ponovno raditi.";
 "keyshareRecoveryImportButton" = "Uvezi .vult kopiju";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "Ne propusti nagrade";
 "referredSaveOnSwaps" = "Spremi %@ na zamjene - Dodajte preporuku";
 "registrationFee" = "Naknada za registraciju";
+"relaySendCeremonyDeadlineExceeded" = "Istek vremena: rok ceremonije istekao je tijekom slanja poruke poslužitelju za prijenos";
+"relaySendExhausted" = "Slanje poruke nije uspjelo nakon %d pokušaja: %@";
+"relaySendInvalidMessage" = "Slanje poruke nije uspjelo: %@";
+"relaySendRejected" = "Poslužitelj za prijenos odbio je poruku (status %d)";
 "remove" = "Ukloni";
 "removeCoinLP" = "Ukloni %@ LP";
 "removeLPDustAmountError" = "Trebate najmanje %@ za pokrivanje naknada";

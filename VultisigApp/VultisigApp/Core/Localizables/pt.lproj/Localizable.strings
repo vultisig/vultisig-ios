@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "Estou ciente de que posso perder fundos";
 "cardanoMinimumSendAmountError" = "O valor mínimo de envio é %@ ADA. A Cardano exige isto para evitar que a rede descarte a sua transação.";
 "cardanoOutputBelowMinAda" = "ADA insuficiente para cobrir a taxa de rede e o requisito mínimo de UTXO da Cardano (~1,4 ADA por saída). Envie mais ADA para este vault primeiro.";
+"ceremonyOverallDeadlineExceeded" = "Tempo esgotado: a cerimônia excedeu 240 segundos";
+"ceremonyPeerUnresponsive" = "Tempo esgotado: nenhuma resposta de outro participante em 60 segundos";
 "chain" = "Cadeia";
 "chainNotAdded" = "Cadeia Não Adicionada";
 "chainNotAddedMessage" = "A blockchain %@ não está adicionada neste cofre. Por favor, adicione-a manualmente nas configurações do cofre.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "de vários dispositivos";
 "keygenInstructionsCar7DescriptionPart3" = ", aumentando a flexibilidade sem comprometer a segurança.";
 "keygenInstructionsCar7Title" = "Destaque de recursos";
+"keygenKickoffFailed" = "Falha ao iniciar a geração de chave. Tente novamente.";
 "keys" = "Chaves";
 "keyshareRecoveryBackupMessage" = "A sua cópia de segurança .vult é o caminho de volta. Importe-a e estes vaults voltam a funcionar.";
 "keyshareRecoveryImportButton" = "Importar cópia .vult";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "Não perca recompensas";
 "referredSaveOnSwaps" = "Economize %@ em swaps - Adicione uma indicação";
 "registrationFee" = "Taxa de registro";
+"relaySendCeremonyDeadlineExceeded" = "Tempo esgotado: o prazo da cerimônia expirou ao enviar uma mensagem ao relay";
+"relaySendExhausted" = "Não foi possível enviar a mensagem após %d tentativas: %@";
+"relaySendInvalidMessage" = "Não foi possível enviar a mensagem: %@";
+"relaySendRejected" = "O relay rejeitou a mensagem (status %d)";
 "remove" = "Remover";
 "removeCoinLP" = "Remover %@ LP";
 "removeLPDustAmountError" = "Você precisa de pelo menos %@ para cobrir as taxas";

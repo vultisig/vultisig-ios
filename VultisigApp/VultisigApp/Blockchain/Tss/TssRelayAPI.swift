@@ -13,6 +13,9 @@ import Mediator
 struct TssRelayAPI: TargetType {
     let baseURL: URL
     let endpoint: Endpoint
+    /// Callers opt into a shorter request budget when retry or ceremony
+    /// deadlines require it; otherwise every endpoint keeps this default.
+    var timeoutInterval: TimeInterval = Self.defaultTimeout
 
     enum Endpoint {
         /// POST /setup-message/{sessionID}. `body` is already-encrypted UTF-8 bytes.
@@ -102,6 +105,8 @@ struct TssRelayAPI: TargetType {
 
         return result
     }
+
+    static let defaultTimeout: TimeInterval = 60
 
     var validationType: ValidationType {
         switch endpoint {

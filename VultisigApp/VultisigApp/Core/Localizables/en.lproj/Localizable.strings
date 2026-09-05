@@ -172,6 +172,8 @@
 "canLoseFundsPrompt" = "I am aware that I can lose funds";
 "cardanoMinimumSendAmountError" = "Minimum send amount is %@ ADA. Cardano requires this to prevent the network from dropping your transaction.";
 "cardanoOutputBelowMinAda" = "Not enough ADA to cover the network fee and Cardano's minimum-UTXO requirement (~1.4 ADA per output). Send more ADA into this vault first.";
+"ceremonyOverallDeadlineExceeded" = "timeout: the ceremony exceeded 240 seconds";
+"ceremonyPeerUnresponsive" = "timeout: no response from another participant within 60 seconds";
 "chain" = "Chain";
 "chainNotAdded" = "Chain Not Added";
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
@@ -748,6 +750,7 @@
 "keygenInstructionsCar7DescriptionPart2" = "from multiple devices";
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
 "keygenInstructionsCar7Title" = "Feature Highlight";
+"keygenKickoffFailed" = "Failed to start key generation. Please try again.";
 "keys" = "Keys";
 "keyshareRecoveryBackupMessage" = "Your .vult backup is the way back. Import it and these vaults work again.";
 "keyshareRecoveryImportButton" = "Import .vult backup";
@@ -1240,6 +1243,10 @@
 "referralRewardsBannerTitle" = "Don't miss rewards";
 "referredSaveOnSwaps" = "Save %@ on swaps - Add a Referral";
 "registrationFee" = "Registration Fee";
+"relaySendCeremonyDeadlineExceeded" = "timeout: the ceremony deadline expired while sending a relay message";
+"relaySendExhausted" = "Failed to send the message after %d attempts: %@";
+"relaySendInvalidMessage" = "Failed to send the message: %@";
+"relaySendRejected" = "The relay rejected the message (status %d)";
 "remove" = "Remove";
 "removeCoinLP" = "Remove %@ LP";
 "removeLPDustAmountError" = "You need at least %@ to cover fees";

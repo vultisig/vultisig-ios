@@ -29,6 +29,7 @@ final class DilithiumKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
+    var ceremonyWatchdog = CeremonyWatchdog()
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
     let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
@@ -125,7 +126,13 @@ final class DilithiumKeygen {
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
-                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                try await self.messenger.send(
+                    self.localPartyID,
+                    to: receiverString,
+                    body: encodedOutboundMessage,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
     }
@@ -137,8 +144,9 @@ final class DilithiumKeygen {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        ceremonyWatchdog.beginAttempt()
         repeat {
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -147,8 +155,11 @@ final class DilithiumKeygen {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messenger.messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -162,12 +173,7 @@ final class DilithiumKeygen {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            if elapsedTimeInSeconds > 60 {
-                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -208,9 +214,11 @@ final class DilithiumKeygen {
             try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDilithiumOutboundMessage(handle: handle)
+            try ceremonyWatchdog.checkHardDeadline()
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -219,15 +227,22 @@ final class DilithiumKeygen {
         guard let baseURL = URL(string: mediatorURL) else {
             throw HelperError.runtimeError("invalid mediator URL: \(mediatorURL)")
         }
-        _ = try await httpClient.request(TssRelayAPI(
-            baseURL: baseURL,
-            endpoint: .deleteMessage(
-                sessionID: sessionID,
-                localPartyID: localPartyID,
-                hash: hash,
-                messageID: messenger.messageID
-            )
-        ))
+        let timeout = try ceremonyWatchdog.hardRequestTimeout(maximum: TssRelayAPI.defaultTimeout)
+        do {
+            _ = try await httpClient.request(TssRelayAPI(
+                baseURL: baseURL,
+                endpoint: .deleteMessage(
+                    sessionID: sessionID,
+                    localPartyID: localPartyID,
+                    hash: hash,
+                    messageID: messenger.messageID
+                ),
+                timeoutInterval: timeout
+            ))
+        } catch HTTPError.timeout {
+            try ceremonyWatchdog.checkHardDeadline()
+            throw HTTPError.timeout
+        }
     }
 
     func DilithiumKeygenWithRetry(attempt: UInt8) async throws {
@@ -239,9 +254,16 @@ final class DilithiumKeygen {
             if self.isInitiateDevice && attempt == 0 {
                 keygenSetupMsg = try getDilithiumSetupMessage()
                 self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), nil)
+                try await messenger.uploadSetupMessage(
+                    message: Data(keygenSetupMsg).base64EncodedString(),
+                    nil,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
             } else {
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(
+                    nil,
+                    hardDeadline: ceremonyWatchdog.hardDeadline
+                )
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -287,6 +309,12 @@ final class DilithiumKeygen {
                 logger.debug("keyId: \(keyIdBytes.toHexString(), privacy: .public)")
                 try await Task.sleep(for: .milliseconds(500))
             }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch CeremonyTimeoutError.overallDeadlineExceeded {
+            throw CeremonyTimeoutError.overallDeadlineExceeded
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {

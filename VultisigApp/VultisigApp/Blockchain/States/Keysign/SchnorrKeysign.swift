@@ -33,6 +33,7 @@ final class SchnorrKeysign {
     let publicKeyEdDSA: String
     var messenger: DKLSMessenger? = nil
     var cache = NSCache<NSString, AnyObject>()
+    var ceremonyWatchdog = CeremonyWatchdog(hardLimit: nil)
     var signatures = [String: TssKeysignResponse]()
     var keyshare: [UInt8] = []
     private let httpClient: HTTPClientProtocol
@@ -191,7 +192,9 @@ final class SchnorrKeysign {
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
-                                         body: encodedOutboundMessage)
+                                         body: encodedOutboundMessage,
+                                         hardDeadline: ceremonyWatchdog.hardDeadline)
+                try ceremonyWatchdog.checkHardDeadline()
             }
         } while 1 > 0
 
@@ -204,12 +207,13 @@ final class SchnorrKeysign {
         logger.debug("start pulling inbound messages for session \(self.sessionID), party \(self.localPartyID)")
 
         var isFinished = false
-        let start = DispatchTime.now()
+        ceremonyWatchdog.beginAttempt()
         repeat {
             // Cooperative cancellation: honour cancelAll() from the stage-level
             // timeout so a stalled poll stops instead of running to completion
             // and broadcasting an abandoned ceremony.
             try Task.checkCancellation()
+            let budget = try ceremonyWatchdog.pollRequestBudget()
             let response: HTTPResponse<Data>
             do {
                 response = try await httpClient.request(TssRelayAPI(
@@ -218,8 +222,11 @@ final class SchnorrKeysign {
                         sessionID: sessionID,
                         localPartyID: localPartyID,
                         messageID: messageID
-                    )
+                    ),
+                    timeoutInterval: budget.timeoutInterval
                 ))
+            } catch HTTPError.timeout {
+                throw budget.timeoutError
             } catch let HTTPError.statusCode(code, _) {
                 throw HelperError.runtimeError("invalid status code: \(code)")
             }
@@ -235,13 +242,7 @@ final class SchnorrKeysign {
                 try await Task.sleep(for: .milliseconds(100))
             }
 
-            let currentTime = DispatchTime.now()
-            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
-            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-            // timeout for 60 seconds
-            if elapsedTimeInSeconds > 60 {
-                throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
-            }
+            try ceremonyWatchdog.checkExpired()
         } while !isFinished
 
         return false
@@ -289,10 +290,12 @@ final class SchnorrKeysign {
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processSchnorrOutboundMessage(handle: handle)
+            try ceremonyWatchdog.checkHardDeadline()
             // local party keysign finished
             if isFinished != 0 {
                 return true
             }
+            ceremonyWatchdog.beginWaitingForPeer()
         }
         return false
     }
@@ -385,6 +388,8 @@ final class SchnorrKeysign {
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
                 self.signatures[messageToSign] = resp
             }
+        } catch let error as RelaySendError {
+            throw error
         } catch {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.
@@ -392,6 +397,8 @@ final class SchnorrKeysign {
             logger.error("Failed to sign message (\(messageToSign, privacy: .public)), error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+            } else {
+                throw error
             }
         }
     }

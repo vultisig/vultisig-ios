@@ -13,6 +13,7 @@ import Foundation
 struct RelayServerAPI: TargetType {
     let baseURL: URL
     let endpoint: Endpoint
+    var timeoutInterval: TimeInterval = 60
 
     enum Endpoint {
         case getParticipants(sessionID: String)
@@ -73,4 +74,5 @@ struct RelayServerAPI: TargetType {
             return .successCodes
         }
     }
+
 }
