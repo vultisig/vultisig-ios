@@ -482,7 +482,11 @@ struct TransactionHistoryCardView: View {
 
     private var collapsedContent: some View {
         HStack(spacing: 12) {
-            coinIcon
+            if showsSwapLegs {
+                swapPairIcon
+            } else {
+                coinIcon
+            }
 
             if transaction.type == .trustLineActivation {
                 trustLineColumn
@@ -530,6 +534,44 @@ struct TransactionHistoryCardView: View {
             ticker: transaction.coinTicker,
             tokenChainLogo: transaction.coinChainLogo
         )
+    }
+
+    /// A completed swap/limit row's icon: the FROM token's left half against
+    /// the TO token's right half, meeting as one 24pt circle split down the
+    /// middle — so the row names both assets before the eye reaches the
+    /// amounts. Send/receive rows keep the single `coinIcon` above.
+    private var swapPairIcon: some View {
+        HStack(spacing: 0) {
+            iconHalf(
+                logo: transaction.coinLogo,
+                ticker: transaction.coinTicker,
+                keeping: .leading
+            )
+            iconHalf(
+                logo: transaction.toCoinLogo ?? "",
+                ticker: transaction.toCoinTicker ?? "",
+                keeping: .trailing
+            )
+        }
+        .frame(width: 24, height: 24)
+    }
+
+    /// One half of `swapPairIcon`. The logo renders at its FULL 24pt inside a
+    /// 12pt-wide clip, so it keeps its own circular mask and true proportions
+    /// rather than being squashed to half width; `keeping` selects which side
+    /// survives the clip.
+    ///
+    /// No chain badge here: at 12pt it would be sliced down the middle, and
+    /// the `FROM → TO` pill already names both assets.
+    private func iconHalf(logo: String, ticker: String, keeping: Alignment) -> some View {
+        AsyncImageView(
+            logo: logo,
+            size: CGSize(width: 24, height: 24),
+            ticker: ticker,
+            tokenChainLogo: nil
+        )
+        .frame(width: 12, height: 24, alignment: keeping)
+        .clipped()
     }
 
     private var amountColumn: some View {
