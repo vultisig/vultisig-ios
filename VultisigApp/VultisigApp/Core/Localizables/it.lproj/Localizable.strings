@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "Transazione scaduta. Riprova.";
 "broadcastRetryStaleNonce" = "Nonce della transazione obsoleto — dettagli aggiornati. Riprova.";
 "broadcastRetryStaleQuote" = "Quotazione scaduta — dettagli aggiornati. Riprova.";
+"burnAddressError" = "Questo è un indirizzo di combustione. I fondi inviati qui non possono essere recuperati.";
 "buy" = "Acquista";
 "buyVultBannerSubtitle" = "E risparmia sulle commissioni di swap";
 "buyVultBannerTitle" = "Compra $VULT";

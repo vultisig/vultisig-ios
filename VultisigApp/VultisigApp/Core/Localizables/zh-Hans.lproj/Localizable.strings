@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "交易已过期。请重试。";
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
+"burnAddressError" = "这是一个销毁地址，发送到这里的资金将永远无法找回。";
 "buy" = "购买";
 "buyVultBannerSubtitle" = "并节省兑换手续费";
 "buyVultBannerTitle" = "购买 $VULT";

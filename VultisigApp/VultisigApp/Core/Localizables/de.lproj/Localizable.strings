@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "Transaktion abgelaufen. Bitte erneut versuchen.";
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleQuote" = "Angebot abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
+"burnAddressError" = "Dies ist eine Verbrennungsadresse. Hierher gesendete Gelder können nicht wiederhergestellt werden.";
 "buy" = "Kaufen";
 "buyVultBannerSubtitle" = "Und spare bei Swap-Gebühren";
 "buyVultBannerTitle" = "$VULT kaufen";

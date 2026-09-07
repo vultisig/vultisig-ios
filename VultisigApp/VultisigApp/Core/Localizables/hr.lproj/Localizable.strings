@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "Transakcija istekla. Molimo pokušajte ponovno.";
 "broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";
 "broadcastRetryStaleQuote" = "Ponuda istekla — detalji ažurirani. Molimo pokušajte ponovno.";
+"burnAddressError" = "Ovo je adresa za spaljivanje. Sredstva poslana na ovu adresu ne mogu se povratiti.";
 "buy" = "Kupi";
 "buyVultBannerSubtitle" = "I uštedi na naknadama za swap";
 "buyVultBannerTitle" = "Kupi $VULT";
