@@ -169,22 +169,55 @@ final class SendValidationTests: XCTestCase {
         XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("9.99"), gas: .zero))
     }
 
-    func testCanBeReapedFalseForBittensorTAO() {
-        // Bittensor shares chainType == .Polkadot but signs transfer_allow_death,
-        // so it has no enforced ED and must never be blocked or reserve ED.
+    func testCanBeReapedTrueForBittensorTAOWhenRemainderBelowExistentialDeposit() {
+        // Bittensor now defaults to signing `transfer_keep_alive` (see
+        // BittensorHelper), so it reserves its own 500-rao ED just like DOT.
         let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
                            rawBalance: "1000000000") // 1 TAO
-        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("0.999999999"), gas: BigInt(1)))
+        // Leaves 499 rao remainder — below the 500-rao ED, but > 0.
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("0.999999501"), gas: .zero))
     }
 
-    func testExistentialDepositReservedForPolkadotZeroForTAO() {
+    func testCanBeReapedFalseForBittensorTAOWhenRemainderAboveExistentialDeposit() {
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
+                           rawBalance: "1000000000") // 1 TAO
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("0.999"), gas: .zero))
+    }
+
+    func testCanBeReapedFalseForBittensorTAOWhenRemainderEqualsExistentialDeposit() {
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
+                           rawBalance: "1000000000") // 1 TAO
+        // Leaves exactly 500 rao remainder — `transfer_keep_alive` permits ED,
+        // so this is NOT reaped (mirrors the DOT boundary test above).
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("0.9999995"), gas: .zero))
+    }
+
+    func testCanBeReapedTrueForPolkadotWhenRemainderIsExactlyZero() {
+        // `transfer_keep_alive` requires the resulting balance to clear the
+        // ED; a remainder of exactly zero never does, so this must be
+        // treated as reaped, not as a safe drain. A manually typed
+        // `balance − fee` amount is exactly this case; MAX sends never hit
+        // it because `computeMaxAmount` reserves the ED on top of the fee.
+        let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true,
+                           rawBalance: "100000000000") // 10 DOT
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: dot, amount: amount("10"), gas: .zero))
+    }
+
+    func testCanBeReapedTrueForBittensorTAOWhenRemainderIsExactlyZero() {
+        let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
+                           rawBalance: "1000000000") // 1 TAO
+        XCTAssertTrue(SendCryptoLogic.canBeReaped(coin: tao, amount: amount("1"), gas: .zero))
+    }
+
+    func testExistentialDepositReservedForPolkadotAndBittensor() {
         let dot = makeCoin(.polkadot, ticker: Chain.polkadot.ticker, decimals: 10, isNative: true)
         let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true)
         // Asset Hub native-DOT ED is 0.01 DOT = 100_000_000 plancks (10 decimals).
         XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: dot), BigInt(100_000_000))
         XCTAssertEqual(PolkadotHelper.defaultExistentialDeposit, BigInt(100_000_000))
-        // TAO (allow_death) reserves nothing.
-        XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: tao), .zero)
+        // Subtensor's `EXISTENTIAL_DEPOSIT` (runtime/src/lib.rs) is 500 rao.
+        XCTAssertEqual(SendCryptoLogic.existentialDeposit(for: tao), BigInt(500))
+        XCTAssertEqual(BittensorHelper.existentialDeposit, BigInt(500))
     }
 
     func testComputeMaxAmountReservesExistentialDepositForPolkadot() {
@@ -198,13 +231,16 @@ final class SendValidationTests: XCTestCase {
         XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: maxAmount, gas: fee))
     }
 
-    func testComputeMaxAmountDoesNotReserveExistentialDepositForTAO() {
+    func testComputeMaxAmountReservesExistentialDepositForTAO() {
         let tao = makeCoin(.bittensor, ticker: Chain.bittensor.ticker, decimals: 9, isNative: true,
                            rawBalance: "1000000000") // 1 TAO
         let fee = BigInt(1_000_000) // 0.001 TAO
-        // No ED reserve for allow_death: max = balance − fee = 0.999 TAO.
+        // max = balance − fee − ED = 1_000_000_000 − 1_000_000 − 500 rao
+        //     = 998_999_500 rao = 0.9989995 TAO
         let maxAmount = SendCryptoLogic.computeMaxAmount(coin: tao, fee: fee)
-        XCTAssertEqual(maxAmount.toDecimal(), amount("0.999").toDecimal())
+        XCTAssertEqual(maxAmount.toDecimal(), amount("0.9989995").toDecimal())
+        // And that max-send must NOT be reaped (remainder == ED, allowed).
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: tao, amount: maxAmount, gas: fee))
     }
 
     func testSubExistentialDepositSendToRecipientIsAllowed() {
