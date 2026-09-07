@@ -6,7 +6,12 @@
 //  pre-ceremony guard that blocks a native TAO send which would leave the
 //  DESTINATION below the 500-rao existential deposit, and its FAIL-OPEN
 //  posture on a lookup that couldn't complete (matching the XRP guards in
-//  SendRippleDestinationGuardTests).
+//  SendRippleDestinationGuardTests). Exercises the guard against
+//  `getBalanceIfKnown`, which distinguishes a confirmed balance from an
+//  unknown read — see `BittensorAccountStorageTests` for the pure
+//  malformed/truncated-response parsing this rests on, and
+//  `BittensorServiceUndecodableAddressTests` for the address-decode case at
+//  the real service (no network reached).
 //
 
 import BigInt
@@ -30,7 +35,7 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     }
 
     func testNonBittensorSendSkipsBalanceLookup() async throws {
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18)
         let tx = makeTransaction(coin: eth, amount: amount("0.1"))
@@ -42,7 +47,7 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     func testTaoTokenNotNativeSkipsBalanceLookup() async throws {
         // Guards the isNativeToken gate: a non-native Bittensor coin (were one
         // ever added) must not trigger a native-account ED check.
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let taoToken = makeCoin(.bittensor, ticker: "SUBTOKEN", decimals: 9, isNative: false)
         let tx = makeTransaction(coin: taoToken, amount: amount("0.1"))
@@ -52,7 +57,7 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     }
 
     func testUnfundedDestinationReceivingAtLeastEDPasses() async throws {
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
         // 0.000001 TAO = 1000 rao, above the 500-rao ED.
@@ -67,7 +72,7 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
         // on the ED (only strictly below it is rejected), so this must pass —
         // mirrors the DOT/TAO `canBeReaped` boundary tests in
         // SendValidationTests.
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
         let tx = makeTransaction(coin: tao, amount: amount("0.0000005")) // exactly 500 rao
@@ -76,7 +81,10 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     }
 
     func testDestinationLeftBelowExistentialDepositThrows() async throws {
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        // A genuinely CONFIRMED zero (not unknown) below-ED destination must
+        // still block — this is the case the whole fail-open/fail-open-not
+        // distinction exists to preserve.
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
         // 0.0000004 TAO = 400 rao — a brand-new destination would land below
@@ -94,7 +102,7 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     func testDestinationAlreadyFundedAboveEDPasses() async throws {
         // An existing balance plus a small top-up that individually would be
         // sub-ED must still pass: the guard checks the RESULTING balance.
-        let bittensorService = StubBittensorBalanceFetching(result: .success("10000000")) // 0.01 TAO
+        let bittensorService = StubBittensorBalanceFetching(result: .success(BigInt(10_000_000))) // 0.01 TAO
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
         let tx = makeTransaction(coin: tao, amount: amount("0.0000001")) // 100 rao
@@ -102,14 +110,16 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
         try await logic.validateBittensorDestinationIfNeeded(tx: tx)
     }
 
-    func testUnparseableBalanceResponseFailsOpen() async throws {
-        // An unreadable response is not evidence of anything and must not be
-        // coerced to "zero balance" — that would fail CLOSED and block a
-        // send the guard has no real basis to reject.
-        let bittensorService = StubBittensorBalanceFetching(result: .success("not-a-number"))
+    func testUnknownBalanceReadFailsOpen() async throws {
+        // `getBalanceIfKnown` answering `nil` — an undecodable address or a
+        // malformed/truncated RPC response, per BittensorService — is not
+        // evidence of anything and must not be read as "destination confirmed
+        // empty". That would fail CLOSED and block a send the guard has no
+        // real basis to reject.
+        let bittensorService = StubBittensorBalanceFetching(result: .success(nil))
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
-        let tx = makeTransaction(coin: tao, amount: amount("0.0000004")) // 400 rao — sub-ED if read as 0
+        let tx = makeTransaction(coin: tao, amount: amount("0.0000004")) // 400 rao — sub-ED if read as confirmed zero
 
         try await logic.validateBittensorDestinationIfNeeded(tx: tx)
     }
@@ -140,14 +150,15 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
         }
     }
 
-    /// The gap the round-1 Codex finding closed: `getBalance` can answer from
-    /// a cache with no suspension point that would observe cancellation, so
-    /// the guard has to ask the task itself. The stub here SUCCEEDS — this
-    /// exercises the post-fetch `try Task.checkCancellation()`, not the
-    /// `catch is CancellationError` branch the test above covers. Mirrors
+    /// The gap the round-1 Codex finding closed: the balance read can answer
+    /// from a cache with no suspension point that would observe
+    /// cancellation, so the guard has to ask the task itself. The stub here
+    /// SUCCEEDS — this exercises the post-fetch `try Task.checkCancellation()`,
+    /// not the `catch is CancellationError` branch the test above covers.
+    /// Mirrors
     /// `SendRippleDestinationGuardTests.testDestinationTrustLineGuardPropagatesCancellation`.
     func testCancellationObservedEvenWhenBalanceReadSucceeds() async throws {
-        let bittensorService = StubBittensorBalanceFetching(result: .success("0"))
+        let bittensorService = StubBittensorBalanceFetching(result: .success(.zero))
         let logic = makeLogic(bittensorService: bittensorService)
         let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
         // Would throw belowExistentialDepositDestinationError if evaluated —
@@ -233,18 +244,28 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
     }
 }
 
+/// Stubs `getBalanceIfKnown` — the only method `validateBittensorDestinationIfNeeded`
+/// calls. `result` carries `BigInt?`: `.success(.some(balance))` is a
+/// confirmed read (zero included), `.success(nil)` is unknown, `.failure`
+/// simulates a thrown error (transport failure or cancellation).
 private final class StubBittensorBalanceFetching: BittensorBalanceFetching, @unchecked Sendable {
-    private let result: Result<String, Error>
+    private let result: Result<BigInt?, Error>
     private(set) var callCount = 0
 
-    init(result: Result<String, Error>) {
+    init(result: Result<BigInt?, Error>) {
         self.result = result
     }
 
-    // The protocol requirement is async; this stub has no network round-trip
-    // to await, and `address` only matters to the real service.
+    // Not exercised by these tests — validateBittensorDestinationIfNeeded
+    // calls getBalanceIfKnown exclusively. Trivial pass-through to satisfy
+    // protocol conformance.
     // swiftlint:disable:next async_without_await unused_parameter
     func getBalance(address: String) async throws -> String {
+        (try result.get()).map(String.init) ?? ""
+    }
+
+    // swiftlint:disable:next async_without_await unused_parameter
+    func getBalanceIfKnown(address: String) async throws -> BigInt? {
         callCount += 1
         return try result.get()
     }

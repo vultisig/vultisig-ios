@@ -204,6 +204,53 @@ enum BittensorHelper {
         return hash.prefix(2) == checksum && pubkey.count == 32
     }
 
+    // MARK: - Account Storage Parsing
+
+    /// A read of the `System.Account` storage for one address, distinguishing
+    /// a confirmed balance (including a legitimate zero for an account with
+    /// no ledger entry) from a read that couldn't be determined. Callers that
+    /// treat "no evidence" as reason to block something (the destination-ED
+    /// guard) must fail open on `.unknown`, never read it as `.confirmed(.zero)`.
+    enum AccountStorageRead: Equatable {
+        case confirmed(BigInt)
+        case unknown
+    }
+
+    /// Pure interpretation of a `state_getStorage` result for the
+    /// `System.Account` key — no network access, so the malformed/truncated/
+    /// absent-account cases can be pinned directly without mocking the RPC
+    /// layer.
+    ///
+    /// `nil` or an empty string means the storage key doesn't exist in the
+    /// trie — the account has no ledger entry, which IS a confirmed zero
+    /// balance (this is how a fresh, never-funded account reads). A
+    /// non-empty response shorter than the `AccountInfo` layout requires is a
+    /// malformed or truncated read, not a confirmed value, and must not be
+    /// treated as zero.
+    static func interpretAccountStorage(_ rawResult: String?) -> AccountStorageRead {
+        guard let result = rawResult, !result.isEmpty else {
+            return .confirmed(.zero)
+        }
+
+        // Parse SCALE-encoded AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
+        let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
+        guard hex.count >= 64 else {
+            return .unknown
+        }
+
+        // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
+        let freeHex = String(hex[hex.index(hex.startIndex, offsetBy: 32)..<hex.index(hex.startIndex, offsetBy: 64)])
+        // Reverse byte pairs for LE → BE conversion
+        var beHex = ""
+        for i in stride(from: freeHex.count - 2, through: 0, by: -2) {
+            let start = freeHex.index(freeHex.startIndex, offsetBy: i)
+            let end = freeHex.index(start, offsetBy: 2)
+            beHex += String(freeHex[start..<end])
+        }
+
+        return .confirmed(BigInt(beHex, radix: 16) ?? BigInt.zero)
+    }
+
     // MARK: - Pre-signed Image Hash (for MPC signing)
 
     /// `keepAlive` selects the Balances call: `transfer_keep_alive` (default)

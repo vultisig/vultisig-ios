@@ -12,6 +12,17 @@ import WalletCore
 /// substitute a stub without exercising `RpcService`'s network layer.
 protocol BittensorBalanceFetching {
     func getBalance(address: String) async throws -> String
+
+    /// Distinguishes a confirmed balance (including a legitimate zero for an
+    /// account with no ledger entry) from a read that couldn't be
+    /// determined — an undecodable address, a malformed RPC response, or a
+    /// truncated one. `nil` means unknown. Used only by the destination-ED
+    /// guard, which must fail open on unknown rather than reading it as a
+    /// confirmed empty destination the way `getBalance` does (`getBalance`
+    /// also backs the user's own wallet-balance display via `BalanceService`,
+    /// where collapsing an unknown read to zero is the existing, intentional
+    /// behavior and must not change).
+    func getBalanceIfKnown(address: String) async throws -> BigInt?
 }
 
 class BittensorService: RpcService, BittensorBalanceFetching {
@@ -43,15 +54,20 @@ class BittensorService: RpcService, BittensorBalanceFetching {
     // System.Account storage key prefix: twox128("System") ++ twox128("Account")
     private static let systemAccountPrefix = "26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9"
 
-    private func fetchBalance(address: String) async throws -> BigInt {
+    /// Reads `System.Account` for `address`, distinguishing a confirmed
+    /// balance from a read that couldn't be determined. Only the confirmed
+    /// path is cached — an undecodable-address or malformed/truncated read
+    /// returns `.unknown` on every call, matching the pre-existing behavior
+    /// where those cases were never cached either.
+    private func fetchBalanceRead(address: String) async throws -> BittensorHelper.AccountStorageRead {
         let cacheKey = "bittensor-\(address)-balance"
         if let cachedData: BigInt = Utils.getCachedData(cacheKey: cacheKey, cache: cacheBittensorBalance, timeInSeconds: 60) {
-            return cachedData
+            return .confirmed(cachedData)
         }
 
         // Decode SS58 address to raw pubkey, compute storage key
         guard let pubkey = BittensorHelper.ss58Decode(address) else {
-            return BigInt.zero
+            return .unknown
         }
         let blake2Hash = Hash.blake2b(data: pubkey, size: 16) // 128-bit
         let storageKey = "0x" + Self.systemAccountPrefix + blake2Hash.toHexString() + pubkey.toHexString()
@@ -64,27 +80,18 @@ class BittensorService: RpcService, BittensorBalanceFetching {
             return hex
         }
 
-        guard !result.isEmpty else {
-            return BigInt.zero
+        let read = BittensorHelper.interpretAccountStorage(result)
+        if case .confirmed(let balance) = read {
+            self.cacheBittensorBalance.set(cacheKey, (data: balance, timestamp: Date()))
         }
+        return read
+    }
 
-        // Parse SCALE-encoded AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
-        let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
-        guard hex.count >= 64 else { return BigInt.zero }
-
-        // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
-        let freeHex = String(hex[hex.index(hex.startIndex, offsetBy: 32)..<hex.index(hex.startIndex, offsetBy: 64)])
-        // Reverse byte pairs for LE → BE conversion
-        var beHex = ""
-        for i in stride(from: freeHex.count - 2, through: 0, by: -2) {
-            let start = freeHex.index(freeHex.startIndex, offsetBy: i)
-            let end = freeHex.index(start, offsetBy: 2)
-            beHex += String(freeHex[start..<end])
+    private func fetchBalance(address: String) async throws -> BigInt {
+        switch try await fetchBalanceRead(address: address) {
+        case .confirmed(let balance): return balance
+        case .unknown: return .zero
         }
-
-        let balance = BigInt(beHex, radix: 16) ?? BigInt.zero
-        self.cacheBittensorBalance.set(cacheKey, (data: balance, timestamp: Date()))
-        return balance
     }
 
     // MARK: - RPC Methods (chain metadata)
@@ -156,6 +163,13 @@ class BittensorService: RpcService, BittensorBalanceFetching {
     func getBalance(address: String) async throws -> String {
         let balance = try await fetchBalance(address: address)
         return String(balance)
+    }
+
+    func getBalanceIfKnown(address: String) async throws -> BigInt? {
+        switch try await fetchBalanceRead(address: address) {
+        case .confirmed(let balance): return balance
+        case .unknown: return nil
+        }
     }
 
     func getGasInfo(fromAddress: String) async throws -> (recentBlockHash: String, currentBlockNumber: BigInt, nonce: Int64, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String) {

@@ -327,9 +327,20 @@ struct SendCryptoVerifyLogic {
     func validateBittensorDestinationIfNeeded(tx: SendTransaction) async throws {
         guard tx.coin.chain == .bittensor, tx.coin.isNativeToken else { return }
 
-        let rawBalance: String
+        let existingBalance: BigInt
         do {
-            rawBalance = try await bittensorService.getBalance(address: tx.toAddress)
+            // `getBalanceIfKnown` distinguishes a confirmed balance (zero
+            // included, for a genuinely absent account) from a read that
+            // couldn't be determined — an undecodable address or a
+            // malformed/truncated RPC response. `getBalance` (used for the
+            // wallet's own balance display) collapses all of those to "0",
+            // which would read as "destination confirmed empty" here and
+            // reject a perfectly fine send; `nil` is not evidence of
+            // anything, so it fails open exactly like a transport error.
+            guard let balance = try await bittensorService.getBalanceIfKnown(address: tx.toAddress) else {
+                return
+            }
+            existingBalance = balance
         } catch is CancellationError {
             // Propagate — same convention as `validateDestinationIfNeeded`: a
             // cancelled lookup must abort the load pass, never be read as
@@ -339,16 +350,11 @@ struct SendCryptoVerifyLogic {
             return
         }
 
-        // `getBalance` can answer from a cache with no suspension point that
+        // The read can answer from a cache with no suspension point that
         // would observe cancellation, so a cancelled caller can reach here
         // with a real-looking read. Ask the task itself — same reasoning as
         // `validateDestinationTrustLineIfNeeded`'s post-fetch check.
         try Task.checkCancellation()
-
-        // An unreadable response is not evidence of anything — coercing it to
-        // zero would fail CLOSED (a bogus response could block a fine send),
-        // contradicting the fail-open contract above.
-        guard let existingBalance = BigInt(rawBalance) else { return }
 
         let resultingBalance = existingBalance + tx.amountInRaw
         guard resultingBalance > .zero, resultingBalance < BittensorHelper.existentialDeposit else { return }
