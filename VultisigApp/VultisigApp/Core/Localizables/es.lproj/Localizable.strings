@@ -140,6 +140,7 @@
 "beforeYouReshare" = "Antes de compartir nuevamente";
 "beforeYouReshareSubtitle" = "Compartir nuevamente regenera las particiones de tu bóveda. Hay algunas cosas que debes saber primero.";
 "beforeYouStart" = "Antes de comenzar...";
+"belowExistentialDepositDestinationError" = "Este envío dejaría la cuenta del destinatario por debajo del saldo mínimo (depósito existencial), por lo que la red lo rechazaría. Aumenta el importe o elige otro destinatario.";
 "belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
 "biometricUnlockTitle" = "Desbloqueo biométrico";

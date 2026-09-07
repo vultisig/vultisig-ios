@@ -13,9 +13,23 @@ enum BittensorHelper {
     /// SS58 prefix for Bittensor (generic Substrate)
     static let ss58Prefix: UInt16 = 42
 
-    /// Balances.transfer_allow_death: pallet index 5, call index 0 (allows full balance send)
+    /// Balances pallet module index. Verified against subtensor's own
+    /// `construct_runtime!` (`runtime/src/lib.rs`: `Balances: pallet_balances = 5`).
     static let moduleIndex: UInt8 = 5
-    static let methodIndex: UInt8 = 0
+
+    /// `pallet_balances` call indices, verified against the exact
+    /// `pallet-balances` revision subtensor's `runtime/Cargo.toml` pins
+    /// (`RaoFoundation/polkadot-sdk` @ `cacb4310f20c7cac83eb3ccd8ed5a5ad4212608a`,
+    /// `substrate/frame/balances/src/lib.rs`), which declares both calls with
+    /// explicit `#[pallet::call_index(_)]` attributes rather than relying on
+    /// declaration order.
+    static let transferAllowDeathIndex: UInt8 = 0
+    static let transferKeepAliveIndex: UInt8 = 3
+
+    /// Subtensor's existential deposit (`runtime/src/lib.rs`:
+    /// `pub const EXISTENTIAL_DEPOSIT: u64 = 500`). An account whose free
+    /// balance falls below this is reaped by the runtime.
+    static let existentialDeposit: BigInt = 500
 
     /// Static fallback fee: 200_000 RAO (0.0002 TAO). Actual fees ~130k-150k RAO.
     static let defaultFee: BigInt = 200_000
@@ -192,8 +206,15 @@ enum BittensorHelper {
 
     // MARK: - Pre-signed Image Hash (for MPC signing)
 
-    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        let payload = try buildSigningPayload(keysignPayload: keysignPayload)
+    /// `keepAlive` selects the Balances call: `transfer_keep_alive` (default)
+    /// fails on-chain rather than reap the sender, while `transfer_allow_death`
+    /// permits draining the account to zero. No caller passes `false` today —
+    /// there is no UI affordance for a user to explicitly empty a TAO account —
+    /// so this parameter exists to keep both calls available to a future
+    /// reap-confirmation flow without a second signature path. Every existing
+    /// send defaults to keep-alive.
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload, keepAlive: Bool = true) throws -> [String] {
+        let payload = try buildSigningPayload(keysignPayload: keysignPayload, keepAlive: keepAlive)
 
         // If payload > 256 bytes, hash with blake2b-256; otherwise sign directly
         let dataToSign: Data
@@ -209,7 +230,8 @@ enum BittensorHelper {
     // MARK: - Signed Transaction Assembly
 
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+                                     signatures: [String: TssKeysignResponse],
+                                     keepAlive: Bool = true) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
@@ -218,7 +240,7 @@ enum BittensorHelper {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
 
-        let signingPayload = try buildSigningPayload(keysignPayload: keysignPayload)
+        let signingPayload = try buildSigningPayload(keysignPayload: keysignPayload, keepAlive: keepAlive)
 
         // If payload > 256 bytes, hash with blake2b-256; otherwise sign directly
         let dataToSign: Data
@@ -236,7 +258,7 @@ enum BittensorHelper {
 
         // Build the signed extensions (same as what goes before callData in the extrinsic)
         let signedExtra = try buildSignedExtra(keysignPayload: keysignPayload)
-        let callData = try buildCallData(keysignPayload: keysignPayload)
+        let callData = try buildCallData(keysignPayload: keysignPayload, keepAlive: keepAlive)
 
         // Assemble the full extrinsic
         let extrinsic = assembleExtrinsic(
@@ -259,14 +281,14 @@ enum BittensorHelper {
     // MARK: - Internal Building Blocks
 
     /// Build the call data: [moduleIndex, methodIndex] ++ MultiAddress::Id(0x00) ++ dest_pubkey(32B) ++ compact(amount)
-    private static func buildCallData(keysignPayload: KeysignPayload) throws -> Data {
+    private static func buildCallData(keysignPayload: KeysignPayload, keepAlive: Bool) throws -> Data {
         guard let destPubkey = ss58Decode(keysignPayload.toAddress) else {
             throw HelperError.runtimeError("Invalid Bittensor destination address")
         }
 
         var data = Data()
         data.append(moduleIndex) // Balances pallet
-        data.append(methodIndex) // transfer_allow_death
+        data.append(keepAlive ? transferKeepAliveIndex : transferAllowDeathIndex)
         data.append(0x00) // MultiAddress::Id variant
         data.append(destPubkey) // 32 bytes destination public key
         data.append(compactEncode(keysignPayload.toAmount)) // compact encoded amount
@@ -335,8 +357,8 @@ enum BittensorHelper {
     }
 
     /// Build the full signing payload: callData ++ signedExtra ++ additionalSigned
-    private static func buildSigningPayload(keysignPayload: KeysignPayload) throws -> Data {
-        let callData = try buildCallData(keysignPayload: keysignPayload)
+    private static func buildSigningPayload(keysignPayload: KeysignPayload, keepAlive: Bool) throws -> Data {
+        let callData = try buildCallData(keysignPayload: keysignPayload, keepAlive: keepAlive)
         let signedExtra = try buildSignedExtra(keysignPayload: keysignPayload)
         let additionalSigned = try buildAdditionalSigned(keysignPayload: keysignPayload)
 

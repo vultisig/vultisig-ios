@@ -7,7 +7,14 @@ import Foundation
 import BigInt
 import WalletCore
 
-class BittensorService: RpcService {
+/// Balance-read seam for the send-verify destination-ED guard
+/// (`SendCryptoVerifyLogic.validateBittensorDestinationIfNeeded`), so tests can
+/// substitute a stub without exercising `RpcService`'s network layer.
+protocol BittensorBalanceFetching {
+    func getBalance(address: String) async throws -> String
+}
+
+class BittensorService: RpcService, BittensorBalanceFetching {
     static let rpcEndpoint = Endpoint.bittensorServiceRpc
     static let shared = BittensorService(rpcEndpoint)
 

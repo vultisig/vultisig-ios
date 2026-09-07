@@ -16,13 +16,16 @@ struct SendCryptoVerifyLogic {
 
     let interactor: SendInteractor
     private let rippleService: RippleService
+    private let bittensorService: BittensorBalanceFetching
 
     init(
         interactor: SendInteractor = DefaultSendInteractor.live,
-        rippleService: RippleService = .shared
+        rippleService: RippleService = .shared,
+        bittensorService: BittensorBalanceFetching = BittensorService.shared
     ) {
         self.interactor = interactor
         self.rippleService = rippleService
+        self.bittensorService = bittensorService
     }
 
     // MARK: - Fee Calculation
@@ -308,6 +311,49 @@ struct SendCryptoVerifyLogic {
         throw HelperError.runtimeError(
             String(format: "xrpDestinationNoTrustLineError".localized, tx.coin.ticker)
         )
+    }
+
+    /// Pre-ceremony guard for a native TAO send: the DESTINATION's resulting
+    /// balance must clear the 500-rao existential deposit, or `transfer_keep_alive`
+    /// fails on-chain after the ceremony (the runtime reaps an account below ED
+    /// on either side of a transfer, not only the sender). No-op for non-native
+    /// Bittensor coins and every other chain.
+    ///
+    /// FAIL OPEN, matching `validateDestinationIfNeeded`: it blocks only on
+    /// positive proof from a successful balance read. A transport failure, a
+    /// node error or a cancelled lookup lets the send proceed — a lookup we
+    /// couldn't complete must never start blocking a send that worked before
+    /// this guard existed.
+    func validateBittensorDestinationIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .bittensor, tx.coin.isNativeToken else { return }
+
+        let rawBalance: String
+        do {
+            rawBalance = try await bittensorService.getBalance(address: tx.toAddress)
+        } catch is CancellationError {
+            // Propagate — same convention as `validateDestinationIfNeeded`: a
+            // cancelled lookup must abort the load pass, never be read as
+            // evidence either way.
+            throw CancellationError()
+        } catch {
+            return
+        }
+
+        // `getBalance` can answer from a cache with no suspension point that
+        // would observe cancellation, so a cancelled caller can reach here
+        // with a real-looking read. Ask the task itself — same reasoning as
+        // `validateDestinationTrustLineIfNeeded`'s post-fetch check.
+        try Task.checkCancellation()
+
+        // An unreadable response is not evidence of anything — coercing it to
+        // zero would fail CLOSED (a bogus response could block a fine send),
+        // contradicting the fail-open contract above.
+        guard let existingBalance = BigInt(rawBalance) else { return }
+
+        let resultingBalance = existingBalance + tx.amountInRaw
+        guard resultingBalance > .zero, resultingBalance < BittensorHelper.existentialDeposit else { return }
+
+        throw HelperError.runtimeError("belowExistentialDepositDestinationError".localized)
     }
 
     /// Pre-ceremony guard for a TrustSet: spendable XRP must cover the owner

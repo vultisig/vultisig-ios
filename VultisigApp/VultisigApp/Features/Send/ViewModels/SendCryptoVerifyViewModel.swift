@@ -141,14 +141,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     newAmount = SendCryptoLogic.formatRawAmount(plannedRaw, coin: transaction.coin)
                 }
             } else if transaction.sendMaxAmount && transaction.coin.isNativeToken {
-                // `balance − fee − ED`. The ED reservation lets a DOT max-send
-                // settle at `balance − fee − ED` (`transfer_keep_alive` rejects
-                // a transfer that would reap the sender); zero for non-ED chains
-                // — including TAO (`transfer_allow_death`) and XRP, whose
-                // rawBalance is already reserve-net. Terra Classic additionally
-                // clamps to the Details amount so the refetched fee's embedded
-                // burn tax can't push the re-derived amount past the tax fixed
-                // point and underfund the send.
+                // `balance − fee − ED`. The ED reservation lets a DOT or TAO
+                // max-send settle at `balance − fee − ED` (`transfer_keep_alive`
+                // rejects a transfer that would reap the sender); zero for
+                // non-ED chains — XRP's rawBalance is already reserve-net.
+                // Terra Classic additionally clamps to the Details amount so the
+                // refetched fee's embedded burn tax can't push the re-derived
+                // amount past the tax fixed point and underfund the send.
                 //
                 // OP-stack rollups additionally bill an L1 data fee and an
                 // operator fee that op-geth adds to the balance check it runs
@@ -334,6 +333,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // Re-checked here against the freshly loaded balance and fee, not
             // just when the activation sheet quoted it.
             try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
+            // TAO counterpart: a `transfer_keep_alive` that would leave the
+            // destination below the existential deposit fails on-chain.
+            try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
         } catch is CancellationError {
             // Propagate — a cancelled load must abort the whole load pass (its
             // caller returns without running post-load work), not be swallowed
@@ -424,6 +426,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateDestinationIfNeeded(tx: transaction)
         try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
+        try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         syncRefittedAmount(with: keysignPayload)
