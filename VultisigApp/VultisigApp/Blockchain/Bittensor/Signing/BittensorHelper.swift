@@ -196,9 +196,11 @@ enum BittensorHelper {
     /// there is unspendable.
     private static let burnAccountId = Data(repeating: 0, count: 32)
 
-    /// True when `address` SS58-decodes to the burn AccountId. Independent of
-    /// prefix/checksum validity by design, so it also catches malformed
-    /// variants that happen to decode to all-zero key bytes.
+    /// True when `address` SS58-decodes to the burn AccountId. The
+    /// byte-level `assertNotBurnAccount` guard in `buildCallData` is the
+    /// one that does not depend on how strict `ss58Decode` is — this
+    /// string-level check is only ever reached from the form, after
+    /// `isValidAddress` has already required a well-formed address.
     static func isBurnAddress(_ address: String) -> Bool {
         ss58Decode(address) == burnAccountId
     }
