@@ -25,6 +25,27 @@ struct TransactionHistoryCardView: View {
         TransactionHistoryFailureReasonPresentation.displayText(for: transaction.errorMessage)
     }
 
+    /// Whether the collapsed row shows the completed-swap layout (two amount
+    /// legs + a `FROM → TO` pill) instead of today's single fiat/crypto
+    /// amount. See the static twin below for the routing rule.
+    private var showsSwapLegs: Bool {
+        Self.showsSwapLegs(
+            type: transaction.type,
+            toAmountCrypto: transaction.toAmountCrypto,
+            toCoinTicker: transaction.toCoinTicker
+        )
+    }
+
+    /// Whether the "via {provider}" badge belongs on this row. See the
+    /// static twin below for the routing rule.
+    private var showsViaBadge: Bool {
+        Self.showsViaBadge(
+            hasProvider: transaction.swapProvider != nil,
+            isExpanded: isExpanded,
+            showsSwapLegs: showsSwapLegs
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topRow
@@ -38,7 +59,7 @@ struct TransactionHistoryCardView: View {
             }
         }
         .padding(16)
-        .padding(.bottom, transaction.swapProvider != nil ? 20 : 0)
+        .padding(.bottom, showsViaBadge ? 20 : 0)
         .cornerRadius(Theme.radius.xl)
         .background(
             Theme.radius.xl.shape
@@ -47,7 +68,9 @@ struct TransactionHistoryCardView: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
         .overlay(alignment: .bottomTrailing) {
-            viaBadge
+            if showsViaBadge {
+                viaBadge
+            }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
         .onAppear {
@@ -71,6 +94,38 @@ struct TransactionHistoryCardView: View {
     /// put in those slots.
     static func shouldExpand(status: TransactionHistoryStatus, type: TransactionHistoryType) -> Bool {
         status == .inProgress && type != .approve && type != .trustLineActivation
+    }
+
+    // MARK: - Completed Swap/Limit Legs Routing
+
+    /// Whether this row shows the completed-swap layout: two amount legs
+    /// (`+to` / `-from`) plus a `FROM → TO` pill, replacing today's single
+    /// fiat/crypto amount. Requires the to-side to actually be known — a
+    /// limit order placed from a native source (`recordLimitOrder`) never
+    /// resolves `toCoinTicker`/`toAmountCrypto` (the co-signer only sees the
+    /// `=<` memo, never a real `Coin`), so that row keeps the old layout
+    /// rather than claiming a pair it cannot show.
+    static func showsSwapLegs(
+        type: TransactionHistoryType,
+        toAmountCrypto: String?,
+        toCoinTicker: String?
+    ) -> Bool {
+        guard type == .swap || type == .limit else { return false }
+        guard let toAmountCrypto, !toAmountCrypto.isEmpty else { return false }
+        guard let toCoinTicker, !toCoinTicker.isEmpty else { return false }
+        return true
+    }
+
+    /// Whether the "via {provider}" badge belongs on this row.
+    ///
+    /// Gone only on a COMPLETED row already showing the swap legs — the
+    /// `FROM → TO` pill takes over naming the route there. Every other
+    /// swap-provider row keeps it: an in-progress row's `expandedContent`
+    /// names both coins but not the provider, and a to-side-less limit
+    /// order still needs the badge to say what it routed through.
+    static func showsViaBadge(hasProvider: Bool, isExpanded: Bool, showsSwapLegs: Bool) -> Bool {
+        guard hasProvider else { return false }
+        return isExpanded || !showsSwapLegs
     }
 
     // MARK: - Top Row
@@ -431,6 +486,8 @@ struct TransactionHistoryCardView: View {
 
             if transaction.type == .trustLineActivation {
                 trustLineColumn
+            } else if showsSwapLegs {
+                swapLegsColumn
             } else {
                 amountColumn
             }
@@ -439,6 +496,8 @@ struct TransactionHistoryCardView: View {
 
             if transaction.type == .send {
                 addressPill
+            } else if showsSwapLegs {
+                swapPairPill
             }
         }
     }
@@ -482,6 +541,59 @@ struct TransactionHistoryCardView: View {
 
             cryptoAmountText(transaction.amountCrypto, ticker: transaction.coinTicker)
         }
+    }
+
+    /// The completed row's two legs: `+{toAmount} {toTicker}` in primary
+    /// above `-{fromAmount} {fromTicker}` in tertiary, same size
+    /// (`priceFootnote`) — confirmed against the Figma frame, which uses one
+    /// size for both lines and only the colour to demote the from-side.
+    ///
+    /// Rebuilds the ticker from `toCoinTicker`/`coinTicker` via
+    /// `Self.stripTicker` rather than trusting `toAmountCrypto`/
+    /// `amountCrypto` to already carry it: the `SwapDoneScreen` path
+    /// pre-formats `"\(amount) \(ticker)"`, but the co-signer's
+    /// `TransactionHistoryRecorder.recordFromKeysignPayload` records
+    /// `toAmountCrypto` as a bare number — the exact reason
+    /// `cryptoAmountText` strips defensively instead of assuming the ticker
+    /// is there.
+    ///
+    /// ⚠️ `toAmountCrypto` is the quote's EXPECTED output, frozen when the
+    /// row was recorded and never refreshed with what actually landed
+    /// (`TransactionHistoryViewModel.updateStatus`,
+    /// `SwapKitTrackingService.applyResponseToTx` both carry it forward
+    /// verbatim). The in-progress row labels the same value "expectedPayout"
+    /// for exactly this reason; this completed row has no such label and
+    /// reads as fact — a known, accepted property of the data.
+    private var swapLegsColumn: some View {
+        let toTicker = transaction.toCoinTicker ?? ""
+        let toAmount = Self.stripTicker(from: transaction.toAmountCrypto ?? "", ticker: toTicker)
+        let fromAmount = Self.stripTicker(from: transaction.amountCrypto, ticker: transaction.coinTicker)
+
+        return VStack(alignment: .leading, spacing: 2) {
+            Text("+\(toAmount) \(toTicker)")
+                .foregroundStyle(Theme.colors.textPrimary)
+            Text("-\(fromAmount) \(transaction.coinTicker)")
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
+        .font(Theme.fonts.priceFootnote)
+        .lineLimit(1)
+    }
+
+    /// `FROM → TO`, in the same pill geometry `addressPill` uses for a send
+    /// row's `to 0x…` — the slot a completed swap/limit row fills instead.
+    private var swapPairPill: some View {
+        Text("\(transaction.coinTicker) → \(transaction.toCoinTicker ?? "")")
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .lineLimit(1)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Theme.colors.bgSurface2)
+            .cornerRadius(Theme.radius.pill)
+            .overlay(
+                Theme.radius.pill.shape
+                    .stroke(Theme.colors.border, lineWidth: 1)
+            )
     }
 
     private var addressPill: some View {
@@ -529,9 +641,7 @@ struct TransactionHistoryCardView: View {
     // MARK: - Helpers
 
     private func cryptoAmountText(_ crypto: String, ticker: String) -> some View {
-        let amount = crypto.hasSuffix(ticker)
-            ? String(crypto.dropLast(ticker.count)).trimmingCharacters(in: .whitespaces)
-            : crypto
+        let amount = Self.stripTicker(from: crypto, ticker: ticker)
 
         return HStack(spacing: 4) {
             Text(amount)
@@ -541,6 +651,19 @@ struct TransactionHistoryCardView: View {
         }
         .font(Theme.fonts.priceFootnote)
         .lineLimit(1)
+    }
+
+    /// Bare numeric amount from a pre-formatted `"{amount} {ticker}"` string
+    /// that may or may not actually carry the suffix — not every recorder
+    /// path appends one (see `swapLegsColumn`). A no-op when the ticker
+    /// isn't present, so callers can always safely re-append it themselves.
+    static func stripTicker(from crypto: String, ticker: String) -> String {
+        // Matches the SPACE-delimited suffix, not a bare `hasSuffix(ticker)`
+        // — a custom token can carry a numeric-looking ticker (e.g. "50"),
+        // which would otherwise chew digits off an amount like "200.50"
+        // that merely ends in the same characters.
+        let suffix = " \(ticker)"
+        return crypto.hasSuffix(suffix) ? String(crypto.dropLast(suffix.count)) : crypto
     }
 
     private func truncatedAddress(_ address: String) -> String {
