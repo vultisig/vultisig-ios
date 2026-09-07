@@ -59,7 +59,11 @@ class PolkadotService: RpcService {
             return hex
         }
 
+        // An empty result means the account has never held a balance on-chain
+        // (no `System.Account` entry). Cache the zero so a never-funded address
+        // doesn't bypass the cache and re-hit the RPC on every balance refresh.
         guard !result.isEmpty else {
+            self.cachePolkadotBalance.set(cacheKey, (data: BigInt.zero, timestamp: Date()))
             return BigInt.zero
         }
 
@@ -70,7 +74,10 @@ class PolkadotService: RpcService {
         // the misc_frozen/fee_frozen -> frozen/flags runtime migration since
         // `free` is always the first AccountData field.
         let hex = result.stripHexPrefix()
-        guard hex.count >= 64 else { return BigInt.zero }
+        guard hex.count >= 64 else {
+            self.cachePolkadotBalance.set(cacheKey, (data: BigInt.zero, timestamp: Date()))
+            return BigInt.zero
+        }
 
         // free balance at bytes 16-31 (hex chars 32-63), u128 little-endian
         let freeHex = String(hex[hex.index(hex.startIndex, offsetBy: 32)..<hex.index(hex.startIndex, offsetBy: 64)])
