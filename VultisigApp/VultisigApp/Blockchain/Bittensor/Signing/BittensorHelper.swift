@@ -190,6 +190,19 @@ enum BittensorHelper {
         return hash.prefix(2) == checksum && pubkey.count == 32
     }
 
+    /// The Substrate burn/zero AccountId (32 zero bytes) — SS58-42-encodes to
+    /// `5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM`, a syntactically
+    /// valid Bittensor address with no known private key, so anything sent
+    /// there is unspendable.
+    private static let burnAccountId = Data(repeating: 0, count: 32)
+
+    /// True when `address` SS58-decodes to the burn AccountId. Independent of
+    /// prefix/checksum validity by design, so it also catches malformed
+    /// variants that happen to decode to all-zero key bytes.
+    static func isBurnAddress(_ address: String) -> Bool {
+        ss58Decode(address) == burnAccountId
+    }
+
     // MARK: - Pre-signed Image Hash (for MPC signing)
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
@@ -263,6 +276,7 @@ enum BittensorHelper {
         guard let destPubkey = ss58Decode(keysignPayload.toAddress) else {
             throw HelperError.runtimeError("Invalid Bittensor destination address")
         }
+        try assertNotBurnAccount(destPubkey)
 
         var data = Data()
         data.append(moduleIndex) // Balances pallet
@@ -272,6 +286,16 @@ enum BittensorHelper {
         data.append(compactEncode(keysignPayload.toAmount)) // compact encoded amount
 
         return data
+    }
+
+    /// Fail-closed guard so a keysign payload never builds a call to the burn
+    /// AccountId even if it bypassed this device's send-form validation — a
+    /// co-signer that only sees the payload at keysign time still routes
+    /// through here before anything gets signed.
+    private static func assertNotBurnAccount(_ pubkey: Data) throws {
+        guard pubkey != burnAccountId else {
+            throw HelperError.runtimeError("Bittensor destination is the burn/zero account")
+        }
     }
 
     /// Build signed extra: mortal_era(2B) ++ compact(nonce) ++ compact(tip=0) ++ 0x00(CheckMetadataHash:Disabled)
