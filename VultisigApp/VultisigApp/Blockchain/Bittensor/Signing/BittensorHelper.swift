@@ -152,7 +152,7 @@ enum BittensorHelper {
         let payload = Data(decoded[0..<(prefixByteCount + 32)])
         let checksum = Data(decoded[(prefixByteCount + 32)..<expectedLength])
 
-        let ss58PrefixData = "SS58PRE".data(using: .utf8)!
+        let ss58PrefixData = Data("SS58PRE".utf8)
         let hash = Hash.blake2b(data: ss58PrefixData + payload, size: 64)
         guard hash.prefix(2) == checksum else { return nil }
 
