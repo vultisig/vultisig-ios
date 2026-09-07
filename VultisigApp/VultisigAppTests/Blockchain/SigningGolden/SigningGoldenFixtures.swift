@@ -72,7 +72,19 @@ enum SigningGoldenFactory {
     /// Canonical destination address for `chain`, derived from a fixed key so
     /// it is a real, chain-valid address (never a placeholder string).
     static func recipient(_ chain: Chain) -> String {
-        chain.coinType.deriveAddress(privateKey: recipientKey)
+        switch chain {
+        case .bittensor:
+            // WalletCore has no CoinType.Bittensor; `chain.coinType` aliases
+            // Polkadot, whose SS58 prefix is 0, not Bittensor's 42. Mirror
+            // `CoinFactory`'s override so this is a real, checksummed SS58-42
+            // address — the strict sign-path decode rejects anything else.
+            return BittensorHelper.ss58Encode(
+                publicKey: recipientKey.getPublicKeyEd25519().data,
+                prefix: BittensorHelper.ss58Prefix
+            )
+        default:
+            return chain.coinType.deriveAddress(privateKey: recipientKey)
+        }
     }
 
     /// A signing coin whose `address` + `hexPublicKey` both derive from the

@@ -114,22 +114,49 @@ enum BittensorHelper {
 
     // MARK: - SS58 Address Encoding/Decoding
 
-    /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519)
-    static func ss58Decode(_ address: String) -> Data? {
-        guard let decoded = Base58.decodeNoCheck(string: address) else {
+    /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519),
+    /// requiring an exact prefix + checksum match against `expectedPrefix`.
+    /// This is the single decode both the form (`isValidAddress`) and the sign
+    /// path (`buildCallData`) use, so they can never accept different addresses.
+    static func ss58Decode(_ address: String, expectedPrefix: UInt16 = ss58Prefix) -> Data? {
+        guard let decoded = Base58.decodeNoCheck(string: address), !decoded.isEmpty else {
             return nil
         }
 
-        // Simple prefix (1 byte) + 32 byte key + 2 byte checksum = 35 bytes
-        // Full prefix (2 bytes) + 32 byte key + 2 byte checksum = 36 bytes
-        if decoded.count == 35 {
-            // Single byte prefix
-            return Data(decoded[1..<33])
-        } else if decoded.count == 36 {
-            // Two byte prefix
-            return Data(decoded[2..<34])
+        let prefixByteCount: Int
+        let decodedPrefix: UInt16
+
+        if decoded[0] < 64 {
+            prefixByteCount = 1
+            decodedPrefix = UInt16(decoded[0])
+        } else if decoded[0] <= 127 {
+            // The SS58 two-byte prefix indicator is 64...127; 128...255 is
+            // reserved (not a valid full-identifier prefix at all), and the
+            // low-6-bits-only formula below would otherwise alias several
+            // reserved first bytes onto the same prefix as a canonical one.
+            guard decoded.count >= 2 else { return nil }
+            prefixByteCount = 2
+            let first = decoded[0]
+            let second = decoded[1]
+            decodedPrefix = UInt16((first & 0x3F) << 2) | UInt16(second >> 6) | (UInt16(second & 0x3F) << 8)
+        } else {
+            return nil
         }
-        return nil
+
+        guard decodedPrefix == expectedPrefix else { return nil }
+
+        // Exact length only: prefix + 32-byte key + 2-byte checksum, no trailing bytes.
+        let expectedLength = prefixByteCount + 32 + 2
+        guard decoded.count == expectedLength else { return nil }
+
+        let payload = Data(decoded[0..<(prefixByteCount + 32)])
+        let checksum = Data(decoded[(prefixByteCount + 32)..<expectedLength])
+
+        let ss58PrefixData = "SS58PRE".data(using: .utf8)!
+        let hash = Hash.blake2b(data: ss58PrefixData + payload, size: 64)
+        guard hash.prefix(2) == checksum else { return nil }
+
+        return Data(decoded[prefixByteCount..<(prefixByteCount + 32)])
     }
 
     /// Encode raw public key bytes to SS58 address with given prefix
@@ -154,40 +181,11 @@ enum BittensorHelper {
         return Base58.encodeNoCheck(data: payload + checksum)
     }
 
-    /// Validate a Bittensor SS58 address (prefix 42)
+    /// Validate a Bittensor SS58 address (prefix 42). Thin wrapper over
+    /// `ss58Decode` so the form can never accept an address the sign path
+    /// would reject, or vice versa.
     static func isValidAddress(_ address: String) -> Bool {
-        guard let decoded = Base58.decodeNoCheck(string: address) else {
-            return false
-        }
-
-        // Check minimum length: prefix(1-2) + pubkey(32) + checksum(2) = 35 or 36
-        guard decoded.count >= 35 else { return false }
-
-        let prefixByteCount: Int
-        let decodedPrefix: UInt16
-
-        if decoded[0] < 64 {
-            prefixByteCount = 1
-            decodedPrefix = UInt16(decoded[0])
-        } else {
-            guard decoded.count >= 36 else { return false }
-            prefixByteCount = 2
-            let first = decoded[0]
-            let second = decoded[1]
-            decodedPrefix = UInt16((first & 0x3F) << 2) | UInt16(second >> 6) | (UInt16(second & 0x3F) << 8)
-        }
-
-        guard decodedPrefix == ss58Prefix else { return false }
-
-        let pubkey = Data(decoded[prefixByteCount..<(prefixByteCount + 32)])
-        let checksum = Data(decoded[(prefixByteCount + 32)..<(prefixByteCount + 34)])
-
-        // Verify checksum
-        let ss58PrefixData = "SS58PRE".data(using: .utf8)!
-        let payload = Data(decoded[0..<(prefixByteCount + 32)])
-        let hash = Hash.blake2b(data: ss58PrefixData + payload, size: 64)
-
-        return hash.prefix(2) == checksum && pubkey.count == 32
+        ss58Decode(address) != nil
     }
 
     // MARK: - Pre-signed Image Hash (for MPC signing)
