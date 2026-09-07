@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "Transação expirada. Por favor, tente novamente.";
 "broadcastRetryStaleNonce" = "Nonce da transação desatualizado — detalhes atualizados. Por favor, tente novamente.";
 "broadcastRetryStaleQuote" = "Cotação expirada — detalhes atualizados. Por favor, tente novamente.";
+"burnAddressError" = "Este é um endereço de queima. Os fundos enviados aqui não podem ser recuperados.";
 "buy" = "Comprar";
 "buyVultBannerSubtitle" = "E economize nas taxas de swap";
 "buyVultBannerTitle" = "Comprar $VULT";

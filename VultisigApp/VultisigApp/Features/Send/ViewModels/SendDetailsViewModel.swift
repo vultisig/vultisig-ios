@@ -1161,17 +1161,33 @@ final class SendDetailsViewModel {
         return true
     }
 
-    /// TRON self-send guard (parity with android DefaultSendStrategy): a plain
+    /// Self-send guard (parity with android DefaultSendStrategy): a plain
     /// transfer whose destination is the sender's own address just burns fees.
-    /// Staking ops (freeze/unfreeze) are self-directed by design, so they're
-    /// excluded via the existing `isStakingOperation` flag. Compares against
-    /// `fromAddress` — the sender `makeTransaction()` actually signs with, which
-    /// a hydrated seed can decouple from `coin.address` — so the guard tracks the
-    /// real sender rather than an assumed-equal default.
+    /// TRON staking ops (freeze/unfreeze) are self-directed by design, so
+    /// they're excluded via the existing `isStakingOperation` flag. Bittensor
+    /// shares the same self-send-wastes-fees shape as TRON, so it reuses this
+    /// guard rather than growing a second one. Compares against `fromAddress`
+    /// — the sender `makeTransaction()` actually signs with, which a hydrated
+    /// seed can decouple from `coin.address` — so the guard tracks the real
+    /// sender rather than an assumed-equal default.
     func validateNotSelfSend() -> Bool {
-        guard coin.chain == .tron, !isStakingOperation else { return true }
+        guard [.tron, .bittensor].contains(coin.chain), !isStakingOperation else { return true }
         guard toAddress == fromAddress else { return true }
         setAddressError(message: "sameAddressError")
+        return false
+    }
+
+    /// Blocks a send to the Substrate burn/zero AccountId — form-level only,
+    /// so the failure is actionable while the destination field is still on
+    /// screen. `BittensorHelper.buildCallData` carries the fail-closed
+    /// counterpart for a keysign payload that bypasses this form (e.g. built
+    /// on a co-signer device). Bittensor-scoped: Polkadot shares the same
+    /// zero-AccountId concept but resolves addresses through a different path
+    /// (WalletCore `AnyAddress` in `Polkadot.swift`), which is left as
+    /// follow-up rather than folded into this check.
+    func validateBurnDestination() -> Bool {
+        guard coin.chain == .bittensor, BittensorHelper.isBurnAddress(toAddress) else { return true }
+        setAddressError(message: "burnAddressError")
         return false
     }
 
@@ -1306,6 +1322,7 @@ final class SendDetailsViewModel {
         // through the screen's format check.
         guard await validateAddressResolved() else { return false }
         guard validateNotSelfSend() else { return false }
+        guard validateBurnDestination() else { return false }
         guard validateRippleTagAndMemo() else { return false }
         guard await validateRippleRequireDest() else { return false }
         guard validateBalance() else { return false }

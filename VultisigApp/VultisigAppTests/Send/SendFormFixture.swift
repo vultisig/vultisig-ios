@@ -70,6 +70,10 @@ enum SendFormFixture {
         makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true, rawBalance: rawBalance)
     }
 
+    static func makeTAO(rawBalance: String = "1000000000") -> Coin {
+        makeCoin(.bittensor, ticker: "TAO", decimals: 9, isNative: true, rawBalance: rawBalance)
+    }
+
     static func makeXRP(rawBalance: String = "20000000") -> Coin {
         makeCoin(.ripple, ticker: "XRP", decimals: 6, isNative: true, rawBalance: rawBalance)
     }

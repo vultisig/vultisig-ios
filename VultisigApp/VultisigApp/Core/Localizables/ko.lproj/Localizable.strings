@@ -161,6 +161,7 @@
 "broadcastRetryStaleBlockhash" = "트랜잭션이 만료되었습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleNonce" = "트랜잭션 nonce가 오래되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleQuote" = "견적이 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
+"burnAddressError" = "이것은 소각 주소입니다. 이 주소로 보낸 자금은 복구할 수 없습니다.";
 "buy" = "구매";
 "buyVultBannerSubtitle" = "스왑 수수료 절약";
 "buyVultBannerTitle" = "$VULT 구매";
