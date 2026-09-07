@@ -235,14 +235,20 @@ extension Chain {
     }
 
     /// Whether the Send flow's memo input should be exposed for this chain.
-    /// Most chains carry a memo at the protocol level. The exception is Sui:
-    /// a transaction is a Programmable Transaction Block with no memo field, so
-    /// a typed memo would be silently dropped — hiding the input avoids that.
+    /// Most chains carry a memo at the protocol level; a typed memo would be
+    /// silently dropped for the exceptions below, so hiding the input avoids
+    /// that:
+    /// - Sui: a transaction is a Programmable Transaction Block with no memo
+    ///   field.
+    /// - Polkadot and Bittensor: the signer builds only a `balances.transfer`
+    ///   extrinsic (module/method + destination + amount + signed extra) —
+    ///   there is no `system.remark`, no batch call, and no other field the
+    ///   memo could ride on.
     /// Cardano DOES support memos: they are attached on-chain as CIP-20
     /// transaction metadata (label 674) via `CardanoSigningInput.auxiliaryData`.
     var supportsMemo: Bool {
         switch self {
-        case .sui:
+        case .sui, .polkadot, .bittensor:
             return false
         default:
             return true
