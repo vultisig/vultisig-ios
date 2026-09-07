@@ -141,7 +141,7 @@
 "beforeYouReshareSubtitle" = "Compartilhar novamente regenera as partes do seu cofre. Há algumas coisas que você precisa saber primeiro.";
 "beforeYouStart" = "Antes de começar...";
 "belowExistentialDepositDestinationError" = "Este envio deixaria a conta do destinatário abaixo do saldo mínimo (depósito existencial), então a rede o rejeitaria. Aumente o valor ou escolha outro destinatário.";
-"belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor ou envie o saldo completo.";
+"belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor para que pelo menos o saldo mínimo permaneça na sua conta.";
 "biometricsFastSigning" = "Biometria assinatura rápida";
 "biometricUnlockTitle" = "Desbloqueio biométrico";
 "bond" = "Vincular";

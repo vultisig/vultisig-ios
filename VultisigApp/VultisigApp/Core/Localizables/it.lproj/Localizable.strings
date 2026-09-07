@@ -141,7 +141,7 @@
 "beforeYouReshareSubtitle" = "La ricondivisione rigenera le quote del tuo vault. Ci sono alcune cose da sapere prima.";
 "beforeYouStart" = "Prima di iniziare...";
 "belowExistentialDepositDestinationError" = "Questo invio lascerebbe il conto del destinatario al di sotto del saldo minimo (deposito esistenziale), quindi la rete lo rifiuterebbe. Aumenta l'importo o scegli un altro destinatario.";
-"belowExistentialDepositError" = "Questo invio lascerebbe sul tuo conto un saldo inferiore al minimo (deposito esistenziale), quindi la rete lo rifiuterebbe. Riduci l'importo o invia l'intero saldo.";
+"belowExistentialDepositError" = "Questo invio lascerebbe sul tuo conto un saldo inferiore al minimo (deposito esistenziale), quindi la rete lo rifiuterebbe. Riduci l'importo in modo che rimanga almeno il saldo minimo sul tuo conto.";
 "biometricsFastSigning" = "Biometria Firma rapida";
 "biometricUnlockTitle" = "Sblocco biometrico";
 "bond" = "Vincola";
