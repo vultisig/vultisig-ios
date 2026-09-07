@@ -55,6 +55,9 @@ struct DefiMainScreen: View {
                     scrollProxy = proxy
                 }
             }
+            // A different vault starts at its balance, without retaining the
+            // previous vault's scroll position or cached lazy-stack layout.
+            .id(vault.id)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(MainBackgroundWithNotification())
             .onChange(of: showSearchHeader) { _, showSearchHeader in
@@ -77,6 +80,11 @@ struct DefiMainScreen: View {
         }
         .throttledOnAppear(interval: 15.0, action: refresh)
         .onChange(of: vault) { _, _ in
+            // A new vault opens at its balance, without the old search filter
+            // or a focused field competing with the reset scroll position.
+            if focusSearch { focusSearch = false }
+            if showSearchHeader { showSearchHeader = false }
+            if !viewModel.searchText.isEmpty { viewModel.searchText = "" }
             refresh()
         }
         .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in

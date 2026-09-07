@@ -41,7 +41,14 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
                 legacyTabBar
             }
 #endif
-        }.onChange(of: selectedItem) { oldValue, newValue in
+        }
+        .onChange(of: items) { _, newItems in
+            // TabView can display a fallback without updating its selection
+            // binding. Keep the screen's header on the tab that still exists.
+            guard !newItems.contains(selectedItem), let firstItem = newItems.first else { return }
+            selectedItem = firstItem
+        }
+        .onChange(of: selectedItem) { oldValue, newValue in
             if newValue == accessory {
                 selectedItem = oldValue
                 onAccessory?()

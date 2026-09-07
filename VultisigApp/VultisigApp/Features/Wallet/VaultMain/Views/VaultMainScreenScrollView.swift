@@ -50,7 +50,9 @@ struct VaultMainScreenScrollView<Content: View>: View {
                     .background(
                         GeometryReader { proxy in
                             Color.clear
-                                .onChange(of: preferenceValue(proxy: proxy)) { _, newValue in
+                                // A new vault's viewport must also replace the
+                                // old header progress before the first scroll.
+                                .onChange(of: preferenceValue(proxy: proxy), initial: true) { _, newValue in
                                     onOffsetChange(newValue)
                                 }
                         }

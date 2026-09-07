@@ -53,6 +53,7 @@ struct OffsetObservingScrollView<Content: View>: View {
         }
         .coordinateSpace(name: coordinateSpaceName)
         .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+            guard scrollOffset != value else { return }
             scrollOffset = value
         }
     }
@@ -90,22 +91,14 @@ private extension OffsetObservingScrollView {
     }
 }
 
-private struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-
-    private static var lastUpdateTime: CFTimeInterval = 0
-    private static let targetFrameRate: Double = 30
-    private static var frameInterval: CFTimeInterval { 1.0 / targetFrameRate }
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        let newValue = nextValue()
-        let currentTime = CACurrentMediaTime()
-
-        // Only update if enough time has passed since the last update
-        if currentTime - lastUpdateTime >= frameInterval {
-            value += newValue
-            lastUpdateTime = currentTime
-        }
-        // If not enough time has passed, keep the previous value (don't update)
+        // Reduction combines one preference tree at a time. A shared clock here
+        // drops values from unrelated scroll views and can replace an offset
+        // with the default value. Keep reduction independent of time/instances;
+        // the picker handles scroll-settle debouncing after receiving offsets.
+        value += nextValue()
     }
 }
