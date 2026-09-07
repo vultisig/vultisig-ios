@@ -182,10 +182,8 @@ struct ManagePasscodeScreen: View {
 
             Spacer()
 
-            Toggle("", isOn: isOn)
+            VultiToggle(isOn: isOn)
                 .labelsHidden()
-                .tint(Theme.colors.primaryAccent4)
-                .fixedSize()
         }
         .padding(16)
         .contentShape(Rectangle())
