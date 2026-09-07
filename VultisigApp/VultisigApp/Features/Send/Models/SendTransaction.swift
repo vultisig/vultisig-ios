@@ -67,7 +67,11 @@ struct SendDetailsSeed: Hashable {
             lastResolvedAddress: nil,
             amount: prefilledAmount ?? "",
             amountInFiat: "",
-            memo: prefilledMemo ?? "",
+            // A deeplink can carry a memo for a coin whose signer never
+            // encodes one (see `Chain.supportsMemo`); dropping it here keeps
+            // the seed's memo consistent with the hidden field so Verify
+            // never confirms a note that would be silently discarded.
+            memo: coin.supportsMemo ? (prefilledMemo ?? "") : "",
             gas: .zero,
             fee: .zero,
             feeMode: .default,
