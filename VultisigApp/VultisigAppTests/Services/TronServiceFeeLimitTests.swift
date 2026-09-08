@@ -498,7 +498,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let coin = makeNativeCoin()
         let result = try await service.getBlockInfo(coin: coin, to: Self.recipient, memo: nil, isSwap: false)
 
-        XCTAssertEqual(extractGasFee(result), UInt64(try bandwidthBytes(for: coin, memo: nil)) * 1000)
+        XCTAssertEqual(extractGasFee(result), Self.memolessBandwidthBytes * 1000)
     }
 
     /// The defect this replaced: bandwidth was reserved from a 300-byte
@@ -508,23 +508,22 @@ final class TronServiceFeeLimitTests: XCTestCase {
     /// memo-less send is free and the memo-bearing one is not.
     func testGetBlockInfoMemoPushesTransferPastTheFreeBandwidthItFitsWithout() async throws {
         let coin = makeNativeCoin()
-        let memo = String(repeating: "a", count: 100)
-        let freeBandwidth = try bandwidthBytes(for: coin, memo: nil)
+        let memo = String(repeating: "a", count: Self.memoLength)
+        let freeBandwidth = Int64(Self.memolessBandwidthBytes)
 
         let bare = try await gasFee(coin: coin, memo: nil, availableBandwidth: freeBandwidth)
         XCTAssertEqual(bare, 0)
 
         let withMemo = try await gasFee(coin: coin, memo: memo, availableBandwidth: freeBandwidth)
-        let expectedBandwidthFee = UInt64(try bandwidthBytes(for: coin, memo: memo)) * 1000
         // The flat `getMemoFee` chain parameter is charged on top of bandwidth.
-        XCTAssertEqual(withMemo, expectedBandwidthFee + 1_000_000)
+        XCTAssertEqual(withMemo, Self.memo100BandwidthBytes * 1000 + 1_000_000)
     }
 
     /// Routing markers select a WalletCore system-contract builder and never
     /// reach the wire, so they must not inflate the bandwidth reserve either.
     func testGetBlockInfoRoutingMemoDoesNotInflateTheBandwidthReserve() async throws {
         let coin = makeNativeCoin()
-        let freeBandwidth = try bandwidthBytes(for: coin, memo: nil)
+        let freeBandwidth = Int64(Self.memolessBandwidthBytes)
 
         let fee = try await gasFee(
             coin: coin,
@@ -559,25 +558,22 @@ final class TronServiceFeeLimitTests: XCTestCase {
 
     private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 
-    /// The bandwidth `getBlockInfo` measures for this transfer. Block-reference
-    /// and timestamp fields are fixed-width at millisecond epoch scale, so the
-    /// count does not depend on when the test runs.
-    private func bandwidthBytes(for coin: Coin, memo: String?, to: String? = nil) throws -> Int64 {
-        try TronHelper.nativeTransferBandwidthBytes(
-            ownerAddress: coin.address,
-            toAddress: to ?? Self.recipient,
-            amount: .zero,
-            memo: memo,
-            timestamp: 1_757_000_000_000,
-            expiration: 1_757_003_600_000,
-            blockHeaderTimestamp: 1_700_000_000,
-            blockHeaderNumber: 1,
-            blockHeaderVersion: 0,
-            blockHeaderTxTrieRoot: "00",
-            blockHeaderParentHash: "00",
-            blockHeaderWitnessAddress: "00"
-        )
-    }
+    /// Hand-derived byte counts for the transfer these tests build, so the
+    /// expectations do not come from the production helper they are checking.
+    /// The derivation is spelled out field by field in
+    /// `TronBandwidthEstimateTests`; the only difference is that `getBlockInfo`
+    /// is called with no amount here, so `TransferContract.amount` stays at its
+    /// proto3 default and its 4 bytes are not serialized: 267 - 4 = 263. Both
+    /// millisecond timestamps are fixed-width for the next several decades, so
+    /// neither count depends on when the test runs.
+    private static let memolessBandwidthBytes: UInt64 = 263
+
+    /// The same transfer carrying a 100-byte memo, whose `data` field adds
+    /// 1 tag + 1 length + 100 = 102 bytes.
+    private static let memo100BandwidthBytes: UInt64 = 365
+
+    /// Length of the memo `memo100BandwidthBytes` was derived for.
+    private static let memoLength = 100
 
     private func gasFee(
         coin: Coin,

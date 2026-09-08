@@ -24,16 +24,34 @@ final class TronBandwidthEstimateTests: XCTestCase {
     /// plus the single-byte length varint every memo below 128 bytes uses.
     private static let memoFieldOverhead: Int64 = 2
 
-    func testMemolessTransferIsSizedFromTheSerializedTransaction() throws {
-        let bytes = try bandwidthBytes(memo: nil)
+    /// Hand-derived from TRON's wire format for the fixture below, so the
+    /// signature framing and the result allowance are pinned rather than
+    /// merely bracketed. Field numbers from `Transaction.raw` (ref_block_bytes
+    /// 1, ref_block_hash 4, expiration 8, data 10, contract 11, timestamp 14);
+    /// `ref_block_num` and `fee_limit` are left at their proto3 defaults and so
+    /// are not serialized.
+    ///
+    ///     TransferContract  owner 1+1+21, to 1+1+21, amount 1+3      =  50
+    ///     Any               type_url 1+1+45, value 1+1+50            =  99
+    ///     Contract          type 1+1, parameter 1+1+99               = 103
+    ///     raw_data          ref_block_bytes 1+1+2,  ref_block_hash 1+1+8,
+    ///                       expiration 1+6, contract 1+1+103,
+    ///                       timestamp 1+6                            = 133
+    ///     signed tx         raw_data 1+2+133, signature 1+1+65       = 203
+    ///     + MAX_RESULT_SIZE_IN_TX                                    =  64
+    ///                                                                = 267
+    private static let memolessTransferBytes: Int64 = 267
 
-        // A native transfer serializes to a couple of hundred bytes: two
-        // 21-byte addresses, the block reference, two millisecond timestamps,
-        // one 65-byte signature and TRON's 64-byte result allowance. The band
-        // is wide on purpose — it catches a WalletCore payload that stopped
-        // being the raw transaction without pinning an exact wire size.
-        XCTAssertGreaterThan(bytes, 150)
-        XCTAssertLessThan(bytes, 400)
+    func testMemolessTransferMatchesTheHandDerivedByteCount() throws {
+        XCTAssertEqual(try bandwidthBytes(memo: nil), Self.memolessTransferBytes)
+    }
+
+    /// The same derivation with a 50-byte memo, whose `data` field adds
+    /// 1 tag + 1 length + 50 = 52 bytes.
+    func testMemoBearingTransferMatchesTheHandDerivedByteCount() throws {
+        let memo = String(repeating: "a", count: 50)
+
+        XCTAssertEqual(try bandwidthBytes(memo: memo), Self.memolessTransferBytes + 52)
     }
 
     func testMemoAddsItsOwnBytesToTheEstimate() throws {
