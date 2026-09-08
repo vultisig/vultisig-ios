@@ -147,9 +147,6 @@ final class StringExtensionsTests: XCTestCase {
 
     // MARK: - isValidDecimal
 
-    /// `NumberFormatter` reads scientific notation, so before the character-set
-    /// half was folded in, an `amount=1e5` reaching the send form from a deeplink
-    /// or a scanned `bitcoin:` URI validated and then signed as 100000.
     func testIsValidDecimalRejectsScientificNotationAndHex() {
         let locale = Locale(identifier: "en_US")
 
@@ -159,8 +156,7 @@ final class StringExtensionsTests: XCTestCase {
         XCTAssertFalse("1e-3".isValidDecimal(locale: locale))
         XCTAssertFalse("0x1F".isValidDecimal(locale: locale))
 
-        // The expansion `parseInput` performs is unchanged — the guard is on the
-        // notation, not on the value it would reach.
+        // The guard is on the notation; `parseInput`'s expansion is unchanged.
         XCTAssertEqual("1e5".parseInput(locale: locale), Decimal(100_000))
         XCTAssertTrue("100000".isValidDecimal(locale: locale))
     }
@@ -172,7 +168,6 @@ final class StringExtensionsTests: XCTestCase {
         XCTAssertTrue("0".isValidDecimal(locale: enUS))
         XCTAssertTrue("0.00000001".isValidDecimal(locale: enUS))
         XCTAssertTrue("1,234.56".isValidDecimal(locale: enUS))
-        // Surrounding spaces stay tolerated, as `parseInput` always has.
         XCTAssertTrue("   1,234.56   ".isValidDecimal(locale: enUS))
 
         let ptBR = Locale(identifier: "pt_BR")
@@ -190,11 +185,7 @@ final class StringExtensionsTests: XCTestCase {
         XCTAssertFalse("\n\t1,234.56\t\n".isValidDecimal(locale: locale))
     }
 
-    /// `NumberFormatter` renders digits in the locale's numbering system, so an
-    /// amount the app formatted for the user has to validate again under that same
-    /// locale. Every shipping locale is Latin-digit, but the two sides must agree
-    /// for any effective locale — a rejected Max amount would block sending
-    /// outright, a worse failure than the one the guard exists to prevent.
+    /// An amount the app formatted must validate back, or Max would block sending.
     func testIsValidDecimalAcceptsEveryLocaleNumberingSystem() {
         let identifiers = [
             "en_US", "de_DE", "zh_Hans_CN", "es_ES", "ko_KR", "it_IT", "pt_BR", "hr_HR",
@@ -203,8 +194,7 @@ final class StringExtensionsTests: XCTestCase {
 
         for identifier in identifiers {
             let locale = Locale(identifier: identifier)
-            // Mirrors `SendCryptoLogic.formatAmountInput`, which fills the amount
-            // field from Max / percentage presets.
+            // Mirrors `SendCryptoLogic.formatAmountInput`.
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
             formatter.locale = locale
@@ -222,8 +212,6 @@ final class StringExtensionsTests: XCTestCase {
         }
     }
 
-    /// The digit test is Unicode decimal digits (Nd) — deliberately narrower than
-    /// `isNumber`, which also accepts exponents, fractions and numeral letters.
     func testIsDecimalInputAcceptsOnlyDecimalDigits() {
         let locale = Locale(identifier: "en_US")
 

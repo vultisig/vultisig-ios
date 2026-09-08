@@ -1144,12 +1144,7 @@ final class SendDetailsViewModel {
         return true
     }
 
-    /// Rejects an amount that is not a plain decimal. `parseInput` is backed by
-    /// `NumberFormatter`, which expands scientific notation ("1e5" -> 100000),
-    /// and Verify renders the raw string — so an expanded value would be signed
-    /// behind a figure the user never agreed to. The boundaries that can carry one
-    /// in are guarded at their source; this is the backstop for anything that
-    /// reaches `amount` without passing them.
+    /// Backstop: Verify renders the raw string, so an expanded one signs behind it.
     func validateAmountFormat() -> Bool {
         guard amount.isValidDecimal() else {
             setAmountError(message: "decimalAmountError")

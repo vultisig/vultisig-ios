@@ -228,9 +228,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(vm.showAmountAlert)
     }
 
-    /// `1e5` is non-zero once expanded, so the non-zero rule waves it through —
-    /// the format rule is what stops it, and it has to run before the address is
-    /// resolved so the failure is about the amount, not the recipient.
+    /// `1e5` is non-zero once expanded, so only the format rule stops it.
     func testValidateFormRejectsScientificNotationAmount() async {
         let vm = SendFormFixture.make()
         vm.toAddress = "addr"
@@ -243,7 +241,6 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertTrue(vm.showAmountAlert)
     }
 
-    /// An empty amount keeps reporting the zero-amount error, not the format one.
     func testValidateFormEmptyAmountStillReportsPositiveAmountError() async {
         let vm = SendFormFixture.make()
         vm.toAddress = "addr"
@@ -255,8 +252,6 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "positiveAmountError")
     }
 
-    /// The Continue hand-off refuses to build a transaction Verify would render
-    /// as `1e5` while 100000 got signed.
     func testMakeTransactionRejectsScientificNotationAmount() {
         let vm = SendFormFixture.make()
         vm.toAddress = "addr"

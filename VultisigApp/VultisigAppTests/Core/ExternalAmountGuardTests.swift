@@ -2,10 +2,8 @@
 //  ExternalAmountGuardTests.swift
 //  VultisigAppTests
 //
-//  Amounts that reach the send form from outside the app — a `vultisig://send`
-//  deeplink and a scanned `bitcoin:` / `ton://` URI — must be plain decimals
-//  before they can be prefilled. `NumberFormatter` expands scientific notation,
-//  so an unguarded `amount=1e5` stages 100000.
+//  The two paths that prefill the send form from outside the app: a
+//  `vultisig://send` deeplink and a scanned `bitcoin:` / `ton://` URI.
 //
 
 import XCTest
@@ -16,10 +14,7 @@ final class ExternalAmountGuardTests: XCTestCase {
 
     // MARK: - Why the guard rejects rather than normalises
 
-    /// Verify renders the amount string verbatim — `SendVerifyScreen` hands
-    /// `tx.amount` to `CoinAmountFiatLabel`, which is a plain `Text(amount)` with
-    /// no formatting hop — while everything signed derives from `amountDecimal`.
-    /// For scientific notation those two disagree by five orders of magnitude.
+    /// Verify renders `tx.amount`; the signed value comes from `amountDecimal`.
     func testScientificNotationDisplaysAndSignsDifferentValues() {
         let coin = SendFormFixture.makeBTC()
         let displayed = "1e5"
@@ -52,15 +47,10 @@ final class ExternalAmountGuardTests: XCTestCase {
         XCTAssertEqual(try sendAmount(from: "amount=100000"), "100000")
     }
 
-    /// A link with no amount at all is unchanged by the guard — the form opens
-    /// with an empty field, exactly as a rejected one now does.
     func testDeeplinkWithoutAmountStaysNil() throws {
         XCTAssertNil(try sendAmount(from: "memo=hello"))
     }
 
-    /// The rest of the send deeplink keeps working when the amount is dropped:
-    /// the address still routes, so the user lands on a prefilled form and types
-    /// the amount themselves.
     func testDeeplinkWithRejectedAmountStillCarriesAddress() throws {
         let url = URL(string: "vultisig://send?assetChain=ethereum&assetTicker=ETH&toAddress=0xdead&amount=1e5")!
 
@@ -84,7 +74,6 @@ final class ExternalAmountGuardTests: XCTestCase {
         XCTAssertEqual(AddressResult.fromURI("ton://transfer/EQabc?amount=12.25").amount, "12.25")
     }
 
-    /// Dropping the amount must not drop the address or the memo riding with it.
     func testScannedURIWithRejectedAmountKeepsAddressAndMessage() {
         let result = AddressResult.fromURI("bitcoin:bc1qexampleaddress?amount=1e5&message=coffee")
 
@@ -93,13 +82,10 @@ final class ExternalAmountGuardTests: XCTestCase {
         XCTAssertNil(result.amount)
     }
 
-    // MARK: - Comma-decimal locales (the misparse that outranks 1e5)
+    // MARK: - Comma-decimal locales
 
-    /// An external amount is dot-decimal by specification, but `parseInput` is
-    /// locale-aware: under a comma-decimal locale it reads the `.` in `0.005` as a
-    /// grouping separator and returns 5. Five of the eight shipping locales do
-    /// this, so a canonical payment link was staging a thousandfold overpayment —
-    /// a larger error than the scientific notation this guard started from.
+    /// A locale-aware parse reads the `.` in a machine-supplied `0.005` as a
+    /// grouping separator and returns 5, in five of the eight shipping locales.
     func testExternalAmountSurvivesCommaDecimalLocales() {
         for identifier in ["en_US", "de_DE", "zh_Hans_CN", "es_ES", "ko_KR", "it_IT", "pt_BR", "hr_HR"] {
             let locale = Locale(identifier: identifier)
@@ -115,8 +101,6 @@ final class ExternalAmountGuardTests: XCTestCase {
         }
     }
 
-    /// The same misread with the digits the other way round: `1.234` is one and a
-    /// bit, never one thousand two hundred and thirty four.
     func testExternalAmountDoesNotPromoteFractionToThousands() {
         for identifier in ["pt_BR", "de_DE"] {
             let locale = Locale(identifier: identifier)
@@ -137,10 +121,8 @@ final class ExternalAmountGuardTests: XCTestCase {
         }
     }
 
-    /// BIP-321's amount grammar is `*digit [ "." *digit ]`, which admits a
-    /// trailing and a leading separator, and `parseInput` reads both ("1." -> 1,
-    /// ".5" -> 0.5). Rejecting them would drop a spec-legal QR amount. `""` and
-    /// `"."` stay rejected — they carry no digit, so they name no amount.
+    /// BIP-321 admits a bare separator on either side, so rejecting `1.` / `.5`
+    /// would drop a spec-legal QR amount. `""` and `"."` carry no digit.
     func testExternalAmountAcceptsTheGrammarsBareSeparatorForms() {
         for identifier in ["en_US", "pt_BR", "de_DE"] {
             let locale = Locale(identifier: identifier)
@@ -153,11 +135,8 @@ final class ExternalAmountGuardTests: XCTestCase {
         }
     }
 
-    /// An amount too large for `Decimal` must be refused identically everywhere.
-    /// It previously slipped through on dot-decimal locales only, because the
-    /// no-re-rendering-needed path returned early without the final check — so
-    /// the form then rejected a value the boundary had already staged, and which
-    /// of the two happened depended on the device's separator.
+    /// Previously slipped through on dot-decimal locales, where the early return
+    /// skipped the final check.
     func testExternalAmountRejectsOversizedAmountOnEveryLocale() {
         let oversized = String(repeating: "9", count: 309)
 
@@ -169,7 +148,6 @@ final class ExternalAmountGuardTests: XCTestCase {
         }
     }
 
-    /// End to end through the deeplink, not just the helper.
     func testDeeplinkStagesCommaLocaleAmountThatReadsBackCorrectly() throws {
         for identifier in ["pt_BR", "de_DE"] {
             let locale = Locale(identifier: identifier)
@@ -189,9 +167,7 @@ final class ExternalAmountGuardTests: XCTestCase {
 
     // MARK: - The live function-call / DeFi amount gate
 
-    /// `AmountBalanceValidator` is the validator on ~19 function-call and DeFi
-    /// amount fields, and its `NumberFormatter` read scientific notation. The
-    /// balance ceiling is not a backstop: a large enough balance clears it.
+    /// The live gate on ~19 function-call and DeFi amount fields.
     func testAmountBalanceValidatorRejectsScientificNotation() {
         let validator = AmountBalanceValidator(balance: Decimal(1_000_000))
 

@@ -144,14 +144,13 @@ extension String {
     /// pasted from another locale still validates). An empty string is valid (it
     /// clears the field).
     ///
-    /// Gates entry on macOS, which has no decimal keypad: a numeric field rejects
-    /// any edit that introduces a letter or symbol, rather than silently stripping
-    /// it — stripping would turn a mixed paste like `"12abc34"` into a real-looking
-    /// `"1234"`, and collapse a grouped `pt_BR` `"1.234,56"` toward a wrong value.
-    /// Also the character-set half of `isValidDecimal`. This only validates the
-    /// character SET; `parseInput` remains the numeric validator (so an in-progress
-    /// `"1."` or a stray second separator is still allowed as text and simply parses
-    /// to its own value / zero).
+    /// Used to gate entry on macOS, which has no decimal keypad: a numeric field
+    /// rejects any edit that introduces a letter or symbol, rather than silently
+    /// stripping it — stripping would turn a mixed paste like `"12abc34"` into a
+    /// real-looking `"1234"`, and collapse a grouped `pt_BR` `"1.234,56"` toward a
+    /// wrong value. This only validates the character SET; `parseInput` remains the
+    /// numeric validator (so an in-progress `"1."` or a stray second separator is
+    /// still allowed as text and simply parses to its own value / zero).
     func isDecimalInput(locale: Locale = .current) -> Bool {
         var allowed: Set<Character> = [".", ","]
         if let decimal = locale.decimalSeparator, decimal.count == 1 {
@@ -165,13 +164,9 @@ extension String {
 }
 
 private extension Character {
-    /// A Unicode decimal digit, not just `0`-`9`. `NumberFormatter` renders in the
-    /// locale's numbering system — `ar_EG` formats 1234.5 as `١٢٣٤٫٥`, `ne_NP` as
-    /// `१२३४.५` — so an amount the app formatted for the user has to validate again
-    /// under that same locale.
-    ///
-    /// Narrower than `isNumber` / `isWholeNumber` on purpose: those also accept
-    /// `²`, `½`, `Ⅷ` and `②`, none of which belong in an amount field.
+    /// A Unicode decimal digit, so an amount `NumberFormatter` rendered in a
+    /// non-Latin numbering system validates back. Narrower than `isNumber` /
+    /// `isWholeNumber`, which also accept `²`, `½`, `Ⅷ` and `②`.
     var isDecimalDigit: Bool {
         unicodeScalars.count == 1 && unicodeScalars.first?.properties.numericType == .decimal
     }
@@ -236,15 +231,8 @@ extension String {
         return self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
 
-    /// Whether this is a plain decimal amount: the character set `isDecimalInput`
-    /// allows, parsing to a non-negative value.
-    ///
     /// The character-set half is what stops `NumberFormatter` expanding scientific
-    /// notation — it reads `"1e5"` as 100000, so an amount arriving from outside the
-    /// app would otherwise sign five orders of magnitude above the string the Verify
-    /// screen displays. Surrounding whitespace is trimmed for that half only:
-    /// `parseInput` still rules on the untrimmed value, so it keeps tolerating the
-    /// spaces it always did and keeps rejecting embedded newlines.
+    /// notation. Whitespace is trimmed for that half only.
     func isValidDecimal(locale: Locale = .current) -> Bool {
         guard trimmingCharacters(in: .whitespaces).isDecimalInput(locale: locale),
               let number = parseInput(locale: locale) else {
@@ -254,23 +242,10 @@ extension String {
         return number >= 0
     }
 
-    /// Normalizes an amount that arrived from outside the app — a deeplink query
-    /// item, a payment URI's `amount=` — into the representation everything
-    /// downstream reads back, or nil when it is not a plain dot-decimal number.
-    ///
-    /// The shape is BIP-321's amount grammar, `*digit [ "." *digit ]`, read with
-    /// fixed ASCII semantics rather than the device locale. The spec mandates a
-    /// period and forbids commas, and a locale-aware parse of such a value is
-    /// actively wrong: under `pt_BR` or `de_DE`, `NumberFormatter` reads the `.`
-    /// in `0.005` as a grouping separator and returns 5 — a thousandfold error on
-    /// a value heading for a signature, larger than the scientific-notation case
-    /// this guard was first written for. `1.` and `.5` are accepted because the
-    /// grammar admits them; `""` and `"."` are not, since they name no amount.
-    ///
-    /// The accepted digits are re-rendered with the locale's decimal separator,
-    /// because the send form and `toDecimal()` parse with `Locale.current`:
-    /// handing `0.005` to a `pt_BR` device unchanged would just move the same
-    /// misparse one step later.
+    /// An amount supplied by a link or QR, in this device's representation, or nil
+    /// if it is not BIP-321's `*digit [ "." *digit ]`. Read with fixed semantics,
+    /// never the device locale, which would take the `.` for a grouping separator;
+    /// re-rendered after, because everything downstream parses `Locale.current`.
     func externalAmount(locale: Locale = .current) -> String? {
         var seenSeparator = false
         var digits = 0
@@ -289,10 +264,7 @@ extension String {
         let separator = locale.decimalSeparator ?? "."
         let localized = separator == "." ? self : replacingOccurrences(of: ".", with: separator)
 
-        // Every path ends here, including the one where no re-rendering was
-        // needed: the form applies its own gate to whatever is prefilled, so a
-        // value it would refuse must never be staged — and a value too large for
-        // `Decimal` must not depend on which separator the device happens to use.
+        // Every path ends here, so validity never depends on the device separator.
         return localized.isValidDecimal(locale: locale) ? localized : nil
     }
 

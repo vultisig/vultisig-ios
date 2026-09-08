@@ -26,10 +26,7 @@ struct AddressResult {
 
         let (address, amount, message) = Utils.parseCryptoURI(uri)
 
-        // A scanned URI is untrusted text, and the send form assigns this amount
-        // straight into the field. A payment URI is dot-decimal by specification,
-        // so it goes through the same fixed-semantics read as a deeplink rather
-        // than the device locale.
+        // Untrusted, and dot-decimal like a deeplink: same fixed-semantics read.
         return AddressResult(
             address: address,
             memo: message,

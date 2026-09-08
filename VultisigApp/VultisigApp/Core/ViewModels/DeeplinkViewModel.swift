@@ -98,8 +98,7 @@ class DeeplinkViewModel: ObservableObject {
 }
 
 struct DeeplinkLogic {
-    /// Locale used to render an accepted `amount` for this device. The link's own
-    /// digits are always read as dot-decimal, independent of it.
+    /// Renders an accepted `amount`; the link itself is always read as dot-decimal.
     let locale: Locale
 
     init(locale: Locale = .current) {
@@ -199,12 +198,8 @@ struct DeeplinkLogic {
         result.assetChain = queryItems?.first(where: { $0.name == "assetChain" })?.value?.removingPercentEncoding
         result.assetTicker = queryItems?.first(where: { $0.name == "assetTicker" })?.value?.removingPercentEncoding
         result.address = queryItems?.first(where: { $0.name == "toAddress" })?.value?.removingPercentEncoding
-        // A link is attacker-supplied text, and two different misreads of it end in
-        // a wrong signed amount: `NumberFormatter` expands `1e5` to 100000, and a
-        // locale-aware parse turns a canonical `0.005` into 5 under a
-        // comma-decimal locale. `externalAmount` settles both — dot-decimal in,
-        // this device's representation out — and anything else leaves the field
-        // empty for the user to fill.
+        // Attacker-supplied: anything that would not stage the number the link names
+        // leaves the field empty.
         result.sendAmount = queryItems?
             .first(where: { $0.name == "amount" })?
             .value?
