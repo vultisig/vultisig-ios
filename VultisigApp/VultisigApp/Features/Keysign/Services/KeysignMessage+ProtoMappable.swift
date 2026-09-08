@@ -220,10 +220,11 @@ extension ERC20ApprovePayload {
     }
 }
 
-/// Receivers read an absent or empty `fee` as "legacy sender, render no row",
-/// so a nil or a zero must leave the field unset rather than write `"0"`.
+/// `fee` has implicit presence, so an unset field and a `"0"` are distinguishable
+/// on the wire and mean different things: unknown versus a route that charges
+/// nothing. Only a nil leaves the field unset; `"0"` is written like any value.
 private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapPayload) {
-    guard let fee = fee?.nilIfEmpty, fee != "0" else { return }
+    guard let fee = fee?.nilIfEmpty else { return }
     proto.fee = fee
 }
 

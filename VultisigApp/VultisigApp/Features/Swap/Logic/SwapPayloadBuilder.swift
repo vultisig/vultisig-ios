@@ -208,15 +208,17 @@ extension SwapCryptoLogic {
     /// `fees.total`: that folds in the liquidity component, which the quoted output
     /// amount already reflects, so carrying it would double-count.
     ///
-    /// `nil` when nothing is charged or either component is malformed — a partial
-    /// sum would still read as authoritative.
+    /// A route that charges nothing returns `"0"`, NOT `nil`: the receiver has to
+    /// tell a known zero (render `$0.00`, as the initiator does) from a sender that
+    /// stated nothing (render no row). `nil` is reserved for the second case —
+    /// here, a component too malformed to sum.
     static func nativeSwapPayloadFee(quote: ThorchainSwapQuote) -> String? {
         guard let affiliate = BigInt(quote.fees.affiliate),
               let outbound = BigInt(quote.fees.outbound) else {
             return nil
         }
         let total = affiliate + outbound
-        return total > 0 ? String(total) : nil
+        return total >= 0 ? String(total) : nil
     }
 
     /// Assemble the final `KeysignPayload` for a swap given a finalised

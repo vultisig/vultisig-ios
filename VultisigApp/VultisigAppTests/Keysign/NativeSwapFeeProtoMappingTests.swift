@@ -71,12 +71,37 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertNil(decoded.fee, "Empty on the wire normalizes back to nil, not \"\"")
     }
 
-    func testZeroFeeStaysOffTheWire() {
+    func testKnownZeroFeeTravelsOnTheWire() throws {
+        // A route that charges nothing is a statement, and the initiator renders
+        // it as $0.00. Dropping it here is what left the co-signer with no row.
         let proto = SwapPayload.thorchain(makeNativePayload(fee: "0")).mapToProtobuff()
         guard case let .thorchainSwapPayload(value) = proto else {
             XCTFail("Expected .thorchainSwapPayload"); return
         }
-        XCTAssertTrue(value.fee.isEmpty, "A zero is indistinguishable from unknown; never claim it")
+        XCTAssertEqual(value.fee, "0")
+
+        guard case let .thorchain(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .thorchain"); return
+        }
+        XCTAssertEqual(decoded.fee, "0", "A stated zero must survive as a zero, not decay to nil")
+    }
+
+    /// `fee` has implicit presence, so unset and `"0"` are different bytes and must
+    /// stay different UI. A change that rendered everything, or nothing, fails here.
+    func testAbsentAndKnownZeroAreDistinguishableEndToEnd() throws {
+        let model = JoinKeysignSwapFeeViewModel()
+
+        let absent = try SwapPayload(proto: SwapPayload.thorchain(makeNativePayload(fee: nil)).mapToProtobuff())
+        let zero = try SwapPayload(proto: SwapPayload.thorchain(makeNativePayload(fee: "0")).mapToProtobuff())
+
+        XCTAssertNil(
+            model.resolveSwapFee(swapPayload: absent, vault: nil),
+            "A sender that stated nothing must render no row"
+        )
+        XCTAssertEqual(
+            model.resolveSwapFee(swapPayload: zero, vault: nil)?.amount, 0,
+            "A sender that stated zero must render a zero row, matching the initiator"
+        )
     }
 
     func testLegacyWireBytesDecodeToNoFeeAndNoRow() throws {
@@ -154,9 +179,11 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         }
     }
 
-    func testNativeSwapPayloadFeeIsNilWhenNothingIsCharged() {
+    func testNativeSwapPayloadFeeIsZeroWhenNothingIsCharged() {
+        // Same-chain routes (RUNE -> RUJI) have no outbound leg and can round the
+        // affiliate cut to nothing. That is a fee of zero, not an absent fee.
         let quote = makeThorQuote(affiliate: "0", outbound: "0", total: "0")
-        XCTAssertNil(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote))
+        XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "0")
     }
 
     func testNativeSwapPayloadFeeIsNilForAMalformedComponent() {
@@ -199,11 +226,23 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertEqual(resolved?.coin.ticker, "CACAO")
     }
 
-    func testNativeResolverYieldsNoRowForZeroOrAbsentFee() {
+    func testNativeResolverYieldsNoRowOnlyForAnAbsentFee() {
         let model = JoinKeysignSwapFeeViewModel()
         XCTAssertNil(model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: nil)), vault: nil))
-        XCTAssertNil(model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "0")), vault: nil))
         XCTAssertNil(model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "")), vault: nil))
+        XCTAssertNil(
+            model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "not-a-number")), vault: nil),
+            "A malformed fee is unstatable, not zero"
+        )
+    }
+
+    func testNativeResolverRendersAStatedZero() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .thorchain(makeNativePayload(fee: "0")),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, 0)
+        XCTAssertEqual(resolved?.coin.ticker, "TRX")
     }
 
     func testChainnetAndStagenetVariantsResolveTheSameFee() {
@@ -275,6 +314,26 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertEqual(
             viewModel.getSwapTotalFee(),
             Decimal(string: "0.162")?.formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testTotalFeeRowPresentForAStatedZeroSwapFee() {
+        // The RUNE -> RUJI shape: network fee only, but the row must still render
+        // rather than vanish, because the initiator shows a total here.
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            // Destination deliberately unpriced: a zero leg is worth zero at any
+            // price, so it must not need a rate to enter the total.
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertEqual(
+            viewModel.getSwapTotalFee(),
+            Decimal(string: "0.042")?.formatToFiat(includeCurrencySymbol: true),
+            "A zero swap fee contributes zero; the total is the network fee alone"
         )
     }
 

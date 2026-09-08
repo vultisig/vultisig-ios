@@ -48,7 +48,9 @@ struct THORChainSwapPayload: Codable, Hashable {
     /// Provider-side swap fee, for a co-signer that holds no quote. A raw integer
     /// in the destination coin's native-swap fixed point (`toCoin.thorswapMultiplier`):
     /// native routes charge in the output asset, so `toCoin` is the fee coin and no
-    /// coin context travels. `nil` means unknown, and renders no row. Display only.
+    /// coin context travels. `"0"` is a route that charges nothing and renders
+    /// `$0.00`; `nil` is a sender that stated nothing and renders no row.
+    /// Display only.
     var fee: String? = nil
 
     var toAddress: String {

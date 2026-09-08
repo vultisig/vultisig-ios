@@ -809,11 +809,18 @@ class JoinKeysignViewModel: ObservableObject {
               let swapFee = swapFeeViewModel.resolveSwapFee(
                 swapPayload: keysignPayload.swapPayload,
                 vault: vault
-              ),
-              let rate = RateProvider.shared.rate(for: swapFee.coin) else {
+              ) else {
             return nil
         }
-        let swapFeeFiat = RateProvider.shared.fiatBalance(value: swapFee.amount, rate: rate)
+        // A stated zero is worth zero at any price, so it needs no rate. Only a
+        // non-zero leg has to be priced before it can enter a total.
+        let swapFeeFiat: Decimal
+        if swapFee.amount.isZero {
+            swapFeeFiat = .zero
+        } else {
+            guard let rate = RateProvider.shared.rate(for: swapFee.coin) else { return nil }
+            swapFeeFiat = RateProvider.shared.fiatBalance(value: swapFee.amount, rate: rate)
+        }
         return (networkFeeFiat + swapFeeFiat).formatToFiat(includeCurrencySymbol: true)
     }
 

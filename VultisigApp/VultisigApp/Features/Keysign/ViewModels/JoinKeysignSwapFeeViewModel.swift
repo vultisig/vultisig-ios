@@ -57,9 +57,11 @@ struct JoinKeysignSwapFeeViewModel {
     /// Not `SwapCryptoLogic.swapFeeCoin`: native quotes carry no
     /// `swapFeeTokenContract`, so it would fall through to the source gas coin.
     private func resolveNativeSwapFee(payload: THORChainSwapPayload) -> ResolvedSwapFee? {
+        // `>= 0`, not `> 0`: a stated zero renders a `$0.00` row to match the
+        // initiator. Only an absent fee hides the row.
         guard let rawFee = payload.fee?.nilIfEmpty,
               let amount = Decimal(string: rawFee),
-              amount > 0 else { return nil }
+              amount >= 0 else { return nil }
         let multiplier = payload.toCoin.thorswapMultiplier
         guard multiplier > 0 else { return nil }
         return ResolvedSwapFee(amount: amount / multiplier, coin: payload.toCoin.toCoinMeta())
