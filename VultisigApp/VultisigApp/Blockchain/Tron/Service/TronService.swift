@@ -32,9 +32,12 @@ class TronService {
     /// enough that navigating back into the screen serves from cache.
     static var accountCacheTTL: TimeInterval = 60
 
-    // Constants from Android implementation
-    private static let BYTES_PER_COIN_TX: Int64 = 300
-    private static let BYTES_PER_CONTRACT_TX: Int64 = 345
+    /// Used only when the transfer cannot be serialized yet — no recipient
+    /// typed, or one WalletCore refuses to encode. Sized for the transfer
+    /// alone; the memo is added on top, since past ~31 memo bytes this stops
+    /// being an upper bound and would under-reserve the very case the
+    /// measurement exists to catch.
+    private static let FALLBACK_BYTES_PER_COIN_TX: Int64 = 300
 
     /// Headroom multiplier applied to the simulated `energy_used` when
     /// computing the on-chain `fee_limit` cap. The margin covers ordinary
@@ -64,9 +67,14 @@ class TronService {
 
     // MARK: - Broadcast
 
-    func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
+    /// Broadcasts the signed envelope and returns the locally computed hash,
+    /// having checked the node's answer against it.
+    func broadcastTransaction(jsonString: String, expectedTxHash: String) async -> Result<String, Error> {
         do {
-            let txHash = try await apiService.broadcastTransaction(jsonString: jsonString)
+            let txHash = try await apiService.broadcastTransaction(
+                jsonString: jsonString,
+                expectedTxHash: expectedTxHash
+            )
             return .success(txHash)
         } catch {
             return .failure(error)
@@ -79,7 +87,8 @@ class TronService {
         coin: Coin,
         to: String? = nil,
         memo: String? = nil,
-        isSwap: Bool = false
+        isSwap: Bool = false,
+        amount: BigInt? = nil
     ) async throws -> BlockChainSpecific {
         let response = try await apiService.getNowBlock()
 
@@ -88,7 +97,23 @@ class TronService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
 
-        let estimate = try await calculateTronFee(coin: coin, to: to, memo: memo, isSwap: isSwap)
+        let bandwidthBytes = nativeTransferBandwidthBytes(
+            coin: coin,
+            to: to,
+            memo: memo,
+            amount: amount,
+            timestamp: currentTimestampMillis,
+            expiration: UInt64(expiration),
+            block: response
+        )
+
+        let estimate = try await calculateTronFee(
+            coin: coin,
+            to: to,
+            memo: memo,
+            isSwap: isSwap,
+            bandwidthBytes: bandwidthBytes
+        )
 
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
@@ -189,7 +214,8 @@ class TronService {
         coin: Coin,
         to: String?,
         memo: String?,
-        isSwap: Bool
+        isSwap: Bool,
+        bandwidthBytes: Int64
     ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
@@ -214,7 +240,8 @@ class TronService {
                 // is indistinguishable from that once collapsed to `.zero`,
                 // which would render a real transfer as falsely free. Fall back
                 // to the coin's conservative static fee only on that error path.
-                let fee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
+                let fee = (try? await calculateNativeTrxFee(coin: coin, bandwidthBytes: bandwidthBytes))
+                    ?? coin.feeDefault.toBigInt()
                 transactionEstimate = FeeEstimate(displayFee: fee, feeLimit: fee)
             }
         } else {
@@ -238,13 +265,60 @@ class TronService {
         return FeeEstimate(displayFee: displayFee, feeLimit: feeLimit)
     }
 
-    private func calculateNativeTrxFee(coin: Coin) async throws -> BigInt {
+    private func calculateNativeTrxFee(coin: Coin, bandwidthBytes: Int64) async throws -> BigInt {
         let accountResource = try await apiService.getAccountResource(address: coin.address)
         let availableBandwidth = accountResource.calculateAvailableBandwidth()
         return try await getBandwidthFeeDiscount(
-            isNativeToken: true,
+            requiredBandwidth: bandwidthBytes,
             availableBandwidth: availableBandwidth
         )
+    }
+
+    /// Falls back to the conservative constant whenever the transfer cannot be
+    /// serialized, which is the norm while the send form is still incomplete.
+    private func nativeTransferBandwidthBytes(
+        coin: Coin,
+        to: String?,
+        memo: String?,
+        amount: BigInt?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse
+    ) -> Int64 {
+        // Never reach the wire, so they must not inflate the estimate — the
+        // same reason `getTronFeeMemo` charges no memo fee for them.
+        let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
+        let fallback = Self.fallbackBandwidthBytes(memo: serializedMemo)
+
+        guard coin.isNativeToken, let to, !to.isEmpty else {
+            return fallback
+        }
+        guard let rawData = block.block_header?.raw_data else {
+            return fallback
+        }
+
+        let bytes = try? TronHelper.nativeTransferBandwidthBytes(
+            ownerAddress: coin.address,
+            toAddress: to,
+            amount: amount ?? .zero,
+            memo: serializedMemo,
+            timestamp: timestamp,
+            expiration: expiration,
+            blockHeaderTimestamp: rawData.timestamp ?? 0,
+            blockHeaderNumber: rawData.number ?? 0,
+            blockHeaderVersion: UInt64(rawData.version ?? 0),
+            blockHeaderTxTrieRoot: rawData.txTrieRoot ?? "",
+            blockHeaderParentHash: rawData.parentHash ?? "",
+            blockHeaderWitnessAddress: rawData.witness_address ?? ""
+        )
+        return bytes ?? fallback
+    }
+
+    /// The memo is known even when the transaction cannot be built, and it is
+    /// serialized verbatim, so it is charged on top of the constant.
+    static func fallbackBandwidthBytes(memo: String?) -> Int64 {
+        guard let memo, !memo.isEmpty else { return FALLBACK_BYTES_PER_COIN_TX }
+        return FALLBACK_BYTES_PER_COIN_TX + Int64(memo.utf8.count) + TronHelper.memoFieldOverheadBytes(memo)
     }
 
     private func calculateTrc20Fee(
@@ -383,22 +457,16 @@ class TronService {
         return parameters
     }
 
-    private func getBandwidthFeeDiscount(isNativeToken: Bool, availableBandwidth: Int64) async throws -> BigInt {
-        let feeBandwidthRequired = isNativeToken ? Self.BYTES_PER_COIN_TX : Self.BYTES_PER_CONTRACT_TX
+    /// TRC20 never reaches here: smart contracts get no free bandwidth and are
+    /// priced from simulated Energy in `calculateTrc20Fee`.
+    private func getBandwidthFeeDiscount(requiredBandwidth: Int64, availableBandwidth: Int64) async throws -> BigInt {
         let chainParams = try await getCachedChainParameters()
-        let bandwidthPrice = chainParams.bandwidthFeePrice
+        let required = max(requiredBandwidth, 0)
 
-        switch (isNativeToken, availableBandwidth >= feeBandwidthRequired) {
-        case (true, true):
-            // Native transfer with sufficient bandwidth => FREE tx
-            return BigInt.zero
-        case (false, _):
-            // TRC20 always pays fee (no free bandwidth for smart contracts)
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
-        case (true, false):
-            // Native transfer without sufficient bandwidth
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
+        guard availableBandwidth < required else {
+            return .zero
         }
+        return BigInt(required) * BigInt(chainParams.bandwidthFeePrice)
     }
 
     private func getTronFeeMemo(memo: String?) async throws -> BigInt {

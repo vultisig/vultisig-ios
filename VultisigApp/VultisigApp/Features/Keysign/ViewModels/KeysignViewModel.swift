@@ -1083,7 +1083,10 @@ class KeysignViewModel: ObservableObject {
 
                 case .tron:
 
-                    let broadcastResult = await TronService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    let broadcastResult = await TronService.shared.broadcastTransaction(
+                        jsonString: tx.rawTransaction,
+                        expectedTxHash: tx.transactionHash
+                    )
 
                     switch broadcastResult {
                     case .success(let txHash):

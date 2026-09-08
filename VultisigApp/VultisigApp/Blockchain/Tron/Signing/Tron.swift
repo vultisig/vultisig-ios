@@ -221,6 +221,95 @@ enum TronHelper {
         }
     }
 
+    // MARK: - Bandwidth Sizing
+
+    private static let signatureBytes = 65
+
+    /// java-tron bills this per contract on top of the serialized bytes.
+    private static let transactionResultBytes: Int64 = 64
+
+    /// Bandwidth, in bytes, that a native TRX transfer consumes once signed.
+    ///
+    /// Always shaped as a `TransferContract`. The Stake 2.0 routing memos sign
+    /// smaller system contracts — none carries a `to_address` — so this is a
+    /// deliberate upper bound for them, never an under-reservation.
+    ///
+    /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
+    static func nativeTransferBandwidthBytes(
+        ownerAddress: String,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Int64 {
+        let contract = TronTransferContract.with {
+            $0.ownerAddress = ownerAddress
+            $0.toAddress = toAddress
+            // Protobuf omits a zero scalar, so an unknown amount sized at zero
+            // reserves nothing for a field the real transfer carries. The Max
+            // button quotes with zero, so widest-varint it is.
+            $0.amount = (amount > .zero ? Int64(exactly: amount) : nil) ?? .max
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .transfer(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+                if let memo { $0.memo = memo }
+            }
+        }
+
+        let preSigningOutput = try TxCompilerPreSigningOutput(
+            serializedBytes: TransactionCompiler.preImageHashes(
+                coinType: .tron,
+                txInputData: try input.serializedData()
+            )
+        )
+        guard preSigningOutput.errorMessage.isEmpty else {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+        // Hands the caller back to its conservative constant rather than
+        // reporting a large transfer as costing almost no bandwidth.
+        guard !preSigningOutput.data.isEmpty else {
+            throw HelperError.runtimeError("empty Tron pre-signing payload")
+        }
+
+        return lengthDelimitedFieldBytes(preSigningOutput.data.count)
+            + lengthDelimitedFieldBytes(signatureBytes)
+            + transactionResultBytes
+    }
+
+    /// Protobuf overhead of the `data` field carrying `memo`, without its bytes.
+    static func memoFieldOverheadBytes(_ memo: String) -> Int64 {
+        Int64(1 + protobufVarintBytes(memo.utf8.count))
+    }
+
+    /// 1-byte tag, the length varint, then the payload.
+    private static func lengthDelimitedFieldBytes(_ payloadSize: Int) -> Int64 {
+        let size = max(payloadSize, 0)
+        return Int64(1 + protobufVarintBytes(size) + size)
+    }
+
+    private static func protobufVarintBytes(_ value: Int) -> Int {
+        var remaining = max(value, 0)
+        var bytes = 1
+        while remaining >= 128 {
+            remaining /= 128
+            bytes += 1
+        }
+        return bytes
+    }
+
     // MARK: - Contract Payload Builders (dApp Integration)
 
     private static func buildTronTransferContractInput(
