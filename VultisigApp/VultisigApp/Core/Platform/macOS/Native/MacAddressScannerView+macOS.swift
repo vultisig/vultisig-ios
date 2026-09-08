@@ -18,7 +18,7 @@ struct AddressResult {
         self.amount = amount
     }
 
-    static func fromURI(_ uri: String) -> AddressResult {
+    static func fromURI(_ uri: String, locale: Locale = .current) -> AddressResult {
         guard URLComponents(string: uri) != nil else {
             // Validate up
             return .init(address: uri)
@@ -27,13 +27,13 @@ struct AddressResult {
         let (address, amount, message) = Utils.parseCryptoURI(uri)
 
         // A scanned URI is untrusted text, and the send form assigns this amount
-        // straight into the field. `NumberFormatter` reads scientific notation, so
-        // a `?amount=1e5` would fill it with a value that signs as 100000 — carry
-        // only a plain decimal through.
+        // straight into the field. A payment URI is dot-decimal by specification,
+        // so it goes through the same fixed-semantics read as a deeplink rather
+        // than the device locale.
         return AddressResult(
             address: address,
             memo: message,
-            amount: amount.isValidDecimal() ? amount : nil
+            amount: amount.externalAmount(locale: locale)
         )
     }
 }

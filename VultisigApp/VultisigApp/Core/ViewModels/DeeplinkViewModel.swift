@@ -98,6 +98,14 @@ class DeeplinkViewModel: ObservableObject {
 }
 
 struct DeeplinkLogic {
+    /// Locale used to render an accepted `amount` for this device. The link's own
+    /// digits are always read as dot-decimal, independent of it.
+    let locale: Locale
+
+    init(locale: Locale = .current) {
+        self.locale = locale
+    }
+
     struct DeeplinkResult {
         var type: DeeplinkFlowType?
         var selectedVault: Vault?
@@ -191,15 +199,17 @@ struct DeeplinkLogic {
         result.assetChain = queryItems?.first(where: { $0.name == "assetChain" })?.value?.removingPercentEncoding
         result.assetTicker = queryItems?.first(where: { $0.name == "assetTicker" })?.value?.removingPercentEncoding
         result.address = queryItems?.first(where: { $0.name == "toAddress" })?.value?.removingPercentEncoding
-        // `NumberFormatter` reads scientific notation, so an `amount=1e5` carried
-        // through here would stage — and sign — 100000 while Verify displayed the
-        // string it came from. A link is attacker-supplied text: only a plain
-        // decimal is prefilled, anything else leaves the field empty for the user.
+        // A link is attacker-supplied text, and two different misreads of it end in
+        // a wrong signed amount: `NumberFormatter` expands `1e5` to 100000, and a
+        // locale-aware parse turns a canonical `0.005` into 5 under a
+        // comma-decimal locale. `externalAmount` settles both — dot-decimal in,
+        // this device's representation out — and anything else leaves the field
+        // empty for the user to fill.
         result.sendAmount = queryItems?
             .first(where: { $0.name == "amount" })?
             .value?
             .removingPercentEncoding
-            .flatMap { $0.isValidDecimal() ? $0 : nil }
+            .flatMap { $0.externalAmount(locale: locale) }
         result.sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value?.removingPercentEncoding
         result.pendingSendDeeplink = true
 

@@ -254,6 +254,41 @@ extension String {
         return number >= 0
     }
 
+    /// Normalizes an amount that arrived from outside the app — a deeplink query
+    /// item, a payment URI's `amount=` — into the representation everything
+    /// downstream reads back, or nil when it is not a plain dot-decimal number.
+    ///
+    /// The shape is checked with fixed ASCII semantics, never the device locale.
+    /// An external amount is dot-decimal by specification, and a locale-aware
+    /// parse of one is actively wrong: under `pt_BR` or `de_DE`, `NumberFormatter`
+    /// reads the `.` in `0.005` as a grouping separator and yields 5 — a
+    /// thousandfold error on a value heading for a signature, larger than the
+    /// scientific-notation case this guard was first written for.
+    ///
+    /// The accepted digits are then re-rendered with the locale's decimal
+    /// separator, because the send form and `toDecimal()` parse with
+    /// `Locale.current`: handing `0.005` to a `pt_BR` device unchanged would just
+    /// move the same misparse one step later.
+    func externalAmount(locale: Locale = .current) -> String? {
+        let candidate = trimmingCharacters(in: .whitespaces)
+        let parts = candidate.split(separator: ".", omittingEmptySubsequences: false)
+        guard !candidate.isEmpty,
+              parts.count <= 2,
+              parts.allSatisfy({ !$0.isEmpty && $0.allSatisfy { $0.isASCII && $0.isNumber } })
+        else {
+            return nil
+        }
+
+        guard let separator = locale.decimalSeparator, separator != "." else {
+            return candidate
+        }
+
+        let localized = candidate.replacingOccurrences(of: ".", with: separator)
+        // The form applies its own gate to whatever is prefilled; a value that
+        // could not pass it must not be staged in the first place.
+        return localized.isValidDecimal(locale: locale) ? localized : nil
+    }
+
     var isValidEmail: Bool {
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let predicate = NSPredicate(format: "SELF MATCHES %@", regex)
