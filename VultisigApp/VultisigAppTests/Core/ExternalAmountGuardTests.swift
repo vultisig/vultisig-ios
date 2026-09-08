@@ -128,12 +128,44 @@ final class ExternalAmountGuardTests: XCTestCase {
 
     func testExternalAmountRejectsEverythingNotPlainDotDecimal() {
         for locale in [Locale(identifier: "en_US"), Locale(identifier: "pt_BR")] {
-            for candidate in ["1e5", "1E5", "2.5e3", "1e-3", "0x1F", "1,5", "1.", ".5", "1.2.3", "-5", "1 234", "abc", ""] {
+            for candidate in ["1e5", "1E5", "2.5e3", "1e-3", "0x1F", "1,5", "1.2.3", "-5", "1 234", "abc", "", ".", "  0.5  "] {
                 XCTAssertNil(
                     candidate.externalAmount(locale: locale),
                     "\(locale.identifier) must reject \(candidate.isEmpty ? "(empty)" : candidate)"
                 )
             }
+        }
+    }
+
+    /// BIP-321's amount grammar is `*digit [ "." *digit ]`, which admits a
+    /// trailing and a leading separator, and `parseInput` reads both ("1." -> 1,
+    /// ".5" -> 0.5). Rejecting them would drop a spec-legal QR amount. `""` and
+    /// `"."` stay rejected — they carry no digit, so they name no amount.
+    func testExternalAmountAcceptsTheGrammarsBareSeparatorForms() {
+        for identifier in ["en_US", "pt_BR", "de_DE"] {
+            let locale = Locale(identifier: identifier)
+
+            XCTAssertEqual("1.".externalAmount(locale: locale)?.parseInput(locale: locale), Decimal(1), identifier)
+            XCTAssertEqual(
+                ".5".externalAmount(locale: locale)?.parseInput(locale: locale),
+                Decimal(string: "0.5"), identifier
+            )
+        }
+    }
+
+    /// An amount too large for `Decimal` must be refused identically everywhere.
+    /// It previously slipped through on dot-decimal locales only, because the
+    /// no-re-rendering-needed path returned early without the final check — so
+    /// the form then rejected a value the boundary had already staged, and which
+    /// of the two happened depended on the device's separator.
+    func testExternalAmountRejectsOversizedAmountOnEveryLocale() {
+        let oversized = String(repeating: "9", count: 309)
+
+        for identifier in ["en_US", "pt_BR", "de_DE", "ko_KR"] {
+            XCTAssertNil(
+                oversized.externalAmount(locale: Locale(identifier: identifier)),
+                "\(identifier) staged an amount its own parser cannot read"
+            )
         }
     }
 

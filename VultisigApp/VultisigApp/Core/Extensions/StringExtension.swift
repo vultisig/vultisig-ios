@@ -258,34 +258,41 @@ extension String {
     /// item, a payment URI's `amount=` — into the representation everything
     /// downstream reads back, or nil when it is not a plain dot-decimal number.
     ///
-    /// The shape is checked with fixed ASCII semantics, never the device locale.
-    /// An external amount is dot-decimal by specification, and a locale-aware
-    /// parse of one is actively wrong: under `pt_BR` or `de_DE`, `NumberFormatter`
-    /// reads the `.` in `0.005` as a grouping separator and yields 5 — a
-    /// thousandfold error on a value heading for a signature, larger than the
-    /// scientific-notation case this guard was first written for.
+    /// The shape is BIP-321's amount grammar, `*digit [ "." *digit ]`, read with
+    /// fixed ASCII semantics rather than the device locale. The spec mandates a
+    /// period and forbids commas, and a locale-aware parse of such a value is
+    /// actively wrong: under `pt_BR` or `de_DE`, `NumberFormatter` reads the `.`
+    /// in `0.005` as a grouping separator and returns 5 — a thousandfold error on
+    /// a value heading for a signature, larger than the scientific-notation case
+    /// this guard was first written for. `1.` and `.5` are accepted because the
+    /// grammar admits them; `""` and `"."` are not, since they name no amount.
     ///
-    /// The accepted digits are then re-rendered with the locale's decimal
-    /// separator, because the send form and `toDecimal()` parse with
-    /// `Locale.current`: handing `0.005` to a `pt_BR` device unchanged would just
-    /// move the same misparse one step later.
+    /// The accepted digits are re-rendered with the locale's decimal separator,
+    /// because the send form and `toDecimal()` parse with `Locale.current`:
+    /// handing `0.005` to a `pt_BR` device unchanged would just move the same
+    /// misparse one step later.
     func externalAmount(locale: Locale = .current) -> String? {
-        let candidate = trimmingCharacters(in: .whitespaces)
-        let parts = candidate.split(separator: ".", omittingEmptySubsequences: false)
-        guard !candidate.isEmpty,
-              parts.count <= 2,
-              parts.allSatisfy({ !$0.isEmpty && $0.allSatisfy { $0.isASCII && $0.isNumber } })
-        else {
-            return nil
+        var seenSeparator = false
+        var digits = 0
+        for character in self {
+            if character == "." {
+                guard !seenSeparator else { return nil }
+                seenSeparator = true
+            } else if character.isASCII, character.isNumber {
+                digits += 1
+            } else {
+                return nil
+            }
         }
+        guard digits > 0 else { return nil }
 
-        guard let separator = locale.decimalSeparator, separator != "." else {
-            return candidate
-        }
+        let separator = locale.decimalSeparator ?? "."
+        let localized = separator == "." ? self : replacingOccurrences(of: ".", with: separator)
 
-        let localized = candidate.replacingOccurrences(of: ".", with: separator)
-        // The form applies its own gate to whatever is prefilled; a value that
-        // could not pass it must not be staged in the first place.
+        // Every path ends here, including the one where no re-rendering was
+        // needed: the form applies its own gate to whatever is prefilled, so a
+        // value it would refuse must never be staged — and a value too large for
+        // `Decimal` must not depend on which separator the device happens to use.
         return localized.isValidDecimal(locale: locale) ? localized : nil
     }
 
