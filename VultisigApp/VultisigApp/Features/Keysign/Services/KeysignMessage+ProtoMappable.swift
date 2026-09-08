@@ -220,6 +220,15 @@ extension ERC20ApprovePayload {
     }
 }
 
+/// Explicit presence for the native swap fee: receivers read an absent or empty
+/// `fee` as "legacy sender → render no fee row", so a nil or a zero must leave
+/// the field untouched rather than write `"0"`. That is also what stops a
+/// relayed legacy payload from gaining a fee its sender never stated.
+private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapPayload) {
+    guard let fee = fee?.nilIfEmpty, fee != "0" else { return }
+    proto.fee = fee
+}
+
 extension SwapPayload {
     init(proto: VSKeysignPayload.OneOf_SwapPayload) throws {
         switch proto {
@@ -236,7 +245,8 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty
             ))
         case .mayachainSwapPayload(let value):
             self = .mayachain(THORChainSwapPayload(
@@ -251,7 +261,8 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty
             ))
         case .oneinchSwapPayload(let value):
             // `has*` guards distinguish "legacy sender, context unknown"
@@ -335,6 +346,7 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
             })
         case .mayachain(let payload):
             return .mayachainSwapPayload(.with {
@@ -350,6 +362,7 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
             })
         case .generic(let payload):
             return .oneinchSwapPayload(.with {

@@ -10,11 +10,39 @@ import BigInt
 
 // TODO: - Extend and reuse for both on-device and co-pairing signing
 struct JoinKeysignGasViewModel {
+
+    /// The network fee a payload resolves to, before formatting: the amount in
+    /// the fee coin's smallest units plus the coin that names and prices it.
+    private struct ResolvedNetworkFee {
+        let amount: BigInt
+        let nativeToken: CoinMeta
+    }
+
     func getCalculatedNetworkFee(payload: KeysignPayload) -> (feeCrypto: String, feeFiat: String) {
+        guard let resolved = resolveNetworkFee(payload: payload) else {
+            return (.empty, .empty)
+        }
+        let gasAmount = Decimal(resolved.amount) / pow(10, resolved.nativeToken.decimals)
+        let gasInReadable = gasAmount.formatToDecimal(digits: resolved.nativeToken.decimals)
+        let feeInReadable = feesInReadable(coin: payload.coin, fee: resolved.amount)
+        return ("\(gasInReadable) \(resolved.nativeToken.ticker)", feeInReadable)
+    }
+
+    /// Fiat value of the same fee `getCalculatedNetworkFee` formats, as a
+    /// `Decimal` so a caller can add it to another fee. `nil` when nothing
+    /// prices the fee coin: a total that silently absorbed an unpriced leg
+    /// would understate the transaction, which is the failure a total row
+    /// exists to prevent.
+    func networkFeeFiat(payload: KeysignPayload) -> Decimal? {
+        guard let resolved = resolveNetworkFee(payload: payload) else { return nil }
+        return feeFiat(coin: payload.coin, fee: resolved.amount)
+    }
+
+    private func resolveNetworkFee(payload: KeysignPayload) -> ResolvedNetworkFee? {
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
         }) else {
-            return (.empty, .empty)
+            return nil
         }
 
         // When the dApp supplied explicit fee data via signAmino (e.g. Rujira
@@ -23,11 +51,7 @@ struct JoinKeysignGasViewModel {
         // non-zero network fee when the chain actually charges nothing.
         // Parity with vultisig-windows PR #3843.
         if let dappFee = payload.dappSuppliedCosmosFee() {
-            let dappFeeBigInt = BigInt(dappFee)
-            let gasAmount = Decimal(dappFee) / pow(10, nativeToken.decimals)
-            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-            let feeInReadable = feesInReadable(coin: payload.coin, fee: dappFeeBigInt)
-            return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
+            return ResolvedNetworkFee(amount: BigInt(dappFee), nativeToken: nativeToken)
         }
 
         if payload.coin.chainType == .EVM {
@@ -49,13 +73,7 @@ struct JoinKeysignGasViewModel {
                     gasLimit: gasLimit
                 ).feeWei
             }
-            let gasAmount = Decimal(totalFeeWei) / pow(10, nativeToken.decimals)
-            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: totalFeeWei)
-            feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
-
-            return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
+            return ResolvedNetworkFee(amount: totalFeeWei, nativeToken: nativeToken)
         }
 
         // A Solana payload carrying an injected ComputeBudget pair costs
@@ -68,9 +86,7 @@ struct JoinKeysignGasViewModel {
            case .Solana(_, let priorityFee, let priorityLimit, _, _, _) = payload.chainSpecific,
            priorityFee > 0, priorityLimit > 0,
            let total = PrebuiltPayloadFee.fee(for: payload) {
-            let gasAmount = Decimal(total) / pow(10, nativeToken.decimals)
-            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-            return ("\(gasInReadable) \(nativeToken.ticker)", feesInReadable(coin: payload.coin, fee: total))
+            return ResolvedNetworkFee(amount: total, nativeToken: nativeToken)
         }
 
         // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
@@ -81,15 +97,7 @@ struct JoinKeysignGasViewModel {
             feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
 
-        // Use the same fee for both crypto and fiat display for UTXO and Cardano chains
-        let gasAmountToDisplay = (payload.coin.chainType == .UTXO || payload.coin.chainType == .Cardano) ? feeToUse : payload.chainSpecific.gas
-        let gasAmount = Decimal(gasAmountToDisplay) / pow(10, nativeToken.decimals)
-        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: feeToUse)
-        feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
-
-        return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
+        return ResolvedNetworkFee(amount: feeToUse, nativeToken: nativeToken)
     }
 
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
@@ -107,6 +115,21 @@ struct JoinKeysignGasViewModel {
         let feeDecimal = coin.decimal(for: fee)
         // Use fee-specific formatting with more decimal places (5 instead of 2)
         return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
+    }
+
+    /// Unformatted twin of `feesInReadable`, for callers that have to sum the
+    /// fee rather than print it. Same coin preference — the vault's own coin
+    /// first for its up-to-date price data, the payload coin as the fallback —
+    /// but `nil` instead of a `$0.00` when neither has a rate, so an unpriced
+    /// fee is dropped from a total rather than counted as free.
+    private func feeFiat(coin: Coin, fee: BigInt) -> Decimal? {
+        if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain),
+           let rate = RateProvider.shared.rate(for: vaultNativeCoin) {
+            return RateProvider.shared.fiatBalance(value: vaultNativeCoin.decimal(for: fee), rate: rate)
+        }
+
+        guard let rate = RateProvider.shared.rate(for: coin) else { return nil }
+        return RateProvider.shared.fiatBalance(value: coin.decimal(for: fee), rate: rate)
     }
 
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {

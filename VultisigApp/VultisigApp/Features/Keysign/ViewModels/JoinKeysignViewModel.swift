@@ -799,6 +799,28 @@ class JoinKeysignViewModel: ObservableObject {
         swapFeeViewModel.getSwapFee(swapPayload: keysignPayload?.swapPayload, vault: vault)
     }
 
+    /// Total-fee row for the swap confirm screen — network fee plus swap fee, the
+    /// figure the initiator totals on its own verify screen. Formatted like the
+    /// initiator's (standard fiat precision), not like the itemized fee rows.
+    ///
+    /// nil unless BOTH legs price. A total that quietly dropped the swap fee is
+    /// the very number this row exists to correct, and a legacy payload carrying
+    /// no fee is indistinguishable from a route that charges none — so no row is
+    /// shown rather than one that understates the swap.
+    func getSwapTotalFee() -> String? {
+        guard let keysignPayload,
+              let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload),
+              let swapFee = swapFeeViewModel.resolveSwapFee(
+                swapPayload: keysignPayload.swapPayload,
+                vault: vault
+              ),
+              let rate = RateProvider.shared.rate(for: swapFee.coin) else {
+            return nil
+        }
+        let swapFeeFiat = RateProvider.shared.fiatBalance(value: swapFee.amount, rate: rate)
+        return (networkFeeFiat + swapFeeFiat).formatToFiat(includeCurrencySymbol: true)
+    }
+
     func getFromFiatAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)

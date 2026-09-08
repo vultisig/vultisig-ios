@@ -53,6 +53,11 @@ struct KeysignSwapConfirmView: View {
 
             separator
             getNetworkFeeCell()
+
+            if let totalFee = viewModel.getSwapTotalFee() {
+                separator
+                getValueCell(for: "totalFee", with: totalFee)
+            }
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
