@@ -209,6 +209,62 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(vm.showAmountAlert)
     }
 
+    // MARK: - Amount format
+
+    func testValidateAmountFormatRejectsScientificNotation() {
+        for candidate in ["1e5", "1E5", "2.5e3", "1e-3", "0x1F"] {
+            let vm = SendFormFixture.make()
+            vm.amount = candidate
+            XCTAssertFalse(vm.validateAmountFormat(), "\(candidate) must be rejected")
+            XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+            XCTAssertTrue(vm.showAmountAlert)
+        }
+    }
+
+    func testValidateAmountFormatAcceptsPlainDecimal() {
+        let vm = SendFormFixture.make()
+        vm.amount = "0.5"
+        XCTAssertTrue(vm.validateAmountFormat())
+        XCTAssertFalse(vm.showAmountAlert)
+    }
+
+    /// `1e5` is non-zero once expanded, so the non-zero rule waves it through —
+    /// the format rule is what stops it, and it has to run before the address is
+    /// resolved so the failure is about the amount, not the recipient.
+    func testValidateFormRejectsScientificNotationAmount() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+        XCTAssertTrue(vm.showAmountAlert)
+    }
+
+    /// An empty amount keeps reporting the zero-amount error, not the format one.
+    func testValidateFormEmptyAmountStillReportsPositiveAmountError() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = ""
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "positiveAmountError")
+    }
+
+    /// The Continue hand-off refuses to build a transaction Verify would render
+    /// as `1e5` while 100000 got signed.
+    func testMakeTransactionRejectsScientificNotationAmount() {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        XCTAssertThrowsError(try vm.makeTransaction())
+    }
+
     func testValidateAddressFormatRejectsEmpty() {
         let vm = SendFormFixture.make()
         vm.toAddress = ""

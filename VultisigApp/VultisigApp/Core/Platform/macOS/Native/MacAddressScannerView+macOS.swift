@@ -26,7 +26,15 @@ struct AddressResult {
 
         let (address, amount, message) = Utils.parseCryptoURI(uri)
 
-        return AddressResult(address: address, memo: message, amount: amount)
+        // A scanned URI is untrusted text, and the send form assigns this amount
+        // straight into the field. `NumberFormatter` reads scientific notation, so
+        // a `?amount=1e5` would fill it with a value that signs as 100000 — carry
+        // only a plain decimal through.
+        return AddressResult(
+            address: address,
+            memo: message,
+            amount: amount.isValidDecimal() ? amount : nil
+        )
     }
 }
 

@@ -1144,6 +1144,20 @@ final class SendDetailsViewModel {
         return true
     }
 
+    /// Rejects an amount that is not a plain decimal. `parseInput` is backed by
+    /// `NumberFormatter`, which expands scientific notation ("1e5" -> 100000),
+    /// and Verify renders the raw string — so an expanded value would be signed
+    /// behind a figure the user never agreed to. The boundaries that can carry one
+    /// in are guarded at their source; this is the backstop for anything that
+    /// reaches `amount` without passing them.
+    func validateAmountFormat() -> Bool {
+        guard amount.isValidDecimal() else {
+            setAmountError(message: "decimalAmountError")
+            return false
+        }
+        return true
+    }
+
     /// Rejects malformed addresses for the current coin's chain.
     func validateAddressFormat() -> Bool {
         guard isValidAddressFormat() else {
@@ -1315,6 +1329,7 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
+        guard validateAmountFormat() else { return false }
         // Address resolution runs BEFORE the XRP tag/memo rule: it hosts the
         // X-address normalization seam, which can autofill the tag field —
         // validating the tag first would let an autofilled value (e.g. an

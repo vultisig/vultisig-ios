@@ -191,7 +191,15 @@ struct DeeplinkLogic {
         result.assetChain = queryItems?.first(where: { $0.name == "assetChain" })?.value?.removingPercentEncoding
         result.assetTicker = queryItems?.first(where: { $0.name == "assetTicker" })?.value?.removingPercentEncoding
         result.address = queryItems?.first(where: { $0.name == "toAddress" })?.value?.removingPercentEncoding
-        result.sendAmount = queryItems?.first(where: { $0.name == "amount" })?.value?.removingPercentEncoding
+        // `NumberFormatter` reads scientific notation, so an `amount=1e5` carried
+        // through here would stage — and sign — 100000 while Verify displayed the
+        // string it came from. A link is attacker-supplied text: only a plain
+        // decimal is prefilled, anything else leaves the field empty for the user.
+        result.sendAmount = queryItems?
+            .first(where: { $0.name == "amount" })?
+            .value?
+            .removingPercentEncoding
+            .flatMap { $0.isValidDecimal() ? $0 : nil }
         result.sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value?.removingPercentEncoding
         result.pendingSendDeeplink = true
 
