@@ -1584,6 +1584,8 @@
 "swapReferralDiscount" = "Preporuka: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
+"swapRouteResetToAuto" = "Ruta vraćena na Auto";
+"swapRouteUnavailableResetToAuto" = "Ruta nije dostupna – vraćena na Auto";
 "swaps" = "Zamjene";
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Odredište zamjene osiguranog sredstva nije valjana %1$@ adresa (%2$@).";

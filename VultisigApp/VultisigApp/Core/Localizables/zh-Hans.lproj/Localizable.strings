@@ -1584,6 +1584,8 @@
 "swapReferralDiscount" = "推荐：%@";
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
+"swapRouteResetToAuto" = "路线已重置为自动";
+"swapRouteUnavailableResetToAuto" = "路线不可用 — 已重置为自动";
 "swaps" = "兑换";
 "swapSecuredAssetBadge" = "担保";
 "swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";

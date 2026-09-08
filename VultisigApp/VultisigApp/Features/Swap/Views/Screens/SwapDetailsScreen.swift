@@ -168,6 +168,9 @@ struct SwapDetailsScreen: View {
         .onChange(of: detailsViewModel.fromAmount) { _, _ in
             detailsViewModel.error = nil
         }
+        // A manual route pick that had to be dropped says so here rather than
+        // reverting to Auto in silence.
+        .withBanner(text: $vm.routeSelectionNotice, style: .error)
         .ignoresSafeArea(.keyboard)
     }
 

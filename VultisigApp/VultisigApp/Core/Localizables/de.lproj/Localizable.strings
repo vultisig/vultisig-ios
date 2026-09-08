@@ -1584,6 +1584,8 @@
 "swapReferralDiscount" = "Empfehlung: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
+"swapRouteResetToAuto" = "Route auf Auto zurückgesetzt";
+"swapRouteUnavailableResetToAuto" = "Route nicht verfügbar – auf Auto zurückgesetzt";
 "swaps" = "Swaps";
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Ziel des Secured-Asset-Swaps ist keine gültige %1$@-Adresse (%2$@).";

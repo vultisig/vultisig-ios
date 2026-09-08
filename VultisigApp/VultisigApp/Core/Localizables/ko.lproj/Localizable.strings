@@ -1584,6 +1584,8 @@
 "swapReferralDiscount" = "추천: %@";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
+"swapRouteResetToAuto" = "경로가 자동으로 재설정되었습니다";
+"swapRouteUnavailableResetToAuto" = "경로를 사용할 수 없어 자동으로 재설정되었습니다";
 "swaps" = "스왑";
 "swapSecuredAssetBadge" = "보안";
 "swapSecuredAssetInvalidDestination" = "보안 자산 스왑 대상이 유효한 %1$@ 주소가 아닙니다 (%2$@).";
