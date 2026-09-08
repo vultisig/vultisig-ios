@@ -78,7 +78,11 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertFalse(value.hasSwapFeeDecimals)
     }
 
-    func testZeroFeeStaysOffTheWire() {
+    /// `swap_fee` is optional on this payload, so `nil` is "absent" and `"0"` is
+    /// a sender stating the route charges nothing. `"0"` is a non-empty string
+    /// and does serialize, so the claim survives the wire and must not be
+    /// collapsed into absence on the way out.
+    func testAStatedZeroFeeTravelsAndKeepsItsCoinContext() throws {
         let payload = makeSwapKitPayload(
             swapFee: "0",
             swapFeeChain: Chain.bitcoinCash.name,
@@ -88,11 +92,40 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         guard case let .swapkitSwapPayload(value) = SwapPayload.swapkit(payload).mapToProtobuff() else {
             XCTFail("Expected .swapkitSwapPayload"); return
         }
-        XCTAssertTrue(
-            value.swapFee.isEmpty,
-            "A zero is indistinguishable from unknown here; never claim it"
+        XCTAssertEqual(value.swapFee, "0")
+        XCTAssertTrue(value.hasSwapFeeChain, "A zero still needs its coin to render as $0.00")
+        XCTAssertTrue(value.hasSwapFeeDecimals)
+
+        guard case let .swapkit(decoded) = try SwapPayload(proto: .swapkitSwapPayload(value)) else {
+            XCTFail("Expected .swapkit"); return
+        }
+        XCTAssertEqual(decoded.swapFee, "0")
+    }
+
+    /// A stated zero renders a `$0.00` row, matching an initiator that itemizes
+    /// one; only a genuinely absent fee hides it.
+    func testResolverRendersAStatedZero() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .swapkit(makeSwapKitPayload(
+                swapFee: "0",
+                swapFeeChain: Chain.bitcoinCash.name,
+                swapFeeTokenId: nil,
+                swapFeeDecimals: 8
+            )),
+            vault: nil
         )
-        XCTAssertFalse(value.hasSwapFeeChain)
+        XCTAssertEqual(resolved?.amount, 0)
+        XCTAssertEqual(resolved?.coin.ticker, "BCH")
+    }
+
+    /// The generic path keeps hiding a zero: `EVMQuote.Transaction.swapFee`
+    /// defaults to "0" when a quote omits the key, so a zero there cannot be
+    /// told from "never quoted".
+    func testGenericPathStillHidesAZero() {
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .generic(makeGenericPayload(swapFee: "0")),
+            vault: nil
+        ))
     }
 
     func testLegacyWireBytesDecodeToNoFeeAndNoRow() throws {
@@ -253,14 +286,14 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         ))
     }
 
-    func testResolverYieldsNoRowForZeroOrAbsentFee() {
+    func testResolverYieldsNoRowForAnAbsentFee() {
         let model = JoinKeysignSwapFeeViewModel()
-        for fee in [nil, "", "0"] as [String?] {
+        for fee in [nil, ""] as [String?] {
             XCTAssertNil(
                 model.resolveSwapFee(swapPayload: .swapkit(makeSwapKitPayload(
                     swapFee: fee, swapFeeChain: Chain.bitcoinCash.name, swapFeeTokenId: nil, swapFeeDecimals: 8
                 )), vault: nil),
-                "fee=\(String(describing: fee)) must render no row"
+                "fee=\(String(describing: fee)) is unknown, not zero"
             )
         }
     }
@@ -314,6 +347,27 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
     // MARK: - Fixtures
 
     private let usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+    private func makeGenericPayload(swapFee: String) -> GenericSwapPayload {
+        GenericSwapPayload(
+            fromCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
+            toCoin: makeUSDC(),
+            fromAmount: BigInt("1000000000000000000"),
+            toAmountDecimal: 3000,
+            quote: EVMQuote(
+                dstAmount: "3000000000",
+                tx: EVMQuote.Transaction(
+                    from: "0xFrom", to: "0xRouter", data: "0x", value: "0",
+                    gasPrice: "1", gas: 100_000,
+                    swapFee: swapFee, swapFeeTokenContract: usdcContract
+                )
+            ),
+            provider: .oneInch,
+            swapFeeChain: "Ethereum",
+            swapFeeTokenId: usdcContract,
+            swapFeeDecimals: 6
+        )
+    }
 
     private func makeSwapKitPayload(
         swapFee: String?,

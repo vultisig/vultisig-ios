@@ -445,7 +445,9 @@ extension SwapPayload {
                 }
                 $0.subProvider = payload.subProvider
                 $0.swapID = payload.swapID
-                if let swapFee = payload.swapFee?.nilIfEmpty, swapFee != "0" {
+                // No `!= "0"` guard: a stated zero is a claim the sender made and
+                // must survive a relay, the same way the native `fee` does.
+                if let swapFee = payload.swapFee?.nilIfEmpty {
                     $0.swapFee = swapFee
                     // Never set from nils: a present-but-empty chain or token id
                     // breaks a receiver's coin lookup.

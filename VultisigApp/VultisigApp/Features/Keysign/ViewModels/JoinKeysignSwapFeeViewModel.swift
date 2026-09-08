@@ -71,6 +71,9 @@ struct JoinKeysignSwapFeeViewModel {
     private func resolveGenericSwapFee(payload: GenericSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
         resolveContextualSwapFee(
             rawFee: payload.quote.tx.swapFee,
+            // `EVMQuote.Transaction.swapFee` defaults to "0" when a quote omits
+            // the key, so a zero here cannot be told from "never quoted".
+            statedZeroIsMeaningful: false,
             chainName: payload.swapFeeChain,
             tokenId: payload.swapFeeTokenId,
             wireDecimals: payload.swapFeeDecimals,
@@ -85,6 +88,10 @@ struct JoinKeysignSwapFeeViewModel {
     private func resolveSwapKitSwapFee(payload: SwapKitSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
         resolveContextualSwapFee(
             rawFee: payload.swapFee,
+            // Optional on this payload, so nil is "absent" and "0" is a sender
+            // stating the route charges nothing — render it, matching a
+            // cross-client initiator that shows $0.00.
+            statedZeroIsMeaningful: true,
             chainName: payload.swapFeeChain,
             tokenId: payload.swapFeeTokenId,
             wireDecimals: payload.swapFeeDecimals,
@@ -98,6 +105,7 @@ struct JoinKeysignSwapFeeViewModel {
     /// swap by construction, so it has to be named on the wire.
     private func resolveContextualSwapFee(
         rawFee: String?,
+        statedZeroIsMeaningful: Bool,
         chainName: String?,
         tokenId: String?,
         wireDecimals: Int?,
@@ -105,7 +113,8 @@ struct JoinKeysignSwapFeeViewModel {
         toCoin: Coin,
         vault: Vault?
     ) -> ResolvedSwapFee? {
-        guard let rawFee, let fee = BigInt(rawFee), fee > 0 else { return nil }
+        guard let rawFee, let fee = BigInt(rawFee), fee >= 0 else { return nil }
+        guard fee > 0 || statedZeroIsMeaningful else { return nil }
 
         // Pre-context senders omit chain/decimals — render no row rather
         // than guessing a coin (a 6-decimal destination-token fee read as an
