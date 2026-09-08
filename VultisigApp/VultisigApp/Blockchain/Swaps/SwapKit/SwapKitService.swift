@@ -179,6 +179,9 @@ struct SwapKitService {
         return ranked.max(by: { $0.1 < $1.1 })?.0
     }
 
+    /// The single gate every `/v3/swap` response passes before its quote can enter
+    /// ranking: the payload shape must be one this chain's signer implements, and the
+    /// response must agree with itself about where the deposit goes.
     static func validateSigningCapability(
         response: SwapKitSwapResponse,
         fromChain: Chain
@@ -191,6 +194,7 @@ struct SwapKitService {
                 "\(response.meta.txType)/\(fromChain.ticker)"
             )
         }
+        try response.validateSelfAgreement(fromChain: fromChain)
     }
 
     /// Format an amount as a dot-separated decimal string suitable for

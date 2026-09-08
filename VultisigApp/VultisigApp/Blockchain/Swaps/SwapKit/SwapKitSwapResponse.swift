@@ -35,7 +35,11 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// failure mode for XRP-to-shared-vault transfers is severe enough that
     /// we accept a tag from three sources at decode time and pick the first
     /// non-nil via `resolvedDestinationTag`.
-    let destinationTag: UInt64?
+    let destinationTagSource: SwapKitDestinationTag
+
+    /// The top-level tag to use, or nil when the field is absent or unreadable.
+    /// `destinationTagSource` keeps the distinction the agreement guard needs.
+    var destinationTag: UInt64? { destinationTagSource.usableTag }
 
     /// Some chains (Cardano) return responses without a `tx` field at all —
     /// see `SwapKitTx.cardano`. The `Hashable` synthesis still works because
@@ -57,7 +61,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     var resolvedDestinationTag: UInt64? {
         if let tag = destinationTag { return tag }
         if let tag = meta.destinationTag { return tag }
-        return Self.extractTagSuffix(from: targetAddress).tag
+        return Self.extractTagSuffix(from: targetAddress).tag.usableTag
     }
 
     /// XRP target-address stripped of any `?dt=…` or `|…` destination-tag
@@ -111,17 +115,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         // and leave `inboundFee` returning nil at quote time.
         fees = try container.decodeIfPresent([SwapKitFee].self, forKey: .fees) ?? []
         warnings = try container.decodeIfPresent([SwapKitWarning].self, forKey: .warnings)
-        // SwapKit may surface a numeric `destinationTag` (rare) or a string-
-        // wrapped one (defensive — `meta.affiliateFee` arrives as a string
-        // even though it's numeric semantically, so accept both shapes).
-        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
-            destinationTag = intTag
-        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
-                  let parsed = UInt64(stringTag) {
-            destinationTag = parsed
-        } else {
-            destinationTag = nil
-        }
+        destinationTagSource = SwapKitDestinationTag.decoded(from: container, forKey: .destinationTag)
         tx = try Self.decodeTx(meta: meta, sellAsset: sellAsset, container: container)
     }
 
@@ -173,35 +167,46 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// but the silent-misroute failure mode is severe enough to absorb
     /// the decoder.
     ///
+    /// Shared with `validateSelfAgreement`, so both sides of a destination comparison
+    /// get the same strip.
+    ///
     /// Query parsing handles arbitrary parameter order
     /// (`?dt=N`, `?dt=N&memo=foo`, `?memo=foo&dt=N`). Whichever key/value
     /// pair parses as `dt=<UInt64>` wins; everything else is dropped.
-    private static func extractTagSuffix(from address: String) -> (address: String, tag: UInt64?) {
-        // `?…` form: walk the query parameters and pick the first `dt=`
-        // that parses as a UInt64. Real-world XRP URIs usually have a
-        // single `dt=N`, but accepting the full `key=val&key=val` shape
-        // means a future flip to `?memo=...&dt=...` doesn't silently
-        // drop the tag.
+    static func extractTagSuffix(from address: String) -> (address: String, tag: SwapKitDestinationTag) {
+        // `?…` form: walk the query parameters and collect every `dt=`. Real-world XRP
+        // URIs carry a single `dt=N`, but accepting the full `key=val&key=val` shape
+        // means a future flip to `?memo=...&dt=...` doesn't silently drop the tag. More
+        // than one `dt` is `.unreadable` rather than "the first one" — two answers is
+        // not one answer.
         if let q = address.firstIndex(of: "?") {
             let bare = String(address[..<q])
             let query = address[address.index(after: q)...]
-            for pair in query.split(separator: "&", omittingEmptySubsequences: true) {
-                let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
-                guard parts.count == 2, parts[0] == "dt" else { continue }
-                if let tag = UInt64(parts[1]) {
-                    return (bare, tag)
-                }
+            let stated = query
+                .split(separator: "&", omittingEmptySubsequences: true)
+                .map { $0.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false) }
+                .filter { $0.count == 2 && $0[0] == "dt" }
+                .map { $0[1] }
+            guard let only = stated.first else { return (bare, .absent) }
+            guard stated.count == 1 else {
+                return (bare, .unreadable(reason: "\(stated.count) dt parameters"))
             }
-            return (bare, nil)
+            guard let tag = UInt64(only) else {
+                return (bare, .unreadable(reason: "dt=\(only) is not a destination tag"))
+            }
+            return (bare, .tag(tag))
         }
         // `|` form: `rXyz|12345`
         if let pipe = address.firstIndex(of: "|") {
             let suffix = address[address.index(after: pipe)...]
-            if let tag = UInt64(suffix) {
-                return (String(address[..<pipe]), tag)
+            guard let tag = UInt64(suffix) else {
+                // Address deliberately left unstripped, matching what this helper has
+                // always returned for an unparseable `|` suffix.
+                return (address, .unreadable(reason: "|\(suffix) is not a destination tag"))
             }
+            return (String(address[..<pipe]), .tag(tag))
         }
-        return (address, nil)
+        return (address, .absent)
     }
 
     private static func decodeTx(
@@ -454,7 +459,10 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
     let affiliateFee: String?
     /// Optional XRP destination tag surfaced via the meta block (second of
     /// three resolution sources — see `SwapKitSwapResponse.resolvedDestinationTag`).
-    let destinationTag: UInt64?
+    let destinationTagSource: SwapKitDestinationTag
+
+    /// The meta tag to use, or nil when the field is absent or unreadable.
+    var destinationTag: UInt64? { destinationTagSource.usableTag }
 
     private enum CodingKeys: String, CodingKey {
         case txType
@@ -476,14 +484,7 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
         priceImpact = try container.decodeIfPresent(Double.self, forKey: .priceImpact)
         affiliate = try container.decodeIfPresent(String.self, forKey: .affiliate)
         affiliateFee = try container.decodeIfPresent(String.self, forKey: .affiliateFee)
-        if let intTag = try? container.decodeIfPresent(UInt64.self, forKey: .destinationTag) {
-            destinationTag = intTag
-        } else if let stringTag = try? container.decodeIfPresent(String.self, forKey: .destinationTag),
-                  let parsed = UInt64(stringTag) {
-            destinationTag = parsed
-        } else {
-            destinationTag = nil
-        }
+        destinationTagSource = SwapKitDestinationTag.decoded(from: container, forKey: .destinationTag)
     }
 }
 

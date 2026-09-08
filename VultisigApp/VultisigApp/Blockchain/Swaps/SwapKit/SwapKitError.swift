@@ -37,6 +37,11 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     case isSanctionedAddress
     case addressScreeningFailed
     case unsupportedTxType(String)
+    /// The `/v3/swap` response disagrees with itself about where the deposit
+    /// goes, or states a transfer array the builder cannot honour. `detail` is
+    /// diagnostic only — see `errorDescription` for why the user copy is shared
+    /// with `unableToBuildTransaction`.
+    case contradictoryResponse(detail: String)
     case providerNotEnabled
     case routeFiltered
     case malformedAmount(String)
@@ -126,6 +131,12 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorAddressScreening".localized
         case .unsupportedTxType(let txType):
             return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
+        case .contradictoryResponse:
+            // The user-facing meaning is identical to `unableToBuildTransaction`:
+            // this route is unusable, try another provider. Reusing that copy keeps
+            // the detail (which names the divergent field and both values) in the
+            // logs, where it is actionable, instead of in a dialog.
+            return "swapKitErrorUnableToBuildTransaction".localized
         case .providerNotEnabled:
             return "swapKitErrorProviderNotEnabled".localized
         case .routeFiltered:
