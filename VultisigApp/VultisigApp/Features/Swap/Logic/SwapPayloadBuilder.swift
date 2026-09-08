@@ -213,12 +213,13 @@ extension SwapCryptoLogic {
     /// stated nothing (render no row). `nil` is reserved for the second case —
     /// here, a component too malformed to sum.
     static func nativeSwapPayloadFee(quote: ThorchainSwapQuote) -> String? {
-        guard let affiliate = BigInt(quote.fees.affiliate),
-              let outbound = BigInt(quote.fees.outbound) else {
+        // Each component is checked, not just the sum: a negative offsetting a
+        // positive would otherwise launder a malformed quote into a stated zero.
+        guard let affiliate = BigInt(quote.fees.affiliate), affiliate >= 0,
+              let outbound = BigInt(quote.fees.outbound), outbound >= 0 else {
             return nil
         }
-        let total = affiliate + outbound
-        return total >= 0 ? String(total) : nil
+        return String(affiliate + outbound)
     }
 
     /// Assemble the final `KeysignPayload` for a swap given a finalised

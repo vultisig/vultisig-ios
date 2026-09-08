@@ -800,9 +800,12 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     /// Network fee plus swap fee, formatted like the initiator's total rather
-    /// than like the itemized fee rows. `nil` unless BOTH legs price: a legacy
-    /// payload carrying no fee is indistinguishable from a route charging none,
-    /// so no row beats one that understates the swap.
+    /// than like the itemized fee rows.
+    ///
+    /// The network leg must price, and so must a non-zero swap leg — a total that
+    /// absorbed an unpriced fee would understate the swap. A STATED zero is worth
+    /// zero at any price and needs no rate. An ABSENT fee still suppresses the
+    /// row: nothing was claimed, so nothing can be totalled.
     func getSwapTotalFee() -> String? {
         guard let keysignPayload,
               let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload),

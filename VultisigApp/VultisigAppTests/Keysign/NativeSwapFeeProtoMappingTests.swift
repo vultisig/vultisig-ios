@@ -71,19 +71,31 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertNil(decoded.fee, "Empty on the wire normalizes back to nil, not \"\"")
     }
 
-    func testKnownZeroFeeTravelsOnTheWire() throws {
+    func testKnownZeroFeeSurvivesSerialization() throws {
         // A route that charges nothing is a statement, and the initiator renders
         // it as $0.00. Dropping it here is what left the co-signer with no row.
-        let proto = SwapPayload.thorchain(makeNativePayload(fee: "0")).mapToProtobuff()
-        guard case let .thorchainSwapPayload(value) = proto else {
-            XCTFail("Expected .thorchainSwapPayload"); return
-        }
-        XCTAssertEqual(value.fee, "0")
+        // Asserted through real bytes: checking the in-memory property alone
+        // would still pass if proto3 elided the field on the way out.
+        let zero = try XCTUnwrap(nativeProto(fee: "0")).serializedData()
+        let absent = try XCTUnwrap(nativeProto(fee: nil)).serializedData()
 
-        guard case let .thorchain(decoded) = try SwapPayload(proto: proto) else {
-            XCTFail("Expected .thorchain"); return
-        }
-        XCTAssertEqual(decoded.fee, "0", "A stated zero must survive as a zero, not decay to nil")
+        // Field 13, wire type 2, length 1, ASCII "0".
+        XCTAssertNotNil(
+            zero.range(of: Data([0x6a, 0x01, 0x30])),
+            "A stated zero must occupy field 13 on the wire"
+        )
+        XCTAssertNotEqual(zero, absent, "The two states must not serialize identically")
+
+        // Reparsed rather than byte-matched for the absent case: a lone 0x6a can
+        // legitimately appear as another field's length or payload byte.
+        XCTAssertTrue(
+            try VSTHORChainSwapPayload(serializedBytes: absent).fee.isEmpty,
+            "An absent fee must reparse as unset"
+        )
+        XCTAssertEqual(
+            try VSTHORChainSwapPayload(serializedBytes: zero).fee, "0",
+            "A stated zero must reparse as a zero, not decay to unset"
+        )
     }
 
     /// `fee` has implicit presence, so unset and `"0"` are different bytes and must
@@ -91,17 +103,25 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
     func testAbsentAndKnownZeroAreDistinguishableEndToEnd() throws {
         let model = JoinKeysignSwapFeeViewModel()
 
-        let absent = try SwapPayload(proto: SwapPayload.thorchain(makeNativePayload(fee: nil)).mapToProtobuff())
-        let zero = try SwapPayload(proto: SwapPayload.thorchain(makeNativePayload(fee: "0")).mapToProtobuff())
+        // Through serialized bytes, and all the way to `getSwapFee` — the
+        // accessor the confirm screen actually binds its row to.
+        let absent = try SwapPayload(proto: .thorchainSwapPayload(
+            try VSTHORChainSwapPayload(serializedBytes: try XCTUnwrap(nativeProto(fee: nil)).serializedData())
+        ))
+        let zero = try SwapPayload(proto: .thorchainSwapPayload(
+            try VSTHORChainSwapPayload(serializedBytes: try XCTUnwrap(nativeProto(fee: "0")).serializedData())
+        ))
 
         XCTAssertNil(
-            model.resolveSwapFee(swapPayload: absent, vault: nil),
+            model.getSwapFee(swapPayload: absent, vault: nil),
             "A sender that stated nothing must render no row"
         )
-        XCTAssertEqual(
-            model.resolveSwapFee(swapPayload: zero, vault: nil)?.amount, 0,
-            "A sender that stated zero must render a zero row, matching the initiator"
+        let zeroRow = try XCTUnwrap(
+            model.getSwapFee(swapPayload: zero, vault: nil),
+            "A sender that stated zero must render a row, matching the initiator's $0.00"
         )
+        XCTAssertTrue(zeroRow.feeCrypto.contains("TRX"))
+        XCTAssertEqual(model.resolveSwapFee(swapPayload: zero, vault: nil)?.amount, 0)
     }
 
     func testLegacyWireBytesDecodeToNoFeeAndNoRow() throws {
@@ -186,6 +206,17 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "0")
     }
 
+    func testNativeSwapPayloadFeeIsNilForANegativeComponent() {
+        // A negative offsetting a positive sums to zero, which would otherwise
+        // be stated as a confident "this route is free".
+        XCTAssertNil(SwapCryptoLogic.nativeSwapPayloadFee(
+            quote: makeThorQuote(affiliate: "-1", outbound: "1", total: "0")
+        ))
+        XCTAssertNil(SwapCryptoLogic.nativeSwapPayloadFee(
+            quote: makeThorQuote(affiliate: "1", outbound: "-1", total: "0")
+        ))
+    }
+
     func testNativeSwapPayloadFeeIsNilForAMalformedComponent() {
         let quote = makeThorQuote(affiliate: "1000000", outbound: "not-a-number", total: "60000000")
         XCTAssertNil(
@@ -233,6 +264,10 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertNil(
             model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "not-a-number")), vault: nil),
             "A malformed fee is unstatable, not zero"
+        )
+        XCTAssertNil(
+            model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "-1")), vault: nil),
+            "A negative fee from a peer is nonsense, not a discount"
         )
     }
 
@@ -396,6 +431,13 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
     }
 
     // MARK: - Fixtures
+
+    /// The generated proto for a native payload, for tests that need real bytes.
+    private func nativeProto(fee: String?) -> VSTHORChainSwapPayload? {
+        guard case let .thorchainSwapPayload(value) =
+            SwapPayload.thorchain(makeNativePayload(fee: fee)).mapToProtobuff() else { return nil }
+        return value
+    }
 
     private func makeNativePayload(fee: String?, toCoin: Coin? = nil) -> THORChainSwapPayload {
         THORChainSwapPayload(
