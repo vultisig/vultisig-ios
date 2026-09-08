@@ -3,10 +3,8 @@
 //  VultisigAppTests
 //
 //  Coverage for `OneInchSwapPayload.sub_provider` — the route tag under an
-//  aggregator ("NEAR", "CHAINFLIP", "GARDEN"). SwapKit's EVM and Solana routes
-//  ride the 1inch-shaped payload, so without this field a co-signer names them
-//  after the aggregator alone while every other SwapKit route, which rides
-//  `SwapKitSwapPayload`, names the route it actually took.
+//  aggregator ("NEAR", "CHAINFLIP", "GARDEN"), which SwapKit's EVM and Solana
+//  routes carry on the 1inch-shaped payload.
 //
 
 import BigInt
@@ -64,9 +62,8 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    /// Byte-for-byte, not just "the field is unset" — a presence-only assertion
-    /// would survive any other field shifting, and mixed-version MPC committees
-    /// depend on a relayed legacy payload re-serializing identically.
+    /// Byte-for-byte, not just "the field is unset": a presence-only assertion
+    /// would survive any other field shifting.
     func testReEncodingALegacyPayloadIsByteIdentical() throws {
         let originalBytes = try makeLegacyProto().serializedData()
         let decoded = try SwapPayload(proto: .oneinchSwapPayload(
@@ -91,11 +88,9 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
 
     // MARK: - How the co-signer names the route
 
-    /// The tag travels, but this device does not render it on an aggregator
-    /// route. iOS's own verify screen names the clean brand, so a joiner that
-    /// appended the route would describe one swap two ways across the two
-    /// screens whose job is to agree. The wire carries it for the clients that
-    /// do render it.
+    /// The tag travels but this device does not render it: iOS's initiator screen
+    /// names the clean brand, so rendering it here alone would describe one swap
+    /// two ways.
     func testGenericRouteCarriesTheTagWithoutRenderingIt() {
         let payload = makeGenericPayload(subProvider: "NEAR")
         XCTAssertEqual(payload.subProvider, "NEAR", "…or the wire assertion below is vacuous")
@@ -106,9 +101,8 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    /// `providerName` is persisted to Transaction History and aliased back to a
-    /// tracker URL by an exact lookup, so the route tag must stay off it — a
-    /// "SwapKit (NEAR)" row would silently lose the SwapKit tracker link.
+    /// `providerName` is persisted and aliased back to a tracker by an exact
+    /// lookup, so a tagged row would silently lose the SwapKit tracker link.
     func testPersistedProviderNameStaysTheBareBrand() {
         XCTAssertEqual(
             SwapPayload.generic(makeGenericPayload(subProvider: "NEAR")).providerName,
@@ -139,10 +133,9 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    /// The transfer-route half of the same split. Before it, `.swapkit` persisted
-    /// "SwapKit (CHAINFLIP)", which normalizes to `swapkitchainflip` — absent
-    /// from `ExplorerLinkBuilder`'s alias table — so the row silently fell back
-    /// to the chain explorer instead of the aggregator's tracker.
+    /// The transfer-route half of the split: "SwapKit (CHAINFLIP)" normalizes to
+    /// `swapkitchainflip`, which matches no alias, so a tagged persisted name
+    /// falls back to the chain explorer.
     func testSwapKitTransferRoutePersistsTheBareBrandAndKeepsItsTracker() {
         let payload = SwapPayload.swapkit(makeSwapKitPayload(subProvider: "CHAINFLIP"))
         XCTAssertEqual(payload.providerName, "SwapKit")
@@ -161,11 +154,9 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    /// The pre-split behaviour, pinned as the thing that must not come back: a
-    /// tagged persisted name loses the tracker. It falls through to the chain's
-    /// own explorer — `url` only reaches `fallbackExplorerLink` when the chain
-    /// itself is unrecognised, so the fallthrough is asserted against the
-    /// registry URL the same way `ExplorerLinkBuilderTests` asserts it.
+    /// Pinned as the thing that must not come back. `url` only reaches
+    /// `fallbackExplorerLink` when the CHAIN is unrecognised, so an unresolved
+    /// provider falls through to the chain's registry explorer.
     func testATaggedPersistedNameWouldLoseTheTracker() {
         let url = ExplorerLinkBuilder.url(
             provider: "SwapKit (CHAINFLIP)",
@@ -217,7 +208,6 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         }
         XCTAssertEqual(proto.subProvider, "ONEINCH", "The tag has to reach the peer")
 
-        // …and both iOS screens still say the same thing about this swap.
         XCTAssertEqual(
             SwapPayload.generic(payload).providerDisplayName,
             SwapQuote.swapkit(response, fee: nil, subProvider: response.subProvider).displayName
@@ -318,7 +308,7 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    /// Fields 1-6 only — the shape a sender predating field 7 puts on the wire.
+    /// Fields 1-6 only — the shape a sender predating field 7 sends.
     private func makeLegacyProto() -> VSOneInchSwapPayload {
         var legacy = VSOneInchSwapPayload()
         legacy.fromCoin = ProtoCoinResolver.proto(from: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true))

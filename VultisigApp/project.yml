@@ -81,23 +81,11 @@ packages:
     # preferring the field and falling back to the memo so mixed-version device
     # pairs stay byte-identical in MPC keysign.
     #
-    # That revision was itself advanced to commondata `main`'s HEAD after
-    # verifying every commit between it and its predecessor touched only repo
-    # tooling (`CLAUDE.md`, `.claude/hooks`, issue/PR templates).
-    #
-    # Advanced again to pick up three display-only swap fields a co-signer needs
-    # and the previous pin predates: `THORChainSwapPayload.slippage_bps = 14`
-    # (optional uint32 — the quote's price impact), `SwapKitSwapPayload.swap_fee
-    # = 12` with its coin context at 13-15, and `OneInchSwapPayload.sub_provider
-    # = 7`. A joiner renders its verify screen from the serialized payload alone,
-    # so a term the initiator cannot write is one it can neither recover nor show.
-    #
-    # Verified before bumping, the way the previous bumps were: the diff
-    # `63a65c37..08e17eb` touches exactly three `.proto` files — the three named
-    # above — and every change appends a new field. No existing field number,
-    # type or name moved, and nothing became required, so a payload from a sender
-    # at the old pin still decodes here and a re-encoded one stays byte-identical.
-    # `08e17eb` is commondata `main`'s HEAD, not a branch-only revision.
+    # Advanced to pick up three additive display-only swap fields a co-signer
+    # needs: `THORChainSwapPayload.slippage_bps = 14`, `SwapKitSwapPayload
+    # .swap_fee = 12` with its coin context at 13-15, and
+    # `OneInchSwapPayload.sub_provider = 7`. Every change between the pins only
+    # appends fields, so payloads from a sender at the old pin still decode.
     revision: 08e17eb63cc634fa81b65306a294ef1455ec4c38
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm

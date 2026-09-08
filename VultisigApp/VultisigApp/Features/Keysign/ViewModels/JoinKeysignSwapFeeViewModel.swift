@@ -80,11 +80,8 @@ struct JoinKeysignSwapFeeViewModel {
         )
     }
 
-    /// SwapKit's transfer routes (PSBT / TON / TRON / SUI / Cardano / XRP) carry
-    /// the provider fee in a group of their own on the wire, in the same shape
-    /// the EVM routes carry it: raw amount plus the chain, token id and decimals
-    /// that say what coin it is denominated in. Same resolution, same refusal to
-    /// guess.
+    /// SwapKit's transfer routes carry the fee in a group of their own, in the
+    /// same shape the EVM routes use.
     private func resolveSwapKitSwapFee(payload: SwapKitSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
         resolveContextualSwapFee(
             rawFee: payload.swapFee,
@@ -97,9 +94,8 @@ struct JoinKeysignSwapFeeViewModel {
         )
     }
 
-    /// Shared resolution for the aggregator payloads, which all denominate their
-    /// fee in a coin that has to be named on the wire because it is neither side
-    /// of the swap by construction.
+    /// Shared by the aggregator payloads: the fee coin is not either side of the
+    /// swap by construction, so it has to be named on the wire.
     private func resolveContextualSwapFee(
         rawFee: String?,
         chainName: String?,

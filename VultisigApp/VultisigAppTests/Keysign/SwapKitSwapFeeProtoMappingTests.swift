@@ -3,11 +3,8 @@
 //  VultisigAppTests
 //
 //  Coverage for the provider fee on `SwapKitSwapPayload` (swap_fee plus the
-//  chain / token id / decimals that say what coin it is denominated in). A
-//  co-signer holds no quote, so a fee that does not travel on the payload is a
-//  fee it can neither recover nor show — its confirm screen would total the
-//  network fee alone. These pin the wire shape, the never-guess resolution, and
-//  that an absent field keeps reading as "unknown" rather than zero.
+//  chain / token id / decimals naming its coin): the wire shape, the never-guess
+//  resolution, and that an absent field reads as "unknown" rather than zero.
 //
 
 import BigInt
@@ -115,9 +112,8 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    /// Byte-for-byte, not just "the fields are unset" — mixed-version MPC
-    /// committees depend on a relayed legacy payload re-serializing identically,
-    /// and a presence-only assertion would survive any other field shifting.
+    /// Byte-for-byte, not just "the fields are unset": a presence-only assertion
+    /// would survive any other field shifting.
     func testReEncodingALegacyPayloadIsByteIdentical() throws {
         let originalBytes = try makeLegacyProto().serializedData()
         let decoded = try SwapPayload(proto: .swapkitSwapPayload(
@@ -140,11 +136,9 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    /// The strongest form of the display-only claim available here: run the real
-    /// BTC PSBT signer over a payload carrying the fee group and one without it,
-    /// and compare the actual BIP-143 pre-signing hashes — the bytes the vault
-    /// commits to. A field-comparison test would pass even if a signer began
-    /// folding a display field into what it signs; this one would not.
+    /// Compares the real BIP-143 pre-signing hashes — the bytes the vault commits
+    /// to — with and without the fee group. A field-comparison test would pass
+    /// even if a signer began folding a display field into what it signs.
     func testFeeGroupDoesNotMoveTheSignedPreSigningHashes() throws {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self, from: "v3-real-btc-all-swap"
@@ -175,8 +169,8 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    /// Wire-level counterpart: clearing the group from a payload that carries it
-    /// must reproduce the bytes of one that never had it, so nothing else moved.
+    /// Clearing the group must reproduce the bytes of a payload that never had
+    /// it, so nothing else moved.
     func testFeeGroupIsPurelyAdditiveOnTheWire() throws {
         guard case var .swapkitSwapPayload(withFee) = SwapPayload.swapkit(makeSwapKitPayload(
                 swapFee: "250000", swapFeeChain: Chain.bitcoinCash.name,
@@ -272,8 +266,6 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
     }
 
     func testGenericRouteResolutionIsUnchangedByTheSharedPath() {
-        // The generic and SwapKit resolvers now share one implementation; this
-        // pins that the 1inch-shaped route still resolves exactly as before.
         let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
             swapPayload: .generic(GenericSwapPayload(
                 fromCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
@@ -349,8 +341,7 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    /// Fields 1-11 only — the shape a sender predating fields 12-15 puts on the
-    /// wire.
+    /// Fields 1-11 only — the shape a sender predating fields 12-15 sends.
     private func makeLegacyProto() -> VSSwapKitSwapPayload {
         var legacy = VSSwapKitSwapPayload()
         legacy.fromCoin = ProtoCoinResolver.proto(from: makeCoin(.bitcoinCash, ticker: "BCH", decimals: 8, isNative: true))

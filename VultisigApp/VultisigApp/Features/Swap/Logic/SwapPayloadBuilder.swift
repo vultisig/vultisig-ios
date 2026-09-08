@@ -204,24 +204,17 @@ extension SwapCryptoLogic {
         )
     }
 
-    /// The quote's reported price impact, in basis points, to carry on the
-    /// keysign payload so a co-signer shows the impact the initiator was quoted
-    /// instead of re-deriving one from a pool that has since moved.
+    /// Price impact in basis points, carried so a co-signer shows what the
+    /// initiator was quoted rather than re-deriving it from a pool that has moved.
     ///
-    /// Read from the quote's TOP-LEVEL `slippage_bps`, which is the field
-    /// `SwapQuote.priceImpact` renders on this device's own verify screen —
-    /// deliberately not `fees.slippage_bps`, which the node reports separately
-    /// and which can differ (THORChain's own streaming example quotes 41 against
-    /// a nested 9). Carrying the other one would hand the co-signer a different
-    /// number from the one the initiator is looking at, which is the single
-    /// failure this field exists to prevent.
+    /// Reads the quote's TOP-LEVEL `slippage_bps` — the field
+    /// `SwapQuote.priceImpact` renders here — and deliberately NOT
+    /// `fees.slippage_bps`, which the node reports separately and which can
+    /// differ (THORChain's streaming example: 41 against a nested 9). Switching
+    /// them hands the co-signer a different number from the initiator's.
     ///
-    /// `nil` when the node reports none — the receiver hides the row rather than
-    /// claiming a zero-impact route. A reported `0` is carried as `0`: the field
-    /// has explicit presence on the wire, so the receiver can tell the two apart,
-    /// and the initiator renders that case as `+0.00%` too. Negative values are
-    /// dropped rather than wrapped: `slippage_bps` is a `uint32`, and a negative
-    /// would land on the peer as a ~4-billion-bps impact.
+    /// A reported `0` is carried as `0`; out-of-range is dropped rather than
+    /// wrapped, since `uint32` would land a negative as ~4 billion bps.
     static func nativeSwapPayloadSlippageBps(quote: ThorchainSwapQuote) -> UInt32? {
         guard let bps = quote.slippageBps else { return nil }
         return UInt32(exactly: bps)
@@ -746,15 +739,9 @@ extension SwapCryptoLogic {
         }
     }
 
-    /// Build the `GenericSwapPayload` for SwapKit's EVM and Solana routes, whose
-    /// wire shape matches `OneInchSwapPayload` 1:1 and so ride the shared
-    /// aggregator payload rather than `SwapPayload.swapkit`.
-    ///
-    /// Carries the route tag (`route.providers[0]`) that the non-EVM SwapKit
-    /// payload already carries. Without it a co-signer on an EVM route names the
-    /// aggregator alone while every other SwapKit route names the route it
-    /// actually took — the same swap described two ways depending on its source
-    /// chain.
+    /// SwapKit's EVM and Solana routes: their wire shape matches
+    /// `OneInchSwapPayload` 1:1, so they ride the shared aggregator payload and
+    /// carry the same route tag the non-EVM SwapKit payload does.
     static func buildSwapKitGenericPayload(
         fromCoin: Coin,
         toCoin: Coin,

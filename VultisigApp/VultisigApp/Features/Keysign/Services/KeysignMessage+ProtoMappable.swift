@@ -228,22 +228,19 @@ private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapP
     proto.fee = fee
 }
 
-/// `router_address` is an `optional string`, so assigning `""` marks it
-/// present-but-empty rather than leaving it off the wire: a relayed payload that
-/// carried no router came back two bytes longer than the one its sender built.
-/// Readers already normalize empty to absent (`nilIfEmpty` on the way in), so
-/// nothing reads differently — but byte-stability across a mixed-version
-/// committee is worth more than the assignment's brevity.
+/// `router_address` has EXPLICIT presence (`optional string`), so assigning `""`
+/// marks it present rather than eliding it as a default. Do not "simplify" this
+/// back to `?? .empty`: a payload carrying no router would then re-serialize
+/// larger than the bytes its sender built, and those bytes are the relay's
+/// content hash.
 private func writeNativeSwapRouterAddress(_ routerAddress: String?, to proto: inout VSTHORChainSwapPayload) {
     guard let routerAddress = routerAddress?.nilIfEmpty else { return }
     proto.routerAddress = routerAddress
 }
 
-/// Explicit presence for the carried price impact. `slippage_bps` is an
-/// `optional uint32`, so absent means "sender predates the field, impact
-/// unknown" and the receiver hides the row, while a present `0` is a real claim
-/// of a zero-impact route. Only a nil leaves the field untouched -- writing a
-/// stand-in would turn "unknown" into a definite statement.
+/// `slippage_bps` has explicit presence: absent means "sender predates the
+/// field" and the row is hidden, a present `0` claims a zero-impact route. Never
+/// write a stand-in, or "unknown" becomes a statement.
 private func writeNativeSwapSlippageBps(_ slippageBps: UInt32?, to proto: inout VSTHORChainSwapPayload) {
     guard let slippageBps else { return }
     proto.slippageBps = slippageBps
@@ -287,9 +284,8 @@ extension SwapPayload {
                 slippageBps: value.hasSlippageBps ? value.slippageBps : nil
             ))
         case .oneinchSwapPayload(let value):
-            // `has*` guards distinguish "legacy sender, context unknown"
-            // (field absent → nil) from a populated value. Empty strings are
-            // normalized to nil so consumers have a single "unknown" shape.
+            // `has*` distinguishes "legacy sender, unknown" from a populated
+            // value; empty normalizes to nil so consumers see one unknown shape.
             let swapFeeTokenId = value.quote.tx.hasSwapFeeTokenID ? value.quote.tx.swapFeeTokenID.nilIfEmpty : nil
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
@@ -349,8 +345,6 @@ extension SwapPayload {
                 memo: value.hasMemo ? value.memo : nil,
                 subProvider: value.subProvider,
                 swapID: value.swapID,
-                // Same `has*` discipline as the 1inch fee context above: an
-                // absent field means "legacy sender, unknown", not zero.
                 swapFee: value.swapFee.nilIfEmpty,
                 swapFeeChain: value.hasSwapFeeChain ? value.swapFeeChain.nilIfEmpty : nil,
                 swapFeeTokenId: value.hasSwapFeeTokenID ? value.swapFeeTokenID.nilIfEmpty : nil,
@@ -430,8 +424,6 @@ extension SwapPayload {
                     }
                 }
                 $0.provider = payload.provider.rawValue
-                // Same discipline as the fee context above: never set from a
-                // nil, so a legacy payload decoded here re-encodes byte-stable.
                 if let subProvider = payload.subProvider?.nilIfEmpty {
                     $0.subProvider = subProvider
                 }
@@ -456,8 +448,7 @@ extension SwapPayload {
                 if let swapFee = payload.swapFee?.nilIfEmpty, swapFee != "0" {
                     $0.swapFee = swapFee
                     // Never set from nils: a present-but-empty chain or token id
-                    // breaks a receiver's coin lookup, and re-encoding a legacy
-                    // payload has to stay byte-stable.
+                    // breaks a receiver's coin lookup.
                     if let swapFeeChain = payload.swapFeeChain?.nilIfEmpty {
                         $0.swapFeeChain = swapFeeChain
                     }

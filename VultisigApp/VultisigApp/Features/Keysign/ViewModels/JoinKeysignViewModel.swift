@@ -734,8 +734,6 @@ class JoinKeysignViewModel: ObservableObject {
         resolvedHero ?? heroContent
     }
 
-    /// Provider row on the swap confirm screen — the aggregator plus the route
-    /// it took, where the payload names one.
     var providerDisplayName: String {
         keysignPayload?.swapPayload?.providerDisplayName ?? .empty
     }
@@ -790,11 +788,8 @@ class JoinKeysignViewModel: ObservableObject {
         return SwapCryptoLogic.minPayoutCaption(amount: amount, ticker: swapPayload.toCoin.ticker)
     }
 
-    /// Price-impact label for the swap confirm screen, formatted by the same
-    /// helper the initiator's verify screen uses so the two cannot word it
-    /// differently. Empty when the payload carries no impact — a joiner must not
-    /// re-derive one from its own quote, because it would price a pool that has
-    /// moved since the initiator was quoted.
+    /// Empty when the payload carries no impact. A joiner must not re-derive one
+    /// from its own quote: that prices a pool that has moved since.
     var priceImpactString: String {
         SwapCryptoLogic.priceImpactString(impact: keysignPayload?.swapPayload?.priceImpact)
     }

@@ -89,17 +89,12 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
-    /// Price impact of the route as a fraction (`0.0125` == 1.25%), mirroring
-    /// `SwapQuote.priceImpact` for the co-signer, which holds only the serialized
-    /// payload. Native routes carry the quote's basis points on the wire; the
-    /// aggregator routes put none there. `nil` also for a sender that pre-dates
-    /// the field — consumers hide the row rather than claim a zero-impact route,
-    /// which a carried `0` would legitimately mean.
-    /// "SwapKit (NEAR)" when a route tag travelled with the payload, the bare
-    /// aggregator name when it did not. A tag naming the aggregator itself is
-    /// dropped rather than repeated: SwapKit's `providers` is empty for some
-    /// routes and its own name is the fallback, which would otherwise read
-    /// "SwapKit (SwapKit)".
+    /// Route price impact as a fraction (`0.0125` == 1.25%). `nil` where no
+    /// impact travelled; consumers hide the row rather than render a zero, which
+    /// a carried `0` would legitimately mean.
+    /// A tag naming the aggregator itself is dropped rather than repeated:
+    /// SwapKit's `providers` can be empty and its own name is the fallback,
+    /// which would otherwise read "SwapKit (SwapKit)".
     private static func appendingRoute(_ provider: String, subProvider: String?) -> String {
         guard let subProvider = subProvider?.nilIfEmpty,
               subProvider.caseInsensitiveCompare(provider) != .orderedSame else {
@@ -128,12 +123,11 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
-    /// Persisted / explorer-facing provider identity. Transaction History stores
-    /// this string and `ExplorerLinkBuilder` resolves it back to a tracker URL
-    /// through an exact alias lookup, so the route tag lives on
-    /// `providerDisplayName` instead of here: `"SwapKit (CHAINFLIP)"` normalizes
-    /// to `swapkitchainflip`, which is in no alias table, and the row silently
-    /// falls back to the chain explorer instead of the aggregator's tracker.
+    /// Persisted identity. Transaction History stores this string and
+    /// `ExplorerLinkBuilder` resolves it to a tracker through an EXACT alias
+    /// lookup, so a route tag must not be folded in here: "SwapKit (CHAINFLIP)"
+    /// normalizes to `swapkitchainflip`, matches no alias, and the row silently
+    /// loses its tracker. The tag lives on `providerDisplayName`.
     var providerName: String {
         switch self {
         case .thorchain:
@@ -151,23 +145,14 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
-    /// Verify-screen name, kept separate from `providerName` because that string
-    /// is persisted to Transaction History and aliased back to a tracker URL by
-    /// an exact lookup — a route tag folded into it drops the aggregator's own
-    /// tracker for every affected row.
-    ///
-    /// `.generic` deliberately does NOT render the route tag it now carries, even
-    /// though the tag is on the wire. This device's own swap verify screen names
-    /// the clean brand (`SwapQuote.displayName`), and a joiner that appended the
-    /// route would describe the same swap differently from the device that
-    /// initiated it. Whether iOS should show sub-provider tags is a decision for
-    /// both screens together, not one that arrives on the joiner as a side
-    /// effect; the tag travels so the clients that do render it can.
+    /// Verify-screen name. `.generic` deliberately does NOT render the route tag
+    /// it carries: this device's initiator screen names the clean brand
+    /// (`SwapQuote.displayName`), so rendering it here alone would describe one
+    /// swap two ways. The tag travels for the clients that do render it.
     var providerDisplayName: String {
         switch self {
         case .swapkit(let payload):
-            // Long-standing behaviour for the transfer routes: preserves the
-            // "via Chainflip" / "via NEAR Intents" / "via Garden" affordance.
+            // Long-standing "via Chainflip" affordance for the transfer routes.
             return Self.appendingRoute("SwapKit", subProvider: payload.subProvider)
         case .generic, .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return providerName

@@ -54,9 +54,6 @@ struct KeysignSwapConfirmView: View {
             separator
             getNetworkFeeCell()
 
-            // Only when the initiator carried the quote's impact. Re-deriving it
-            // here would price a pool that has moved since, so no row beats a
-            // number this device made up.
             if !viewModel.priceImpactString.isEmpty {
                 separator
                 priceImpactRow

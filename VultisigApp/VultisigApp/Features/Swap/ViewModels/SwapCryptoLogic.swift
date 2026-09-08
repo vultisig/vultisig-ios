@@ -806,10 +806,8 @@ enum SwapCryptoLogic {
         priceImpactString(impact: quote?.priceImpact)
     }
 
-    /// Price-impact label for a fractional impact (0.0125 == 1.25%), whatever its
-    /// source: the initiator passes its live quote's, the co-signer passes the
-    /// `slippage_bps` carried on the keysign payload. Both go through this one
-    /// formatter so the two verify screens cannot drift in wording, precision or
+    /// Shared by the initiator (live quote) and the co-signer (carried
+    /// `slippage_bps`) so the two verify screens cannot drift in wording or
     /// quality band. `.empty` for an unknown impact — callers hide the row.
     static func priceImpactString(impact: Decimal?) -> String {
         guard let impact else { return .empty }

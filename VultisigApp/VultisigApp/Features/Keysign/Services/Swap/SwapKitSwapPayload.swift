@@ -59,26 +59,19 @@ struct SwapKitSwapPayload: Codable, Hashable {
     /// accepted by `POST /track` — track by broadcast hash + chain id.
     let swapID: String
 
-    /// Provider fee for this swap, raw in the base units of the coin the three
-    /// fields below identify. A co-signer holds no quote, so a fee that does not
-    /// travel here is one it can neither recover nor show.
+    /// Provider fee, raw in the base units of the coin the three fields below
+    /// identify. Display only.
     ///
-    /// Read from the wire but not yet written by this app: iOS treats SwapKit's
-    /// affiliate charge as embedded in the quoted rate (`SwapCryptoLogic`'s
-    /// `affiliateFeeFiat` returns zero for SwapKit and the form shows an
-    /// "included in rate" note instead of an amount), so there is no itemized
-    /// initiator figure to carry. Populating one here would give the joiner a fee
-    /// row and a total that the initiator's own verify screen does not show —
-    /// the disagreement these fields exist to remove. A sender that does itemize
-    /// it (Windows, Android, the SDK) reaches an iOS joiner through these fields.
-    ///
-    /// Display only: no signer reads any of them.
+    /// Read but deliberately NOT written here: iOS treats SwapKit's affiliate
+    /// charge as embedded in the quoted rate and itemizes no figure for it on the
+    /// initiator, so populating this would show the joiner a fee its own
+    /// initiator does not. Senders that do itemize it reach an iOS joiner
+    /// through these fields.
     var swapFee: String? = nil
 
-    /// Coin context for `swapFee`. The amount alone is ambiguous — providers
-    /// charge in the source gas coin, the sell asset or the destination token —
-    /// and a 6-decimal fee read as an 18-decimal one is wrong by 10^12. All nil
-    /// means "unknown"; the consumer renders no row rather than guessing a coin.
+    /// Coin context for `swapFee` — the amount alone is ambiguous, and a
+    /// 6-decimal fee read as an 18-decimal one is wrong by 10^12. All nil means
+    /// unknown; consumers render no row rather than guess a coin.
     var swapFeeChain: String? = nil
     var swapFeeTokenId: String? = nil
     var swapFeeDecimals: Int? = nil
