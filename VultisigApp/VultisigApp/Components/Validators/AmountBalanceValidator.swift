@@ -35,6 +35,12 @@ struct AmountBalanceValidator: FormFieldValidator {
     }
 
     func validate(value: String) throws {
+        // `formatter` reads scientific notation, and the balance ceiling below is no
+        // backstop for it: a large enough balance clears the expanded value.
+        guard value.isValidDecimal() else {
+            throw ValidationError.invalidAmount
+        }
+
         guard
             let number = Self.formatter.number(from: value),
             let amount = Decimal(string: number.stringValue)

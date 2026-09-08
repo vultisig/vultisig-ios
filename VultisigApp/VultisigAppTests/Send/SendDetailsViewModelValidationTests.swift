@@ -209,6 +209,57 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(vm.showAmountAlert)
     }
 
+    // MARK: - Amount format
+
+    func testValidateAmountFormatRejectsScientificNotation() {
+        for candidate in ["1e5", "1E5", "2.5e3", "1e-3", "0x1F"] {
+            let vm = SendFormFixture.make()
+            vm.amount = candidate
+            XCTAssertFalse(vm.validateAmountFormat(), "\(candidate) must be rejected")
+            XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+            XCTAssertTrue(vm.showAmountAlert)
+        }
+    }
+
+    func testValidateAmountFormatAcceptsPlainDecimal() {
+        let vm = SendFormFixture.make()
+        vm.amount = "0.5"
+        XCTAssertTrue(vm.validateAmountFormat())
+        XCTAssertFalse(vm.showAmountAlert)
+    }
+
+    /// `1e5` is non-zero once expanded, so only the format rule stops it.
+    func testValidateFormRejectsScientificNotationAmount() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+        XCTAssertTrue(vm.showAmountAlert)
+    }
+
+    func testValidateFormEmptyAmountStillReportsPositiveAmountError() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = ""
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "positiveAmountError")
+    }
+
+    func testMakeTransactionRejectsScientificNotationAmount() {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        XCTAssertThrowsError(try vm.makeTransaction())
+    }
+
     func testValidateAddressFormatRejectsEmpty() {
         let vm = SendFormFixture.make()
         vm.toAddress = ""

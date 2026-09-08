@@ -139,7 +139,7 @@ extension String {
         return nil
     }
 
-    /// Whether every character belongs to a numeric amount: an ASCII digit or a
+    /// Whether every character belongs to a numeric amount: a decimal digit or a
     /// decimal / grouping separator (the current locale's, plus `.`/`,` so a value
     /// pasted from another locale still validates). An empty string is valid (it
     /// clears the field).
@@ -159,7 +159,16 @@ extension String {
         if let grouping = locale.groupingSeparator, grouping.count == 1 {
             allowed.insert(Character(grouping))
         }
-        return allSatisfy { ($0.isASCII && $0.isNumber) || allowed.contains($0) }
+        return allSatisfy { $0.isDecimalDigit || allowed.contains($0) }
+    }
+}
+
+private extension Character {
+    /// A Unicode decimal digit, so an amount `NumberFormatter` rendered in a
+    /// non-Latin numbering system validates back. Narrower than `isNumber` /
+    /// `isWholeNumber`, which also accept `²`, `½`, `Ⅷ` and `②`.
+    var isDecimalDigit: Bool {
+        unicodeScalars.count == 1 && unicodeScalars.first?.properties.numericType == .decimal
     }
 }
 
@@ -222,12 +231,41 @@ extension String {
         return self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
 
-    func isValidDecimal() -> Bool {
-        guard let number = parseInput() else {
+    /// The character-set half is what stops `NumberFormatter` expanding scientific
+    /// notation. Whitespace is trimmed for that half only.
+    func isValidDecimal(locale: Locale = .current) -> Bool {
+        guard trimmingCharacters(in: .whitespaces).isDecimalInput(locale: locale),
+              let number = parseInput(locale: locale) else {
             return false
         }
 
         return number >= 0
+    }
+
+    /// An amount supplied by a link or QR, in this device's representation, or nil
+    /// if it is not BIP-321's `*digit [ "." *digit ]`. Read with fixed semantics,
+    /// never the device locale, which would take the `.` for a grouping separator;
+    /// re-rendered after, because everything downstream parses `Locale.current`.
+    func externalAmount(locale: Locale = .current) -> String? {
+        var seenSeparator = false
+        var digits = 0
+        for character in self {
+            if character == "." {
+                guard !seenSeparator else { return nil }
+                seenSeparator = true
+            } else if character.isASCII, character.isNumber {
+                digits += 1
+            } else {
+                return nil
+            }
+        }
+        guard digits > 0 else { return nil }
+
+        let separator = locale.decimalSeparator ?? "."
+        let localized = separator == "." ? self : replacingOccurrences(of: ".", with: separator)
+
+        // Every path ends here, so validity never depends on the device separator.
+        return localized.isValidDecimal(locale: locale) ? localized : nil
     }
 
     var isValidEmail: Bool {

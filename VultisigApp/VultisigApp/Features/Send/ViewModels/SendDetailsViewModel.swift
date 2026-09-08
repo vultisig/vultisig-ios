@@ -1144,6 +1144,15 @@ final class SendDetailsViewModel {
         return true
     }
 
+    /// Backstop: Verify renders the raw string, so an expanded one signs behind it.
+    func validateAmountFormat() -> Bool {
+        guard amount.isValidDecimal() else {
+            setAmountError(message: "decimalAmountError")
+            return false
+        }
+        return true
+    }
+
     /// Rejects malformed addresses for the current coin's chain.
     func validateAddressFormat() -> Bool {
         guard isValidAddressFormat() else {
@@ -1315,6 +1324,7 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
+        guard validateAmountFormat() else { return false }
         // Address resolution runs BEFORE the XRP tag/memo rule: it hosts the
         // X-address normalization seam, which can autofill the tag field —
         // validating the tag first would let an autofilled value (e.g. an
