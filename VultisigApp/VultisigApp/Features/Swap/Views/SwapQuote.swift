@@ -58,6 +58,40 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Identity of the route this quote represents, free of the quote payload
+    /// (amounts, fees, calldata) that changes on every fetch. Two quotes from
+    /// consecutive fetches share it exactly when they are the same row in the
+    /// route picker, which is what lets a manual route pick re-attach to the
+    /// fresh quote instead of being dropped.
+    ///
+    /// Network variants stay distinct — they are separate `SwapProvider`s with
+    /// separate `displayName`s, so they are separate rows. The SwapKit
+    /// sub-provider is deliberately excluded: SwapKit is one provider and one
+    /// row whichever protocol it routes through underneath, and that underlying
+    /// choice can legitimately flip between fetches.
+    var routeIdentity: SwapRouteIdentity {
+        switch self {
+        case .thorchain:
+            return .thorchain
+        case .thorchainChainnet:
+            return .thorchainChainnet
+        case .thorchainStagenet:
+            return .thorchainStagenet
+        case .mayachain:
+            return .mayachain
+        case .oneinch:
+            return .oneInch
+        case .kyberswap:
+            return .kyberSwap
+        case .lifi:
+            return .lifi
+        case .swapkit:
+            return .swapkit
+        case .jupiter:
+            return .jupiter
+        }
+    }
+
     /// Payload-free provider identity — the single source of truth for this
     /// quote's brand logo and display name. Network variants collapse to their
     /// base kind; `displayName` re-adds the `-Chainnet`/`-Stagenet` suffix.
@@ -295,4 +329,18 @@ enum SwapQuote: Hashable {
             hasher.combine(feeOnInput)
         }
     }
+}
+
+/// Payload-free identity of a swap route, one case per row of the
+/// route-selection sheet. See `SwapQuote.routeIdentity`.
+enum SwapRouteIdentity: Hashable {
+    case thorchain
+    case thorchainChainnet
+    case thorchainStagenet
+    case mayachain
+    case oneInch
+    case kyberSwap
+    case lifi
+    case swapkit
+    case jupiter
 }
