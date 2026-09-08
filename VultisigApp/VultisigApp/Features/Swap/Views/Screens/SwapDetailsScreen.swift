@@ -179,6 +179,10 @@ struct SwapDetailsScreen: View {
     /// the limit form reads as an error about the order being placed. Withheld,
     /// not dropped — switching back to Market flips the binding and the notice
     /// lands on the form it is about.
+    ///
+    /// This gates when a banner STARTS. One already on screen when the user
+    /// switches tabs still finishes its own ~1.5s dismissal, because the shared
+    /// banner modifier tracks visibility itself and ignores the text going nil.
     private var routeSelectionNotice: Binding<String?> {
         Binding(
             get: { selectedSwapMode == .market ? detailsViewModel.routeSelectionNotice : nil },

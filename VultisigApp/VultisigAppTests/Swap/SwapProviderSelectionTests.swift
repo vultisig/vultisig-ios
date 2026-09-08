@@ -203,9 +203,19 @@ final class SwapProviderSelectionTests: XCTestCase {
         await landQuotes(on: vm)
         vm.selectProvider(alt)
 
-        // "1" -> "1.0" is the same number to the provider, so it is a refresh of
-        // the same swap, not a new one.
-        vm.fromAmount = "1.0"
+        // "1" and "1<sep>0" are the same number to the provider, so this is a
+        // refresh of the same swap rather than a new one. Built from the running
+        // locale's separator: `toDecimal` parses with `Locale.current` first, so a
+        // hard-coded "1.0" reads as ten under a comma-decimal locale and would
+        // fail this test against correct production behaviour.
+        let separator = Locale.current.decimalSeparator ?? "."
+        let equivalentAmount = "1\(separator)0"
+        XCTAssertEqual(
+            equivalentAmount.toDecimal(),
+            "1".toDecimal(),
+            "Fixture must be numerically equivalent for this test to mean anything"
+        )
+        vm.fromAmount = equivalentAmount
         vm.updateFromAmount(vault: makeVault(), immediate: true)
 
         XCTAssertEqual(vm.selectedQuote, alt, "An equivalent amount must not drop the pick")
