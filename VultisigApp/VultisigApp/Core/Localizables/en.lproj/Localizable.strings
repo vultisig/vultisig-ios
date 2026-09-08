@@ -1634,6 +1634,7 @@
 "transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
+"transactionExpiredBeforeInclusion" = "Transaction expired before it was included in a block";
 "transactionFailed" = "Transaction failed";
 "transactionFailedDescription" = "Something went wrong. Please try again.";
 "transactionFailedHighlight" = "failed";

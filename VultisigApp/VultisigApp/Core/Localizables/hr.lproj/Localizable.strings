@@ -1634,6 +1634,7 @@
 "transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
+"transactionExpiredBeforeInclusion" = "Transakcija je istekla prije nego što je uključena u blok";
 "transactionFailed" = "Transakcija nije uspjela";
 "transactionFailedDescription" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "transactionFailedHighlight" = "nije uspjela";

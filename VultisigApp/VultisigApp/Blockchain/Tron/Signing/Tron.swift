@@ -239,6 +239,13 @@ enum TronHelper {
     /// `raw_data` bytes; the signed envelope adds that field's length prefix,
     /// one length-delimited signature, and the per-contract result allowance.
     ///
+    /// Always shaped as a `TransferContract`. The Stake 2.0 routing memos
+    /// (`FREEZE:`, `UNFREEZE:`, `WITHDRAW_EXPIRE_UNFREEZE`) sign a different
+    /// system contract, and every one of those is *smaller* than a transfer —
+    /// none carries a `to_address` — so this stays an upper bound for them. It
+    /// can therefore predict a fee for a claim that would in fact have been
+    /// free, but it never under-reserves, which is the direction that matters.
+    ///
     /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
     static func nativeTransferBandwidthBytes(
         ownerAddress: String,
@@ -254,9 +261,13 @@ enum TronHelper {
         let contract = TronTransferContract.with {
             $0.ownerAddress = ownerAddress
             $0.toAddress = toAddress
-            // An amount past Int64 cannot be signed either; sizing it at the
-            // maximum keeps the estimate on the conservative side.
-            $0.amount = Int64(exactly: amount) ?? .max
+            // Protobuf omits a zero scalar entirely, so sizing an unknown
+            // amount at zero would reserve nothing for a field the real
+            // transfer always carries. The Max button quotes a fee before the
+            // amount is settled and asks with zero, which is exactly the case
+            // that must not under-reserve — size it at the widest varint
+            // instead. An amount past Int64 cannot be signed and lands here too.
+            $0.amount = (amount > .zero ? Int64(exactly: amount) : nil) ?? .max
         }
 
         let input = try TronSigningInput.with {

@@ -113,26 +113,36 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         )
     }
 
-    /// A transaction the node still holds and whose expiration has not passed
-    /// keeps polling. The chain-time lookup is not even made — the device clock
-    /// is the cheap gate in front of it.
+    /// A transaction the chain head has not yet passed keeps polling.
     func testUnconfirmedTransactionBeforeItsExpirationKeepsPolling() async throws {
-        let client = TronTransactionStatusHTTPClient(
-            response: response(id: nil, blockNumber: nil, hasReceipt: false),
+        let result = try await checkStatus(
+            response(id: nil, blockNumber: nil, hasReceipt: false),
+            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
+            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_699_999_999_999)
+        )
+
+        XCTAssertEqual(result.status, .pending)
+    }
+
+    /// TRON validates `expiration` against block time, so the device clock is
+    /// not evidence in either direction and must not veto the chain. Both of
+    /// these use an expiration far ahead of any real device clock: the first
+    /// would stay pending forever if a slow clock could gate the check, and the
+    /// second would go terminal if a fast one could force it.
+    func testChainTimePastExpirationExpiresEvenWhenTheDeviceClockIsBehind() async throws {
+        let result = try await checkStatus(
+            response(id: nil, blockNumber: nil, hasReceipt: false),
             rawTransactionJSON: Self.rawTransactionJSON(expiration: 4_000_000_000_000),
             nowBlockJSON: Self.nowBlockJSON(timestamp: 4_000_000_000_001)
         )
 
-        let result = try await TronTransactionStatusProvider(httpClient: client)
-            .checkStatus(query: Self.query)
-
-        XCTAssertEqual(result.status, .pending)
-        XCTAssertFalse(client.requestedPaths.contains("/wallet/getnowblock"))
+        XCTAssertEqual(
+            result.status,
+            .expired(reason: TronTransactionStatusProvider.expiredReason)
+        )
     }
 
-    /// TRON validates `expiration` against block time, so a device clock
-    /// running fast must not turn a live transaction into a terminal failure.
-    func testExpiredByTheDeviceClockButNotByChainTimeKeepsPolling() async throws {
+    func testChainTimeBeforeExpirationKeepsPollingWhateverTheDeviceClockSays() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
             rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_780_000_000_000),
@@ -183,7 +193,7 @@ final class TronTransactionStatusProviderTests: XCTestCase {
     func testReceiptlessTransactionWithoutABlockStaysPending() async throws {
         let result = try await checkStatus(
             response(id: "deadbeef", blockNumber: 0, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 4_000_000_000_000),
+            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
             nowBlockJSON: nil
         )
 

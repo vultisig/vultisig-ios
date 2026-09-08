@@ -139,13 +139,14 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
             return pending
         }
 
-        // The device clock is only the cheap gate. TRON validates `expiration`
-        // against block time, so a phone running fast would otherwise report a
-        // perfectly live transaction as permanently failed. Confirm against the
-        // chain before making a terminal claim, and stay pending if that
-        // lookup fails — an unreachable node is not evidence of anything.
-        guard Int64(Date().timeIntervalSince1970 * 1000) > expiration,
-              let chainTimeMillis = await chainTimeMillis(),
+        // Chain time decides this, and only chain time: TRON validates
+        // `expiration` against block time, so the device clock is not evidence
+        // in either direction. A phone running fast would call a live
+        // transaction permanently failed; a phone running slow would never let
+        // it become terminal at all, which is the bug this status exists to
+        // fix. An unreachable node leaves it pending — that is not evidence
+        // either.
+        guard let chainTimeMillis = await chainTimeMillis(),
               chainTimeMillis > expiration else {
             return pending
         }

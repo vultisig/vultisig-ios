@@ -521,6 +521,10 @@ final class TronServiceFeeLimitTests: XCTestCase {
 
     /// Routing markers select a WalletCore system-contract builder and never
     /// reach the wire, so they must not inflate the bandwidth reserve either.
+    ///
+    /// The reserve is still sized as a `TransferContract`, which is the larger
+    /// shape — a claim carries no `to_address` — so this is an upper bound for
+    /// the transaction that actually gets signed, never an under-reservation.
     func testGetBlockInfoRoutingMemoDoesNotInflateTheBandwidthReserve() async throws {
         let coin = makeNativeCoin()
         let freeBandwidth = Int64(Self.memolessBandwidthBytes)
@@ -533,6 +537,26 @@ final class TronServiceFeeLimitTests: XCTestCase {
         )
 
         XCTAssertEqual(fee, 0)
+    }
+
+    /// A transfer that cannot be serialized — here an address WalletCore will
+    /// not encode — has no measurable size, so the reserve falls back to the
+    /// conservative 300-byte constant rather than reporting a transfer as
+    /// costing nothing. This is the path a send takes while the recipient
+    /// field is still being filled in.
+    func testGetBlockInfoUnencodableRecipientFallsBackToTheConservativeConstant() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeNativeCoin(),
+            to: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8",  // fails base58check
+            memo: nil,
+            isSwap: false
+        )
+
+        XCTAssertEqual(extractGasFee(result), 300 * 1000)
     }
 
     /// Native TRX transfer where the account-resource fetch FAILS — the true
@@ -562,15 +586,16 @@ final class TronServiceFeeLimitTests: XCTestCase {
     /// expectations do not come from the production helper they are checking.
     /// The derivation is spelled out field by field in
     /// `TronBandwidthEstimateTests`; the only difference is that `getBlockInfo`
-    /// is called with no amount here, so `TransferContract.amount` stays at its
-    /// proto3 default and its 4 bytes are not serialized: 267 - 4 = 263. Both
-    /// millisecond timestamps are fixed-width for the next several decades, so
-    /// neither count depends on when the test runs.
-    private static let memolessBandwidthBytes: UInt64 = 263
+    /// is called with no amount here, so the estimator sizes
+    /// `TransferContract.amount` at the widest varint rather than at a zero it
+    /// would not serialize at all — 1 tag + 9 bytes in place of the fixture's
+    /// 1 + 3, so 267 + 6 = 273. Both millisecond timestamps are fixed-width for
+    /// the next several decades, so neither count depends on when the test runs.
+    private static let memolessBandwidthBytes: UInt64 = 273
 
     /// The same transfer carrying a 100-byte memo, whose `data` field adds
     /// 1 tag + 1 length + 100 = 102 bytes.
-    private static let memo100BandwidthBytes: UInt64 = 365
+    private static let memo100BandwidthBytes: UInt64 = 375
 
     /// Length of the memo `memo100BandwidthBytes` was derived for.
     private static let memoLength = 100
@@ -607,6 +632,11 @@ final class TronServiceFeeLimitTests: XCTestCase {
         return Coin(asset: asset, address: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8", hexPublicKey: "")
     }
 
+    /// The address has to pass base58check: the bandwidth estimator builds a
+    /// real signing input from it, and WalletCore refuses an address whose
+    /// digest does not verify. This one is a real recorded sender, from the
+    /// captured SwapKit TRON quote in
+    /// `Swap/SwapKit/__fixtures__/v3-tron-final-swap-fresh.json`.
     private func makeNativeCoin() -> Coin {
         let asset = CoinMeta.make(
             chain: .tron,
@@ -614,7 +644,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
             decimals: 6,
             isNativeToken: true
         )
-        return Coin(asset: asset, address: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8", hexPublicKey: "")
+        return Coin(asset: asset, address: "TLBaRhANQoJFTqre9Nf1mjuwNWjCJeYqUL", hexPublicKey: "")
     }
 
     private func extractGasFee(_ specific: BlockChainSpecific) -> UInt64 {

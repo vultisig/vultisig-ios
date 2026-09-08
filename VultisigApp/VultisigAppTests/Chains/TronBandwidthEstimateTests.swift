@@ -17,7 +17,12 @@ import XCTest
 
 final class TronBandwidthEstimateTests: XCTestCase {
 
-    private static let owner = "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8"
+    /// Real recorded sender, from the captured SwapKit TRON quote in
+    /// `Swap/SwapKit/__fixtures__/v3-tron-final-swap-fresh.json`. Every TRON
+    /// address decodes to the same 21-byte payload, so the byte counts below do
+    /// not depend on which valid address is used — but an address that fails
+    /// base58check makes WalletCore refuse to build the transaction at all.
+    private static let owner = "TLBaRhANQoJFTqre9Nf1mjuwNWjCJeYqUL"
     private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 
     /// Protobuf overhead of the `data` field carrying the memo: one field tag
@@ -30,6 +35,13 @@ final class TronBandwidthEstimateTests: XCTestCase {
     /// 1, ref_block_hash 4, expiration 8, data 10, contract 11, timestamp 14);
     /// `ref_block_num` and `fee_limit` are left at their proto3 defaults and so
     /// are not serialized.
+    ///
+    /// Cross-checked against the recorded `raw_data_hex` in
+    /// `Swap/SwapKit/__fixtures__/v3-tron-final-swap-fresh.json`, a real TRON
+    /// transaction: it opens `0a 02 8975` (ref_block_bytes, 4 bytes),
+    /// `22 08 …` (ref_block_hash, 10), `40 …` (expiration, 7), carries its
+    /// addresses as `0a 15 41…` / `12 15 41…` (21-byte payloads), and ends
+    /// `70 …` (timestamp, 7) with no `ref_block_num` anywhere.
     ///
     ///     TransferContract  owner 1+1+21, to 1+1+21, amount 1+3      =  50
     ///     Any               type_url 1+1+45, value 1+1+50            =  99
