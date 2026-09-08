@@ -208,6 +208,14 @@ extension SwapCryptoLogic {
     /// keysign payload so a co-signer shows the impact the initiator was quoted
     /// instead of re-deriving one from a pool that has since moved.
     ///
+    /// Read from the quote's TOP-LEVEL `slippage_bps`, which is the field
+    /// `SwapQuote.priceImpact` renders on this device's own verify screen —
+    /// deliberately not `fees.slippage_bps`, which the node reports separately
+    /// and which can differ (THORChain's own streaming example quotes 41 against
+    /// a nested 9). Carrying the other one would hand the co-signer a different
+    /// number from the one the initiator is looking at, which is the single
+    /// failure this field exists to prevent.
+    ///
     /// `nil` when the node reports none — the receiver hides the row rather than
     /// claiming a zero-impact route. A reported `0` is carried as `0`: the field
     /// has explicit presence on the wire, so the receiver can tell the two apart,
@@ -215,7 +223,7 @@ extension SwapCryptoLogic {
     /// dropped rather than wrapped: `slippage_bps` is a `uint32`, and a negative
     /// would land on the peer as a ~4-billion-bps impact.
     static func nativeSwapPayloadSlippageBps(quote: ThorchainSwapQuote) -> UInt32? {
-        guard let bps = quote.fees.slippageBps else { return nil }
+        guard let bps = quote.slippageBps else { return nil }
         return UInt32(exactly: bps)
     }
 

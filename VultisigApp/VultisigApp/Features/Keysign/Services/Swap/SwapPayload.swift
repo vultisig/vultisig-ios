@@ -129,8 +129,11 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     }
 
     /// Persisted / explorer-facing provider identity. Transaction History stores
-    /// this string and `ExplorerLinkBuilder` aliases it back to a tracker, so the
-    /// route tag lives on `providerDisplayName` instead of here.
+    /// this string and `ExplorerLinkBuilder` resolves it back to a tracker URL
+    /// through an exact alias lookup, so the route tag lives on
+    /// `providerDisplayName` instead of here: `"SwapKit (CHAINFLIP)"` normalizes
+    /// to `swapkitchainflip`, which is in no alias table, and the row silently
+    /// falls back to the chain explorer instead of the aggregator's tracker.
     var providerName: String {
         switch self {
         case .thorchain:
@@ -143,10 +146,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return "Maya Protocol"
         case .generic(let payload):
             return payload.provider.name
-        case .swapkit(let payload):
-            // Sub-provider tag preserves the verify-screen "via Chainflip" /
-            // "via NEAR Intents" / "via Garden" affordance.
-            return Self.appendingRoute("SwapKit", subProvider: payload.subProvider)
+        case .swapkit:
+            return "SwapKit"
         }
     }
 
@@ -160,7 +161,15 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     /// `ExplorerLinkBuilder`, whose lookup is exact — folding a route tag into it
     /// would drop the aggregator's own tracker for every affected row.
     var providerDisplayName: String {
-        guard case let .generic(payload) = self else { return providerName }
-        return Self.appendingRoute(payload.provider.name, subProvider: payload.subProvider)
+        switch self {
+        case .generic(let payload):
+            return Self.appendingRoute(payload.provider.name, subProvider: payload.subProvider)
+        case .swapkit(let payload):
+            // Preserves the verify-screen "via Chainflip" / "via NEAR Intents" /
+            // "via Garden" affordance this shape has always had.
+            return Self.appendingRoute("SwapKit", subProvider: payload.subProvider)
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return providerName
+        }
     }
 }

@@ -115,9 +115,13 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    func testReEncodingALegacyPayloadLeavesTheFeeGroupUnset() throws {
+    /// Byte-for-byte, not just "the fields are unset" — mixed-version MPC
+    /// committees depend on a relayed legacy payload re-serializing identically,
+    /// and a presence-only assertion would survive any other field shifting.
+    func testReEncodingALegacyPayloadIsByteIdentical() throws {
+        let originalBytes = try makeLegacyProto().serializedData()
         let decoded = try SwapPayload(proto: .swapkitSwapPayload(
-            try VSSwapKitSwapPayload(serializedBytes: try makeLegacyProto().serializedData())
+            try VSSwapKitSwapPayload(serializedBytes: originalBytes)
         ))
         guard case let .swapkitSwapPayload(reEncoded) = decoded.mapToProtobuff() else {
             XCTFail("Expected .swapkitSwapPayload"); return
@@ -126,27 +130,69 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertFalse(reEncoded.hasSwapFeeChain)
         XCTAssertFalse(reEncoded.hasSwapFeeTokenID)
         XCTAssertFalse(reEncoded.hasSwapFeeDecimals)
+        XCTAssertEqual(
+            try reEncoded.serializedData(), originalBytes,
+            "A relayed legacy payload must re-serialize to the sender's exact bytes"
+        )
     }
 
-    /// The routing fields a signer actually reads must survive untouched
-    /// alongside the new display group.
-    func testFeeGroupTravelsBesideTheSigningFieldsWithoutDisturbingThem() throws {
-        let payload = makeSwapKitPayload(
+    /// The strongest form of the display-only claim available here: run the real
+    /// BTC PSBT signer over a payload carrying the fee group and one without it,
+    /// and compare the actual BIP-143 pre-signing hashes — the bytes the vault
+    /// commits to. A field-comparison test would pass even if a signer began
+    /// folding a display field into what it signs; this one would not.
+    func testFeeGroupDoesNotMoveTheSignedPreSigningHashes() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self, from: "v3-real-btc-all-swap"
+        )
+        guard case let .psbt(base64) = response.tx else {
+            XCTFail("Expected a PSBT fixture"); return
+        }
+        let psbt = try XCTUnwrap(Data(base64Encoded: base64))
+
+        let withFee = makeSwapKitPayload(
             swapFee: "250000",
             swapFeeChain: Chain.bitcoinCash.name,
             swapFeeTokenId: nil,
-            swapFeeDecimals: 8
+            swapFeeDecimals: 8,
+            txPayload: psbt
         )
-        guard case let .swapkit(decoded) = try SwapPayload(
-            proto: SwapPayload.swapkit(payload).mapToProtobuff()
-        ) else {
-            XCTFail("Expected .swapkit"); return
+        let withoutFee = makeSwapKitPayload(
+            swapFee: nil, swapFeeChain: nil, swapFeeTokenId: nil, swapFeeDecimals: nil,
+            txPayload: psbt
+        )
+
+        let signedWithFee = try SwapKitBTCSigner.preSigningHashes(payload: withFee)
+        XCTAssertFalse(signedWithFee.isEmpty, "…or the comparison below is vacuous")
+        XCTAssertEqual(
+            signedWithFee,
+            try SwapKitBTCSigner.preSigningHashes(payload: withoutFee),
+            "A display field must never reach what the vault signs"
+        )
+    }
+
+    /// Wire-level counterpart: clearing the group from a payload that carries it
+    /// must reproduce the bytes of one that never had it, so nothing else moved.
+    func testFeeGroupIsPurelyAdditiveOnTheWire() throws {
+        guard case var .swapkitSwapPayload(withFee) = SwapPayload.swapkit(makeSwapKitPayload(
+                swapFee: "250000", swapFeeChain: Chain.bitcoinCash.name,
+                swapFeeTokenId: nil, swapFeeDecimals: 8
+              )).mapToProtobuff(),
+              case let .swapkitSwapPayload(withoutFee) = SwapPayload.swapkit(makeSwapKitPayload(
+                swapFee: nil, swapFeeChain: nil, swapFeeTokenId: nil, swapFeeDecimals: nil
+              )).mapToProtobuff() else {
+            XCTFail("Expected .swapkitSwapPayload"); return
         }
-        XCTAssertEqual(decoded.txType, payload.txType)
-        XCTAssertEqual(decoded.txPayload, payload.txPayload)
-        XCTAssertEqual(decoded.targetAddress, payload.targetAddress)
-        XCTAssertEqual(decoded.memo, payload.memo)
-        XCTAssertEqual(decoded.swapID, payload.swapID)
+        XCTAssertNotEqual(try withFee.serializedData(), try withoutFee.serializedData())
+
+        withFee.swapFee = ""
+        withFee.clearSwapFeeChain()
+        withFee.clearSwapFeeTokenID()
+        withFee.clearSwapFeeDecimals()
+        XCTAssertEqual(
+            try withFee.serializedData(), try withoutFee.serializedData(),
+            "The fee group must be the ONLY difference these bytes carry"
+        )
     }
 
     // MARK: - What the co-signer reads back
@@ -277,7 +323,8 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         swapFee: String?,
         swapFeeChain: String?,
         swapFeeTokenId: String?,
-        swapFeeDecimals: Int?
+        swapFeeDecimals: Int?,
+        txPayload: Data = Data([0x70, 0x73, 0x62, 0x74])
     ) -> SwapKitSwapPayload {
         SwapKitSwapPayload(
             fromCoin: makeCoin(.bitcoinCash, ticker: "BCH", decimals: 8, isNative: true),
@@ -285,7 +332,7 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
             fromAmount: BigInt(50_000_000),
             toAmountDecimal: 380,
             txType: "PSBT",
-            txPayload: Data([0x70, 0x73, 0x62, 0x74]),
+            txPayload: txPayload,
             targetAddress: "qtarget",
             inboundAddress: nil,
             memo: nil,

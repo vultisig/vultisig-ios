@@ -112,9 +112,14 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         )
     }
 
-    func testReEncodingALegacyPayloadLeavesSlippageUnset() throws {
+    /// Byte-for-byte, not just "the field is unset". Mixed-version MPC committees
+    /// depend on a relayed legacy payload re-serializing to the identical bytes;
+    /// an assertion that only checks presence would survive a change that shifted
+    /// any other field on the wire.
+    func testReEncodingALegacyPayloadIsByteIdentical() throws {
+        let originalBytes = try makeLegacyProto().serializedData()
         let decoded = try SwapPayload(proto: .thorchainSwapPayload(
-            try VSTHORChainSwapPayload(serializedBytes: try makeLegacyProto().serializedData())
+            try VSTHORChainSwapPayload(serializedBytes: originalBytes)
         ))
         guard case let .thorchainSwapPayload(reEncoded) = decoded.mapToProtobuff() else {
             XCTFail("Expected .thorchainSwapPayload"); return
@@ -122,6 +127,10 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         XCTAssertFalse(
             reEncoded.hasSlippageBps,
             "Relaying a legacy payload must not invent an impact its sender never stated"
+        )
+        XCTAssertEqual(
+            try reEncoded.serializedData(), originalBytes,
+            "A relayed legacy payload must re-serialize to the sender's exact bytes"
         )
     }
 
@@ -133,6 +142,39 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
             125
         )
         XCTAssertEqual(builtPayload(slippageBps: 125).slippageBps, 125)
+    }
+
+    /// The quote reports price impact in two places and they can differ. The one
+    /// that has to travel is the one THIS device renders (`SwapQuote.priceImpact`
+    /// reads the top-level field); carrying the nested `fees.slippage_bps` would
+    /// show the co-signer a different number from the initiator, which is the one
+    /// failure this field exists to prevent.
+    func testBuilderCarriesTheTopLevelSlippageNotTheNestedFeeSlippage() {
+        let quote = makeThorQuote(topLevel: 41, nested: 9)
+        XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadSlippageBps(quote: quote), 41)
+
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeBTC(),
+            toCoin: makeTRX(),
+            fromAmountInCoin: BigInt(100_000),
+            toAmountDecimal: 3000,
+            quote: quote
+        )
+        XCTAssertEqual(payload.slippageBps, 41)
+        XCTAssertEqual(
+            SwapPayload.thorchain(payload).priceImpact,
+            SwapQuote.thorchain(quote).priceImpact,
+            "Co-signer and initiator must read the same source"
+        )
+    }
+
+    /// Presence follows the top-level field alone: a nested value with no
+    /// top-level one is not a substitute.
+    func testNestedFeeSlippageAloneCarriesNothing() {
+        XCTAssertNil(
+            SwapCryptoLogic.nativeSwapPayloadSlippageBps(quote: makeThorQuote(topLevel: nil, nested: 9))
+        )
+        XCTAssertNil(SwapQuote.thorchain(makeThorQuote(topLevel: nil, nested: 9)).priceImpact)
     }
 
     func testBuilderCarriesAQuotedZero() {
@@ -213,17 +255,27 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
 
     // MARK: - Signing is untouched
 
-    /// These fields are display-only. The memo is the signed statement of the
-    /// swap for a native route, and it must not move when the impact does.
-    func testCarriedImpactDoesNotChangeTheSignedMemo() {
-        let withImpact = builtPayload(slippageBps: 305)
-        let withoutImpact = builtPayload(slippageBps: nil)
+    /// Display-only, asserted on the bytes rather than on a handful of fields.
+    /// Clearing `slippage_bps` from a payload that carries it must reproduce the
+    /// serialized bytes of a payload that never had it: that proves the field is
+    /// purely additive and that nothing else on the wire — the memo terms, the
+    /// vault address, the amounts a signer consumes — moved with it. A
+    /// field-by-field comparison would pass even if an unlisted field had.
+    func testCarriedImpactIsPurelyAdditiveOnTheWire() throws {
+        guard case var .thorchainSwapPayload(withImpact) =
+                SwapPayload.thorchain(builtPayload(slippageBps: 305)).mapToProtobuff(),
+              case let .thorchainSwapPayload(withoutImpact) =
+                SwapPayload.thorchain(builtPayload(slippageBps: nil)).mapToProtobuff() else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+        XCTAssertTrue(withImpact.hasSlippageBps, "…or this asserts nothing")
+        XCTAssertNotEqual(try withImpact.serializedData(), try withoutImpact.serializedData())
 
-        XCTAssertEqual(withImpact.toAmountLimit, withoutImpact.toAmountLimit)
-        XCTAssertEqual(withImpact.streamingInterval, withoutImpact.streamingInterval)
-        XCTAssertEqual(withImpact.streamingQuantity, withoutImpact.streamingQuantity)
-        XCTAssertEqual(withImpact.vaultAddress, withoutImpact.vaultAddress)
-        XCTAssertEqual(withImpact.fromAmount, withoutImpact.fromAmount)
+        withImpact.clearSlippageBps()
+        XCTAssertEqual(
+            try withImpact.serializedData(), try withoutImpact.serializedData(),
+            "The impact must be the ONLY difference these bytes carry"
+        )
     }
 
     // MARK: - Fixtures
@@ -341,7 +393,15 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         )
     }
 
+    /// Every fixture deliberately gives the quote's two price-impact sources
+    /// DIFFERENT values. A fixture that set `slippage_bps` and
+    /// `fees.slippage_bps` to the same number passes whichever one the builder
+    /// happens to read — which is exactly how the wrong one shipped once.
     private func makeThorQuote(slippageBps: Int?) -> ThorchainSwapQuote {
+        makeThorQuote(topLevel: slippageBps, nested: slippageBps.map { $0 + 7 })
+    }
+
+    private func makeThorQuote(topLevel: Int?, nested: Int?) -> ThorchainSwapQuote {
         ThorchainSwapQuote(
             dustThreshold: nil,
             expectedAmountOut: "300000000000",
@@ -352,7 +412,7 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
                 outbound: "0",
                 total: "0",
                 liquidity: nil,
-                slippageBps: slippageBps,
+                slippageBps: nested,
                 totalBps: nil
             ),
             inboundAddress: "bc1qasgard",
@@ -363,7 +423,7 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
             recommendedMinAmountIn: "0",
-            slippageBps: slippageBps,
+            slippageBps: topLevel,
             totalSwapSeconds: nil,
             warning: "",
             router: nil,

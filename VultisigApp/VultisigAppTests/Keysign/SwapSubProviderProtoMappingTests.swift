@@ -64,9 +64,13 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
     }
 
-    func testReEncodingALegacyPayloadLeavesSubProviderUnset() throws {
+    /// Byte-for-byte, not just "the field is unset" — a presence-only assertion
+    /// would survive any other field shifting, and mixed-version MPC committees
+    /// depend on a relayed legacy payload re-serializing identically.
+    func testReEncodingALegacyPayloadIsByteIdentical() throws {
+        let originalBytes = try makeLegacyProto().serializedData()
         let decoded = try SwapPayload(proto: .oneinchSwapPayload(
-            try VSOneInchSwapPayload(serializedBytes: try makeLegacyProto().serializedData())
+            try VSOneInchSwapPayload(serializedBytes: originalBytes)
         ))
         guard case let .oneinchSwapPayload(reEncoded) = decoded.mapToProtobuff() else {
             XCTFail("Expected .oneinchSwapPayload"); return
@@ -74,6 +78,10 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         XCTAssertTrue(
             reEncoded.subProvider.isEmpty,
             "Relaying a legacy payload must not invent a route its sender never stated"
+        )
+        XCTAssertEqual(
+            try reEncoded.serializedData(), originalBytes,
+            "A relayed legacy payload must re-serialize to the sender's exact bytes"
         )
     }
 
@@ -124,6 +132,43 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         XCTAssertEqual(
             SwapPayload.swapkit(makeSwapKitPayload(subProvider: "SwapKit")).providerDisplayName,
             "SwapKit"
+        )
+    }
+
+    /// The transfer-route half of the same split. Before it, `.swapkit` persisted
+    /// "SwapKit (CHAINFLIP)", which normalizes to `swapkitchainflip` — absent
+    /// from `ExplorerLinkBuilder`'s alias table — so the row silently fell back
+    /// to the chain explorer instead of the aggregator's tracker.
+    func testSwapKitTransferRoutePersistsTheBareBrandAndKeepsItsTracker() {
+        let payload = SwapPayload.swapkit(makeSwapKitPayload(subProvider: "CHAINFLIP"))
+        XCTAssertEqual(payload.providerName, "SwapKit")
+        XCTAssertEqual(
+            payload.providerDisplayName, "SwapKit (CHAINFLIP)",
+            "The verify screen still names the route; only the persisted identity is bare"
+        )
+        XCTAssertEqual(
+            ExplorerLinkBuilder.url(
+                provider: payload.providerName,
+                txHash: "0xabc",
+                chainRawValue: Chain.ethereum.rawValue,
+                fallbackExplorerLink: "https://etherscan.io/tx/0xfallback"
+            )?.absoluteString,
+            "https://track.swapkit.dev/?hash=0xabc&chainId=1"
+        )
+    }
+
+    /// The pre-split behaviour, pinned as the thing that must not come back: a
+    /// tagged persisted name loses the tracker.
+    func testATaggedPersistedNameWouldLoseTheTracker() {
+        XCTAssertEqual(
+            ExplorerLinkBuilder.url(
+                provider: "SwapKit (CHAINFLIP)",
+                txHash: "0xabc",
+                chainRawValue: Chain.ethereum.rawValue,
+                fallbackExplorerLink: "https://etherscan.io/tx/0xfallback"
+            )?.absoluteString,
+            "https://etherscan.io/tx/0xfallback",
+            "Documents why the route tag must stay off providerName"
         )
     }
 
