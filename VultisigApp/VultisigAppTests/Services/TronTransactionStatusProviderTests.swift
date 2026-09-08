@@ -178,18 +178,36 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .notFound)
     }
 
-    /// A receipt-less transaction the node reports at a block is unconfirmed,
-    /// not expired, while its deadline still stands — and it keeps the block
-    /// number the info endpoint gave.
-    func testReceiptlessTransactionKeepsItsBlockNumberWhilePending() async throws {
+    /// A receipt-less transaction the node reports without a block is checked
+    /// against its expiration, and stays pending while the deadline stands.
+    func testReceiptlessTransactionWithoutABlockStaysPending() async throws {
         let result = try await checkStatus(
-            response(id: "deadbeef", blockNumber: 123, hasReceipt: false),
+            response(id: "deadbeef", blockNumber: 0, hasReceipt: false),
             rawTransactionJSON: Self.rawTransactionJSON(expiration: 4_000_000_000_000),
             nowBlockJSON: nil
         )
 
         XCTAssertEqual(result.status, .pending)
+    }
+
+    /// A block number is evidence of inclusion. Expiring on it would report a
+    /// transaction that already landed as terminally failed, and invite the
+    /// user to pay twice — worse than the indefinite polling this replaced.
+    /// `gettransactionbyid` answers for included transactions too, so the
+    /// matching `txID` here proves nothing about confirmation.
+    func testIncludedTransactionAwaitingItsReceiptIsNeverExpired() async throws {
+        let client = TronTransactionStatusHTTPClient(
+            response: response(id: "deadbeef", blockNumber: 123, hasReceipt: false),
+            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
+            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_780_000_000_000)
+        )
+
+        let result = try await TronTransactionStatusProvider(httpClient: client)
+            .checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .pending)
         XCTAssertEqual(result.blockNumber, 123)
+        XCTAssertFalse(client.requestedPaths.contains("/wallet/gettransactionbyid"))
     }
 
     private static func rawTransactionJSON(expiration: Int64) -> String {

@@ -11,8 +11,9 @@ import Foundation
 /// - If receipt.result is nil or "SUCCESS" → SUCCESS
 /// - Any other receipt.result → FAILED (contains error like "OUT_OF_ENERGY", "REVERT", etc.)
 /// - Top-level result field may also indicate "FAILED" with resMessage
-/// - Anything the info endpoint cannot resolve is checked against the
-///   transaction's own `expiration` before being reported as still in flight
+/// - Anything the info endpoint cannot resolve, and that carries no block
+///   number, is checked against the transaction's own `expiration` before
+///   being reported as still in flight
 struct TronTransactionStatusProvider: TransactionStatusProvider {
 
     /// Recorded on the expired row. Joins the raw chain-code reasons this
@@ -72,8 +73,22 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
                 )
             }
 
-            // Transaction exists but no receipt yet — either still waiting for
-            // a block or already past its expiration.
+            // A block number is evidence the transaction was included; it is
+            // waiting for its receipt, not running out of time. The expiry
+            // probe must not run here: `gettransactionbyid` answers for
+            // included transactions too, so it cannot tell an unconfirmed
+            // transaction from a landed one, and reporting a landed transfer
+            // as terminally failed would invite the user to send it twice.
+            if let blockNumber, blockNumber > 0 {
+                return TransactionStatusResult(
+                    status: .pending,
+                    blockNumber: blockNumber,
+                    confirmations: nil
+                )
+            }
+
+            // No block: either still waiting for one, or already past the
+            // expiration its payload carries.
             return await unconfirmedStatus(txHash: query.txHash, isKnown: true, blockNumber: blockNumber)
 
         } catch let error as HTTPError {
