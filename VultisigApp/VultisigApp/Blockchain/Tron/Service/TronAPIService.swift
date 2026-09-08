@@ -69,28 +69,23 @@ struct TronAPIService {
 
     // MARK: - Broadcast
 
-    /// - Parameter expectedTxHash: the hash the signer computed locally, which
-    ///   the node's answer is checked against.
+    /// - Parameter expectedTxHash: the locally computed hash the node's answer
+    ///   is checked against.
     func broadcastTransaction(jsonString: String, expectedTxHash: String) async throws -> String {
         let response = try await httpClient.request(api(.broadcastTransaction(jsonString: jsonString)), responseType: TronBroadcastResponse.self)
 
-        // Only an explicit success counts. `DUP_TRANSACTION_ERROR` reads like
-        // one and used to be accepted as one, but TRON fills its duplicate
-        // cache before validating, so a transaction the node went on to reject
-        // answers with that code too — it is not evidence the transaction is
-        // on chain. Throwing routes it into `handleBroadcastError`, which looks
-        // the hash up on chain and recovers the ones that really did land.
+        // Only an explicit success counts. TRON fills its duplicate cache
+        // before validating, so `DUP_TRANSACTION_ERROR` is not evidence the
+        // transaction is on chain. Throwing routes it into
+        // `handleBroadcastError`, which verifies the hash against the chain.
         guard let txid = response.data.txid, response.data.result == true else {
             let errorMessage = response.data.message ?? response.data.code ?? "Unknown error"
             throw TronAPIError.broadcastFailed(errorMessage)
         }
 
-        // The hash the app then tracks, displays and links to an explorer must
-        // be the one it signed, not one the endpoint reports back. An honest
-        // node returns the same value — TRON's txid is `sha256(raw_data)`,
-        // which the signer already computed — so a mismatch means the response
-        // does not describe the transaction that was broadcast, and adopting it
-        // would follow someone else's transaction instead.
+        // TRON's txid is `sha256(raw_data)`, which the signer already computed,
+        // so an honest node returns the same value. A mismatch means the
+        // response does not describe the transaction that was broadcast.
         guard Self.txidMatchesLocalHash(nodeTxid: txid, localTxHash: expectedTxHash) else {
             throw TronAPIError.broadcastHashMismatch(expected: expectedTxHash, returned: txid)
         }
@@ -98,10 +93,8 @@ struct TronAPIService {
         return expectedTxHash
     }
 
-    /// Hex comparison tolerant of case and a `0x` prefix. An empty local hash
-    /// never matches: without one there is nothing to verify against, and
-    /// falling back to the node's value is exactly what this check exists to
-    /// prevent.
+    /// Tolerant of case and a `0x` prefix. An empty local hash never matches:
+    /// without one there is nothing to verify against.
     static func txidMatchesLocalHash(nodeTxid: String, localTxHash: String) -> Bool {
         let local = normalizedHash(localTxHash)
         guard !local.isEmpty else { return false }

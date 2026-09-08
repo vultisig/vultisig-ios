@@ -39,8 +39,6 @@ final class TransactionHistoryFailureReasonPresentationTests: XCTestCase {
         )
     }
 
-    /// The expired reason is authored by the app, not echoed from a node, so it
-    /// resolves to localized copy rather than reaching the user as English.
     func testExpiredReasonUsesLocalizedCopy() {
         XCTAssertEqual(
             TransactionHistoryFailureReasonPresentation.displayText(

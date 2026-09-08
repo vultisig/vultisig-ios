@@ -11,14 +11,12 @@ import Foundation
 /// - If receipt.result is nil or "SUCCESS" → SUCCESS
 /// - Any other receipt.result → FAILED (contains error like "OUT_OF_ENERGY", "REVERT", etc.)
 /// - Top-level result field may also indicate "FAILED" with resMessage
-/// - Anything the info endpoint cannot resolve, and that carries no block
-///   number, is checked against the transaction's own `expiration` before
-///   being reported as still in flight
+/// - Anything it cannot resolve, and that carries no block number, is checked
+///   against the transaction's own `expiration`
 struct TronTransactionStatusProvider: TransactionStatusProvider {
 
-    /// Recorded on the expired row. Joins the raw chain-code reasons this
-    /// provider already surfaces (`OUT_OF_ENERGY: …`) rather than introducing
-    /// the only localized one among them.
+    /// Stored raw and localized when rendered, via
+    /// `TransactionHistoryFailureReasonPresentation`.
     static let expiredReason = "EXPIRED: transaction expired before it was included in a block"
 
     private let httpClient: HTTPClientProtocol
@@ -73,12 +71,11 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
                 )
             }
 
-            // A block number is evidence the transaction was included; it is
-            // waiting for its receipt, not running out of time. The expiry
-            // probe must not run here: `gettransactionbyid` answers for
-            // included transactions too, so it cannot tell an unconfirmed
-            // transaction from a landed one, and reporting a landed transfer
-            // as terminally failed would invite the user to send it twice.
+            // Must stay ahead of the expiry probe. A block number means the
+            // transaction was included, and `gettransactionbyid` answers for
+            // included transactions too — so the probe cannot tell a landed
+            // transfer from an unconfirmed one and would report it failed,
+            // inviting a duplicate payment.
             if let blockNumber, blockNumber > 0 {
                 return TransactionStatusResult(
                     status: .pending,
@@ -87,8 +84,6 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
                 )
             }
 
-            // No block: either still waiting for one, or already past the
-            // expiration its payload carries.
             return await unconfirmedStatus(txHash: query.txHash, isKnown: true, blockNumber: blockNumber)
 
         } catch let error as HTTPError {
@@ -99,15 +94,9 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
         }
     }
 
-    /// Resolves a transaction the info endpoint could not settle. A TRON
-    /// transaction carries an `expiration`; once it passes unconfirmed the
-    /// transaction can never be included, and polling it as `notFound` forever
-    /// leaves the row in flight for good. The expiration lives only on the raw
-    /// transaction, so read that before answering.
-    ///
-    /// Bounded by what the node still holds: once it has dropped the
-    /// transaction there is no expiration to read and the answer is the old
-    /// one. That is the same bound the SDK's resolver has.
+    /// The expiration lives only on the raw transaction, so read that before
+    /// answering. Bounded by what the node still holds: once it has dropped the
+    /// transaction there is no expiration to read and the answer is the old one.
     private func unconfirmedStatus(
         txHash: String,
         isKnown: Bool,
@@ -128,8 +117,8 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
             )
         }
 
-        // The node still holds the transaction, so it is known even when the
-        // info endpoint had nothing to say about it.
+        // The node still holds it, so it is known even if the info endpoint
+        // said nothing.
         let pending = TransactionStatusResult(
             status: .pending,
             blockNumber: blockNumber,
@@ -139,13 +128,10 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
             return pending
         }
 
-        // Chain time decides this, and only chain time: TRON validates
-        // `expiration` against block time, so the device clock is not evidence
-        // in either direction. A phone running fast would call a live
-        // transaction permanently failed; a phone running slow would never let
-        // it become terminal at all, which is the bug this status exists to
-        // fix. An unreachable node leaves it pending — that is not evidence
-        // either.
+        // Chain time only. TRON validates `expiration` against block time, so
+        // the device clock is not evidence either way: a fast one would call a
+        // live transaction failed, a slow one would never let it go terminal at
+        // all. An unreachable node leaves it pending.
         guard let chainTimeMillis = await chainTimeMillis(),
               chainTimeMillis > expiration else {
             return pending
@@ -158,7 +144,6 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
         )
     }
 
-    /// Head-block timestamp in milliseconds, or nil when it cannot be read.
     private func chainTimeMillis() async -> Int64? {
         let block = try? await httpClient.request(
             TronTransactionStatusAPI.getNowBlock,

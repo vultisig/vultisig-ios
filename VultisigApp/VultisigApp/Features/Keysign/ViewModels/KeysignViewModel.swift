@@ -1329,8 +1329,6 @@ class KeysignViewModel: ObservableObject {
                     case .confirmed, .pending:
                         return true
                     case .failed, .expired:
-                        // Expired means the transaction never landed, so this
-                        // is not the peer-broadcast race the lookup recovers.
                         return false
                     case .notFound:
                         break

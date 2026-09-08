@@ -65,9 +65,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
         XCTAssertEqual(callCount, 1)
     }
 
-    /// An expired transaction is terminal on the chain's own terms — no block
-    /// can include it any more — so it completes as an error rather than
-    /// retrying until the client deadline runs out.
+    /// Completes as an error rather than retrying to the client deadline.
     func testExpiredTransactionCompletesAsErrorBeforeTheDeadline() async {
         let checker = StubStatusChecker(outcome: .expired("EXPIRED: ran out of time"))
 

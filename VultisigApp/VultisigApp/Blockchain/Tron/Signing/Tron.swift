@@ -223,28 +223,16 @@ enum TronHelper {
 
     // MARK: - Bandwidth Sizing
 
-    /// A secp256k1 signature on the wire: 32-byte `r`, 32-byte `s`, 1-byte recovery id.
     private static let signatureBytes = 65
 
-    /// java-tron bills a 64-byte transaction-result allowance per contract on
-    /// top of the serialized bytes, and a transfer carries exactly one contract.
+    /// java-tron bills this per contract on top of the serialized bytes.
     private static let transactionResultBytes: Int64 = 64
 
     /// Bandwidth, in bytes, that a native TRX transfer consumes once signed.
     ///
-    /// TRON charges for the serialized signed transaction, not for a per-shape
-    /// template, so a memo has to be measured rather than assumed — it is
-    /// serialized into `raw_data` and makes the transfer larger than any fixed
-    /// estimate. WalletCore's pre-signing output carries exactly those
-    /// `raw_data` bytes; the signed envelope adds that field's length prefix,
-    /// one length-delimited signature, and the per-contract result allowance.
-    ///
-    /// Always shaped as a `TransferContract`. The Stake 2.0 routing memos
-    /// (`FREEZE:`, `UNFREEZE:`, `WITHDRAW_EXPIRE_UNFREEZE`) sign a different
-    /// system contract, and every one of those is *smaller* than a transfer —
-    /// none carries a `to_address` — so this stays an upper bound for them. It
-    /// can therefore predict a fee for a claim that would in fact have been
-    /// free, but it never under-reserves, which is the direction that matters.
+    /// Always shaped as a `TransferContract`. The Stake 2.0 routing memos sign
+    /// smaller system contracts — none carries a `to_address` — so this is a
+    /// deliberate upper bound for them, never an under-reservation.
     ///
     /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
     static func nativeTransferBandwidthBytes(
@@ -261,12 +249,9 @@ enum TronHelper {
         let contract = TronTransferContract.with {
             $0.ownerAddress = ownerAddress
             $0.toAddress = toAddress
-            // Protobuf omits a zero scalar entirely, so sizing an unknown
-            // amount at zero would reserve nothing for a field the real
-            // transfer always carries. The Max button quotes a fee before the
-            // amount is settled and asks with zero, which is exactly the case
-            // that must not under-reserve — size it at the widest varint
-            // instead. An amount past Int64 cannot be signed and lands here too.
+            // Protobuf omits a zero scalar, so an unknown amount sized at zero
+            // reserves nothing for a field the real transfer carries. The Max
+            // button quotes with zero, so widest-varint it is.
             $0.amount = (amount > .zero ? Int64(exactly: amount) : nil) ?? .max
         }
 
@@ -293,9 +278,8 @@ enum TronHelper {
         guard preSigningOutput.errorMessage.isEmpty else {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-        // Without the raw bytes there is nothing to measure. Throwing hands the
-        // caller back to its conservative constant rather than reporting a
-        // large transfer as costing almost no bandwidth.
+        // Hands the caller back to its conservative constant rather than
+        // reporting a large transfer as costing almost no bandwidth.
         guard !preSigningOutput.data.isEmpty else {
             throw HelperError.runtimeError("empty Tron pre-signing payload")
         }
@@ -305,8 +289,7 @@ enum TronHelper {
             + transactionResultBytes
     }
 
-    /// Bytes a protobuf length-delimited field occupies: 1-byte tag, the length
-    /// varint, then the payload.
+    /// 1-byte tag, the length varint, then the payload.
     private static func lengthDelimitedFieldBytes(_ payloadSize: Int) -> Int64 {
         let size = max(payloadSize, 0)
         return Int64(1 + protobufVarintBytes(size) + size)

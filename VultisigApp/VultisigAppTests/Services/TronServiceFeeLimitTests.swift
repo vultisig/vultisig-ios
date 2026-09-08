@@ -483,12 +483,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(extractGasFee(result), 1_000_000)
     }
 
-    /// Native TRX transfer *without* sufficient bandwidth — the account has no
-    /// free-net quota, so the node charges for every byte of the signed
-    /// transaction at 1000 sun (`getTransactionFee` / `bandwidthFeePrice`).
-    /// The displayed fee must be the REAL bandwidth cost, not `coin.feeDefault`.
-    /// Memo is 0 (none) and activation is 0 (destination "exists" per the
-    /// stub's getaccount response).
+    /// No free-net quota, so every byte is charged at 1000 sun. The displayed
+    /// fee must be the real bandwidth cost, not `coin.feeDefault`.
     func testGetBlockInfoNativeTransferInsufficientBandwidthPricesMeasuredBytes() async throws {
         let stub = TronStubHTTPClient()
         // Default getaccountresource has zero available bandwidth.
@@ -501,11 +497,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(extractGasFee(result), Self.memolessBandwidthBytes * 1000)
     }
 
-    /// The defect this replaced: bandwidth was reserved from a 300-byte
-    /// constant, so a memo — which is serialized into the transaction — could
-    /// push the real transfer past the free bandwidth the account holds while
-    /// the app still displayed it as free. At the same available bandwidth the
-    /// memo-less send is free and the memo-bearing one is not.
+    /// At the same available bandwidth the memo-less send is free and the
+    /// memo-bearing one is not.
     func testGetBlockInfoMemoPushesTransferPastTheFreeBandwidthItFitsWithout() async throws {
         let coin = makeNativeCoin()
         let memo = String(repeating: "a", count: Self.memoLength)
@@ -519,12 +512,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(withMemo, Self.memo100BandwidthBytes * 1000 + 1_000_000)
     }
 
-    /// Routing markers select a WalletCore system-contract builder and never
-    /// reach the wire, so they must not inflate the bandwidth reserve either.
-    ///
-    /// The reserve is still sized as a `TransferContract`, which is the larger
-    /// shape — a claim carries no `to_address` — so this is an upper bound for
-    /// the transaction that actually gets signed, never an under-reservation.
+    /// Still sized as a `TransferContract`, the larger shape — a deliberate
+    /// upper bound over the system contract that actually gets signed.
     func testGetBlockInfoRoutingMemoDoesNotInflateTheBandwidthReserve() async throws {
         let coin = makeNativeCoin()
         let freeBandwidth = Int64(Self.memolessBandwidthBytes)
@@ -539,11 +528,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(fee, 0)
     }
 
-    /// A transfer that cannot be serialized — here an address WalletCore will
-    /// not encode — has no measurable size, so the reserve falls back to the
-    /// conservative 300-byte constant rather than reporting a transfer as
-    /// costing nothing. This is the path a send takes while the recipient
-    /// field is still being filled in.
+    /// The path a send takes while the recipient field is still being typed.
     func testGetBlockInfoUnencodableRecipientFallsBackToTheConservativeConstant() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 0)
@@ -582,22 +567,14 @@ final class TronServiceFeeLimitTests: XCTestCase {
 
     private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 
-    /// Hand-derived byte counts for the transfer these tests build, so the
-    /// expectations do not come from the production helper they are checking.
-    /// The derivation is spelled out field by field in
-    /// `TronBandwidthEstimateTests`; the only difference is that `getBlockInfo`
-    /// is called with no amount here, so the estimator sizes
-    /// `TransferContract.amount` at the widest varint rather than at a zero it
-    /// would not serialize at all — 1 tag + 9 bytes in place of the fixture's
-    /// 1 + 3, so 267 + 6 = 273. Both millisecond timestamps are fixed-width for
-    /// the next several decades, so neither count depends on when the test runs.
+    /// Hand-derived, not taken from the helper under test. Differs from
+    /// `TronBandwidthEstimateTests` only in that `getBlockInfo` is called with
+    /// no amount, which the estimator sizes at the widest varint: 267 + 6.
     private static let memolessBandwidthBytes: UInt64 = 273
 
-    /// The same transfer carrying a 100-byte memo, whose `data` field adds
-    /// 1 tag + 1 length + 100 = 102 bytes.
+    /// The same transfer with a 100-byte memo: + 1 tag + 1 length + 100.
     private static let memo100BandwidthBytes: UInt64 = 375
 
-    /// Length of the memo `memo100BandwidthBytes` was derived for.
     private static let memoLength = 100
 
     private func gasFee(
@@ -632,11 +609,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         return Coin(asset: asset, address: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8", hexPublicKey: "")
     }
 
-    /// The address has to pass base58check: the bandwidth estimator builds a
-    /// real signing input from it, and WalletCore refuses an address whose
-    /// digest does not verify. This one is a real recorded sender, from the
-    /// captured SwapKit TRON quote in
-    /// `Swap/SwapKit/__fixtures__/v3-tron-final-swap-fresh.json`.
+    /// Must pass base58check: the estimator builds a real signing input from
+    /// it. Recorded sender from `__fixtures__/v3-tron-final-swap-fresh.json`.
     private func makeNativeCoin() -> Coin {
         let asset = CoinMeta.make(
             chain: .tron,

@@ -97,9 +97,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
 
     // MARK: - Expiration
 
-    /// A TRON transaction carries an `expiration`; once it passes unconfirmed
-    /// no block can ever include it. Before this the provider answered
-    /// `notFound` and the row stayed in flight on every app open.
     func testUnconfirmedTransactionPastItsExpirationIsExpired() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
@@ -113,7 +110,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         )
     }
 
-    /// A transaction the chain head has not yet passed keeps polling.
     func testUnconfirmedTransactionBeforeItsExpirationKeepsPolling() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
@@ -124,10 +120,8 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .pending)
     }
 
-    /// TRON validates `expiration` against block time, so the device clock is
-    /// not evidence in either direction and must not veto the chain. Both of
-    /// these use an expiration far ahead of any real device clock: the first
-    /// would stay pending forever if a slow clock could gate the check, and the
+    /// Both use an expiration far ahead of any real device clock: the first
+    /// would stay pending forever if a slow clock could gate the check, the
     /// second would go terminal if a fast one could force it.
     func testChainTimePastExpirationExpiresEvenWhenTheDeviceClockIsBehind() async throws {
         let result = try await checkStatus(
@@ -152,7 +146,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .pending)
     }
 
-    /// An unreachable node is not evidence that a transaction expired.
     func testChainTimeLookupFailureKeepsPolling() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
@@ -163,8 +156,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .pending)
     }
 
-    /// The node no longer holds the transaction, so there is no expiration to
-    /// read and the answer is the one it was before.
     func testUnknownRawTransactionStaysNotFound() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
@@ -175,7 +166,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .notFound)
     }
 
-    /// A raw transaction for some other hash says nothing about this one.
     func testRawTransactionForAnotherHashStaysNotFound() async throws {
         let result = try await checkStatus(
             response(id: nil, blockNumber: nil, hasReceipt: false),
@@ -188,8 +178,6 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .notFound)
     }
 
-    /// A receipt-less transaction the node reports without a block is checked
-    /// against its expiration, and stays pending while the deadline stands.
     func testReceiptlessTransactionWithoutABlockStaysPending() async throws {
         let result = try await checkStatus(
             response(id: "deadbeef", blockNumber: 0, hasReceipt: false),
@@ -200,11 +188,8 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .pending)
     }
 
-    /// A block number is evidence of inclusion. Expiring on it would report a
-    /// transaction that already landed as terminally failed, and invite the
-    /// user to pay twice — worse than the indefinite polling this replaced.
-    /// `gettransactionbyid` answers for included transactions too, so the
-    /// matching `txID` here proves nothing about confirmation.
+    /// The raw transaction matches, but a block number means it already
+    /// landed: expiring here would invite a duplicate payment.
     func testIncludedTransactionAwaitingItsReceiptIsNeverExpired() async throws {
         let client = TronTransactionStatusHTTPClient(
             response: response(id: "deadbeef", blockNumber: 123, hasReceipt: false),
@@ -276,9 +261,8 @@ final class TronTransactionStatusProviderTests: XCTestCase {
     }
 }
 
-/// Routes by endpoint path so one double can answer the info lookup, the raw
-/// transaction and the head block. The latter two are decoded from JSON, which
-/// pins their wire mapping alongside the behaviour under test.
+/// Routes by endpoint path. The raw transaction and head block are decoded
+/// from JSON, which pins their wire mapping too.
 private final class TronTransactionStatusHTTPClient: HTTPClientProtocol, @unchecked Sendable {
     private let response: TronTransactionStatusResponse
     private let rawTransactionJSON: String?

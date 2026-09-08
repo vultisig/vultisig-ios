@@ -32,11 +32,8 @@ class TronService {
     /// enough that navigating back into the screen serves from cache.
     static var accountCacheTTL: TimeInterval = 60
 
-    /// Bandwidth reserve used when the transfer cannot be serialized yet — no
-    /// recipient typed, or an address WalletCore refuses to encode. The real
-    /// requirement is measured from the transaction itself
-    /// (`TronHelper.nativeTransferBandwidthBytes`); this only keeps the fee
-    /// screen answering while the form is still incomplete.
+    /// Used only when the transfer cannot be serialized yet — no recipient
+    /// typed, or one WalletCore refuses to encode.
     private static let FALLBACK_BYTES_PER_COIN_TX: Int64 = 300
 
     /// Headroom multiplier applied to the simulated `energy_used` when
@@ -274,10 +271,8 @@ class TronService {
         )
     }
 
-    /// Bandwidth the signed native transfer will consume, measured from the
-    /// transaction WalletCore will actually build. Returns the conservative
-    /// constant whenever the transfer cannot be serialized — an empty or
-    /// unencodable recipient while the send form is still being filled in.
+    /// Falls back to the conservative constant whenever the transfer cannot be
+    /// serialized, which is the norm while the send form is still incomplete.
     private func nativeTransferBandwidthBytes(
         coin: Coin,
         to: String?,
@@ -294,9 +289,8 @@ class TronService {
             return Self.FALLBACK_BYTES_PER_COIN_TX
         }
 
-        // Routing markers select a WalletCore system-contract builder and never
-        // reach the wire, so they must not inflate the estimate — the same
-        // reason `getTronFeeMemo` charges no memo fee for them.
+        // Never reach the wire, so they must not inflate the estimate — the
+        // same reason `getTronFeeMemo` charges no memo fee for them.
         let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
 
         let bytes = try? TronHelper.nativeTransferBandwidthBytes(
@@ -452,10 +446,8 @@ class TronService {
         return parameters
     }
 
-    /// Native transfers are free while the account's free bandwidth covers the
-    /// whole signed transaction; short of that TRON burns TRX for every byte.
-    /// TRC20 transfers never reach here — smart contracts get no free
-    /// bandwidth and are priced from simulated Energy in `calculateTrc20Fee`.
+    /// TRC20 never reaches here: smart contracts get no free bandwidth and are
+    /// priced from simulated Energy in `calculateTrc20Fee`.
     private func getBandwidthFeeDiscount(requiredBandwidth: Int64, availableBandwidth: Int64) async throws -> BigInt {
         let chainParams = try await getCachedChainParameters()
         let required = max(requiredBandwidth, 0)

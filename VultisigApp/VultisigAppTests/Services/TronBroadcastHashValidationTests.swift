@@ -2,11 +2,6 @@
 //  TronBroadcastHashValidationTests.swift
 //  VultisigAppTests
 //
-//  A TRON txid is `sha256(raw_data)`, which the signer already computed before
-//  the transaction left the device. Adopting the value the broadcast endpoint
-//  reports instead means the app tracks, displays and links to whatever hash it
-//  was handed. These pin the comparison and the hash the caller receives.
-//
 
 @testable import VultisigApp
 import XCTest
@@ -41,8 +36,6 @@ final class TronBroadcastHashValidationTests: XCTestCase {
         )
     }
 
-    /// Without a locally computed hash there is nothing to verify against, and
-    /// falling back to the node's value is what this check exists to prevent.
     func testEmptyLocalHashNeverMatches() {
         XCTAssertFalse(
             TronAPIService.txidMatchesLocalHash(nodeTxid: Self.localHash, localTxHash: "")
@@ -82,10 +75,8 @@ final class TronBroadcastHashValidationTests: XCTestCase {
         }
     }
 
-    /// `DUP_TRANSACTION_ERROR` is not proof the transaction is on chain: TRON
-    /// fills its duplicate cache before validating, so a transaction it went on
-    /// to reject answers with the same code. It must throw and let the caller's
-    /// on-chain hash lookup decide, not short-circuit to success.
+    /// TRON fills its duplicate cache before validating, so the code is not
+    /// proof of inclusion — the caller's on-chain lookup decides instead.
     func testDuplicateBroadcastIsNotTreatedAsSuccess() async {
         let service = makeService(json: """
         {"code":"DUP_TRANSACTION_ERROR","txid":"\(Self.localHash)"}
@@ -104,8 +95,7 @@ final class TronBroadcastHashValidationTests: XCTestCase {
         }
     }
 
-    /// A rejected broadcast still reports the node's error rather than a hash
-    /// mismatch — the mismatch check must not mask why the send failed.
+    /// The mismatch check must not mask why the send actually failed.
     func testRejectedBroadcastReportsTheNodeError() async {
         let service = makeService(json: """
         {"result":false,"code":"SIGERROR","message":"bad signature","txid":"\(Self.localHash)"}

@@ -9,12 +9,9 @@ import Foundation
 
 enum TronTransactionStatusAPI: TargetType {
     case getTransactionInfo(txHash: String)
-    /// The signed transaction as the node holds it. Unlike the info endpoint
-    /// it carries `raw_data.expiration`, which is the only way to tell an
-    /// unconfirmed transaction from one that can never be included.
+    /// Carries `raw_data.expiration`, which the info endpoint does not.
     case getTransactionById(txHash: String)
-    /// Head block, read for its timestamp — TRON validates `expiration`
-    /// against block time, not against the device clock.
+    /// Read for its timestamp: TRON validates `expiration` against block time.
     case getNowBlock
 
     var baseURL: URL {
