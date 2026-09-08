@@ -26,7 +26,11 @@ final class SwapDetailsViewModel {
     // pair OR amount change clears it so the "to" field falls back to the
     // instant indicative estimate and the summary shows its loading skeleton.
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
-    @ObservationIgnored private var quotedAmount: String?
+    /// The PARSED amount the held quote was fetched for — the same value that
+    /// went to the provider. Comparing the parsed amount rather than the raw text
+    /// keeps `1` → `1.` → `1.0` a silent refresh instead of a new swap, so it
+    /// neither blanks the summary nor drops a route pick over a re-typed zero.
+    @ObservationIgnored private var quotedAmount: Decimal?
 
     // MARK: - Form fields (mutable while the user is editing)
 
@@ -65,7 +69,8 @@ final class SwapDetailsViewModel {
     // verify, sign — reads the computed `quote`, so a manual pick flows through
     // unchanged. A refresh re-resolves the pick against the fresh candidate
     // set by `routeIdentity`, so it survives while that route is still on offer
-    // and always points at the current numbers.
+    // and always points at the current numbers. `makeTransaction` hands the
+    // identity on, so the verify screen's own refresh keeps the pick too.
 
     /// Full ranked candidate set (best→worst by net output). Drives the
     /// provider-selection sheet. Empty until the first quote of a pair lands.
@@ -455,7 +460,8 @@ final class SwapDetailsViewModel {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
             feeCoin: feeCoin,
-            advancedSettings: resolvedAdvancedSettings
+            advancedSettings: resolvedAdvancedSettings,
+            selectedRouteIdentity: selectedQuote?.routeIdentity
         )
     }
 
@@ -753,7 +759,7 @@ private extension SwapDetailsViewModel {
         // "to" field falls back to the instant indicative estimate and the
         // summary shows its loading skeleton (`showsQuoteSkeleton` =
         // isLoadingQuotes && quote == nil) until the fresh quote lands.
-        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount
+        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount.toDecimal()
         if !isSilentRefresh {
             clearQuoteState()
             quotedPair = nil
@@ -809,6 +815,10 @@ private extension SwapDetailsViewModel {
 
         guard !fromAmount.isEmpty else { return }
 
+        // Parse once: the value that goes to the provider is the same value that
+        // stamps quote ownership, so the two can never disagree.
+        let requestedAmount = fromAmount.toDecimal()
+
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
         // quote. Confirm builds the real SECURE+ deposit payload.
@@ -816,10 +826,10 @@ private extension SwapDetailsViewModel {
             // The candidate set collapses to the one synthetic mint quote, so
             // any picked route really is gone.
             dropRouteSelection(.routeUnavailable)
-            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: fromAmount.toDecimal(), toCoin: toCoin)
+            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
             quotedPair = currentPair
-            quotedAmount = fromAmount
+            quotedAmount = requestedAmount
             vultDiscountBps = 0
             referralDiscountBps = 0
             return
@@ -827,7 +837,7 @@ private extension SwapDetailsViewModel {
 
         do {
             let result = try await interactor.fetchQuote(
-                amount: fromAmount.toDecimal(),
+                amount: requestedAmount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
@@ -859,7 +869,7 @@ private extension SwapDetailsViewModel {
                 bestQuote = result.quote
                 allQuotes = result.allQuotes
                 quotedPair = currentPair
-                quotedAmount = fromAmount
+                quotedAmount = requestedAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }

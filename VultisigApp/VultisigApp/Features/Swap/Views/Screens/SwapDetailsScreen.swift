@@ -170,8 +170,20 @@ struct SwapDetailsScreen: View {
         }
         // A manual route pick that had to be dropped says so here rather than
         // reverting to Auto in silence.
-        .withBanner(text: $vm.routeSelectionNotice, style: .error)
+        .withBanner(text: routeSelectionNotice, style: .error)
         .ignoresSafeArea(.keyboard)
+    }
+
+    /// The market form's route notice, withheld while the Limit tab is showing:
+    /// the market quote keeps refreshing behind it, and a market-route banner over
+    /// the limit form reads as an error about the order being placed. Withheld,
+    /// not dropped — switching back to Market flips the binding and the notice
+    /// lands on the form it is about.
+    private var routeSelectionNotice: Binding<String?> {
+        Binding(
+            get: { selectedSwapMode == .market ? detailsViewModel.routeSelectionNotice : nil },
+            set: { detailsViewModel.routeSelectionNotice = $0 }
+        )
     }
 
     var swapContent: some View {
