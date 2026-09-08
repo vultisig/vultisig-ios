@@ -170,11 +170,12 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         if let q = address.firstIndex(of: "?") {
             let bare = String(address[..<q])
             let query = address[address.index(after: q)...]
-            let stated = query
-                .split(separator: "&", omittingEmptySubsequences: true)
-                .map { $0.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false) }
-                .filter { $0.count == 2 && $0[0] == "dt" }
-                .map { $0[1] }
+            var stated: [Substring] = []
+            for pair in query.split(separator: "&", omittingEmptySubsequences: true) {
+                let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+                guard parts.count == 2, parts[0] == "dt" else { continue }
+                stated.append(parts[1])
+            }
             guard let only = stated.first else { return (bare, .absent) }
             guard stated.count == 1 else {
                 return (bare, .unreadable(reason: "\(stated.count) dt parameters"))
