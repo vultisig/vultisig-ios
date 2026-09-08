@@ -71,7 +71,9 @@ struct TronAPIService {
 
     private static let DUP_TRANSACTION_ERROR_CODE = "DUP_TRANSACTION_ERROR"
 
-    func broadcastTransaction(jsonString: String) async throws -> String {
+    /// - Parameter expectedTxHash: the hash the signer computed locally, which
+    ///   the node's answer is checked against.
+    func broadcastTransaction(jsonString: String, expectedTxHash: String) async throws -> String {
         let response = try await httpClient.request(api(.broadcastTransaction(jsonString: jsonString)), responseType: TronBroadcastResponse.self)
 
         // Accept success (result == true) OR duplicate transaction error (already broadcast)
@@ -84,7 +86,35 @@ struct TronAPIService {
             throw TronAPIError.broadcastFailed(errorMessage)
         }
 
-        return txid
+        // The hash the app then tracks, displays and links to an explorer must
+        // be the one it signed, not one the endpoint reports back. An honest
+        // node returns the same value — TRON's txid is `sha256(raw_data)`,
+        // which the signer already computed — so a mismatch means the response
+        // does not describe the transaction that was broadcast, and adopting it
+        // would follow someone else's transaction instead.
+        guard Self.txidMatchesLocalHash(nodeTxid: txid, localTxHash: expectedTxHash) else {
+            throw TronAPIError.broadcastHashMismatch(expected: expectedTxHash, returned: txid)
+        }
+
+        return expectedTxHash
+    }
+
+    /// Hex comparison tolerant of case and a `0x` prefix. An empty local hash
+    /// never matches: without one there is nothing to verify against, and
+    /// falling back to the node's value is exactly what this check exists to
+    /// prevent.
+    static func txidMatchesLocalHash(nodeTxid: String, localTxHash: String) -> Bool {
+        let local = normalizedHash(localTxHash)
+        guard !local.isEmpty else { return false }
+        return normalizedHash(nodeTxid) == local
+    }
+
+    private static func normalizedHash(_ value: String) -> String {
+        var hash = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if hash.hasPrefix("0x") {
+            hash.removeFirst(2)
+        }
+        return hash
     }
 
     // MARK: - Balance
@@ -276,6 +306,7 @@ struct TronAPIService {
 
 enum TronAPIError: LocalizedError {
     case broadcastFailed(String)
+    case broadcastHashMismatch(expected: String, returned: String)
     case invalidAddress
     case invalidResponse
 
@@ -283,6 +314,8 @@ enum TronAPIError: LocalizedError {
         switch self {
         case .broadcastFailed(let message):
             return "Broadcast failed: \(message)"
+        case .broadcastHashMismatch(let expected, let returned):
+            return "Broadcast returned transaction id \(returned), expected \(expected)"
         case .invalidAddress:
             return "Invalid Tron address"
         case .invalidResponse:

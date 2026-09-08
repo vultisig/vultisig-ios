@@ -67,9 +67,14 @@ class TronService {
 
     // MARK: - Broadcast
 
-    func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
+    /// Broadcasts the signed envelope and returns the locally computed hash,
+    /// having checked the node's answer against it.
+    func broadcastTransaction(jsonString: String, expectedTxHash: String) async -> Result<String, Error> {
         do {
-            let txHash = try await apiService.broadcastTransaction(jsonString: jsonString)
+            let txHash = try await apiService.broadcastTransaction(
+                jsonString: jsonString,
+                expectedTxHash: expectedTxHash
+            )
             return .success(txHash)
         } catch {
             return .failure(error)
