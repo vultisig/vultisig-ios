@@ -56,9 +56,6 @@ struct TransactionStatusResult {
         case pending
         case confirmed
         case failed(reason: String)
-        /// Terminal. Kept distinct from `failed` because nothing rejected the
-        /// transaction; its `expiration` passed unconfirmed.
-        case expired(reason: String)
     }
 }
 

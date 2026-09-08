@@ -1634,7 +1634,6 @@
 "transactionBytes" = "트랜잭션 바이트";
 "transactionComplete" = "완료";
 "transactionDetails" = "트랜잭션 세부 정보";
-"transactionExpiredBeforeInclusion" = "트랜잭션이 블록에 포함되기 전에 만료되었습니다";
 "transactionFailed" = "트랜잭션 실패";
 "transactionFailedDescription" = "문제가 발생했습니다. 다시 시도해 주세요.";
 "transactionFailedHighlight" = "실패";

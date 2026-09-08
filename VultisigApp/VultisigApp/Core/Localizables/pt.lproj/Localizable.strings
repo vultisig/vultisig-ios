@@ -1634,7 +1634,6 @@
 "transactionBytes" = "Bytes da transação";
 "transactionComplete" = "Feito";
 "transactionDetails" = "Detalhes da transação";
-"transactionExpiredBeforeInclusion" = "A transação expirou antes de ser incluída num bloco";
 "transactionFailed" = "Transação falhou";
 "transactionFailedDescription" = "Algo deu errado. Tente novamente.";
 "transactionFailedHighlight" = "falhou";

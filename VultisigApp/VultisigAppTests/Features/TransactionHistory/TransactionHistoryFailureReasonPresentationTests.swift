@@ -39,15 +39,6 @@ final class TransactionHistoryFailureReasonPresentationTests: XCTestCase {
         )
     }
 
-    func testExpiredReasonUsesLocalizedCopy() {
-        XCTAssertEqual(
-            TransactionHistoryFailureReasonPresentation.displayText(
-                for: TronTransactionStatusProvider.expiredReason
-            ),
-            "transactionExpiredBeforeInclusion".localized
-        )
-    }
-
     func testUnknownReasonPassesThroughUnchanged() {
         let rawReason = "  execution reverted: transfer failed  "
 

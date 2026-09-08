@@ -1328,7 +1328,7 @@ class KeysignViewModel: ObservableObject {
                     switch result.status {
                     case .confirmed, .pending:
                         return true
-                    case .failed, .expired:
+                    case .failed:
                         return false
                     case .notFound:
                         break

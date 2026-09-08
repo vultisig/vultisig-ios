@@ -38,14 +38,3 @@ struct TronTransactionStatusResponse: Codable {
         case resMessage
     }
 }
-
-/// `/wallet/gettransactionbyid`. Only `raw_data.expiration` is read.
-struct TronRawTransactionResponse: Codable {
-    let txID: String?
-    let raw_data: RawData?
-
-    struct RawData: Codable {
-        /// Milliseconds since the epoch, compared against block time.
-        let expiration: Int64?
-    }
-}

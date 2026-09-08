@@ -1634,7 +1634,6 @@
 "transactionBytes" = "交易字节";
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
-"transactionExpiredBeforeInclusion" = "交易在被打包进区块前已过期";
 "transactionFailed" = "交易失败";
 "transactionFailedDescription" = "出了点问题，请重试。";
 "transactionFailedHighlight" = "失败";

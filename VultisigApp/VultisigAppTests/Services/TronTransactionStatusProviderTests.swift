@@ -95,139 +95,10 @@ final class TronTransactionStatusProviderTests: XCTestCase {
         XCTAssertNil(result.blockNumber)
     }
 
-    // MARK: - Expiration
-
-    func testUnconfirmedTransactionPastItsExpirationIsExpired() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_780_000_000_000)
-        )
-
-        XCTAssertEqual(
-            result.status,
-            .expired(reason: TronTransactionStatusProvider.expiredReason)
-        )
-    }
-
-    func testUnconfirmedTransactionBeforeItsExpirationKeepsPolling() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_699_999_999_999)
-        )
-
-        XCTAssertEqual(result.status, .pending)
-    }
-
-    /// Both use an expiration far ahead of any real device clock: the first
-    /// would stay pending forever if a slow clock could gate the check, the
-    /// second would go terminal if a fast one could force it.
-    func testChainTimePastExpirationExpiresEvenWhenTheDeviceClockIsBehind() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 4_000_000_000_000),
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 4_000_000_000_001)
-        )
-
-        XCTAssertEqual(
-            result.status,
-            .expired(reason: TronTransactionStatusProvider.expiredReason)
-        )
-    }
-
-    func testChainTimeBeforeExpirationKeepsPollingWhateverTheDeviceClockSays() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_780_000_000_000),
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_770_000_000_000)
-        )
-
-        XCTAssertEqual(result.status, .pending)
-    }
-
-    func testChainTimeLookupFailureKeepsPolling() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
-            nowBlockJSON: nil
-        )
-
-        XCTAssertEqual(result.status, .pending)
-    }
-
-    func testUnknownRawTransactionStaysNotFound() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: "{}",
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_780_000_000_000)
-        )
-
-        XCTAssertEqual(result.status, .notFound)
-    }
-
-    func testRawTransactionForAnotherHashStaysNotFound() async throws {
-        let result = try await checkStatus(
-            response(id: nil, blockNumber: nil, hasReceipt: false),
-            rawTransactionJSON: """
-            {"txID":"feedface","raw_data":{"expiration":1700000000000}}
-            """,
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_780_000_000_000)
-        )
-
-        XCTAssertEqual(result.status, .notFound)
-    }
-
-    func testReceiptlessTransactionWithoutABlockStaysPending() async throws {
-        let result = try await checkStatus(
-            response(id: "deadbeef", blockNumber: 0, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
-            nowBlockJSON: nil
-        )
-
-        XCTAssertEqual(result.status, .pending)
-    }
-
-    /// The raw transaction matches, but a block number means it already
-    /// landed: expiring here would invite a duplicate payment.
-    func testIncludedTransactionAwaitingItsReceiptIsNeverExpired() async throws {
-        let client = TronTransactionStatusHTTPClient(
-            response: response(id: "deadbeef", blockNumber: 123, hasReceipt: false),
-            rawTransactionJSON: Self.rawTransactionJSON(expiration: 1_700_000_000_000),
-            nowBlockJSON: Self.nowBlockJSON(timestamp: 1_780_000_000_000)
-        )
-
-        let result = try await TronTransactionStatusProvider(httpClient: client)
-            .checkStatus(query: Self.query)
-
-        XCTAssertEqual(result.status, .pending)
-        XCTAssertEqual(result.blockNumber, 123)
-        XCTAssertFalse(client.requestedPaths.contains("/wallet/gettransactionbyid"))
-    }
-
-    private static func rawTransactionJSON(expiration: Int64) -> String {
-        """
-        {"txID":"DEADBEEF","raw_data":{"expiration":\(expiration)}}
-        """
-    }
-
-    private static func nowBlockJSON(timestamp: Int64) -> String {
-        """
-        {"block_header":{"raw_data":{"timestamp":\(timestamp),"number":1,"version":0,\
-        "txTrieRoot":"00","parentHash":"00","witness_address":"00"}}}
-        """
-    }
-
     private func checkStatus(
-        _ response: TronTransactionStatusResponse,
-        rawTransactionJSON: String? = nil,
-        nowBlockJSON: String? = nil
+        _ response: TronTransactionStatusResponse
     ) async throws -> TransactionStatusResult {
-        let client = TronTransactionStatusHTTPClient(
-            response: response,
-            rawTransactionJSON: rawTransactionJSON,
-            nowBlockJSON: nowBlockJSON
-        )
+        let client = TronTransactionStatusHTTPClient(response: response)
         let provider = TronTransactionStatusProvider(httpClient: client)
         return try await provider.checkStatus(query: Self.query)
     }
@@ -261,22 +132,11 @@ final class TronTransactionStatusProviderTests: XCTestCase {
     }
 }
 
-/// Routes by endpoint path. The raw transaction and head block are decoded
-/// from JSON, which pins their wire mapping too.
 private final class TronTransactionStatusHTTPClient: HTTPClientProtocol, @unchecked Sendable {
     private let response: TronTransactionStatusResponse
-    private let rawTransactionJSON: String?
-    private let nowBlockJSON: String?
-    private(set) var requestedPaths: [String] = []
 
-    init(
-        response: TronTransactionStatusResponse,
-        rawTransactionJSON: String? = nil,
-        nowBlockJSON: String? = nil
-    ) {
+    init(response: TronTransactionStatusResponse) {
         self.response = response
-        self.rawTransactionJSON = rawTransactionJSON
-        self.nowBlockJSON = nowBlockJSON
     }
 
     // The asynchronous signatures are protocol requirements; this in-memory
@@ -287,22 +147,11 @@ private final class TronTransactionStatusHTTPClient: HTTPClientProtocol, @unchec
     }
 
     func request<T: Decodable>(
-        _ target: TargetType,
+        _: TargetType,
         responseType _: T.Type
     ) async throws -> HTTPResponse<T> {
-        requestedPaths.append(target.path)
-
-        let decoded: T
-        switch target.path {
-        case "/wallet/gettransactionbyid":
-            decoded = try decode(rawTransactionJSON)
-        case "/wallet/getnowblock":
-            decoded = try decode(nowBlockJSON)
-        default:
-            guard let typedResponse = response as? T else {
-                throw HTTPError.invalidResponse
-            }
-            decoded = typedResponse
+        guard let typedResponse = response as? T else {
+            throw HTTPError.invalidResponse
         }
 
         let urlResponse = HTTPURLResponse(
@@ -311,12 +160,7 @@ private final class TronTransactionStatusHTTPClient: HTTPClientProtocol, @unchec
             httpVersion: nil,
             headerFields: nil
         )!
-        return HTTPResponse(data: decoded, response: urlResponse)
-    }
-
-    private func decode<T: Decodable>(_ json: String?) throws -> T {
-        guard let json else { throw HTTPError.invalidResponse }
-        return try JSONDecoder().decode(T.self, from: Data(json.utf8))
+        return HTTPResponse(data: typedResponse, response: urlResponse)
     }
 
     func requestEmpty(_: TargetType) async throws -> HTTPResponse<EmptyResponse> {
