@@ -139,6 +139,12 @@ struct SwapKitService {
                 SwapKitAPI.swap(request),
                 responseType: SwapKitSwapResponse.self
             )
+            try Self.validateRequestEcho(
+                response: response.data,
+                routeId: routeId,
+                sourceAddress: sourceAddress,
+                destinationAddress: destinationAddress
+            )
             return response.data
         } catch HTTPError.statusCode(_, let data) {
             if let error = SwapKitError.from(httpData: data) {
@@ -177,6 +183,51 @@ struct SwapKitService {
             return (route, amount)
         }
         return ranked.max(by: { $0.1 < $1.1 })?.0
+    }
+
+    /// Assert the `/v3/swap` response describes the swap that was actually requested.
+    ///
+    /// `buildSwapTx` returned whatever came back, so a response built for a different
+    /// route — a mis-routed proxy, a stale cache entry, an unversioned API change —
+    /// would be carried into signing as if it were ours, with the deposit address and
+    /// amount that belong to someone else's swap. `JupiterService.fetchQuote` already
+    /// gates its quote this way; SwapKit had no equivalent.
+    static func validateRequestEcho(
+        response: SwapKitSwapResponse,
+        routeId: String,
+        sourceAddress: String,
+        destinationAddress: String
+    ) throws {
+        guard response.routeId == routeId else {
+            throw SwapKitError.responseEchoMismatch(
+                detail: "requested routeId \(routeId) but the response is for \(response.routeId)"
+            )
+        }
+        guard echoesAddress(response.sourceAddress, sourceAddress) else {
+            throw SwapKitError.responseEchoMismatch(
+                detail: "requested sourceAddress \(sourceAddress) but the response echoes \(response.sourceAddress)"
+            )
+        }
+        guard echoesAddress(response.destinationAddress, destinationAddress) else {
+            throw SwapKitError.responseEchoMismatch(
+                detail: "requested destinationAddress \(destinationAddress) "
+                    + "but the response echoes \(response.destinationAddress)"
+            )
+        }
+    }
+
+    /// Whether an echoed address names the address that was requested.
+    ///
+    /// `addressesMatch` ignores case only for 20-byte hex (EVM checksum casing) and is
+    /// exact everywhere else, which is the right default: base58 is case-sensitive. TON
+    /// is the one encoding where one account has several spellings, and the source or
+    /// destination of a TON route could legitimately come back re-spelled, so an account
+    /// match is accepted too. The chain is not threaded in because it need not be: two
+    /// different non-TON addresses cannot both parse as TON addresses (48 base64url
+    /// characters, a valid tag byte, and a matching CRC16) and canonicalise equal.
+    private static func echoesAddress(_ echoed: String, _ requested: String) -> Bool {
+        SwapRecipientVerifier.addressesMatch(echoed, requested)
+            || TonAccountIdentity.isSameAccount(echoed, requested)
     }
 
     /// The single gate every `/v3/swap` response passes before its quote can enter
