@@ -153,7 +153,7 @@ class TransactionStatusViewModel: ObservableObject {
         case .confirmed:
             status = .confirmed
 
-        case .failed(let reason):
+        case .failed(let reason), .expired(let reason):
             status = .failed(reason: reason)
         }
 

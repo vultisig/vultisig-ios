@@ -56,6 +56,12 @@ struct TransactionStatusResult {
         case pending
         case confirmed
         case failed(reason: String)
+        /// The chain can no longer include this transaction: the `expiration`
+        /// its payload carries has passed with the transaction unconfirmed.
+        /// Terminal — every consumer today reports it to the user as a
+        /// failure, but it is kept distinct from `failed` because nothing
+        /// rejected the transaction; it simply ran out of time.
+        case expired(reason: String)
     }
 }
 

@@ -132,7 +132,7 @@ struct LimitOrderCancelVerifier: LimitOrderCancelVerifying {
             switch result.status {
             case .confirmed:
                 return .delivered
-            case let .failed(reason):
+            case let .failed(reason), let .expired(reason):
                 return .failed(reason: reason)
             case .pending, .notFound:
                 return .unresolved

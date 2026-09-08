@@ -241,7 +241,10 @@ final class TransactionStatusPoller: ObservableObject {
             switch result.status {
             case .confirmed:
                 return .complete(.successful, nil)
-            case let .failed(reason):
+            case let .failed(reason), let .expired(reason):
+                // An expired transaction is terminal on the chain's own terms:
+                // no block can include it any more, so polling stops here
+                // rather than at the client deadline.
                 return .complete(.error, reason)
             case .notFound, .pending:
                 return deadlineReached ? .stop : .retry

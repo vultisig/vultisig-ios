@@ -38,3 +38,16 @@ struct TronTransactionStatusResponse: Codable {
         case resMessage
     }
 }
+
+/// The signed transaction as `/wallet/gettransactionbyid` returns it. Only
+/// `raw_data.expiration` is read: it is the deadline past which no block can
+/// include the transaction, and the info endpoint never reports it.
+struct TronRawTransactionResponse: Codable {
+    let txID: String?
+    let raw_data: RawData?
+
+    struct RawData: Codable {
+        /// Milliseconds since the epoch, compared against block time.
+        let expiration: Int64?
+    }
+}
