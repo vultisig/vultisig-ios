@@ -2,14 +2,9 @@
 //  SwapKitRequestEchoTests.swift
 //  VultisigAppTests
 //
-//  `buildSwapTx` returned whatever /v3/swap handed back without checking that it
-//  described the swap that was asked for. These pin that a response built for a
-//  different route, source, or destination is refused before it can reach signing,
-//  while the spellings one address legitimately arrives in still pass.
-//
-//  Every case starts from the recorded `v3-real-ton-swap` response and mutates one
-//  field, so a fixture that drifts from what SwapKit returns breaks the tests rather
-//  than quietly making them meaningless.
+//  Every case mutates one field of the recorded `v3-real-ton-swap` response rather than
+//  hand-rolling JSON: a hand-written body drifted from the real wire shape twice here, once
+//  fatally (no `tx` key under `txType: "TON"`, so every test died at decode).
 //
 
 import XCTest
@@ -17,9 +12,8 @@ import XCTest
 
 final class SwapKitRequestEchoTests: XCTestCase {
 
-    // The request that produced `v3-real-ton-swap.json`. Written as literals, not read
-    // back off the response: passing the response's own fields in as the expectation
-    // asserts `x == x` and would pass against any implementation, including none.
+    // The request that produced `v3-real-ton-swap.json`, as literals: passing the response's
+    // own fields back in would assert `x == x` and pass against any implementation.
     private let routeId = "c6340348-2bc4-4052-9bd7-d5913312de49"
     private let sourceAddress = "UQBAETYfujlv90Oa5P3K5vnABkvoOnXBSCo3W8q_2-sXIN5U"
     private let destinationAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -27,11 +21,9 @@ final class SwapKitRequestEchoTests: XCTestCase {
 
     // MARK: - The guard is wired into buildSwapTx, not merely defined
 
-    /// Exercising `validateRequestEcho` directly proves the rule; it does not prove
-    /// `buildSwapTx` applies it. Deleting the call site — or letting the surrounding
-    /// `catch HTTPError.statusCode` remap the error to `.generic` — would leave every
-    /// other test in this file green, so drive the real method through a stub client
-    /// and assert the error TYPE that reaches the caller.
+    /// Deleting the call site, or letting the surrounding `catch HTTPError.statusCode` remap
+    /// the error to `.generic`, would leave every other test here green — hence the error type
+    /// is asserted through the real method.
     func testBuildSwapTxRejectsAResponseBuiltForADifferentRoute() async throws {
         let service = SwapKitService(
             httpClient: StubSwapHTTPClient(
@@ -94,7 +86,7 @@ final class SwapKitRequestEchoTests: XCTestCase {
         assertEchoMismatch(response, mentioning: "destinationAddress")
     }
 
-    /// EVM addresses differ only by checksum casing, which is not a different address.
+    /// EVM checksum casing is not a different address.
     func testAcceptsAnEvmDestinationDifferingOnlyByChecksumCase() throws {
         let response = try decode(makeResponseData())
         XCTAssertNoThrow(
@@ -120,8 +112,7 @@ final class SwapKitRequestEchoTests: XCTestCase {
         )
     }
 
-    /// Base58 is case-sensitive, so a case-only difference outside EVM is a different
-    /// address and must not be absorbed by the TON account comparison.
+    /// Base58 is case-sensitive, so a case-only difference outside EVM is a different address.
     func testRejectsANonEvmSourceDifferingOnlyByCase() throws {
         let base58Source = "rPVMhWBsfF9iMXYj3aAzJVkPDTFNSyWdKy"
         let response = try decode(makeResponseData(sourceAddress: base58Source))
@@ -168,7 +159,6 @@ final class SwapKitRequestEchoTests: XCTestCase {
         try JSONDecoder().decode(SwapKitSwapResponse.self, from: data)
     }
 
-    /// The recorded response with at most one field replaced.
     private func makeResponseData(
         routeId: String? = nil,
         sourceAddress: String? = nil,
@@ -189,8 +179,7 @@ final class SwapKitRequestEchoTests: XCTestCase {
     }
 }
 
-/// Returns one canned `/v3/swap` body for any target, so `buildSwapTx` runs end to end
-/// without a network and the guard's wiring is exercised rather than assumed.
+/// One canned `/v3/swap` body for any target, so `buildSwapTx` runs end to end.
 private final class StubSwapHTTPClient: HTTPClientProtocol, @unchecked Sendable {
     private let payload: Data
 

@@ -135,10 +135,8 @@ enum SwapKitError: Error, LocalizedError, Equatable {
         case .unsupportedTxType(let txType):
             return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
         case .contradictoryResponse, .responseEchoMismatch:
-            // The user-facing meaning is identical to `unableToBuildTransaction`:
-            // this route is unusable, try another provider. Reusing that copy keeps
-            // the detail (which names the divergent field and both values) in the
-            // logs, where it is actionable, instead of in a dialog.
+            // Same user-facing meaning as `unableToBuildTransaction`: this route is
+            // unusable, try another provider. The detail stays in the logs.
             return "swapKitErrorUnableToBuildTransaction".localized
         case .providerNotEnabled:
             return "swapKitErrorProviderNotEnabled".localized

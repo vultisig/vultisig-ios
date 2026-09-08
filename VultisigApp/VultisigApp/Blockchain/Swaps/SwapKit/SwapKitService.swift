@@ -185,13 +185,8 @@ struct SwapKitService {
         return ranked.max(by: { $0.1 < $1.1 })?.0
     }
 
-    /// Assert the `/v3/swap` response describes the swap that was actually requested.
-    ///
-    /// `buildSwapTx` returned whatever came back, so a response built for a different
-    /// route — a mis-routed proxy, a stale cache entry, an unversioned API change —
-    /// would be carried into signing as if it were ours, with the deposit address and
-    /// amount that belong to someone else's swap. `JupiterService.fetchQuote` already
-    /// gates its quote this way; SwapKit had no equivalent.
+    /// Assert the response describes the swap that was requested: one built for another
+    /// route would otherwise be carried into signing as if it were ours.
     static func validateRequestEcho(
         response: SwapKitSwapResponse,
         routeId: String,
@@ -216,23 +211,14 @@ struct SwapKitService {
         }
     }
 
-    /// Whether an echoed address names the address that was requested.
-    ///
-    /// `addressesMatch` ignores case only for 20-byte hex (EVM checksum casing) and is
-    /// exact everywhere else, which is the right default: base58 is case-sensitive. TON
-    /// is the one encoding where one account has several spellings, and the source or
-    /// destination of a TON route could legitimately come back re-spelled, so an account
-    /// match is accepted too. The chain is not threaded in because it need not be: two
-    /// different non-TON addresses cannot both parse as TON addresses (48 base64url
-    /// characters, a valid tag byte, and a matching CRC16) and canonicalise equal.
+    /// The chain is not threaded in because it need not be: two different non-TON addresses
+    /// cannot both parse as TON addresses and canonicalise equal.
     private static func echoesAddress(_ echoed: String, _ requested: String) -> Bool {
         SwapRecipientVerifier.addressesMatch(echoed, requested)
             || TonAccountIdentity.isSameAccount(echoed, requested)
     }
 
-    /// The single gate every `/v3/swap` response passes before its quote can enter
-    /// ranking: the payload shape must be one this chain's signer implements, and the
-    /// response must agree with itself about where the deposit goes.
+    /// The single gate every `/v3/swap` response passes before its quote can enter ranking.
     static func validateSigningCapability(
         response: SwapKitSwapResponse,
         fromChain: Chain

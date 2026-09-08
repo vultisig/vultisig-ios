@@ -37,8 +37,6 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// non-nil via `resolvedDestinationTag`.
     let destinationTagSource: SwapKitDestinationTag
 
-    /// The top-level tag to use, or nil when the field is absent or unreadable.
-    /// `destinationTagSource` keeps the distinction the agreement guard needs.
     var destinationTag: UInt64? { destinationTagSource.usableTag }
 
     /// Some chains (Cardano) return responses without a `tx` field at all —
@@ -167,18 +165,13 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     /// but the silent-misroute failure mode is severe enough to absorb
     /// the decoder.
     ///
-    /// Shared with `validateSelfAgreement`, so both sides of a destination comparison
-    /// get the same strip.
-    ///
     /// Query parsing handles arbitrary parameter order
     /// (`?dt=N`, `?dt=N&memo=foo`, `?memo=foo&dt=N`). Whichever key/value
     /// pair parses as `dt=<UInt64>` wins; everything else is dropped.
     static func extractTagSuffix(from address: String) -> (address: String, tag: SwapKitDestinationTag) {
-        // `?…` form: walk the query parameters and collect every `dt=`. Real-world XRP
-        // URIs carry a single `dt=N`, but accepting the full `key=val&key=val` shape
-        // means a future flip to `?memo=...&dt=...` doesn't silently drop the tag. More
-        // than one `dt` is `.unreadable` rather than "the first one" — two answers is
-        // not one answer.
+        // More than one `dt` is `.unreadable` rather than "the first one": two answers is
+        // not one answer, and picking the readable one invents a fact the provider did not
+        // state — on XRP that misattributes the deposit.
         if let q = address.firstIndex(of: "?") {
             let bare = String(address[..<q])
             let query = address[address.index(after: q)...]
@@ -200,8 +193,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         if let pipe = address.firstIndex(of: "|") {
             let suffix = address[address.index(after: pipe)...]
             guard let tag = UInt64(suffix) else {
-                // Address deliberately left unstripped, matching what this helper has
-                // always returned for an unparseable `|` suffix.
+                // Unstripped, matching what this helper has always returned here.
                 return (address, .unreadable(reason: "|\(suffix) is not a destination tag"))
             }
             return (String(address[..<pipe]), .tag(tag))
@@ -461,7 +453,6 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
     /// three resolution sources — see `SwapKitSwapResponse.resolvedDestinationTag`).
     let destinationTagSource: SwapKitDestinationTag
 
-    /// The meta tag to use, or nil when the field is absent or unreadable.
     var destinationTag: UInt64? { destinationTagSource.usableTag }
 
     private enum CodingKeys: String, CodingKey {

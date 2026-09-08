@@ -2,19 +2,12 @@
 //  SwapKitResponseAgreementTests.swift
 //  VultisigAppTests
 //
-//  SwapKit states the deposit destination in three independent fields and the
-//  payload builder reads only `targetAddress`. These pin that a response which
-//  disagrees with itself is refused rather than resolved by precedence — while
-//  the several spellings of one TON account still compare equal, and every
-//  recorded real response still passes.
-//
 
 import XCTest
 @testable import VultisigApp
 
 final class SwapKitResponseAgreementTests: XCTestCase {
 
-    // The account SwapKit returns in `v3-real-ton-swap.json`, in each spelling.
     private let tonBounceable = "EQC_BuLzOqk9GGNXh0y1XosB2BqUyk1AQcGMHKMGfRqlhxmd"
     private let tonNonBounceable = "UQC_BuLzOqk9GGNXh0y1XosB2BqUyk1AQcGMHKMGfRqlh0RY"
     private let tonRaw = "0:bf06e2f33aa93d186357874cb55e8b01d81a94ca4d4041c18c1ca3067d1aa587"
@@ -152,8 +145,6 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         assertContradiction(response, chain: .ton, mentioning: "tx[0].address is empty")
     }
 
-    /// A TON route whose destination does not parse as a TON account is refused
-    /// rather than passed through on string equality.
     func testRejectsATonDestinationThatIsNotAnAccount() throws {
         let response = try decode(makeJSON(
             sellAsset: "TON.TON",
@@ -166,9 +157,6 @@ final class SwapKitResponseAgreementTests: XCTestCase {
 
     // MARK: - Destination tags are half the XRP destination
 
-    /// The address comparison strips the tag suffix on purpose, so without a separate
-    /// tag check two fields naming one address with different tags would agree — and
-    /// the deposit would land credited to a different account at the exchange.
     func testRejectsConflictingTagSuffixesOnOneAddress() throws {
         let response = try decode(makeJSON(
             sellAsset: "XRP.XRP",
@@ -200,9 +188,6 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         assertContradiction(response, chain: .ripple, mentioning: "meta.destinationTag is 200")
     }
 
-    /// Agreeing tags across all three sources are not a contradiction, and one
-    /// destination spelled with the suffix in one field and without it in another
-    /// still names one destination.
     func testAcceptsAgreeingTagsStatedInSeveralFields() throws {
         let response = try decode(makeJSON(
             sellAsset: "XRP.XRP",
@@ -215,9 +200,6 @@ final class SwapKitResponseAgreementTests: XCTestCase {
     }
 
     // MARK: - A tag that cannot be read is not an absent tag
-
-    // Each source is covered on its own: collapsing "unreadable" into "absent" anywhere
-    // sends a tag-less deposit to an address where the tag identifies the depositor.
 
     func testRejectsAnUnreadableTopLevelDestinationTag() throws {
         let response = try decode(makeJSON(
@@ -248,7 +230,6 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         assertContradiction(response, chain: .ripple, mentioning: "targetAddress tag suffix")
     }
 
-    /// Two `dt` parameters is two answers. Silently taking the first is a guess.
     func testRejectsDuplicateTargetAddressTagParameters() throws {
         let response = try decode(makeJSON(
             sellAsset: "XRP.XRP",
@@ -287,8 +268,7 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         assertContradiction(response, chain: .ripple, mentioning: "targetAddress tag suffix")
     }
 
-    /// A query string carrying no `dt` at all states no tag — that really is absent, and
-    /// must not be swept up by the unreadable check.
+    /// A query with no `dt` really is absent, and must not be swept up by the unreadable check.
     func testAcceptsAnAddressWhoseQueryCarriesNoTag() throws {
         let response = try decode(makeJSON(
             sellAsset: "XRP.XRP",
@@ -300,8 +280,7 @@ final class SwapKitResponseAgreementTests: XCTestCase {
 
     // MARK: - No false rejections
 
-    /// An EVM route states the destination once (`inboundAddress` is omitted and
-    /// `tx` is an object), so there is nothing to corroborate and nothing to reject.
+    /// An EVM route states the destination once, so there is nothing to corroborate.
     func testAcceptsAnEvmResponseWithNoCorroboratingFields() throws {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
@@ -310,8 +289,7 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         XCTAssertNoThrow(try response.validateSelfAgreement(fromChain: .ethereum))
     }
 
-    /// The guard is only worth having if it never fires on a healthy route. Every
-    /// recorded real `/v3/swap` response must pass the whole gate unchanged.
+    /// A fail-closed guard is only shippable if it never fires on a healthy route.
     func testAcceptsEveryRecordedRealResponse() throws {
         let fixtures: [(name: String, chain: Chain)] = [
             ("v3-real-ton-swap", .ton),
