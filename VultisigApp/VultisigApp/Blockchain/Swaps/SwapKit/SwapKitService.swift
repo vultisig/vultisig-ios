@@ -139,6 +139,12 @@ struct SwapKitService {
                 SwapKitAPI.swap(request),
                 responseType: SwapKitSwapResponse.self
             )
+            try Self.validateRequestEcho(
+                response: response.data,
+                routeId: routeId,
+                sourceAddress: sourceAddress,
+                destinationAddress: destinationAddress
+            )
             return response.data
         } catch HTTPError.statusCode(_, let data) {
             if let error = SwapKitError.from(httpData: data) {
@@ -179,6 +185,49 @@ struct SwapKitService {
         return ranked.max(by: { $0.1 < $1.1 })?.0
     }
 
+    /// Assert the response describes the swap that was requested: one built for another
+    /// route would otherwise be carried into signing as if it were ours.
+    static func validateRequestEcho(
+        response: SwapKitSwapResponse,
+        routeId: String,
+        sourceAddress: String,
+        destinationAddress: String
+    ) throws {
+        guard response.routeId == routeId else {
+            throw refusal(.responseEchoMismatch(
+                detail: "requested routeId \(routeId) but the response is for \(response.routeId)"
+            ))
+        }
+        guard echoesAddress(response.sourceAddress, sourceAddress) else {
+            throw refusal(.responseEchoMismatch(
+                detail: "requested sourceAddress \(sourceAddress) but the response echoes \(response.sourceAddress)"
+            ))
+        }
+        guard echoesAddress(response.destinationAddress, destinationAddress) else {
+            throw refusal(.responseEchoMismatch(
+                detail: "requested destinationAddress \(destinationAddress) "
+                    + "but the response echoes \(response.destinationAddress)"
+            ))
+        }
+    }
+
+    /// A refusal is only actionable if the mismatch reaches the log. Addresses stay `.private`
+    /// so the log store redacts them.
+    private static func refusal(_ error: SwapKitError) -> SwapKitError {
+        if let detail = error.refusalDetail {
+            logger.error("SwapKit response refused: \(detail, privacy: .private)")
+        }
+        return error
+    }
+
+    /// The chain is not threaded in because it need not be: two different non-TON addresses
+    /// cannot both parse as TON addresses and canonicalise equal.
+    private static func echoesAddress(_ echoed: String, _ requested: String) -> Bool {
+        SwapRecipientVerifier.addressesMatch(echoed, requested)
+            || TonAccountIdentity.isSameAccount(echoed, requested)
+    }
+
+    /// The single gate every `/v3/swap` response passes before its quote can enter ranking.
     static func validateSigningCapability(
         response: SwapKitSwapResponse,
         fromChain: Chain
@@ -190,6 +239,11 @@ struct SwapKitService {
             throw SwapKitError.unsupportedTxType(
                 "\(response.meta.txType)/\(fromChain.ticker)"
             )
+        }
+        do {
+            try response.validateSelfAgreement(fromChain: fromChain)
+        } catch let error as SwapKitError {
+            throw refusal(error)
         }
     }
 

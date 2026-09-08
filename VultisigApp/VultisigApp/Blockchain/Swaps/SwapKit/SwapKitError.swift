@@ -37,6 +37,14 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     case isSanctionedAddress
     case addressScreeningFailed
     case unsupportedTxType(String)
+    /// The `/v3/swap` response disagrees with itself about where the deposit
+    /// goes, or states a transfer array the builder cannot honour. `detail` is
+    /// diagnostic only — see `errorDescription` for why the user copy is shared
+    /// with `unableToBuildTransaction`.
+    case contradictoryResponse(detail: String)
+    /// The `/v3/swap` response does not echo the swap that was requested — a
+    /// different route, source, or destination than the one asked for.
+    case responseEchoMismatch(detail: String)
     case providerNotEnabled
     case routeFiltered
     case malformedAmount(String)
@@ -78,6 +86,17 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             self = .addressScreeningFailed
         default:
             self = .generic(message: envelope.message ?? code)
+        }
+    }
+
+    /// Names the divergent field and both values. Logged at rejection, never shown: both
+    /// cases share the `unableToBuildTransaction` copy.
+    var refusalDetail: String? {
+        switch self {
+        case .contradictoryResponse(let detail), .responseEchoMismatch(let detail):
+            return detail
+        default:
+            return nil
         }
     }
 
@@ -126,6 +145,10 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorAddressScreening".localized
         case .unsupportedTxType(let txType):
             return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
+        case .contradictoryResponse, .responseEchoMismatch:
+            // Same user-facing meaning as `unableToBuildTransaction`: this route is
+            // unusable, try another provider. See `refusalDetail` for the diagnostic.
+            return "swapKitErrorUnableToBuildTransaction".localized
         case .providerNotEnabled:
             return "swapKitErrorProviderNotEnabled".localized
         case .routeFiltered:

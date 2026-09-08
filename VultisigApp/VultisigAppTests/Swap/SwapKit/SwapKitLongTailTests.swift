@@ -33,11 +33,16 @@ final class SwapKitLongTailTests: XCTestCase {
         guard case .ton(let transfers) = response.tx else {
             return XCTFail("expected .ton case, got \(response.tx)")
         }
-        XCTAssertEqual(transfers.count, 1, "SwapKit returns single-element transfer array for TON")
+        // These pin properties of this recorded fixture; they enforce nothing.
+        // The guard that refuses a response whose destination fields disagree, or
+        // a `tx[]` that is not exactly one transfer, lives in
+        // `SwapKitSwapResponse.validateSelfAgreement` and is covered by
+        // `SwapKitResponseAgreementTests`.
+        XCTAssertEqual(transfers.count, 1, "this fixture carries a single-element TON transfer array")
         XCTAssertFalse(transfers[0].address.isEmpty)
         XCTAssertFalse(transfers[0].amount.isEmpty)
         XCTAssertEqual(transfers[0].address, response.targetAddress,
-                       "deposit address inside `tx` must match top-level targetAddress")
+                       "in this fixture the address inside `tx` equals the top-level targetAddress")
     }
 
     func testTonQuoteFixtureSurvivesClientFilter() throws {

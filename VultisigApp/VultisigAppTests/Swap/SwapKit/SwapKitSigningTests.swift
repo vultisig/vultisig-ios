@@ -236,13 +236,16 @@ final class SwapKitSigningTests: XCTestCase {
     // MARK: - TON fall-through wiring
 
     func testTonPayloadFallsThroughToTonHelper() throws {
-        // Phase 3 sets `keysignPayload.toAddress = targetAddress` and
-        // `keysignPayload.toAmount = tx[0].amount` via the outer
+        // Phase 3 sets `keysignPayload.toAddress = targetAddress` via the outer
         // `buildTransfer` call, so the existing `TonHelper.getPreSignedImageHash`
-        // path signs the deposit transfer directly. Lock that contract by
-        // asserting the SwapKit TON payload's targetAddress matches the
-        // inner `tx[0].address` — the keysign-message dispatcher then just
-        // breaks through to the TON helper.
+        // path signs the deposit transfer directly. `toAmount` is the amount the
+        // user is spending — NOT `tx[0].amount`, which rides in `txPayload` for
+        // the peer and is never read on either side.
+        //
+        // What follows describes this recorded fixture. The guard that REFUSES a
+        // response whose destination fields disagree lives in
+        // `SwapKitSwapResponse.validateSelfAgreement`
+        // (`SwapKitResponseAgreementTests`); nothing here enforces it.
         let response = try fixture(name: "v3-real-ton-swap")
         guard case let .ton(transfers) = response.tx else {
             return XCTFail("expected ton tx")
