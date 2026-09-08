@@ -260,7 +260,7 @@ struct SwapDetailsScreen: View {
         let isDisabled = !isFormValid || detailsViewModel.isLoading || detailsViewModel.isLoadingFees
 
         if detailsViewModel.isLoadingTransaction {
-            ButtonLoader()
+            CircularProgressIndicator(size: 32)
                 .disabled(true)
                 .opacity(isFormValid ? 1 : 0.5)
         } else {

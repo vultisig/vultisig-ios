@@ -127,8 +127,7 @@ struct StakingValidatorPickerScreen<V: StakingValidatorConvertible>: View {
 
     private var loadingView: some View {
         VStack(spacing: 16) {
-            SpinningLineLoader()
-                .scaleEffect(1.2)
+            CircularProgressIndicator(size: 28)
             Text("loading".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
