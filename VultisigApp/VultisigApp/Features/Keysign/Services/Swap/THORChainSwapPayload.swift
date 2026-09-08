@@ -45,13 +45,10 @@ struct THORChainSwapPayload: Codable, Hashable {
     let streamingQuantity: String
     let expirationTime: UInt64
     let isAffiliate: Bool
-    /// Provider-side swap fee, so a co-signer holding only this payload can show
-    /// what the swap costs instead of the network fee alone. A raw integer in the
-    /// destination coin's native-swap fixed point (`toCoin.thorswapMultiplier`) —
-    /// native routes charge in the output asset, so `toCoin` is the fee coin and
-    /// no separate coin context has to travel. `nil` from a sender that quotes no
-    /// fee (limit orders, synthesized deposits) or pre-dates the field; consumers
-    /// render no row rather than a definite zero. Display only: no signer reads it.
+    /// Provider-side swap fee, for a co-signer that holds no quote. A raw integer
+    /// in the destination coin's native-swap fixed point (`toCoin.thorswapMultiplier`):
+    /// native routes charge in the output asset, so `toCoin` is the fee coin and no
+    /// coin context travels. `nil` means unknown, and renders no row. Display only.
     var fee: String? = nil
 
     var toAddress: String {

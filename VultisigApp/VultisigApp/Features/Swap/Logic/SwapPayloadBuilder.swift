@@ -203,23 +203,13 @@ extension SwapCryptoLogic {
         )
     }
 
-    /// The provider-side swap fee to carry on the keysign payload, as a raw
-    /// integer in the units the quote already reports it in — the destination
-    /// coin's native-swap fixed point (`toCoin.thorswapMultiplier`). Native
-    /// routes charge in the output asset, so the payload's `toCoin` is the fee
-    /// coin and no separate coin context has to travel.
+    /// Sums exactly the two components the verify screens itemize, so a co-signer
+    /// reaches the initiator's figure by construction. Deliberately NOT the quote's
+    /// `fees.total`: that folds in the liquidity component, which the quoted output
+    /// amount already reflects, so carrying it would double-count.
     ///
-    /// Sums exactly the two components the verify screens itemize
-    /// (`affiliateFeeFiat` + `outboundFeeFiat`), so a co-signer rendering off
-    /// the payload arrives at the initiator's figure by construction. The
-    /// quote's own `fees.total` is deliberately not used: it folds in the
-    /// liquidity/slippage component, which is already reflected in the quoted
-    /// output amount, so carrying it would double-count against the total this
-    /// device displays.
-    ///
-    /// `nil` when nothing chargeable is itemized, or when either component is
-    /// malformed — a receiver shows no row rather than a partial figure that
-    /// reads as authoritative.
+    /// `nil` when nothing is charged or either component is malformed — a partial
+    /// sum would still read as authoritative.
     static func nativeSwapPayloadFee(quote: ThorchainSwapQuote) -> String? {
         guard let affiliate = BigInt(quote.fees.affiliate),
               let outbound = BigInt(quote.fees.outbound) else {

@@ -220,10 +220,8 @@ extension ERC20ApprovePayload {
     }
 }
 
-/// Explicit presence for the native swap fee: receivers read an absent or empty
-/// `fee` as "legacy sender → render no fee row", so a nil or a zero must leave
-/// the field untouched rather than write `"0"`. That is also what stops a
-/// relayed legacy payload from gaining a fee its sender never stated.
+/// Receivers read an absent or empty `fee` as "legacy sender, render no row",
+/// so a nil or a zero must leave the field unset rather than write `"0"`.
 private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapPayload) {
     guard let fee = fee?.nilIfEmpty, fee != "0" else { return }
     proto.fee = fee

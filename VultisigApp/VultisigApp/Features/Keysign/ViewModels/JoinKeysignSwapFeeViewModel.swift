@@ -48,18 +48,14 @@ struct JoinKeysignSwapFeeViewModel {
         case let .generic(payload):
             return resolveGenericSwapFee(payload: payload, vault: vault)
         case .swapkit, .none:
-            // SwapKit's transfer routes keep their fee in a group of their own
-            // on the wire, which this payload shape does not carry yet.
+            // SwapKit keeps its fee in a wire group this payload shape lacks.
             return nil
         }
     }
 
-    /// Native THORChain/MayaChain routes charge in the destination asset, so the
-    /// payload's own `toCoin` is the fee coin — no coin context has to travel and
-    /// none has to be guessed. The amount is scaled by the same
-    /// `thorswapMultiplier` the rest of the native path reads quote amounts with
-    /// (1e8 for THORChain, the coin's own decimals for MayaChain), which is the
-    /// denomination every platform writes this field in.
+    /// Native routes charge in the destination asset, so `toCoin` is the fee coin.
+    /// Not `SwapCryptoLogic.swapFeeCoin`: native quotes carry no
+    /// `swapFeeTokenContract`, so it would fall through to the source gas coin.
     private func resolveNativeSwapFee(payload: THORChainSwapPayload) -> ResolvedSwapFee? {
         guard let rawFee = payload.fee?.nilIfEmpty,
               let amount = Decimal(string: rawFee),

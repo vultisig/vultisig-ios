@@ -2,12 +2,9 @@
 //  NativeSwapFeeProtoMappingTests.swift
 //  VultisigAppTests
 //
-//  Coverage for the native (THORChain / MayaChain) swap fee on
-//  `THORChainSwapPayload.fee`: what the builder puts on the wire, that a
-//  legacy or zero fee stays off it, and that a co-signer rendering off the
-//  payload alone lands on the initiator's own figure. A joiner holds no
-//  quote, so this field is the only statement it gets of what the swap
-//  costs — without it the confirm screen totals the network fee alone.
+//  Native (THORChain / MayaChain) swap fee on `THORChainSwapPayload.fee`:
+//  what reaches the wire, and that a co-signer reading only the payload
+//  lands on the initiator's figure.
 //
 
 import BigInt
@@ -19,10 +16,8 @@ import VultisigCommonData
 @MainActor
 final class NativeSwapFeeProtoMappingTests: XCTestCase {
 
-    /// Rate fixtures are written through `Storage.shared.modelContext`, so this
-    /// class installs its own in-memory container rather than persisting into
-    /// whatever store a previous test class left installed — which in a
-    /// simulator can be the app's real one.
+    /// Rate fixtures write through `Storage.shared.modelContext`, which in a
+    /// simulator can be the app's real store unless a container is installed.
     private var token: TestContextToken!
 
     override func setUpWithError() throws {
@@ -148,11 +143,8 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
     }
 
     func testNativeSwapPayloadFeeIgnoresTheQuotesTotal() {
-        // `fees.total` folds in the liquidity/slippage charge, which the quoted
-        // output amount already reflects. Carrying it would put the co-signer's
-        // total above the initiator's for one swap. Varying ONLY `total` and
-        // pinning the exact result asserts independence, where a `!=` check
-        // would also be satisfied by an implementation that returned nil.
+        // Varying ONLY `total` and pinning the exact result asserts independence;
+        // a `!=` check would also be satisfied by an always-nil implementation.
         for total in ["60000000", "48000000", "0", "not-a-number"] {
             let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: total)
             XCTAssertEqual(
@@ -189,8 +181,6 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
     // MARK: - What the co-signer reads back
 
     func testNativeResolverScalesByThorchainFixedPoint() {
-        // 48_000_000 @ 1e8 is 0.48 TRX — the destination asset, which is where
-        // a native route charges. Reading it as raw units would be 1e8x off.
         let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
             swapPayload: .thorchain(makeNativePayload(fee: "48000000")),
             vault: nil
@@ -229,8 +219,6 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
-    /// The point of the whole change: the fiat the co-signer shows is the fiat
-    /// the initiator itemizes, arrived at from the payload alone.
     func testCoSignerSwapFeeFiatMatchesTheInitiatorItemization() throws {
         let fromCoin = makeBTC()
         let toCoin = makeTRX()
@@ -249,9 +237,8 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
             toAmountDecimal: 3000,
             quote: quote
         )
-        // Serialize and parse back: the co-signer's figure has to survive the
-        // wire, not just the in-memory struct, or this proves nothing about the
-        // device that actually renders it.
+        // Through the wire, not the in-memory struct: otherwise this still passes
+        // when the proto writer stops writing the field.
         let decoded = try SwapPayload(proto: SwapPayload.thorchain(payload).mapToProtobuff())
         let resolved = try XCTUnwrap(
             JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: decoded, vault: nil)
@@ -276,11 +263,10 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         let viewModel = JoinKeysignViewModel()
         viewModel.keysignPayload = keysignPayload
 
-        // Both legs are derived from the fixture by hand rather than from the
-        // code under test, so a wrong gas amount, decimals, coin or rate moves
+        // Derived by hand, not from the code under test, so a wrong amount moves
         // the actual without moving the expectation.
         //   network: 21_000 gas x 1 gwei = 0.000021 ETH @ $2000 = $0.042
-        //   swap:    0.48 TRX @ $0.25                            = $0.12
+        //   swap:    0.48 TRX @ $0.25                           = $0.12
         XCTAssertEqual(
             JoinKeysignGasViewModel().networkFeeFiat(payload: keysignPayload),
             Decimal(string: "0.042"),
@@ -445,8 +431,7 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
     }
 
-    /// Same shape as the priced fixtures but under an id nothing seeds, so the
-    /// fail-closed branches are exercised by a genuinely absent rate.
+    /// Under an id nothing seeds, so the fail-closed branches see a real absence.
     private func makeUnpricedTRX() -> Coin {
         makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true, priceScope: "unpriced")
     }
@@ -456,9 +441,7 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
     }
 
     /// `RateProvider` is a process-wide singleton keyed by `priceProviderId`, so
-    /// fixtures scope theirs to this class. Sharing a generic id ("eth", "trx")
-    /// would let this class's seeded prices leak into other test classes and let
-    /// theirs leak in here, making both order-dependent.
+    /// a generic id ("eth", "trx") would make this class and others order-dependent.
     private func makeCoin(
         _ chain: Chain,
         ticker: String,
@@ -486,11 +469,8 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         line: UInt = #line
     ) {
         let cryptoId = RateProvider.cryptoId(for: coin.toCoinMeta()).id
-        // In-memory rates update before the storage write, so a storage failure
-        // does not by itself invalidate the assertion. What the tests actually
-        // depend on is that the rate reads back, so that is what is asserted —
-        // a silent seeding failure surfaces here rather than as a confusing nil
-        // fiat several lines later.
+        // In-memory rates update before the storage write, so assert what the
+        // tests depend on — that the rate reads back — not that the save landed.
         try? RateProvider.shared.save(rates: [
             Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: value)
         ])

@@ -11,8 +11,6 @@ import BigInt
 // TODO: - Extend and reuse for both on-device and co-pairing signing
 struct JoinKeysignGasViewModel {
 
-    /// The network fee a payload resolves to, before formatting: the amount in
-    /// the fee coin's smallest units plus the coin that names and prices it.
     private struct ResolvedNetworkFee {
         let amount: BigInt
         let nativeToken: CoinMeta
@@ -28,11 +26,8 @@ struct JoinKeysignGasViewModel {
         return ("\(gasInReadable) \(resolved.nativeToken.ticker)", feeInReadable)
     }
 
-    /// Fiat value of the same fee `getCalculatedNetworkFee` formats, as a
-    /// `Decimal` so a caller can add it to another fee. `nil` when nothing
-    /// prices the fee coin: a total that silently absorbed an unpriced leg
-    /// would understate the transaction, which is the failure a total row
-    /// exists to prevent.
+    /// `nil` when nothing prices the fee coin, so a caller summing this never
+    /// absorbs an unpriced leg as free.
     func networkFeeFiat(payload: KeysignPayload) -> Decimal? {
         guard let resolved = resolveNetworkFee(payload: payload) else { return nil }
         return feeFiat(coin: payload.coin, fee: resolved.amount)
@@ -117,11 +112,8 @@ struct JoinKeysignGasViewModel {
         return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
     }
 
-    /// Unformatted twin of `feesInReadable`, for callers that have to sum the
-    /// fee rather than print it. Same coin preference — the vault's own coin
-    /// first for its up-to-date price data, the payload coin as the fallback —
-    /// but `nil` instead of a `$0.00` when neither has a rate, so an unpriced
-    /// fee is dropped from a total rather than counted as free.
+    /// Unformatted twin of `feesInReadable`, same coin preference, but `nil`
+    /// rather than a `$0.00` when neither coin has a rate.
     private func feeFiat(coin: Coin, fee: BigInt) -> Decimal? {
         if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain),
            let rate = RateProvider.shared.rate(for: vaultNativeCoin) {
