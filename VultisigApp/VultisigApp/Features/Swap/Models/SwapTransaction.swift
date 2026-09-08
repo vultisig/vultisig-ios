@@ -113,6 +113,16 @@ struct SwapTransaction: Hashable {
     /// on the verify screen before signing.
     let advancedSettings: SwapAdvancedSettings
 
+    /// The route the user picked by hand, `nil` when the swap is on Auto.
+    /// Deliberately its own field rather than part of `advancedSettings`, which
+    /// is the form's re-fetch trigger — a route pick must never re-quote.
+    ///
+    /// Carried past the hand-off so the verify screen's 60s refresh can re-resolve
+    /// the pick against the fresh candidate set instead of installing the auto
+    /// winner and swapping the route out from under an order the user has already
+    /// confirmed. `var` only so the memberwise init defaults it.
+    var selectedRouteIdentity: SwapRouteIdentity?
+
     /// Final destination for the swapped funds: the user-set external recipient
     /// when present, otherwise the user's own address on the destination chain
     /// (today's behavior). Surfaced on the verify screen.
@@ -174,7 +184,11 @@ extension SwapTransaction {
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
             networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
-            advancedSettings: advancedSettings
+            advancedSettings: advancedSettings,
+            // A re-quote never changes which route the user chose — only which
+            // quote object represents it. Clearing the pick is the caller's job,
+            // done before this call when the route is no longer offered.
+            selectedRouteIdentity: selectedRouteIdentity
         )
     }
 }

@@ -44,6 +44,9 @@ struct SwapVerifyScreen: View {
             }
         }
         .withBanner(text: $retryBannerText, style: .error)
+        // The refresh substituted a route the user had picked — say so instead of
+        // silently signing a different provider.
+        .withBanner(text: $vm.routeSelectionNotice, style: .error)
         // Surface build-side failures so the user doesn't see "nothing
         // happens" after entering the FastVault password. `buildSwapKeysignPayload`
         // catches errors into `verifyViewModel.error`; without this binding
