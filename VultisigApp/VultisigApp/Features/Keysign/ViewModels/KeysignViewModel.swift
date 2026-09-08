@@ -781,7 +781,8 @@ class KeysignViewModel: ObservableObject {
                 // bytes drive transaction assembly directly. TON + CARDANO
                 // fall through to the per-chain helpers at the bottom of
                 // this method — the SwapKit builder already pointed
-                // `toAddress` / `toAmount` at the deposit address + amount.
+                // `toAddress` at the deposit address; `toAmount` is the
+                // user's own send amount.
                 switch payload.txType {
                 case "PSBT":
                     let tx = try SwapKitBTCSigner.compileSignedTransaction(

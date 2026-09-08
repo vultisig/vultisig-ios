@@ -194,21 +194,30 @@ struct SwapKitService {
         destinationAddress: String
     ) throws {
         guard response.routeId == routeId else {
-            throw SwapKitError.responseEchoMismatch(
+            throw refusal(.responseEchoMismatch(
                 detail: "requested routeId \(routeId) but the response is for \(response.routeId)"
-            )
+            ))
         }
         guard echoesAddress(response.sourceAddress, sourceAddress) else {
-            throw SwapKitError.responseEchoMismatch(
+            throw refusal(.responseEchoMismatch(
                 detail: "requested sourceAddress \(sourceAddress) but the response echoes \(response.sourceAddress)"
-            )
+            ))
         }
         guard echoesAddress(response.destinationAddress, destinationAddress) else {
-            throw SwapKitError.responseEchoMismatch(
+            throw refusal(.responseEchoMismatch(
                 detail: "requested destinationAddress \(destinationAddress) "
                     + "but the response echoes \(response.destinationAddress)"
-            )
+            ))
         }
+    }
+
+    /// A refusal is only actionable if the mismatch reaches the log. Addresses stay `.private`
+    /// so the log store redacts them.
+    private static func refusal(_ error: SwapKitError) -> SwapKitError {
+        if let detail = error.refusalDetail {
+            logger.error("SwapKit response refused: \(detail, privacy: .private)")
+        }
+        return error
     }
 
     /// The chain is not threaded in because it need not be: two different non-TON addresses
@@ -231,7 +240,11 @@ struct SwapKitService {
                 "\(response.meta.txType)/\(fromChain.ticker)"
             )
         }
-        try response.validateSelfAgreement(fromChain: fromChain)
+        do {
+            try response.validateSelfAgreement(fromChain: fromChain)
+        } catch let error as SwapKitError {
+            throw refusal(error)
+        }
     }
 
     /// Format an amount as a dot-separated decimal string suitable for

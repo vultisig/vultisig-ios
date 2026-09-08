@@ -159,15 +159,10 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         }
     }
 
-    /// Split a `?dt=12345` (or `?dt=12345&other=foo`) or `|12345` suffix
-    /// off an XRP target address. Returns the bare r-address plus the
-    /// parsed tag (or `nil`). Defensive — no probe today returns a suffix,
-    /// but the silent-misroute failure mode is severe enough to absorb
-    /// the decoder.
-    ///
-    /// Query parsing handles arbitrary parameter order
-    /// (`?dt=N`, `?dt=N&memo=foo`, `?memo=foo&dt=N`). Whichever key/value
-    /// pair parses as `dt=<UInt64>` wins; everything else is dropped.
+    /// Split a `?dt=12345` (or `?dt=12345&other=foo`) or `|12345` suffix off an XRP target
+    /// address, returning the bare r-address and what the suffix states about the tag.
+    /// Parameter order is arbitrary; a single readable `dt` is `.tag`, none is `.absent`,
+    /// and an unparseable or repeated `dt` is `.unreadable`.
     static func extractTagSuffix(from address: String) -> (address: String, tag: SwapKitDestinationTag) {
         // More than one `dt` is `.unreadable` rather than "the first one": two answers is
         // not one answer, and picking the readable one invents a fact the provider did not

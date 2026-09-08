@@ -278,6 +278,28 @@ final class SwapKitResponseAgreementTests: XCTestCase {
         XCTAssertNoThrow(try response.validateSelfAgreement(fromChain: .ripple))
     }
 
+    // MARK: - The guard is wired into the production gate
+
+    /// Calling `validateSelfAgreement` directly proves the rule, not that the gate applies
+    /// it: removing the call in `validateSigningCapability` would leave every other test
+    /// here green.
+    func testValidateSigningCapabilityRefusesAContradictoryResponse() throws {
+        let response = try decode(makeJSON(
+            sellAsset: "TON.TON",
+            txType: "TON",
+            targetAddress: tonBounceable,
+            tx: #"[{"address":"\#(tonOtherAccount)","amount":"5000000000"}]"#
+        ))
+        XCTAssertThrowsError(
+            try SwapKitService.validateSigningCapability(response: response, fromChain: .ton)
+        ) { error in
+            guard let swapKitError = error as? SwapKitError,
+                  case .contradictoryResponse = swapKitError else {
+                return XCTFail("expected contradictoryResponse, got \(error)")
+            }
+        }
+    }
+
     // MARK: - No false rejections
 
     /// An EVM route states the destination once, so there is nothing to corroborate.

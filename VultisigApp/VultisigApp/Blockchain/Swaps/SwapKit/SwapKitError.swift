@@ -89,6 +89,17 @@ enum SwapKitError: Error, LocalizedError, Equatable {
         }
     }
 
+    /// Names the divergent field and both values. Logged at rejection, never shown: both
+    /// cases share the `unableToBuildTransaction` copy.
+    var refusalDetail: String? {
+        switch self {
+        case .contradictoryResponse(let detail), .responseEchoMismatch(let detail):
+            return detail
+        default:
+            return nil
+        }
+    }
+
     static func from(httpData: Data?) -> SwapKitError? {
         guard let httpData,
               let envelope = try? JSONDecoder().decode(SwapKitErrorEnvelope.self, from: httpData)
@@ -136,7 +147,7 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
         case .contradictoryResponse, .responseEchoMismatch:
             // Same user-facing meaning as `unableToBuildTransaction`: this route is
-            // unusable, try another provider. The detail stays in the logs.
+            // unusable, try another provider. See `refusalDetail` for the diagnostic.
             return "swapKitErrorUnableToBuildTransaction".localized
         case .providerNotEnabled:
             return "swapKitErrorProviderNotEnabled".localized
