@@ -528,6 +528,38 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(fee, 0)
     }
 
+    /// The fallback is sized for the transfer alone, so a memo has to be added
+    /// on top: past ~31 memo bytes a flat 300 stops being an upper bound and
+    /// would under-reserve exactly the case the measurement exists to catch.
+    func testGetBlockInfoUnencodableRecipientWithMemoChargesTheMemoOnTopOfTheFallback() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        let service = TronService(httpClient: stub)
+        let memo = String(repeating: "a", count: 200)
+
+        let result = try await service.getBlockInfo(
+            coin: makeNativeCoin(),
+            to: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8",  // fails base58check
+            memo: memo,
+            isSwap: false
+        )
+
+        // 300 + 200 memo bytes + tag + 2-byte length varint, then the flat memo fee.
+        XCTAssertEqual(extractGasFee(result), 503 * 1000 + 1_000_000)
+    }
+
+    /// The estimate is measured from the serialized transaction, and the
+    /// amount's varint widens with the value, so the amount has to reach it.
+    func testGetBlockInfoSizesTheAmountItIsGiven() async throws {
+        let coin = makeNativeCoin()
+
+        let small = try await gasFee(coin: coin, memo: nil, availableBandwidth: 0, amount: BigInt(1))
+        let large = try await gasFee(coin: coin, memo: nil, availableBandwidth: 0, amount: BigInt(1) << 60)
+
+        // A 1-byte varint against a 9-byte one, at 1000 sun per byte.
+        XCTAssertEqual(large - small, 8 * 1000)
+    }
+
     /// The path a send takes while the recipient field is still being typed.
     func testGetBlockInfoUnencodableRecipientFallsBackToTheConservativeConstant() async throws {
         let stub = TronStubHTTPClient()
@@ -581,7 +613,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         coin: Coin,
         memo: String?,
         availableBandwidth: Int64,
-        to: String? = nil
+        to: String? = nil,
+        amount: BigInt? = nil
     ) async throws -> UInt64 {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 0)
@@ -593,7 +626,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
             coin: coin,
             to: to ?? Self.recipient,
             memo: memo,
-            isSwap: false
+            isSwap: false,
+            amount: amount
         )
         return extractGasFee(result)
     }

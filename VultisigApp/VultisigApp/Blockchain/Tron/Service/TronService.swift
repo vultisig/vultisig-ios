@@ -33,7 +33,10 @@ class TronService {
     static var accountCacheTTL: TimeInterval = 60
 
     /// Used only when the transfer cannot be serialized yet — no recipient
-    /// typed, or one WalletCore refuses to encode.
+    /// typed, or one WalletCore refuses to encode. Sized for the transfer
+    /// alone; the memo is added on top, since past ~31 memo bytes this stops
+    /// being an upper bound and would under-reserve the very case the
+    /// measurement exists to catch.
     private static let FALLBACK_BYTES_PER_COIN_TX: Int64 = 300
 
     /// Headroom multiplier applied to the simulated `energy_used` when
@@ -282,16 +285,17 @@ class TronService {
         expiration: UInt64,
         block: TronNowBlockResponse
     ) -> Int64 {
-        guard coin.isNativeToken, let to, !to.isEmpty else {
-            return Self.FALLBACK_BYTES_PER_COIN_TX
-        }
-        guard let rawData = block.block_header?.raw_data else {
-            return Self.FALLBACK_BYTES_PER_COIN_TX
-        }
-
         // Never reach the wire, so they must not inflate the estimate — the
         // same reason `getTronFeeMemo` charges no memo fee for them.
         let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
+        let fallback = Self.fallbackBandwidthBytes(memo: serializedMemo)
+
+        guard coin.isNativeToken, let to, !to.isEmpty else {
+            return fallback
+        }
+        guard let rawData = block.block_header?.raw_data else {
+            return fallback
+        }
 
         let bytes = try? TronHelper.nativeTransferBandwidthBytes(
             ownerAddress: coin.address,
@@ -307,7 +311,14 @@ class TronService {
             blockHeaderParentHash: rawData.parentHash ?? "",
             blockHeaderWitnessAddress: rawData.witness_address ?? ""
         )
-        return bytes ?? Self.FALLBACK_BYTES_PER_COIN_TX
+        return bytes ?? fallback
+    }
+
+    /// The memo is known even when the transaction cannot be built, and it is
+    /// serialized verbatim, so it is charged on top of the constant.
+    static func fallbackBandwidthBytes(memo: String?) -> Int64 {
+        guard let memo, !memo.isEmpty else { return FALLBACK_BYTES_PER_COIN_TX }
+        return FALLBACK_BYTES_PER_COIN_TX + Int64(memo.utf8.count) + TronHelper.memoFieldOverheadBytes(memo)
     }
 
     private func calculateTrc20Fee(

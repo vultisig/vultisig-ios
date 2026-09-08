@@ -289,6 +289,11 @@ enum TronHelper {
             + transactionResultBytes
     }
 
+    /// Protobuf overhead of the `data` field carrying `memo`, without its bytes.
+    static func memoFieldOverheadBytes(_ memo: String) -> Int64 {
+        Int64(1 + protobufVarintBytes(memo.utf8.count))
+    }
+
     /// 1-byte tag, the length varint, then the payload.
     private static func lengthDelimitedFieldBytes(_ payloadSize: Int) -> Int64 {
         let size = max(payloadSize, 0)
