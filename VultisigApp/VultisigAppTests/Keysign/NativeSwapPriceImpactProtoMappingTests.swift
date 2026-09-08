@@ -140,6 +140,49 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         )
     }
 
+    /// A router that IS present must still travel — the presence fix must not
+    /// turn into "never write the field".
+    func testAPresentRouterAddressStillTravels() throws {
+        var payload = makeNativePayload(slippageBps: nil)
+        payload = THORChainSwapPayload(
+            fromAddress: payload.fromAddress,
+            fromCoin: payload.fromCoin,
+            toCoin: payload.toCoin,
+            vaultAddress: payload.vaultAddress,
+            routerAddress: "0xrouter",
+            fromAmount: payload.fromAmount,
+            toAmountDecimal: payload.toAmountDecimal,
+            toAmountLimit: payload.toAmountLimit,
+            streamingInterval: payload.streamingInterval,
+            streamingQuantity: payload.streamingQuantity,
+            expirationTime: payload.expirationTime,
+            isAffiliate: payload.isAffiliate
+        )
+        guard case let .thorchainSwapPayload(proto) = SwapPayload.thorchain(payload).mapToProtobuff() else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+        XCTAssertTrue(proto.hasRouterAddress)
+        XCTAssertEqual(proto.routerAddress, "0xrouter")
+
+        guard case let .thorchain(decoded) = try SwapPayload(proto: .thorchainSwapPayload(proto)) else {
+            XCTFail("Expected .thorchain"); return
+        }
+        XCTAssertEqual(decoded.routerAddress, "0xrouter")
+    }
+
+    /// The reason the legacy round-trip was two bytes long: `router_address` is
+    /// an `optional string`, so writing `""` for "no router" marks it present.
+    func testAnAbsentRouterAddressStaysOffTheWire() {
+        guard case let .thorchainSwapPayload(proto) =
+                SwapPayload.thorchain(makeNativePayload(slippageBps: nil)).mapToProtobuff() else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+        XCTAssertFalse(
+            proto.hasRouterAddress,
+            "An absent router must not be written as a present empty string"
+        )
+    }
+
     // MARK: - What the builder puts on the wire
 
     func testBuilderCarriesTheQuotesSlippageBps() {

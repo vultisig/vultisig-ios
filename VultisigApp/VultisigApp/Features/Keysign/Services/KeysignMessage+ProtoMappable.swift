@@ -228,6 +228,17 @@ private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapP
     proto.fee = fee
 }
 
+/// `router_address` is an `optional string`, so assigning `""` marks it
+/// present-but-empty rather than leaving it off the wire: a relayed payload that
+/// carried no router came back two bytes longer than the one its sender built.
+/// Readers already normalize empty to absent (`nilIfEmpty` on the way in), so
+/// nothing reads differently — but byte-stability across a mixed-version
+/// committee is worth more than the assignment's brevity.
+private func writeNativeSwapRouterAddress(_ routerAddress: String?, to proto: inout VSTHORChainSwapPayload) {
+    guard let routerAddress = routerAddress?.nilIfEmpty else { return }
+    proto.routerAddress = routerAddress
+}
+
 /// Explicit presence for the carried price impact. `slippage_bps` is an
 /// `optional uint32`, so absent means "sender predates the field, impact
 /// unknown" and the receiver hides the row, while a present `0` is a real claim
@@ -356,7 +367,7 @@ extension SwapPayload {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.vaultAddress = payload.vaultAddress
-                $0.routerAddress = payload.routerAddress ?? .empty
+                writeNativeSwapRouterAddress(payload.routerAddress, to: &$0)
                 $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.toAmountLimit = payload.toAmountLimit
@@ -373,7 +384,7 @@ extension SwapPayload {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.vaultAddress = payload.vaultAddress
-                $0.routerAddress = payload.routerAddress ?? .empty
+                writeNativeSwapRouterAddress(payload.routerAddress, to: &$0)
                 $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.toAmountLimit = payload.toAmountLimit
