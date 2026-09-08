@@ -97,11 +97,8 @@ struct KeysignDiscoveryView: View {
         ZStack {
             background
             view
-
-            if isLoading {
-                loader
-            }
         }
+        .withLoading(isLoading: $isLoading)
         .withBanner(text: $bannerText)
         .onLoad {
             Task { @MainActor in
@@ -123,10 +120,6 @@ struct KeysignDiscoveryView: View {
                 await setData()
             }
         }
-    }
-
-    var loader: some View {
-        Loader()
     }
 
     var errorText: some View {

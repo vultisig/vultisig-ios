@@ -54,7 +54,7 @@ struct VaultServerBackupScreen: View {
                 focusedFieldBinding = nil
             }
         }
-        .overlay(viewModel.isLoading ? Loader() : nil)
+        .withLoading(isLoading: $viewModel.isLoading)
         .onLoad {
             focusedFieldBinding = .email
             viewModel.onLoad()

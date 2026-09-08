@@ -61,8 +61,7 @@ struct PreferredAssetSelectionView: View {
 
     var loadingView: some View {
         VStack(spacing: 16) {
-            SpinningLineLoader()
-                .scaleEffect(1.2)
+            CircularProgressIndicator(size: 24)
 
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)

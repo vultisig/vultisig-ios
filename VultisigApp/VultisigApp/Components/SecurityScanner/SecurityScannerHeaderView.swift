@@ -34,7 +34,7 @@ struct SecurityScannerHeaderView: View {
 
     @ViewBuilder
     var scanningView: some View {
-        InlineLoader()
+        CircularProgressIndicator(size: 20)
         Text("securityScannerTransactionScanning".localized)
     }
 
