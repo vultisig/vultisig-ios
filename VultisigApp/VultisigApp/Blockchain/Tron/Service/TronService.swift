@@ -32,9 +32,12 @@ class TronService {
     /// enough that navigating back into the screen serves from cache.
     static var accountCacheTTL: TimeInterval = 60
 
-    // Constants from Android implementation
-    private static let BYTES_PER_COIN_TX: Int64 = 300
-    private static let BYTES_PER_CONTRACT_TX: Int64 = 345
+    /// Bandwidth reserve used when the transfer cannot be serialized yet — no
+    /// recipient typed, or an address WalletCore refuses to encode. The real
+    /// requirement is measured from the transaction itself
+    /// (`TronHelper.nativeTransferBandwidthBytes`); this only keeps the fee
+    /// screen answering while the form is still incomplete.
+    private static let FALLBACK_BYTES_PER_COIN_TX: Int64 = 300
 
     /// Headroom multiplier applied to the simulated `energy_used` when
     /// computing the on-chain `fee_limit` cap. The margin covers ordinary
@@ -79,7 +82,8 @@ class TronService {
         coin: Coin,
         to: String? = nil,
         memo: String? = nil,
-        isSwap: Bool = false
+        isSwap: Bool = false,
+        amount: BigInt? = nil
     ) async throws -> BlockChainSpecific {
         let response = try await apiService.getNowBlock()
 
@@ -88,7 +92,23 @@ class TronService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
 
-        let estimate = try await calculateTronFee(coin: coin, to: to, memo: memo, isSwap: isSwap)
+        let bandwidthBytes = nativeTransferBandwidthBytes(
+            coin: coin,
+            to: to,
+            memo: memo,
+            amount: amount,
+            timestamp: currentTimestampMillis,
+            expiration: UInt64(expiration),
+            block: response
+        )
+
+        let estimate = try await calculateTronFee(
+            coin: coin,
+            to: to,
+            memo: memo,
+            isSwap: isSwap,
+            bandwidthBytes: bandwidthBytes
+        )
 
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
@@ -189,7 +209,8 @@ class TronService {
         coin: Coin,
         to: String?,
         memo: String?,
-        isSwap: Bool
+        isSwap: Bool,
+        bandwidthBytes: Int64
     ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
@@ -214,7 +235,8 @@ class TronService {
                 // is indistinguishable from that once collapsed to `.zero`,
                 // which would render a real transfer as falsely free. Fall back
                 // to the coin's conservative static fee only on that error path.
-                let fee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
+                let fee = (try? await calculateNativeTrxFee(coin: coin, bandwidthBytes: bandwidthBytes))
+                    ?? coin.feeDefault.toBigInt()
                 transactionEstimate = FeeEstimate(displayFee: fee, feeLimit: fee)
             }
         } else {
@@ -238,13 +260,55 @@ class TronService {
         return FeeEstimate(displayFee: displayFee, feeLimit: feeLimit)
     }
 
-    private func calculateNativeTrxFee(coin: Coin) async throws -> BigInt {
+    private func calculateNativeTrxFee(coin: Coin, bandwidthBytes: Int64) async throws -> BigInt {
         let accountResource = try await apiService.getAccountResource(address: coin.address)
         let availableBandwidth = accountResource.calculateAvailableBandwidth()
         return try await getBandwidthFeeDiscount(
-            isNativeToken: true,
+            requiredBandwidth: bandwidthBytes,
             availableBandwidth: availableBandwidth
         )
+    }
+
+    /// Bandwidth the signed native transfer will consume, measured from the
+    /// transaction WalletCore will actually build. Returns the conservative
+    /// constant whenever the transfer cannot be serialized — an empty or
+    /// unencodable recipient while the send form is still being filled in.
+    private func nativeTransferBandwidthBytes(
+        coin: Coin,
+        to: String?,
+        memo: String?,
+        amount: BigInt?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse
+    ) -> Int64 {
+        guard coin.isNativeToken, let to, !to.isEmpty else {
+            return Self.FALLBACK_BYTES_PER_COIN_TX
+        }
+        guard let rawData = block.block_header?.raw_data else {
+            return Self.FALLBACK_BYTES_PER_COIN_TX
+        }
+
+        // Routing markers select a WalletCore system-contract builder and never
+        // reach the wire, so they must not inflate the estimate — the same
+        // reason `getTronFeeMemo` charges no memo fee for them.
+        let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
+
+        let bytes = try? TronHelper.nativeTransferBandwidthBytes(
+            ownerAddress: coin.address,
+            toAddress: to,
+            amount: amount ?? .zero,
+            memo: serializedMemo,
+            timestamp: timestamp,
+            expiration: expiration,
+            blockHeaderTimestamp: rawData.timestamp ?? 0,
+            blockHeaderNumber: rawData.number ?? 0,
+            blockHeaderVersion: UInt64(rawData.version ?? 0),
+            blockHeaderTxTrieRoot: rawData.txTrieRoot ?? "",
+            blockHeaderParentHash: rawData.parentHash ?? "",
+            blockHeaderWitnessAddress: rawData.witness_address ?? ""
+        )
+        return bytes ?? Self.FALLBACK_BYTES_PER_COIN_TX
     }
 
     private func calculateTrc20Fee(
@@ -383,22 +447,18 @@ class TronService {
         return parameters
     }
 
-    private func getBandwidthFeeDiscount(isNativeToken: Bool, availableBandwidth: Int64) async throws -> BigInt {
-        let feeBandwidthRequired = isNativeToken ? Self.BYTES_PER_COIN_TX : Self.BYTES_PER_CONTRACT_TX
+    /// Native transfers are free while the account's free bandwidth covers the
+    /// whole signed transaction; short of that TRON burns TRX for every byte.
+    /// TRC20 transfers never reach here — smart contracts get no free
+    /// bandwidth and are priced from simulated Energy in `calculateTrc20Fee`.
+    private func getBandwidthFeeDiscount(requiredBandwidth: Int64, availableBandwidth: Int64) async throws -> BigInt {
         let chainParams = try await getCachedChainParameters()
-        let bandwidthPrice = chainParams.bandwidthFeePrice
+        let required = max(requiredBandwidth, 0)
 
-        switch (isNativeToken, availableBandwidth >= feeBandwidthRequired) {
-        case (true, true):
-            // Native transfer with sufficient bandwidth => FREE tx
-            return BigInt.zero
-        case (false, _):
-            // TRC20 always pays fee (no free bandwidth for smart contracts)
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
-        case (true, false):
-            // Native transfer without sufficient bandwidth
-            return BigInt(feeBandwidthRequired * bandwidthPrice)
+        guard availableBandwidth < required else {
+            return .zero
         }
+        return BigInt(required) * BigInt(chainParams.bandwidthFeePrice)
     }
 
     private func getTronFeeMemo(memo: String?) async throws -> BigInt {

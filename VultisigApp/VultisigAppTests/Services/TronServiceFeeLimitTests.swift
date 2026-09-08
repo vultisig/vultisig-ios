@@ -194,7 +194,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
     }
 
     /// Simulation throws (network error / TRON gateway 5xx). Old behavior
-    /// fell through to `BYTES_PER_CONTRACT_TX * 1000` (~0.345 TRX), which
+    /// fell through to a 345-byte bandwidth charge (~0.345 TRX), which
     /// silently re-introduced OUT_OF_ENERGY. New behavior: fall back to
     /// the max-factor fallback (120.12 TRX at the test chain price).
     func testGetBlockInfo_trc20Transfer_fallsBackOnSimulationError() async throws {
@@ -405,7 +405,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
     }
 
     /// Native TRX transfer with sufficient bandwidth — the daily free-net
-    /// quota covers the 300-byte transfer, so the on-chain fee is genuinely
+    /// quota covers the whole serialized transfer, so the on-chain fee is genuinely
     /// 0. `gasFeeEstimation` must report that true 0 (Android parity), not a
     /// fabricated `coin.feeDefault`. This case is the *only* one where
     /// `calculateTronFee` returns 0: TRC20 / native-swap / bandwidth-shortfall
@@ -484,22 +484,56 @@ final class TronServiceFeeLimitTests: XCTestCase {
     }
 
     /// Native TRX transfer *without* sufficient bandwidth — the account has no
-    /// free-net quota, so the node consumes the 300-byte bandwidth fee. The
-    /// displayed fee must be the REAL bandwidth cost, not `coin.feeDefault`:
-    /// 300 bytes (`BYTES_PER_COIN_TX`) × 1000 sun (`getTransactionFee` /
-    /// `bandwidthFeePrice`) = 300_000 sun. Memo is 0 (none) and activation is
-    /// 0 (destination "exists" per the stub's getaccount response).
-    func testGetBlockInfo_nativeTransfer_insufficientBandwidth_showsRealBandwidthFee() async throws {
+    /// free-net quota, so the node charges for every byte of the signed
+    /// transaction at 1000 sun (`getTransactionFee` / `bandwidthFeePrice`).
+    /// The displayed fee must be the REAL bandwidth cost, not `coin.feeDefault`.
+    /// Memo is 0 (none) and activation is 0 (destination "exists" per the
+    /// stub's getaccount response).
+    func testGetBlockInfoNativeTransferInsufficientBandwidthPricesMeasuredBytes() async throws {
         let stub = TronStubHTTPClient()
         // Default getaccountresource has zero available bandwidth.
         stub.stubDefaults(energyUsed: 0)
         let service = TronService(httpClient: stub)
 
         let coin = makeNativeCoin()
-        let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
-        let gasFee = extractGasFee(result)
+        let result = try await service.getBlockInfo(coin: coin, to: Self.recipient, memo: nil, isSwap: false)
 
-        XCTAssertEqual(gasFee, 300_000)
+        XCTAssertEqual(extractGasFee(result), UInt64(try bandwidthBytes(for: coin, memo: nil)) * 1000)
+    }
+
+    /// The defect this replaced: bandwidth was reserved from a 300-byte
+    /// constant, so a memo — which is serialized into the transaction — could
+    /// push the real transfer past the free bandwidth the account holds while
+    /// the app still displayed it as free. At the same available bandwidth the
+    /// memo-less send is free and the memo-bearing one is not.
+    func testGetBlockInfoMemoPushesTransferPastTheFreeBandwidthItFitsWithout() async throws {
+        let coin = makeNativeCoin()
+        let memo = String(repeating: "a", count: 100)
+        let freeBandwidth = try bandwidthBytes(for: coin, memo: nil)
+
+        let bare = try await gasFee(coin: coin, memo: nil, availableBandwidth: freeBandwidth)
+        XCTAssertEqual(bare, 0)
+
+        let withMemo = try await gasFee(coin: coin, memo: memo, availableBandwidth: freeBandwidth)
+        let expectedBandwidthFee = UInt64(try bandwidthBytes(for: coin, memo: memo)) * 1000
+        // The flat `getMemoFee` chain parameter is charged on top of bandwidth.
+        XCTAssertEqual(withMemo, expectedBandwidthFee + 1_000_000)
+    }
+
+    /// Routing markers select a WalletCore system-contract builder and never
+    /// reach the wire, so they must not inflate the bandwidth reserve either.
+    func testGetBlockInfoRoutingMemoDoesNotInflateTheBandwidthReserve() async throws {
+        let coin = makeNativeCoin()
+        let freeBandwidth = try bandwidthBytes(for: coin, memo: nil)
+
+        let fee = try await gasFee(
+            coin: coin,
+            memo: TronHelper.withdrawExpireUnfreezeMemo,
+            availableBandwidth: freeBandwidth,
+            to: coin.address
+        )
+
+        XCTAssertEqual(fee, 0)
     }
 
     /// Native TRX transfer where the account-resource fetch FAILS — the true
@@ -522,6 +556,49 @@ final class TronServiceFeeLimitTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+
+    /// The bandwidth `getBlockInfo` measures for this transfer. Block-reference
+    /// and timestamp fields are fixed-width at millisecond epoch scale, so the
+    /// count does not depend on when the test runs.
+    private func bandwidthBytes(for coin: Coin, memo: String?, to: String? = nil) throws -> Int64 {
+        try TronHelper.nativeTransferBandwidthBytes(
+            ownerAddress: coin.address,
+            toAddress: to ?? Self.recipient,
+            amount: .zero,
+            memo: memo,
+            timestamp: 1_757_000_000_000,
+            expiration: 1_757_003_600_000,
+            blockHeaderTimestamp: 1_700_000_000,
+            blockHeaderNumber: 1,
+            blockHeaderVersion: 0,
+            blockHeaderTxTrieRoot: "00",
+            blockHeaderParentHash: "00",
+            blockHeaderWitnessAddress: "00"
+        )
+    }
+
+    private func gasFee(
+        coin: Coin,
+        memo: String?,
+        availableBandwidth: Int64,
+        to: String? = nil
+    ) async throws -> UInt64 {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":\(availableBandwidth),"NetUsed":0,"NetLimit":0,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+        let result = try await service.getBlockInfo(
+            coin: coin,
+            to: to ?? Self.recipient,
+            memo: memo,
+            isSwap: false
+        )
+        return extractGasFee(result)
+    }
 
     private func makeTrc20Coin() -> Coin {
         let asset = CoinMeta.make(

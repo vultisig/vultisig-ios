@@ -221,6 +221,96 @@ enum TronHelper {
         }
     }
 
+    // MARK: - Bandwidth Sizing
+
+    /// A secp256k1 signature on the wire: 32-byte `r`, 32-byte `s`, 1-byte recovery id.
+    private static let signatureBytes = 65
+
+    /// java-tron bills a 64-byte transaction-result allowance per contract on
+    /// top of the serialized bytes, and a transfer carries exactly one contract.
+    private static let transactionResultBytes: Int64 = 64
+
+    /// Bandwidth, in bytes, that a native TRX transfer consumes once signed.
+    ///
+    /// TRON charges for the serialized signed transaction, not for a per-shape
+    /// template, so a memo has to be measured rather than assumed — it is
+    /// serialized into `raw_data` and makes the transfer larger than any fixed
+    /// estimate. WalletCore's pre-signing output carries exactly those
+    /// `raw_data` bytes; the signed envelope adds that field's length prefix,
+    /// one length-delimited signature, and the per-contract result allowance.
+    ///
+    /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
+    static func nativeTransferBandwidthBytes(
+        ownerAddress: String,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Int64 {
+        let contract = TronTransferContract.with {
+            $0.ownerAddress = ownerAddress
+            $0.toAddress = toAddress
+            // An amount past Int64 cannot be signed either; sizing it at the
+            // maximum keeps the estimate on the conservative side.
+            $0.amount = Int64(exactly: amount) ?? .max
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .transfer(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+                if let memo { $0.memo = memo }
+            }
+        }
+
+        let preSigningOutput = try TxCompilerPreSigningOutput(
+            serializedBytes: TransactionCompiler.preImageHashes(
+                coinType: .tron,
+                txInputData: try input.serializedData()
+            )
+        )
+        guard preSigningOutput.errorMessage.isEmpty else {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+        // Without the raw bytes there is nothing to measure. Throwing hands the
+        // caller back to its conservative constant rather than reporting a
+        // large transfer as costing almost no bandwidth.
+        guard !preSigningOutput.data.isEmpty else {
+            throw HelperError.runtimeError("empty Tron pre-signing payload")
+        }
+
+        return lengthDelimitedFieldBytes(preSigningOutput.data.count)
+            + lengthDelimitedFieldBytes(signatureBytes)
+            + transactionResultBytes
+    }
+
+    /// Bytes a protobuf length-delimited field occupies: 1-byte tag, the length
+    /// varint, then the payload.
+    private static func lengthDelimitedFieldBytes(_ payloadSize: Int) -> Int64 {
+        let size = max(payloadSize, 0)
+        return Int64(1 + protobufVarintBytes(size) + size)
+    }
+
+    private static func protobufVarintBytes(_ value: Int) -> Int {
+        var remaining = max(value, 0)
+        var bytes = 1
+        while remaining >= 128 {
+            remaining /= 128
+            bytes += 1
+        }
+        return bytes
+    }
+
     // MARK: - Contract Payload Builders (dApp Integration)
 
     private static func buildTronTransferContractInput(
