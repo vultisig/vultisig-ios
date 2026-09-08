@@ -139,18 +139,19 @@ extension String {
         return nil
     }
 
-    /// Whether every character belongs to a numeric amount: an ASCII digit or a
+    /// Whether every character belongs to a numeric amount: a decimal digit or a
     /// decimal / grouping separator (the current locale's, plus `.`/`,` so a value
     /// pasted from another locale still validates). An empty string is valid (it
     /// clears the field).
     ///
-    /// Used to gate entry on macOS, which has no decimal keypad: a numeric field
-    /// rejects any edit that introduces a letter or symbol, rather than silently
-    /// stripping it — stripping would turn a mixed paste like `"12abc34"` into a
-    /// real-looking `"1234"`, and collapse a grouped `pt_BR` `"1.234,56"` toward a
-    /// wrong value. This only validates the character SET; `parseInput` remains the
-    /// numeric validator (so an in-progress `"1."` or a stray second separator is
-    /// still allowed as text and simply parses to its own value / zero).
+    /// Gates entry on macOS, which has no decimal keypad: a numeric field rejects
+    /// any edit that introduces a letter or symbol, rather than silently stripping
+    /// it — stripping would turn a mixed paste like `"12abc34"` into a real-looking
+    /// `"1234"`, and collapse a grouped `pt_BR` `"1.234,56"` toward a wrong value.
+    /// Also the character-set half of `isValidDecimal`. This only validates the
+    /// character SET; `parseInput` remains the numeric validator (so an in-progress
+    /// `"1."` or a stray second separator is still allowed as text and simply parses
+    /// to its own value / zero).
     func isDecimalInput(locale: Locale = .current) -> Bool {
         var allowed: Set<Character> = [".", ","]
         if let decimal = locale.decimalSeparator, decimal.count == 1 {
@@ -159,7 +160,20 @@ extension String {
         if let grouping = locale.groupingSeparator, grouping.count == 1 {
             allowed.insert(Character(grouping))
         }
-        return allSatisfy { ($0.isASCII && $0.isNumber) || allowed.contains($0) }
+        return allSatisfy { $0.isDecimalDigit || allowed.contains($0) }
+    }
+}
+
+private extension Character {
+    /// A Unicode decimal digit, not just `0`-`9`. `NumberFormatter` renders in the
+    /// locale's numbering system — `ar_EG` formats 1234.5 as `١٢٣٤٫٥`, `ne_NP` as
+    /// `१२३४.५` — so an amount the app formatted for the user has to validate again
+    /// under that same locale.
+    ///
+    /// Narrower than `isNumber` / `isWholeNumber` on purpose: those also accept
+    /// `²`, `½`, `Ⅷ` and `②`, none of which belong in an amount field.
+    var isDecimalDigit: Bool {
+        unicodeScalars.count == 1 && unicodeScalars.first?.properties.numericType == .decimal
     }
 }
 
@@ -222,8 +236,18 @@ extension String {
         return self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
 
-    func isValidDecimal() -> Bool {
-        guard let number = parseInput() else {
+    /// Whether this is a plain decimal amount: the character set `isDecimalInput`
+    /// allows, parsing to a non-negative value.
+    ///
+    /// The character-set half is what stops `NumberFormatter` expanding scientific
+    /// notation — it reads `"1e5"` as 100000, so an amount arriving from outside the
+    /// app would otherwise sign five orders of magnitude above the string the Verify
+    /// screen displays. Surrounding whitespace is trimmed for that half only:
+    /// `parseInput` still rules on the untrimmed value, so it keeps tolerating the
+    /// spaces it always did and keeps rejecting embedded newlines.
+    func isValidDecimal(locale: Locale = .current) -> Bool {
+        guard trimmingCharacters(in: .whitespaces).isDecimalInput(locale: locale),
+              let number = parseInput(locale: locale) else {
             return false
         }
 

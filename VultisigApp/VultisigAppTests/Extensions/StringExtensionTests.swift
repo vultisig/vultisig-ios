@@ -145,6 +145,97 @@ final class StringExtensionsTests: XCTestCase {
         XCTAssertFalse("abc12,5".isDecimalInput(locale: locale))
     }
 
+    // MARK: - isValidDecimal
+
+    /// `NumberFormatter` reads scientific notation, so before the character-set
+    /// half was folded in, an `amount=1e5` reaching the send form from a deeplink
+    /// or a scanned `bitcoin:` URI validated and then signed as 100000.
+    func testIsValidDecimalRejectsScientificNotationAndHex() {
+        let locale = Locale(identifier: "en_US")
+
+        XCTAssertFalse("1e5".isValidDecimal(locale: locale))
+        XCTAssertFalse("1E5".isValidDecimal(locale: locale))
+        XCTAssertFalse("2.5e3".isValidDecimal(locale: locale))
+        XCTAssertFalse("1e-3".isValidDecimal(locale: locale))
+        XCTAssertFalse("0x1F".isValidDecimal(locale: locale))
+
+        // The expansion `parseInput` performs is unchanged — the guard is on the
+        // notation, not on the value it would reach.
+        XCTAssertEqual("1e5".parseInput(locale: locale), Decimal(100_000))
+        XCTAssertTrue("100000".isValidDecimal(locale: locale))
+    }
+
+    func testIsValidDecimalAcceptsPlainAndGroupedAmounts() {
+        let enUS = Locale(identifier: "en_US")
+
+        XCTAssertTrue("1".isValidDecimal(locale: enUS))
+        XCTAssertTrue("0".isValidDecimal(locale: enUS))
+        XCTAssertTrue("0.00000001".isValidDecimal(locale: enUS))
+        XCTAssertTrue("1,234.56".isValidDecimal(locale: enUS))
+        // Surrounding spaces stay tolerated, as `parseInput` always has.
+        XCTAssertTrue("   1,234.56   ".isValidDecimal(locale: enUS))
+
+        let ptBR = Locale(identifier: "pt_BR")
+        XCTAssertTrue("1.234,56".isValidDecimal(locale: ptBR))
+        XCTAssertEqual("1.234,56".parseInput(locale: ptBR), Decimal(string: "1234.56"))
+    }
+
+    func testIsValidDecimalRejectsEmptyMalformedAndNegative() {
+        let locale = Locale(identifier: "en_US")
+
+        XCTAssertFalse("".isValidDecimal(locale: locale))
+        XCTAssertFalse("abc".isValidDecimal(locale: locale))
+        XCTAssertFalse("1.8.3".isValidDecimal(locale: locale))
+        XCTAssertFalse("-5".isValidDecimal(locale: locale))
+        XCTAssertFalse("\n\t1,234.56\t\n".isValidDecimal(locale: locale))
+    }
+
+    /// `NumberFormatter` renders digits in the locale's numbering system, so an
+    /// amount the app formatted for the user has to validate again under that same
+    /// locale. Every shipping locale is Latin-digit, but the two sides must agree
+    /// for any effective locale — a rejected Max amount would block sending
+    /// outright, a worse failure than the one the guard exists to prevent.
+    func testIsValidDecimalAcceptsEveryLocaleNumberingSystem() {
+        let identifiers = [
+            "en_US", "de_DE", "zh_Hans_CN", "es_ES", "ko_KR", "it_IT", "pt_BR", "hr_HR",
+            "ar_EG", "fa_IR", "ne_NP"
+        ]
+
+        for identifier in identifiers {
+            let locale = Locale(identifier: identifier)
+            // Mirrors `SendCryptoLogic.formatAmountInput`, which fills the amount
+            // field from Max / percentage presets.
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.locale = locale
+            formatter.maximumFractionDigits = 8
+            formatter.minimumFractionDigits = 0
+            formatter.usesGroupingSeparator = false
+            formatter.decimalSeparator = locale.decimalSeparator ?? "."
+            let formatted = formatter.string(from: NSDecimalNumber(decimal: Decimal(string: "1234.5")!)) ?? ""
+
+            XCTAssertTrue(
+                formatted.isValidDecimal(locale: locale),
+                "\(identifier) formats 1234.5 as \(formatted), which it must accept back"
+            )
+            XCTAssertFalse("1e5".isValidDecimal(locale: locale), "\(identifier) must still reject 1e5")
+        }
+    }
+
+    /// The digit test is Unicode decimal digits (Nd) — deliberately narrower than
+    /// `isNumber`, which also accepts exponents, fractions and numeral letters.
+    func testIsDecimalInputAcceptsOnlyDecimalDigits() {
+        let locale = Locale(identifier: "en_US")
+
+        XCTAssertTrue("١٢٣".isDecimalInput(locale: Locale(identifier: "ar_EG")))
+        XCTAssertTrue("१२३".isDecimalInput(locale: Locale(identifier: "ne_NP")))
+
+        XCTAssertFalse("1²".isDecimalInput(locale: locale))
+        XCTAssertFalse("½".isDecimalInput(locale: locale))
+        XCTAssertFalse("Ⅷ".isDecimalInput(locale: locale))
+        XCTAssertFalse("②".isDecimalInput(locale: locale))
+    }
+
     // MARK: - toBigInt(decimals:)
 
     /// The whole point of the exact path: past `Int64` — about 9.223 on an
