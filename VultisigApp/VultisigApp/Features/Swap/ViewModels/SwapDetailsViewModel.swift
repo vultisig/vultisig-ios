@@ -63,20 +63,29 @@ final class SwapDetailsViewModel {
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
     // override (provider selection). The rest of the screen — fees, validation,
     // verify, sign — reads the computed `quote`, so a manual pick flows through
-    // unchanged. A refresh resets `selectedQuote` so it re-defaults to Best.
+    // unchanged. A refresh re-resolves the pick against the fresh candidate
+    // set by `routeIdentity`, so it survives while that route is still on offer
+    // and always points at the current numbers.
 
     /// Full ranked candidate set (best→worst by net output). Drives the
     /// provider-selection sheet. Empty until the first quote of a pair lands.
     var allQuotes: [SwapQuote] = []
     /// Auto-selected winner for the current pair/amount.
     var bestQuote: SwapQuote?
-    /// Manual provider override. `nil` means "use Best". Reset on every refresh.
+    /// Manual provider override. `nil` means "use Auto". Survives a refresh of
+    /// the same pair/amount for as long as the picked route is still a
+    /// candidate; every path that drops it goes through `dropRouteSelection`.
     var selectedQuote: SwapQuote?
 
+    /// One-shot notice that a manual route pick was dropped, rendered by the
+    /// screen as a banner and cleared by it. `nil` when there's nothing to say.
+    var routeSelectionNotice: String?
+
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
-    /// auto-selected best. Writing it (e.g. the reset paths, tests) clears the
-    /// manual override and assigns the best slot so existing call sites behave
-    /// exactly as before.
+    /// auto-selected best. Writing it replaces the slot wholesale — that clears
+    /// the manual override without a notice, since it isn't a pick being
+    /// invalidated under the user (nothing in the app writes it; the reset paths
+    /// call `clearQuoteState` and tests seed state through it).
     var quote: SwapQuote? {
         get { selectedQuote ?? bestQuote }
         set {
@@ -198,6 +207,34 @@ final class SwapDetailsViewModel {
     /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
+    }
+
+    /// Why a manual route pick had to be dropped. Each case carries the message
+    /// the screen shows, so a pick can never disappear without the user knowing.
+    enum RouteSelectionDropReason {
+        /// The picked route is no longer among the candidates for this swap.
+        case routeUnavailable
+        /// The swap itself changed (pair or amount), so the whole candidate set
+        /// is being refetched and nothing carries over.
+        case swapChanged
+
+        var message: String {
+            switch self {
+            case .routeUnavailable:
+                return "swapRouteUnavailableResetToAuto".localized
+            case .swapChanged:
+                return "swapRouteResetToAuto".localized
+            }
+        }
+    }
+
+    /// Drop the manual route pick and say why. No-op without a pick, so an
+    /// invalidation that repeats — `fetchQuotes` runs on every keystroke of an
+    /// amount edit — still surfaces at most one notice per pick.
+    func dropRouteSelection(_ reason: RouteSelectionDropReason) {
+        guard selectedQuote != nil else { return }
+        selectedQuote = nil
+        routeSelectionNotice = reason.message
     }
 
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
@@ -684,7 +721,7 @@ private extension SwapDetailsViewModel {
     /// set. Keeps the three in lock-step so a stale provider list can't outlive
     /// the quote it belonged to.
     func clearQuoteState() {
-        selectedQuote = nil
+        dropRouteSelection(.swapChanged)
         bestQuote = nil
         allQuotes = []
     }
@@ -776,7 +813,9 @@ private extension SwapDetailsViewModel {
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
         // quote. Confirm builds the real SECURE+ deposit payload.
         if isSecuredMint {
-            selectedQuote = nil
+            // The candidate set collapses to the one synthetic mint quote, so
+            // any picked route really is gone.
+            dropRouteSelection(.routeUnavailable)
             bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: fromAmount.toDecimal(), toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
             quotedPair = currentPair
@@ -800,10 +839,23 @@ private extension SwapDetailsViewModel {
             // quote over the state the new fetch is about to populate.
             guard !Task.isCancelled else { return }
             if let result {
-                // Every refresh re-defaults to Best: drop any manual override so
-                // the active `quote` tracks the fresh winner ("until next refresh"
-                // persistence). `allQuotes` repopulates from the ranked set.
-                selectedQuote = nil
+                // Re-attach a manual pick to the fresh candidate set by route
+                // identity. `SwapQuote` is Hashable by payload, so the refreshed
+                // quote for the same route is a different value — matching on the
+                // quote itself could never survive a refresh. Re-pointing at the
+                // object out of `result.allQuotes` is also what keeps signing on
+                // current numbers rather than the quote the user tapped.
+                //
+                // Only genuine same-pair/same-amount refreshes reach here with a
+                // pick: `fetchQuotes` already dropped it for any pair or amount
+                // change before this fetch started.
+                if let picked = selectedQuote?.routeIdentity {
+                    if let refreshed = result.allQuotes.first(where: { $0.routeIdentity == picked }) {
+                        selectedQuote = refreshed
+                    } else {
+                        dropRouteSelection(.routeUnavailable)
+                    }
+                }
                 bestQuote = result.quote
                 allQuotes = result.allQuotes
                 quotedPair = currentPair
