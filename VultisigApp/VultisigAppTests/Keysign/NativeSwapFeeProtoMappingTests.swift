@@ -11,12 +11,28 @@
 //
 
 import BigInt
+import SwiftData
 import XCTest
 import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
 final class NativeSwapFeeProtoMappingTests: XCTestCase {
+
+    /// Rate fixtures are written through `Storage.shared.modelContext`, so this
+    /// class installs its own in-memory container rather than persisting into
+    /// whatever store a previous test class left installed — which in a
+    /// simulator can be the app's real one.
+    private var token: TestContextToken!
+
+    override func setUpWithError() throws {
+        token = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() {
+        TestStore.restore(token)
+        token = nil
+    }
 
     // MARK: - Proto round-trip
 
@@ -131,12 +147,19 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "48000000")
     }
 
-    func testNativeSwapPayloadFeeExcludesTheLiquidityComponent() {
+    func testNativeSwapPayloadFeeIgnoresTheQuotesTotal() {
         // `fees.total` folds in the liquidity/slippage charge, which the quoted
-        // output amount already reflects. Carrying it would make the co-signer's
-        // total exceed the initiator's for the same swap.
-        let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: "60000000")
-        XCTAssertNotEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), quote.fees.total)
+        // output amount already reflects. Carrying it would put the co-signer's
+        // total above the initiator's for one swap. Varying ONLY `total` and
+        // pinning the exact result asserts independence, where a `!=` check
+        // would also be satisfied by an implementation that returned nil.
+        for total in ["60000000", "48000000", "0", "not-a-number"] {
+            let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: total)
+            XCTAssertEqual(
+                SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "48000000",
+                "fees.total = \(total) must not move the carried fee"
+            )
+        }
     }
 
     func testNativeSwapPayloadFeeIsNilWhenNothingIsCharged() {
@@ -226,8 +249,12 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
             toAmountDecimal: 3000,
             quote: quote
         )
+        // Serialize and parse back: the co-signer's figure has to survive the
+        // wire, not just the in-memory struct, or this proves nothing about the
+        // device that actually renders it.
+        let decoded = try SwapPayload(proto: SwapPayload.thorchain(payload).mapToProtobuff())
         let resolved = try XCTUnwrap(
-            JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: .thorchain(payload), vault: nil)
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: decoded, vault: nil)
         )
 
         XCTAssertGreaterThan(initiatorFiat, 0, "Seeded rate should make the comparison meaningful")
@@ -249,11 +276,61 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         let viewModel = JoinKeysignViewModel()
         viewModel.keysignPayload = keysignPayload
 
-        let networkFiat = try XCTUnwrap(JoinKeysignGasViewModel().networkFeeFiat(payload: keysignPayload))
-        let expected = (networkFiat + toCoin.fiat(decimal: Decimal(string: "0.48") ?? 0))
-            .formatToFiat(includeCurrencySymbol: true)
+        // Both legs are derived from the fixture by hand rather than from the
+        // code under test, so a wrong gas amount, decimals, coin or rate moves
+        // the actual without moving the expectation.
+        //   network: 21_000 gas x 1 gwei = 0.000021 ETH @ $2000 = $0.042
+        //   swap:    0.48 TRX @ $0.25                            = $0.12
+        XCTAssertEqual(
+            JoinKeysignGasViewModel().networkFeeFiat(payload: keysignPayload),
+            Decimal(string: "0.042"),
+            "Network leg must price the transmitted gas through the payload's own coin"
+        )
+        XCTAssertEqual(
+            viewModel.getSwapTotalFee(),
+            Decimal(string: "0.162")?.formatToFiat(includeCurrencySymbol: true)
+        )
+    }
 
-        XCTAssertEqual(viewModel.getSwapTotalFee(), expected)
+    func testTotalFeeRowHiddenWhenTheSwapFeeCoinHasNoRate() throws {
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        // Destination coin deliberately left unpriced.
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertNotNil(
+            JoinKeysignGasViewModel().networkFeeFiat(payload: try XCTUnwrap(viewModel.keysignPayload)),
+            "Only the swap leg should be unpriced here, or this asserts the wrong branch"
+        )
+        XCTAssertNil(
+            viewModel.getSwapTotalFee(),
+            "An unpriced swap leg must drop the row, not be absorbed into the total as free"
+        )
+    }
+
+    func testTotalFeeRowHiddenWhenTheNetworkFeeCoinHasNoRate() {
+        // Source coin deliberately left unpriced.
+        setPrice(0.25, for: makeTRX())
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: makeUnpricedEthSource(),
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000"))
+        )
+
+        XCTAssertNotNil(
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(
+                swapPayload: viewModel.keysignPayload?.swapPayload, vault: nil
+            ),
+            "Only the network leg should be unpriced here, or this asserts the wrong branch"
+        )
+        XCTAssertNil(
+            viewModel.getSwapTotalFee(),
+            "An unpriced network leg must drop the row for the same reason"
+        )
     }
 
     func testTotalFeeRowHiddenWhenTheSenderCarriedNoFee() {
@@ -364,31 +441,64 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
     }
 
-    /// A distinct ticker (and so a distinct price-provider id) keeps the source
-    /// coin's seeded rate independent of whatever another test class priced ETH at.
     private func makeEthSource() -> Coin {
-        makeCoin(.ethereum, ticker: "ETHNATIVEFEE", decimals: 18, isNative: true)
+        makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
     }
 
-    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, contract: String = "") -> Coin {
+    /// Same shape as the priced fixtures but under an id nothing seeds, so the
+    /// fail-closed branches are exercised by a genuinely absent rate.
+    private func makeUnpricedTRX() -> Coin {
+        makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true, priceScope: "unpriced")
+    }
+
+    private func makeUnpricedEthSource() -> Coin {
+        makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, priceScope: "unpriced")
+    }
+
+    /// `RateProvider` is a process-wide singleton keyed by `priceProviderId`, so
+    /// fixtures scope theirs to this class. Sharing a generic id ("eth", "trx")
+    /// would let this class's seeded prices leak into other test classes and let
+    /// theirs leak in here, making both order-dependent.
+    private func makeCoin(
+        _ chain: Chain,
+        ticker: String,
+        decimals: Int,
+        isNative: Bool,
+        contract: String = "",
+        priceScope: String = "5340"
+    ) -> Coin {
         let asset = CoinMeta(
             chain: chain,
             ticker: ticker,
             logo: "logo",
             decimals: decimals,
-            priceProviderId: ticker.lowercased(),
+            priceProviderId: "native-swap-fee-\(priceScope)-\(ticker.lowercased())",
             contractAddress: contract,
             isNativeToken: isNative
         )
         return Coin(asset: asset, address: "native-swap-fee-\(ticker)", hexPublicKey: "")
     }
 
-    private func setPrice(_ value: Double, for coin: Coin) {
+    private func setPrice(
+        _ value: Double,
+        for coin: Coin,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         let cryptoId = RateProvider.cryptoId(for: coin.toCoinMeta()).id
         // In-memory rates update before the storage write, so a storage failure
-        // in the test harness doesn't invalidate the assertion.
+        // does not by itself invalidate the assertion. What the tests actually
+        // depend on is that the rate reads back, so that is what is asserted —
+        // a silent seeding failure surfaces here rather than as a confusing nil
+        // fiat several lines later.
         try? RateProvider.shared.save(rates: [
             Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: value)
         ])
+        XCTAssertNotNil(
+            RateProvider.shared.rate(for: coin),
+            "Seeded rate for \(coin.ticker) must be readable",
+            file: file,
+            line: line
+        )
     }
 }
