@@ -52,6 +52,14 @@ struct THORChainSwapPayload: Codable, Hashable {
     /// `$0.00`; `nil` is a sender that stated nothing and renders no row.
     /// Display only.
     var fee: String? = nil
+    /// Price impact of the route in basis points, as the quote reported it —
+    /// carried rather than recomputed because a co-signer fetching its own quote
+    /// would price a pool that has moved since the initiator quoted it, making
+    /// this the one term on the two verify screens where honest devices disagree.
+    /// `nil` from a quote that reports none or a sender that pre-dates the field,
+    /// and the row is hidden; a carried `0` is a real claim of a zero-impact
+    /// route and renders as one. Display only: no signer reads it.
+    var slippageBps: UInt32? = nil
 
     var toAddress: String {
         return toCoin.address

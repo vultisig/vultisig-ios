@@ -89,6 +89,36 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
+    /// Price impact of the route as a fraction (`0.0125` == 1.25%), mirroring
+    /// `SwapQuote.priceImpact` for the co-signer, which holds only the serialized
+    /// payload. Native routes carry the quote's basis points on the wire; the
+    /// aggregator routes put none there. `nil` also for a sender that pre-dates
+    /// the field — consumers hide the row rather than claim a zero-impact route,
+    /// which a carried `0` would legitimately mean.
+    /// "SwapKit (NEAR)" when a route tag travelled with the payload, the bare
+    /// aggregator name when it did not. A tag naming the aggregator itself is
+    /// dropped rather than repeated: SwapKit's `providers` is empty for some
+    /// routes and its own name is the fallback, which would otherwise read
+    /// "SwapKit (SwapKit)".
+    private static func appendingRoute(_ provider: String, subProvider: String?) -> String {
+        guard let subProvider = subProvider?.nilIfEmpty,
+              subProvider.caseInsensitiveCompare(provider) != .orderedSame else {
+            return provider
+        }
+        return "\(provider) (\(subProvider))"
+    }
+
+    var priceImpact: Decimal? {
+        switch self {
+        case .thorchain(let payload), .thorchainChainnet(let payload),
+             .thorchainStagenet(let payload), .mayachain(let payload):
+            guard let slippageBps = payload.slippageBps else { return nil }
+            return Decimal(slippageBps) / 10000
+        case .generic, .swapkit:
+            return nil
+        }
+    }
+
     var isDeposit: Bool {
         switch self {
         case .mayachain(let payload):
@@ -98,6 +128,9 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
+    /// Persisted / explorer-facing provider identity. Transaction History stores
+    /// this string and `ExplorerLinkBuilder` aliases it back to a tracker, so the
+    /// route tag lives on `providerDisplayName` instead of here.
     var providerName: String {
         switch self {
         case .thorchain:
@@ -113,7 +146,21 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         case .swapkit(let payload):
             // Sub-provider tag preserves the verify-screen "via Chainflip" /
             // "via NEAR Intents" / "via Garden" affordance.
-            return payload.subProvider.isEmpty ? "SwapKit" : "SwapKit (\(payload.subProvider))"
+            return Self.appendingRoute("SwapKit", subProvider: payload.subProvider)
         }
+    }
+
+    /// Verify-screen name: the aggregator plus the route it actually took, when
+    /// a route tag travelled with the payload. SwapKit's EVM and Solana routes
+    /// ride `.generic`, so this is what lets a co-signer name them the way every
+    /// other SwapKit route is already named.
+    ///
+    /// Kept separate from `providerName` deliberately. That string is persisted
+    /// to Transaction History and aliased back to a tracker URL by
+    /// `ExplorerLinkBuilder`, whose lookup is exact — folding a route tag into it
+    /// would drop the aggregator's own tracker for every affected row.
+    var providerDisplayName: String {
+        guard case let .generic(payload) = self else { return providerName }
+        return Self.appendingRoute(payload.provider.name, subProvider: payload.subProvider)
     }
 }

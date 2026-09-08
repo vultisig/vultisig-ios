@@ -734,8 +734,10 @@ class JoinKeysignViewModel: ObservableObject {
         resolvedHero ?? heroContent
     }
 
-    var providerName: String {
-        keysignPayload?.swapPayload?.providerName ?? .empty
+    /// Provider row on the swap confirm screen — the aggregator plus the route
+    /// it took, where the payload names one.
+    var providerDisplayName: String {
+        keysignPayload?.swapPayload?.providerDisplayName ?? .empty
     }
 
     /// dApp identity (name / url / icon) attached to the keysign request, if
@@ -786,6 +788,19 @@ class JoinKeysignViewModel: ObservableObject {
         }
         let amount = Decimal(limit) / swapPayload.toCoin.thorswapMultiplier
         return SwapCryptoLogic.minPayoutCaption(amount: amount, ticker: swapPayload.toCoin.ticker)
+    }
+
+    /// Price-impact label for the swap confirm screen, formatted by the same
+    /// helper the initiator's verify screen uses so the two cannot word it
+    /// differently. Empty when the payload carries no impact — a joiner must not
+    /// re-derive one from its own quote, because it would price a pool that has
+    /// moved since the initiator was quoted.
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(impact: keysignPayload?.swapPayload?.priceImpact)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(impact: keysignPayload?.swapPayload?.priceImpact)
     }
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {

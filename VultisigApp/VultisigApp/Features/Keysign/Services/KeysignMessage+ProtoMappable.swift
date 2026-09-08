@@ -228,6 +228,16 @@ private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapP
     proto.fee = fee
 }
 
+/// Explicit presence for the carried price impact. `slippage_bps` is an
+/// `optional uint32`, so absent means "sender predates the field, impact
+/// unknown" and the receiver hides the row, while a present `0` is a real claim
+/// of a zero-impact route. Only a nil leaves the field untouched -- writing a
+/// stand-in would turn "unknown" into a definite statement.
+private func writeNativeSwapSlippageBps(_ slippageBps: UInt32?, to proto: inout VSTHORChainSwapPayload) {
+    guard let slippageBps else { return }
+    proto.slippageBps = slippageBps
+}
+
 extension SwapPayload {
     init(proto: VSKeysignPayload.OneOf_SwapPayload) throws {
         switch proto {
@@ -245,7 +255,8 @@ extension SwapPayload {
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
                 isAffiliate: value.isAffiliate,
-                fee: value.fee.nilIfEmpty
+                fee: value.fee.nilIfEmpty,
+                slippageBps: value.hasSlippageBps ? value.slippageBps : nil
             ))
         case .mayachainSwapPayload(let value):
             self = .mayachain(THORChainSwapPayload(
@@ -261,7 +272,8 @@ extension SwapPayload {
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
                 isAffiliate: value.isAffiliate,
-                fee: value.fee.nilIfEmpty
+                fee: value.fee.nilIfEmpty,
+                slippageBps: value.hasSlippageBps ? value.slippageBps : nil
             ))
         case .oneinchSwapPayload(let value):
             // `has*` guards distinguish "legacy sender, context unknown"
@@ -289,7 +301,8 @@ extension SwapPayload {
                 provider: SwapProviderId.from(rawValue: value.provider),
                 swapFeeChain: value.quote.tx.hasSwapFeeChain ? value.quote.tx.swapFeeChain.nilIfEmpty : nil,
                 swapFeeTokenId: swapFeeTokenId,
-                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil
+                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil,
+                subProvider: value.subProvider.nilIfEmpty
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(
@@ -324,7 +337,13 @@ extension SwapPayload {
                 inboundAddress: value.hasInboundAddress ? value.inboundAddress : nil,
                 memo: value.hasMemo ? value.memo : nil,
                 subProvider: value.subProvider,
-                swapID: value.swapID
+                swapID: value.swapID,
+                // Same `has*` discipline as the 1inch fee context above: an
+                // absent field means "legacy sender, unknown", not zero.
+                swapFee: value.swapFee.nilIfEmpty,
+                swapFeeChain: value.hasSwapFeeChain ? value.swapFeeChain.nilIfEmpty : nil,
+                swapFeeTokenId: value.hasSwapFeeTokenID ? value.swapFeeTokenID.nilIfEmpty : nil,
+                swapFeeDecimals: value.hasSwapFeeDecimals ? Int(value.swapFeeDecimals) : nil
             ))
         }
     }
@@ -346,6 +365,7 @@ extension SwapPayload {
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
                 writeNativeSwapFee(payload.fee, to: &$0)
+                writeNativeSwapSlippageBps(payload.slippageBps, to: &$0)
             })
         case .mayachain(let payload):
             return .mayachainSwapPayload(.with {
@@ -362,6 +382,7 @@ extension SwapPayload {
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
                 writeNativeSwapFee(payload.fee, to: &$0)
+                writeNativeSwapSlippageBps(payload.slippageBps, to: &$0)
             })
         case .generic(let payload):
             return .oneinchSwapPayload(.with {
@@ -398,6 +419,11 @@ extension SwapPayload {
                     }
                 }
                 $0.provider = payload.provider.rawValue
+                // Same discipline as the fee context above: never set from a
+                // nil, so a legacy payload decoded here re-encodes byte-stable.
+                if let subProvider = payload.subProvider?.nilIfEmpty {
+                    $0.subProvider = subProvider
+                }
             })
         case .swapkit(let payload):
             return .swapkitSwapPayload(.with {
@@ -416,6 +442,21 @@ extension SwapPayload {
                 }
                 $0.subProvider = payload.subProvider
                 $0.swapID = payload.swapID
+                if let swapFee = payload.swapFee?.nilIfEmpty, swapFee != "0" {
+                    $0.swapFee = swapFee
+                    // Never set from nils: a present-but-empty chain or token id
+                    // breaks a receiver's coin lookup, and re-encoding a legacy
+                    // payload has to stay byte-stable.
+                    if let swapFeeChain = payload.swapFeeChain?.nilIfEmpty {
+                        $0.swapFeeChain = swapFeeChain
+                    }
+                    if let swapFeeTokenId = payload.swapFeeTokenId?.nilIfEmpty {
+                        $0.swapFeeTokenID = swapFeeTokenId
+                    }
+                    if let swapFeeDecimals = payload.swapFeeDecimals {
+                        $0.swapFeeDecimals = Int32(swapFeeDecimals)
+                    }
+                }
             })
         }
     }

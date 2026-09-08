@@ -47,8 +47,9 @@ struct JoinKeysignSwapFeeViewModel {
             return resolveNativeSwapFee(payload: payload)
         case let .generic(payload):
             return resolveGenericSwapFee(payload: payload, vault: vault)
-        case .swapkit, .none:
-            // SwapKit keeps its fee in a wire group this payload shape lacks.
+        case let .swapkit(payload):
+            return resolveSwapKitSwapFee(payload: payload, vault: vault)
+        case .none:
             return nil
         }
     }
@@ -68,22 +69,62 @@ struct JoinKeysignSwapFeeViewModel {
     }
 
     private func resolveGenericSwapFee(payload: GenericSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
-        guard let fee = BigInt(payload.quote.tx.swapFee), fee > 0 else { return nil }
+        resolveContextualSwapFee(
+            rawFee: payload.quote.tx.swapFee,
+            chainName: payload.swapFeeChain,
+            tokenId: payload.swapFeeTokenId,
+            wireDecimals: payload.swapFeeDecimals,
+            fromCoin: payload.fromCoin,
+            toCoin: payload.toCoin,
+            vault: vault
+        )
+    }
+
+    /// SwapKit's transfer routes (PSBT / TON / TRON / SUI / Cardano / XRP) carry
+    /// the provider fee in a group of their own on the wire, in the same shape
+    /// the EVM routes carry it: raw amount plus the chain, token id and decimals
+    /// that say what coin it is denominated in. Same resolution, same refusal to
+    /// guess.
+    private func resolveSwapKitSwapFee(payload: SwapKitSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
+        resolveContextualSwapFee(
+            rawFee: payload.swapFee,
+            chainName: payload.swapFeeChain,
+            tokenId: payload.swapFeeTokenId,
+            wireDecimals: payload.swapFeeDecimals,
+            fromCoin: payload.fromCoin,
+            toCoin: payload.toCoin,
+            vault: vault
+        )
+    }
+
+    /// Shared resolution for the aggregator payloads, which all denominate their
+    /// fee in a coin that has to be named on the wire because it is neither side
+    /// of the swap by construction.
+    private func resolveContextualSwapFee(
+        rawFee: String?,
+        chainName: String?,
+        tokenId: String?,
+        wireDecimals: Int?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault?
+    ) -> ResolvedSwapFee? {
+        guard let rawFee, let fee = BigInt(rawFee), fee > 0 else { return nil }
 
         // Pre-context senders omit chain/decimals — render no row rather
         // than guessing a coin (a 6-decimal destination-token fee read as an
         // 18-decimal native amount is wrong by ~10^12).
         guard
-            let chainName = payload.swapFeeChain,
+            let chainName,
             let chain = Chain(name: chainName),
-            let wireDecimals = payload.swapFeeDecimals
+            let wireDecimals
         else { return nil }
 
         guard let coin = resolveDisplayCoin(
             chain: chain,
-            tokenId: payload.swapFeeTokenId,
-            fromCoin: payload.fromCoin,
-            toCoin: payload.toCoin,
+            tokenId: tokenId,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
             vault: vault
         ) else { return nil }
 

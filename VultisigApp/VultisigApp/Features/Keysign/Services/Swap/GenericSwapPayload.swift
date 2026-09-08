@@ -24,4 +24,11 @@ struct GenericSwapPayload: Codable, Hashable {
     var swapFeeChain: String? = nil
     var swapFeeTokenId: String? = nil
     var swapFeeDecimals: Int? = nil
+
+    /// Route tag under the aggregator named by `provider` — "NEAR", "CHAINFLIP",
+    /// "GARDEN". SwapKit's EVM and Solana routes ride this payload shape, and
+    /// without the tag a co-signer names the aggregator while the initiator that
+    /// holds the quote names the route too. nil for aggregators that route
+    /// directly and for senders that predate the field.
+    var subProvider: String? = nil
 }

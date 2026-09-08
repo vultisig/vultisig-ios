@@ -58,4 +58,28 @@ struct SwapKitSwapPayload: Codable, Hashable {
     /// SwapKit swap identifier. Persisted for tracking + analytics. NOT
     /// accepted by `POST /track` — track by broadcast hash + chain id.
     let swapID: String
+
+    /// Provider fee for this swap, raw in the base units of the coin the three
+    /// fields below identify. A co-signer holds no quote, so a fee that does not
+    /// travel here is one it can neither recover nor show.
+    ///
+    /// Read from the wire but not yet written by this app: iOS treats SwapKit's
+    /// affiliate charge as embedded in the quoted rate (`SwapCryptoLogic`'s
+    /// `affiliateFeeFiat` returns zero for SwapKit and the form shows an
+    /// "included in rate" note instead of an amount), so there is no itemized
+    /// initiator figure to carry. Populating one here would give the joiner a fee
+    /// row and a total that the initiator's own verify screen does not show —
+    /// the disagreement these fields exist to remove. A sender that does itemize
+    /// it (Windows, Android, the SDK) reaches an iOS joiner through these fields.
+    ///
+    /// Display only: no signer reads any of them.
+    var swapFee: String? = nil
+
+    /// Coin context for `swapFee`. The amount alone is ambiguous — providers
+    /// charge in the source gas coin, the sell asset or the destination token —
+    /// and a 6-decimal fee read as an 18-decimal one is wrong by 10^12. All nil
+    /// means "unknown"; the consumer renders no row rather than guessing a coin.
+    var swapFeeChain: String? = nil
+    var swapFeeTokenId: String? = nil
+    var swapFeeDecimals: Int? = nil
 }

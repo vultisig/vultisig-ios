@@ -42,7 +42,7 @@ struct KeysignSwapConfirmView: View {
             separator
             getValueCell(
                 for: "provider",
-                with: viewModel.providerName,
+                with: viewModel.providerDisplayName,
                 showIcon: true
             )
 
@@ -53,6 +53,14 @@ struct KeysignSwapConfirmView: View {
 
             separator
             getNetworkFeeCell()
+
+            // Only when the initiator carried the quote's impact. Re-deriving it
+            // here would price a pool that has moved since, so no row beats a
+            // number this device made up.
+            if !viewModel.priceImpactString.isEmpty {
+                separator
+                priceImpactRow
+            }
 
             if let totalFee = viewModel.getSwapTotalFee() {
                 separator
@@ -169,6 +177,20 @@ struct KeysignSwapConfirmView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
             }
 
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var priceImpactRow: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(viewModel.priceImpactString)
+                .foregroundStyle(viewModel.priceImpactColor)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
