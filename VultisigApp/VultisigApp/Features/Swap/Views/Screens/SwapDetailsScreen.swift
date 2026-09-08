@@ -168,21 +168,14 @@ struct SwapDetailsScreen: View {
         .onChange(of: detailsViewModel.fromAmount) { _, _ in
             detailsViewModel.error = nil
         }
-        // A manual route pick that had to be dropped says so here rather than
-        // reverting to Auto in silence.
         .withBanner(text: routeSelectionNotice, style: .error)
         .ignoresSafeArea(.keyboard)
     }
 
-    /// The market form's route notice, withheld while the Limit tab is showing:
-    /// the market quote keeps refreshing behind it, and a market-route banner over
-    /// the limit form reads as an error about the order being placed. Withheld,
-    /// not dropped — switching back to Market flips the binding and the notice
-    /// lands on the form it is about.
-    ///
-    /// This gates when a banner STARTS. One already on screen when the user
-    /// switches tabs still finishes its own ~1.5s dismissal, because the shared
-    /// banner modifier tracks visibility itself and ignores the text going nil.
+    /// Withheld while the Limit tab shows — the market quote keeps refreshing
+    /// behind it, so its banner would land on the limit form. Withheld, not
+    /// dropped: returning to Market delivers it. Gates only when a banner STARTS;
+    /// one already visible finishes its own dismissal (the modifier owns that).
     private var routeSelectionNotice: Binding<String?> {
         Binding(
             get: { selectedSwapMode == .market ? detailsViewModel.routeSelectionNotice : nil },

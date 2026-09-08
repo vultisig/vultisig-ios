@@ -26,10 +26,8 @@ final class SwapDetailsViewModel {
     // pair OR amount change clears it so the "to" field falls back to the
     // instant indicative estimate and the summary shows its loading skeleton.
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
-    /// The PARSED amount the held quote was fetched for — the same value that
-    /// went to the provider. Comparing the parsed amount rather than the raw text
-    /// keeps `1` → `1.` → `1.0` a silent refresh instead of a new swap, so it
-    /// neither blanks the summary nor drops a route pick over a re-typed zero.
+    /// The PARSED amount the held quote was fetched for — the same value sent to
+    /// the provider, so re-typing an equivalent amount is not a new swap.
     @ObservationIgnored private var quotedAmount: Decimal?
 
     // MARK: - Form fields (mutable while the user is editing)
@@ -67,30 +65,25 @@ final class SwapDetailsViewModel {
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
     // override (provider selection). The rest of the screen — fees, validation,
     // verify, sign — reads the computed `quote`, so a manual pick flows through
-    // unchanged. A refresh re-resolves the pick against the fresh candidate
-    // set by `routeIdentity`, so it survives while that route is still on offer
-    // and always points at the current numbers. `makeTransaction` hands the
-    // identity on, so the verify screen's own refresh keeps the pick too.
+    // unchanged. A refresh re-resolves the pick by `routeIdentity`, and
+    // `makeTransaction` hands that identity on so verify's refresh keeps it too.
 
     /// Full ranked candidate set (best→worst by net output). Drives the
     /// provider-selection sheet. Empty until the first quote of a pair lands.
     var allQuotes: [SwapQuote] = []
     /// Auto-selected winner for the current pair/amount.
     var bestQuote: SwapQuote?
-    /// Manual provider override. `nil` means "use Auto". Survives a refresh of
-    /// the same pair/amount for as long as the picked route is still a
-    /// candidate; every path that drops it goes through `dropRouteSelection`.
+    /// Manual provider override. `nil` means "use Auto". Every path that drops it
+    /// goes through `dropRouteSelection`, so it can never vanish silently.
     var selectedQuote: SwapQuote?
 
-    /// One-shot notice that a manual route pick was dropped, rendered by the
-    /// screen as a banner and cleared by it. `nil` when there's nothing to say.
+    /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
 
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
-    /// auto-selected best. Writing it replaces the slot wholesale — that clears
-    /// the manual override without a notice, since it isn't a pick being
-    /// invalidated under the user (nothing in the app writes it; the reset paths
-    /// call `clearQuoteState` and tests seed state through it).
+    /// auto-selected best. Writing it replaces the slot wholesale and clears the
+    /// override without a notice — no production path writes it; use
+    /// `clearQuoteState`.
     var quote: SwapQuote? {
         get { selectedQuote ?? bestQuote }
         set {
@@ -214,13 +207,8 @@ final class SwapDetailsViewModel {
         selectedQuote = quote
     }
 
-    /// Why a manual route pick had to be dropped. Each case carries the message
-    /// the screen shows, so a pick can never disappear without the user knowing.
     enum RouteSelectionDropReason {
-        /// The picked route is no longer among the candidates for this swap.
         case routeUnavailable
-        /// The swap itself changed (pair or amount), so the whole candidate set
-        /// is being refetched and nothing carries over.
         case swapChanged
 
         var message: String {
@@ -233,9 +221,8 @@ final class SwapDetailsViewModel {
         }
     }
 
-    /// Drop the manual route pick and say why. No-op without a pick, so an
-    /// invalidation that repeats — `fetchQuotes` runs on every keystroke of an
-    /// amount edit — still surfaces at most one notice per pick.
+    /// No-op without a pick, so a repeating invalidation (`fetchQuotes` runs on
+    /// every keystroke) still surfaces at most one notice per pick.
     func dropRouteSelection(_ reason: RouteSelectionDropReason) {
         guard selectedQuote != nil else { return }
         selectedQuote = nil
@@ -815,16 +802,14 @@ private extension SwapDetailsViewModel {
 
         guard !fromAmount.isEmpty else { return }
 
-        // Parse once: the value that goes to the provider is the same value that
-        // stamps quote ownership, so the two can never disagree.
+        // Parse once so the requested amount and the ownership stamp can't disagree.
         let requestedAmount = fromAmount.toDecimal()
 
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
         // quote. Confirm builds the real SECURE+ deposit payload.
         if isSecuredMint {
-            // The candidate set collapses to the one synthetic mint quote, so
-            // any picked route really is gone.
+            // Candidate set collapses to the one synthetic mint quote.
             dropRouteSelection(.routeUnavailable)
             bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
@@ -849,16 +834,8 @@ private extension SwapDetailsViewModel {
             // quote over the state the new fetch is about to populate.
             guard !Task.isCancelled else { return }
             if let result {
-                // Re-attach a manual pick to the fresh candidate set by route
-                // identity. `SwapQuote` is Hashable by payload, so the refreshed
-                // quote for the same route is a different value — matching on the
-                // quote itself could never survive a refresh. Re-pointing at the
-                // object out of `result.allQuotes` is also what keeps signing on
-                // current numbers rather than the quote the user tapped.
-                //
-                // Only genuine same-pair/same-amount refreshes reach here with a
-                // pick: `fetchQuotes` already dropped it for any pair or amount
-                // change before this fetch started.
+                // Re-point at the object out of `result.allQuotes`, never the one
+                // the user tapped: that is what keeps signing on current numbers.
                 if let picked = selectedQuote?.routeIdentity {
                     if let refreshed = result.allQuotes.first(where: { $0.routeIdentity == picked }) {
                         selectedQuote = refreshed

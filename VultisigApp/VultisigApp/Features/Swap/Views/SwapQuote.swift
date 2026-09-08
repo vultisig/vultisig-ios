@@ -58,17 +58,10 @@ enum SwapQuote: Hashable {
         }
     }
 
-    /// Identity of the route this quote represents, free of the quote payload
-    /// (amounts, fees, calldata) that changes on every fetch. Two quotes from
-    /// consecutive fetches share it exactly when they are the same row in the
-    /// route picker, which is what lets a manual route pick re-attach to the
-    /// fresh quote instead of being dropped.
-    ///
-    /// Network variants stay distinct — they are separate `SwapProvider`s with
-    /// separate `displayName`s, so they are separate rows. The SwapKit
-    /// sub-provider is deliberately excluded: SwapKit is one provider and one
-    /// row whichever protocol it routes through underneath, and that underlying
-    /// choice can legitimately flip between fetches.
+    /// Payload-free identity of this quote's route — stable across fetches, one
+    /// case per row of the picker. The SwapKit sub-provider is excluded on
+    /// purpose: SwapKit is one row whichever protocol it routes through, and that
+    /// choice can flip between fetches, so keying on it would drop a live pick.
     var routeIdentity: SwapRouteIdentity {
         switch self {
         case .thorchain:
@@ -331,8 +324,7 @@ enum SwapQuote: Hashable {
     }
 }
 
-/// Payload-free identity of a swap route, one case per row of the
-/// route-selection sheet. See `SwapQuote.routeIdentity`.
+/// See `SwapQuote.routeIdentity`.
 enum SwapRouteIdentity: Hashable {
     case thorchain
     case thorchainChainnet

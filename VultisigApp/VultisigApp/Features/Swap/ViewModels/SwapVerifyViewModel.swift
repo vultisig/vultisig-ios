@@ -31,8 +31,7 @@ final class SwapVerifyViewModel {
     var securityScannerState: SecurityScannerState = .idle
 
     var error: Error?
-    /// One-shot notice that the refresh had to substitute the user's picked route,
-    /// rendered by the screen as a banner and cleared by it.
+    /// Set when the refresh substituted the picked route; the screen clears it.
     var routeSelectionNotice: String?
     var isLoading = false
     var isLoadingFees = false
@@ -100,9 +99,7 @@ final class SwapVerifyViewModel {
 
         do {
             var updated = transaction
-            // Set when the refresh had to fall back to the auto winner because the
-            // route the user picked is no longer offered. Applied to the UI only
-            // once the refreshed transaction actually commits below.
+            // Applied to the UI only once the refreshed transaction commits below.
             var routeWasSubstituted = false
             // Same-underlying secured mint has no pool quote to refresh — keep the
             // synthetic ~1:1 quote and refresh only the L1 deposit gas below.
@@ -117,10 +114,8 @@ final class SwapVerifyViewModel {
                     recipientAddress: transaction.advancedSettings.externalRecipient
                 )
                 if let result {
-                    // A manual route pick must survive this refresh too. Installing
-                    // `result.quote` unconditionally would hand the user a route
-                    // they never chose at the last moment before signing — the same
-                    // defect the details screen used to have, one screen later.
+                    // Installing `result.quote` unconditionally would hand the user
+                    // a route they never chose, immediately before signing.
                     var refreshedQuote = result.quote
                     if let picked = updated.selectedRouteIdentity {
                         if let stillOffered = result.allQuotes.first(where: { $0.routeIdentity == picked }) {
@@ -182,9 +177,7 @@ final class SwapVerifyViewModel {
             transaction = updated
             error = nil
             if routeWasSubstituted {
-                // The confirmations were given for a route that is no longer on
-                // offer, so they no longer mean anything — make the user re-read
-                // the summary and re-confirm against the substitute.
+                // The confirmations were given for a route that is now gone.
                 isAmountCorrect = false
                 isFeeCorrect = false
                 isApproveCorrect = false

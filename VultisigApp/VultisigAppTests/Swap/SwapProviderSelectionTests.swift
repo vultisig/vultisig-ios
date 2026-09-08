@@ -8,10 +8,8 @@
 //      when no provider-preference band applies.
 //   2. VM selection — `selectedQuote` drives the computed `quote` and a non-best
 //      pick reaches the active quote (and therefore the verify/sign summary).
-//   3. Pick persistence — a refresh re-resolves the pick by `routeIdentity`, so
-//      it survives while its route is still a candidate and re-points at the
-//      fresh quote; it is dropped, with a notice, when the route leaves the
-//      candidate set or the swap itself changes.
+//   3. Pick persistence — a pick survives a refresh and re-points at the fresh
+//      quote; it is dropped, with a notice, when it stops being valid.
 //   4. Availability — provider selection depends solely on `allQuotes.count > 1`
 //      (the advanced-settings entry point is already silver-gated, so there is
 //      no second tier gate on the row itself).
@@ -128,7 +126,6 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.selectProvider(alt)
         XCTAssertEqual(vm.quote, alt)
 
-        // A silent same-pair/same-amount refresh — the 60s auto-refresh.
         await landQuotes(on: vm)
 
         XCTAssertEqual(interactor.fetchCount, 2, "The refresh this test is about must actually have landed")
@@ -154,8 +151,8 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.fromAmount = "1"
         await landQuotes(on: vm)
 
-        // Pick out of the set the VM actually landed, so the test can't pass by
-        // selecting a value the first fetch never returned.
+        // Pick from the landed set, so the test can't select a value the first
+        // fetch never returned.
         XCTAssertEqual(interactor.fetchCount, 1, "The first landing must be script entry 0")
         guard let landed = vm.allQuotes.first(where: { $0.routeIdentity == .oneInch }) else {
             return XCTFail("The first landing must offer the 1inch route")
@@ -203,11 +200,9 @@ final class SwapProviderSelectionTests: XCTestCase {
         await landQuotes(on: vm)
         vm.selectProvider(alt)
 
-        // "1" and "1<sep>0" are the same number to the provider, so this is a
-        // refresh of the same swap rather than a new one. Built from the running
-        // locale's separator: `toDecimal` parses with `Locale.current` first, so a
-        // hard-coded "1.0" reads as ten under a comma-decimal locale and would
-        // fail this test against correct production behaviour.
+        // Built from the running locale's separator: `toDecimal` parses with
+        // `Locale.current` first, so a hard-coded "1.0" is TEN in five of the eight
+        // shipping locales and would fail against correct production behaviour.
         let separator = Locale.current.decimalSeparator ?? "."
         let equivalentAmount = "1\(separator)0"
         XCTAssertEqual(
@@ -259,8 +254,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         await landQuotes(on: vm)
         vm.selectProvider(stale)
 
-        // Changing a quote-affecting setting re-fetches at the SAME pair/amount,
-        // so it is a refresh: a new slippage does not invalidate a route choice.
+        // Re-fetches at the SAME pair/amount, so it is a refresh, not a new swap.
         vm.snapshotAdvancedSettings()
         vm.advancedSettings.gasLimit = 100_000
         vm.advancedSettingsSheetDidClose(vault: makeVault())
@@ -272,8 +266,7 @@ final class SwapProviderSelectionTests: XCTestCase {
     }
 
     func testAdvancedSettingsRefetchDropsSelectionWhenRoutePruned() async {
-        // An external recipient prunes the aggregator routes that can't honour it,
-        // so a picked 1inch route legitimately disappears on the re-fetch.
+        // An external recipient prunes aggregator routes that can't honour it.
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
         let (vm, interactor) = makeVM(script: [
@@ -298,9 +291,9 @@ final class SwapProviderSelectionTests: XCTestCase {
     }
 
     func testSecuredMintRefreshDropsSelectionWithNotice() async {
-        // Defensive branch: a pair change to a secured mint already clears the pick
-        // in `fetchQuotes`, so production can't reach here holding one. Pinned so
-        // the branch stays a NOTIFIED drop rather than reverting to a silent nil.
+        // Defensive branch — `fetchQuotes` clears the pick on the pair change that
+        // gets here, so production can't hold one. Pinned so it stays a NOTIFIED
+        // drop rather than reverting to a silent nil.
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let vm = makeVM(best: best, allQuotes: [best])
         vm.fromCoin = makeCoin(.bitcoin, ticker: "BTC", balance: "100000000")
@@ -391,9 +384,7 @@ final class SwapProviderSelectionTests: XCTestCase {
     }
 
     func testRouteIdentityIgnoresSwapKitSubProvider() {
-        // SwapKit is one row whichever protocol it routes through underneath, and
-        // that underlying choice can legitimately change between fetches — keying
-        // on it would drop a pick the user can still see on screen.
+        // Keying on the sub-provider would drop a pick still visible on screen.
         let viaChainflip = SwapQuote.swapkit(
             makeSwapKitResponse(providers: ["Chainflip"]), fee: nil, subProvider: "Chainflip"
         )
@@ -433,10 +424,8 @@ final class SwapProviderSelectionTests: XCTestCase {
         makeVM(script: [makeResult(best: best, allQuotes: allQuotes)]).vm
     }
 
-    /// A VM whose interactor hands out `script` one entry per fetch, so a test can
-    /// make a refresh return something different from the first landing. The
-    /// interactor comes back too: the script repeats its last entry once exhausted,
-    /// so a test that depends on WHICH entry landed must pin `fetchCount`.
+    /// One scripted result per fetch. The script repeats its last entry once
+    /// exhausted, so a test depending on WHICH entry landed must pin `fetchCount`.
     private func makeVM(script: [SwapQuoteResult]) -> (vm: SwapDetailsViewModel, interactor: ProviderSelectionMockInteractor) {
         let interactor = ProviderSelectionMockInteractor(script: script)
         return (SwapDetailsViewModel(interactor: interactor), interactor)
@@ -503,9 +492,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         )
     }
 
-    /// THORChain secured BTC: not native, `contractAddress` "btc-btc", so
-    /// `isSameUnderlyingSecuredMint` resolves its underlying to "BTC.BTC" and
-    /// matches a native BTC source.
+    /// Underlying resolves to "BTC.BTC", matching a native BTC source.
     private func makeSecuredBTCCoin() -> Coin {
         let meta = CoinMeta(
             chain: .thorChain,
@@ -519,8 +506,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         return Coin(asset: meta, address: "test-address-secured-BTC", hexPublicKey: "")
     }
 
-    /// SwapKit responses are `Decodable`-only (custom `init(from:)`, no memberwise
-    /// init), so the fixture is built from a minimal EVM-txType JSON payload.
+    /// `Decodable`-only (custom `init(from:)`), so build it from JSON.
     private func makeSwapKitResponse(providers: [String] = ["Chainflip"]) -> SwapKitSwapResponse {
         let providerList = providers.map { "\"\($0)\"" }.joined(separator: ", ")
         let json = """
@@ -580,16 +566,13 @@ private extension SwapDetailsViewModel {
 
 // swiftlint:disable async_without_await unused_parameter
 
-/// Hands out a scripted result per fetch so the VM's quote-landing path can be
-/// driven without the network, including a refresh that returns a different
-/// candidate set from the first landing. The last entry repeats once the script
-/// is exhausted, so a steady-state test can pass a single one.
+/// Drives the VM's quote-landing path without the network. The last entry repeats
+/// once the script is exhausted, so a steady-state test can pass a single one.
 @MainActor
 private final class ProviderSelectionMockInteractor: SwapInteractor {
     private let script: [SwapQuoteResult]
-    /// Lets a test prove the landings it expected actually happened — without it,
-    /// an extra fetch could consume the script early and the repeat-last behaviour
-    /// would hide the desync behind a passing assertion.
+    /// Pin this: an extra fetch consuming the script early would otherwise hide
+    /// the desync behind a passing assertion.
     private(set) var fetchCount = 0
 
     init(script: [SwapQuoteResult]) {

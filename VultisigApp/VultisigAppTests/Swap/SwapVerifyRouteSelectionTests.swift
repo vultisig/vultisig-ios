@@ -2,10 +2,8 @@
 //  SwapVerifyRouteSelectionTests.swift
 //  VultisigAppTests
 //
-//  The verify screen re-quotes every 60s. It must re-resolve a manual route pick
-//  against the fresh candidate set — exactly as the details screen does — instead
-//  of installing the auto winner, which would hand the user a route they never
-//  chose at the last moment before signing.
+//  The verify screen re-quotes every 60s and must re-resolve a manual route pick
+//  against the fresh candidate set rather than installing the auto winner.
 //
 
 import BigInt
@@ -67,7 +65,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         let previousBest = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let newBest = SwapQuote.oneinch(makeEVMQuote(dstAmount: "900000000"), fee: nil)
 
-        // No manual pick: Auto must stay free to change winner between refreshes.
+        // Auto must stay free to change winner between refreshes.
         let vm = makeVM(
             transaction: makeTransaction(quote: previousBest, pickedRoute: nil),
             refreshed: makeResult(best: newBest, allQuotes: [newBest, previousBest])
@@ -168,8 +166,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
 
 // swiftlint:disable async_without_await unused_parameter
 
-/// Returns one fixed refreshed candidate set, so the verify VM's refresh path can
-/// be driven without the network. Everything else is a no-op stub.
+/// One fixed refreshed candidate set; everything else is a no-op stub.
 private struct RouteSelectionStubInteractor: SwapInteractor {
     let refreshed: SwapQuoteResult
 
