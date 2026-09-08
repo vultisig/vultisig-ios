@@ -69,19 +69,18 @@ struct TronAPIService {
 
     // MARK: - Broadcast
 
-    private static let DUP_TRANSACTION_ERROR_CODE = "DUP_TRANSACTION_ERROR"
-
     /// - Parameter expectedTxHash: the hash the signer computed locally, which
     ///   the node's answer is checked against.
     func broadcastTransaction(jsonString: String, expectedTxHash: String) async throws -> String {
         let response = try await httpClient.request(api(.broadcastTransaction(jsonString: jsonString)), responseType: TronBroadcastResponse.self)
 
-        // Accept success (result == true) OR duplicate transaction error (already broadcast)
-        // This matches Android behavior where DUP_TRANSACTION_ERROR is treated as success
-        let isSuccess = response.data.result == true
-        let isDuplicateTransaction = response.data.code == Self.DUP_TRANSACTION_ERROR_CODE
-
-        guard let txid = response.data.txid, isSuccess || isDuplicateTransaction else {
+        // Only an explicit success counts. `DUP_TRANSACTION_ERROR` reads like
+        // one and used to be accepted as one, but TRON fills its duplicate
+        // cache before validating, so a transaction the node went on to reject
+        // answers with that code too — it is not evidence the transaction is
+        // on chain. Throwing routes it into `handleBroadcastError`, which looks
+        // the hash up on chain and recovers the ones that really did land.
+        guard let txid = response.data.txid, response.data.result == true else {
             let errorMessage = response.data.message ?? response.data.code ?? "Unknown error"
             throw TronAPIError.broadcastFailed(errorMessage)
         }

@@ -82,19 +82,26 @@ final class TronBroadcastHashValidationTests: XCTestCase {
         }
     }
 
-    /// A duplicate broadcast is still treated as success, and still has to
-    /// describe the transaction this device signed.
-    func testDuplicateBroadcastStillValidatesTheTxid() async throws {
+    /// `DUP_TRANSACTION_ERROR` is not proof the transaction is on chain: TRON
+    /// fills its duplicate cache before validating, so a transaction it went on
+    /// to reject answers with the same code. It must throw and let the caller's
+    /// on-chain hash lookup decide, not short-circuit to success.
+    func testDuplicateBroadcastIsNotTreatedAsSuccess() async {
         let service = makeService(json: """
         {"code":"DUP_TRANSACTION_ERROR","txid":"\(Self.localHash)"}
         """)
 
-        let txHash = try await service.broadcastTransaction(
-            jsonString: "{}",
-            expectedTxHash: Self.localHash
-        )
-
-        XCTAssertEqual(txHash, Self.localHash)
+        do {
+            _ = try await service.broadcastTransaction(jsonString: "{}", expectedTxHash: Self.localHash)
+            XCTFail("expected a duplicate broadcast to throw")
+        } catch let error as TronAPIError {
+            guard case .broadcastFailed(let message) = error else {
+                return XCTFail("expected broadcastFailed, got \(error)")
+            }
+            XCTAssertEqual(message, "DUP_TRANSACTION_ERROR")
+        } catch {
+            XCTFail("expected TronAPIError, got \(error)")
+        }
     }
 
     /// A rejected broadcast still reports the node's error rather than a hash
