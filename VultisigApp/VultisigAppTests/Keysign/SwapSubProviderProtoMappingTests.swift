@@ -80,6 +80,10 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
             "Relaying a legacy payload must not invent a route its sender never stated"
         )
         XCTAssertEqual(
+            reEncoded, try VSOneInchSwapPayload(serializedBytes: originalBytes),
+            "Re-encoding must not add, drop or rewrite any field"
+        )
+        XCTAssertEqual(
             try reEncoded.serializedData(), originalBytes,
             "A relayed legacy payload must re-serialize to the sender's exact bytes"
         )
@@ -87,14 +91,18 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
 
     // MARK: - How the co-signer names the route
 
-    func testProviderDisplayNameAppendsTheRouteTag() {
-        XCTAssertEqual(
-            SwapPayload.generic(makeGenericPayload(subProvider: "NEAR")).providerDisplayName,
-            "SwapKit (NEAR)"
-        )
+    /// The tag travels, but this device does not render it on an aggregator
+    /// route. iOS's own verify screen names the clean brand, so a joiner that
+    /// appended the route would describe one swap two ways across the two
+    /// screens whose job is to agree. The wire carries it for the clients that
+    /// do render it.
+    func testGenericRouteCarriesTheTagWithoutRenderingIt() {
+        let payload = makeGenericPayload(subProvider: "NEAR")
+        XCTAssertEqual(payload.subProvider, "NEAR", "…or the wire assertion below is vacuous")
+        XCTAssertEqual(SwapPayload.generic(payload).providerDisplayName, "SwapKit")
         XCTAssertEqual(
             SwapPayload.generic(makeGenericPayload(subProvider: "CHAINFLIP", provider: .oneInch)).providerDisplayName,
-            "1Inch (CHAINFLIP)"
+            "1Inch"
         )
     }
 
@@ -122,15 +130,11 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
     /// the tag can repeat the aggregator. "SwapKit (SwapKit)" names nothing.
     func testProviderDisplayNameDropsATagThatRepeatsTheAggregator() {
         XCTAssertEqual(
-            SwapPayload.generic(makeGenericPayload(subProvider: "SwapKit")).providerDisplayName,
-            "SwapKit"
-        )
-        XCTAssertEqual(
-            SwapPayload.generic(makeGenericPayload(subProvider: "swapkit")).providerDisplayName,
-            "SwapKit"
-        )
-        XCTAssertEqual(
             SwapPayload.swapkit(makeSwapKitPayload(subProvider: "SwapKit")).providerDisplayName,
+            "SwapKit"
+        )
+        XCTAssertEqual(
+            SwapPayload.swapkit(makeSwapKitPayload(subProvider: "swapkit")).providerDisplayName,
             "SwapKit"
         )
     }
@@ -158,17 +162,25 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
     }
 
     /// The pre-split behaviour, pinned as the thing that must not come back: a
-    /// tagged persisted name loses the tracker.
+    /// tagged persisted name loses the tracker. It falls through to the chain's
+    /// own explorer — `url` only reaches `fallbackExplorerLink` when the chain
+    /// itself is unrecognised, so the fallthrough is asserted against the
+    /// registry URL the same way `ExplorerLinkBuilderTests` asserts it.
     func testATaggedPersistedNameWouldLoseTheTracker() {
+        let url = ExplorerLinkBuilder.url(
+            provider: "SwapKit (CHAINFLIP)",
+            txHash: "0xabc",
+            chainRawValue: Chain.ethereum.rawValue,
+            fallbackExplorerLink: "https://etherscan.io/tx/0xfallback"
+        )
         XCTAssertEqual(
-            ExplorerLinkBuilder.url(
-                provider: "SwapKit (CHAINFLIP)",
-                txHash: "0xabc",
-                chainRawValue: Chain.ethereum.rawValue,
-                fallbackExplorerLink: "https://etherscan.io/tx/0xfallback"
-            )?.absoluteString,
-            "https://etherscan.io/tx/0xfallback",
-            "Documents why the route tag must stay off providerName"
+            url?.absoluteString,
+            ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: "0xabc"),
+            "A tagged name resolves to no tracker and drops to the chain explorer"
+        )
+        XCTAssertNotEqual(
+            url?.absoluteString, "https://track.swapkit.dev/?hash=0xabc&chainId=1",
+            "…which is exactly the link the split exists to keep"
         )
     }
 
@@ -200,7 +212,16 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
 
         XCTAssertEqual(payload.subProvider, "ONEINCH")
-        XCTAssertEqual(SwapPayload.generic(payload).providerDisplayName, "SwapKit (ONEINCH)")
+        guard case let .oneinchSwapPayload(proto) = SwapPayload.generic(payload).mapToProtobuff() else {
+            XCTFail("Expected .oneinchSwapPayload"); return
+        }
+        XCTAssertEqual(proto.subProvider, "ONEINCH", "The tag has to reach the peer")
+
+        // …and both iOS screens still say the same thing about this swap.
+        XCTAssertEqual(
+            SwapPayload.generic(payload).providerDisplayName,
+            SwapQuote.swapkit(response, fee: nil, subProvider: response.subProvider).displayName
+        )
     }
 
     func testSolanaSwapKitRouteCarriesTheRouteTag() throws {
@@ -218,9 +239,11 @@ final class SwapSubProviderProtoMappingTests: XCTestCase {
         )
 
         XCTAssertEqual(payload.subProvider, response.subProvider)
+        XCTAssertEqual(payload.subProvider, "NEAR", "…or the parity assertion below is vacuous")
         XCTAssertEqual(
             SwapPayload.generic(payload).providerDisplayName,
-            "SwapKit (\(response.subProvider))"
+            SwapQuote.swapkit(response, fee: nil, subProvider: response.subProvider).displayName,
+            "Joiner and initiator must name this swap identically"
         )
     }
 

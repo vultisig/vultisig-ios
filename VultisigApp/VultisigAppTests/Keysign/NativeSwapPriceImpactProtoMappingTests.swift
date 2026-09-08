@@ -128,6 +128,12 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
             reEncoded.hasSlippageBps,
             "Relaying a legacy payload must not invent an impact its sender never stated"
         )
+        // Message equality first: it names the offending field on failure, where
+        // a raw byte comparison only reports that two blobs differ.
+        XCTAssertEqual(
+            reEncoded, try VSTHORChainSwapPayload(serializedBytes: originalBytes),
+            "Re-encoding must not add, drop or rewrite any field"
+        )
         XCTAssertEqual(
             try reEncoded.serializedData(), originalBytes,
             "A relayed legacy payload must re-serialize to the sender's exact bytes"

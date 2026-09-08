@@ -151,24 +151,25 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
-    /// Verify-screen name: the aggregator plus the route it actually took, when
-    /// a route tag travelled with the payload. SwapKit's EVM and Solana routes
-    /// ride `.generic`, so this is what lets a co-signer name them the way every
-    /// other SwapKit route is already named.
+    /// Verify-screen name, kept separate from `providerName` because that string
+    /// is persisted to Transaction History and aliased back to a tracker URL by
+    /// an exact lookup — a route tag folded into it drops the aggregator's own
+    /// tracker for every affected row.
     ///
-    /// Kept separate from `providerName` deliberately. That string is persisted
-    /// to Transaction History and aliased back to a tracker URL by
-    /// `ExplorerLinkBuilder`, whose lookup is exact — folding a route tag into it
-    /// would drop the aggregator's own tracker for every affected row.
+    /// `.generic` deliberately does NOT render the route tag it now carries, even
+    /// though the tag is on the wire. This device's own swap verify screen names
+    /// the clean brand (`SwapQuote.displayName`), and a joiner that appended the
+    /// route would describe the same swap differently from the device that
+    /// initiated it. Whether iOS should show sub-provider tags is a decision for
+    /// both screens together, not one that arrives on the joiner as a side
+    /// effect; the tag travels so the clients that do render it can.
     var providerDisplayName: String {
         switch self {
-        case .generic(let payload):
-            return Self.appendingRoute(payload.provider.name, subProvider: payload.subProvider)
         case .swapkit(let payload):
-            // Preserves the verify-screen "via Chainflip" / "via NEAR Intents" /
-            // "via Garden" affordance this shape has always had.
+            // Long-standing behaviour for the transfer routes: preserves the
+            // "via Chainflip" / "via NEAR Intents" / "via Garden" affordance.
             return Self.appendingRoute("SwapKit", subProvider: payload.subProvider)
-        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+        case .generic, .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return providerName
         }
     }

@@ -131,6 +131,10 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertFalse(reEncoded.hasSwapFeeTokenID)
         XCTAssertFalse(reEncoded.hasSwapFeeDecimals)
         XCTAssertEqual(
+            reEncoded, try VSSwapKitSwapPayload(serializedBytes: originalBytes),
+            "Re-encoding must not add, drop or rewrite any field"
+        )
+        XCTAssertEqual(
             try reEncoded.serializedData(), originalBytes,
             "A relayed legacy payload must re-serialize to the sender's exact bytes"
         )
