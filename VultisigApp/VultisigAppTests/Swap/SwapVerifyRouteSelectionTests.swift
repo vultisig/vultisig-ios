@@ -12,6 +12,16 @@ import XCTest
 
 @MainActor
 final class SwapVerifyRouteSelectionTests: XCTestCase {
+    private var storeToken: TestContextToken?
+
+    override func setUpWithError() throws {
+        storeToken = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() {
+        TestStore.restore(storeToken)
+        storeToken = nil
+    }
 
     func testRefreshKeepsThePickedRouteAndRepointsIt() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
@@ -78,6 +88,79 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         XCTAssertNil(vm.transaction.selectedProvider)
         XCTAssertNil(vm.routeSelectionNotice, "Auto changing winner is not a substitution")
         XCTAssertTrue(vm.isAmountCorrect, "The Auto path must not disturb the confirmations")
+    }
+
+    func testTimerRefreshDoesNotOverlapTimerOrExplicitRefetch() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let gate = RefreshRequestGate()
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeFetch: { try await gate.wait() }
+            )
+        )
+        let vault = makeVault()
+        vm.timer = 1
+        let refresh = Task { await vm.updateTimer(vault: vault) }
+        await fulfillment(of: [gate.started], timeout: 2)
+
+        XCTAssertTrue(vm.isLoadingFees)
+        XCTAssertEqual(vm.timer, 0)
+        await vm.updateTimer(vault: vault)
+        await vm.refreshData(vault: vault)
+        XCTAssertEqual(gate.calls, 1, "Timer ticks and explicit refetches must not overlap the pending request")
+        XCTAssertTrue(vm.isLoadingFees, "A duplicate refresh must not clear the active request's loading state")
+        XCTAssertEqual(vm.timer, 0, "The countdown pauses until the refresh completes")
+
+        gate.finish()
+        await refresh.value
+        XCTAssertFalse(vm.isLoadingFees)
+        XCTAssertEqual(vm.timer, 59)
+    }
+
+    func testRefreshStaysLoadingUntilFeeFetchCompletes() async {
+        let stale = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let fresh = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "200000000"))
+        let gate = RefreshRequestGate()
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: stale, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: fresh, allQuotes: [fresh]),
+                beforeFees: { try await gate.wait() }
+            )
+        )
+        let refresh = Task { await vm.refreshData(vault: makeVault()) }
+        await fulfillment(of: [gate.started], timeout: 2)
+
+        XCTAssertTrue(vm.isLoadingFees, "Receiving the quote must not dismiss loading while fees are pending")
+        XCTAssertEqual(vm.transaction.quote, stale)
+        gate.finish()
+        await refresh.value
+        XCTAssertFalse(vm.isLoadingFees)
+        XCTAssertEqual(vm.transaction.quote, fresh)
+    }
+
+    func testFailedRefreshClearsLoadingAndRestartsCountdown() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let gate = RefreshRequestGate()
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeFetch: { try await gate.wait() }
+            )
+        )
+        vm.timer = 1
+        let refresh = Task { await vm.updateTimer(vault: makeVault()) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        XCTAssertTrue(vm.isLoadingFees)
+
+        gate.finish(error: URLError(.timedOut))
+        await refresh.value
+        XCTAssertFalse(vm.isLoadingFees)
+        XCTAssertEqual(vm.timer, 59)
+        XCTAssertEqual(vm.transaction.quote, quote)
     }
 
     // MARK: - Fixtures
@@ -173,6 +256,8 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
 /// One fixed refreshed candidate set; everything else is a no-op stub.
 private struct RouteSelectionStubInteractor: SwapInteractor {
     let refreshed: SwapQuoteResult
+    var beforeFetch: (() async throws -> Void)? = nil
+    var beforeFees: (() async throws -> Void)? = nil
 
     func fetchQuote(
         amount: Decimal,
@@ -183,7 +268,8 @@ private struct RouteSelectionStubInteractor: SwapInteractor {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
-        refreshed
+        try await beforeFetch?()
+        return refreshed
     }
 
     func fetchChainSpecific(
@@ -192,7 +278,8 @@ private struct RouteSelectionStubInteractor: SwapInteractor {
         fromAmount: Decimal,
         quote: SwapQuote?
     ) async throws -> BlockChainSpecific {
-        .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
+        try await beforeFees?()
+        return .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     func computeThorchainFee(
@@ -216,3 +303,30 @@ private struct RouteSelectionStubInteractor: SwapInteractor {
 }
 
 // swiftlint:enable async_without_await unused_parameter
+
+@MainActor
+private final class RefreshRequestGate {
+    let started = XCTestExpectation(description: "Refresh reached the delayed request")
+    private(set) var calls = 0
+    private var continuation: CheckedContinuation<Void, Error>?
+
+    func wait() async throws {
+        calls += 1
+        // Let accidental overlapping calls finish so the test can assert the
+        // wrong count/loading state without leaving a second task suspended.
+        guard calls == 1 else { return }
+        try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            started.fulfill()
+        }
+    }
+
+    func finish(error: Error? = nil) {
+        if let error {
+            continuation?.resume(throwing: error)
+        } else {
+            continuation?.resume()
+        }
+        continuation = nil
+    }
+}

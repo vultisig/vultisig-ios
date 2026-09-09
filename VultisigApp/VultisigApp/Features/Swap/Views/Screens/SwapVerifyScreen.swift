@@ -37,6 +37,7 @@ struct SwapVerifyScreen: View {
                     .disabled(!verifyViewModel.isValidForm(shouldApprove: currentTransaction.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
             }
         }
+        .withLoading(isLoading: $vm.isLoadingFees)
         .screenTitle("swapOverview".localized)
         .screenToolbar {
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
@@ -138,7 +139,6 @@ struct SwapVerifyScreen: View {
                         cryptoAmount: currentTransaction.swapGasString,
                         fiatAmount: currentTransaction.approveFeeString
                     )
-                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 // Gross list-rate Vultisig fee. Applied savings are itemized in
@@ -146,7 +146,6 @@ struct SwapVerifyScreen: View {
                 if currentTransaction.showAffiliateFeeRow {
                     separator
                     affiliateFeeRow
-                        .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 // Protocol Fee (native THOR/Maya outbound).
@@ -156,7 +155,6 @@ struct SwapVerifyScreen: View {
                         for: "swap.protocol_fee",
                         with: currentTransaction.outboundFeeString
                     )
-                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 if currentTransaction.hasAppliedDiscounts {
@@ -177,7 +175,6 @@ struct SwapVerifyScreen: View {
                         for: "totalFee",
                         with: currentTransaction.totalFeeString
                     )
-                    .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
                 if currentTransaction.advancedSettings.slippage != .auto {
@@ -418,7 +415,7 @@ struct SwapVerifyScreen: View {
     var refreshCounter: some View {
         // Limit orders execute at a fixed target price, so there is no live quote
         // to refresh — hide the countdown on the limit verify screen.
-        if !currentTransaction.isLimit {
+        if !currentTransaction.isLimit && !verifyViewModel.isLoadingFees {
             SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
         }
     }
