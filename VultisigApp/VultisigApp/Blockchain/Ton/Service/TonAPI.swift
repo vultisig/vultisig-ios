@@ -20,6 +20,9 @@ struct TonAPI: TargetType {
         case extendedAddressInformation(address: String)
         case jettonWallets(ownerAddress: String, jettonMasterAddress: String)
         case jettonWalletsByAddress(walletAddress: String)
+        /// Every jetton wallet an owner holds, one page at a time. Used by
+        /// discovery, which needs the whole set rather than one master.
+        case ownerJettonWallets(ownerAddress: String, limit: Int, offset: Int)
         case jettonMasters(jettonAddress: String)
         case runGetMethod(address: String, method: String, stack: [[String]])
         case broadcastTransaction(boc: String)
@@ -45,7 +48,7 @@ struct TonAPI: TargetType {
             return "/ton/v3/addressInformation"
         case .extendedAddressInformation:
             return "/ton/v2/getExtendedAddressInformation"
-        case .jettonWallets, .jettonWalletsByAddress:
+        case .jettonWallets, .jettonWalletsByAddress, .ownerJettonWallets:
             return "/ton/v3/jetton/wallets"
         case .jettonMasters:
             return "/ton/v3/jetton/masters"
@@ -58,7 +61,8 @@ struct TonAPI: TargetType {
 
     var method: HTTPMethod {
         switch endpoint {
-        case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress, .jettonMasters:
+        case .addressInformation, .extendedAddressInformation, .jettonWallets, .jettonWalletsByAddress,
+             .ownerJettonWallets, .jettonMasters:
             return .get
         case .runGetMethod, .broadcastTransaction:
             return .post
@@ -75,6 +79,19 @@ struct TonAPI: TargetType {
             return .requestParameters(["owner_address": owner, "jetton_master_address": master], .urlEncoding)
         case .jettonWalletsByAddress(let walletAddress):
             return .requestParameters(["address": walletAddress, "limit": 1], .urlEncoding)
+        case .ownerJettonWallets(let owner, let limit, let offset):
+            // `exclude_zero_balance` is the server-side half of "only jettons
+            // the account actually holds"; the finder drops zero balances again
+            // rather than trusting it.
+            return .requestParameters(
+                [
+                    "owner_address": owner,
+                    "exclude_zero_balance": "true",
+                    "limit": limit,
+                    "offset": offset
+                ],
+                .urlEncoding
+            )
         case .jettonMasters(let jettonAddress):
             return .requestParameters(["address": jettonAddress, "limit": 1], .urlEncoding)
         case .runGetMethod(let address, let method, let stack):
