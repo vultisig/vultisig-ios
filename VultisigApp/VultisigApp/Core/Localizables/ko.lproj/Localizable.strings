@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "설정 열기";
 "openSystemSettings" = "시스템 설정 열기";
+"operatorFeeRangeError" = "운영자 수수료는 0에서 10000 기준점 사이여야 합니다";
 "operatorFeesError" = "공급자가 입력된 경우 운영자 수수료는 비워둘 수 없습니다";
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
@@ -1533,8 +1534,11 @@
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
 "swapAppliedDiscounts" = "적용된 할인:";
+"swapErrorAddressScreeningTitle" = "주소 확인 실패";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";
 "swapErrorAmountTooSmallTitle" = "금액이 너무 작음";
+"swapErrorApprovalRequiredTitle" = "승인 필요";
+"swapErrorAssetBlockedTitle" = "자산 차단됨";
 "swapErrorInboundAddressDescription" = "인바운드 주소가 유효하지 않습니다. 다시 시도하세요.";
 "swapErrorInboundAddressTitle" = "유효하지 않은 주소";
 "swapErrorInsufficientFundsDescription" = "스왑을 실행하기에 자금이 부족합니다. 지갑에 자금을 추가하세요.";
@@ -1542,11 +1546,14 @@
 "swapErrorInsufficientGasDescription" = "네트워크 수수료를 충당할 가스 토큰이 부족합니다. 지갑에 가스를 추가하세요.";
 "swapErrorInsufficientGasTitle" = "가스 부족";
 "swapErrorInvalidDestinationTitle" = "유효하지 않은 대상";
+"swapErrorInvalidSourceTitle" = "유효하지 않은 발신 주소";
 "swapErrorNoLiquidityPoolTitle" = "유동성 풀 없음";
 "swapErrorProviderRejectedDescription" = "스왑 제공자가 이 거래의 견적을 제공하지 못했습니다. 다시 시도하거나 다른 쌍을 선택하세요.";
 "swapErrorProviderRejectedTitle" = "스왑 불가";
+"swapErrorQuoteExpiredTitle" = "견적 만료됨";
 "swapErrorRecipientRouteTitle" = "수신자 경로 없음";
 "swapErrorRecipientVerificationTitle" = "수신자 확인 실패";
+"swapErrorRouteExpiredTitle" = "경로 만료됨";
 "swapErrorRouteUnavailableTitle" = "사용 가능한 경로 없음";
 "swapErrorSameAssetDescription" = "동일한 자산으로 스왑할 수 없습니다. 다른 자산을 선택하세요.";
 "swapErrorSameAssetTitle" = "동일한 자산";
