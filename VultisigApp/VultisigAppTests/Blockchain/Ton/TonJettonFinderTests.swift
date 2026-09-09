@@ -151,6 +151,22 @@ final class TonJettonFinderTests: XCTestCase {
         XCTAssertEqual(coins.map(\.ticker).sorted(), ["NOT", "USDT"], "and nothing is discovered twice")
     }
 
+    /// A full page can be entirely spam, entirely somebody else's, or entirely
+    /// jettons that fail verification. None of that means the listing ended —
+    /// the account's own jettons may sit at the next offset — so the walk must
+    /// continue. Judging replay on what survived the filters instead of on the
+    /// rows themselves would strand a user whose first page is all spam.
+    func testAFullPageThatSurvivesNoFilterIsStillWalkedPast() async throws {
+        let (finder, client) = finder(
+            pages: [.success(TonJettonFixtures.pageOfTwoForeignRows), .success(TonJettonFixtures.pageOfOne)],
+            pageSize: 2
+        )
+        let coins = try await finder.discover(ownerAddress: TonJettonFixtures.owner)
+
+        XCTAssertEqual(client.attempts, 2, "A page nothing survived is not the end of the list")
+        XCTAssertEqual(coins.map(\.ticker), ["DOGS"])
+    }
+
     func testAnEmptyAccountDiscoversNothing() async throws {
         let coins = try await discover(pages: [.success(TonJettonFixtures.emptyPage)])
         XCTAssertTrue(coins.isEmpty)

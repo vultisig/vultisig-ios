@@ -70,6 +70,8 @@ struct TonJettonFinder {
 
         let registry = await registryStore.registry()
         var seenMasters: Set<String> = []
+        /// Row identity, recorded before any filtering — see the paging note below.
+        var seenWallets: Set<String> = []
         var discovered: [CoinMeta] = []
 
         for page in 0..<maxPages {
@@ -86,9 +88,10 @@ struct TonJettonFinder {
             ).data
 
             let masters = TonJettonMasterMetadata.index(from: response.metadata)
-            let mastersBeforePage = seenMasters.count
+            let walletsBeforePage = seenWallets.count
 
             for wallet in response.jetton_wallets {
+                seenWallets.insert(wallet.address)
                 guard TonJettonAddress.canonical(wallet.owner) == owner else { continue }
                 guard let master = TonJettonAddress.canonical(wallet.jetton) else { continue }
                 guard seenMasters.insert(master).inserted else { continue }
@@ -99,12 +102,17 @@ struct TonJettonFinder {
                 }
             }
 
-            // An owner holds exactly one wallet per master, so a page that adds
-            // no new master is the same page served again — which is what a
-            // proxy that ignores `offset` does, and would otherwise turn one
-            // balance into twenty. Either way the list has ended.
+            // A full page that carries no row we have not already seen is the
+            // same page served again — what a proxy that ignores `offset` does,
+            // and what would otherwise turn one balance into twenty.
+            //
+            // Replay is judged on the rows, not on what survived the filters: a
+            // full page of somebody else's wallets, or of jettons that all
+            // failed verification, is a page we must walk *past*, not a reason
+            // to stop while later offsets still hold the account's own jettons.
             let isLastPage = response.jetton_wallets.count < pageSize
-            if isLastPage || seenMasters.count == mastersBeforePage { break }
+            let isReplay = seenWallets.count == walletsBeforePage
+            if isLastPage || isReplay { break }
         }
 
         return discovered

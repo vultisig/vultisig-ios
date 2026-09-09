@@ -62,7 +62,15 @@ extension TonJettonMasterMetadata {
 extension JettonMasterMetadata {
     /// The validated *master* entry, if this address has one. See
     /// `TonJettonMasterMetadata.index(from:)` for why `type` is filtered.
+    ///
+    /// A typed master entry always wins. An untyped one is accepted only when
+    /// there is no typed master to be had, so that a Toncenter version which
+    /// stopped emitting `type` degrades to reading the entry rather than to
+    /// finding no metadata at all — which would classify every jetton on the
+    /// chain as unverified and quietly stop discovery.
     var masterTokenInfo: JettonTokenInfo? {
-        token_info?.first { $0.valid == true && ($0.type == nil || $0.type == "jetton_masters") }
+        guard let entries = token_info else { return nil }
+        return entries.first { $0.valid == true && $0.type == "jetton_masters" }
+            ?? entries.first { $0.valid == true && $0.type == nil }
     }
 }

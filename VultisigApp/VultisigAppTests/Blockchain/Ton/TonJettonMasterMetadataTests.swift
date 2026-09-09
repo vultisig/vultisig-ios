@@ -8,12 +8,13 @@ import XCTest
 
 final class TonJettonMasterMetadataTests: XCTestCase {
 
-    private func indexFromRecordedPage() throws -> [String: TonJettonMasterMetadata] {
-        let page = try JSONDecoder().decode(
-            JettonWalletsResponse.self,
-            from: Data(TonJettonFixtures.ownerJettonWalletsPage.utf8)
-        )
+    private func index(from json: String) throws -> [String: TonJettonMasterMetadata] {
+        let page = try JSONDecoder().decode(JettonWalletsResponse.self, from: Data(json.utf8))
         return TonJettonMasterMetadata.index(from: page.metadata)
+    }
+
+    private func indexFromRecordedPage() throws -> [String: TonJettonMasterMetadata] {
+        try index(from: TonJettonFixtures.ownerJettonWalletsPage)
     }
 
     /// The filter the whole discovery path depends on. Toncenter marks the
@@ -55,6 +56,30 @@ final class TonJettonMasterMetadataTests: XCTestCase {
         let index = try indexFromRecordedPage()
         let dogs = try XCTUnwrap(TonJettonAddress.canonical(TonJettonFixtures.dogsMasterRaw))
         XCTAssertEqual(index[dogs]?.logo, TonJettonFixtures.dogsLogo)
+    }
+
+    /// A typed master entry always wins, even when an untyped one is listed
+    /// first — otherwise a wallet entry that simply lost its `type` would
+    /// supply the metadata and the master's symbol would go unread.
+    func testTypedMasterEntryWinsOverAnUntypedOne() throws {
+        let index = try index(from: TonJettonFixtures.pageWithUntypedEntryBeforeMaster)
+        let dogs = try XCTUnwrap(TonJettonAddress.canonical(TonJettonFixtures.dogsMasterRaw))
+
+        XCTAssertEqual(index[dogs]?.symbol, "DOGS")
+        XCTAssertEqual(index[dogs]?.decimals, 9)
+        XCTAssertEqual(index[dogs]?.logo, TonJettonFixtures.dogsLogo)
+    }
+
+    /// An untyped entry is still read when it is all there is. If Toncenter ever
+    /// stops emitting `type`, the fallback is the difference between degraded
+    /// metadata and no metadata at all — and no metadata would classify every
+    /// jetton on the chain as unverified and quietly stop discovery.
+    func testUntypedEntryIsReadWhenNoMasterEntryExists() throws {
+        let index = try index(from: TonJettonFixtures.pageWithUntypedMasterEntry)
+        let dogs = try XCTUnwrap(TonJettonAddress.canonical(TonJettonFixtures.dogsMasterRaw))
+
+        XCTAssertEqual(index[dogs]?.symbol, "DOGS")
+        XCTAssertEqual(index[dogs]?.decimals, 9)
     }
 
     func testAbsentMetadataIndexesToNothing() {

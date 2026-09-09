@@ -195,6 +195,45 @@ enum TonJettonFixtures {
 
     static let emptyPage = ##"{"jetton_wallets": [], "metadata": {}}"##
 
+    /// A full page of somebody else's wallets. Nothing here survives the owner
+    /// check, but the rows are all new, so the walk must continue past it.
+    static let pageOfTwoForeignRows = #"""
+    {
+      "jetton_wallets": [
+        {"address": "0:DD01000000000000000000000000000000000000000000000000000000000001", "balance": "5000000", "owner": "0:1111111111111111111111111111111111111111111111111111111111111111", "jetton": "0:B113A994B5024A16719F69139328EB759596C38A25F59028B146FECDC3621DFE"},
+        {"address": "0:DD01000000000000000000000000000000000000000000000000000000000002", "balance": "1000000000", "owner": "0:1111111111111111111111111111111111111111111111111111111111111111", "jetton": "0:2F956143C461769579BAEF2E32CC2D7BC18283F40D20BB03E432CD603AC33FFC"}
+      ],
+      "metadata": {}
+    }
+    """#
+
+    /// A master whose only indexer entry carries no `type` at all — the shape a
+    /// Toncenter that stopped emitting the field would produce.
+    static let pageWithUntypedMasterEntry = #"""
+    {
+      "jetton_wallets": [
+        {"address": "0:EE01000000000000000000000000000000000000000000000000000000000001", "balance": "250000000000", "owner": "0:83DFD552E63729B472FCBCC8C45EBCC6691702558B68EC7527E1BA403A0F31A8", "jetton": "0:AFC49CB8786F21C87045B19EDE78FC6B46C51048513F8E9A6D44060199C1BF0C"}
+      ],
+      "metadata": {
+        "0:AFC49CB8786F21C87045B19EDE78FC6B46C51048513F8E9A6D44060199C1BF0C": {"is_indexed": true, "token_info": [{"valid": true, "name": "Dogs", "symbol": "DOGS", "extra": {"decimals": "9", "_image_medium": "https://proxy.toncenter.com/dogs/pr:medium/abc"}}]}
+      }
+    }
+    """#
+
+    /// An untyped entry listed *ahead* of the real master entry for the same
+    /// address, which is the ordering that makes preference — not mere
+    /// acceptance — the thing under test.
+    static let pageWithUntypedEntryBeforeMaster = #"""
+    {
+      "jetton_wallets": [
+        {"address": "0:FF01000000000000000000000000000000000000000000000000000000000001", "balance": "250000000000", "owner": "0:83DFD552E63729B472FCBCC8C45EBCC6691702558B68EC7527E1BA403A0F31A8", "jetton": "0:AFC49CB8786F21C87045B19EDE78FC6B46C51048513F8E9A6D44060199C1BF0C"}
+      ],
+      "metadata": {
+        "0:AFC49CB8786F21C87045B19EDE78FC6B46C51048513F8E9A6D44060199C1BF0C": {"is_indexed": true, "token_info": [{"valid": true, "extra": {"balance": "250000000000"}}, {"valid": true, "type": "jetton_masters", "name": "Dogs", "symbol": "DOGS", "extra": {"decimals": "9", "_image_medium": "https://proxy.toncenter.com/dogs/pr:medium/abc"}}]}
+      }
+    }
+    """#
+
     // MARK: - Helpers
 
     static func store(
