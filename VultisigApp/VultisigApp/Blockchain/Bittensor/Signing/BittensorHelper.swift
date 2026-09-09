@@ -115,77 +115,26 @@ enum BittensorHelper {
     // MARK: - SS58 Address Encoding/Decoding
 
     /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519),
-    /// requiring an exact prefix + checksum match against `expectedPrefix`.
-    /// This is the single decode both the form (`isValidAddress`) and the sign
-    /// path (`buildCallData`) use, so they can never accept different addresses.
-    static func ss58Decode(_ address: String, expectedPrefix: UInt16 = ss58Prefix) -> Data? {
-        guard let decoded = Base58.decodeNoCheck(string: address), !decoded.isEmpty else {
-            return nil
-        }
-
-        let prefixByteCount: Int
-        let decodedPrefix: UInt16
-
-        if decoded[0] < 64 {
-            prefixByteCount = 1
-            decodedPrefix = UInt16(decoded[0])
-        } else if decoded[0] <= 127 {
-            // The SS58 two-byte prefix indicator is 64...127; 128...255 is
-            // reserved (not a valid full-identifier prefix at all), and the
-            // low-6-bits-only formula below would otherwise alias several
-            // reserved first bytes onto the same prefix as a canonical one.
-            guard decoded.count >= 2 else { return nil }
-            prefixByteCount = 2
-            let first = decoded[0]
-            let second = decoded[1]
-            decodedPrefix = UInt16((first & 0x3F) << 2) | UInt16(second >> 6) | (UInt16(second & 0x3F) << 8)
-        } else {
-            return nil
-        }
-
-        guard decodedPrefix == expectedPrefix else { return nil }
-
-        // Exact length only: prefix + 32-byte key + 2-byte checksum, no trailing bytes.
-        let expectedLength = prefixByteCount + 32 + 2
-        guard decoded.count == expectedLength else { return nil }
-
-        let payload = Data(decoded[0..<(prefixByteCount + 32)])
-        let checksum = Data(decoded[(prefixByteCount + 32)..<expectedLength])
-
-        let ss58PrefixData = Data("SS58PRE".utf8)
-        let hash = Hash.blake2b(data: ss58PrefixData + payload, size: 64)
-        guard hash.prefix(2) == checksum else { return nil }
-
-        return Data(decoded[prefixByteCount..<(prefixByteCount + 32)])
+    /// requiring an exact prefix + checksum match. This is the single decode
+    /// both the form (`isValidAddress`) and the sign path (`buildCallData`)
+    /// use, so they can never accept different addresses.
+    static func ss58Decode(_ address: String) -> Data? {
+        AnyAddress(string: address, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix))?.data
     }
 
-    /// Encode raw public key bytes to SS58 address with given prefix
-    static func ss58Encode(publicKey: Data, prefix: UInt16) -> String {
-        let ss58Prefix = "SS58PRE".data(using: .utf8)!
-
-        var prefixBytes: Data
-        if prefix < 64 {
-            prefixBytes = Data([UInt8(prefix)])
-        } else {
-            // Two-byte encoding for prefix >= 64
-            let first = UInt8(((prefix & 0xFC) >> 2) | 0x40)
-            let second = UInt8((prefix >> 8) | ((prefix & 0x03) << 6))
-            prefixBytes = Data([first, second])
+    /// Encode raw public key bytes to a Bittensor SS58 (prefix 42) address.
+    static func ss58Encode(publicKey: Data) -> String {
+        guard let key = PublicKey(data: publicKey, type: .ed25519) else {
+            return ""
         }
-
-        let payload = prefixBytes + publicKey
-        let checksumInput = ss58Prefix + payload
-        let hash = Hash.blake2b(data: checksumInput, size: 64)
-        let checksum = hash.prefix(2)
-
-        return Base58.encodeNoCheck(data: payload + checksum)
+        return AnyAddress(publicKey: key, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix)).description
     }
 
     /// Validate a Bittensor SS58 address (prefix 42). Thin wrapper over
     /// `ss58Decode` so the form can never accept an address the sign path
     /// would reject, or vice versa.
     static func isValidAddress(_ address: String) -> Bool {
-        ss58Decode(address) != nil
+        AnyAddress.isValidSS58(string: address, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix))
     }
 
     /// The Substrate burn/zero AccountId (32 zero bytes) — SS58-42-encodes to

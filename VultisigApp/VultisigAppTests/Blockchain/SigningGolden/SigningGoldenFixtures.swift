@@ -78,10 +78,7 @@ enum SigningGoldenFactory {
             // Polkadot, whose SS58 prefix is 0, not Bittensor's 42. Mirror
             // `CoinFactory`'s override so this is a real, checksummed SS58-42
             // address — the strict sign-path decode rejects anything else.
-            return BittensorHelper.ss58Encode(
-                publicKey: recipientKey.getPublicKeyEd25519().data,
-                prefix: BittensorHelper.ss58Prefix
-            )
+            return BittensorHelper.ss58Encode(publicKey: recipientKey.getPublicKeyEd25519().data)
         default:
             return chain.coinType.deriveAddress(privateKey: recipientKey)
         }
