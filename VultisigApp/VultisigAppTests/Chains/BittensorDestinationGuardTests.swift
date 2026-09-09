@@ -26,7 +26,7 @@ final class BittensorDestinationGuardTests: XCTestCase {
 
     func testSS58EncodeOfZeroPubkeyProducesKnownBurnAddress() {
         let zeroPubkey = Data(repeating: 0, count: 32)
-        let encoded = BittensorHelper.ss58Encode(publicKey: zeroPubkey, prefix: BittensorHelper.ss58Prefix)
+        let encoded = BittensorHelper.ss58Encode(publicKey: zeroPubkey)
         XCTAssertEqual(encoded, burnAddress)
     }
 
