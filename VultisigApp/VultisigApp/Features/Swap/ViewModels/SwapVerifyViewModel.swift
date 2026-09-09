@@ -79,6 +79,7 @@ final class SwapVerifyViewModel {
     }
 
     func updateTimer(vault: Vault) async {
+        guard !transaction.isLimit, !isLoadingFees else { return }
         timer -= 1
         if timer < 1 {
             await refreshData(vault: vault)
@@ -92,7 +93,7 @@ final class SwapVerifyViewModel {
         // `quote == nil` limit invariant (the signed artifact is the pre-built
         // limit memo; a refreshed quote would only render misleading
         // provider/fee rows). Covers the 60s ticker and the retry path.
-        guard !transaction.isLimit else { return }
+        guard !transaction.isLimit, !isLoadingFees else { return }
 
         isLoadingFees = true
         defer { isLoadingFees = false }
