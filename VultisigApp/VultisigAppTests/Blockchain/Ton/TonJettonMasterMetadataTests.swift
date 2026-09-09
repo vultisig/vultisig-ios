@@ -82,6 +82,20 @@ final class TonJettonMasterMetadataTests: XCTestCase {
         XCTAssertEqual(index[dogs]?.decimals, 9)
     }
 
+    /// The degraded case the untyped fallback exists for is also the one where
+    /// it is easiest to read the wrong record: with no `type` anywhere, a
+    /// balance-only wallet entry is indistinguishable from a master entry by
+    /// type alone. Requiring a symbol or a name is what separates them — and
+    /// getting it wrong would lose the jetton's real decimals and leave the
+    /// default standing in, which is a wrong balance and a wrong amount.
+    func testUntypedWalletRecordIsNotReadAsTheMaster() throws {
+        let index = try index(from: TonJettonFixtures.pageWithUntypedWalletBeforeUntypedMaster)
+        let jusdt = try XCTUnwrap(TonJettonAddress.canonical(TonJettonFixtures.jusdtMasterRaw))
+
+        XCTAssertEqual(index[jusdt]?.symbol, "jUSDT")
+        XCTAssertEqual(index[jusdt]?.decimals, 6, "the master's real decimals, not the 9 default")
+    }
+
     func testAbsentMetadataIndexesToNothing() {
         XCTAssertTrue(TonJettonMasterMetadata.index(from: nil).isEmpty)
     }

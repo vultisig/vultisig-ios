@@ -234,6 +234,20 @@ enum TonJettonFixtures {
     }
     """#
 
+    /// Degraded Toncenter: no entry declares a `type` at all, and under the
+    /// master's own key a balance-only wallet record is listed *before* the
+    /// record that actually describes the jetton.
+    static let pageWithUntypedWalletBeforeUntypedMaster = #"""
+    {
+      "jetton_wallets": [
+        {"address": "0:1A01000000000000000000000000000000000000000000000000000000000001", "balance": "250000000000", "owner": "0:83DFD552E63729B472FCBCC8C45EBCC6691702558B68EC7527E1BA403A0F31A8", "jetton": "0:729C13B6DF2C07CBF0A06AB63D34AF454F3D320EC1BCD8FB5C6D24D0806A17C2"}
+      ],
+      "metadata": {
+        "0:729C13B6DF2C07CBF0A06AB63D34AF454F3D320EC1BCD8FB5C6D24D0806A17C2": {"is_indexed": true, "token_info": [{"valid": true, "extra": {"balance": "250000000000"}}, {"valid": true, "name": "jUSDT", "symbol": "jUSDT", "extra": {"decimals": "6"}}]}
+      }
+    }
+    """#
+
     // MARK: - Helpers
 
     static func store(

@@ -70,8 +70,6 @@ struct TonJettonFinder {
 
         let registry = await registryStore.registry()
         var seenMasters: Set<String> = []
-        /// Row identity, recorded before any filtering — see the paging note below.
-        var seenWallets: Set<String> = []
         var discovered: [CoinMeta] = []
 
         for page in 0..<maxPages {
@@ -88,10 +86,8 @@ struct TonJettonFinder {
             ).data
 
             let masters = TonJettonMasterMetadata.index(from: response.metadata)
-            let walletsBeforePage = seenWallets.count
 
             for wallet in response.jetton_wallets {
-                seenWallets.insert(wallet.address)
                 guard TonJettonAddress.canonical(wallet.owner) == owner else { continue }
                 guard let master = TonJettonAddress.canonical(wallet.jetton) else { continue }
                 guard seenMasters.insert(master).inserted else { continue }
@@ -102,17 +98,17 @@ struct TonJettonFinder {
                 }
             }
 
-            // A full page that carries no row we have not already seen is the
-            // same page served again — what a proxy that ignores `offset` does,
-            // and what would otherwise turn one balance into twenty.
-            //
-            // Replay is judged on the rows, not on what survived the filters: a
-            // full page of somebody else's wallets, or of jettons that all
-            // failed verification, is a page we must walk *past*, not a reason
-            // to stop while later offsets still hold the account's own jettons.
-            let isLastPage = response.jetton_wallets.count < pageSize
-            let isReplay = seenWallets.count == walletsBeforePage
-            if isLastPage || isReplay { break }
+            // Only a short page ends the walk. A proxy that ignores `offset`
+            // and replays one page forever is handled by the two guarantees
+            // above it rather than by trying to recognise the replay: the
+            // master dedup means a repeated holding is never counted twice, and
+            // `maxPages` bounds the loop. Every heuristic that tried to spot a
+            // repeat instead — no new master, then no new wallet row, then two
+            // such pages in a row — also describes a legitimately overlapping
+            // page, and stopping on one strands every holding at a later
+            // offset. Correctness is worth more here than the handful of
+            // requests a broken proxy costs.
+            if response.jetton_wallets.count < pageSize { break }
         }
 
         return discovered

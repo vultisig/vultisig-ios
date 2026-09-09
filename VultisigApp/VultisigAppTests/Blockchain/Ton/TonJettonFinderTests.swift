@@ -139,23 +139,10 @@ final class TonJettonFinderTests: XCTestCase {
         XCTAssertEqual(Set(coins.map(\.ticker)), ["USDT", "NOT", "DOGS"])
     }
 
-    /// A proxy that ignores `offset` replays page one forever. An owner holds
-    /// exactly one wallet per master, so a page that adds no new master is the
-    /// end of the list however the proxy chose to express it — without this the
-    /// same balance would be walked until the page cap.
-    func testAReplayedPageEndsTheWalk() async throws {
-        let (finder, client) = finder(pages: [.success(TonJettonFixtures.pageOfTwo)], pageSize: 2, maxPages: 20)
-        let coins = try await finder.discover(ownerAddress: TonJettonFixtures.owner)
-
-        XCTAssertEqual(client.attempts, 2, "One page, then one that proves it repeated")
-        XCTAssertEqual(coins.map(\.ticker).sorted(), ["NOT", "USDT"], "and nothing is discovered twice")
-    }
-
     /// A full page can be entirely spam, entirely somebody else's, or entirely
     /// jettons that fail verification. None of that means the listing ended —
     /// the account's own jettons may sit at the next offset — so the walk must
-    /// continue. Judging replay on what survived the filters instead of on the
-    /// rows themselves would strand a user whose first page is all spam.
+    /// continue past it.
     func testAFullPageThatSurvivesNoFilterIsStillWalkedPast() async throws {
         let (finder, client) = finder(
             pages: [.success(TonJettonFixtures.pageOfTwoForeignRows), .success(TonJettonFixtures.pageOfOne)],
@@ -165,6 +152,39 @@ final class TonJettonFinderTests: XCTestCase {
 
         XCTAssertEqual(client.attempts, 2, "A page nothing survived is not the end of the list")
         XCTAssertEqual(coins.map(\.ticker), ["DOGS"])
+    }
+
+    /// A proxy that ignores `offset` replays one page forever. Rather than try
+    /// to recognise that — every attempt also described a legitimately
+    /// overlapping page, and stopping on one stranded real holdings — the walk
+    /// leans on the two guarantees that hold unconditionally: the master dedup
+    /// means a repeated holding is never counted twice, and `maxPages` bounds
+    /// the loop. This pins both.
+    func testAReplayingProxyTerminatesAndDoesNotDuplicate() async throws {
+        let (finder, client) = finder(pages: [.success(TonJettonFixtures.pageOfTwo)], pageSize: 2, maxPages: 5)
+        let coins = try await finder.discover(ownerAddress: TonJettonFixtures.owner)
+
+        XCTAssertEqual(client.attempts, 5, "maxPages bounds a proxy that never advances")
+        XCTAssertEqual(coins.map(\.ticker).sorted(), ["NOT", "USDT"], "and nothing is discovered twice")
+    }
+
+    /// Pages of rows already seen are not the end of the listing: a proxy can
+    /// legitimately overlap pages, or serve a cached offset, while later offsets
+    /// still hold jettons the account owns. Stopping on them would strand those.
+    func testOverlappingPagesDoNotEndTheWalk() async throws {
+        let (finder, client) = finder(
+            pages: [
+                .success(TonJettonFixtures.pageOfTwo),
+                .success(TonJettonFixtures.pageOfTwo),
+                .success(TonJettonFixtures.pageOfTwo),
+                .success(TonJettonFixtures.pageOfOne)
+            ],
+            pageSize: 2
+        )
+        let coins = try await finder.discover(ownerAddress: TonJettonFixtures.owner)
+
+        XCTAssertEqual(client.attempts, 4)
+        XCTAssertEqual(coins.map(\.ticker).sorted(), ["DOGS", "NOT", "USDT"], "the stranded page is reached")
     }
 
     func testAnEmptyAccountDiscoversNothing() async throws {

@@ -63,14 +63,26 @@ extension JettonMasterMetadata {
     /// The validated *master* entry, if this address has one. See
     /// `TonJettonMasterMetadata.index(from:)` for why `type` is filtered.
     ///
-    /// A typed master entry always wins. An untyped one is accepted only when
-    /// there is no typed master to be had, so that a Toncenter version which
-    /// stopped emitting `type` degrades to reading the entry rather than to
-    /// finding no metadata at all — which would classify every jetton on the
-    /// chain as unverified and quietly stop discovery.
+    /// A typed master entry always wins. An untyped one is read only when there
+    /// is no typed master to be had, so that a Toncenter version which stopped
+    /// emitting `type` degrades to partial metadata rather than to none — none
+    /// would classify every jetton on the chain as unverified and quietly stop
+    /// discovery.
+    ///
+    /// In that degraded case *every* entry is untyped, including the wallet
+    /// records, so the fallback additionally requires something only a master
+    /// describes: a symbol or a name. A wallet entry carries neither — just a
+    /// balance — and reading one as the master would drop the jetton's real
+    /// decimals and leave the default standing in for them, which is a wrong
+    /// displayed balance and a wrong transfer amount.
     var masterTokenInfo: JettonTokenInfo? {
         guard let entries = token_info else { return nil }
-        return entries.first { $0.valid == true && $0.type == "jetton_masters" }
-            ?? entries.first { $0.valid == true && $0.type == nil }
+        if let typed = entries.first(where: { $0.valid == true && $0.type == "jetton_masters" }) {
+            return typed
+        }
+        return entries.first {
+            $0.valid == true && $0.type == nil
+                && ($0.symbol?.trimmedNonEmpty != nil || $0.name?.trimmedNonEmpty != nil)
+        }
     }
 }
