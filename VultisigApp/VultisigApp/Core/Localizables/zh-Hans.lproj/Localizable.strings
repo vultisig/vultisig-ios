@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "打开设置";
 "openSystemSettings" = "打开系统设置";
+"operatorFeeRangeError" = "运营商费用必须介于 0 和 10000 基点之间";
 "operatorFeesError" = "如果填写了提供商，运营商费用不能为空";
 "operatorFeesLabel" = "运营商费用（基点）";
 "optional" = "(可选)";

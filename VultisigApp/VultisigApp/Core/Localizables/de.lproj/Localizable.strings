@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Einstellungen öffnen";
 "openSystemSettings" = "Systemeinstellungen öffnen";
+"operatorFeeRangeError" = "Betreibergebühr muss zwischen 0 und 10000 Basispunkten liegen";
 "operatorFeesError" = "Betreibergebühr darf nicht leer sein, wenn Anbieter ausgefüllt ist";
 "operatorFeesLabel" = "Betreibergebühren (Basis Punkte)";
 "optional" = "(optional)";

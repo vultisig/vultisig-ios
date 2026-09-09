@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Abrir Configurações";
 "openSystemSettings" = "Abrir Configurações do Sistema";
+"operatorFeeRangeError" = "A taxa do operador deve estar entre 0 e 10000 pontos base";
 "operatorFeesError" = "A taxa do operador não pode estar vazia se o provedor estiver preenchido";
 "operatorFeesLabel" = "Taxas do operador (Pontos Base)";
 "optional" = "(opcional)";

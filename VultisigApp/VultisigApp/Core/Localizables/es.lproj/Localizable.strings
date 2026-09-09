@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Abrir Configuración";
 "openSystemSettings" = "Abrir Configuración del Sistema";
+"operatorFeeRangeError" = "La tarifa del operador debe estar entre 0 y 10000 puntos base";
 "operatorFeesError" = "La tarifa del operador no puede estar vacía si el proveedor está lleno";
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
 "optional" = "(opcional)";

@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Apri Impostazioni";
 "openSystemSettings" = "Apri Impostazioni di Sistema";
+"operatorFeeRangeError" = "La commissione operatore deve essere compresa tra 0 e 10000 punti base";
 "operatorFeesError" = "La commissione operatore non può essere vuota se il fornitore è compilato";
 "operatorFeesLabel" = "Commissioni operatore (Punti Base)";
 "optional" = "(opzionale)";
