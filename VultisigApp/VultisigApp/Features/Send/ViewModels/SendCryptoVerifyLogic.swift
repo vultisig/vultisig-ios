@@ -327,20 +327,17 @@ struct SendCryptoVerifyLogic {
     func validateBittensorDestinationIfNeeded(tx: SendTransaction) async throws {
         guard tx.coin.chain == .bittensor, tx.coin.isNativeToken else { return }
 
-        let existingBalance: BigInt
+        // `getBalanceIfKnown` distinguishes a confirmed balance (zero
+        // included, for a genuinely absent account) from a read that
+        // couldn't be determined — an undecodable address or a
+        // malformed/truncated RPC response. `getBalance` (used for the
+        // wallet's own balance display) collapses all of those to "0", which
+        // would read as "destination confirmed empty" here and reject a
+        // perfectly fine send; `nil` is not evidence of anything, so it
+        // fails open exactly like a transport error.
+        let balanceIfKnown: BigInt?
         do {
-            // `getBalanceIfKnown` distinguishes a confirmed balance (zero
-            // included, for a genuinely absent account) from a read that
-            // couldn't be determined — an undecodable address or a
-            // malformed/truncated RPC response. `getBalance` (used for the
-            // wallet's own balance display) collapses all of those to "0",
-            // which would read as "destination confirmed empty" here and
-            // reject a perfectly fine send; `nil` is not evidence of
-            // anything, so it fails open exactly like a transport error.
-            guard let balance = try await bittensorService.getBalanceIfKnown(address: tx.toAddress) else {
-                return
-            }
-            existingBalance = balance
+            balanceIfKnown = try await bittensorService.getBalanceIfKnown(address: tx.toAddress)
         } catch is CancellationError {
             // Propagate — same convention as `validateDestinationIfNeeded`: a
             // cancelled lookup must abort the load pass, never be read as
@@ -352,9 +349,15 @@ struct SendCryptoVerifyLogic {
 
         // The read can answer from a cache with no suspension point that
         // would observe cancellation, so a cancelled caller can reach here
-        // with a real-looking read. Ask the task itself — same reasoning as
-        // `validateDestinationTrustLineIfNeeded`'s post-fetch check.
+        // with a real-looking (or unknown) result either way. Ask the task
+        // itself BEFORE branching on that result — same reasoning as
+        // `validateDestinationTrustLineIfNeeded`'s post-fetch check, and
+        // deliberately ahead of the `nil` check below: a cancelled pass that
+        // happened to read "unknown" must still abort, not silently return
+        // as if validation succeeded.
         try Task.checkCancellation()
+
+        guard let existingBalance = balanceIfKnown else { return }
 
         let resultingBalance = existingBalance + tx.amountInRaw
         guard resultingBalance > .zero, resultingBalance < BittensorHelper.existentialDeposit else { return }

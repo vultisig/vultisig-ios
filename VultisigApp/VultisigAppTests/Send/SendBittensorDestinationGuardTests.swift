@@ -10,7 +10,7 @@
 //  `getBalanceIfKnown`, which distinguishes a confirmed balance from an
 //  unknown read — see `BittensorAccountStorageTests` for the pure
 //  malformed/truncated-response parsing this rests on, and
-//  `BittensorServiceUndecodableAddressTests` for the address-decode case at
+//  `BittensorAccountStorageTests` for the address-decode case at
 //  the real service (no network reached).
 //
 
@@ -168,6 +168,34 @@ final class SendBittensorDestinationGuardTests: XCTestCase {
         let task = Task {
             // Suspend first so the cancel below always lands before the guard
             // runs, regardless of scheduling order.
+            try? await Task.sleep(for: .seconds(60))
+            try await logic.validateBittensorDestinationIfNeeded(tx: tx)
+        }
+        task.cancel()
+
+        do {
+            try await task.value
+            XCTFail("a cancelled destination lookup must abort the load pass")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
+    /// The `nil` (unknown) branch must observe cancellation exactly like the
+    /// confirmed branch above — a cancelled pass that happens to read
+    /// "unknown" must still abort with `CancellationError`, not silently
+    /// `return` as if validation succeeded. Regression test for a Codex
+    /// finding: the cancellation check originally sat AFTER the `nil` guard,
+    /// so this exact case slipped through un-checked.
+    func testCancellationObservedEvenWhenBalanceReadIsUnknown() async throws {
+        let bittensorService = StubBittensorBalanceFetching(result: .success(nil))
+        let logic = makeLogic(bittensorService: bittensorService)
+        let tao = makeCoin(.bittensor, ticker: "TAO", decimals: 9)
+        let tx = makeTransaction(coin: tao, amount: amount("0.0000004"))
+
+        let task = Task {
             try? await Task.sleep(for: .seconds(60))
             try await logic.validateBittensorDestinationIfNeeded(tx: tx)
         }

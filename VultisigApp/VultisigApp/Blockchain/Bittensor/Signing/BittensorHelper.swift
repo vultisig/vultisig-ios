@@ -221,20 +221,30 @@ enum BittensorHelper {
     /// absent-account cases can be pinned directly without mocking the RPC
     /// layer.
     ///
-    /// `nil` or an empty string means the storage key doesn't exist in the
-    /// trie — the account has no ledger entry, which IS a confirmed zero
-    /// balance (this is how a fresh, never-funded account reads). A
-    /// non-empty response shorter than the `AccountInfo` layout requires is a
-    /// malformed or truncated read, not a confirmed value, and must not be
-    /// treated as zero.
+    /// `nil` means the caller determined the storage key doesn't exist in
+    /// the trie (Substrate's JSON-null sentinel) — the account has no ledger
+    /// entry, which IS a confirmed zero balance. An actual empty STRING is
+    /// NOT that sentinel — a well-formed node never returns one for this
+    /// call — so it's unknown, not zero. A non-empty response shorter than
+    /// the `AccountInfo` layout requires, or one whose free-balance field
+    /// fails to parse, is likewise a malformed/truncated read, not a
+    /// confirmed value, and must not be treated as zero.
     static func interpretAccountStorage(_ rawResult: String?) -> AccountStorageRead {
-        guard let result = rawResult, !result.isEmpty else {
+        guard let result = rawResult else {
+            // Substrate's sentinel for "no value" is JSON null, which the
+            // caller maps to `nil` here — the account has no ledger entry,
+            // which IS a confirmed zero balance.
             return .confirmed(.zero)
+        }
+        guard !result.isEmpty else {
+            // An actual empty STRING is not that sentinel — a well-formed
+            // node never returns one for this call. Unknown, not zero.
+            return .unknown
         }
 
         // Parse SCALE-encoded AccountInfo: nonce(4) + consumers(4) + providers(4) + sufficients(4) + free(16) + ...
         let hex = result.hasPrefix("0x") ? String(result.dropFirst(2)) : result
-        guard hex.count >= 64 else {
+        guard hex.count >= 64, hex.count.isMultiple(of: 2), hex.allSatisfy(\.isHexDigit) else {
             return .unknown
         }
 
@@ -248,7 +258,13 @@ enum BittensorHelper {
             beHex += String(freeHex[start..<end])
         }
 
-        return .confirmed(BigInt(beHex, radix: 16) ?? BigInt.zero)
+        guard let balance = BigInt(beHex, radix: 16) else {
+            // Malformed hex in the free-balance field is not a confirmed
+            // zero — the whole point of this type is to not let a parse
+            // failure masquerade as a real value.
+            return .unknown
+        }
+        return .confirmed(balance)
     }
 
     // MARK: - Pre-signed Image Hash (for MPC signing)

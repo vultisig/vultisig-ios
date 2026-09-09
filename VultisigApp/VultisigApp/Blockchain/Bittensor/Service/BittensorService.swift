@@ -72,19 +72,29 @@ class BittensorService: RpcService, BittensorBalanceFetching {
         let blake2Hash = Hash.blake2b(data: pubkey, size: 16) // 128-bit
         let storageKey = "0x" + Self.systemAccountPrefix + blake2Hash.toHexString() + pubkey.toHexString()
 
-        // Query via RPC — no API key needed
-        let result: String = try await sendRPCRequest(method: "state_getStorage", params: [storageKey], endpoint: resolvedEndpoint) { result in
-            guard let hex = result as? String else {
-                return ""
+        // Query via RPC — no API key needed. `result` is JSON `null` for an
+        // absent storage key (Substrate's documented "no value" sentinel) —
+        // decoded here as `NSNull`, distinct from any other non-String shape,
+        // which is a malformed response rather than a confirmed absence.
+        // Cache only confirmed storage values. An absent account stays uncached
+        // so funding it is visible on the next read; malformed data never
+        // becomes a cached zero.
+        let read: (value: BittensorHelper.AccountStorageRead, cacheable: Bool) = try await sendRPCRequest(
+            method: "state_getStorage", params: [storageKey], endpoint: resolvedEndpoint
+        ) { result in
+            if result is NSNull {
+                return (BittensorHelper.interpretAccountStorage(nil), false)
             }
-            return hex
+            guard let hex = result as? String else {
+                return (.unknown, false)
+            }
+            return (BittensorHelper.interpretAccountStorage(hex), true)
         }
 
-        let read = BittensorHelper.interpretAccountStorage(result)
-        if case .confirmed(let balance) = read {
+        if read.cacheable, case .confirmed(let balance) = read.value {
             self.cacheBittensorBalance.set(cacheKey, (data: balance, timestamp: Date()))
         }
-        return read
+        return read.value
     }
 
     private func fetchBalance(address: String) async throws -> BigInt {
