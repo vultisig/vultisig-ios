@@ -60,8 +60,8 @@ final class SwapKitErrorTests: XCTestCase {
 
     /// The reclassified case reuses the existing THORChain `Amount Too Small`
     /// localized string for its `errorDescription` so no new translation
-    /// cycle is required. The view layer normalizes the case to
-    /// `SwapCryptoLogic.Errors.swapAmountTooSmall` for the tooltip title.
+    /// cycle is required. It carries the matching title too — pinned in
+    /// `SwapKitErrorPresentationTests`.
     func testAmountBelowProviderMinimumDescriptionReusesSwapAmountTooSmallString() {
         let error: SwapKitError = .amountBelowProviderMinimum
         XCTAssertEqual(error.errorDescription, "swapErrorAmountTooSmallDescription".localized)

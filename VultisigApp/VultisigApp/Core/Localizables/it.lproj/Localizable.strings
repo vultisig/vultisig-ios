@@ -1534,8 +1534,11 @@
 "swapAmountTooSmall" = "Importo dello scambio troppo piccolo";
 "swapAmountTooSmallRecommended" = "Importo dello scambio troppo piccolo. Importo raccomandato %@";
 "swapAppliedDiscounts" = "Sconti applicati:";
+"swapErrorAddressScreeningTitle" = "Verifica Indirizzo Fallita";
 "swapErrorAmountTooSmallDescription" = "L'importo dello scambio è troppo piccolo. Per favore aumenta l'importo.";
 "swapErrorAmountTooSmallTitle" = "Importo Troppo Piccolo";
+"swapErrorApprovalRequiredTitle" = "Approvazione Richiesta";
+"swapErrorAssetBlockedTitle" = "Asset Bloccato";
 "swapErrorInboundAddressDescription" = "L'indirizzo in entrata non è valido. Per favore riprova.";
 "swapErrorInboundAddressTitle" = "Indirizzo Non Valido";
 "swapErrorInsufficientFundsDescription" = "Fondi insufficienti per eseguire lo scambio. Per favore ricarica il portafoglio.";
@@ -1543,11 +1546,14 @@
 "swapErrorInsufficientGasDescription" = "Token gas insufficiente per coprire la commissione di rete. Per favore aggiungi gas al tuo portafoglio.";
 "swapErrorInsufficientGasTitle" = "Gas Insufficiente";
 "swapErrorInvalidDestinationTitle" = "Destinazione Non Valida";
+"swapErrorInvalidSourceTitle" = "Origine Non Valida";
 "swapErrorNoLiquidityPoolTitle" = "Nessun Pool di Liquidità";
 "swapErrorProviderRejectedDescription" = "Il fornitore di scambio non è riuscito a quotare questa operazione. Riprova o scegli un'altra coppia.";
 "swapErrorProviderRejectedTitle" = "Scambio Non Disponibile";
+"swapErrorQuoteExpiredTitle" = "Preventivo Scaduto";
 "swapErrorRecipientRouteTitle" = "Nessun Percorso al Destinatario";
 "swapErrorRecipientVerificationTitle" = "Verifica Destinatario Fallita";
+"swapErrorRouteExpiredTitle" = "Rotta Scaduta";
 "swapErrorRouteUnavailableTitle" = "Nessun Percorso Disponibile";
 "swapErrorSameAssetDescription" = "Non è possibile scambiare lo stesso asset. Per favore seleziona un asset diverso.";
 "swapErrorSameAssetTitle" = "Stesso Asset";
