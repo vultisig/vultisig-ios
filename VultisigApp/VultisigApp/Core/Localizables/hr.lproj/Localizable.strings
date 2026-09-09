@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Otvori Postavke";
 "openSystemSettings" = "Otvori Postavke sustava";
+"operatorFeeRangeError" = "Naknada operatora mora biti između 0 i 10000 baznih točaka";
 "operatorFeesError" = "Naknada operatora ne može biti prazna ako je pružatelj popunjen";
 "operatorFeesLabel" = "Naknade operatora (Bazne točke)";
 "optional" = "(neobavezno)";

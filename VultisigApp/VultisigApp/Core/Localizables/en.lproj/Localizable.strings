@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Open Settings";
 "openSystemSettings" = "Open System Settings";
+"operatorFeeRangeError" = "Operator-fee must be between 0 and 10000 basis points";
 "operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "optional" = "(optional)";

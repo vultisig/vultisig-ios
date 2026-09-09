@@ -60,11 +60,13 @@ final class BondTransactionViewModel: ObservableObject, Form {
                 if value.isEmpty && self.providerViewModel.field.value.isNotEmpty {
                     throw HelperError.runtimeError("operatorFeesError".localized)
                 }
-
-                if !value.isEmpty && Int64(value) == nil {
-                    throw HelperError.runtimeError("invalidOperatorFee".localized)
-                }
-            }
+            },
+            // The memo's fee segment is read as basis points, so anything outside
+            // 0...10000 is not a fee the chain can honour.
+            BasisPointsValidator(
+                invalidMessage: "invalidOperatorFee".localized,
+                outOfRangeMessage: "operatorFeeRangeError".localized
+            )
         ]
 
         amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))

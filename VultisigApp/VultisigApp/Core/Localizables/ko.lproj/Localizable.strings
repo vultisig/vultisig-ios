@@ -1057,6 +1057,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "설정 열기";
 "openSystemSettings" = "시스템 설정 열기";
+"operatorFeeRangeError" = "운영자 수수료는 0에서 10000 기준점 사이여야 합니다";
 "operatorFeesError" = "공급자가 입력된 경우 운영자 수수료는 비워둘 수 없습니다";
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
