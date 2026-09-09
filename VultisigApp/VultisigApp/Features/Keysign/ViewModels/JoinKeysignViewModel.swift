@@ -808,7 +808,7 @@ class JoinKeysignViewModel: ObservableObject {
     /// row: nothing was claimed, so nothing can be totalled.
     func getSwapTotalFee() -> String? {
         guard let keysignPayload,
-              let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload),
+              let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload, vault: vault),
               let swapFee = swapFeeViewModel.resolveSwapFee(
                 swapPayload: keysignPayload.swapPayload,
                 vault: vault

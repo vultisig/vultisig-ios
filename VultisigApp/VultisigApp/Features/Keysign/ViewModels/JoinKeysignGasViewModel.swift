@@ -28,9 +28,15 @@ struct JoinKeysignGasViewModel {
 
     /// `nil` when nothing prices the fee coin, so a caller summing this never
     /// absorbs an unpriced leg as free.
-    func networkFeeFiat(payload: KeysignPayload) -> Decimal? {
+    func networkFeeFiat(payload: KeysignPayload, vault: Vault? = nil) -> Decimal? {
         guard let resolved = resolveNetworkFee(payload: payload) else { return nil }
-        return feeFiat(coin: payload.coin, fee: resolved.amount)
+        // Gas is always paid in the native coin. A priced source token cannot
+        // stand in for an unavailable native rate, even on the same chain.
+        let feeCoin = vault?.nativeCoin(for: payload.coin.chain)?.toCoinMeta()
+            ?? (payload.coin.isNativeToken ? payload.coin.toCoinMeta() : resolved.nativeToken)
+        guard let rate = RateProvider.shared.rate(for: feeCoin) else { return nil }
+        let amount = Decimal(resolved.amount) / pow(10, resolved.nativeToken.decimals)
+        return RateProvider.shared.fiatBalance(value: amount, rate: rate)
     }
 
     private func resolveNetworkFee(payload: KeysignPayload) -> ResolvedNetworkFee? {
@@ -110,18 +116,6 @@ struct JoinKeysignGasViewModel {
         let feeDecimal = coin.decimal(for: fee)
         // Use fee-specific formatting with more decimal places (5 instead of 2)
         return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
-    }
-
-    /// Unformatted twin of `feesInReadable`, same coin preference, but `nil`
-    /// rather than a `$0.00` when neither coin has a rate.
-    private func feeFiat(coin: Coin, fee: BigInt) -> Decimal? {
-        if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain),
-           let rate = RateProvider.shared.rate(for: vaultNativeCoin) {
-            return RateProvider.shared.fiatBalance(value: vaultNativeCoin.decimal(for: fee), rate: rate)
-        }
-
-        guard let rate = RateProvider.shared.rate(for: coin) else { return nil }
-        return RateProvider.shared.fiatBalance(value: coin.decimal(for: fee), rate: rate)
     }
 
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {

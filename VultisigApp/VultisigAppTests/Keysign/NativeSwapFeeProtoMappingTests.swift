@@ -413,6 +413,62 @@ final class NativeSwapFeeProtoMappingTests: XCTestCase {
         )
     }
 
+    func testTokenRateCannotPriceAnUnpricedNativeNetworkFee() throws {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let nativeCoin = makeUnpricedEthSource()
+        XCTAssertNil(RateProvider.shared.rate(for: nativeCoin))
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin, nativeCoin]
+        let viewModel = JoinKeysignViewModel()
+        viewModel.vault = vault
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertNil(JoinKeysignGasViewModel().networkFeeFiat(payload: try XCTUnwrap(viewModel.keysignPayload), vault: vault))
+        XCTAssertNil(viewModel.getSwapTotalFee(), "A priced token must not make an unpriced gas leg look known")
+    }
+
+    func testTokenSwapNetworkFeeUsesNativeDecimalsAndRate() {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let nativeCoin = makeEthSource()
+        setPrice(2000, for: nativeCoin)
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin, nativeCoin]
+        let payload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+        let viewModel = JoinKeysignViewModel()
+        viewModel.vault = vault
+        viewModel.keysignPayload = payload
+
+        // 21,000 gas at 1 gwei = 0.000021 ETH; at $2,000/ETH this is $0.042.
+        XCTAssertEqual(JoinKeysignGasViewModel().networkFeeFiat(payload: payload, vault: vault), Decimal(string: "0.042"))
+        XCTAssertEqual(viewModel.getSwapTotalFee(), Decimal(string: "0.042")?.formatToFiat(includeCurrencySymbol: true))
+    }
+
+    func testTokenSwapWithoutVaultNativeUsesCatalogNativeRate() throws {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin]
+        XCTAssertNil(vault.nativeCoin(for: .ethereum))
+        let native = try XCTUnwrap(TokensStore.TokenSelectionAssets.first { $0.chain == .ethereum && $0.isNativeToken })
+        let payload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        // Do not seed a shared catalog rate: another test may have loaded it.
+        // Either cache state must value 0.000021 ETH, never 21 million USDC.
+        let expected = RateProvider.shared.rate(for: native).map { Decimal(21) / 1_000_000 * Decimal($0.value) }
+        XCTAssertEqual(JoinKeysignGasViewModel().networkFeeFiat(payload: payload, vault: vault), expected)
+    }
+
     func testTotalFeeRowHiddenWhenTheSenderCarriedNoFee() {
         let sourceCoin = makeEthSource()
         setPrice(2000, for: sourceCoin)
