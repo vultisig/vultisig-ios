@@ -13,6 +13,16 @@ import Foundation
 @MainActor
 protocol TokenDiscoverer {
     func discoverTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta]
+
+    /// Whether this discoverer has positively identified everything it returns,
+    /// so the caller's spam heuristics add nothing. Default `false`: a
+    /// discoverer that simply enumerates what an address holds cannot vouch for
+    /// any of it, and the heuristics are the only gate those chains have.
+    var vouchesForResults: Bool { get }
+}
+
+extension TokenDiscoverer {
+    var vouchesForResults: Bool { false }
 }
 
 // MARK: - Concrete discoverers
@@ -80,6 +90,22 @@ struct RippleTrustLineTokenDiscoverer: TokenDiscoverer {
     }
 }
 
+/// TON jettons: everything the account holds that is listed in the verified
+/// registry — our curated TON tokens merged with Tonkeeper's community
+/// whitelist. Unverified and counterfeit jettons are dropped rather than
+/// returned, because a TON account is airdropped counterfeits it never asked
+/// for and auto-adding one would put a balance on the home screen the user
+/// never received.
+struct TonJettonTokenDiscoverer: TokenDiscoverer {
+    /// Every jetton returned here matched a registry address, which says
+    /// strictly more than the ticker and logo heuristics could.
+    let vouchesForResults = true
+
+    func discoverTokens(nativeCoin _: CoinMeta, address: String) async throws -> [CoinMeta] {
+        try await TonJettonFinder().discover(ownerAddress: address)
+    }
+}
+
 /// Explicit no-op for chains that do not support token auto-discovery.
 /// Registered by name so "no discovery" is a declared choice rather than an
 /// implicit empty fall-through.
@@ -118,7 +144,9 @@ enum TokenDiscovererRegistry {
                 : NoTokenDiscoverer()
         case .Ripple:
             return RippleTrustLineTokenDiscoverer()
-        case .UTXO, .Cardano, .Polkadot, .Ton, .Tron:
+        case .Ton:
+            return TonJettonTokenDiscoverer()
+        case .UTXO, .Cardano, .Polkadot, .Tron:
             return NoTokenDiscoverer()
         }
     }
