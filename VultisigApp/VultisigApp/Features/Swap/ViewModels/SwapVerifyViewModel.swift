@@ -31,6 +31,8 @@ final class SwapVerifyViewModel {
     var securityScannerState: SecurityScannerState = .idle
 
     var error: Error?
+    /// Set when the refresh substituted the picked route; the screen clears it.
+    var routeSelectionNotice: String?
     var isLoading = false
     var isLoadingFees = false
     var isLoadingTransaction = false
@@ -77,6 +79,7 @@ final class SwapVerifyViewModel {
     }
 
     func updateTimer(vault: Vault) async {
+        guard !transaction.isLimit, !isLoadingFees else { return }
         timer -= 1
         if timer < 1 {
             await refreshData(vault: vault)
@@ -90,13 +93,15 @@ final class SwapVerifyViewModel {
         // `quote == nil` limit invariant (the signed artifact is the pre-built
         // limit memo; a refreshed quote would only render misleading
         // provider/fee rows). Covers the 60s ticker and the retry path.
-        guard !transaction.isLimit else { return }
+        guard !transaction.isLimit, !isLoadingFees else { return }
 
         isLoadingFees = true
         defer { isLoadingFees = false }
 
         do {
             var updated = transaction
+            // Applied to the UI only once the refreshed transaction commits below.
+            var routeWasSubstituted = false
             // Same-underlying secured mint has no pool quote to refresh — keep the
             // synthetic ~1:1 quote and refresh only the L1 deposit gas below.
             if transaction.mode == .standard {
@@ -110,8 +115,19 @@ final class SwapVerifyViewModel {
                     recipientAddress: transaction.advancedSettings.externalRecipient
                 )
                 if let result {
+                    // Installing `result.quote` unconditionally would hand the user
+                    // a route they never chose, immediately before signing.
+                    var refreshedQuote = result.quote
+                    if let picked = updated.selectedProvider {
+                        if let stillOffered = result.allQuotes.first(where: { $0.provider(fromChain: updated.fromCoin.chain) == picked }) {
+                            refreshedQuote = stillOffered
+                        } else {
+                            updated.selectedProvider = nil
+                            routeWasSubstituted = true
+                        }
+                    }
                     updated = updated.with(
-                        quote: result.quote,
+                        quote: refreshedQuote,
                         vultDiscountBps: result.vultDiscountBps,
                         referralDiscountBps: result.referralDiscountBps
                     )
@@ -161,6 +177,13 @@ final class SwapVerifyViewModel {
             }
             transaction = updated
             error = nil
+            if routeWasSubstituted {
+                // The confirmations were given for a route that is now gone.
+                isAmountCorrect = false
+                isFeeCorrect = false
+                isApproveCorrect = false
+                routeSelectionNotice = "swapRouteUnavailableResetToAuto".localized
+            }
         } catch {
             guard (error as? URLError)?.code != .cancelled else { return }
             logger.warning("Refresh quote error: \(error.localizedDescription)")

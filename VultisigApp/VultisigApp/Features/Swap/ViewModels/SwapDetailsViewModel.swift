@@ -26,7 +26,9 @@ final class SwapDetailsViewModel {
     // pair OR amount change clears it so the "to" field falls back to the
     // instant indicative estimate and the summary shows its loading skeleton.
     @ObservationIgnored private var quotedPair: SwapPairIdentity?
-    @ObservationIgnored private var quotedAmount: String?
+    /// The PARSED amount the held quote was fetched for — the same value sent to
+    /// the provider, so re-typing an equivalent amount is not a new swap.
+    @ObservationIgnored private var quotedAmount: Decimal?
 
     // MARK: - Form fields (mutable while the user is editing)
 
@@ -63,20 +65,25 @@ final class SwapDetailsViewModel {
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
     // override (provider selection). The rest of the screen — fees, validation,
     // verify, sign — reads the computed `quote`, so a manual pick flows through
-    // unchanged. A refresh resets `selectedQuote` so it re-defaults to Best.
+    // unchanged. A refresh re-resolves the pick by provider, and
+    // `makeTransaction` hands that identity on so verify's refresh keeps it too.
 
     /// Full ranked candidate set (best→worst by net output). Drives the
     /// provider-selection sheet. Empty until the first quote of a pair lands.
     var allQuotes: [SwapQuote] = []
     /// Auto-selected winner for the current pair/amount.
     var bestQuote: SwapQuote?
-    /// Manual provider override. `nil` means "use Best". Reset on every refresh.
+    /// Manual provider override. `nil` means "use Auto". Every path that drops it
+    /// goes through `dropRouteSelection`, so it can never vanish silently.
     var selectedQuote: SwapQuote?
 
+    /// Set when a route pick was dropped; the screen renders and clears it.
+    var routeSelectionNotice: String?
+
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
-    /// auto-selected best. Writing it (e.g. the reset paths, tests) clears the
-    /// manual override and assigns the best slot so existing call sites behave
-    /// exactly as before.
+    /// auto-selected best. Writing it replaces the slot wholesale and clears the
+    /// override without a notice — no production path writes it; use
+    /// `clearQuoteState`.
     var quote: SwapQuote? {
         get { selectedQuote ?? bestQuote }
         set {
@@ -198,6 +205,28 @@ final class SwapDetailsViewModel {
     /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
+    }
+
+    enum RouteSelectionDropReason {
+        case routeUnavailable
+        case swapChanged
+
+        var message: String {
+            switch self {
+            case .routeUnavailable:
+                return "swapRouteUnavailableResetToAuto".localized
+            case .swapChanged:
+                return "swapRouteResetToAuto".localized
+            }
+        }
+    }
+
+    /// No-op without a pick, so a repeating invalidation (`fetchQuotes` runs on
+    /// every keystroke) still surfaces at most one notice per pick.
+    func dropRouteSelection(_ reason: RouteSelectionDropReason) {
+        guard selectedQuote != nil else { return }
+        selectedQuote = nil
+        routeSelectionNotice = reason.message
     }
 
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
@@ -418,7 +447,8 @@ final class SwapDetailsViewModel {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
             feeCoin: feeCoin,
-            advancedSettings: resolvedAdvancedSettings
+            advancedSettings: resolvedAdvancedSettings,
+            selectedProvider: selectedQuote?.provider(fromChain: fromCoin.chain)
         )
     }
 
@@ -684,7 +714,7 @@ private extension SwapDetailsViewModel {
     /// set. Keeps the three in lock-step so a stale provider list can't outlive
     /// the quote it belonged to.
     func clearQuoteState() {
-        selectedQuote = nil
+        dropRouteSelection(.swapChanged)
         bestQuote = nil
         allQuotes = []
     }
@@ -716,7 +746,7 @@ private extension SwapDetailsViewModel {
         // "to" field falls back to the instant indicative estimate and the
         // summary shows its loading skeleton (`showsQuoteSkeleton` =
         // isLoadingQuotes && quote == nil) until the fresh quote lands.
-        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount
+        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount.toDecimal()
         if !isSilentRefresh {
             clearQuoteState()
             quotedPair = nil
@@ -772,15 +802,19 @@ private extension SwapDetailsViewModel {
 
         guard !fromAmount.isEmpty else { return }
 
+        // Parse once so the requested amount and the ownership stamp can't disagree.
+        let requestedAmount = fromAmount.toDecimal()
+
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
         // quote. Confirm builds the real SECURE+ deposit payload.
         if isSecuredMint {
-            selectedQuote = nil
-            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: fromAmount.toDecimal(), toCoin: toCoin)
+            // Candidate set collapses to the one synthetic mint quote.
+            dropRouteSelection(.routeUnavailable)
+            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
             quotedPair = currentPair
-            quotedAmount = fromAmount
+            quotedAmount = requestedAmount
             vultDiscountBps = 0
             referralDiscountBps = 0
             return
@@ -788,7 +822,7 @@ private extension SwapDetailsViewModel {
 
         do {
             let result = try await interactor.fetchQuote(
-                amount: fromAmount.toDecimal(),
+                amount: requestedAmount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 vault: vault,
@@ -800,14 +834,19 @@ private extension SwapDetailsViewModel {
             // quote over the state the new fetch is about to populate.
             guard !Task.isCancelled else { return }
             if let result {
-                // Every refresh re-defaults to Best: drop any manual override so
-                // the active `quote` tracks the fresh winner ("until next refresh"
-                // persistence). `allQuotes` repopulates from the ranked set.
-                selectedQuote = nil
+                // Re-point at the object out of `result.allQuotes`, never the one
+                // the user tapped: that is what keeps signing on current numbers.
+                if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) {
+                    if let refreshed = result.allQuotes.first(where: { $0.provider(fromChain: fromCoin.chain) == picked }) {
+                        selectedQuote = refreshed
+                    } else {
+                        dropRouteSelection(.routeUnavailable)
+                    }
+                }
                 bestQuote = result.quote
                 allQuotes = result.allQuotes
                 quotedPair = currentPair
-                quotedAmount = fromAmount
+                quotedAmount = requestedAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }

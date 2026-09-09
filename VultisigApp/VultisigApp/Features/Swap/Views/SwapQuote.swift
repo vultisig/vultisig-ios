@@ -58,6 +58,33 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Provider for this quote on the source chain — stable across fetches, one
+    /// case per row of the picker. The SwapKit sub-provider is excluded on
+    /// purpose: SwapKit is one row whichever protocol it routes through, and that
+    /// choice can flip between fetches, so keying on it would drop a live pick.
+    func provider(fromChain: Chain) -> SwapProvider {
+        switch self {
+        case .thorchain:
+            return .thorchain
+        case .thorchainChainnet:
+            return .thorchainChainnet
+        case .thorchainStagenet:
+            return .thorchainStagenet
+        case .mayachain:
+            return .mayachain
+        case .oneinch:
+            return .oneinch(fromChain)
+        case .kyberswap:
+            return .kyberswap(fromChain)
+        case .lifi:
+            return .lifi
+        case .swapkit:
+            return .swapkit
+        case .jupiter:
+            return .jupiter
+        }
+    }
+
     /// Payload-free provider identity — the single source of truth for this
     /// quote's brand logo and display name. Network variants collapse to their
     /// base kind; `displayName` re-adds the `-Chainnet`/`-Stagenet` suffix.

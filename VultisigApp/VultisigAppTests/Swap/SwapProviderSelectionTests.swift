@@ -6,10 +6,11 @@
 //   1. Ranking — `SwapService.rankedQuotes` sorts best→worst by
 //      `expectedNetToAmount`, and `selectBestQuote`'s winner is the rate-top
 //      when no provider-preference band applies.
-//   2. VM selection — `selectedQuote` drives the computed `quote`, a non-best
-//      pick reaches the active quote (and therefore the verify/sign summary),
-//      and every refresh resets the override back to Best.
-//   3. Availability — provider selection depends solely on `allQuotes.count > 1`
+//   2. VM selection — `selectedQuote` drives the computed `quote` and a non-best
+//      pick reaches the active quote (and therefore the verify/sign summary).
+//   3. Pick persistence — a pick survives a refresh and re-points at the fresh
+//      quote; it is dropped, with a notice, when it stops being valid.
+//   4. Availability — provider selection depends solely on `allQuotes.count > 1`
 //      (the advanced-settings entry point is already silver-gated, so there is
 //      no second tier gate on the row itself).
 //
@@ -94,21 +95,6 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertEqual(transaction?.quote, alt, "The non-best pick must carry into the signed transaction")
     }
 
-    func testRefreshResetsSelectionBackToBest() async {
-        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
-        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
-        let vm = makeVM(best: best, allQuotes: [best, alt])
-        await landQuotes(on: vm)
-
-        vm.selectProvider(alt)
-        XCTAssertEqual(vm.quote, alt)
-
-        // A fresh quote landing (same-pair refresh) must drop the manual override.
-        await landQuotes(on: vm)
-        XCTAssertNil(vm.selectedQuote, "A refresh must reset the manual override")
-        XCTAssertEqual(vm.quote, best, "After a refresh the active quote re-defaults to Best")
-    }
-
     func testEmptyAmountClearsAllQuoteState() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
@@ -128,7 +114,299 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertTrue(vm.allQuotes.isEmpty, "Emptying the amount clears the ranked set")
     }
 
-    // MARK: - Item 3: availability depends only on the quote count
+    // MARK: - Item 3: the pick survives a refresh
+
+    func testRefreshPreservesManualRouteSelection() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let candidates = makeResult(best: best, allQuotes: [best, alt])
+        let (vm, interactor) = makeVM(script: [candidates, candidates])
+        await landQuotes(on: vm)
+
+        vm.selectProvider(alt)
+        XCTAssertEqual(vm.quote, alt)
+
+        await landQuotes(on: vm)
+
+        XCTAssertEqual(interactor.fetchCount, 2, "The refresh this test is about must actually have landed")
+        XCTAssertEqual(vm.selectedQuote, alt, "A refresh must not drop a still-valid manual pick")
+        XCTAssertEqual(vm.quote, alt, "The active quote stays on the picked route")
+        XCTAssertNil(vm.routeSelectionNotice, "Nothing was dropped, so there is nothing to tell the user")
+    }
+
+    func testRefreshRepointsSelectionAtFreshQuoteForSameRoute() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        // Same route, different payload — what a real refresh returns.
+        let stale = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1_000))
+        let fresh = SwapQuote.oneinch(makeEVMQuote(dstAmount: "123456789"), fee: BigInt(1_000))
+        XCTAssertNotEqual(stale, fresh, "Fixture must differ by payload for this test to mean anything")
+        XCTAssertEqual(stale.provider(fromChain: .ethereum), fresh.provider(fromChain: .ethereum), "…while still being the same route")
+
+        let (vm, interactor) = makeVM(script: [
+            makeResult(best: best, allQuotes: [best, stale]),
+            makeResult(best: best, allQuotes: [best, fresh])
+        ])
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH", balance: "5000000000000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+        await landQuotes(on: vm)
+
+        // Pick from the landed set, so the test can't select a value the first
+        // fetch never returned.
+        XCTAssertEqual(interactor.fetchCount, 1, "The first landing must be script entry 0")
+        guard let landed = vm.allQuotes.first(where: { $0.provider(fromChain: .ethereum) == .oneinch(.ethereum) }) else {
+            return XCTFail("The first landing must offer the 1inch route")
+        }
+        XCTAssertEqual(landed, stale, "…and it must be the stale payload, not the refreshed one")
+        vm.selectProvider(landed)
+
+        await landQuotes(on: vm)
+
+        XCTAssertEqual(interactor.fetchCount, 2, "The refresh must be script entry 1")
+        XCTAssertEqual(vm.selectedQuote, fresh, "The pick must re-point at the refreshed quote")
+        XCTAssertEqual(
+            vm.makeTransaction()?.quote,
+            fresh,
+            "Signing must carry the refreshed quote, never the one the user tapped"
+        )
+    }
+
+    func testRefreshDropsSelectionWhenRouteLeavesCandidateSet() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let (vm, interactor) = makeVM(script: [
+            makeResult(best: best, allQuotes: [best, alt]),
+            makeResult(best: best, allQuotes: [best])
+        ])
+        await landQuotes(on: vm)
+
+        vm.selectProvider(alt)
+        await landQuotes(on: vm)
+
+        XCTAssertEqual(interactor.fetchCount, 2, "The refresh must be the entry that drops 1inch")
+        XCTAssertNil(vm.selectedQuote, "A route that is no longer offered can't stay picked")
+        XCTAssertEqual(vm.quote, best, "The active quote falls back to the auto-selected winner")
+        XCTAssertEqual(
+            vm.routeSelectionNotice,
+            "swapRouteUnavailableResetToAuto".localized,
+            "Dropping the pick must be surfaced, not silent"
+        )
+    }
+
+    func testRetypingAnEquivalentAmountKeepsTheSelection() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
+        await landQuotes(on: vm)
+        vm.selectProvider(alt)
+
+        // Built from the running locale's separator: `toDecimal` parses with
+        // `Locale.current` first, so a hard-coded "1.0" is TEN in five of the eight
+        // shipping locales and would fail against correct production behaviour.
+        let separator = Locale.current.decimalSeparator ?? "."
+        let equivalentAmount = "1\(separator)0"
+        XCTAssertEqual(
+            equivalentAmount.toDecimal(),
+            "1".toDecimal(),
+            "Fixture must be numerically equivalent for this test to mean anything"
+        )
+        vm.fromAmount = equivalentAmount
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+
+        XCTAssertEqual(vm.selectedQuote, alt, "An equivalent amount must not drop the pick")
+        XCTAssertNil(vm.routeSelectionNotice, "…and must not claim the swap changed")
+
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(vm.selectedQuote, alt, "The refresh re-attaches the pick as usual")
+    }
+
+    func testMakeTransactionCarriesTheSelectedProvider() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1_000))
+        let vm = makeVM(best: best, allQuotes: [best, alt])
+        vm.fromCoin = makeCoin(.arbitrum, ticker: "ETH", balance: "5000000000000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+        await landQuotes(on: vm)
+
+        XCTAssertNil(
+            vm.makeTransaction()?.selectedProvider,
+            "On Auto the transaction pins no route, so verify stays free to follow the winner"
+        )
+
+        vm.selectProvider(alt)
+
+        XCTAssertEqual(
+            vm.makeTransaction()?.selectedProvider,
+            .oneinch(.arbitrum),
+            "A manual pick must reach verify, which re-resolves it on its own refresh"
+        )
+    }
+
+    func testAdvancedSettingsRefetchPreservesAndRepointsSelection() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let stale = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let fresh = SwapQuote.oneinch(makeEVMQuote(dstAmount: "111111111"), fee: nil)
+        let (vm, interactor) = makeVM(script: [
+            makeResult(best: best, allQuotes: [best, stale]),
+            makeResult(best: best, allQuotes: [best, fresh])
+        ])
+        await landQuotes(on: vm)
+        vm.selectProvider(stale)
+
+        // Re-fetches at the SAME pair/amount, so it is a refresh, not a new swap.
+        vm.snapshotAdvancedSettings()
+        vm.advancedSettings.gasLimit = 100_000
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
+        await vm.waitForQuoteTask()
+
+        XCTAssertEqual(interactor.fetchCount, 2, "The settings change must have re-fetched")
+        XCTAssertEqual(vm.selectedQuote, fresh, "The pick survives the re-fetch, re-pointed at the fresh quote")
+        XCTAssertNil(vm.routeSelectionNotice)
+    }
+
+    func testAdvancedSettingsRefetchDropsSelectionWhenRoutePruned() async {
+        // An external recipient prunes aggregator routes that can't honour it.
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let (vm, interactor) = makeVM(script: [
+            makeResult(best: best, allQuotes: [best, alt]),
+            makeResult(best: best, allQuotes: [best])
+        ])
+        await landQuotes(on: vm)
+        vm.selectProvider(alt)
+
+        vm.snapshotAdvancedSettings()
+        vm.advancedSettings.externalRecipient = "thor1recipient"
+        vm.advancedSettingsSheetDidClose(vault: makeVault())
+        await vm.waitForQuoteTask()
+
+        XCTAssertEqual(interactor.fetchCount, 2)
+        XCTAssertNil(vm.selectedQuote, "A pruned route can't stay picked")
+        XCTAssertEqual(
+            vm.routeSelectionNotice,
+            "swapRouteUnavailableResetToAuto".localized,
+            "The user must be told the recipient cost them their route"
+        )
+    }
+
+    func testSecuredMintRefreshDropsSelectionWithNotice() async {
+        // Defensive branch — `fetchQuotes` clears the pick on the pair change that
+        // gets here, so production can't hold one. Pinned so it stays a NOTIFIED
+        // drop rather than reverting to a silent nil.
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let vm = makeVM(best: best, allQuotes: [best])
+        vm.fromCoin = makeCoin(.bitcoin, ticker: "BTC", balance: "100000000")
+        vm.toCoin = makeSecuredBTCCoin()
+        vm.fromAmount = "1"
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        await vm.waitForQuoteTask()
+        XCTAssertTrue(vm.isSecuredMint, "Fixture must actually be a same-underlying secured mint")
+
+        vm.selectedQuote = SwapQuote.oneinch(makeEVMQuote(dstAmount: "1"), fee: nil)
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        await vm.waitForQuoteTask()
+
+        XCTAssertNil(vm.selectedQuote, "The synthetic mint quote is the only candidate")
+        XCTAssertEqual(vm.routeSelectionNotice, "swapRouteUnavailableResetToAuto".localized)
+    }
+
+    func testAmountChangeDropsSelectionWithNotice() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
+        await landQuotes(on: vm)
+        vm.selectProvider(alt)
+
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+
+        XCTAssertNil(vm.selectedQuote, "A new amount invalidates the pick")
+        XCTAssertEqual(vm.routeSelectionNotice, "swapRouteResetToAuto".localized)
+
+        await vm.waitForQuoteTask()
+        XCTAssertNil(vm.selectedQuote, "The refetch must not resurrect the dropped pick")
+        XCTAssertEqual(vm.quote, best)
+    }
+
+    func testPairChangeDropsSelectionWithNotice() async {
+        let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
+        let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
+        let vm = makeVM(best: best, allQuotes: [best, alt])
+        await landQuotes(on: vm)
+        vm.selectProvider(alt)
+
+        vm.updateToCoin(coin: makeCoin(.ethereum, ticker: "ETH"), vault: makeVault())
+
+        XCTAssertNil(vm.selectedQuote, "A new pair invalidates the pick")
+        XCTAssertEqual(vm.routeSelectionNotice, "swapRouteResetToAuto".localized)
+    }
+
+    func testDropNoticeKeysAreBundled() {
+        // `.localized` echoes a missing key back, so assert both keys resolve.
+        XCTAssertNotEqual("swapRouteResetToAuto".localized, "swapRouteResetToAuto")
+        XCTAssertNotEqual("swapRouteUnavailableResetToAuto".localized, "swapRouteUnavailableResetToAuto")
+    }
+
+    // MARK: - Provider matching
+
+    func testProviderIsStableAcrossPayloadChanges() {
+        let stale = SwapQuote.lifi(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1), integratorFee: 0.001)
+        let fresh = SwapQuote.lifi(makeEVMQuote(dstAmount: "999999999"), fee: BigInt(2), integratorFee: 0.002)
+
+        XCTAssertNotEqual(stale, fresh, "Quotes compare by payload, so these are different values")
+        XCTAssertEqual(stale.provider(fromChain: .ethereum), fresh.provider(fromChain: .ethereum), "…but the same route")
+    }
+
+    func testProviderIsDistinctPerPickerRow() {
+        let quotes: [SwapQuote] = [
+            .thorchain(makeThorQuote(expectedAmountOut: "1")),
+            .thorchainChainnet(makeThorQuote(expectedAmountOut: "1")),
+            .thorchainStagenet(makeThorQuote(expectedAmountOut: "1")),
+            .mayachain(makeThorQuote(expectedAmountOut: "1")),
+            .oneinch(makeEVMQuote(dstAmount: "1"), fee: nil),
+            .kyberswap(makeEVMQuote(dstAmount: "1"), fee: nil),
+            .lifi(makeEVMQuote(dstAmount: "1"), fee: nil, integratorFee: nil),
+            .swapkit(makeSwapKitResponse(), fee: nil, subProvider: "Chainflip"),
+            .jupiter(makeEVMQuote(dstAmount: "1"), fee: nil, platformFee: 0, feeOnInput: false)
+        ]
+
+        XCTAssertEqual(
+            Set(quotes.map { $0.provider(fromChain: .ethereum) }).count,
+            quotes.count,
+            "Every route the picker can show must be separately identifiable"
+        )
+        XCTAssertEqual(
+            Set(quotes.compactMap(\.displayName)).count,
+            quotes.count,
+            "…and the identity must be as fine-grained as the row labels the user sees"
+        )
+    }
+
+    func testAggregatorProviderUsesSourceChain() {
+        let quote = makeEVMQuote(dstAmount: "1")
+        let oneInch = SwapQuote.oneinch(quote, fee: nil)
+        let kyberSwap = SwapQuote.kyberswap(quote, fee: nil)
+
+        XCTAssertEqual(oneInch.provider(fromChain: .ethereum), .oneinch(.ethereum))
+        XCTAssertEqual(oneInch.provider(fromChain: .arbitrum), .oneinch(.arbitrum))
+        XCTAssertEqual(kyberSwap.provider(fromChain: .ethereum), .kyberswap(.ethereum))
+        XCTAssertEqual(kyberSwap.provider(fromChain: .arbitrum), .kyberswap(.arbitrum))
+    }
+
+    func testProviderIgnoresSwapKitSubProvider() {
+        // Keying on the sub-provider would drop a pick still visible on screen.
+        let viaChainflip = SwapQuote.swapkit(
+            makeSwapKitResponse(providers: ["Chainflip"]), fee: nil, subProvider: "Chainflip"
+        )
+        let viaNear = SwapQuote.swapkit(
+            makeSwapKitResponse(providers: ["NEAR"]), fee: nil, subProvider: "NEAR"
+        )
+
+        XCTAssertEqual(viaChainflip.provider(fromChain: .ethereum), viaNear.provider(fromChain: .ethereum))
+    }
+
+    // MARK: - Item 4: availability depends only on the quote count
 
     func testCanSelectProviderFalseWithSingleQuote() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
@@ -154,11 +432,18 @@ final class SwapProviderSelectionTests: XCTestCase {
         best: SwapQuote,
         allQuotes: [SwapQuote]
     ) -> SwapDetailsViewModel {
-        let interactor = ProviderSelectionMockInteractor(
-            best: best,
-            allQuotes: allQuotes
-        )
-        return SwapDetailsViewModel(interactor: interactor)
+        makeVM(script: [makeResult(best: best, allQuotes: allQuotes)]).vm
+    }
+
+    /// One scripted result per fetch. The script repeats its last entry once
+    /// exhausted, so a test depending on WHICH entry landed must pin `fetchCount`.
+    private func makeVM(script: [SwapQuoteResult]) -> (vm: SwapDetailsViewModel, interactor: ProviderSelectionMockInteractor) {
+        let interactor = ProviderSelectionMockInteractor(script: script)
+        return (SwapDetailsViewModel(interactor: interactor), interactor)
+    }
+
+    private func makeResult(best: SwapQuote, allQuotes: [SwapQuote]) -> SwapQuoteResult {
+        SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
 
     /// Drive a quote fetch to completion so `allQuotes`/`bestQuote` populate via
@@ -218,6 +503,53 @@ final class SwapProviderSelectionTests: XCTestCase {
         )
     }
 
+    /// Underlying resolves to "BTC.BTC", matching a native BTC source.
+    private func makeSecuredBTCCoin() -> Coin {
+        let meta = CoinMeta(
+            chain: .thorChain,
+            ticker: "BTC",
+            logo: "logo",
+            decimals: 8,
+            priceProviderId: "bitcoin",
+            contractAddress: "btc-btc",
+            isNativeToken: false
+        )
+        return Coin(asset: meta, address: "test-address-secured-BTC", hexPublicKey: "")
+    }
+
+    /// `Decodable`-only (custom `init(from:)`), so build it from JSON.
+    private func makeSwapKitResponse(providers: [String] = ["Chainflip"]) -> SwapKitSwapResponse {
+        let providerList = providers.map { "\"\($0)\"" }.joined(separator: ", ")
+        let json = """
+        {
+          "swapId": "swap-1",
+          "routeId": "route-1",
+          "providers": [\(providerList)],
+          "sellAsset": "ETH.USDC",
+          "buyAsset": "ETH.ETH",
+          "sellAmount": "10",
+          "expectedBuyAmount": "1",
+          "expectedBuyAmountMaxSlippage": "1",
+          "sourceAddress": "0xfrom",
+          "destinationAddress": "0xto",
+          "targetAddress": "0xtarget",
+          "meta": { "txType": "EVM" },
+          "tx": {
+            "from": "0xfrom",
+            "to": "0xto",
+            "value": "0",
+            "data": "0x",
+            "gas": "200000",
+            "gasPrice": "20000000000"
+          },
+          "fees": []
+        }
+        """
+        // Test fixture: a decode failure here is a test bug, so force-unwrap is acceptable.
+        // swiftlint:disable:next force_try
+        return try! JSONDecoder().decode(SwapKitSwapResponse.self, from: Data(json.utf8))
+    }
+
     private func makeEVMQuote(dstAmount: String) -> EVMQuote {
         EVMQuote(
             dstAmount: dstAmount,
@@ -245,16 +577,18 @@ private extension SwapDetailsViewModel {
 
 // swiftlint:disable async_without_await unused_parameter
 
-/// Returns a fixed best + ranked set so the VM's quote-landing path can be
-/// driven without the network.
+/// Drives the VM's quote-landing path without the network. The last entry repeats
+/// once the script is exhausted, so a steady-state test can pass a single one.
 @MainActor
 private final class ProviderSelectionMockInteractor: SwapInteractor {
-    private let best: SwapQuote
-    private let allQuotes: [SwapQuote]
+    private let script: [SwapQuoteResult]
+    /// Pin this: an extra fetch consuming the script early would otherwise hide
+    /// the desync behind a passing assertion.
+    private(set) var fetchCount = 0
 
-    init(best: SwapQuote, allQuotes: [SwapQuote]) {
-        self.best = best
-        self.allQuotes = allQuotes
+    init(script: [SwapQuoteResult]) {
+        precondition(!script.isEmpty, "The script needs at least one result")
+        self.script = script
     }
 
     func fetchQuote(
@@ -266,7 +600,8 @@ private final class ProviderSelectionMockInteractor: SwapInteractor {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuoteResult? {
-        SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
+        defer { fetchCount += 1 }
+        return script[min(fetchCount, script.count - 1)]
     }
 
     func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}

@@ -1591,6 +1591,8 @@
 "swapReferralDiscount" = "Indicação: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
+"swapRouteResetToAuto" = "Rota redefinida para Auto";
+"swapRouteUnavailableResetToAuto" = "Rota indisponível — redefinida para Auto";
 "swaps" = "Trocas";
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "O destino do swap de ativo protegido não é um endereço %1$@ válido (%2$@).";

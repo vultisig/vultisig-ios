@@ -168,7 +168,19 @@ struct SwapDetailsScreen: View {
         .onChange(of: detailsViewModel.fromAmount) { _, _ in
             detailsViewModel.error = nil
         }
+        .withBanner(text: routeSelectionNotice, style: .error)
         .ignoresSafeArea(.keyboard)
+    }
+
+    /// Withheld while the Limit tab shows — the market quote keeps refreshing
+    /// behind it, so its banner would land on the limit form. Withheld, not
+    /// dropped: returning to Market delivers it. Gates only when a banner STARTS;
+    /// one already visible finishes its own dismissal (the modifier owns that).
+    private var routeSelectionNotice: Binding<String?> {
+        Binding(
+            get: { selectedSwapMode == .market ? detailsViewModel.routeSelectionNotice : nil },
+            set: { detailsViewModel.routeSelectionNotice = $0 }
+        )
     }
 
     var swapContent: some View {
