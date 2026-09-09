@@ -140,7 +140,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         let stale = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1_000))
         let fresh = SwapQuote.oneinch(makeEVMQuote(dstAmount: "123456789"), fee: BigInt(1_000))
         XCTAssertNotEqual(stale, fresh, "Fixture must differ by payload for this test to mean anything")
-        XCTAssertEqual(stale.routeIdentity, fresh.routeIdentity, "…while still being the same route")
+        XCTAssertEqual(stale.provider(fromChain: .ethereum), fresh.provider(fromChain: .ethereum), "…while still being the same route")
 
         let (vm, interactor) = makeVM(script: [
             makeResult(best: best, allQuotes: [best, stale]),
@@ -154,7 +154,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         // Pick from the landed set, so the test can't select a value the first
         // fetch never returned.
         XCTAssertEqual(interactor.fetchCount, 1, "The first landing must be script entry 0")
-        guard let landed = vm.allQuotes.first(where: { $0.routeIdentity == .oneInch }) else {
+        guard let landed = vm.allQuotes.first(where: { $0.provider(fromChain: .ethereum) == .oneinch(.ethereum) }) else {
             return XCTFail("The first landing must offer the 1inch route")
         }
         XCTAssertEqual(landed, stale, "…and it must be the stale payload, not the refreshed one")
@@ -220,25 +220,25 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertEqual(vm.selectedQuote, alt, "The refresh re-attaches the pick as usual")
     }
 
-    func testMakeTransactionCarriesTheManualRouteIdentity() async {
+    func testMakeTransactionCarriesTheSelectedProvider() async {
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1_000))
         let vm = makeVM(best: best, allQuotes: [best, alt])
-        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH", balance: "5000000000000000000")
+        vm.fromCoin = makeCoin(.arbitrum, ticker: "ETH", balance: "5000000000000000000")
         vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
         vm.fromAmount = "1"
         await landQuotes(on: vm)
 
         XCTAssertNil(
-            vm.makeTransaction()?.selectedRouteIdentity,
+            vm.makeTransaction()?.selectedProvider,
             "On Auto the transaction pins no route, so verify stays free to follow the winner"
         )
 
         vm.selectProvider(alt)
 
         XCTAssertEqual(
-            vm.makeTransaction()?.selectedRouteIdentity,
-            .oneInch,
+            vm.makeTransaction()?.selectedProvider,
+            .oneinch(.arbitrum),
             "A manual pick must reach verify, which re-resolves it on its own refresh"
         )
     }
@@ -348,17 +348,17 @@ final class SwapProviderSelectionTests: XCTestCase {
         XCTAssertNotEqual("swapRouteUnavailableResetToAuto".localized, "swapRouteUnavailableResetToAuto")
     }
 
-    // MARK: - Route identity
+    // MARK: - Provider matching
 
-    func testRouteIdentityIsStableAcrossPayloadChanges() {
+    func testProviderIsStableAcrossPayloadChanges() {
         let stale = SwapQuote.lifi(makeEVMQuote(dstAmount: "100000000"), fee: BigInt(1), integratorFee: 0.001)
         let fresh = SwapQuote.lifi(makeEVMQuote(dstAmount: "999999999"), fee: BigInt(2), integratorFee: 0.002)
 
         XCTAssertNotEqual(stale, fresh, "Quotes compare by payload, so these are different values")
-        XCTAssertEqual(stale.routeIdentity, fresh.routeIdentity, "…but the same route")
+        XCTAssertEqual(stale.provider(fromChain: .ethereum), fresh.provider(fromChain: .ethereum), "…but the same route")
     }
 
-    func testRouteIdentityIsDistinctPerPickerRow() {
+    func testProviderIsDistinctPerPickerRow() {
         let quotes: [SwapQuote] = [
             .thorchain(makeThorQuote(expectedAmountOut: "1")),
             .thorchainChainnet(makeThorQuote(expectedAmountOut: "1")),
@@ -372,7 +372,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         ]
 
         XCTAssertEqual(
-            Set(quotes.map(\.routeIdentity)).count,
+            Set(quotes.map { $0.provider(fromChain: .ethereum) }).count,
             quotes.count,
             "Every route the picker can show must be separately identifiable"
         )
@@ -383,7 +383,18 @@ final class SwapProviderSelectionTests: XCTestCase {
         )
     }
 
-    func testRouteIdentityIgnoresSwapKitSubProvider() {
+    func testAggregatorProviderUsesSourceChain() {
+        let quote = makeEVMQuote(dstAmount: "1")
+        let oneInch = SwapQuote.oneinch(quote, fee: nil)
+        let kyberSwap = SwapQuote.kyberswap(quote, fee: nil)
+
+        XCTAssertEqual(oneInch.provider(fromChain: .ethereum), .oneinch(.ethereum))
+        XCTAssertEqual(oneInch.provider(fromChain: .arbitrum), .oneinch(.arbitrum))
+        XCTAssertEqual(kyberSwap.provider(fromChain: .ethereum), .kyberswap(.ethereum))
+        XCTAssertEqual(kyberSwap.provider(fromChain: .arbitrum), .kyberswap(.arbitrum))
+    }
+
+    func testProviderIgnoresSwapKitSubProvider() {
         // Keying on the sub-provider would drop a pick still visible on screen.
         let viaChainflip = SwapQuote.swapkit(
             makeSwapKitResponse(providers: ["Chainflip"]), fee: nil, subProvider: "Chainflip"
@@ -392,7 +403,7 @@ final class SwapProviderSelectionTests: XCTestCase {
             makeSwapKitResponse(providers: ["NEAR"]), fee: nil, subProvider: "NEAR"
         )
 
-        XCTAssertEqual(viaChainflip.routeIdentity, viaNear.routeIdentity)
+        XCTAssertEqual(viaChainflip.provider(fromChain: .ethereum), viaNear.provider(fromChain: .ethereum))
     }
 
     // MARK: - Item 4: availability depends only on the quote count

@@ -65,7 +65,7 @@ final class SwapDetailsViewModel {
     // `bestQuote` is the auto-selected winner; `selectedQuote` is a manual
     // override (provider selection). The rest of the screen — fees, validation,
     // verify, sign — reads the computed `quote`, so a manual pick flows through
-    // unchanged. A refresh re-resolves the pick by `routeIdentity`, and
+    // unchanged. A refresh re-resolves the pick by provider, and
     // `makeTransaction` hands that identity on so verify's refresh keeps it too.
 
     /// Full ranked candidate set (best→worst by net output). Drives the
@@ -448,7 +448,7 @@ final class SwapDetailsViewModel {
             referralDiscountBps: referralDiscountBps,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings,
-            selectedRouteIdentity: selectedQuote?.routeIdentity
+            selectedProvider: selectedQuote?.provider(fromChain: fromCoin.chain)
         )
     }
 
@@ -836,8 +836,8 @@ private extension SwapDetailsViewModel {
             if let result {
                 // Re-point at the object out of `result.allQuotes`, never the one
                 // the user tapped: that is what keeps signing on current numbers.
-                if let picked = selectedQuote?.routeIdentity {
-                    if let refreshed = result.allQuotes.first(where: { $0.routeIdentity == picked }) {
+                if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) {
+                    if let refreshed = result.allQuotes.first(where: { $0.provider(fromChain: fromCoin.chain) == picked }) {
                         selectedQuote = refreshed
                     } else {
                         dropRouteSelection(.routeUnavailable)

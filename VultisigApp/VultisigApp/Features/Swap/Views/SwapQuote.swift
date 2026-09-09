@@ -58,11 +58,11 @@ enum SwapQuote: Hashable {
         }
     }
 
-    /// Payload-free identity of this quote's route — stable across fetches, one
+    /// Provider for this quote on the source chain — stable across fetches, one
     /// case per row of the picker. The SwapKit sub-provider is excluded on
     /// purpose: SwapKit is one row whichever protocol it routes through, and that
     /// choice can flip between fetches, so keying on it would drop a live pick.
-    var routeIdentity: SwapRouteIdentity {
+    func provider(fromChain: Chain) -> SwapProvider {
         switch self {
         case .thorchain:
             return .thorchain
@@ -73,9 +73,9 @@ enum SwapQuote: Hashable {
         case .mayachain:
             return .mayachain
         case .oneinch:
-            return .oneInch
+            return .oneinch(fromChain)
         case .kyberswap:
-            return .kyberSwap
+            return .kyberswap(fromChain)
         case .lifi:
             return .lifi
         case .swapkit:
@@ -322,17 +322,4 @@ enum SwapQuote: Hashable {
             hasher.combine(feeOnInput)
         }
     }
-}
-
-/// See `SwapQuote.routeIdentity`.
-enum SwapRouteIdentity: Hashable {
-    case thorchain
-    case thorchainChainnet
-    case thorchainStagenet
-    case mayachain
-    case oneInch
-    case kyberSwap
-    case lifi
-    case swapkit
-    case jupiter
 }

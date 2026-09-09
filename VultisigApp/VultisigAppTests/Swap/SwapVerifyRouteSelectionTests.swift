@@ -20,7 +20,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         XCTAssertNotEqual(stale, fresh, "Fixture must differ by payload")
 
         let vm = makeVM(
-            transaction: makeTransaction(quote: stale, pickedRoute: .oneInch),
+            transaction: makeTransaction(quote: stale, pickedProvider: .oneinch(.arbitrum), fromChain: .arbitrum),
             refreshed: makeResult(best: best, allQuotes: [best, fresh])
         )
         vm.isAmountCorrect = true
@@ -29,7 +29,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         await vm.refreshData(vault: makeVault())
 
         XCTAssertEqual(vm.transaction.quote, fresh, "The refresh must keep the picked route, on fresh numbers")
-        XCTAssertEqual(vm.transaction.selectedRouteIdentity, .oneInch, "…and keep it pinned for the next refresh")
+        XCTAssertEqual(vm.transaction.selectedProvider, .oneinch(.arbitrum), "…and keep it pinned for the next refresh")
         XCTAssertNil(vm.routeSelectionNotice, "Nothing was substituted, so there is nothing to say")
         XCTAssertTrue(vm.isAmountCorrect, "Confirmations stand when the route did not change")
         XCTAssertTrue(vm.isFeeCorrect)
@@ -40,7 +40,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         let stale = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
 
         let vm = makeVM(
-            transaction: makeTransaction(quote: stale, pickedRoute: .oneInch),
+            transaction: makeTransaction(quote: stale, pickedProvider: .oneinch(.ethereum)),
             refreshed: makeResult(best: best, allQuotes: [best])
         )
         vm.isAmountCorrect = true
@@ -50,7 +50,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         await vm.refreshData(vault: makeVault())
 
         XCTAssertEqual(vm.transaction.quote, best, "With the picked route gone, the auto winner takes over")
-        XCTAssertNil(vm.transaction.selectedRouteIdentity, "The pin is released so later refreshes follow Auto")
+        XCTAssertNil(vm.transaction.selectedProvider, "The pin is released so later refreshes follow Auto")
         XCTAssertEqual(
             vm.routeSelectionNotice,
             "swapRouteUnavailableResetToAuto".localized,
@@ -67,7 +67,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
 
         // Auto must stay free to change winner between refreshes.
         let vm = makeVM(
-            transaction: makeTransaction(quote: previousBest, pickedRoute: nil),
+            transaction: makeTransaction(quote: previousBest, pickedProvider: nil),
             refreshed: makeResult(best: newBest, allQuotes: [newBest, previousBest])
         )
         vm.isAmountCorrect = true
@@ -75,7 +75,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         await vm.refreshData(vault: makeVault())
 
         XCTAssertEqual(vm.transaction.quote, newBest, "Auto follows the fresh winner")
-        XCTAssertNil(vm.transaction.selectedRouteIdentity)
+        XCTAssertNil(vm.transaction.selectedProvider)
         XCTAssertNil(vm.routeSelectionNotice, "Auto changing winner is not a substitution")
         XCTAssertTrue(vm.isAmountCorrect, "The Auto path must not disturb the confirmations")
     }
@@ -93,8 +93,12 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         SwapQuoteResult(quote: best, allQuotes: allQuotes, vultDiscountBps: 0, referralDiscountBps: 0)
     }
 
-    private func makeTransaction(quote: SwapQuote, pickedRoute: SwapRouteIdentity?) -> SwapTransaction {
-        let eth = makeCoin(.ethereum, ticker: "ETH", balance: "5000000000000000000")
+    private func makeTransaction(
+        quote: SwapQuote,
+        pickedProvider: SwapProvider?,
+        fromChain: Chain = .ethereum
+    ) -> SwapTransaction {
+        let eth = makeCoin(fromChain, ticker: "ETH", balance: "5000000000000000000")
         let btc = makeCoin(.bitcoin, ticker: "BTC")
         return SwapTransaction(
             fromCoin: eth,
@@ -108,7 +112,7 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
             referralDiscountBps: 0,
             feeCoin: eth,
             advancedSettings: .default,
-            selectedRouteIdentity: pickedRoute
+            selectedProvider: pickedProvider
         )
     }
 

@@ -117,11 +117,11 @@ final class SwapVerifyViewModel {
                     // Installing `result.quote` unconditionally would hand the user
                     // a route they never chose, immediately before signing.
                     var refreshedQuote = result.quote
-                    if let picked = updated.selectedRouteIdentity {
-                        if let stillOffered = result.allQuotes.first(where: { $0.routeIdentity == picked }) {
+                    if let picked = updated.selectedProvider {
+                        if let stillOffered = result.allQuotes.first(where: { $0.provider(fromChain: updated.fromCoin.chain) == picked }) {
                             refreshedQuote = stillOffered
                         } else {
-                            updated.selectedRouteIdentity = nil
+                            updated.selectedProvider = nil
                             routeWasSubstituted = true
                         }
                     }
