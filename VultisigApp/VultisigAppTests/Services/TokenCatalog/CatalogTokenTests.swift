@@ -36,12 +36,23 @@ final class CatalogTokenTests: XCTestCase {
         XCTAssertTrue(TokenVerification.curated.autoSurfaces)
         XCTAssertTrue(TokenVerification.verified(source: "Jupiter").autoSurfaces)
         XCTAssertFalse(TokenVerification.unverified.autoSurfaces, "Unverified must never auto-surface")
+        XCTAssertFalse(TokenVerification.scam.autoSurfaces, "Scam must never auto-surface")
+    }
+
+    /// Rank orders authority, not trust: a positive identification says more
+    /// than a source-side allowlist, and the in-code bundled list says most of
+    /// all. `autoSurfaces` — not rank — is what keeps a scam off a screen.
+    func testScamOutranksAllowlistsButNotTheBundledList() {
+        XCTAssertGreaterThan(TokenVerification.scam.rank, TokenVerification.verified(source: "ton-assets").rank)
+        XCTAssertGreaterThan(TokenVerification.scam.rank, TokenVerification.unverified.rank)
+        XCTAssertGreaterThan(TokenVerification.curated.rank, TokenVerification.scam.rank)
     }
 
     func testSourceLabel() {
         XCTAssertEqual(TokenVerification.verified(source: "CoinGecko").sourceLabel, "CoinGecko")
         XCTAssertNil(TokenVerification.curated.sourceLabel)
         XCTAssertNil(TokenVerification.unverified.sourceLabel)
+        XCTAssertNil(TokenVerification.scam.sourceLabel)
     }
 
     func testStrongerKeepsHigherRank() {
@@ -58,6 +69,29 @@ final class CatalogTokenTests: XCTestCase {
             TokenVerification.stronger(.verified(source: "A"), .verified(source: "B")),
             .verified(source: "A")
         )
+    }
+
+    /// A provider that merely does not recognise the address must not erase a
+    /// positive identification, in either argument position.
+    func testStrongerKeepsScamOverIgnorance() {
+        XCTAssertEqual(TokenVerification.stronger(.scam, .unverified), .scam)
+        XCTAssertEqual(TokenVerification.stronger(.unverified, .scam), .scam)
+        XCTAssertEqual(TokenVerification.stronger(.scam, .verified(source: "ton-assets")), .scam)
+        XCTAssertEqual(TokenVerification.stronger(.verified(source: "1inch"), .scam), .scam)
+    }
+
+    /// The bundled list is in-code and cannot be tampered with, so nothing —
+    /// including a `.scam` restored from the untrusted disk snapshot — may
+    /// suppress a curated token.
+    func testStrongerNeverLetsScamDisplaceCurated() {
+        XCTAssertEqual(TokenVerification.stronger(.curated, .scam), .curated)
+        XCTAssertEqual(TokenVerification.stronger(.scam, .curated), .curated)
+    }
+
+    /// Preserved rather than downgraded: the worst a tampered `.scam` can do is
+    /// hide a non-curated token from search, which is the fail-closed direction.
+    func testScamSurvivesUntrustedPersistence() {
+        XCTAssertEqual(TokenVerification.scam.cappedForUntrustedPersistence, .scam)
     }
 
     // MARK: - CatalogToken
