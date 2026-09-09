@@ -107,7 +107,7 @@ final class SwapErrorPresentationTests: XCTestCase {
         XCTAssertNotNil(SwapErrorPresentation.presentable(for: SwapError.tradingHalted))
         // `SwapCryptoLogic.Errors` — the vocabulary that always worked.
         XCTAssertNotNil(SwapErrorPresentation.presentable(for: SwapCryptoLogic.Errors.insufficientGas))
-        // `SwapKitError` — normalized for the one case with an equivalent.
+        // `SwapKitError` — conforms in full; see `SwapKitErrorPresentationTests`.
         XCTAssertEqual(
             SwapErrorPresentation.title(for: SwapKitError.amountBelowProviderMinimum),
             SwapCryptoLogic.Errors.swapAmountTooSmall.errorTitle
