@@ -1533,8 +1533,11 @@
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapAppliedDiscounts" = "Primijenjeni popusti:";
+"swapErrorAddressScreeningTitle" = "Provjera Adrese Nije Uspjela";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorAmountTooSmallTitle" = "Iznos Premali";
+"swapErrorApprovalRequiredTitle" = "Potrebno Odobrenje";
+"swapErrorAssetBlockedTitle" = "Imovina Blokirana";
 "swapErrorInboundAddressDescription" = "Ulazna adresa je nevažeća. Molimo pokušajte ponovo.";
 "swapErrorInboundAddressTitle" = "Nevažeća Adresa";
 "swapErrorInsufficientFundsDescription" = "Nedovoljna sredstva za izvršenje zamjene. Molimo dopunite novčanik.";
@@ -1542,11 +1545,14 @@
 "swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
 "swapErrorInvalidDestinationTitle" = "Nevažeće Odredište";
+"swapErrorInvalidSourceTitle" = "Nevažeći Izvor";
 "swapErrorNoLiquidityPoolTitle" = "Nema Pool Likvidnosti";
 "swapErrorProviderRejectedDescription" = "Pružatelj zamjene nije mogao dati ponudu za ovu trgovinu. Pokušajte ponovno ili odaberite drugi par.";
 "swapErrorProviderRejectedTitle" = "Zamjena Nije Dostupna";
+"swapErrorQuoteExpiredTitle" = "Ponuda Istekla";
 "swapErrorRecipientRouteTitle" = "Nema Rute do Primatelja";
 "swapErrorRecipientVerificationTitle" = "Provjera Primatelja Nije Uspjela";
+"swapErrorRouteExpiredTitle" = "Ruta Istekla";
 "swapErrorRouteUnavailableTitle" = "Nema Dostupne Rute";
 "swapErrorSameAssetDescription" = "Ne možete zamijeniti isti asset. Molimo odaberite drugi asset.";
 "swapErrorSameAssetTitle" = "Isti Asset";

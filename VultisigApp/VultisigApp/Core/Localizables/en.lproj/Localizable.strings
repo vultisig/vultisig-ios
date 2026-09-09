@@ -1533,8 +1533,11 @@
 "swapAmountTooSmall" = "Swap amount too small";
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
 "swapAppliedDiscounts" = "Applied Discounts:";
+"swapErrorAddressScreeningTitle" = "Address Check Failed";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
 "swapErrorAmountTooSmallTitle" = "Amount Too Small";
+"swapErrorApprovalRequiredTitle" = "Approval Required";
+"swapErrorAssetBlockedTitle" = "Asset Blocked";
 "swapErrorInboundAddressDescription" = "The inbound address is invalid. Please try again.";
 "swapErrorInboundAddressTitle" = "Invalid Address";
 "swapErrorInsufficientFundsDescription" = "Insufficient funds to execute the swap. Please fund the wallet.";
@@ -1542,11 +1545,14 @@
 "swapErrorInsufficientGasDescription" = "Not enough gas token to cover the network fee. Please add gas to your wallet.";
 "swapErrorInsufficientGasTitle" = "Insufficient Gas";
 "swapErrorInvalidDestinationTitle" = "Invalid Destination";
+"swapErrorInvalidSourceTitle" = "Invalid Source";
 "swapErrorNoLiquidityPoolTitle" = "No Liquidity Pool";
 "swapErrorProviderRejectedDescription" = "The swap provider couldn't quote this trade. Try again, or choose a different pair.";
 "swapErrorProviderRejectedTitle" = "Swap Unavailable";
+"swapErrorQuoteExpiredTitle" = "Quote Expired";
 "swapErrorRecipientRouteTitle" = "No Recipient Route";
 "swapErrorRecipientVerificationTitle" = "Recipient Check Failed";
+"swapErrorRouteExpiredTitle" = "Route Expired";
 "swapErrorRouteUnavailableTitle" = "No Route Available";
 "swapErrorSameAssetDescription" = "Can't swap to the same asset. Please select a different asset.";
 "swapErrorSameAssetTitle" = "Same Asset";
