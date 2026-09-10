@@ -85,6 +85,9 @@ struct ContentView: View {
         .colorScheme(.dark)
         .accentColor(.white)
         .sheetPresentedStyle()
+        .onChange(of: appViewModel.showSplashView) { _, showing in
+            if !showing && !appViewModel.isCoveredByAppLock { drainPendingDeeplinks() }
+        }
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
@@ -416,7 +419,7 @@ struct ContentView: View {
             logger.info("Ignoring a deeplink that arrived while the key-share recovery screen was up")
             return
         }
-        guard !appViewModel.isCoveredByAppLock else {
+        guard !appViewModel.isCoveredByAppLock, !appViewModel.showSplashView else {
             // Queued rather than replaced: a single slot silently drops every
             // link but the last, and each one is a user action.
             pendingDeeplinks.append(incomingURL)
@@ -426,12 +429,19 @@ struct ContentView: View {
     }
 
     private func drainPendingDeeplinks() {
+        guard !appViewModel.isCoveredByAppLock, !appViewModel.showSplashView else { return }
         let queued = pendingDeeplinks
         pendingDeeplinks = []
         queued.forEach(processDeeplink)
     }
 
     private func processDeeplink(_ incomingURL: URL) {
+        if let recordID = TransactionActivityLink.recordID(from: incomingURL) {
+            navigationRouter.navigate(to: TransactionHistoryRoute.detail(recordID: recordID))
+            return
+        }
+        // Malformed activity links must never be reinterpreted as a signing/send link.
+        if incomingURL.scheme == "vultisig", incomingURL.host == "transaction" { return }
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }

@@ -1646,6 +1646,7 @@
 "transactionActivityFailed" = "Falhou";
 "transactionActivityFee" = "Taxa estimada";
 "transactionActivityFixture" = "Testar atividade ao vivo";
+"transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendente";
 "transactionActivityPrototype" = "Atualizações apenas enquanto o app está ativo. Os dados podem ficar desatualizados.";
 "transactionActivityRefunded" = "Reembolsada";
@@ -1657,6 +1658,7 @@
 "transactionActivitySwapping" = "Trocando";
 "transactionActivityTitle" = "Transação";
 "transactionActivityTrackingEnded" = "Acompanhamento encerrado";
+"transactionActivityUnavailable" = "Esta transação não está mais disponível neste dispositivo.";
 "transactionActivityUpdated" = "Atualizado";
 "transactionBroadcasted" = "Transação difundida";
 "transactionBytes" = "Bytes da transação";

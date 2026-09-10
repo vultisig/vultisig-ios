@@ -1646,6 +1646,7 @@
 "transactionActivityFailed" = "Non riuscita";
 "transactionActivityFee" = "Commissione stimata";
 "transactionActivityFixture" = "Prova attività in tempo reale";
+"transactionActivityPartiallyRefunded" = "Rimborso parziale";
 "transactionActivityPending" = "In attesa";
 "transactionActivityPrototype" = "Aggiornamenti solo mentre l’app è attiva. I dati possono diventare obsoleti.";
 "transactionActivityRefunded" = "Rimborsata";
@@ -1657,6 +1658,7 @@
 "transactionActivitySwapping" = "Scambio in corso";
 "transactionActivityTitle" = "Transazione";
 "transactionActivityTrackingEnded" = "Monitoraggio terminato";
+"transactionActivityUnavailable" = "Questa transazione non è più disponibile su questo dispositivo.";
 "transactionActivityUpdated" = "Aggiornato";
 "transactionBroadcasted" = "Transazione trasmessa";
 "transactionBytes" = "Byte della transazione";

@@ -1646,6 +1646,7 @@
 "transactionActivityFailed" = "실패";
 "transactionActivityFee" = "예상 수수료";
 "transactionActivityFixture" = "실시간 현황 미리보기";
+"transactionActivityPartiallyRefunded" = "일부 환불됨";
 "transactionActivityPending" = "대기 중";
 "transactionActivityPrototype" = "앱이 실행 중일 때만 업데이트됩니다. 데이터가 오래될 수 있습니다.";
 "transactionActivityRefunded" = "환불됨";
@@ -1657,6 +1658,7 @@
 "transactionActivitySwapping" = "스왑 중";
 "transactionActivityTitle" = "거래";
 "transactionActivityTrackingEnded" = "추적 종료";
+"transactionActivityUnavailable" = "이 기기에서 이 거래를 더 이상 사용할 수 없습니다.";
 "transactionActivityUpdated" = "업데이트";
 "transactionBroadcasted" = "트랜잭션이 브로드캐스트되었습니다";
 "transactionBytes" = "트랜잭션 바이트";

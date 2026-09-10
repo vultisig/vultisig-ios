@@ -3,6 +3,7 @@
 "transactionActivityDelayed" = "Ažuriranje kasni";
 "transactionActivityFailed" = "Neuspjelo";
 "transactionActivityFee" = "Procijenjena naknada";
+"transactionActivityPartiallyRefunded" = "Djelomično vraćeno";
 "transactionActivityPending" = "Na čekanju";
 "transactionActivityRefunded" = "Vraćeno";
 "transactionActivitySending" = "Slanje";

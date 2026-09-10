@@ -1646,6 +1646,7 @@
 "transactionActivityFailed" = "Failed";
 "transactionActivityFee" = "Est. fee";
 "transactionActivityFixture" = "Preview Live Activity";
+"transactionActivityPartiallyRefunded" = "Partially refunded";
 "transactionActivityPending" = "Pending";
 "transactionActivityPrototype" = "Updates only while the app is running. Live Activities may become stale.";
 "transactionActivityRefunded" = "Refunded";
@@ -1657,6 +1658,7 @@
 "transactionActivitySwapping" = "Swapping";
 "transactionActivityTitle" = "Transaction";
 "transactionActivityTrackingEnded" = "Tracking ended";
+"transactionActivityUnavailable" = "This transaction is no longer available on this device.";
 "transactionActivityUpdated" = "Updated";
 "transactionBroadcasted" = "Transaction broadcasted";
 "transactionBytes" = "Transaction Bytes";

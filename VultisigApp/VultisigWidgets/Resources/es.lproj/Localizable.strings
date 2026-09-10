@@ -3,6 +3,7 @@
 "transactionActivityDelayed" = "Actualización retrasada";
 "transactionActivityFailed" = "Fallida";
 "transactionActivityFee" = "Comisión estimada";
+"transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendiente";
 "transactionActivityRefunded" = "Reembolsada";
 "transactionActivitySending" = "Enviando";

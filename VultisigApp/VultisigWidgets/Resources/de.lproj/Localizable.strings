@@ -3,6 +3,7 @@
 "transactionActivityDelayed" = "Aktualisierung verzögert";
 "transactionActivityFailed" = "Fehlgeschlagen";
 "transactionActivityFee" = "Geschätzte Gebühr";
+"transactionActivityPartiallyRefunded" = "Teilweise erstattet";
 "transactionActivityPending" = "Ausstehend";
 "transactionActivityRefunded" = "Erstattet";
 "transactionActivitySending" = "Wird gesendet";

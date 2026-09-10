@@ -3,6 +3,7 @@
 "transactionActivityDelayed" = "업데이트 지연";
 "transactionActivityFailed" = "실패";
 "transactionActivityFee" = "예상 수수료";
+"transactionActivityPartiallyRefunded" = "일부 환불됨";
 "transactionActivityPending" = "대기 중";
 "transactionActivityRefunded" = "환불됨";
 "transactionActivitySending" = "전송 중";

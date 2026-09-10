@@ -3,6 +3,7 @@
 "transactionActivityDelayed" = "更新延迟";
 "transactionActivityFailed" = "失败";
 "transactionActivityFee" = "预计费用";
+"transactionActivityPartiallyRefunded" = "已部分退款";
 "transactionActivityPending" = "待处理";
 "transactionActivityRefunded" = "已退款";
 "transactionActivitySending" = "发送中";

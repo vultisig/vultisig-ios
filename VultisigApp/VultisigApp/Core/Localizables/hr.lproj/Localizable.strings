@@ -1646,6 +1646,7 @@
 "transactionActivityFailed" = "Neuspjelo";
 "transactionActivityFee" = "Procijenjena naknada";
 "transactionActivityFixture" = "Pregled aktivnosti uživo";
+"transactionActivityPartiallyRefunded" = "Djelomično vraćeno";
 "transactionActivityPending" = "Na čekanju";
 "transactionActivityPrototype" = "Ažuriranja samo dok je aplikacija aktivna. Podaci mogu zastarjeti.";
 "transactionActivityRefunded" = "Vraćeno";
@@ -1657,6 +1658,7 @@
 "transactionActivitySwapping" = "Zamjena u tijeku";
 "transactionActivityTitle" = "Transakcija";
 "transactionActivityTrackingEnded" = "Praćenje završeno";
+"transactionActivityUnavailable" = "Ova transakcija više nije dostupna na ovom uređaju.";
 "transactionActivityUpdated" = "Ažurirano";
 "transactionBroadcasted" = "Transakcija odaslana";
 "transactionBytes" = "Bajtovi transakcije";

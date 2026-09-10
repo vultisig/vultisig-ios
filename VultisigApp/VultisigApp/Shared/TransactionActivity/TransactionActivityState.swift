@@ -5,11 +5,11 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     enum Phase: String, Codable, CaseIterable, Sendable {
         case submitted, pending, sourceConfirmed, swapping
         /// Transfer settlement and provider-confirmed swap settlement are distinct.
-        case confirmed, completed, refunded, failed, trackingEnded
+        case confirmed, completed, refunded, partiallyRefunded, failed, trackingEnded
 
         var isTerminal: Bool {
             switch self {
-            case .confirmed, .completed, .refunded, .failed, .trackingEnded: true
+            case .confirmed, .completed, .refunded, .partiallyRefunded, .failed, .trackingEnded: true
             default: false
             }
         }
@@ -20,7 +20,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
             switch self {
             case .confirmed, .completed: "checkmark.circle.fill"
             case .failed: "exclamationmark.circle.fill"
-            case .refunded: "arrow.uturn.backward.circle"
+            case .refunded, .partiallyRefunded: "arrow.uturn.backward.circle"
             case .trackingEnded: "clock"
             default: "arrow.triangle.2.circlepath"
             }
@@ -63,6 +63,11 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         self.fee = showDetails ? fee.map { Self.bounded($0, bytes: 96) } : nil
         self.provider = showDetails ? provider.map { Self.bounded($0, bytes: 80) } : nil
         self.submittedAt = showDetails ? submittedAt : nil
+    }
+
+    var hasDetails: Bool {
+        summary != nil || network != nil || operation != nil || recipient != nil
+            || fee != nil || provider != nil || submittedAt != nil
     }
 
     /// Scalar-wise byte bounding also handles a single huge combining grapheme.

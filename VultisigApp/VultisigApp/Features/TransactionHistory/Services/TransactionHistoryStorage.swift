@@ -8,24 +8,56 @@ import SwiftData
 
 @MainActor
 final class TransactionHistoryStorage {
-    static let shared = TransactionHistoryStorage()
+    static let shared = TransactionHistoryStorage(publishesActivityEvents: TransactionActivityPolicy.isDevelopmentEnabled)
 
     private let modelContext: ModelContext
+    private let publishesActivityEvents: Bool
 
     /// `shared` uses the app's `Storage.shared.modelContext`. The initializer
     /// takes the context so tests can inject an in-memory container.
-    init(modelContext: ModelContext = Storage.shared.modelContext) {
+    init(modelContext: ModelContext = Storage.shared.modelContext, publishesActivityEvents: Bool = false) {
         self.modelContext = modelContext
+        self.publishesActivityEvents = publishesActivityEvents
     }
 
     // MARK: - Save
 
     func save(_ data: TransactionHistoryData) throws {
-        guard !exists(txHash: data.txHash, pubKeyECDSA: data.pubKeyECDSA) else { return }
-
+        let hash = data.txHash
+        let key = data.pubKeyECDSA
+        let predicate = #Predicate<TransactionHistoryItem> {
+            $0.txHash == hash && $0.pubKeyECDSA == key
+        }
+        if let existing = try modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            // A broadcast-first row can precede Done's richer receipt. Enrich only
+            // missing display fields; preserve identity, outcome and tracking evidence.
+            guard existing.typeRawValue == data.type.rawValue, existing.chainRawValue == data.chainRawValue else { return }
+            var enriched = false
+            if existing.feeCrypto.isEmpty, !data.feeCrypto.isEmpty {
+                existing.feeCrypto = data.feeCrypto
+                enriched = true
+            }
+            if existing.feeFiat.isEmpty, !data.feeFiat.isEmpty {
+                existing.feeFiat = data.feeFiat
+                enriched = true
+            }
+            if existing.amountFiat.isEmpty, !data.amountFiat.isEmpty {
+                existing.amountFiat = data.amountFiat
+                enriched = true
+            }
+            if existing.toAmountFiat?.isEmpty != false, let value = data.toAmountFiat, !value.isEmpty {
+                existing.toAmountFiat = value
+                enriched = true
+            }
+            guard enriched else { return }
+            try modelContext.save()
+            emit(.saved(TransactionHistoryData(item: existing)))
+            return
+        }
         let item = data.toItem()
         modelContext.insert(item)
         try modelContext.save()
+        emit(.saved(TransactionHistoryData(item: item)))
     }
 
     /// Reopen rows that released clients marked as failed solely because their
@@ -76,6 +108,7 @@ final class TransactionHistoryStorage {
             modelContext.delete(item)
         }
         try modelContext.save()
+        emit(.deleted)
     }
 
     // MARK: - Update Status
@@ -96,6 +129,30 @@ final class TransactionHistoryStorage {
             item.errorMessage = errorMessage
         }
         try modelContext.save()
+        emit(.nativeStatus(TransactionHistoryData(item: item), Date()))
+    }
+
+    func fetch(id: UUID) throws -> TransactionHistoryData? {
+        let predicate = #Predicate<TransactionHistoryItem> { $0.id == id }
+        return try modelContext.fetch(FetchDescriptor(predicate: predicate)).first.map(TransactionHistoryData.init(item:))
+    }
+
+    func publishObservation(txHash: String, pubKeyECDSA: String, chain: Chain, isPending: Bool) {
+        guard publishesActivityEvents else { return }
+        let chainRawValue = chain.rawValue
+        let predicate = #Predicate<TransactionHistoryItem> {
+            $0.pubKeyECDSA == pubKeyECDSA && $0.chainRawValue == chainRawValue && $0.txHash == txHash
+        }
+        var descriptor = FetchDescriptor(predicate: predicate)
+        descriptor.fetchLimit = 1
+        guard let item = try? modelContext.fetch(descriptor).first else { return }
+        let row = TransactionHistoryData(item: item)
+        emit(isPending ? .nativePending(row, Date()) : .delayed(row))
+    }
+
+    private func emit(_ event: TransactionHistoryActivityEvent) {
+        guard publishesActivityEvents else { return }
+        NotificationCenter.default.post(name: TransactionHistoryActivityEvent.notification, object: event)
     }
 
     // MARK: - Fetch All
@@ -124,18 +181,6 @@ final class TransactionHistoryStorage {
         return try modelContext.fetch(descriptor).map { TransactionHistoryData(item: $0) }
     }
 
-    // MARK: - Fetch by Type
-
-    // MARK: - Exists Check
-
-    func exists(txHash: String, pubKeyECDSA: String) -> Bool {
-        let predicate = #Predicate<TransactionHistoryItem> { item in
-            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
-        }
-        let descriptor = FetchDescriptor(predicate: predicate)
-        return (try? modelContext.fetchCount(descriptor)) ?? 0 > 0
-    }
-
     // MARK: - Fetch by Hash
 
     /// Single-row lookup used by callers that want to inspect a row's metadata
@@ -152,7 +197,7 @@ final class TransactionHistoryStorage {
     // MARK: - Swap-tracking metadata
 
     /// Persist swap-tracking metadata onto an existing row. Idempotent —
-    /// overwrites whatever was there previously. Called from
+    /// enriches identifiers without resetting observations from the same tracker. Called from
     /// `TransactionHistoryRecorder` immediately after an aggregator broadcast
     /// so the matching tracking service has the data it needs to start
     /// polling.
@@ -172,19 +217,23 @@ final class TransactionHistoryStorage {
         let descriptor = FetchDescriptor(predicate: predicate)
         guard let item = try modelContext.fetch(descriptor).first else { return }
 
-        let metadata = SwapTrackingMetadata(
-            providerKind: providerKind,
-            swapId: swapId,
-            routeId: routeId,
-            broadcastHash: broadcastHash,
-            sourceChainId: sourceChainId,
-            subProvider: subProvider
-        )
-        // Cascade-delete-owned relationship: assigning a fresh metadata row
-        // here is sufficient — SwiftData drops the previous one (if any) when
-        // the parent's reference is overwritten.
-        item.swapTracking = metadata
+        if let metadata = item.swapTracking, metadata.providerKind == providerKind,
+           metadata.broadcastHash == nil || metadata.broadcastHash == broadcastHash {
+            // Done may learn routing identifiers after broadcast-first tracking has
+            // already observed settlement. Enrich identifiers without erasing evidence.
+            metadata.swapId = swapId ?? metadata.swapId
+            metadata.routeId = routeId ?? metadata.routeId
+            metadata.broadcastHash = broadcastHash
+            metadata.sourceChainId = sourceChainId
+            metadata.subProvider = subProvider ?? metadata.subProvider
+        } else {
+            item.swapTracking = SwapTrackingMetadata(
+                providerKind: providerKind, swapId: swapId, routeId: routeId,
+                broadcastHash: broadcastHash, sourceChainId: sourceChainId, subProvider: subProvider
+            )
+        }
         try modelContext.save()
+        emit(.saved(TransactionHistoryData(item: item)))
     }
 
     /// Persist a poll observation. Called by a tracking service on each
@@ -251,6 +300,11 @@ final class TransactionHistoryStorage {
             break
         }
         try modelContext.save()
+        if uiStatus == .unknownPendingExtended {
+            emit(.delayed(TransactionHistoryData(item: item)))
+        } else {
+            emit(.swapStatus(TransactionHistoryData(item: item), polledAt))
+        }
     }
 
     /// Stamp `lastPolledAt` without changing status. Used after transient
@@ -269,6 +323,7 @@ final class TransactionHistoryStorage {
               let tracking = item.swapTracking else { return }
         tracking.lastPolledAt = polledAt
         try modelContext.save()
+        emit(.delayed(TransactionHistoryData(item: item)))
     }
 
     /// Fetch all swap rows that are mid-flight on a given provider and need

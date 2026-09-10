@@ -1138,6 +1138,11 @@ class KeysignViewModel: ObservableObject {
             return
         }
 
+        #if os(iOS)
+        TransactionLiveActivityBroadcast.record(hash: txid, approveHash: approveTxid, payload: keysignPayload,
+                                               vault: vault, isInitiator: isInitiateDevice)
+        #endif
+
         let storage = StoredPendingTransactionStorage.shared
         let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)
 

@@ -220,6 +220,8 @@ extension VultisigApp {
                     // `.inactive` and must not be decided again here — see
                     // `AppViewModel.sceneBecameActive()`.
                     appViewModel.sceneBecameActive()
+                    TransactionLiveActivityCoordinator.shared.start()
+                    TransactionLiveActivityCoordinator.shared.refresh()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
                     Task { @MainActor in
                         SwapTrackingRegistry.shared.setActiveOnAll(true)
@@ -248,7 +250,9 @@ extension VultisigApp {
                 }
             }
             .onAppear {
+                TransactionLiveActivityCoordinator.shared.start()
                 #if DEBUG
+                Task { await TransactionLiveActivityDemo.shared.runIfRequested() }
                 if CommandLine.arguments.contains("-disableAnimations") {
                     UIView.setAnimationsEnabled(false)
                 }

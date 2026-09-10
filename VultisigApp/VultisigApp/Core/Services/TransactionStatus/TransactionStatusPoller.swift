@@ -109,7 +109,12 @@ final class TransactionStatusPoller: ObservableObject {
                         checker: self.service,
                         txHash: txHash,
                         chain: chain,
-                        deadlineReached: elapsed >= config.maxWaitTime
+                        deadlineReached: elapsed >= config.maxWaitTime,
+                        onObservation: { [weak self] isPending in
+                            guard !Task.isCancelled else { return }
+                            self?.historyStorage.publishObservation(txHash: txHash, pubKeyECDSA: pubKeyECDSA,
+                                                                    chain: chain, isPending: isPending)
+                        }
                     )
 
                     // `stopAll()` (e.g. the global reset) cancels this task while
@@ -234,7 +239,8 @@ final class TransactionStatusPoller: ObservableObject {
         checker: TransactionStatusChecking,
         txHash: String,
         chain: Chain,
-        deadlineReached: Bool
+        deadlineReached: Bool,
+        onObservation: (Bool) -> Void = { _ in }
     ) async -> PollAction {
         do {
             let result = try await checker.checkTransactionStatus(txHash: txHash, chain: chain)
@@ -243,12 +249,17 @@ final class TransactionStatusPoller: ObservableObject {
                 return .complete(.successful, nil)
             case let .failed(reason):
                 return .complete(.error, reason)
-            case .notFound, .pending:
+            case .pending:
+                onObservation(true)
+                return deadlineReached ? .stop : .retry
+            case .notFound:
+                onObservation(false)
                 return deadlineReached ? .stop : .retry
             }
         } catch is CancellationError {
             return .stop
         } catch {
+            onObservation(false)
             return deadlineReached ? .stop : .retry
         }
     }
