@@ -592,8 +592,11 @@ enum SwapCryptoLogic {
     static func affiliateFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
         guard let quote else { return .zero }
         switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q):
             let feeDecimal = q.fees.affiliate.toDecimal() / pow(10, 8)
+            return toCoin.fiat(decimal: feeDecimal)
+        case let .mayachain(q):
+            let feeDecimal = q.fees.affiliate.toDecimal() / toCoin.thorswapMultiplier
             return toCoin.fiat(decimal: feeDecimal)
         case .oneinch, .kyberswap:
             let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
@@ -649,8 +652,10 @@ enum SwapCryptoLogic {
     static func outboundFeeFiat(quote: SwapQuote?, toCoin: Coin) -> Decimal {
         guard let quote else { return .zero }
         switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q):
             return toCoin.fiat(decimal: q.fees.outbound.toDecimal() / pow(10, 8))
+        case let .mayachain(q):
+            return toCoin.fiat(decimal: q.fees.outbound.toDecimal() / toCoin.thorswapMultiplier)
         default:
             return .zero
         }
