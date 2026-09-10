@@ -274,6 +274,67 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         )), vault: nil))
     }
 
+    /// `swap_fee_decimals` is an `int32` the sender chooses, so the resolver must
+    /// bound it before it reaches `pow(10, decimals)`. Unbounded, `-9` renders a
+    /// fee 10^9x too large and anything past `Decimal`'s exponent range renders
+    /// the literal string "NaN" — both on the screen the co-signer reads to
+    /// decide whether to sign.
+    func testResolverYieldsNoRowForOutOfRangeWireDecimals() {
+        let model = JoinKeysignSwapFeeViewModel()
+        for decimals in [-1, -9, 37, 130, Int(Int32.max)] {
+            XCTAssertNil(
+                model.resolveSwapFee(swapPayload: .swapkit(makeSwapKitPayload(
+                    swapFee: "250000",
+                    swapFeeChain: Chain.bitcoinCash.name,
+                    swapFeeTokenId: nil,
+                    swapFeeDecimals: decimals
+                )), vault: nil),
+                "decimals=\(decimals) is unusable, so no row beats a wrong one"
+            )
+            XCTAssertNil(
+                model.resolveSwapFee(swapPayload: .generic(GenericSwapPayload(
+                    fromCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
+                    toCoin: makeUSDC(),
+                    fromAmount: BigInt("1000000000000000000"),
+                    toAmountDecimal: 3000,
+                    quote: EVMQuote(
+                        dstAmount: "3000000000",
+                        tx: EVMQuote.Transaction(
+                            from: "0xFrom", to: "0xRouter", data: "0x", value: "0",
+                            gasPrice: "1", gas: 100_000,
+                            swapFee: "5000000", swapFeeTokenContract: usdcContract
+                        )
+                    ),
+                    provider: .oneInch,
+                    swapFeeChain: "Ethereum",
+                    swapFeeTokenId: usdcContract,
+                    swapFeeDecimals: decimals
+                )), vault: nil),
+                "The generic path shares the resolver, so it shares the bound"
+            )
+        }
+    }
+
+    /// The bound is inclusive at both ends: `0` is a real integer-denominated
+    /// fee and must still render.
+    func testResolverAcceptsTheEdgesOfTheSupportedRange() {
+        let model = JoinKeysignSwapFeeViewModel()
+        XCTAssertEqual(
+            model.resolveSwapFee(swapPayload: .swapkit(makeSwapKitPayload(
+                swapFee: "250000", swapFeeChain: Chain.bitcoinCash.name,
+                swapFeeTokenId: nil, swapFeeDecimals: 0
+            )), vault: nil)?.amount,
+            250_000
+        )
+        XCTAssertEqual(
+            model.resolveSwapFee(swapPayload: .swapkit(makeSwapKitPayload(
+                swapFee: "250000", swapFeeChain: Chain.bitcoinCash.name,
+                swapFeeTokenId: nil, swapFeeDecimals: 36
+            )), vault: nil)?.amount,
+            Decimal(string: "0.00000000000000000000000000000025")
+        )
+    }
+
     func testResolverYieldsNoRowForAnUnknownTokenId() {
         XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(
             swapPayload: .swapkit(makeSwapKitPayload(

@@ -14,6 +14,10 @@ import BigInt
 /// beats a fiat value that's wrong by orders of magnitude.
 struct JoinKeysignSwapFeeViewModel {
 
+    /// Matches `TokenMetadataResolver` and `CosmosTokenMetadataResolver`: the
+    /// bound this app already applies to decimals it did not choose itself.
+    private static let supportedWireDecimals = 0...36
+
     struct ResolvedSwapFee {
         /// Fee in human units. Scaled by the wire decimals (not the resolved
         /// coin's) — the sender serialized the raw amount in those units.
@@ -119,10 +123,17 @@ struct JoinKeysignSwapFeeViewModel {
         // Pre-context senders omit chain/decimals — render no row rather
         // than guessing a coin (a 6-decimal destination-token fee read as an
         // 18-decimal native amount is wrong by ~10^12).
+        //
+        // `wireDecimals` is an unvalidated `int32` off the wire, and it lands in
+        // `pow(10, wireDecimals)`: a negative exponent inverts the scale (-9 shows
+        // a fee 10^9x too large) and one past `Decimal`'s range yields `.nan`,
+        // which formats as the literal string "NaN" on the confirm screen. Bound
+        // it the way the token-metadata resolvers bound untrusted decimals.
         guard
             let chainName,
             let chain = Chain(name: chainName),
-            let wireDecimals
+            let wireDecimals,
+            Self.supportedWireDecimals.contains(wireDecimals)
         else { return nil }
 
         guard let coin = resolveDisplayCoin(
