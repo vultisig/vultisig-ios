@@ -52,6 +52,10 @@ struct THORChainSwapPayload: Codable, Hashable {
     /// `$0.00`; `nil` is a sender that stated nothing and renders no row.
     /// Display only.
     var fee: String? = nil
+    /// Route price impact in basis points, carried rather than recomputed: a
+    /// co-signer's own quote would price a pool that has since moved. `nil` hides
+    /// the row; a carried `0` claims a zero-impact route. Display only.
+    var slippageBps: UInt32? = nil
 
     var toAddress: String {
         return toCoin.address

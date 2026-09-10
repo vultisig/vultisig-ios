@@ -803,7 +803,14 @@ enum SwapCryptoLogic {
     // MARK: - Price impact
 
     static func priceImpactString(quote: SwapQuote?) -> String {
-        guard let impact = quote?.priceImpact else { return .empty }
+        priceImpactString(impact: quote?.priceImpact)
+    }
+
+    /// Shared by the initiator (live quote) and the co-signer (carried
+    /// `slippage_bps`) so the two verify screens cannot drift in wording or
+    /// quality band. `.empty` for an unknown impact — callers hide the row.
+    static func priceImpactString(impact: Decimal?) -> String {
+        guard let impact else { return .empty }
         // THORChain returns positive slippage bps; we negate for consistent display.
         let displayImpact = -impact
         let formatter = NumberFormatter()
@@ -826,7 +833,12 @@ enum SwapCryptoLogic {
     }
 
     static func priceImpactColor(quote: SwapQuote?) -> Color {
-        guard let impact = quote?.priceImpact else { return Theme.colors.textSecondary }
+        priceImpactColor(impact: quote?.priceImpact)
+    }
+
+    /// Colour bands for `priceImpactString(impact:)`, shared for the same reason.
+    static func priceImpactColor(impact: Decimal?) -> Color {
+        guard let impact else { return Theme.colors.textSecondary }
         let displayImpact = -impact
 
         if displayImpact > -0.01 {

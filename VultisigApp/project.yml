@@ -81,11 +81,12 @@ packages:
     # preferring the field and falling back to the memo so mixed-version device
     # pairs stay byte-identical in MPC keysign.
     #
-    # Advanced to commondata `main`'s current HEAD per review request. Verified
-    # first: every commit between the prior pin and this one only touches repo
-    # tooling (`CLAUDE.md`, `.claude/hooks`, issue/PR templates) — no `.proto`
-    # file changed, so this is a no-op for generated Swift.
-    revision: 63a65c37c50f6a944f6791d36eb905810af82760
+    # Advanced to pick up three additive display-only swap fields a co-signer
+    # needs: `THORChainSwapPayload.slippage_bps = 14`, `SwapKitSwapPayload
+    # .swap_fee = 12` with its coin context at 13-15, and
+    # `OneInchSwapPayload.sub_provider = 7`. Every change between the pins only
+    # appends fields, so payloads from a sender at the old pin still decode.
+    revision: 08e17eb63cc634fa81b65306a294ef1455ec4c38
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
