@@ -615,6 +615,32 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(p1.memo, "=:BTC.BTC:addr:0/1/0")
     }
 
+    // MARK: - Maya fee rows scale by the asset's own decimals, not THORChain's 1e8
+
+    func testMayaAffiliateAndOutboundFeeScaleByCacaoDecimals() {
+        // CACAO: 10 dp. Raw fee 1_000_000_000 at 1e10 = 0.1 CACAO = $100 at $1000.
+        let cacao = makeCoin(.mayaChain, ticker: "CACAOFEE", decimals: 10, isNative: true)
+        setPrice(1000, for: cacao)
+        let quote = SwapQuote.mayachain(makeThorQuote(affiliate: "1000000000", outbound: "1000000000"))
+
+        XCTAssertEqual(SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: cacao, toCoin: cacao, feeCoin: cacao), 100)
+        XCTAssertEqual(SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: cacao), 100)
+        // NOT the THORChain 1e8 scaling (would read $10,000).
+        XCTAssertNotEqual(SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: cacao, toCoin: cacao, feeCoin: cacao), 10000)
+    }
+
+    func testMayaAffiliateAndOutboundFeeScaleByFourDecimalAsset() {
+        // 4 dp Maya asset. Raw fee 10_000 at 1e4 = 1.0 unit = $1000 at $1000.
+        let asset = makeCoin(.mayaChain, ticker: "MAYA4DP", decimals: 4, isNative: false)
+        setPrice(1000, for: asset)
+        let quote = SwapQuote.mayachain(makeThorQuote(affiliate: "10000", outbound: "10000"))
+
+        XCTAssertEqual(SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: asset, toCoin: asset, feeCoin: asset), 1000)
+        XCTAssertEqual(SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: asset), 1000)
+        // NOT the THORChain 1e8 scaling (would read $0.10).
+        XCTAssertNotEqual(SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: asset, toCoin: asset, feeCoin: asset), Decimal(string: "0.1"))
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
