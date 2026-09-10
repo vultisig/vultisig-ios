@@ -198,8 +198,28 @@ extension SwapCryptoLogic {
             streamingInterval: memoTerms.streamingInterval,
             streamingQuantity: memoTerms.streamingQuantity,
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-            isAffiliate: SwapCryptoLogic.isAffiliate
+            isAffiliate: SwapCryptoLogic.isAffiliate,
+            fee: nativeSwapPayloadFee(quote: quote)
         )
+    }
+
+    /// Sums exactly the two components the verify screens itemize, so a co-signer
+    /// reaches the initiator's figure by construction. Deliberately NOT the quote's
+    /// `fees.total`: that folds in the liquidity component, which the quoted output
+    /// amount already reflects, so carrying it would double-count.
+    ///
+    /// A route that charges nothing returns `"0"`, NOT `nil`: the receiver has to
+    /// tell a known zero (render `$0.00`, as the initiator does) from a sender that
+    /// stated nothing (render no row). `nil` is reserved for the second case —
+    /// here, a component too malformed to sum.
+    static func nativeSwapPayloadFee(quote: ThorchainSwapQuote) -> String? {
+        // Each component is checked, not just the sum: a negative offsetting a
+        // positive would otherwise launder a malformed quote into a stated zero.
+        guard let affiliate = BigInt(quote.fees.affiliate), affiliate >= 0,
+              let outbound = BigInt(quote.fees.outbound), outbound >= 0 else {
+            return nil
+        }
+        return String(affiliate + outbound)
     }
 
     /// Assemble the final `KeysignPayload` for a swap given a finalised

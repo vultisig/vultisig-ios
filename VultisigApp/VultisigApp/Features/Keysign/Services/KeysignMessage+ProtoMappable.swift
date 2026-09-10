@@ -220,6 +220,14 @@ extension ERC20ApprovePayload {
     }
 }
 
+/// `fee` has implicit presence, so an unset field and a `"0"` are distinguishable
+/// on the wire and mean different things: unknown versus a route that charges
+/// nothing. Only a nil leaves the field unset; `"0"` is written like any value.
+private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapPayload) {
+    guard let fee = fee?.nilIfEmpty else { return }
+    proto.fee = fee
+}
+
 extension SwapPayload {
     init(proto: VSKeysignPayload.OneOf_SwapPayload) throws {
         switch proto {
@@ -236,7 +244,8 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty
             ))
         case .mayachainSwapPayload(let value):
             self = .mayachain(THORChainSwapPayload(
@@ -251,7 +260,8 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty
             ))
         case .oneinchSwapPayload(let value):
             // `has*` guards distinguish "legacy sender, context unknown"
@@ -335,6 +345,7 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
             })
         case .mayachain(let payload):
             return .mayachainSwapPayload(.with {
@@ -350,6 +361,7 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
             })
         case .generic(let payload):
             return .oneinchSwapPayload(.with {

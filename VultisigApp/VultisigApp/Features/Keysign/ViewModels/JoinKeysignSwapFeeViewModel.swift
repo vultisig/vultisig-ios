@@ -41,9 +41,33 @@ struct JoinKeysignSwapFeeViewModel {
     }
 
     func resolveSwapFee(swapPayload: SwapPayload?, vault: Vault?) -> ResolvedSwapFee? {
-        // Only general (1inch-shaped) swaps carry a bare swap-fee amount;
-        // other payload variants encode fees elsewhere.
-        guard case let .generic(payload) = swapPayload else { return nil }
+        switch swapPayload {
+        case let .thorchain(payload), let .thorchainChainnet(payload),
+             let .thorchainStagenet(payload), let .mayachain(payload):
+            return resolveNativeSwapFee(payload: payload)
+        case let .generic(payload):
+            return resolveGenericSwapFee(payload: payload, vault: vault)
+        case .swapkit, .none:
+            // SwapKit keeps its fee in a wire group this payload shape lacks.
+            return nil
+        }
+    }
+
+    /// Native routes charge in the destination asset, so `toCoin` is the fee coin.
+    /// Not `SwapCryptoLogic.swapFeeCoin`: native quotes carry no
+    /// `swapFeeTokenContract`, so it would fall through to the source gas coin.
+    private func resolveNativeSwapFee(payload: THORChainSwapPayload) -> ResolvedSwapFee? {
+        // `>= 0`, not `> 0`: a stated zero renders a `$0.00` row to match the
+        // initiator. Only an absent fee hides the row.
+        guard let rawFee = payload.fee?.nilIfEmpty,
+              let amount = Decimal(string: rawFee),
+              amount >= 0 else { return nil }
+        let multiplier = payload.toCoin.thorswapMultiplier
+        guard multiplier > 0 else { return nil }
+        return ResolvedSwapFee(amount: amount / multiplier, coin: payload.toCoin.toCoinMeta())
+    }
+
+    private func resolveGenericSwapFee(payload: GenericSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
         guard let fee = BigInt(payload.quote.tx.swapFee), fee > 0 else { return nil }
 
         // Pre-context senders omit chain/decimals — render no row rather
