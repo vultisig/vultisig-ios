@@ -135,6 +135,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.vultisig.wallet
         PRODUCT_NAME: $(TARGET_NAME)
         INFOPLIST_FILE: VultisigApp/Info.plist
+        "INFOPLIST_KEY_NSSupportsLiveActivities[sdk=iphone*]": YES
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_ENTITLEMENTS: VultisigApp/VultisigApp.entitlements
         CODE_SIGN_IDENTITY: "Apple Development"
@@ -279,6 +280,10 @@ targets:
       # These files already belong to the app's recursive source tree. List
       # them explicitly here instead of adding an overlapping directory tree,
       # which makes XcodeGen spend minutes reconciling duplicate groups.
+      - path: VultisigApp/Shared/TransactionActivity/TransactionActivityState.swift
+        group: VultisigApp/Shared/TransactionActivity
+      - path: VultisigApp/Shared/TransactionActivity/TransactionActivityAttributes.swift
+        group: VultisigApp/Shared/TransactionActivity
       - path: VultisigApp/Shared/WidgetShared/WidgetSharedStorage.swift
         group: VultisigApp/Shared/WidgetShared
       - path: VultisigApp/Shared/WidgetShared/WidgetMarketAsset.swift
