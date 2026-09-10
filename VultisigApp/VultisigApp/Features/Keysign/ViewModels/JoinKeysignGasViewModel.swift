@@ -103,10 +103,16 @@ struct JoinKeysignGasViewModel {
             }
         }
 
-        // Fallback to the payload coin itself
-        let feeDecimal = coin.decimal(for: fee)
-        // Use fee-specific formatting with more decimal places (5 instead of 2)
-        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
+        // Fallback: the fee is always denominated in the chain's native coin, never
+        // the payload's token coin (e.g. an ERC-20) — pricing with `coin` here priced
+        // a native-coin amount at the token's rate.
+        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
+            $0.isNativeToken && $0.chain == coin.chain
+        }) else {
+            return .empty
+        }
+        let feeDecimal = Decimal(fee) / pow(10, nativeToken.decimals)
+        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: nativeToken)
     }
 
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
