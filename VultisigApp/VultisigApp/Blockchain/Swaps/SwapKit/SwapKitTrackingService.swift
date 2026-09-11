@@ -194,7 +194,12 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
               let hash = tracking.broadcastHash,
               let chainId = tracking.sourceChainId else { return }
         guard !Task.isCancelled, shouldApply() else { return }
-        await pollOnce(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, broadcastHash: hash, chainId: chainId, backgroundObservation: backgroundObservation, shouldApply: shouldApply)
+        let outcome = await pollOnce(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, broadcastHash: hash, chainId: chainId,
+                                     backgroundObservation: backgroundObservation, shouldApply: shouldApply)
+        if backgroundObservation, outcome.shouldStop, uiStatusByTxHash[tx.txHash]?.isTerminal == true {
+            // A terminal one-shot must not resume its suspended poller and rewrite the receipt time.
+            stop(txHash: tx.txHash)
+        }
     }
 
     /// Test-only state inspection. Returns the number of currently-tracked

@@ -113,6 +113,20 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         XCTAssertEqual(client.requestCount, 1)
     }
 
+    func testRestoreReplaysTerminalWriteInterruptedAfterLedgerPersistence() async {
+        let row = addRow()
+        let manager = coordinator()
+        manager.admit(row)
+        let before = client.activities
+        let terminal = ActivityTestFixture.row(id: row.id, hash: row.txHash, status: .successful, createdAt: row.createdAt)
+        rows[row.id] = terminal
+        await manager.receive(.nativeStatus(terminal, Date()))
+        client.activities = before // Simulate death before the system received end().
+        await coordinator().reconcile()
+        XCTAssertEqual(client.activities.first?.state.phase, .confirmed)
+        XCTAssertEqual(client.activities.first?.isActive, false)
+    }
+
     func testFreshInstallationStartsRichActivityWithoutOptIn() {
         let manager = coordinator()
         manager.admit(addRow())

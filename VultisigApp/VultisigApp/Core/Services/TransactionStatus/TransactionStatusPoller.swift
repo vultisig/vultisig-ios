@@ -165,6 +165,9 @@ final class TransactionStatusPoller: ObservableObject {
         activeTasks[txHash] = task
     }
 
+    /// Preserve the wallet balance-refresh signal for observations completed by native runtime.
+    func notifyTransactionCompleted() { completedTransactionCount += 1 }
+
     func stopPolling(txHash: String) {
         activeTasks[txHash]?.cancel()
         activeTasks.removeValue(forKey: txHash)

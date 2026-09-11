@@ -12,6 +12,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _: UIApplication,
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        TransactionActivityBackgroundService.shared.register()
         PushNotificationManager.shared.setupNotificationDelegate()
         return true
     }

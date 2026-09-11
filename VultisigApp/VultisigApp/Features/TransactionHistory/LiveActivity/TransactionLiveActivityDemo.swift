@@ -1,5 +1,6 @@
 #if DEBUG && os(iOS)
 import Foundation
+import UIKit
 
 /// Synthetic ActivityKit exercise: no vault, history write, network call, or funds.
 @MainActor
@@ -7,6 +8,11 @@ final class TransactionLiveActivityDemo {
     static let shared = TransactionLiveActivityDemo()
     private let client = SystemTransactionActivityClient()
     private var didLaunch = false
+    private var backgroundRunner: TransactionActivityBackgroundRunner?
+    private let backgroundSystem = TransactionActivityBackgroundSystem()
+
+    func enteredBackground() { backgroundRunner?.enteredBackground() }
+    func enteredForeground() { backgroundRunner?.enteredForeground() }
     private var recordIDs = Set<UUID>()
 
     func owns(recordID: UUID) -> Bool { recordIDs.contains(recordID) }
@@ -49,6 +55,35 @@ final class TransactionLiveActivityDemo {
             recordIDs.insert(recordID)
             let id = try client.request(recordID: recordID, state: state(.submitted, revision: 1))
             Log.wallet.other.info("Synthetic Live Activity requested")
+            if arguments.contains("-transactionLiveActivityBackgroundDemo") {
+                var revision = 1
+                var finished = false
+                var runtime = backgroundSystem.runtime
+                // This fixture exercises the real UIKit assertion without queuing production refreshes.
+                runtime.schedule = { _ in }
+                runtime.cancelScheduled = {}
+                backgroundRunner = TransactionActivityBackgroundRunner(
+                    runtime: runtime, hasWork: { !finished },
+                    isForeground: { UIApplication.shared.applicationState != .background },
+                    refresh: { [weak self] in
+                        let delay = arguments.contains("-transactionLiveActivityBackgroundExpiry") ? 40 : 2
+                        do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+                        guard !Task.isCancelled, let self else { return }
+                        revision += 1
+                        let phase: TransactionActivityState.Phase = revision == 2
+                            ? (swap ? .sourceConfirmed : .pending) : (swap ? .completed : .confirmed)
+                        if phase.isTerminal {
+                            await self.client.end(id: id, state: state(phase, revision: revision), immediately: false)
+                            finished = true
+                        } else {
+                            await self.client.update(id: id, state: state(phase, revision: revision))
+                        }
+                        let background = UIApplication.shared.applicationState == .background
+                        Log.wallet.other.info("Synthetic native activity revision \(revision) background=\(background)")
+                    }
+                )
+                return
+            }
             task = Task { [weak self] in
                 try? await Task.sleep(for: .seconds(8))
                 guard !Task.isCancelled, let self else { return }

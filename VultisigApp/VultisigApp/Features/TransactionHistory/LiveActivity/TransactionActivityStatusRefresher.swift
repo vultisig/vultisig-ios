@@ -11,13 +11,15 @@ final class TransactionActivityStatusRefresher {
     private let checker: any TransactionStatusChecking
     private let lookup: Lookup
     private let refreshSwap: SwapRefresh
+    private let didCompleteSend: () -> Void
 
     init(storage: TransactionHistoryStorage, checker: any TransactionStatusChecking,
-         lookup: @escaping Lookup, refreshSwap: @escaping SwapRefresh) {
+         lookup: @escaping Lookup, refreshSwap: @escaping SwapRefresh, didCompleteSend: @escaping () -> Void = {}) {
         self.storage = storage
         self.checker = checker
         self.lookup = lookup
         self.refreshSwap = refreshSwap
+        self.didCompleteSend = didCompleteSend
     }
 
     func refresh(_ original: TransactionHistoryData) async {
@@ -38,9 +40,13 @@ final class TransactionActivityStatusRefresher {
             guard !Task.isCancelled, let fresh = current(row), fresh.type == .send, fresh.swapTracking == nil else { return }
             switch result.status {
             case .confirmed:
-                try storage.updateActivitySendStatus(id: fresh.id, status: .successful, errorMessage: nil, observedAt: Date())
+                if try storage.updateActivitySendStatus(id: fresh.id, status: .successful, errorMessage: nil, observedAt: Date()) {
+                    didCompleteSend()
+                }
             case .failed(let reason):
-                try storage.updateActivitySendStatus(id: fresh.id, status: .error, errorMessage: reason, observedAt: Date())
+                if try storage.updateActivitySendStatus(id: fresh.id, status: .error, errorMessage: reason, observedAt: Date()) {
+                    didCompleteSend()
+                }
             case .pending:
                 storage.publishObservation(txHash: fresh.txHash, pubKeyECDSA: fresh.pubKeyECDSA, chain: chain, isPending: true)
             case .notFound:

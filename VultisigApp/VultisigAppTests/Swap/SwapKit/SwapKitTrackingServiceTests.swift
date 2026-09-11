@@ -66,6 +66,24 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         service.stopAllTracking()
     }
 
+    func testBackgroundCompletionRemovesPausedPollerBeforeForegroundResume() async {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        http.responses = [Self.makeResponse(status: .completed, trackingStatus: "completed")]
+        let service = SwapKitTrackingService(httpClient: http, storage: storage)
+        service.setActive(false)
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        XCTAssertEqual(service.trackedSwapCountForTesting, 0)
+        service.setActive(true)
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(http.requestCount, 1)
+        XCTAssertEqual(storage.observations.count, 1)
+        XCTAssertEqual(storage.observations.first?.uiStatus, .completed)
+        service.stopAllTracking()
+    }
+
     func testHappyPathTransitionsThroughFullSequence() async throws {
         let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()

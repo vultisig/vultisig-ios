@@ -28,6 +28,7 @@ final class TransactionLiveActivityCoordinator {
     private var queue: Task<Void, Never>?
     private var detailsVisible = false
     private var started = false
+    var backgroundWorkDidChange: (() -> Void)?
 
     init(client: (any TransactionActivityClient)? = nil,
          defaults: UserDefaults = .standard,
@@ -124,6 +125,7 @@ final class TransactionLiveActivityCoordinator {
         queue = Task {
             await predecessor?.value
             await operation()
+            self.backgroundWorkDidChange?()
         }
     }
 
@@ -184,6 +186,16 @@ final class TransactionLiveActivityCoordinator {
                 continue
             }
             if pair.value.ended {
+                // Recover a terminal write interrupted after persistence but before ActivityKit acknowledged it.
+                if activity.isActive, pair.value.phase.isTerminal, client.isAuthorized,
+                   let row = try? lookup(pair.value.recordID), TransactionActivityPolicy.identity(row) == pair.key,
+                   (try? vaultExists(row.pubKeyECDSA)) == true {
+                    let state = TransactionActivityPolicy.state(for: row, phase: pair.value.phase,
+                        observedAt: pair.value.observedAt, revision: pair.value.revision + 1,
+                        delayed: false, showDetails: showDetails)
+                    await client.end(id: activity.id, state: state, immediately: false)
+                    continue
+                }
                 // Preserve the recognition window on routine foregrounds. Erase a
                 // retained receipt when privacy/permission/deletion actually require it.
                 var mustRemove = activity.isActive || !client.isAuthorized

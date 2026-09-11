@@ -43,6 +43,20 @@ final class TransactionActivityStatusRefresherTests: XCTestCase {
         }
     }
 
+    func testTerminalSendSignalsWalletRefreshOnlyAfterItsFirstPersistedCompletion() async throws {
+        let (container, storage) = try storage()
+        let row = ActivityTestFixture.row()
+        try storage.save(row)
+        var completed = 0
+        let worker = TransactionActivityStatusRefresher(storage: storage, checker: NativeActivityChecker(status: .confirmed),
+            lookup: { try? storage.fetch(id: $0) }, refreshSwap: { _, _ in }, didCompleteSend: { completed += 1 })
+        await worker.refresh(row)
+        await worker.refresh(row)
+        XCTAssertEqual(completed, 1)
+        XCTAssertEqual(try storage.fetch(id: row.id)?.status, .successful)
+        withExtendedLifetime(container) {}
+    }
+
     func testCancellationDiscardsLateChainSuccess() async throws {
         let (container, storage) = try storage()
         let row = ActivityTestFixture.row()
