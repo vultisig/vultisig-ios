@@ -25,6 +25,24 @@ final class CoinMemoSupportTests: XCTestCase {
         XCTAssertFalse(coin.supportsMemo)
     }
 
+    func testNativePolkadotCoinDoesNotSupportMemo() {
+        let coin = makeCoin(chain: .polkadot, isNativeToken: true)
+
+        XCTAssertFalse(coin.supportsMemo)
+    }
+
+    func testNativeBittensorCoinDoesNotSupportMemo() {
+        let coin = makeCoin(chain: .bittensor, isNativeToken: true)
+
+        XCTAssertFalse(coin.supportsMemo)
+    }
+
+    func testNativeCosmosCoinStillSupportsMemo() {
+        let coin = makeCoin(chain: .gaiaChain, isNativeToken: true)
+
+        XCTAssertTrue(coin.supportsMemo)
+    }
+
     private func makeCoin(chain: Chain, isNativeToken: Bool) -> Coin {
         Coin(
             asset: CoinMeta(

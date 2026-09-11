@@ -734,8 +734,8 @@ class JoinKeysignViewModel: ObservableObject {
         resolvedHero ?? heroContent
     }
 
-    var providerName: String {
-        keysignPayload?.swapPayload?.providerName ?? .empty
+    var providerDisplayName: String {
+        keysignPayload?.swapPayload?.providerDisplayName ?? .empty
     }
 
     /// dApp identity (name / url / icon) attached to the keysign request, if
@@ -788,6 +788,16 @@ class JoinKeysignViewModel: ObservableObject {
         return SwapCryptoLogic.minPayoutCaption(amount: amount, ticker: swapPayload.toCoin.ticker)
     }
 
+    /// Empty when the payload carries no impact. A joiner must not re-derive one
+    /// from its own quote: that prices a pool that has moved since.
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(impact: keysignPayload?.swapPayload?.priceImpact)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(impact: keysignPayload?.swapPayload?.priceImpact)
+    }
+
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
@@ -797,6 +807,34 @@ class JoinKeysignViewModel: ObservableObject {
     /// carries no fee or no trustworthy coin context (legacy sender).
     func getSwapFee() -> (feeCrypto: String, feeFiat: String)? {
         swapFeeViewModel.getSwapFee(swapPayload: keysignPayload?.swapPayload, vault: vault)
+    }
+
+    /// Network fee plus swap fee, formatted like the initiator's total rather
+    /// than like the itemized fee rows.
+    ///
+    /// The network leg must price, and so must a non-zero swap leg — a total that
+    /// absorbed an unpriced fee would understate the swap. A STATED zero is worth
+    /// zero at any price and needs no rate. An ABSENT fee still suppresses the
+    /// row: nothing was claimed, so nothing can be totalled.
+    func getSwapTotalFee() -> String? {
+        guard let keysignPayload,
+              let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload, vault: vault),
+              let swapFee = swapFeeViewModel.resolveSwapFee(
+                swapPayload: keysignPayload.swapPayload,
+                vault: vault
+              ) else {
+            return nil
+        }
+        // A stated zero is worth zero at any price, so it needs no rate. Only a
+        // non-zero leg has to be priced before it can enter a total.
+        let swapFeeFiat: Decimal
+        if swapFee.amount.isZero {
+            swapFeeFiat = .zero
+        } else {
+            guard let rate = RateProvider.shared.rate(for: swapFee.coin) else { return nil }
+            swapFeeFiat = RateProvider.shared.fiatBalance(value: swapFee.amount, rate: rate)
+        }
+        return (networkFeeFiat + swapFeeFiat).formatToFiat(includeCurrencySymbol: true)
     }
 
     func getFromFiatAmount() -> String {

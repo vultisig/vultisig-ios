@@ -69,22 +69,44 @@ struct TronAPIService {
 
     // MARK: - Broadcast
 
-    private static let DUP_TRANSACTION_ERROR_CODE = "DUP_TRANSACTION_ERROR"
-
-    func broadcastTransaction(jsonString: String) async throws -> String {
+    /// - Parameter expectedTxHash: the locally computed hash the node's answer
+    ///   is checked against.
+    func broadcastTransaction(jsonString: String, expectedTxHash: String) async throws -> String {
         let response = try await httpClient.request(api(.broadcastTransaction(jsonString: jsonString)), responseType: TronBroadcastResponse.self)
 
-        // Accept success (result == true) OR duplicate transaction error (already broadcast)
-        // This matches Android behavior where DUP_TRANSACTION_ERROR is treated as success
-        let isSuccess = response.data.result == true
-        let isDuplicateTransaction = response.data.code == Self.DUP_TRANSACTION_ERROR_CODE
-
-        guard let txid = response.data.txid, isSuccess || isDuplicateTransaction else {
+        // Only an explicit success counts. TRON fills its duplicate cache
+        // before validating, so `DUP_TRANSACTION_ERROR` is not evidence the
+        // transaction is on chain. Throwing routes it into
+        // `handleBroadcastError`, which verifies the hash against the chain.
+        guard let txid = response.data.txid, response.data.result == true else {
             let errorMessage = response.data.message ?? response.data.code ?? "Unknown error"
             throw TronAPIError.broadcastFailed(errorMessage)
         }
 
-        return txid
+        // TRON's txid is `sha256(raw_data)`, which the signer already computed,
+        // so an honest node returns the same value. A mismatch means the
+        // response does not describe the transaction that was broadcast.
+        guard Self.txidMatchesLocalHash(nodeTxid: txid, localTxHash: expectedTxHash) else {
+            throw TronAPIError.broadcastHashMismatch(expected: expectedTxHash, returned: txid)
+        }
+
+        return expectedTxHash
+    }
+
+    /// Tolerant of case and a `0x` prefix. An empty local hash never matches:
+    /// without one there is nothing to verify against.
+    static func txidMatchesLocalHash(nodeTxid: String, localTxHash: String) -> Bool {
+        let local = normalizedHash(localTxHash)
+        guard !local.isEmpty else { return false }
+        return normalizedHash(nodeTxid) == local
+    }
+
+    private static func normalizedHash(_ value: String) -> String {
+        var hash = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if hash.hasPrefix("0x") {
+            hash.removeFirst(2)
+        }
+        return hash
     }
 
     // MARK: - Balance
@@ -276,6 +298,7 @@ struct TronAPIService {
 
 enum TronAPIError: LocalizedError {
     case broadcastFailed(String)
+    case broadcastHashMismatch(expected: String, returned: String)
     case invalidAddress
     case invalidResponse
 
@@ -283,6 +306,8 @@ enum TronAPIError: LocalizedError {
         switch self {
         case .broadcastFailed(let message):
             return "Broadcast failed: \(message)"
+        case .broadcastHashMismatch(let expected, let returned):
+            return "Broadcast returned transaction id \(returned), expected \(expected)"
         case .invalidAddress:
             return "Invalid Tron address"
         case .invalidResponse:

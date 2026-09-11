@@ -14,6 +14,10 @@ import BigInt
 /// beats a fiat value that's wrong by orders of magnitude.
 struct JoinKeysignSwapFeeViewModel {
 
+    /// Matches `TokenMetadataResolver` and `CosmosTokenMetadataResolver`: the
+    /// bound this app already applies to decimals it did not choose itself.
+    private static let supportedWireDecimals = 0...36
+
     struct ResolvedSwapFee {
         /// Fee in human units. Scaled by the wire decimals (not the resolved
         /// coin's) — the sender serialized the raw amount in those units.
@@ -41,25 +45,102 @@ struct JoinKeysignSwapFeeViewModel {
     }
 
     func resolveSwapFee(swapPayload: SwapPayload?, vault: Vault?) -> ResolvedSwapFee? {
-        // Only general (1inch-shaped) swaps carry a bare swap-fee amount;
-        // other payload variants encode fees elsewhere.
-        guard case let .generic(payload) = swapPayload else { return nil }
-        guard let fee = BigInt(payload.quote.tx.swapFee), fee > 0 else { return nil }
+        switch swapPayload {
+        case let .thorchain(payload), let .thorchainChainnet(payload),
+             let .thorchainStagenet(payload), let .mayachain(payload):
+            return resolveNativeSwapFee(payload: payload)
+        case let .generic(payload):
+            return resolveGenericSwapFee(payload: payload, vault: vault)
+        case let .swapkit(payload):
+            return resolveSwapKitSwapFee(payload: payload, vault: vault)
+        case .none:
+            return nil
+        }
+    }
+
+    /// Native routes charge in the destination asset, so `toCoin` is the fee coin.
+    /// Not `SwapCryptoLogic.swapFeeCoin`: native quotes carry no
+    /// `swapFeeTokenContract`, so it would fall through to the source gas coin.
+    private func resolveNativeSwapFee(payload: THORChainSwapPayload) -> ResolvedSwapFee? {
+        // `>= 0`, not `> 0`: a stated zero renders a `$0.00` row to match the
+        // initiator. Only an absent fee hides the row.
+        guard let rawFee = payload.fee?.nilIfEmpty,
+              let amount = Decimal(string: rawFee),
+              amount >= 0 else { return nil }
+        let multiplier = payload.toCoin.thorswapMultiplier
+        guard multiplier > 0 else { return nil }
+        return ResolvedSwapFee(amount: amount / multiplier, coin: payload.toCoin.toCoinMeta())
+    }
+
+    private func resolveGenericSwapFee(payload: GenericSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
+        resolveContextualSwapFee(
+            rawFee: payload.quote.tx.swapFee,
+            // `EVMQuote.Transaction.swapFee` defaults to "0" when a quote omits
+            // the key, so a zero here cannot be told from "never quoted".
+            statedZeroIsMeaningful: false,
+            chainName: payload.swapFeeChain,
+            tokenId: payload.swapFeeTokenId,
+            wireDecimals: payload.swapFeeDecimals,
+            fromCoin: payload.fromCoin,
+            toCoin: payload.toCoin,
+            vault: vault
+        )
+    }
+
+    /// SwapKit's transfer routes carry the fee in a group of their own, in the
+    /// same shape the EVM routes use.
+    private func resolveSwapKitSwapFee(payload: SwapKitSwapPayload, vault: Vault?) -> ResolvedSwapFee? {
+        resolveContextualSwapFee(
+            rawFee: payload.swapFee,
+            // Optional on this payload, so nil is "absent" and "0" is a sender
+            // stating the route charges nothing — render it, matching a
+            // cross-client initiator that shows $0.00.
+            statedZeroIsMeaningful: true,
+            chainName: payload.swapFeeChain,
+            tokenId: payload.swapFeeTokenId,
+            wireDecimals: payload.swapFeeDecimals,
+            fromCoin: payload.fromCoin,
+            toCoin: payload.toCoin,
+            vault: vault
+        )
+    }
+
+    /// Shared by the aggregator payloads: the fee coin is not either side of the
+    /// swap by construction, so it has to be named on the wire.
+    private func resolveContextualSwapFee(
+        rawFee: String?,
+        statedZeroIsMeaningful: Bool,
+        chainName: String?,
+        tokenId: String?,
+        wireDecimals: Int?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vault: Vault?
+    ) -> ResolvedSwapFee? {
+        guard let rawFee, let fee = BigInt(rawFee), fee >= 0 else { return nil }
+        guard fee > 0 || statedZeroIsMeaningful else { return nil }
 
         // Pre-context senders omit chain/decimals — render no row rather
         // than guessing a coin (a 6-decimal destination-token fee read as an
         // 18-decimal native amount is wrong by ~10^12).
+        //
+        // `wireDecimals` is an unvalidated `int32` off the wire, and it lands in
+        // `pow(10, wireDecimals)`: a negative exponent inverts the scale (-9 shows
+        // a fee 10^9x too large) and one past `Decimal`'s range yields `.nan`,
+        // which formats as the literal string "NaN" on the confirm screen. Bound
+        // it the way the token-metadata resolvers bound untrusted decimals.
         guard
-            let chainName = payload.swapFeeChain,
+            let chainName,
             let chain = Chain(name: chainName),
-            let wireDecimals = payload.swapFeeDecimals
+            let wireDecimals,
+            Self.supportedWireDecimals.contains(wireDecimals)
         else { return nil }
 
         guard let coin = resolveDisplayCoin(
             chain: chain,
-            tokenId: payload.swapFeeTokenId,
-            fromCoin: payload.fromCoin,
-            toCoin: payload.toCoin,
+            tokenId: tokenId,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
             vault: vault
         ) else { return nil }
 

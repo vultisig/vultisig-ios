@@ -89,7 +89,7 @@ struct SecuredWithdrawTransactionScreen: View {
 
     var loadingAssetsView: some View {
         HStack(spacing: 12) {
-            SpinningLineLoader()
+            CircularProgressIndicator(size: 28)
             Text("loadingSecuredAssets".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)

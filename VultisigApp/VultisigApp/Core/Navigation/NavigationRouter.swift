@@ -47,7 +47,10 @@ final class NavigationRouter: ObservableObject {
     }
 
     func navigateToRoot() {
-        navPath.removeLast(navPath.count)
+        // An empty-path mutation still publishes and invalidates NavigationStack.
+        if !navPath.isEmpty {
+            navPath.removeLast(navPath.count)
+        }
         history.removeAll()
     }
 }

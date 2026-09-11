@@ -220,6 +220,32 @@ extension ERC20ApprovePayload {
     }
 }
 
+/// `fee` has implicit presence, so an unset field and a `"0"` are distinguishable
+/// on the wire and mean different things: unknown versus a route that charges
+/// nothing. Only a nil leaves the field unset; `"0"` is written like any value.
+private func writeNativeSwapFee(_ fee: String?, to proto: inout VSTHORChainSwapPayload) {
+    guard let fee = fee?.nilIfEmpty else { return }
+    proto.fee = fee
+}
+
+/// `router_address` has EXPLICIT presence (`optional string`), so assigning `""`
+/// marks it present rather than eliding it as a default. Do not "simplify" this
+/// back to `?? .empty`: a payload carrying no router would then re-serialize
+/// larger than the bytes its sender built, and those bytes are the relay's
+/// content hash.
+private func writeNativeSwapRouterAddress(_ routerAddress: String?, to proto: inout VSTHORChainSwapPayload) {
+    guard let routerAddress = routerAddress?.nilIfEmpty else { return }
+    proto.routerAddress = routerAddress
+}
+
+/// `slippage_bps` has explicit presence: absent means "sender predates the
+/// field" and the row is hidden, a present `0` claims a zero-impact route. Never
+/// write a stand-in, or "unknown" becomes a statement.
+private func writeNativeSwapSlippageBps(_ slippageBps: UInt32?, to proto: inout VSTHORChainSwapPayload) {
+    guard let slippageBps else { return }
+    proto.slippageBps = slippageBps
+}
+
 extension SwapPayload {
     init(proto: VSKeysignPayload.OneOf_SwapPayload) throws {
         switch proto {
@@ -236,7 +262,9 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty,
+                slippageBps: value.hasSlippageBps ? value.slippageBps : nil
             ))
         case .mayachainSwapPayload(let value):
             self = .mayachain(THORChainSwapPayload(
@@ -251,12 +279,13 @@ extension SwapPayload {
                 streamingInterval: value.streamingInterval,
                 streamingQuantity: value.streamingQuantity,
                 expirationTime: value.expirationTime,
-                isAffiliate: value.isAffiliate
+                isAffiliate: value.isAffiliate,
+                fee: value.fee.nilIfEmpty,
+                slippageBps: value.hasSlippageBps ? value.slippageBps : nil
             ))
         case .oneinchSwapPayload(let value):
-            // `has*` guards distinguish "legacy sender, context unknown"
-            // (field absent → nil) from a populated value. Empty strings are
-            // normalized to nil so consumers have a single "unknown" shape.
+            // `has*` distinguishes "legacy sender, unknown" from a populated
+            // value; empty normalizes to nil so consumers see one unknown shape.
             let swapFeeTokenId = value.quote.tx.hasSwapFeeTokenID ? value.quote.tx.swapFeeTokenID.nilIfEmpty : nil
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
@@ -279,7 +308,8 @@ extension SwapPayload {
                 provider: SwapProviderId.from(rawValue: value.provider),
                 swapFeeChain: value.quote.tx.hasSwapFeeChain ? value.quote.tx.swapFeeChain.nilIfEmpty : nil,
                 swapFeeTokenId: swapFeeTokenId,
-                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil
+                swapFeeDecimals: value.quote.tx.hasSwapFeeDecimals ? Int(value.quote.tx.swapFeeDecimals) : nil,
+                subProvider: value.subProvider.nilIfEmpty
             ))
         case .kyberswapSwapPayload(let value):
             self = .generic(GenericSwapPayload(
@@ -314,7 +344,11 @@ extension SwapPayload {
                 inboundAddress: value.hasInboundAddress ? value.inboundAddress : nil,
                 memo: value.hasMemo ? value.memo : nil,
                 subProvider: value.subProvider,
-                swapID: value.swapID
+                swapID: value.swapID,
+                swapFee: value.swapFee.nilIfEmpty,
+                swapFeeChain: value.hasSwapFeeChain ? value.swapFeeChain.nilIfEmpty : nil,
+                swapFeeTokenId: value.hasSwapFeeTokenID ? value.swapFeeTokenID.nilIfEmpty : nil,
+                swapFeeDecimals: value.hasSwapFeeDecimals ? Int(value.swapFeeDecimals) : nil
             ))
         }
     }
@@ -327,7 +361,7 @@ extension SwapPayload {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.vaultAddress = payload.vaultAddress
-                $0.routerAddress = payload.routerAddress ?? .empty
+                writeNativeSwapRouterAddress(payload.routerAddress, to: &$0)
                 $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.toAmountLimit = payload.toAmountLimit
@@ -335,6 +369,8 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
+                writeNativeSwapSlippageBps(payload.slippageBps, to: &$0)
             })
         case .mayachain(let payload):
             return .mayachainSwapPayload(.with {
@@ -342,7 +378,7 @@ extension SwapPayload {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.vaultAddress = payload.vaultAddress
-                $0.routerAddress = payload.routerAddress ?? .empty
+                writeNativeSwapRouterAddress(payload.routerAddress, to: &$0)
                 $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.toAmountLimit = payload.toAmountLimit
@@ -350,6 +386,8 @@ extension SwapPayload {
                 $0.streamingQuantity = payload.streamingQuantity
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
+                writeNativeSwapFee(payload.fee, to: &$0)
+                writeNativeSwapSlippageBps(payload.slippageBps, to: &$0)
             })
         case .generic(let payload):
             return .oneinchSwapPayload(.with {
@@ -386,6 +424,9 @@ extension SwapPayload {
                     }
                 }
                 $0.provider = payload.provider.rawValue
+                if let subProvider = payload.subProvider?.nilIfEmpty {
+                    $0.subProvider = subProvider
+                }
             })
         case .swapkit(let payload):
             return .swapkitSwapPayload(.with {
@@ -404,6 +445,22 @@ extension SwapPayload {
                 }
                 $0.subProvider = payload.subProvider
                 $0.swapID = payload.swapID
+                // No `!= "0"` guard: a stated zero is a claim the sender made and
+                // must survive a relay, the same way the native `fee` does.
+                if let swapFee = payload.swapFee?.nilIfEmpty {
+                    $0.swapFee = swapFee
+                    // Never set from nils: a present-but-empty chain or token id
+                    // breaks a receiver's coin lookup.
+                    if let swapFeeChain = payload.swapFeeChain?.nilIfEmpty {
+                        $0.swapFeeChain = swapFeeChain
+                    }
+                    if let swapFeeTokenId = payload.swapFeeTokenId?.nilIfEmpty {
+                        $0.swapFeeTokenID = swapFeeTokenId
+                    }
+                    if let swapFeeDecimals = payload.swapFeeDecimals {
+                        $0.swapFeeDecimals = Int32(swapFeeDecimals)
+                    }
+                }
             })
         }
     }

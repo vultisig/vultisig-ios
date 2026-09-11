@@ -162,6 +162,7 @@
 "broadcastRetryStaleBlockhash" = "트랜잭션이 만료되었습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleNonce" = "트랜잭션 nonce가 오래되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
 "broadcastRetryStaleQuote" = "견적이 만료되었습니다 — 세부 정보가 새로 고쳐졌습니다. 다시 시도해 주세요.";
+"burnAddressError" = "이것은 소각 주소입니다. 이 주소로 보낸 자금은 복구할 수 없습니다.";
 "buy" = "구매";
 "buyVultBannerSubtitle" = "스왑 수수료 절약";
 "buyVultBannerTitle" = "$VULT 구매";
@@ -1057,6 +1058,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "설정 열기";
 "openSystemSettings" = "시스템 설정 열기";
+"operatorFeeRangeError" = "운영자 수수료는 0에서 10000 기준점 사이여야 합니다";
 "operatorFeesError" = "공급자가 입력된 경우 운영자 수수료는 비워둘 수 없습니다";
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
@@ -1533,8 +1535,11 @@
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
 "swapAppliedDiscounts" = "적용된 할인:";
+"swapErrorAddressScreeningTitle" = "주소 확인 실패";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";
 "swapErrorAmountTooSmallTitle" = "금액이 너무 작음";
+"swapErrorApprovalRequiredTitle" = "승인 필요";
+"swapErrorAssetBlockedTitle" = "자산 차단됨";
 "swapErrorInboundAddressDescription" = "인바운드 주소가 유효하지 않습니다. 다시 시도하세요.";
 "swapErrorInboundAddressTitle" = "유효하지 않은 주소";
 "swapErrorInsufficientFundsDescription" = "스왑을 실행하기에 자금이 부족합니다. 지갑에 자금을 추가하세요.";
@@ -1542,11 +1547,14 @@
 "swapErrorInsufficientGasDescription" = "네트워크 수수료를 충당할 가스 토큰이 부족합니다. 지갑에 가스를 추가하세요.";
 "swapErrorInsufficientGasTitle" = "가스 부족";
 "swapErrorInvalidDestinationTitle" = "유효하지 않은 대상";
+"swapErrorInvalidSourceTitle" = "유효하지 않은 발신 주소";
 "swapErrorNoLiquidityPoolTitle" = "유동성 풀 없음";
 "swapErrorProviderRejectedDescription" = "스왑 제공자가 이 거래의 견적을 제공하지 못했습니다. 다시 시도하거나 다른 쌍을 선택하세요.";
 "swapErrorProviderRejectedTitle" = "스왑 불가";
+"swapErrorQuoteExpiredTitle" = "견적 만료됨";
 "swapErrorRecipientRouteTitle" = "수신자 경로 없음";
 "swapErrorRecipientVerificationTitle" = "수신자 확인 실패";
+"swapErrorRouteExpiredTitle" = "경로 만료됨";
 "swapErrorRouteUnavailableTitle" = "사용 가능한 경로 없음";
 "swapErrorSameAssetDescription" = "동일한 자산으로 스왑할 수 없습니다. 다른 자산을 선택하세요.";
 "swapErrorSameAssetTitle" = "동일한 자산";
@@ -1584,6 +1592,8 @@
 "swapReferralDiscount" = "추천: %@";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
+"swapRouteResetToAuto" = "경로가 자동으로 재설정되었습니다";
+"swapRouteUnavailableResetToAuto" = "경로를 사용할 수 없어 자동으로 재설정되었습니다";
 "swaps" = "스왑";
 "swapSecuredAssetBadge" = "보안";
 "swapSecuredAssetInvalidDestination" = "보안 자산 스왑 대상이 유효한 %1$@ 주소가 아닙니다 (%2$@).";

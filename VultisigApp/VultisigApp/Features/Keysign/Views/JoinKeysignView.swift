@@ -217,7 +217,7 @@ struct JoinKeysignView: View {
     }
 
     var discoveringSignMessage: some View {
-        Loader()
+        CircularProgressIndicator(size: 24)
             .onLoad {
                 viewModel.startScan()
             }

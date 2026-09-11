@@ -162,6 +162,7 @@
 "broadcastRetryStaleBlockhash" = "Transacción expirada. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleNonce" = "Nonce de transacción desactualizado — detalles actualizados. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleQuote" = "Cotización expirada — detalles actualizados. Por favor, inténtalo de nuevo.";
+"burnAddressError" = "Esta es una dirección de quema. Los fondos enviados aquí no se pueden recuperar.";
 "buy" = "Comprar";
 "buyVultBannerSubtitle" = "Y ahorra en comisiones de swap";
 "buyVultBannerTitle" = "Comprar $VULT";
@@ -1057,6 +1058,7 @@
 "OnboardingCard6Text4" = "";
 "openSettings" = "Abrir Configuración";
 "openSystemSettings" = "Abrir Configuración del Sistema";
+"operatorFeeRangeError" = "La tarifa del operador debe estar entre 0 y 10000 puntos base";
 "operatorFeesError" = "La tarifa del operador no puede estar vacía si el proveedor está lleno";
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
 "optional" = "(opcional)";
@@ -1533,8 +1535,11 @@
 "swapAmountTooSmall" = "Cantidad de intercambio demasiado pequeña";
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
 "swapAppliedDiscounts" = "Descuentos aplicados:";
+"swapErrorAddressScreeningTitle" = "Verificación de Dirección Fallida";
 "swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";
 "swapErrorAmountTooSmallTitle" = "Cantidad Muy Pequeña";
+"swapErrorApprovalRequiredTitle" = "Aprobación Requerida";
+"swapErrorAssetBlockedTitle" = "Activo Bloqueado";
 "swapErrorInboundAddressDescription" = "La dirección de entrada es inválida. Por favor, inténtalo de nuevo.";
 "swapErrorInboundAddressTitle" = "Dirección Inválida";
 "swapErrorInsufficientFundsDescription" = "Fondos insuficientes para ejecutar el intercambio. Por favor, recarga tu billetera.";
@@ -1542,11 +1547,14 @@
 "swapErrorInsufficientGasDescription" = "Token de gas insuficiente para cubrir la tarifa de red. Por favor, agrega gas a tu billetera.";
 "swapErrorInsufficientGasTitle" = "Gas Insuficiente";
 "swapErrorInvalidDestinationTitle" = "Destino Inválido";
+"swapErrorInvalidSourceTitle" = "Origen Inválido";
 "swapErrorNoLiquidityPoolTitle" = "Sin Pool de Liquidez";
 "swapErrorProviderRejectedDescription" = "El proveedor de intercambio no pudo cotizar esta operación. Inténtalo de nuevo o elige otro par.";
 "swapErrorProviderRejectedTitle" = "Intercambio No Disponible";
+"swapErrorQuoteExpiredTitle" = "Cotización Expirada";
 "swapErrorRecipientRouteTitle" = "Sin Ruta al Destinatario";
 "swapErrorRecipientVerificationTitle" = "Verificación de Destinatario Fallida";
+"swapErrorRouteExpiredTitle" = "Ruta Expirada";
 "swapErrorRouteUnavailableTitle" = "Sin Ruta Disponible";
 "swapErrorSameAssetDescription" = "No se puede intercambiar por el mismo activo. Por favor, selecciona un activo diferente.";
 "swapErrorSameAssetTitle" = "Mismo Activo";
@@ -1584,6 +1592,8 @@
 "swapReferralDiscount" = "Referido: %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
+"swapRouteResetToAuto" = "Ruta restablecida a Auto";
+"swapRouteUnavailableResetToAuto" = "Ruta no disponible: restablecida a Auto";
 "swaps" = "Intercambios";
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "El destino del swap de activo asegurado no es una dirección %1$@ válida (%2$@).";

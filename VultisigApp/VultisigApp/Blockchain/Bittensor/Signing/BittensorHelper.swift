@@ -128,80 +128,42 @@ enum BittensorHelper {
 
     // MARK: - SS58 Address Encoding/Decoding
 
-    /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519)
+    /// Decode an SS58 address to its raw public key bytes (32 bytes for ed25519),
+    /// requiring an exact prefix + checksum match. This is the single decode
+    /// both the form (`isValidAddress`) and the sign path (`buildCallData`)
+    /// use, so they can never accept different addresses.
     static func ss58Decode(_ address: String) -> Data? {
-        guard let decoded = Base58.decodeNoCheck(string: address) else {
-            return nil
-        }
-
-        // Simple prefix (1 byte) + 32 byte key + 2 byte checksum = 35 bytes
-        // Full prefix (2 bytes) + 32 byte key + 2 byte checksum = 36 bytes
-        if decoded.count == 35 {
-            // Single byte prefix
-            return Data(decoded[1..<33])
-        } else if decoded.count == 36 {
-            // Two byte prefix
-            return Data(decoded[2..<34])
-        }
-        return nil
+        AnyAddress(string: address, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix))?.data
     }
 
-    /// Encode raw public key bytes to SS58 address with given prefix
-    static func ss58Encode(publicKey: Data, prefix: UInt16) -> String {
-        let ss58Prefix = "SS58PRE".data(using: .utf8)!
-
-        var prefixBytes: Data
-        if prefix < 64 {
-            prefixBytes = Data([UInt8(prefix)])
-        } else {
-            // Two-byte encoding for prefix >= 64
-            let first = UInt8(((prefix & 0xFC) >> 2) | 0x40)
-            let second = UInt8((prefix >> 8) | ((prefix & 0x03) << 6))
-            prefixBytes = Data([first, second])
+    /// Encode raw public key bytes to a Bittensor SS58 (prefix 42) address.
+    static func ss58Encode(publicKey: Data) -> String {
+        guard let key = PublicKey(data: publicKey, type: .ed25519) else {
+            return ""
         }
-
-        let payload = prefixBytes + publicKey
-        let checksumInput = ss58Prefix + payload
-        let hash = Hash.blake2b(data: checksumInput, size: 64)
-        let checksum = hash.prefix(2)
-
-        return Base58.encodeNoCheck(data: payload + checksum)
+        return AnyAddress(publicKey: key, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix)).description
     }
 
-    /// Validate a Bittensor SS58 address (prefix 42)
+    /// Validate a Bittensor SS58 address (prefix 42). Thin wrapper over
+    /// `ss58Decode` so the form can never accept an address the sign path
+    /// would reject, or vice versa.
     static func isValidAddress(_ address: String) -> Bool {
-        guard let decoded = Base58.decodeNoCheck(string: address) else {
-            return false
-        }
+        AnyAddress.isValidSS58(string: address, coin: .polkadot, ss58Prefix: UInt32(ss58Prefix))
+    }
 
-        // Check minimum length: prefix(1-2) + pubkey(32) + checksum(2) = 35 or 36
-        guard decoded.count >= 35 else { return false }
+    /// The Substrate burn/zero AccountId (32 zero bytes) — SS58-42-encodes to
+    /// `5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM`, a syntactically
+    /// valid Bittensor address with no known private key, so anything sent
+    /// there is unspendable.
+    private static let burnAccountId = Data(repeating: 0, count: 32)
 
-        let prefixByteCount: Int
-        let decodedPrefix: UInt16
-
-        if decoded[0] < 64 {
-            prefixByteCount = 1
-            decodedPrefix = UInt16(decoded[0])
-        } else {
-            guard decoded.count >= 36 else { return false }
-            prefixByteCount = 2
-            let first = decoded[0]
-            let second = decoded[1]
-            decodedPrefix = UInt16((first & 0x3F) << 2) | UInt16(second >> 6) | (UInt16(second & 0x3F) << 8)
-        }
-
-        guard decodedPrefix == ss58Prefix else { return false }
-
-        let pubkey = Data(decoded[prefixByteCount..<(prefixByteCount + 32)])
-        let checksum = Data(decoded[(prefixByteCount + 32)..<(prefixByteCount + 34)])
-
-        // Verify checksum
-        let ss58PrefixData = "SS58PRE".data(using: .utf8)!
-        let payload = Data(decoded[0..<(prefixByteCount + 32)])
-        let hash = Hash.blake2b(data: ss58PrefixData + payload, size: 64)
-
-        return hash.prefix(2) == checksum && pubkey.count == 32
+    /// True when `address` SS58-decodes to the burn AccountId. The
+    /// byte-level `assertNotBurnAccount` guard in `buildCallData` is the
+    /// one that does not depend on how strict `ss58Decode` is — this
+    /// string-level check is only ever reached from the form, after
+    /// `isValidAddress` has already required a well-formed address.
+    static func isBurnAddress(_ address: String) -> Bool {
+        ss58Decode(address) == burnAccountId
     }
 
     // MARK: - Account Storage Parsing
@@ -348,6 +310,7 @@ enum BittensorHelper {
         guard let destPubkey = ss58Decode(keysignPayload.toAddress) else {
             throw HelperError.runtimeError("Invalid Bittensor destination address")
         }
+        try assertNotBurnAccount(destPubkey)
 
         var data = Data()
         data.append(moduleIndex) // Balances pallet
@@ -357,6 +320,16 @@ enum BittensorHelper {
         data.append(compactEncode(keysignPayload.toAmount)) // compact encoded amount
 
         return data
+    }
+
+    /// Fail-closed guard so a keysign payload never builds a call to the burn
+    /// AccountId even if it bypassed this device's send-form validation — a
+    /// co-signer that only sees the payload at keysign time still routes
+    /// through here before anything gets signed.
+    private static func assertNotBurnAccount(_ pubkey: Data) throws {
+        guard pubkey != burnAccountId else {
+            throw HelperError.runtimeError("Bittensor destination is the burn/zero account")
+        }
     }
 
     /// Build signed extra: mortal_era(2B) ++ compact(nonce) ++ compact(tip=0) ++ 0x00(CheckMetadataHash:Disabled)

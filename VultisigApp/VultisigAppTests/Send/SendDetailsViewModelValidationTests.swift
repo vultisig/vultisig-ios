@@ -209,6 +209,57 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(vm.showAmountAlert)
     }
 
+    // MARK: - Amount format
+
+    func testValidateAmountFormatRejectsScientificNotation() {
+        for candidate in ["1e5", "1E5", "2.5e3", "1e-3", "0x1F"] {
+            let vm = SendFormFixture.make()
+            vm.amount = candidate
+            XCTAssertFalse(vm.validateAmountFormat(), "\(candidate) must be rejected")
+            XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+            XCTAssertTrue(vm.showAmountAlert)
+        }
+    }
+
+    func testValidateAmountFormatAcceptsPlainDecimal() {
+        let vm = SendFormFixture.make()
+        vm.amount = "0.5"
+        XCTAssertTrue(vm.validateAmountFormat())
+        XCTAssertFalse(vm.showAmountAlert)
+    }
+
+    /// `1e5` is non-zero once expanded, so only the format rule stops it.
+    func testValidateFormRejectsScientificNotationAmount() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "decimalAmountError")
+        XCTAssertTrue(vm.showAmountAlert)
+    }
+
+    func testValidateFormEmptyAmountStillReportsPositiveAmountError() async {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = ""
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "positiveAmountError")
+    }
+
+    func testMakeTransactionRejectsScientificNotationAmount() {
+        let vm = SendFormFixture.make()
+        vm.toAddress = "addr"
+        vm.amount = "1e5"
+
+        XCTAssertThrowsError(try vm.makeTransaction())
+    }
+
     func testValidateAddressFormatRejectsEmpty() {
         let vm = SendFormFixture.make()
         vm.toAddress = ""
@@ -336,6 +387,72 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertFalse(isValid)
         XCTAssertEqual(vm.errorMessage, "sameAddressError")
         XCTAssertTrue(vm.showAddressAlert)
+    }
+
+    // MARK: - Bittensor self-send guard (validateNotSelfSend)
+
+    func testValidateNotSelfSendFailsForBittensorSameAddress() {
+        let tao = SendFormFixture.makeTAO()
+        let vm = SendFormFixture.make(coin: tao)
+        vm.toAddress = tao.address
+
+        XCTAssertFalse(vm.validateNotSelfSend())
+        XCTAssertEqual(vm.errorMessage, "sameAddressError")
+    }
+
+    func testValidateNotSelfSendPassesForBittensorDifferentAddress() {
+        let tao = SendFormFixture.makeTAO()
+        let vm = SendFormFixture.make(coin: tao)
+        vm.toAddress = "5DtJMgqtYZg6NyCM1KDkmgZ6nW7pKgL1fneDHQtwPjBrQuXG"
+
+        XCTAssertTrue(vm.validateNotSelfSend())
+    }
+
+    // MARK: - Bittensor burn/zero-account guard (validateBurnDestination)
+
+    /// SS58-42 encoding of the all-zero AccountId — a syntactically valid,
+    /// checksum-passing Bittensor address with no known private key.
+    private let bittensorBurnAddress = "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM"
+
+    func testValidateBurnDestinationFailsForBurnAddress() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeTAO())
+        vm.toAddress = bittensorBurnAddress
+
+        XCTAssertFalse(vm.validateBurnDestination())
+        XCTAssertEqual(vm.errorMessage, "burnAddressError")
+        XCTAssertTrue(vm.showAddressAlert)
+    }
+
+    func testValidateBurnDestinationPassesForNormalBittensorAddress() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeTAO())
+        vm.toAddress = "5DtJMgqtYZg6NyCM1KDkmgZ6nW7pKgL1fneDHQtwPjBrQuXG"
+
+        XCTAssertTrue(vm.validateBurnDestination())
+    }
+
+    func testValidateBurnDestinationPassesForNonBittensorChainEvenWithBurnAddress() {
+        // Guard is Bittensor-scoped — the same 32-zero-byte pattern encoded
+        // under a different chain's address scheme is not this guard's concern.
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = bittensorBurnAddress
+
+        XCTAssertTrue(vm.validateBurnDestination())
+    }
+
+    /// End-to-end: a TAO send to the burn address is rejected by
+    /// `validateForm()` with `burnAddressError`. A passthrough address
+    /// resolver isolates the burn-destination guard from `AddressService`'s
+    /// resolution behavior in unit tests.
+    func testValidateFormBlocksBittensorBurnDestination() async {
+        let tao = SendFormFixture.makeTAO()
+        let vm = SendFormFixture.make(coin: tao, addressResolver: { input, _ in input })
+        vm.toAddress = bittensorBurnAddress
+        vm.amount = "1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "burnAddressError")
     }
 
     func testValidateFormStopsAtFirstFailure() async {

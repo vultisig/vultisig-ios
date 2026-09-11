@@ -22,7 +22,7 @@ struct ReferredCodeFormScreen: View {
             }
         }
         .screenTitle(referredViewModel.title.localized)
-        .overlay(referredViewModel.isLoading ? loader : nil)
+        .withLoading(isLoading: $referredViewModel.isLoading)
         .onAppear {
             setData()
         }
@@ -69,10 +69,6 @@ struct ReferredCodeFormScreen: View {
             }
 
         }
-    }
-
-    var loader: some View {
-        Loader()
     }
 
     private func setData() {

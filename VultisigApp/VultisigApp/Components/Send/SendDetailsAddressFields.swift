@@ -79,10 +79,6 @@ struct SendDetailsAddressFields: View {
             viewModel.convertToFiat(newValue: amount)
         }
 
-        if let memo = addressResult.memo, memo.isNotEmpty {
-            viewModel.memo = memo
-        }
-
         // Attempt to detect and switch chain if address belongs to different chain
         if !viewModel.toAddress.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(
@@ -103,6 +99,15 @@ struct SendDetailsAddressFields: View {
                 // resolve is flagged now, so Next is disabled *with a reason*.
                 viewModel.markInvalidRecipientIfUnresolvable()
             }
+        }
+
+        // A scanned/pasted URI can carry a memo query param for a coin whose
+        // signer never encodes one. Checked after the chain-switch above so
+        // this reflects the coin actually selected once detection settles —
+        // checking before it would drop a legitimate memo when switching
+        // into a memo-supporting chain, or leak one when switching out of one.
+        if let memo = addressResult.memo, memo.isNotEmpty, viewModel.coin.supportsMemo {
+            viewModel.memo = memo
         }
     }
 }

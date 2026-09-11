@@ -60,9 +60,11 @@ struct KeysignMessageFactory {
                 // Dispatch on SwapKit's `meta.txType`. For chains where the
                 // SwapKit wire shape is a plain native send (TON transfer,
                 // ADA deposit), we fall through to the per-chain helper at
-                // the bottom of this method — `keysignPayload.toAddress` /
-                // `toAmount` have already been set to SwapKit's deposit
-                // address + amount by `SwapPayloadBuilder`. PSBT (BTC), SUI
+                // the bottom of this method — `SwapPayloadBuilder` has already
+                // pointed `keysignPayload.toAddress` at SwapKit's deposit
+                // address. `toAmount` is the amount the user is spending, NOT a
+                // SwapKit-stated one: a TON route's `tx[0].amount` rides along
+                // in `txPayload` for the peer but is never read. PSBT (BTC), SUI
                 // (pre-built PTB), and TRON (pre-built raw_data_hex) need
                 // SwapKit-specific signers since their pre-built bytes drive
                 // the signing input directly.
@@ -87,8 +89,9 @@ struct KeysignMessageFactory {
                     messages += try SwapKitCardanoSigner.preSigningHashes(payload: swapKitPayload)
                 case "TON", "CARDANO", "XRP":
                     // Fall through to the existing per-chain helper below
-                    // (deposit-only flows: the SwapKit builder already
-                    // pointed `toAddress` / `toAmount` at the deposit).
+                    // (deposit-only flows: the SwapKit builder already pointed
+                    // `toAddress` at the deposit; `toAmount` is the user's own
+                    // send amount).
                     // XRP: builder also stringified the destination tag
                     // into `keysignPayload.memo` — `RippleHelper` parses
                     // numeric memos and attaches `destinationTag` on the

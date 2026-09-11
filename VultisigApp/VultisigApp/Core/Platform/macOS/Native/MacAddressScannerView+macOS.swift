@@ -18,7 +18,7 @@ struct AddressResult {
         self.amount = amount
     }
 
-    static func fromURI(_ uri: String) -> AddressResult {
+    static func fromURI(_ uri: String, locale: Locale = .current) -> AddressResult {
         guard URLComponents(string: uri) != nil else {
             // Validate up
             return .init(address: uri)
@@ -26,7 +26,12 @@ struct AddressResult {
 
         let (address, amount, message) = Utils.parseCryptoURI(uri)
 
-        return AddressResult(address: address, memo: message, amount: amount)
+        // Untrusted, and dot-decimal like a deeplink: same fixed-semantics read.
+        return AddressResult(
+            address: address,
+            memo: message,
+            amount: amount.externalAmount(locale: locale)
+        )
     }
 }
 

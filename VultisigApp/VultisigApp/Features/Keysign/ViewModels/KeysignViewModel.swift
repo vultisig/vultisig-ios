@@ -781,7 +781,8 @@ class KeysignViewModel: ObservableObject {
                 // bytes drive transaction assembly directly. TON + CARDANO
                 // fall through to the per-chain helpers at the bottom of
                 // this method — the SwapKit builder already pointed
-                // `toAddress` / `toAmount` at the deposit address + amount.
+                // `toAddress` at the deposit address; `toAmount` is the
+                // user's own send amount.
                 switch payload.txType {
                 case "PSBT":
                     let tx = try SwapKitBTCSigner.compileSignedTransaction(
@@ -845,9 +846,10 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(tx)
                 case "TON", "CARDANO", "XRP":
                     // Deposit-only flows fall through to the per-chain helper
-                    // at the bottom of this method — the SwapKit builder
-                    // already pointed `toAddress` / `toAmount` (and memo
-                    // for XRP destination tag) at the deposit.
+                    // at the bottom of this method — the SwapKit builder already
+                    // pointed `toAddress` (and memo, for the XRP destination
+                    // tag) at the deposit. `toAmount` is the user's own send
+                    // amount, not a SwapKit-stated one.
                     break
                 case "EVM", "SOLANA":
                     throw SwapKitError.unsupportedTxType(payload.txType)
@@ -1083,7 +1085,10 @@ class KeysignViewModel: ObservableObject {
 
                 case .tron:
 
-                    let broadcastResult = await TronService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    let broadcastResult = await TronService.shared.broadcastTransaction(
+                        jsonString: tx.rawTransaction,
+                        expectedTxHash: tx.transactionHash
+                    )
 
                     switch broadcastResult {
                     case .success(let txHash):

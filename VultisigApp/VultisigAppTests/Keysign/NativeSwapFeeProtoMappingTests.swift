@@ -1,0 +1,641 @@
+//
+//  NativeSwapFeeProtoMappingTests.swift
+//  VultisigAppTests
+//
+//  Native (THORChain / MayaChain) swap fee on `THORChainSwapPayload.fee`:
+//  what reaches the wire, and that a co-signer reading only the payload
+//  lands on the initiator's figure.
+//
+
+import BigInt
+import SwiftData
+import XCTest
+import VultisigCommonData
+@testable import VultisigApp
+
+@MainActor
+final class NativeSwapFeeProtoMappingTests: XCTestCase {
+
+    /// Rate fixtures write through `Storage.shared.modelContext`, which in a
+    /// simulator can be the app's real store unless a container is installed.
+    private var token: TestContextToken!
+
+    override func setUpWithError() throws {
+        token = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() {
+        TestStore.restore(token)
+        token = nil
+    }
+
+    // MARK: - Proto round-trip
+
+    func testThorchainProtoRoundTripCarriesFee() throws {
+        let proto = SwapPayload.thorchain(makeNativePayload(fee: "48000000")).mapToProtobuff()
+        guard case let .thorchainSwapPayload(value) = proto else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+        XCTAssertEqual(value.fee, "48000000")
+
+        guard case let .thorchain(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .thorchain"); return
+        }
+        XCTAssertEqual(decoded.fee, "48000000")
+    }
+
+    func testMayachainProtoRoundTripCarriesFee() throws {
+        let payload = makeNativePayload(fee: "125000000000", toCoin: makeCacao())
+        let proto = SwapPayload.mayachain(payload).mapToProtobuff()
+        guard case let .mayachainSwapPayload(value) = proto else {
+            XCTFail("Expected .mayachainSwapPayload"); return
+        }
+        XCTAssertEqual(value.fee, "125000000000")
+
+        guard case let .mayachain(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .mayachain"); return
+        }
+        XCTAssertEqual(decoded.fee, "125000000000")
+    }
+
+    func testNilFeeStaysOffTheWire() throws {
+        let proto = SwapPayload.thorchain(makeNativePayload(fee: nil)).mapToProtobuff()
+        guard case let .thorchainSwapPayload(value) = proto else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+        XCTAssertTrue(value.fee.isEmpty, "A sender with no quoted fee must leave the field unset")
+
+        guard case let .thorchain(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .thorchain"); return
+        }
+        XCTAssertNil(decoded.fee, "Empty on the wire normalizes back to nil, not \"\"")
+    }
+
+    func testKnownZeroFeeSurvivesSerialization() throws {
+        // A route that charges nothing is a statement, and the initiator renders
+        // it as $0.00. Dropping it here is what left the co-signer with no row.
+        // Asserted through real bytes: checking the in-memory property alone
+        // would still pass if proto3 elided the field on the way out.
+        let zero = try XCTUnwrap(nativeProto(fee: "0")).serializedData()
+        let absent = try XCTUnwrap(nativeProto(fee: nil)).serializedData()
+
+        // Field 13, wire type 2, length 1, ASCII "0".
+        XCTAssertNotNil(
+            zero.range(of: Data([0x6a, 0x01, 0x30])),
+            "A stated zero must occupy field 13 on the wire"
+        )
+        XCTAssertNotEqual(zero, absent, "The two states must not serialize identically")
+
+        // Reparsed rather than byte-matched for the absent case: a lone 0x6a can
+        // legitimately appear as another field's length or payload byte.
+        XCTAssertTrue(
+            try VSTHORChainSwapPayload(serializedBytes: absent).fee.isEmpty,
+            "An absent fee must reparse as unset"
+        )
+        XCTAssertEqual(
+            try VSTHORChainSwapPayload(serializedBytes: zero).fee, "0",
+            "A stated zero must reparse as a zero, not decay to unset"
+        )
+    }
+
+    /// `fee` has implicit presence, so unset and `"0"` are different bytes and must
+    /// stay different UI. A change that rendered everything, or nothing, fails here.
+    func testAbsentAndKnownZeroAreDistinguishableEndToEnd() throws {
+        let model = JoinKeysignSwapFeeViewModel()
+
+        // Through serialized bytes, and all the way to `getSwapFee` — the
+        // accessor the confirm screen actually binds its row to.
+        let absent = try SwapPayload(proto: .thorchainSwapPayload(
+            try VSTHORChainSwapPayload(serializedBytes: try XCTUnwrap(nativeProto(fee: nil)).serializedData())
+        ))
+        let zero = try SwapPayload(proto: .thorchainSwapPayload(
+            try VSTHORChainSwapPayload(serializedBytes: try XCTUnwrap(nativeProto(fee: "0")).serializedData())
+        ))
+
+        XCTAssertNil(
+            model.getSwapFee(swapPayload: absent, vault: nil),
+            "A sender that stated nothing must render no row"
+        )
+        let zeroRow = try XCTUnwrap(
+            model.getSwapFee(swapPayload: zero, vault: nil),
+            "A sender that stated zero must render a row, matching the initiator's $0.00"
+        )
+        XCTAssertTrue(zeroRow.feeCrypto.contains("TRX"))
+        XCTAssertEqual(model.resolveSwapFee(swapPayload: zero, vault: nil)?.amount, 0)
+    }
+
+    func testLegacyWireBytesDecodeToNoFeeAndNoRow() throws {
+        // A sender that predates field 13 serializes fields 1-12 only.
+        var legacy = VSTHORChainSwapPayload()
+        legacy.fromAddress = "bc1qsender"
+        legacy.fromCoin = ProtoCoinResolver.proto(from: makeBTC())
+        legacy.toCoin = ProtoCoinResolver.proto(from: makeTRX())
+        legacy.vaultAddress = "bc1qasgard"
+        legacy.fromAmount = "100000"
+        legacy.toAmountDecimal = "3000"
+        legacy.toAmountLimit = "0"
+        legacy.streamingInterval = "1"
+        legacy.streamingQuantity = "0"
+        legacy.expirationTime = 1_757_000_000
+        legacy.isAffiliate = true
+
+        let bytes = try legacy.serializedData()
+        let reparsed = try VSTHORChainSwapPayload(serializedBytes: bytes)
+        let decoded = try SwapPayload(proto: .thorchainSwapPayload(reparsed))
+
+        guard case let .thorchain(payload) = decoded else {
+            XCTFail("Expected .thorchain"); return
+        }
+        XCTAssertNil(payload.fee)
+        XCTAssertNil(
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: decoded, vault: nil),
+            "Legacy sender → render no row, never a definite $0.00"
+        )
+    }
+
+    func testReEncodingALegacyPayloadLeavesTheFeeUnset() throws {
+        var legacy = VSTHORChainSwapPayload()
+        legacy.fromAddress = "bc1qsender"
+        legacy.fromCoin = ProtoCoinResolver.proto(from: makeBTC())
+        legacy.toCoin = ProtoCoinResolver.proto(from: makeTRX())
+        legacy.vaultAddress = "bc1qasgard"
+        legacy.fromAmount = "100000"
+        legacy.toAmountDecimal = "3000"
+        legacy.toAmountLimit = "0"
+        legacy.streamingInterval = "1"
+        legacy.streamingQuantity = "0"
+        legacy.expirationTime = 1_757_000_000
+        legacy.isAffiliate = true
+
+        let decoded = try SwapPayload(proto: .thorchainSwapPayload(
+            try VSTHORChainSwapPayload(serializedBytes: try legacy.serializedData())
+        ))
+        guard case let .thorchainSwapPayload(reEncoded) = decoded.mapToProtobuff() else {
+            XCTFail("Expected .thorchainSwapPayload"); return
+        }
+
+        XCTAssertTrue(
+            reEncoded.fee.isEmpty,
+            "Relaying a legacy payload must not invent a fee the original sender never stated"
+        )
+    }
+
+    // MARK: - What the builder puts on the wire
+
+    func testNativeSwapPayloadFeeSumsAffiliateAndOutbound() {
+        let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: "60000000")
+        XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "48000000")
+    }
+
+    func testNativeSwapPayloadFeeIgnoresTheQuotesTotal() {
+        // Varying ONLY `total` and pinning the exact result asserts independence;
+        // a `!=` check would also be satisfied by an always-nil implementation.
+        for total in ["60000000", "48000000", "0", "not-a-number"] {
+            let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: total)
+            XCTAssertEqual(
+                SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "48000000",
+                "fees.total = \(total) must not move the carried fee"
+            )
+        }
+    }
+
+    func testNativeSwapPayloadFeeIsZeroWhenNothingIsCharged() {
+        // Same-chain routes (RUNE -> RUJI) have no outbound leg and can round the
+        // affiliate cut to nothing. That is a fee of zero, not an absent fee.
+        let quote = makeThorQuote(affiliate: "0", outbound: "0", total: "0")
+        XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadFee(quote: quote), "0")
+    }
+
+    func testNativeSwapPayloadFeeIsNilForANegativeComponent() {
+        // A negative offsetting a positive sums to zero, which would otherwise
+        // be stated as a confident "this route is free".
+        XCTAssertNil(SwapCryptoLogic.nativeSwapPayloadFee(
+            quote: makeThorQuote(affiliate: "-1", outbound: "1", total: "0")
+        ))
+        XCTAssertNil(SwapCryptoLogic.nativeSwapPayloadFee(
+            quote: makeThorQuote(affiliate: "1", outbound: "-1", total: "0")
+        ))
+    }
+
+    func testNativeSwapPayloadFeeIsNilForAMalformedComponent() {
+        let quote = makeThorQuote(affiliate: "1000000", outbound: "not-a-number", total: "60000000")
+        XCTAssertNil(
+            SwapCryptoLogic.nativeSwapPayloadFee(quote: quote),
+            "A partial sum reads as authoritative; report nothing instead"
+        )
+    }
+
+    func testBuiltThorchainPayloadCarriesTheQuoteFee() {
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeBTC(),
+            toCoin: makeTRX(),
+            fromAmountInCoin: BigInt(100_000),
+            toAmountDecimal: 3000,
+            quote: makeThorQuote(affiliate: "1000000", outbound: "47000000", total: "60000000")
+        )
+        XCTAssertEqual(payload.fee, "48000000")
+    }
+
+    // MARK: - What the co-signer reads back
+
+    func testNativeResolverScalesByThorchainFixedPoint() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000")),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, Decimal(string: "0.48"))
+        XCTAssertEqual(resolved?.coin.ticker, "TRX", "Native fees are denominated in the destination coin")
+    }
+
+    func testNativeResolverScalesMayaDestinationByItsOwnDecimals() {
+        // CACAO is 10-decimal, so MayaChain quotes it at 1e10, not THORChain's 1e8.
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .mayachain(makeNativePayload(fee: "125000000000", toCoin: makeCacao())),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, Decimal(string: "12.5"))
+        XCTAssertEqual(resolved?.coin.ticker, "CACAO")
+    }
+
+    func testNativeResolverYieldsNoRowOnlyForAnAbsentFee() {
+        let model = JoinKeysignSwapFeeViewModel()
+        XCTAssertNil(model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: nil)), vault: nil))
+        XCTAssertNil(model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "")), vault: nil))
+        XCTAssertNil(
+            model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "not-a-number")), vault: nil),
+            "A malformed fee is unstatable, not zero"
+        )
+        XCTAssertNil(
+            model.resolveSwapFee(swapPayload: .thorchain(makeNativePayload(fee: "-1")), vault: nil),
+            "A negative fee from a peer is nonsense, not a discount"
+        )
+    }
+
+    func testNativeResolverRendersAStatedZero() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .thorchain(makeNativePayload(fee: "0")),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, 0)
+        XCTAssertEqual(resolved?.coin.ticker, "TRX")
+    }
+
+    func testChainnetAndStagenetVariantsResolveTheSameFee() {
+        let model = JoinKeysignSwapFeeViewModel()
+        let payload = makeNativePayload(fee: "48000000")
+        XCTAssertEqual(
+            model.resolveSwapFee(swapPayload: .thorchainChainnet(payload), vault: nil)?.amount,
+            Decimal(string: "0.48")
+        )
+        XCTAssertEqual(
+            model.resolveSwapFee(swapPayload: .thorchainStagenet(payload), vault: nil)?.amount,
+            Decimal(string: "0.48")
+        )
+    }
+
+    func testCoSignerSwapFeeFiatMatchesTheInitiatorItemization() throws {
+        let fromCoin = makeBTC()
+        let toCoin = makeTRX()
+        setPrice(0.25, for: toCoin)
+        let quote = makeThorQuote(affiliate: "1000000", outbound: "47000000", total: "60000000")
+        let swapQuote = SwapQuote.thorchain(quote)
+
+        let initiatorFiat = SwapCryptoLogic.affiliateFeeFiat(
+            quote: swapQuote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: fromCoin
+        ) + SwapCryptoLogic.outboundFeeFiat(quote: swapQuote, toCoin: toCoin)
+
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmountInCoin: BigInt(100_000),
+            toAmountDecimal: 3000,
+            quote: quote
+        )
+        // Through the wire, not the in-memory struct: otherwise this still passes
+        // when the proto writer stops writing the field.
+        let decoded = try SwapPayload(proto: SwapPayload.thorchain(payload).mapToProtobuff())
+        let resolved = try XCTUnwrap(
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: decoded, vault: nil)
+        )
+
+        XCTAssertGreaterThan(initiatorFiat, 0, "Seeded rate should make the comparison meaningful")
+        XCTAssertEqual(toCoin.fiat(decimal: resolved.amount), initiatorFiat)
+    }
+
+    // MARK: - Total-fee row on the co-signer's confirm screen
+
+    func testTotalFeeRowSumsNetworkAndSwapFee() throws {
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        let toCoin = makeTRX()
+        setPrice(0.25, for: toCoin)
+
+        let keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000", toCoin: toCoin))
+        )
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = keysignPayload
+
+        // Derived by hand, not from the code under test, so a wrong amount moves
+        // the actual without moving the expectation.
+        //   network: 21_000 gas x 1 gwei = 0.000021 ETH @ $2000 = $0.042
+        //   swap:    0.48 TRX @ $0.25                           = $0.12
+        XCTAssertEqual(
+            JoinKeysignGasViewModel().networkFeeFiat(payload: keysignPayload),
+            Decimal(string: "0.042"),
+            "Network leg must price the transmitted gas through the payload's own coin"
+        )
+        XCTAssertEqual(
+            viewModel.getSwapTotalFee(),
+            Decimal(string: "0.162")?.formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testTotalFeeRowPresentForAStatedZeroSwapFee() {
+        // The RUNE -> RUJI shape: network fee only, but the row must still render
+        // rather than vanish, because the initiator shows a total here.
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            // Destination deliberately unpriced: a zero leg is worth zero at any
+            // price, so it must not need a rate to enter the total.
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertEqual(
+            viewModel.getSwapTotalFee(),
+            Decimal(string: "0.042")?.formatToFiat(includeCurrencySymbol: true),
+            "A zero swap fee contributes zero; the total is the network fee alone"
+        )
+    }
+
+    func testTotalFeeRowHiddenWhenTheSwapFeeCoinHasNoRate() throws {
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        // Destination coin deliberately left unpriced.
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertNotNil(
+            JoinKeysignGasViewModel().networkFeeFiat(payload: try XCTUnwrap(viewModel.keysignPayload)),
+            "Only the swap leg should be unpriced here, or this asserts the wrong branch"
+        )
+        XCTAssertNil(
+            viewModel.getSwapTotalFee(),
+            "An unpriced swap leg must drop the row, not be absorbed into the total as free"
+        )
+    }
+
+    func testTotalFeeRowHiddenWhenTheNetworkFeeCoinHasNoRate() {
+        // Source coin deliberately left unpriced.
+        setPrice(0.25, for: makeTRX())
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: makeUnpricedEthSource(),
+            swapPayload: .thorchain(makeNativePayload(fee: "48000000"))
+        )
+
+        XCTAssertNotNil(
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(
+                swapPayload: viewModel.keysignPayload?.swapPayload, vault: nil
+            ),
+            "Only the network leg should be unpriced here, or this asserts the wrong branch"
+        )
+        XCTAssertNil(
+            viewModel.getSwapTotalFee(),
+            "An unpriced network leg must drop the row for the same reason"
+        )
+    }
+
+    func testTokenRateCannotPriceAnUnpricedNativeNetworkFee() throws {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let nativeCoin = makeUnpricedEthSource()
+        XCTAssertNil(RateProvider.shared.rate(for: nativeCoin))
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin, nativeCoin]
+        let viewModel = JoinKeysignViewModel()
+        viewModel.vault = vault
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        XCTAssertNil(JoinKeysignGasViewModel().networkFeeFiat(payload: try XCTUnwrap(viewModel.keysignPayload), vault: vault))
+        XCTAssertNil(viewModel.getSwapTotalFee(), "A priced token must not make an unpriced gas leg look known")
+    }
+
+    func testTokenSwapNetworkFeeUsesNativeDecimalsAndRate() {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let nativeCoin = makeEthSource()
+        setPrice(2000, for: nativeCoin)
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin, nativeCoin]
+        let payload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+        let viewModel = JoinKeysignViewModel()
+        viewModel.vault = vault
+        viewModel.keysignPayload = payload
+
+        // 21,000 gas at 1 gwei = 0.000021 ETH; at $2,000/ETH this is $0.042.
+        XCTAssertEqual(JoinKeysignGasViewModel().networkFeeFiat(payload: payload, vault: vault), Decimal(string: "0.042"))
+        XCTAssertEqual(viewModel.getSwapTotalFee(), Decimal(string: "0.042")?.formatToFiat(includeCurrencySymbol: true))
+    }
+
+    func testTokenSwapWithoutVaultNativeUsesCatalogNativeRate() throws {
+        let tokenCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(1, for: tokenCoin)
+        let vault = TestStore.makeVault()
+        vault.coins = [tokenCoin]
+        XCTAssertNil(vault.nativeCoin(for: .ethereum))
+        let native = try XCTUnwrap(TokensStore.TokenSelectionAssets.first { $0.chain == .ethereum && $0.isNativeToken })
+        let payload = makeKeysignPayload(
+            coin: tokenCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: "0", toCoin: makeUnpricedTRX()))
+        )
+
+        // Do not seed a shared catalog rate: another test may have loaded it.
+        // Either cache state must value 0.000021 ETH, never 21 million USDC.
+        let expected = RateProvider.shared.rate(for: native).map { Decimal(21) / 1_000_000 * Decimal($0.value) }
+        XCTAssertEqual(JoinKeysignGasViewModel().networkFeeFiat(payload: payload, vault: vault), expected)
+    }
+
+    func testTotalFeeRowHiddenWhenTheSenderCarriedNoFee() {
+        let sourceCoin = makeEthSource()
+        setPrice(2000, for: sourceCoin)
+        setPrice(0.25, for: makeTRX())
+
+        let viewModel = JoinKeysignViewModel()
+        viewModel.keysignPayload = makeKeysignPayload(
+            coin: sourceCoin,
+            swapPayload: .thorchain(makeNativePayload(fee: nil))
+        )
+
+        XCTAssertNil(
+            viewModel.getSwapTotalFee(),
+            "A legacy payload is indistinguishable from a free route; a network-fee-only total is the bug"
+        )
+    }
+
+    // MARK: - Fixtures
+
+    /// The generated proto for a native payload, for tests that need real bytes.
+    private func nativeProto(fee: String?) -> VSTHORChainSwapPayload? {
+        guard case let .thorchainSwapPayload(value) =
+            SwapPayload.thorchain(makeNativePayload(fee: fee)).mapToProtobuff() else { return nil }
+        return value
+    }
+
+    private func makeNativePayload(fee: String?, toCoin: Coin? = nil) -> THORChainSwapPayload {
+        THORChainSwapPayload(
+            fromAddress: "bc1qsender",
+            fromCoin: makeBTC(),
+            toCoin: toCoin ?? makeTRX(),
+            vaultAddress: "bc1qasgard",
+            routerAddress: nil,
+            fromAmount: BigInt(100_000),
+            toAmountDecimal: 3000,
+            toAmountLimit: "0",
+            streamingInterval: "1",
+            streamingQuantity: "0",
+            expirationTime: 1_757_000_000,
+            isAffiliate: true,
+            fee: fee
+        )
+    }
+
+    private func makeKeysignPayload(coin: Coin, swapPayload: SwapPayload) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: "0xasgard",
+            toAmount: BigInt("1000000000000000000"),
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: BigInt(1_000_000_000),
+                priorityFeeWei: 0,
+                nonce: 0,
+                gasLimit: BigInt(21_000)
+            ),
+            utxos: [],
+            memo: "=:TRX.TRX:addr",
+            swapPayload: swapPayload,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+    }
+
+    private func makeThorQuote(affiliate: String, outbound: String, total: String) -> ThorchainSwapQuote {
+        ThorchainSwapQuote(
+            dustThreshold: nil,
+            expectedAmountOut: "300000000000",
+            expiry: 1_757_000_000,
+            fees: Fees(
+                affiliate: affiliate,
+                asset: "TRX.TRX",
+                outbound: outbound,
+                total: total,
+                liquidity: nil,
+                slippageBps: nil,
+                totalBps: nil
+            ),
+            inboundAddress: "bc1qasgard",
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
+            memo: "=:TRX.TRX:addr:0/1/0",
+            notes: "",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
+            slippageBps: nil,
+            totalSwapSeconds: nil,
+            warning: "",
+            router: nil,
+            maxStreamingQuantity: nil
+        )
+    }
+
+    private func makeBTC() -> Coin {
+        makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+    }
+
+    private func makeTRX() -> Coin {
+        makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true)
+    }
+
+    private func makeCacao() -> Coin {
+        makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
+    }
+
+    private func makeEthSource() -> Coin {
+        makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+    }
+
+    /// Under an id nothing seeds, so the fail-closed branches see a real absence.
+    private func makeUnpricedTRX() -> Coin {
+        makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true, priceScope: "unpriced")
+    }
+
+    private func makeUnpricedEthSource() -> Coin {
+        makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, priceScope: "unpriced")
+    }
+
+    /// `RateProvider` is a process-wide singleton keyed by `priceProviderId`, so
+    /// a generic id ("eth", "trx") would make this class and others order-dependent.
+    private func makeCoin(
+        _ chain: Chain,
+        ticker: String,
+        decimals: Int,
+        isNative: Bool,
+        contract: String = "",
+        priceScope: String = "5340"
+    ) -> Coin {
+        let asset = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: "logo",
+            decimals: decimals,
+            priceProviderId: "native-swap-fee-\(priceScope)-\(ticker.lowercased())",
+            contractAddress: contract,
+            isNativeToken: isNative
+        )
+        return Coin(asset: asset, address: "native-swap-fee-\(ticker)", hexPublicKey: "")
+    }
+
+    private func setPrice(
+        _ value: Double,
+        for coin: Coin,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let cryptoId = RateProvider.cryptoId(for: coin.toCoinMeta()).id
+        // In-memory rates update before the storage write, so assert what the
+        // tests depend on — that the rate reads back — not that the save landed.
+        try? RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: value)
+        ])
+        XCTAssertNotNil(
+            RateProvider.shared.rate(for: coin),
+            "Seeded rate for \(coin.ticker) must be readable",
+            file: file,
+            line: line
+        )
+    }
+}

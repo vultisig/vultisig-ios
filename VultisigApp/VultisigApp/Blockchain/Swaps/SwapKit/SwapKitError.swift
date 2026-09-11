@@ -27,9 +27,9 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     /// `/v3/providers` snapshot shows at least one non-filtered provider
     /// enables both source and destination chains — meaning the pair is
     /// structurally supported, so the 404 must be amount-related rather
-    /// than a pair-coverage gap. The view layer normalizes this to
-    /// `SwapCryptoLogic.Errors.swapAmountTooSmall` so users see the same
-    /// "Amount Too Small" tooltip the THORChain path already produces.
+    /// than a pair-coverage gap. It presents under the same "Amount Too Small"
+    /// title and body as `SwapCryptoLogic.Errors.swapAmountTooSmall`, so users
+    /// see the tooltip the THORChain path already produces.
     case amountBelowProviderMinimum
     case blackListAsset
     case invalidSourceAddress
@@ -37,6 +37,14 @@ enum SwapKitError: Error, LocalizedError, Equatable {
     case isSanctionedAddress
     case addressScreeningFailed
     case unsupportedTxType(String)
+    /// The `/v3/swap` response disagrees with itself about where the deposit
+    /// goes, or states a transfer array the builder cannot honour. `detail` is
+    /// diagnostic only — see `errorDescription` for why the user copy is shared
+    /// with `unableToBuildTransaction`.
+    case contradictoryResponse(detail: String)
+    /// The `/v3/swap` response does not echo the swap that was requested — a
+    /// different route, source, or destination than the one asked for.
+    case responseEchoMismatch(detail: String)
     case providerNotEnabled
     case routeFiltered
     case malformedAmount(String)
@@ -81,6 +89,17 @@ enum SwapKitError: Error, LocalizedError, Equatable {
         }
     }
 
+    /// Names the divergent field and both values. Logged at rejection, never shown: both
+    /// cases share the `unableToBuildTransaction` copy.
+    var refusalDetail: String? {
+        switch self {
+        case .contradictoryResponse(let detail), .responseEchoMismatch(let detail):
+            return detail
+        default:
+            return nil
+        }
+    }
+
     static func from(httpData: Data?) -> SwapKitError? {
         guard let httpData,
               let envelope = try? JSONDecoder().decode(SwapKitErrorEnvelope.self, from: httpData)
@@ -110,11 +129,9 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorNoRoutesFound".localized
         case .amountBelowProviderMinimum:
             // Reuse the existing THORChain "amount too small" copy rather than
-            // introducing a SwapKit-specific key — the user-facing meaning is
-            // identical and the view layer normalizes this case to
-            // `SwapCryptoLogic.Errors.swapAmountTooSmall` anyway. This
-            // `errorDescription` is only the fallback used if a caller logs
-            // the localized message without going through the tooltip view.
+            // introducing a SwapKit-specific key: the user-facing meaning is
+            // identical to `SwapCryptoLogic.Errors.swapAmountTooSmall`, whose
+            // title this case borrows too.
             return "swapErrorAmountTooSmallDescription".localized
         case .blackListAsset:
             return "swapKitErrorBlackListAsset".localized
@@ -126,6 +143,10 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return "swapKitErrorAddressScreening".localized
         case .unsupportedTxType(let txType):
             return String(format: "swapKitErrorUnsupportedTxType".localized, txType)
+        case .contradictoryResponse, .responseEchoMismatch:
+            // Same user-facing meaning as `unableToBuildTransaction`: this route is
+            // unusable, try another provider. See `refusalDetail` for the diagnostic.
+            return "swapKitErrorUnableToBuildTransaction".localized
         case .providerNotEnabled:
             return "swapKitErrorProviderNotEnabled".localized
         case .routeFiltered:
@@ -134,6 +155,61 @@ enum SwapKitError: Error, LocalizedError, Equatable {
             return String(format: "swapKitErrorMalformedAmount".localized, raw)
         case .generic(let message):
             return message
+        }
+    }
+}
+
+// MARK: - Tooltip presentation
+
+extension SwapKitError: SwapErrorPresentable {
+    /// Every case gets a domain title. A case reaching the tooltip under the
+    /// generic heading means the app named the failure precisely in the body and
+    /// then said "Unexpected Error" above it.
+    var errorTitle: String {
+        switch self {
+        case .apiKeyMissing, .apiKeyInvalid, .providerNotEnabled:
+            // Nothing about the trade is wrong — SwapKit itself is unusable here.
+            return "swapErrorProviderRejectedTitle".localized
+        case .insufficientBalance:
+            return "swapErrorInsufficientFundsTitle".localized
+        case .insufficientAllowance:
+            return "swapErrorApprovalRequiredTitle".localized
+        case .unableToBuildTransaction, .noRoutesFound, .routeFiltered,
+             .unsupportedTxType, .contradictoryResponse, .responseEchoMismatch,
+             .malformedAmount, .generic:
+            return "swapErrorRouteUnavailableTitle".localized
+        case .swapRouteNotFound:
+            return "swapErrorRouteExpiredTitle".localized
+        case .outputAmountDeviationTooHigh:
+            return "swapErrorQuoteExpiredTitle".localized
+        case .amountBelowProviderMinimum:
+            // Same verdict and same body as `SwapCryptoLogic.Errors.swapAmountTooSmall`,
+            // which this case used to be normalized into for the tooltip.
+            return "swapErrorAmountTooSmallTitle".localized
+        case .blackListAsset:
+            return "swapErrorAssetBlockedTitle".localized
+        case .invalidSourceAddress:
+            return "swapErrorInvalidSourceTitle".localized
+        case .invalidDestinationAddress:
+            return "swapErrorInvalidDestinationTitle".localized
+        case .isSanctionedAddress, .addressScreeningFailed:
+            return "swapErrorAddressScreeningTitle".localized
+        }
+    }
+
+    var errorMessage: String {
+        switch self {
+        case .unsupportedTxType, .contradictoryResponse, .responseEchoMismatch,
+             .malformedAmount, .generic:
+            // The only case-specific information these carry is a string this app
+            // did not write for a screen: a txType token, a diverging field name,
+            // an unparseable amount, an upstream body, an encoder failure. It stays
+            // in `errorDescription` for the log. The body is the one thing true at
+            // all three sites they are thrown from — quote, payload build and
+            // signing — which is that this route cannot be used.
+            return "swapKitErrorUnableToBuildTransaction".localized
+        default:
+            return errorDescription ?? "swapKitErrorUnableToBuildTransaction".localized
         }
     }
 }

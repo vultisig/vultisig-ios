@@ -46,25 +46,12 @@ enum SwapErrorPresentation {
 
     /// The single lookup both `title` and `message` go through, so they can never
     /// disagree about which vocabulary an error belongs to.
+    ///
+    /// One membership test, deliberately: a second arm mapping a specific error
+    /// type onto the vocabulary would have to be kept exhaustive by hand, and the
+    /// one that existed here covered a single `SwapKitError` case out of
+    /// twenty-one. Conforming a type is the way in.
     static func presentable(for error: Error) -> SwapErrorPresentable? {
-        if let presentable = error as? SwapErrorPresentable {
-            return presentable
-        }
-        return normalizedSwapKitError(error)
-    }
-
-    /// Map terminal SwapKit error cases onto the swap flow's user-facing error
-    /// vocabulary so the tooltip shows a domain-appropriate title and description
-    /// instead of the generic "Unexpected Error" fallback. Only covers cases with
-    /// a clear `SwapCryptoLogic.Errors` equivalent — everything else flows
-    /// through `error.localizedDescription` as before.
-    private static func normalizedSwapKitError(_ error: Error) -> SwapCryptoLogic.Errors? {
-        guard let swapKitError = error as? SwapKitError else { return nil }
-        switch swapKitError {
-        case .amountBelowProviderMinimum:
-            return .swapAmountTooSmall
-        default:
-            return nil
-        }
+        error as? SwapErrorPresentable
     }
 }

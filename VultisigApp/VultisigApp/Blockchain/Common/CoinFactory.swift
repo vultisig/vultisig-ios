@@ -78,7 +78,7 @@ struct CoinFactory {
                   rawKey.count == 32 else {
                 throw Errors.invalidPublicKey(pubKey: "Bittensor requires 32-byte ed25519 public key")
             }
-            address = BittensorHelper.ss58Encode(publicKey: rawKey, prefix: BittensorHelper.ss58Prefix)
+            address = BittensorHelper.ss58Encode(publicKey: rawKey)
         default:
             address = chain.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }

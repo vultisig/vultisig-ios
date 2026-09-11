@@ -491,11 +491,13 @@ private extension BlockChainService {
         }
     }
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
-        // Terra Classic's fee includes a proportional burn tax, so the cached
-        // fee is only valid for the exact send amount. Key the cache on the
-        // amount for that chain (reusing the free-form `quote` slot) so a
-        // re-quote at a different amount doesn't serve a stale tax.
-        let amountCacheComponent = tx.coin.chain == .terraClassic
+        // Fees that depend on the send amount are only cacheable per amount.
+        // Terra Classic's includes a proportional burn tax; TRON's bandwidth
+        // reserve is measured from the serialized transaction, whose amount
+        // field widens with the value. Key the cache on the amount for both
+        // (reusing the free-form `quote` slot) so a re-quote at a different
+        // amount doesn't serve a stale figure.
+        let amountCacheComponent = [Chain.terraClassic, .tron].contains(tx.coin.chain)
             ? "amount-\(tx.amountInRaw.description)"
             : nil
         let cacheKey = getCacheKey(for: tx.coin,
@@ -1081,7 +1083,7 @@ private extension BlockChainService {
             // 60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: UInt64(fee), lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
-            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap)
+            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap, amount: amount)
         }
     }
 

@@ -98,6 +98,13 @@ class DeeplinkViewModel: ObservableObject {
 }
 
 struct DeeplinkLogic {
+    /// Renders an accepted `amount`; the link itself is always read as dot-decimal.
+    let locale: Locale
+
+    init(locale: Locale = .current) {
+        self.locale = locale
+    }
+
     struct DeeplinkResult {
         var type: DeeplinkFlowType?
         var selectedVault: Vault?
@@ -191,7 +198,13 @@ struct DeeplinkLogic {
         result.assetChain = queryItems?.first(where: { $0.name == "assetChain" })?.value?.removingPercentEncoding
         result.assetTicker = queryItems?.first(where: { $0.name == "assetTicker" })?.value?.removingPercentEncoding
         result.address = queryItems?.first(where: { $0.name == "toAddress" })?.value?.removingPercentEncoding
-        result.sendAmount = queryItems?.first(where: { $0.name == "amount" })?.value?.removingPercentEncoding
+        // Attacker-supplied: anything that would not stage the number the link names
+        // leaves the field empty.
+        result.sendAmount = queryItems?
+            .first(where: { $0.name == "amount" })?
+            .value?
+            .removingPercentEncoding
+            .flatMap { $0.externalAmount(locale: locale) }
         result.sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value?.removingPercentEncoding
         result.pendingSendDeeplink = true
 

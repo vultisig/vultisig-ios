@@ -10,7 +10,7 @@ import SwiftData
 
 private let logger = Log.app.other
 
-enum RootRoute {
+enum RootRoute: Equatable {
     case home(showingVaultSelector: Bool)
     case createVault
 }
@@ -198,10 +198,8 @@ struct ContentView: View {
                 BackgroundTransactionPoller.shared.resumePendingTransactions()
             }
         }
-        .onChange(of: appViewModel.selectedVault) { _, _ in
-            guard appViewModel.restartNavigation else { return }
-            navigateToHome()
-        }
+        // A selection and its restart request change together. Observe the
+        // request once; observing the selection too resets the stack twice.
         .onChange(of: appViewModel.restartNavigation) { _, newValue in
             guard newValue else { return }
             navigateToHome()
@@ -334,9 +332,14 @@ struct ContentView: View {
     }
 
     func navigateToHome() {
-        appViewModel.showSplashView = false
-        rootRoute = .home(showingVaultSelector: appViewModel.showingVaultSelector)
-        navigationRouter.navPath = NavigationPath()
+        if appViewModel.showSplashView {
+            appViewModel.showSplashView = false
+        }
+        let homeRoute = RootRoute.home(showingVaultSelector: appViewModel.showingVaultSelector)
+        if rootRoute != homeRoute {
+            rootRoute = homeRoute
+        }
+        navigationRouter.navigateToRoot()
     }
 
     @ViewBuilder

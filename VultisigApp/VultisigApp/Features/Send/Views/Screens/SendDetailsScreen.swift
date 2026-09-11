@@ -40,7 +40,7 @@ struct SendDetailsScreen: View {
     var body: some View {
         container
             .disabled(viewModel.showLoader)
-            .overlay(viewModel.showLoader ? Loader() : nil)
+            .withLoading(isLoading: $viewModel.isValidatingForm)
             .onAppear {
                 viewModel.initializePendingTransactionState(for: viewModel.coin.chain)
                 viewModel.refreshPendingTransactionState()

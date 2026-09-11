@@ -61,6 +61,50 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertEqual(tx.fromAddress, coin.address)
     }
 
+    // MARK: - fromAction seed: prefilled memo respects Chain.supportsMemo
+
+    func testFromActionDropsPrefilledMemoForBittensor() throws {
+        let coin = makeCoin(.bittensor, ticker: "TAO", decimals: 9, isNative: true)
+        let seed = SendDetailsSeed.fromAction(
+            coin: coin,
+            vault: vault,
+            hasPreselectedCoin: true,
+            prefilledToAddress: "dest",
+            prefilledAmount: "1",
+            prefilledMemo: "deeplink memo"
+        )
+
+        XCTAssertEqual(seed.memo, "")
+    }
+
+    func testFromActionDropsPrefilledMemoForPolkadot() throws {
+        let coin = makeCoin(.polkadot, ticker: "DOT", decimals: 10, isNative: true)
+        let seed = SendDetailsSeed.fromAction(
+            coin: coin,
+            vault: vault,
+            hasPreselectedCoin: true,
+            prefilledToAddress: "dest",
+            prefilledAmount: "1",
+            prefilledMemo: "deeplink memo"
+        )
+
+        XCTAssertEqual(seed.memo, "")
+    }
+
+    func testFromActionKeepsPrefilledMemoForChainThatSupportsIt() throws {
+        let coin = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let seed = SendDetailsSeed.fromAction(
+            coin: coin,
+            vault: vault,
+            hasPreselectedCoin: true,
+            prefilledToAddress: "dest",
+            prefilledAmount: "1",
+            prefilledMemo: "deeplink memo"
+        )
+
+        XCTAssertEqual(seed.memo, "deeplink memo")
+    }
+
     // MARK: - Decision 1: plain [String: String] dictionary
 
     func testMemoFunctionDictionaryIsPlainDict() throws {
