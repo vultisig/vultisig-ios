@@ -6,10 +6,7 @@
 import SwiftUI
 
 struct TransactionHistoryDetailSheet: View {
-    enum Presentation { case sheet, screen }
-
     let transaction: TransactionHistoryData
-    var presentation: Presentation = .sheet
     /// The order behind this row, for `.limit` rows. Carries the target price,
     /// the expiry countdown and the fill split — none of which exist on
     /// `TransactionHistoryItem`. `nil` on a co-signer, which never persists a
@@ -60,17 +57,7 @@ struct TransactionHistoryDetailSheet: View {
         container
     }
 
-    @ViewBuilder
     var container: some View {
-        if presentation == .screen {
-            Screen { receiptContent }
-                .screenEdgeInsets(.noInsets)
-        } else {
-            sheetContainer
-        }
-    }
-
-    var sheetContainer: some View {
         #if os(iOS)
             NavigationStack {
                 content
@@ -82,7 +69,7 @@ struct TransactionHistoryDetailSheet: View {
         #endif
     }
 
-    var receiptContent: some View {
+    var content: some View {
         ScrollView {
             VStack(spacing: 16) {
                 header
@@ -105,10 +92,6 @@ struct TransactionHistoryDetailSheet: View {
         // the moment it goes terminal, rather than running on for a closed
         // order until the sheet happens to be dismissed.
         .task(id: limitOrder?.status) { await tickExpiryWhileResting() }
-    }
-
-    var content: some View {
-        receiptContent
         .background(ModalBackgroundView(width: .infinity))
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)

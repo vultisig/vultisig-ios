@@ -11,13 +11,12 @@ struct TransactionHistoryRouter {
     @ViewBuilder
     func build(_ route: TransactionHistoryRoute) -> some View {
         switch route {
-        case .detail(let recordID):
-            TransactionActivityDetailScreen(recordID: recordID)
-        case .list(let pubKeyECDSA, let vaultName, let chainFilter):
+        case .list(let pubKeyECDSA, let vaultName, let chainFilter, let initialTransactionID):
             viewBuilder.buildListScreen(
                 pubKeyECDSA: pubKeyECDSA,
                 vaultName: vaultName,
-                chainFilter: chainFilter
+                chainFilter: chainFilter,
+                initialTransactionID: initialTransactionID
             )
         }
     }

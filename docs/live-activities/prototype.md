@@ -23,7 +23,7 @@ Admission tombstones are retained indefinitely to preserve no-resurrection even 
 
 All ActivityKit writes are serialized. Stale observations cannot overtake newer timestamps; terminal outcomes cannot regress. Privacy changes redact mutable payload data, including retained terminal cards. Hidden balances redact details both at admission and on subsequent privacy changes. Static attributes contain only the random local record UUID. Full recipient addresses are shortened inside the shared state initializer. Vault names, public keys, hashes, addresses in full, memos and signing material never enter the widget payload.
 
-The link uses `vultisig://transaction/<local-record-uuid>`. ContentView queues it behind splash/passcode, drops it behind key-share recovery, then the detail destination resolves both the record and its vault locally. It does not depend on whichever vault is currently selected. Deleted records show an unavailable state. Opening a valid record refreshes the existing tracker/chain observer and receipt.
+The link uses `vultisig://transaction/<local-record-uuid>`. ContentView queues it behind splash/passcode, drops it behind key-share recovery, then resolves both the record and its vault locally and opens the normal transaction-history details sheet. It does not depend on whichever vault is currently selected. Deleted records or vaults show the localized unavailable message through the existing app error presenter. Opening a valid record uses the history screen’s existing polling/tracking and receipt refresh. Dismissing the sheet returns to that vault’s transaction history.
 
 ## Funds-free fixtures
 
@@ -33,7 +33,7 @@ For developer testing only, run an iOS DEBUG build with `-transactionLiveActivit
 - `-transactionLiveActivityPrivate`: generic redacted payload.
 - `-transactionLiveActivityStale`: observation timestamp already older than the 90-second stale threshold.
 
-The demo requests a synthetic activity, updates after 8 seconds, and ends after 45 seconds while the process remains runnable. iOS suspension can delay those tasks, as with app-driven transaction updates. The fixture is available only through launch arguments; it has no settings entry. Synthetic IDs intentionally resolve to the unavailable-detail screen because they have no real history row. Known in-process fixture UUIDs are exempt from orphan reconciliation until the demo ends. After a process restart an abandoned fixture is removed normally.
+The demo requests a synthetic activity, updates after 8 seconds, and ends after 45 seconds while the process remains runnable. iOS suspension can delay those tasks, as with app-driven transaction updates. The fixture is available only through launch arguments; it has no settings entry. Synthetic IDs intentionally resolve to the unavailable message because they have no real history row. Known in-process fixture UUIDs are exempt from orphan reconciliation until the demo ends. After a process restart an abandoned fixture is removed normally.
 
 The Lock Screen card fits within 160 points including padding; optional detail rows yield to the status, main amount and freshness when needed. The provider/fee/recipient/long-amount fixture should be included in simulator visual acceptance, with Island expanded/compact/minimal and stale/private states. Real locked-and-suspended delivery still requires signed-device/APNs validation.
 

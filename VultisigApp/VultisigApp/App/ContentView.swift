@@ -437,7 +437,16 @@ struct ContentView: View {
 
     private func processDeeplink(_ incomingURL: URL) {
         if let recordID = TransactionActivityLink.recordID(from: incomingURL) {
-            navigationRouter.navigate(to: TransactionHistoryRoute.detail(recordID: recordID))
+            do {
+                guard let route = try TransactionHistoryRoute.resolveDetail(recordID: recordID, context: modelContext) else {
+                    deeplinkError = HelperError.runtimeError("transactionActivityUnavailable".localized)
+                    return
+                }
+                navigationRouter.navigate(to: route)
+            } catch {
+                logger.error("Failed to resolve transaction activity link: \(error)")
+                deeplinkError = HelperError.runtimeError("transactionActivityUnavailable".localized)
+            }
             return
         }
         // Malformed activity links must never be reinterpreted as a signing/send link.

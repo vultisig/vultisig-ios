@@ -31,11 +31,12 @@ struct TransactionHistoryScreen: View {
         let request: LimitOrderCancelRequest
     }
 
-    init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
+    init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?, initialTransactionID: UUID? = nil) {
         _viewModel = StateObject(wrappedValue: TransactionHistoryViewModel(
             pubKeyECDSA: pubKeyECDSA,
             vaultName: vaultName,
-            chainFilter: chainFilter
+            chainFilter: chainFilter,
+            initialTransactionID: initialTransactionID
         ))
     }
 
@@ -59,6 +60,10 @@ struct TransactionHistoryScreen: View {
         }
         .onDisappear {
             viewModel.stopPolling()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: TransactionHistoryActivityEvent.notification)) { notification in
+            guard let event = notification.object as? TransactionHistoryActivityEvent else { return }
+            viewModel.reloadTransactions(after: event)
         }
         .onReceive(NotificationCenter.default.publisher(for: .limitOrdersDidChange)) { _ in
             // `LimitOrder` is a nested `@Model` array on the vault, and
