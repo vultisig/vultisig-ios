@@ -53,6 +53,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         let row = addRow()
         let manager = coordinator()
         manager.admit(row)
+        resumedIDs = []
         rows[row.id] = ActivityTestFixture.row(id: row.id, hash: row.txHash, status: .successful, createdAt: row.createdAt)
         await manager.reconcile()
         XCTAssertEqual(client.activities.first?.state.phase, .confirmed)

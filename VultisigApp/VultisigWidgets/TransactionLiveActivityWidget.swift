@@ -25,7 +25,7 @@ struct TransactionLiveActivityWidget: Widget {
             } compactLeading: {
                 HStack(spacing: 0) { WidgetBrandMark(size: 18) }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text("widget.brand".localized))
+                    .accessibilityLabel(Text(String(localized: "widget.brand")))
             } compactTrailing: {
                 TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false)
             } minimal: {
@@ -40,7 +40,7 @@ private struct TransactionActivityBrand: View {
     var body: some View {
         HStack(spacing: 6) {
             WidgetBrandMark(size: 20)
-            Text("widget.brand".localized)
+            Text(String(localized: "widget.brand"))
                 .font(WidgetTheme.labelFont(size: 13))
                 .foregroundStyle(WidgetTheme.primaryText)
         }
