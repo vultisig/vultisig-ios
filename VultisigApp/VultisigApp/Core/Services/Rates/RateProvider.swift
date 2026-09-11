@@ -158,7 +158,11 @@ final class RateProvider {
 
     /// Format fiat balance for fee display with more decimal places (e.g., $0.0065 instead of $0.00)
     func fiatFeeString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
-        let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
+        fiatFeeString(value: value, coin: coin.toCoinMeta(), currency: currency)
+    }
+
+    func fiatFeeString(value: Decimal, coin: CoinMeta, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, currency: currency)
         return balance.formatToFiatForFee(includeCurrencySymbol: true)
     }
 

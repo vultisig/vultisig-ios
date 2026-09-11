@@ -436,7 +436,7 @@ enum SwapCryptoLogic {
 
     static func swapFeeString(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> String {
         if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            return evmFee.formatToFiat(includeCurrencySymbol: true)
+            return evmFee.formatToFiatForFee(includeCurrencySymbol: true)
         }
 
         guard let inboundFee = inboundFeeDecimal(quote: quote, toCoin: toCoin), !inboundFee.isZero else {
@@ -444,7 +444,7 @@ enum SwapCryptoLogic {
         }
 
         let inboundFeeRaw = toCoin.raw(for: inboundFee)
-        return toCoin.fiat(value: inboundFeeRaw).formatToFiat(includeCurrencySymbol: true)
+        return toCoin.fiat(value: inboundFeeRaw).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     static func swapGasString(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, fee: BigInt) -> String {
@@ -472,7 +472,7 @@ enum SwapCryptoLogic {
     }
 
     static func approveFeeString(feeCoin: Coin, fee: BigInt) -> String {
-        feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
+        feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     static func isApproveFeeZero(fee: BigInt) -> Bool {
@@ -490,7 +490,7 @@ enum SwapCryptoLogic {
         let networkFee = feeCoin.fiat(gas: fee)
         let affiliateFee = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
         let outboundFee = outboundFeeFiat(quote: quote, toCoin: toCoin)
-        return (networkFee + affiliateFee + outboundFee).formatToFiat(includeCurrencySymbol: true)
+        return (networkFee + affiliateFee + outboundFee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: limit-order network fee
@@ -511,7 +511,7 @@ enum SwapCryptoLogic {
     /// fee cell's fiat (`approveFeeString`). Empty when no estimate is available.
     static func limitNetworkFeeFiat(feeCoin: Coin, fee: BigInt) -> String {
         guard fee > 0 else { return .empty }
-        return feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
+        return feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: misc
@@ -557,7 +557,7 @@ enum SwapCryptoLogic {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
-        return (net + discounts.total).formatToFiat(includeCurrencySymbol: true)
+        return (net + discounts.total).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     /// Whether the "Vultisig Fee" affiliate row should render. Every real market
@@ -665,7 +665,7 @@ enum SwapCryptoLogic {
         guard let quote else { return .empty }
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
-            return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiat(includeCurrencySymbol: true)
+            return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiatForFee(includeCurrencySymbol: true)
         default:
             return .empty
         }
