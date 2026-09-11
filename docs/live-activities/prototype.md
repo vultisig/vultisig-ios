@@ -37,18 +37,6 @@ All ActivityKit writes are serialized. Stale observations cannot overtake newer 
 
 The link uses `vultisig://transaction/<local-record-uuid>`. ContentView queues it behind splash/passcode, drops it behind key-share recovery, then resolves both the record and its vault locally and opens the normal transaction-history details sheet. It does not depend on whichever vault is currently selected. Deleted records or vaults show the localized unavailable message through the existing app error presenter. Opening a valid record uses the history screen’s existing polling/tracking and receipt refresh. Dismissing the sheet returns to that vault’s transaction history.
 
-## Funds-free fixtures
-
-For developer testing only, run an iOS DEBUG build with `-transactionLiveActivityDemo`. No vault is needed; no history row, network call or transfer is created. Optional flags:
-
-- `-transactionLiveActivitySwap`: swap card with all rich receipt fields.
-- `-transactionLiveActivityPrivate`: generic redacted payload.
-- `-transactionLiveActivityStale`: observation timestamp already older than the 90-second stale threshold.
-
-The demo requests a synthetic activity, updates after 8 seconds, and ends after 45 seconds while the process remains runnable. iOS suspension can delay those tasks, as with app-driven transaction updates. The fixture is available only through launch arguments; it has no settings entry. Synthetic IDs intentionally resolve to the unavailable message because they have no real history row. Known in-process fixture UUIDs are exempt from orphan reconciliation until the demo ends. After a process restart an abandoned fixture is removed normally.
-
-The Lock Screen card fits within 160 points including padding; optional detail rows yield to the status, main amount and freshness when needed. The provider/fee/recipient/long-amount fixture should be included in simulator visual acceptance, with Island expanded/compact/minimal and stale/private states. Real locked-device timing and automatic BGAppRefresh delivery still require signed-device validation.
-
 ## Contract and validation
 
 `TransactionActivityState` is a Foundation-only Codable value. Its date encoding uses Swift JSONEncoder's default seconds-since-2001 strategy. There is no APNs contract in this native-only increment. Combined attributes + state are validated below 4096 bytes at request; every optional string has a scalar-wise UTF-8 bound, including pathological combining characters.
@@ -61,18 +49,16 @@ The card uses bundled token art only when the durable receipt contains an exact 
 
 The loading symbol makes one short pulse on fresh transaction observations, with no looping animation or invented progress. Reduce Motion, Always On luminance reduction, stale observations and terminal outcomes suppress processing motion. Status color distinguishes success, failure, refund and tracking end. The rich card falls back to its core header/hero/freshness layout within the 160-point Lock Screen budget.
 
-Widget previews cover transfer, swap, private, delayed and failure. Synthetic runtime flags remain `-transactionLiveActivityDemo`, `-transactionLiveActivitySwap`, `-transactionLiveActivityPrivate`, and `-transactionLiveActivityStale`; add `-transactionLiveActivityFailure` for a failed terminal state after the normal 45-second fixture sequence. The fixture uses bundled USDC and ETH art and never sends funds.
+Widget previews cover transfer, swap, private, delayed and failure states with bundled token art. The Lock Screen card fits within 160 points including padding; optional detail rows yield to status, amount and freshness. Real locked-device timing and automatic BGAppRefresh delivery require signed-device validation.
 
 ## Testing automatic admission
 
 Build and run this branch on iOS (Debug or Release). No preview toggle is needed. With system Live Activities allowed, an eligible outgoing send starts on the initiating/broadcasting device after a usable hash and saved receipt while the app is foreground. Signing-time max sends and other excluded payloads above remain ineligible. An already missed or dismissed transaction is not restarted. Up to two activities can be active; extra transactions stay in history. Hide balances to redact amounts and asset identity. Ordinary push-notification settings are separate.
 
-Use the DEBUG launch fixtures for funds-free rendering checks. They bypass history because their IDs have no real receipt; coordinator regression tests separately verify automatic admission with fresh defaults, OS permission changes and hidden balances.
+Use the widget previews for rendering checks. Coordinator regression tests verify automatic admission with fresh defaults, OS permission changes and hidden balances. The app has no synthetic activity launch mode.
 
 ## Testing native updates
 
-For funds-free background verification, launch a DEBUG build with `-transactionLiveActivityDemo -transactionLiveActivityBackgroundDemo` (add `-transactionLiveActivitySwap` for a swap). Send the app to the background or lock the simulator without a debugger. The same runner uses a real UIKit assertion; synthetic observations move submitted → pending/source confirmed → confirmed/completed while backgrounded. The fixture's OSLog reports synthetic revision and background state only. It does not exercise real chain/provider traffic or automatic OS refresh scheduling.
-
-Add `-transactionLiveActivityBackgroundExpiry` to make the fixture wait longer than its 25-second budget. The activity must remain at its last observed state; foregrounding later must not apply the cancelled result. Terminate/relaunch between fixture cases so abandoned synthetic cards are reconciled. Runner tests cover injected scheduled delivery, scheduler denial, expiration, foreground handoff, replacement races and exactly-once completion. Simulator may reject BGTaskScheduler submission, so do not interpret a manually invoked handler as proof of automatic scheduling.
+Runner tests cover injected scheduled delivery, scheduler denial, expiration, foreground handoff, replacement races and exactly-once completion. Simulator may reject BGTaskScheduler submission, so do not interpret a manually invoked handler as proof of automatic scheduling.
 
 On a signed device, make an eligible test transaction through the normal send/swap flow and immediately lock or background the app. Confirm the existing activity observes chain confirmation or provider settlement during the granted window. Also test slow settlement beyond that window, Background App Refresh disabled, offline recovery, app return, activity dismissal, vault/history deletion, two concurrent activities and force-quit. After the short window, delayed content is expected until iOS grants refresh or the app returns. No fixed update latency is promised.

@@ -221,9 +221,6 @@ extension VultisigApp {
                     // `AppViewModel.sceneBecameActive()`.
                     appViewModel.sceneBecameActive()
                     TransactionActivityBackgroundService.shared.enteredForeground()
-                    #if DEBUG
-                    TransactionLiveActivityDemo.shared.enteredForeground()
-                    #endif
                     TransactionLiveActivityCoordinator.shared.start()
                     TransactionLiveActivityCoordinator.shared.refresh()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
@@ -249,9 +246,6 @@ extension VultisigApp {
                     resetLogin()
                     SwapTrackingRegistry.shared.setActiveOnAll(false)
                     TransactionActivityBackgroundService.shared.enteredBackground()
-                    #if DEBUG
-                    TransactionLiveActivityDemo.shared.enteredBackground()
-                    #endif
                 @unknown default:
                     break
                 }
@@ -261,7 +255,6 @@ extension VultisigApp {
                     TransactionLiveActivityCoordinator.shared.start()
                 }
                 #if DEBUG
-                Task { await TransactionLiveActivityDemo.shared.runIfRequested() }
                 if CommandLine.arguments.contains("-disableAnimations") {
                     UIView.setAnimationsEnabled(false)
                 }

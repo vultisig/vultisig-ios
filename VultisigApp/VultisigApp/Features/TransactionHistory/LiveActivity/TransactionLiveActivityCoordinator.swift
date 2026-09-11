@@ -178,9 +178,6 @@ final class TransactionLiveActivityCoordinator {
     func reconcile(now: Date = Date()) async {
         let activities = client.activities
         for activity in activities {
-            #if DEBUG
-            if TransactionLiveActivityDemo.shared.owns(recordID: activity.recordID) { continue }
-            #endif
             guard let pair = bindings.first(where: { $0.value.recordID == activity.recordID }) else {
                 await client.end(id: activity.id, state: endedState(revision: activity.state.revision + 1), immediately: true)
                 continue

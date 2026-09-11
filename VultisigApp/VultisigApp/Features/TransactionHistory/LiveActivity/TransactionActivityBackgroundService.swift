@@ -90,7 +90,7 @@ final class TransactionActivityBackgroundService {
     }
 }
 
-/// Small platform boundary, shared with the funds-free runtime fixture.
+/// Platform boundary for native background assertions and scheduled refresh requests.
 @MainActor
 final class TransactionActivityBackgroundSystem {
     private var assertions: [UUID: UIBackgroundTaskIdentifier] = [:]
