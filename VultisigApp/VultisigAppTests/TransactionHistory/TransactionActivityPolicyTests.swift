@@ -45,6 +45,24 @@ final class TransactionActivityPolicyTests: XCTestCase {
         XCTAssertEqual(TransactionActivityPolicy.phase(for: providerError), .pending)
     }
 
+    func testAssetMappingUsesDurableLogoIdentityAndPrivacyGate() {
+        let row = ActivityTestFixture.row(type: .swap, coinLogo: "usdc", toCoinLogo: "eth")
+        let rich = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                                                   revision: 1, delayed: false, showDetails: true)
+        XCTAssertEqual(rich.sourceAssetID, "usdc")
+        XCTAssertEqual(rich.destinationAssetID, "eth")
+        let hidden = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                                                     revision: 2, delayed: false, showDetails: false)
+        XCTAssertNil(hidden.sourceAssetID)
+        XCTAssertNil(hidden.destinationAssetID)
+        let remote = ActivityTestFixture.row(type: .swap, coinLogo: "https://example.com/eth.svg", toCoinLogo: "unknown")
+        let fallback = TransactionActivityPolicy.state(for: remote, phase: .pending, observedAt: row.createdAt,
+                                                       revision: 1, delayed: false, showDetails: true)
+        // Its ticker says ETH/BTC, but neither establishes the bundled logo identity.
+        XCTAssertNil(fallback.sourceAssetID)
+        XCTAssertNil(fallback.destinationAssetID)
+    }
+
     func testIdentityIncludesVaultAndChain() {
         let first = ActivityTestFixture.row(hash: "same", vault: "one", chain: .ethereum)
         let otherVault = ActivityTestFixture.row(hash: "same", vault: "two", chain: .ethereum)
@@ -63,14 +81,14 @@ enum ActivityTestFixture {
     static func row(id: UUID = UUID(), hash: String = UUID().uuidString, vault: String = "fixture-vault",
                     chain: Chain = .ethereum, type: TransactionHistoryType = .send,
                     status: TransactionHistoryStatus = .inProgress, createdAt: Date = Date(),
-                    fee: String = "", error: String? = nil,
+                    fee: String = "", error: String? = nil, coinLogo: String = "", toCoinLogo: String? = nil,
                     tracking: SwapTrackingMetadataData? = nil) -> TransactionHistoryData {
         TransactionHistoryData(
             id: id, txHash: hash, approveTxHash: nil, pubKeyECDSA: vault, type: type, status: status,
-            chainRawValue: chain.rawValue, coinTicker: "ETH", coinLogo: "", coinChainLogo: nil,
+            chainRawValue: chain.rawValue, coinTicker: "ETH", coinLogo: coinLogo, coinChainLogo: nil,
             amountCrypto: "1 ETH", amountFiat: "2500", fromAddress: "source",
             toAddress: "0x1234567890123456789012345678901234567890",
-            toCoinTicker: type == .swap ? "BTC" : nil, toCoinLogo: nil, toCoinChainLogo: nil,
+            toCoinTicker: type == .swap ? "BTC" : nil, toCoinLogo: toCoinLogo, toCoinChainLogo: nil,
             toAmountCrypto: nil, toAmountFiat: nil, swapProvider: type == .swap ? "SwapKit" : nil,
             feeCrypto: fee, feeFiat: "", network: chain.rawValue, explorerLink: "", createdAt: createdAt,
             completedAt: status == .inProgress ? nil : Date(), estimatedTime: nil, errorMessage: error,

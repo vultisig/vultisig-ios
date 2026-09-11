@@ -42,11 +42,15 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     let fee: String?
     let provider: String?
     let submittedAt: Date?
+    /// Exact identifiers for bundled art, never image bytes, URLs or ticker guesses.
+    let sourceAssetID: String?
+    let destinationAssetID: String?
 
     init(phase: Phase, observedAt: Date, revision: Int, updateDelayed: Bool = false,
          summary: String? = nil, network: String? = nil, showDetails: Bool = false,
          operation: Operation? = nil, recipient: String? = nil, fee: String? = nil,
-         provider: String? = nil, submittedAt: Date? = nil) {
+         provider: String? = nil, submittedAt: Date? = nil,
+         sourceAssetID: String? = nil, destinationAssetID: String? = nil) {
         self.schemaVersion = 1
         self.phase = phase
         self.observedAt = observedAt
@@ -63,11 +67,20 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         self.fee = showDetails ? fee.map { Self.bounded($0, bytes: 96) } : nil
         self.provider = showDetails ? provider.map { Self.bounded($0, bytes: 80) } : nil
         self.submittedAt = showDetails ? submittedAt : nil
+        self.sourceAssetID = showDetails ? Self.bundledAssetID(for: sourceAssetID) : nil
+        self.destinationAssetID = showDetails ? Self.bundledAssetID(for: destinationAssetID) : nil
     }
 
     var hasDetails: Bool {
         summary != nil || network != nil || operation != nil || recipient != nil
             || fee != nil || provider != nil || submittedAt != nil
+            || sourceAssetID != nil || destinationAssetID != nil
+    }
+
+    /// Allowlisting bounds the payload and prevents remote or arbitrary bundle lookups.
+    static func bundledAssetID(for logo: String?) -> String? {
+        guard let logo, ["btc", "eth", "usdc", "usdt", "bsc", "solana"].contains(logo) else { return nil }
+        return logo
     }
 
     /// Scalar-wise byte bounding also handles a single huge combining grapheme.

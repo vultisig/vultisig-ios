@@ -42,3 +42,11 @@ The Lock Screen card fits within 160 points including padding; optional detail r
 `TransactionActivityState` is a Foundation-only Codable value. Its date encoding currently uses Swift JSONEncoder's default seconds-since-2001 strategy; future APNs envelope timestamps are Unix seconds and must not be confused with content dates. Keep the encoder/decoder strategy explicit in backend contract fixtures. Combined attributes + state are validated below 4096 bytes at request; every optional string has a scalar-wise UTF-8 bound, including pathological combining characters.
 
 Unit tests cover privacy, byte budget, links, status/freshness semantics, lifecycle restoration/dismissal/limits/settings/deletion, full/partial provider refunds, receipt enrichment and durable storage notifications. Lifecycle tests inject a fake ActivityKit client, local lookup and no-op polling hook. The implementation agent runs generation/lint and local read-only cross-model review. The parent owns the full iOS test gate, macOS build and runtime acceptance; those must pass before any shipping claim.
+
+## Branded card iteration
+
+The card uses bundled token art only when the durable receipt contains an exact known local logo ID (BTC, ETH, USDC, USDT, BSC or Solana assets). Remote and unknown logos use a neutral asset glyph; a ticker never selects an image. Optional source/destination asset IDs are private-gated and backward-compatible with schema v1. No image data or URL enters ActivityKit.
+
+The loading symbol makes one short pulse on fresh transaction observations, with no looping animation or invented progress. Reduce Motion, Always On luminance reduction, stale observations and terminal outcomes suppress processing motion. Status color distinguishes success, failure, refund and tracking end. The rich card falls back to its core header/hero/freshness layout within the 160-point Lock Screen budget.
+
+Widget previews cover transfer, swap, private, delayed and failure. Synthetic runtime flags remain `-transactionLiveActivityDemo`, `-transactionLiveActivitySwap`, `-transactionLiveActivityPrivate`, and `-transactionLiveActivityStale`; add `-transactionLiveActivityFailure` for a failed terminal state after the normal 45-second fixture sequence. The fixture uses bundled USDC and ETH art and never sends funds.

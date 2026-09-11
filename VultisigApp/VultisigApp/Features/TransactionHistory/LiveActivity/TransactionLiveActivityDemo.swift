@@ -30,17 +30,19 @@ final class TransactionLiveActivityDemo {
         let swap = arguments.contains("-transactionLiveActivitySwap")
         let privateMode = arguments.contains("-transactionLiveActivityPrivate")
         let stale = arguments.contains("-transactionLiveActivityStale")
+        let failed = arguments.contains("-transactionLiveActivityFailure")
         let recordID = UUID()
         let date = Date().addingTimeInterval(stale ? -120 : 0)
         func state(_ phase: TransactionActivityState.Phase, revision: Int) -> TransactionActivityState {
             TransactionActivityState(
-                phase: phase, observedAt: date, revision: revision,
+                phase: phase, observedAt: stale ? date : Date(), revision: revision,
                 summary: swap ? "125.123456 USDC → ETH" : "125.123456 USDC",
                 network: "Base", showDetails: !privateMode,
                 operation: swap ? .swap : .send,
                 recipient: "0x1234567890123456789012345678901234567890",
                 fee: "0.000004 ETH", provider: swap ? "SwapKit" : nil,
-                submittedAt: date.addingTimeInterval(-30)
+                submittedAt: date.addingTimeInterval(-30),
+                sourceAssetID: "usdc", destinationAssetID: swap ? "eth" : nil
             )
         }
         do {
@@ -53,7 +55,7 @@ final class TransactionLiveActivityDemo {
                 await self.client.update(id: id, state: state(swap ? .sourceConfirmed : .pending, revision: 2))
                 try? await Task.sleep(for: .seconds(37))
                 guard !Task.isCancelled else { return }
-                await self.client.end(id: id, state: state(swap ? .completed : .confirmed, revision: 3), immediately: false)
+                await self.client.end(id: id, state: state(failed ? .failed : swap ? .completed : .confirmed, revision: 3), immediately: false)
                 // The ended card remains visible for the client's 60-second
                 // recognition window and still belongs to this fixture.
                 try? await Task.sleep(for: .seconds(60))

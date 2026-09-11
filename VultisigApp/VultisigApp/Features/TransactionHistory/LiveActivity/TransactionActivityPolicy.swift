@@ -97,7 +97,8 @@ enum TransactionActivityPolicy {
             operation: row.type == .swap ? .swap : .send,
             recipient: row.type == .send ? row.toAddress : nil,
             fee: row.feeCrypto.isEmpty ? nil : row.feeCrypto,
-            provider: row.type == .swap ? row.swapProvider : nil, submittedAt: row.createdAt
+            provider: row.type == .swap ? row.swapProvider : nil, submittedAt: row.createdAt,
+            sourceAssetID: row.coinLogo, destinationAssetID: row.type == .swap ? row.toCoinLogo : nil
         )
     }
 }
