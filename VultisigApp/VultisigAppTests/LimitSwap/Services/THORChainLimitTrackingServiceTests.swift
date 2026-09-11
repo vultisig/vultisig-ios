@@ -33,9 +33,9 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         // No suspension between writes: the consumer cannot request another
         // value here. This crashed the old objectWillChange.values subscription.
         for _ in 0..<100 {
-            service.start(tx: Self.makeLimitTx(latestTrackingStatus: "resting"))
+            service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.pending.rawValue))
         }
-        service.start(tx: Self.makeLimitTx(latestTrackingStatus: "completed"))
+        service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.filled.rawValue))
         await fulfillment(of: [completed], timeout: 2)
         XCTAssertEqual(received.last, .confirmed)
     }
@@ -58,7 +58,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             }
         }
         await fulfillment(of: [ready], timeout: 2)
-        service.start(tx: Self.makeLimitTx(latestTrackingStatus: "completed"))
+        service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.filled.rawValue))
         poller.stop()
         await fulfillment(of: [unexpected], timeout: 0.1)
 
