@@ -132,6 +132,20 @@ final class TransactionHistoryStorage {
         emit(.nativeStatus(TransactionHistoryData(item: item), Date()))
     }
 
+    /// Background observations target the opaque row ID, avoiding legacy hash collisions.
+    func updateActivitySendStatus(id: UUID, status: TransactionHistoryStatus, errorMessage: String?, observedAt: Date) throws {
+        let predicate = #Predicate<TransactionHistoryItem> { $0.id == id }
+        guard let item = try modelContext.fetch(FetchDescriptor(predicate: predicate)).first else { return }
+        let row = TransactionHistoryData(item: item)
+        guard row.type == .send, row.swapTracking == nil,
+              !TransactionActivityPolicy.phase(for: row).isTerminal else { return }
+        item.statusRawValue = status.rawValue
+        item.errorMessage = errorMessage
+        item.completedAt = observedAt
+        try modelContext.save()
+        emit(.nativeStatus(TransactionHistoryData(item: item), observedAt))
+    }
+
     func fetch(id: UUID) throws -> TransactionHistoryData? {
         let predicate = #Predicate<TransactionHistoryItem> { $0.id == id }
         return try modelContext.fetch(FetchDescriptor(predicate: predicate)).first.map(TransactionHistoryData.init(item:))

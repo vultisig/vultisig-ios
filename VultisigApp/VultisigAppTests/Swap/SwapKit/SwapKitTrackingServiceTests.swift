@@ -22,6 +22,50 @@ final class SwapKitTrackingServiceTests: XCTestCase {
 
     // MARK: - State-transition coverage
 
+    func testOneShotDiscardsResponseWhenBackgroundActivityBecomesIneligible() async {
+        for shouldFail in [false, true] {
+            let client = StubHTTPClient()
+            let storage = FakeSwapTrackingStorage()
+            if shouldFail {
+                client.shouldThrow = URLError(.notConnectedToInternet)
+            } else {
+                client.responses = [Self.makeResponse(status: .completed, trackingStatus: "completed")]
+            }
+            let service = SwapKitTrackingService(httpClient: client, storage: storage)
+            var checks = 0
+            await service.forceRefresh(tx: Self.makeSwapKitTx(), shouldApply: {
+                checks += 1
+                return checks == 1
+            })
+            XCTAssertEqual(client.requestCount, 1)
+            XCTAssertTrue(storage.observations.isEmpty)
+            XCTAssertEqual(storage.touchCount, 0)
+            XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+        }
+    }
+
+    func testSparseBackgroundFailuresDoNotExhaustSuspendedPoller() async {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        http.shouldThrow = URLError(.notConnectedToInternet)
+        var now = Date()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { now })
+        let tx = Self.makeSwapKitTx()
+        service.setActive(false)
+        service.start(tx: tx)
+        let initialStatus = service.uiStatusByTxHash[tx.txHash]
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        now = now.addingTimeInterval(3600)
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        XCTAssertEqual(storage.touchCount, 2)
+        XCTAssertTrue(storage.observations.isEmpty)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], initialStatus)
+        // The ordinary refresh still gets its initial failure window.
+        await service.forceRefresh(tx: tx)
+        XCTAssertTrue(storage.observations.isEmpty)
+        service.stopAllTracking()
+    }
+
     func testHappyPathTransitionsThroughFullSequence() async throws {
         let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()

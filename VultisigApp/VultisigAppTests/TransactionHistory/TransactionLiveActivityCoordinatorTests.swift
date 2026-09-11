@@ -47,6 +47,72 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         return row
     }
 
+    func testBackgroundRefreshOnlyObservesRecognizedActiveRecords() async {
+        let manager = coordinator()
+        let first = addRow()
+        let second = addRow()
+        manager.admit(first)
+        manager.admit(second)
+        manager.admit(addRow())
+        client.isForeground = false
+        var observed = Set<UUID>()
+        await manager.refreshInBackground { observed.insert($0.id) }
+        XCTAssertEqual(observed, [first.id, second.id])
+        XCTAssertEqual(client.requestCount, 2)
+        client.activities = []
+        await manager.refreshInBackground { _ in XCTFail("Dismissed activities must not fetch or restart") }
+        XCTAssertFalse(manager.hasBackgroundWork)
+        XCTAssertEqual(client.requestCount, 2)
+    }
+
+    func testBackgroundLookupFailsClosedForUnreadableOrMissingVault() {
+        let row = addRow()
+        let manager = coordinator()
+        manager.admit(row)
+        client.isForeground = false
+        XCTAssertNotNil(manager.backgroundRecord(id: row.id))
+        lookupFails = true
+        XCTAssertNil(manager.backgroundRecord(id: row.id))
+        lookupFails = false
+        hasVault = false
+        XCTAssertNil(manager.backgroundRecord(id: row.id))
+        hasVault = true
+        XCTAssertNil(manager.backgroundRecord(id: row.id, now: row.createdAt.addingTimeInterval(TransactionActivityPolicy.maximumAge)))
+        client.isAuthorized = false
+        XCTAssertNil(manager.backgroundRecord(id: row.id))
+    }
+
+    func testBackgroundRefreshWaitsForQueuedTerminalActivityWrite() async {
+        let manager = coordinator()
+        let row = addRow()
+        manager.trackBroadcast(row)
+        await manager.waitForPendingUpdates()
+        client.isForeground = false
+        await manager.refreshInBackground { _ in
+            let updated = ActivityTestFixture.row(id: row.id, hash: row.txHash, status: .successful, createdAt: row.createdAt)
+            self.rows[row.id] = updated
+            NotificationCenter.default.post(name: TransactionHistoryActivityEvent.notification,
+                                            object: TransactionHistoryActivityEvent.nativeStatus(updated, Date()))
+        }
+        XCTAssertEqual(client.activities.first?.state.phase, .confirmed)
+        XCTAssertFalse(manager.hasBackgroundWork)
+        XCTAssertEqual(client.requestCount, 1)
+    }
+
+    func testColdBackgroundRefreshSubscribesBeforePendingObservation() async {
+        let row = addRow()
+        coordinator().admit(row)
+        let restored = coordinator()
+        client.isForeground = false
+        let observedAt = row.createdAt.addingTimeInterval(10)
+        await restored.refreshInBackground { _ in
+            NotificationCenter.default.post(name: TransactionHistoryActivityEvent.notification,
+                                            object: TransactionHistoryActivityEvent.nativePending(row, observedAt))
+        }
+        XCTAssertEqual(client.activities.first?.state.observedAt, observedAt)
+        XCTAssertEqual(client.requestCount, 1)
+    }
+
     func testFreshInstallationStartsRichActivityWithoutOptIn() {
         let manager = coordinator()
         manager.admit(addRow())

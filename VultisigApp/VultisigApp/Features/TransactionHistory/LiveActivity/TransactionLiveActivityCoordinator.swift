@@ -3,7 +3,7 @@ import ActivityKit
 import Combine
 import Foundation
 
-/// App-only writer. Its tasks can be suspended by iOS; staleDate conveys that honestly.
+/// Serialized app-owned writer; native background runtime is bounded and staleDate remains authoritative.
 @MainActor
 final class TransactionLiveActivityCoordinator {
     static let shared = TransactionLiveActivityCoordinator()
@@ -73,6 +73,45 @@ final class TransactionLiveActivityCoordinator {
     }
 
     func refresh() { enqueue { [weak self] in await self?.reconcile() } }
+
+    /// Wait for all history events already enqueued before releasing native background runtime.
+    func waitForPendingUpdates() async {
+        await queue?.value
+    }
+
+    var hasBackgroundWork: Bool {
+        client.activities.contains { backgroundRecord(id: $0.recordID) != nil }
+    }
+
+    /// Never admit records here. Only the foreground broadcast path can create an activity.
+    func backgroundRecord(id: UUID, now: Date = Date()) -> TransactionHistoryData? {
+        guard client.isAuthorized,
+              let binding = bindings.values.first(where: { $0.recordID == id && !$0.ended && !$0.phase.isTerminal }),
+              client.activities.contains(where: { $0.recordID == id && $0.id == binding.activityID && $0.isActive }),
+              let row = try? lookup(id),
+              bindings[TransactionActivityPolicy.identity(row)]?.recordID == id,
+              now.timeIntervalSince(row.createdAt) < TransactionActivityPolicy.maximumAge,
+              (try? vaultExists(row.pubKeyECDSA)) == true,
+              !TransactionActivityPolicy.phase(for: row).isTerminal else { return nil }
+        return row
+    }
+
+    func refreshInBackground(observe: @MainActor (TransactionHistoryData) async -> Void) async {
+        start()
+        refresh()
+        await waitForPendingUpdates()
+        let ids = client.activities.compactMap { backgroundRecord(id: $0.recordID)?.id }
+            .prefix(TransactionActivityPolicy.maximumActivities)
+        for id in ids {
+            guard !Task.isCancelled else { return }
+            guard let row = backgroundRecord(id: id) else { continue }
+            await observe(row)
+            await waitForPendingUpdates()
+        }
+        guard !Task.isCancelled else { return }
+        refresh()
+        await waitForPendingUpdates()
+    }
 
     func trackBroadcast(_ row: TransactionHistoryData) {
         start()
