@@ -147,6 +147,7 @@ class TransactionHistoryViewModel: ObservableObject {
                   transactions.first(where: { $0.id == row.id }) != row else { return }
             reloadTransactions()
         case .deleted:
+            selectedDetail = nil
             reloadTransactions()
         case .nativePending:
             break

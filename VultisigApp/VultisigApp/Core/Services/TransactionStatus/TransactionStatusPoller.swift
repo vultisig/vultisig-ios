@@ -110,6 +110,7 @@ final class TransactionStatusPoller: ObservableObject {
                         txHash: txHash,
                         chain: chain,
                         deadlineReached: elapsed >= config.maxWaitTime,
+                        createdAt: createdAt,
                         onObservation: { [weak self] isPending in
                             guard !Task.isCancelled else { return }
                             self?.historyStorage.publishObservation(txHash: txHash, pubKeyECDSA: pubKeyECDSA,
@@ -235,6 +236,12 @@ final class TransactionStatusPoller: ObservableObject {
             && tx.swapTracking?.trackerOutage != true
     }
 
+    /// A just-broadcast hash can take a polling interval to reach the queried node.
+    /// Missing it during that grace period conveys neither freshness nor delay.
+    static func shouldReportNotFound(createdAt: Date, chain: Chain, now: Date = Date()) -> Bool {
+        now.timeIntervalSince(createdAt) >= ChainStatusConfig.config(for: chain).pollInterval
+    }
+
     /// Resolve one polling iteration. The chain lookup always happens before
     /// the client deadline is interpreted, including when a row is already old
     /// when the app opens.
@@ -243,6 +250,7 @@ final class TransactionStatusPoller: ObservableObject {
         txHash: String,
         chain: Chain,
         deadlineReached: Bool,
+        createdAt: Date = .distantPast,
         onObservation: (Bool) -> Void = { _ in }
     ) async -> PollAction {
         do {
@@ -256,7 +264,7 @@ final class TransactionStatusPoller: ObservableObject {
                 onObservation(true)
                 return deadlineReached ? .stop : .retry
             case .notFound:
-                onObservation(false)
+                if shouldReportNotFound(createdAt: createdAt, chain: chain) { onObservation(false) }
                 return deadlineReached ? .stop : .retry
             }
         } catch is CancellationError {

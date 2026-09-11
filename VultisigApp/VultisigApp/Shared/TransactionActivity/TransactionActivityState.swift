@@ -100,8 +100,8 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
 }
 
 enum TransactionActivityLink {
-    static func url(recordID: UUID) -> URL {
-        URL(string: "vultisig://transaction/" + recordID.uuidString)!
+    static func url(recordID: UUID) -> URL? {
+        URL(string: "vultisig://transaction/" + recordID.uuidString)
     }
 
     static func recordID(from url: URL) -> UUID? {

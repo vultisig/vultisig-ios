@@ -19,6 +19,7 @@
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, 7일 추세, %@";
 "widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "자산";
+"widget.brand" = "Vultisig";
 "widget.cached" = "캐시됨";
 "widget.cachedData" = "캐시된 데이터";
 "widget.change" = "%@ 24H";

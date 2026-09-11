@@ -50,7 +50,9 @@ final class TransactionActivityStatusRefresher {
             case .pending:
                 storage.publishObservation(txHash: fresh.txHash, pubKeyECDSA: fresh.pubKeyECDSA, chain: chain, isPending: true)
             case .notFound:
-                storage.publishObservation(txHash: fresh.txHash, pubKeyECDSA: fresh.pubKeyECDSA, chain: chain, isPending: false)
+                if TransactionStatusPoller.shouldReportNotFound(createdAt: fresh.createdAt, chain: chain) {
+                    storage.publishObservation(txHash: fresh.txHash, pubKeyECDSA: fresh.pubKeyECDSA, chain: chain, isPending: false)
+                }
             }
         } catch {
             guard !Task.isCancelled, let fresh = current(row) else { return }

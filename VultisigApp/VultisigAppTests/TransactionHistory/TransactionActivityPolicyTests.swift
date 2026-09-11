@@ -89,12 +89,13 @@ enum ActivityTestFixture {
     static func row(id: UUID = UUID(), hash: String = UUID().uuidString, vault: String = "fixture-vault",
                     chain: Chain = .ethereum, type: TransactionHistoryType = .send,
                     status: TransactionHistoryStatus = .inProgress, createdAt: Date = Date(),
+                    amountCrypto: String = "1 ETH", amountFiat: String = "2500",
                     fee: String = "", error: String? = nil, coinLogo: String = "", toCoinLogo: String? = nil,
                     tracking: SwapTrackingMetadataData? = nil) -> TransactionHistoryData {
         TransactionHistoryData(
             id: id, txHash: hash, approveTxHash: nil, pubKeyECDSA: vault, type: type, status: status,
             chainRawValue: chain.rawValue, coinTicker: "ETH", coinLogo: coinLogo, coinChainLogo: nil,
-            amountCrypto: "1 ETH", amountFiat: "2500", fromAddress: "source",
+            amountCrypto: amountCrypto, amountFiat: amountFiat, fromAddress: "source",
             toAddress: "0x1234567890123456789012345678901234567890",
             toCoinTicker: type == .swap ? "BTC" : nil, toCoinLogo: toCoinLogo, toCoinChainLogo: nil,
             toAmountCrypto: nil, toAmountFiat: nil, swapProvider: type == .swap ? "SwapKit" : nil,

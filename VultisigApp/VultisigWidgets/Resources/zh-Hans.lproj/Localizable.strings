@@ -19,6 +19,7 @@
 "widget.accessibility.ticker" = "%@，%@，%@，%@ %@，七日趋势，%@";
 "widget.accessibility.tickerWithoutTrend" = "%@，%@，%@，%@ %@，%@";
 "widget.asset" = "资产";
+"widget.brand" = "Vultisig";
 "widget.cached" = "缓存数据";
 "widget.cachedData" = "缓存的数据";
 "widget.change" = "%@ 24H";

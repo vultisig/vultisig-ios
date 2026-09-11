@@ -23,7 +23,7 @@ final class TransactionActivityStatusRefresherTests: XCTestCase {
         let statuses: [TransactionStatusResult.TransactionConfirmationStatus?] = [.confirmed, .failed(reason: "reverted"), .pending, .notFound, nil]
         for (index, status) in statuses.enumerated() {
             let (container, storage) = try storage()
-            let row = ActivityTestFixture.row()
+            let row = ActivityTestFixture.row(createdAt: Date().addingTimeInterval(-60))
             try storage.save(row)
             var events: [String] = []
             let subscription = NotificationCenter.default.publisher(for: TransactionHistoryActivityEvent.notification).sink { notification in
@@ -41,6 +41,19 @@ final class TransactionActivityStatusRefresherTests: XCTestCase {
             subscription.cancel()
             withExtendedLifetime(container) {}
         }
+    }
+
+    func testFreshBroadcastNotFoundDoesNotPublishDelay() async throws {
+        let (container, storage) = try storage()
+        let row = ActivityTestFixture.row()
+        try storage.save(row)
+        var count = 0
+        let subscription = NotificationCenter.default.publisher(for: TransactionHistoryActivityEvent.notification).sink { _ in count += 1 }
+        await refresher(storage, checker: NativeActivityChecker(status: .notFound)).refresh(row)
+        XCTAssertEqual(count, 0)
+        XCTAssertEqual(try storage.fetch(id: row.id)?.status, .inProgress)
+        subscription.cancel()
+        withExtendedLifetime(container) {}
     }
 
     func testTerminalSendSignalsWalletRefreshOnlyAfterItsFirstPersistedCompletion() async throws {

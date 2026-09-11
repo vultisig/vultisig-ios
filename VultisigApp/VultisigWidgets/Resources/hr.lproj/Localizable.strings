@@ -19,6 +19,7 @@
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, sedmodnevni trend, %@";
 "widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Imovina";
+"widget.brand" = "Vultisig";
 "widget.cached" = "Predmemorirano";
 "widget.cachedData" = "predmemorirani podaci";
 "widget.change" = "%@ 24H";

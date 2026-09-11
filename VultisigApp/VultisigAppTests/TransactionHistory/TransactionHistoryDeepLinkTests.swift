@@ -54,6 +54,23 @@ final class TransactionHistoryDeepLinkTests: XCTestCase {
         XCTAssertNil(viewModel.selectedDetail, "Returning to history must not reopen a dismissed sheet")
     }
 
+    func testDeletionEventDismissesSelectedReceipt() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault(pubKey: "delete-selection")
+        let storage = TransactionHistoryStorage(modelContext: token.container.mainContext)
+        let row = ActivityTestFixture.row(vault: vault.pubKeyECDSA, status: .successful)
+        try storage.save(row)
+        let viewModel = TransactionHistoryViewModel(pubKeyECDSA: vault.pubKeyECDSA, vaultName: vault.name,
+                                                   chainFilter: nil, initialTransactionID: row.id, storage: storage)
+        viewModel.load()
+        XCTAssertNotNil(viewModel.selectedDetail)
+        try storage.deleteAll()
+        viewModel.reloadTransactions(after: .deleted)
+        XCTAssertNil(viewModel.selectedDetail)
+        XCTAssertTrue(viewModel.transactions.isEmpty)
+    }
+
     func testDelayedEventRefreshesPersistedSwapOutage() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }

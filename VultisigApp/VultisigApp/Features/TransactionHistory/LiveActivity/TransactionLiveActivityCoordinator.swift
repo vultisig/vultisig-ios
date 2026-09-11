@@ -42,6 +42,7 @@ final class TransactionLiveActivityCoordinator {
         self.resume = resume ?? Self.resumeTracking
         bindings = defaults.data(forKey: TransactionActivityPolicy.ledgerKey)
             .flatMap { try? JSONDecoder().decode([String: Binding].self, from: $0) } ?? [:]
+        persist()
     }
 
     private var showDetails: Bool {
@@ -231,7 +232,9 @@ final class TransactionLiveActivityCoordinator {
                 } else {
                     // Re-reading a row is not a fresh network observation.
                     await publish(row, observedAt: nil, delayed: activity.state.updateDelayed)
-                    if !binding.phase.isTerminal && client.isForeground { resume(row) }
+                    if let current = bindings[key], !current.ended, !current.phase.isTerminal, client.isForeground {
+                        resume(row)
+                    }
                 }
             } catch {
                 // A failed fetch is not deletion. Retain last known state until next foreground.
@@ -317,6 +320,13 @@ final class TransactionLiveActivityCoordinator {
     }
 
     private func persist() {
+        // Keep system-retained receipts for privacy cleanup and terminal-write recovery.
+        // Older ended decisions without a system activity can no longer be admitted.
+        let retainedRecordIDs = Set(client.activities.map(\.recordID))
+        let cutoff = Date().addingTimeInterval(-TransactionActivityPolicy.maximumAge)
+        bindings = bindings.filter { _, binding in
+            !binding.ended || binding.observedAt >= cutoff || retainedRecordIDs.contains(binding.recordID)
+        }
         guard let data = try? JSONEncoder().encode(bindings) else { return }
         defaults.set(data, forKey: TransactionActivityPolicy.ledgerKey)
     }

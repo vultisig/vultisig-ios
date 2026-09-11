@@ -13,13 +13,14 @@ final class TransactionActivityStorageTests: XCTestCase {
     func testBroadcastReceiptIsEnrichedWithoutReplacingOutcomeOrIdentity() throws {
         let container = try container()
         let storage = TransactionHistoryStorage(modelContext: container.mainContext)
-        let broadcast = ActivityTestFixture.row()
+        let broadcast = ActivityTestFixture.row(amountFiat: "")
         try storage.save(broadcast)
         try storage.updateStatus(txHash: broadcast.txHash, pubKeyECDSA: broadcast.pubKeyECDSA, status: .successful)
-        let done = ActivityTestFixture.row(hash: broadcast.txHash, createdAt: broadcast.createdAt, fee: "0.001 ETH")
+        let done = ActivityTestFixture.row(hash: broadcast.txHash, createdAt: broadcast.createdAt,
+                                           amountCrypto: "2 ETH", amountFiat: "5000", fee: "0.001 ETH")
         try storage.save(done)
         let row = try XCTUnwrap(storage.fetch(id: broadcast.id))
-        XCTAssertEqual(row.amountCrypto, done.amountCrypto)
+        XCTAssertEqual(row.amountCrypto, broadcast.amountCrypto)
         XCTAssertEqual(row.amountFiat, done.amountFiat)
         XCTAssertEqual(row.feeCrypto, done.feeCrypto)
         XCTAssertEqual(row.status, .successful)
@@ -123,6 +124,26 @@ final class TransactionActivityStorageTests: XCTestCase {
         let silent = TransactionHistoryStorage(modelContext: container.mainContext)
         silent.publishObservation(txHash: "same", pubKeyECDSA: "one", chain: .ethereum, isPending: true)
         XCTAssertEqual(observedIDs, [row.id])
+    }
+
+    func testNotFoundGracePreservesRetryWithoutInventingAnObservation() async {
+        var observations: [Bool] = []
+        let action = await TransactionStatusPoller.nextAction(checker: ActivityStatusChecker(status: .notFound),
+            txHash: "fixture", chain: .ethereum, deadlineReached: false, createdAt: Date(),
+            onObservation: { observations.append($0) })
+        XCTAssertEqual(action, .retry)
+        XCTAssertTrue(observations.isEmpty)
+    }
+
+    func testNotFoundGraceUsesEachChainsPollingInterval() {
+        let createdAt = Date()
+        for chain in [Chain.ethereum, .bitcoin, .solana] {
+            let interval = ChainStatusConfig.config(for: chain).pollInterval
+            XCTAssertFalse(TransactionStatusPoller.shouldReportNotFound(createdAt: createdAt, chain: chain,
+                                                                         now: createdAt.addingTimeInterval(interval - 0.1)))
+            XCTAssertTrue(TransactionStatusPoller.shouldReportNotFound(createdAt: createdAt, chain: chain,
+                                                                        now: createdAt.addingTimeInterval(interval)))
+        }
     }
 
     func testFreshPendingAndNetworkFailureObservationsAreDistinct() async {

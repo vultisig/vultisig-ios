@@ -11,6 +11,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
     private var hasVault = true
     private var lookupFails = false
     private var vaultLookupFails = false
+    private var resumedIDs: [UUID] = []
 
     override func setUp() async throws {
         try await super.setUp()
@@ -21,6 +22,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         hasVault = true
         lookupFails = false
         vaultLookupFails = false
+        resumedIDs = []
     }
 
     override func tearDown() async throws {
@@ -38,13 +40,45 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
                                                if self.vaultLookupFails { throw NSError(domain: "fixture", code: 2) }
                                                return self.hasVault
                                            },
-                                           resume: { _ in })
+                                           resume: { [unowned self] in self.resumedIDs.append($0.id) })
     }
 
     private func addRow() -> TransactionHistoryData {
         let row = ActivityTestFixture.row()
         rows[row.id] = row
         return row
+    }
+
+    func testReconcileDoesNotResumeARecordThatJustSettled() async {
+        let row = addRow()
+        let manager = coordinator()
+        manager.admit(row)
+        rows[row.id] = ActivityTestFixture.row(id: row.id, hash: row.txHash, status: .successful, createdAt: row.createdAt)
+        await manager.reconcile()
+        XCTAssertEqual(client.activities.first?.state.phase, .confirmed)
+        XCTAssertTrue(resumedIDs.isEmpty)
+    }
+
+    func testLedgerPrunesExpiredDecisionsButKeepsRecentAndSystemRetainedEntries() throws {
+        let expired = Date().addingTimeInterval(-TransactionActivityPolicy.maximumAge - 1)
+        let old = addRow()
+        let retained = addRow()
+        let recent = addRow()
+        let active = addRow()
+        let state = TransactionActivityState(phase: .confirmed, observedAt: expired, revision: 1)
+        client.activities = [.init(id: "retained", recordID: retained.id, state: state, isActive: false)]
+        typealias Binding = TransactionLiveActivityCoordinator.Binding
+        let ledger: [String: Binding] = [
+            "old": .init(recordID: old.id, phase: .submitted, observedAt: expired, revision: 1, ended: true),
+            "retained": .init(recordID: retained.id, phase: .confirmed, observedAt: expired, revision: 1, ended: true),
+            "recent": .init(recordID: recent.id, phase: .submitted, observedAt: Date(), revision: 1, ended: true),
+            "active": .init(recordID: active.id, phase: .pending, observedAt: expired, revision: 1, ended: false)
+        ]
+        defaults.set(try JSONEncoder().encode(ledger), forKey: TransactionActivityPolicy.ledgerKey)
+        _ = coordinator()
+        let stored = try XCTUnwrap(defaults.data(forKey: TransactionActivityPolicy.ledgerKey))
+        let restored = try JSONDecoder().decode([String: Binding].self, from: stored)
+        XCTAssertEqual(Set(restored.keys), ["retained", "recent", "active"])
     }
 
     func testBackgroundRefreshOnlyObservesRecognizedActiveRecords() async {

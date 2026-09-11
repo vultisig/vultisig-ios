@@ -19,6 +19,7 @@
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, Sieben-Tage-Trend, %@";
 "widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Vermögenswert";
+"widget.brand" = "Vultisig";
 "widget.cached" = "Zwischengespeichert";
 "widget.cachedData" = "zwischengespeicherte Daten";
 "widget.change" = "%@ 24H";

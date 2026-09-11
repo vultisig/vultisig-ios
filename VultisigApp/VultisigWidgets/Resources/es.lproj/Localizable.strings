@@ -19,6 +19,7 @@
 "widget.accessibility.ticker" = "%@, %@, %@, %@ %@, tendencia de siete días, %@";
 "widget.accessibility.tickerWithoutTrend" = "%@, %@, %@, %@ %@, %@";
 "widget.asset" = "Activo";
+"widget.brand" = "Vultisig";
 "widget.cached" = "En caché";
 "widget.cachedData" = "datos en caché";
 "widget.change" = "%@ 24H";

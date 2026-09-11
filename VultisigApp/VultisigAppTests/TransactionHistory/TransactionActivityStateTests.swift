@@ -84,9 +84,9 @@ final class TransactionActivityStateTests: XCTestCase {
         }
     }
 
-    func testOpaqueDeepLinkRoundTripsAndRejectsExtraContent() {
+    func testOpaqueDeepLinkRoundTripsAndRejectsExtraContent() throws {
         let id = UUID()
-        XCTAssertEqual(TransactionActivityLink.recordID(from: TransactionActivityLink.url(recordID: id)), id)
+        XCTAssertEqual(TransactionActivityLink.recordID(from: try XCTUnwrap(TransactionActivityLink.url(recordID: id))), id)
         XCTAssertNil(TransactionActivityLink.recordID(from: URL(string: "https://transaction/" + id.uuidString)!))
         XCTAssertNil(TransactionActivityLink.recordID(from: URL(string: "vultisig://transaction/" + id.uuidString + "?vault=secret")!))
     }
