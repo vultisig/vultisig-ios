@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "Tausch abgeschlossen";
 "transactionActivityConfirmed" = "Bestätigt";
 "transactionActivityDelayed" = "Aktualisierung verzögert";
-"transactionActivityDetails" = "Transaktionsbeträge anzeigen";
 "transactionActivityFailed" = "Fehlgeschlagen";
 "transactionActivityFee" = "Geschätzte Gebühr";
-"transactionActivityFixture" = "Live-Aktivität testen";
 "transactionActivityPartiallyRefunded" = "Teilweise erstattet";
 "transactionActivityPending" = "Ausstehend";
-"transactionActivityPrototype" = "Aktualisierungen nur bei laufender App. Daten können veralten.";
 "transactionActivityRefunded" = "Erstattet";
 "transactionActivitySending" = "Wird gesendet";
-"transactionActivitySetting" = "Live-Aktivitäten (Vorschau)";
 "transactionActivitySourceConfirmed" = "Quelle bestätigt";
 "transactionActivitySubmitted" = "Gesendet";
 "transactionActivitySwap" = "Tausch";

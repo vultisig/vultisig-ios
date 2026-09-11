@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "스왑 완료";
 "transactionActivityConfirmed" = "확인됨";
 "transactionActivityDelayed" = "업데이트 지연";
-"transactionActivityDetails" = "거래 금액 표시";
 "transactionActivityFailed" = "실패";
 "transactionActivityFee" = "예상 수수료";
-"transactionActivityFixture" = "실시간 현황 미리보기";
 "transactionActivityPartiallyRefunded" = "일부 환불됨";
 "transactionActivityPending" = "대기 중";
-"transactionActivityPrototype" = "앱이 실행 중일 때만 업데이트됩니다. 데이터가 오래될 수 있습니다.";
 "transactionActivityRefunded" = "환불됨";
 "transactionActivitySending" = "전송 중";
-"transactionActivitySetting" = "실시간 현황 (미리보기)";
 "transactionActivitySourceConfirmed" = "출발 체인 확인됨";
 "transactionActivitySubmitted" = "제출됨";
 "transactionActivitySwap" = "스왑";

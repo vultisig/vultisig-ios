@@ -17,8 +17,6 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         client = ActivityClientSpy()
         suite = "live-activities-test-" + UUID().uuidString
         defaults = UserDefaults(suiteName: suite)!
-        defaults.set(true, forKey: TransactionActivityPolicy.enabledKey)
-        defaults.set(true, forKey: TransactionActivityPolicy.detailsKey)
         rows = [:]
         hasVault = true
         lookupFails = false
@@ -40,13 +38,28 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
                                                if self.vaultLookupFails { throw NSError(domain: "fixture", code: 2) }
                                                return self.hasVault
                                            },
-                                           featureEnabled: true, resume: { _ in })
+                                           resume: { _ in })
     }
 
     private func addRow() -> TransactionHistoryData {
         let row = ActivityTestFixture.row()
         rows[row.id] = row
         return row
+    }
+
+    func testFreshInstallationStartsRichActivityWithoutOptIn() {
+        let manager = coordinator()
+        manager.admit(addRow())
+        XCTAssertEqual(client.requestCount, 1)
+        XCTAssertTrue(client.activities.first?.state.hasDetails ?? false)
+    }
+
+    func testHiddenBalancesStartPrivateWithoutPreviewPreferences() {
+        defaults.set(true, forKey: "showVaultBalance")
+        let manager = coordinator()
+        manager.admit(addRow())
+        XCTAssertEqual(client.requestCount, 1)
+        XCTAssertFalse(client.activities.first?.state.hasDetails ?? true)
     }
 
     func testDuplicateAndRestorationDoNotRequestAgain() async {
@@ -105,20 +118,20 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         XCTAssertEqual(client.immediateEnds.count, endsBeforeOrdinaryRefresh)
         XCTAssertEqual(client.activities.first?.state.phase, .confirmed)
         XCTAssertNotNil(client.activities.first?.state.summary)
-        defaults.set(false, forKey: TransactionActivityPolicy.detailsKey)
+        defaults.set(true, forKey: "showVaultBalance")
         await manager.reconcile()
         XCTAssertTrue(client.immediateEnds.last ?? false)
         XCTAssertNil(client.activities.first?.state.summary)
     }
 
-    func testDisablingDeletionAndVaultDeletionEndWithoutResurrection() async {
+    func testRevocationDeletionAndVaultDeletionEndWithoutResurrection() async {
         for change in 0..<3 {
             let row = addRow()
-            defaults.set(true, forKey: TransactionActivityPolicy.enabledKey)
+            client.isAuthorized = true
             hasVault = true
             let manager = coordinator()
             manager.admit(row)
-            if change == 0 { defaults.set(false, forKey: TransactionActivityPolicy.enabledKey) }
+            if change == 0 { client.isAuthorized = false }
             if change == 1 { rows.removeValue(forKey: row.id) }
             if change == 2 { hasVault = false }
             await manager.reconcile()
@@ -129,10 +142,9 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         }
     }
 
-    func testRetainedReceiptsAreRemovedOnDisableDeletionVaultDeletionAndRevocation() async {
-        for change in 0..<4 {
+    func testRetainedReceiptsAreRemovedOnDeletionVaultDeletionAndRevocation() async {
+        for change in 0..<3 {
             client.activities = []
-            defaults.set(true, forKey: TransactionActivityPolicy.enabledKey)
             hasVault = true
             client.isAuthorized = true
             let row = addRow()
@@ -146,10 +158,9 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
             let priorEnds = client.immediateEnds.count
             await manager.reconcile()
             XCTAssertEqual(client.immediateEnds.count, priorEnds)
-            if change == 0 { defaults.set(false, forKey: TransactionActivityPolicy.enabledKey) }
+            if change == 0 { client.isAuthorized = false }
             if change == 1 { rows.removeValue(forKey: row.id) }
             if change == 2 { hasVault = false }
-            if change == 3 { client.isAuthorized = false }
             await manager.reconcile()
             XCTAssertTrue(client.immediateEnds.last ?? false)
             XCTAssertFalse(client.activities.first(where: { $0.id == activityID })!.state.hasDetails)

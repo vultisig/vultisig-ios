@@ -21,40 +21,36 @@ final class TransactionLiveActivityCoordinator {
     private let defaults: UserDefaults
     private let lookup: @MainActor (UUID) throws -> TransactionHistoryData?
     private let vaultExists: @MainActor (String) throws -> Bool
-    private let featureEnabled: Bool
     private let resume: @MainActor (TransactionHistoryData) -> Void
     private var bindings: [String: Binding]
     private var subscriptions = Set<AnyCancellable>()
     private var permissionTask: Task<Void, Never>?
     private var queue: Task<Void, Never>?
-    private var preferences: [Bool] = []
+    private var detailsVisible = false
     private var started = false
 
     init(client: (any TransactionActivityClient)? = nil,
          defaults: UserDefaults = .standard,
          lookup: (@MainActor (UUID) throws -> TransactionHistoryData?)? = nil,
          vaultExists: (@MainActor (String) throws -> Bool)? = nil,
-         featureEnabled: Bool = TransactionActivityPolicy.isDevelopmentEnabled,
          resume: (@MainActor (TransactionHistoryData) -> Void)? = nil) {
         self.client = client ?? SystemTransactionActivityClient()
         self.defaults = defaults
         self.lookup = lookup ?? { try TransactionHistoryStorage.shared.fetch(id: $0) }
         self.vaultExists = vaultExists ?? { try TransactionLiveActivityBroadcast.vaultExists(pubKey: $0) }
-        self.featureEnabled = featureEnabled
         self.resume = resume ?? Self.resumeTracking
         bindings = defaults.data(forKey: TransactionActivityPolicy.ledgerKey)
             .flatMap { try? JSONDecoder().decode([String: Binding].self, from: $0) } ?? [:]
     }
 
-    var isEnabled: Bool { featureEnabled && defaults.bool(forKey: TransactionActivityPolicy.enabledKey) }
     private var showDetails: Bool {
-        defaults.bool(forKey: TransactionActivityPolicy.detailsKey) && !defaults.bool(forKey: "showVaultBalance")
+        !defaults.bool(forKey: "showVaultBalance")
     }
 
     func start() {
-        guard featureEnabled, !started else { return }
+        guard !started else { return }
         started = true
-        preferences = [isEnabled, showDetails]
+        detailsVisible = showDetails
         NotificationCenter.default.publisher(for: TransactionHistoryActivityEvent.notification)
             .sink { [weak self] notification in
                 guard let event = notification.object as? TransactionHistoryActivityEvent else { return }
@@ -63,8 +59,8 @@ final class TransactionLiveActivityCoordinator {
         NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.preferences != [self.isEnabled, self.showDetails] else { return }
-                self.preferences = [self.isEnabled, self.showDetails]
+                guard let self, self.detailsVisible != self.showDetails else { return }
+                self.detailsVisible = self.showDetails
                 self.refresh()
             }.store(in: &subscriptions)
         permissionTask = Task { [weak self] in
@@ -94,12 +90,12 @@ final class TransactionLiveActivityCoordinator {
 
     func admit(_ row: TransactionHistoryData, now: Date = Date()) {
         let key = TransactionActivityPolicy.identity(row)
-        guard featureEnabled, bindings[key] == nil else { return }
+        guard bindings[key] == nil else { return }
         // Persist the one-shot decision before request. A crash, rejection, capacity
-        // overflow, disable, or dismissal must never cause an automatic resurrection.
+        // overflow, permission denial, or dismissal must never cause an automatic resurrection.
         bindings[key] = Binding(recordID: row.id, phase: .submitted, observedAt: row.createdAt, revision: 1, ended: true)
         persist()
-        guard isEnabled, client.isAuthorized, client.isForeground,
+        guard client.isAuthorized, client.isForeground,
               row.status == .inProgress, row.type == .send || row.type == .swap,
               now.timeIntervalSince(row.createdAt) < TransactionActivityPolicy.maximumAge,
               client.activities.filter(\.isActive).count < TransactionActivityPolicy.maximumActivities,
@@ -150,8 +146,8 @@ final class TransactionLiveActivityCoordinator {
             }
             if pair.value.ended {
                 // Preserve the recognition window on routine foregrounds. Erase a
-                // retained receipt when privacy/settings/deletion actually require it.
-                var mustRemove = activity.isActive || !isEnabled || !client.isAuthorized
+                // retained receipt when privacy/permission/deletion actually require it.
+                var mustRemove = activity.isActive || !client.isAuthorized
                     || (!showDetails && activity.state.hasDetails)
                 if !mustRemove {
                     do {
@@ -171,7 +167,7 @@ final class TransactionLiveActivityCoordinator {
             bindings[pair.key]?.activityID = activity.id
         }
         for (key, binding) in bindings where !binding.ended {
-            guard isEnabled, client.isAuthorized,
+            guard client.isAuthorized,
                   let activity = activities.first(where: { $0.recordID == binding.recordID && $0.isActive }) else {
                 await finish(key: key, immediately: true)
                 continue
@@ -202,7 +198,7 @@ final class TransactionLiveActivityCoordinator {
         let key = TransactionActivityPolicy.identity(row)
         guard var binding = bindings[key], !binding.ended, !binding.phase.isTerminal,
               let id = binding.activityID else { return }
-        guard isEnabled, client.isAuthorized else {
+        guard client.isAuthorized else {
             await finish(key: key, immediately: true)
             return
         }

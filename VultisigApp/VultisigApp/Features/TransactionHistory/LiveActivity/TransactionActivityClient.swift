@@ -23,7 +23,7 @@ protocol TransactionActivityClient {
 @MainActor
 final class SystemTransactionActivityClient: TransactionActivityClient {
     // Keep ended handles until dismissal, so retained terminal content can be erased
-    // immediately when the user hides balances, disables tracking, or deletes history.
+    // immediately when the user hides balances, revokes permission, or deletes history.
     private var retained: [String: Activity<TransactionActivityAttributes>] = [:]
 
     var isAuthorized: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }

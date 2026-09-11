@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "兑换完成";
 "transactionActivityConfirmed" = "已确认";
 "transactionActivityDelayed" = "更新延迟";
-"transactionActivityDetails" = "显示交易金额";
 "transactionActivityFailed" = "失败";
 "transactionActivityFee" = "预计费用";
-"transactionActivityFixture" = "预览实时活动";
 "transactionActivityPartiallyRefunded" = "已部分退款";
 "transactionActivityPending" = "待处理";
-"transactionActivityPrototype" = "仅在应用运行时更新。数据可能过时。";
 "transactionActivityRefunded" = "已退款";
 "transactionActivitySending" = "发送中";
-"transactionActivitySetting" = "实时活动（预览）";
 "transactionActivitySourceConfirmed" = "源链已确认";
 "transactionActivitySubmitted" = "已提交";
 "transactionActivitySwap" = "兑换";

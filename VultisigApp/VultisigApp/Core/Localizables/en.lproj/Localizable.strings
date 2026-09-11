@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "Swap completed";
 "transactionActivityConfirmed" = "Confirmed";
 "transactionActivityDelayed" = "Update delayed";
-"transactionActivityDetails" = "Show transaction amounts";
 "transactionActivityFailed" = "Failed";
 "transactionActivityFee" = "Est. fee";
-"transactionActivityFixture" = "Preview Live Activity";
 "transactionActivityPartiallyRefunded" = "Partially refunded";
 "transactionActivityPending" = "Pending";
-"transactionActivityPrototype" = "Updates only while the app is running. Live Activities may become stale.";
 "transactionActivityRefunded" = "Refunded";
 "transactionActivitySending" = "Sending";
-"transactionActivitySetting" = "Live Activities (preview)";
 "transactionActivitySourceConfirmed" = "Source confirmed";
 "transactionActivitySubmitted" = "Submitted";
 "transactionActivitySwap" = "Swap";

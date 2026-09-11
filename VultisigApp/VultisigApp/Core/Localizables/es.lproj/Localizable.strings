@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "Intercambio completado";
 "transactionActivityConfirmed" = "Confirmada";
 "transactionActivityDelayed" = "Actualización retrasada";
-"transactionActivityDetails" = "Mostrar importes";
 "transactionActivityFailed" = "Fallida";
 "transactionActivityFee" = "Comisión estimada";
-"transactionActivityFixture" = "Probar actividad en vivo";
 "transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendiente";
-"transactionActivityPrototype" = "Se actualiza solo mientras la app está activa. Los datos pueden quedar desactualizados.";
 "transactionActivityRefunded" = "Reembolsada";
 "transactionActivitySending" = "Enviando";
-"transactionActivitySetting" = "Actividades en vivo (vista previa)";
 "transactionActivitySourceConfirmed" = "Origen confirmado";
 "transactionActivitySubmitted" = "Enviada";
 "transactionActivitySwap" = "Intercambio";

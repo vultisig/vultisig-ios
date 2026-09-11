@@ -23,9 +23,6 @@ struct NotificationsSettingsScreen: View {
         Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
-                    #if DEBUG && os(iOS)
-                    TransactionLiveActivitySettings()
-                    #endif
                     mainToggleSection
                     vaultListSection
                         .transition(.verticalGrowAndFade)

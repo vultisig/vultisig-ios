@@ -2,14 +2,12 @@ import CryptoKit
 import Foundation
 
 enum TransactionActivityPolicy {
-    static let enabledKey = "transactionLiveActivitiesEnabled"
-    static let detailsKey = "transactionLiveActivitiesShowDetails"
     static let ledgerKey = "transactionLiveActivitiesLedgerV1"
     static let maximumActivities = 2
     static let maximumAge: TimeInterval = 7.5 * 60 * 60
 
-    static var isDevelopmentEnabled: Bool {
-        #if DEBUG && os(iOS)
+    static var isSupportedPlatform: Bool {
+        #if os(iOS)
         true
         #else
         false

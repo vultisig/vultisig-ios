@@ -8,7 +8,7 @@ import SwiftData
 
 @MainActor
 final class TransactionHistoryStorage {
-    static let shared = TransactionHistoryStorage(publishesActivityEvents: TransactionActivityPolicy.isDevelopmentEnabled)
+    static let shared = TransactionHistoryStorage(publishesActivityEvents: TransactionActivityPolicy.isSupportedPlatform)
 
     private let modelContext: ModelContext
     private let publishesActivityEvents: Bool

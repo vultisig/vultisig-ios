@@ -1642,16 +1642,12 @@
 "transactionActivityCompleted" = "Zamjena dovršena";
 "transactionActivityConfirmed" = "Potvrđeno";
 "transactionActivityDelayed" = "Ažuriranje kasni";
-"transactionActivityDetails" = "Prikaži iznose transakcija";
 "transactionActivityFailed" = "Neuspjelo";
 "transactionActivityFee" = "Procijenjena naknada";
-"transactionActivityFixture" = "Pregled aktivnosti uživo";
 "transactionActivityPartiallyRefunded" = "Djelomično vraćeno";
 "transactionActivityPending" = "Na čekanju";
-"transactionActivityPrototype" = "Ažuriranja samo dok je aplikacija aktivna. Podaci mogu zastarjeti.";
 "transactionActivityRefunded" = "Vraćeno";
 "transactionActivitySending" = "Slanje";
-"transactionActivitySetting" = "Aktivnosti uživo (pregled)";
 "transactionActivitySourceConfirmed" = "Izvor potvrđen";
 "transactionActivitySubmitted" = "Poslano";
 "transactionActivitySwap" = "Zamjena";

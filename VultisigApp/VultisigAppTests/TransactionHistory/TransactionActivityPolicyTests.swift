@@ -4,6 +4,14 @@ import XCTest
 
 @MainActor
 final class TransactionActivityPolicyTests: XCTestCase {
+    func testAvailabilityIsPlatformBasedRatherThanBuildConfiguration() {
+        #if os(iOS)
+        XCTAssertTrue(TransactionActivityPolicy.isSupportedPlatform)
+        #else
+        XCTAssertFalse(TransactionActivityPolicy.isSupportedPlatform)
+        #endif
+    }
+
     func testSwapSourceConfirmationNeverSettlesSwap() {
         let row = ActivityTestFixture.row(type: .swap, status: .successful)
         XCTAssertEqual(TransactionActivityPolicy.phase(for: row), .sourceConfirmed)

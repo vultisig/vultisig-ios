@@ -6,9 +6,7 @@ import SwiftData
 @MainActor
 enum TransactionLiveActivityBroadcast {
     static func record(hash: String, approveHash: String?, payload: KeysignPayload, vault: Vault, isInitiator: Bool) {
-        guard TransactionActivityPolicy.isDevelopmentEnabled,
-              UserDefaults.standard.bool(forKey: TransactionActivityPolicy.enabledKey),
-              isInitiator, !hash.isEmpty, TransactionActivityPolicy.isEligible(payload) else { return }
+        guard isInitiator, !hash.isEmpty, TransactionActivityPolicy.isEligible(payload) else { return }
         TransactionLiveActivityCoordinator.shared.start()
         if let swap = payload.swapPayload {
             guard let chainID = SwapKitChainIdentifier.chainId(for: payload.coin.chain) else { return }
