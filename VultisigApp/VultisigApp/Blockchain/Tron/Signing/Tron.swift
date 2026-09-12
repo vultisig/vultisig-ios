@@ -289,6 +289,69 @@ enum TronHelper {
             + transactionResultBytes
     }
 
+    /// Placeholder TRC20 `amount` used when the real one is not known yet.
+    /// A zero amount serializes to 0 bytes and would under-reserve, so this
+    /// mirrors the native transfer's widest-`Int64` trick: token balances
+    /// realistically fit a `uint64`, so 8 bytes is the practical upper bound
+    /// rather than the full 32-byte `uint256` width.
+    private static let placeholderTrc20Amount = BigInt(Int64.max)
+
+    /// Bandwidth, in bytes, that a TRC20 transfer consumes once signed. Same
+    /// measurement approach as `nativeTransferBandwidthBytes`, but for
+    /// `TransferTRC20Contract` — java-tron bills bandwidth for a contract
+    /// call on the same terms as any other transaction.
+    /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
+    static func trc20TransferBandwidthBytes(
+        ownerAddress: String,
+        toAddress: String,
+        contractAddress: String,
+        amount: BigInt,
+        memo: String?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Int64 {
+        let contract = TronTransferTRC20Contract.with {
+            $0.ownerAddress = ownerAddress
+            $0.toAddress = toAddress
+            $0.contractAddress = contractAddress
+            $0.amount = (amount > .zero ? amount : Self.placeholderTrc20Amount).serialize()
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.transferTrc20Contract = contract
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+                if let memo { $0.memo = memo }
+            }
+        }
+
+        let preSigningOutput = try TxCompilerPreSigningOutput(
+            serializedBytes: TransactionCompiler.preImageHashes(
+                coinType: .tron,
+                txInputData: try input.serializedData()
+            )
+        )
+        guard preSigningOutput.errorMessage.isEmpty else {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+        guard !preSigningOutput.data.isEmpty else {
+            throw HelperError.runtimeError("empty Tron pre-signing payload")
+        }
+
+        return lengthDelimitedFieldBytes(preSigningOutput.data.count)
+            + lengthDelimitedFieldBytes(signatureBytes)
+            + transactionResultBytes
+    }
+
     /// Protobuf overhead of the `data` field carrying `memo`, without its bytes.
     static func memoFieldOverheadBytes(_ memo: String) -> Int64 {
         Int64(1 + protobufVarintBytes(memo.utf8.count))

@@ -102,4 +102,60 @@ final class TronBandwidthEstimateTests: XCTestCase {
             blockHeaderWitnessAddress: "41" + String(repeating: "03", count: 20)
         )
     }
+
+    // MARK: - TRC20
+
+    private static let contractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+
+    /// Hand-derived from TRON's wire format, same method as the native
+    /// constant above.
+    private static let trc20TransferBytes: Int64 = 339
+
+    func testTrc20MemolessTransferMatchesTheHandDerivedByteCount() throws {
+        XCTAssertEqual(try trc20BandwidthBytes(memo: nil), Self.trc20TransferBytes)
+    }
+
+    func testTrc20MemoAddsItsOwnBytesToTheEstimate() throws {
+        let memo = String(repeating: "a", count: 50)
+
+        let withoutMemo = try trc20BandwidthBytes(memo: nil)
+        let withMemo = try trc20BandwidthBytes(memo: memo)
+
+        XCTAssertEqual(withMemo - withoutMemo, Int64(memo.count) + Self.memoFieldOverhead)
+    }
+
+    /// A zero/unknown amount must not under-reserve: the bytes field would
+    /// otherwise serialize empty and undercount the real, funded transfer.
+    func testTrc20ZeroAmountReservesAsMuchAsAKnownOne() throws {
+        let zero = try trc20BandwidthBytes(memo: nil, amount: .zero)
+        let known = try trc20BandwidthBytes(memo: nil, amount: BigInt(1_000_000))
+
+        XCTAssertGreaterThanOrEqual(zero, known)
+    }
+
+    func testTrc20UnencodableRecipientThrowsSoCallersKeepTheirFallback() {
+        XCTAssertThrowsError(try trc20BandwidthBytes(memo: nil, toAddress: ""))
+    }
+
+    private func trc20BandwidthBytes(
+        memo: String?,
+        toAddress: String = TronBandwidthEstimateTests.recipient,
+        amount: BigInt = BigInt(1_000_000)
+    ) throws -> Int64 {
+        try TronHelper.trc20TransferBandwidthBytes(
+            ownerAddress: Self.owner,
+            toAddress: toAddress,
+            contractAddress: Self.contractAddress,
+            amount: amount,
+            memo: memo,
+            timestamp: 1_757_000_000_000,
+            expiration: 1_757_003_600_000,
+            blockHeaderTimestamp: 1_757_000_000_000,
+            blockHeaderNumber: 74_000_000,
+            blockHeaderVersion: 30,
+            blockHeaderTxTrieRoot: String(repeating: "01", count: 32),
+            blockHeaderParentHash: String(repeating: "02", count: 32),
+            blockHeaderWitnessAddress: "41" + String(repeating: "03", count: 20)
+        )
+    }
 }
