@@ -90,8 +90,8 @@ struct TonJettonFinder {
             for wallet in response.jetton_wallets {
                 guard TonJettonAddress.canonical(wallet.owner) == owner else { continue }
                 guard let master = TonJettonAddress.canonical(wallet.jetton) else { continue }
-                guard seenMasters.insert(master).inserted else { continue }
                 guard let balance = BigInt(wallet.balance), balance > 0 else { continue }
+                guard seenMasters.insert(master).inserted else { continue }
 
                 if let coin = coin(master: master, metadata: masters[master], registry: registry) {
                     discovered.append(coin)
