@@ -43,6 +43,6 @@ final class VultisigUIResourcesTests: XCTestCase {
         )
 
         XCTAssertTrue(sourceCatalog != nil || compiledCatalog != nil)
-        XCTAssertEqual(VultisigImage.allCases.count, 6)
+        XCTAssertEqual(VultisigImage.allCases.count, 7)
     }
 }

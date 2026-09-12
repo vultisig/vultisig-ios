@@ -49,7 +49,9 @@ class TransactionHistoryViewModel: ObservableObject {
     let vaultName: String
     let chainFilter: Chain?
 
-    private let storage = TransactionHistoryStorage.shared
+    private var initialTransactionID: UUID?
+
+    private let storage: TransactionHistoryStorage
     private let limitOrderStorage = LimitOrderStorageService()
     private let poller: TransactionHistoryNativePoller
     private let registry: SwapTrackingRegistry
@@ -59,12 +61,16 @@ class TransactionHistoryViewModel: ObservableObject {
         pubKeyECDSA: String,
         vaultName: String,
         chainFilter: Chain?,
+        initialTransactionID: UUID? = nil,
+        storage: TransactionHistoryStorage? = nil,
         poller: TransactionHistoryNativePoller? = nil,
         registry: SwapTrackingRegistry? = nil
     ) {
         self.pubKeyECDSA = pubKeyECDSA
         self.vaultName = vaultName
         self.chainFilter = chainFilter
+        self.initialTransactionID = initialTransactionID
+        self.storage = storage ?? .shared
         // Defaults are resolved inside the body so the MainActor-isolated
         // `.shared` singletons aren't referenced from default-argument
         // expressions (which run in the caller's context and would warn
@@ -77,7 +83,11 @@ class TransactionHistoryViewModel: ObservableObject {
 
     func load() {
         reopenLegacyClientTimeouts()
-        fetchRows()
+        reloadTransactions()
+        if let initialTransactionID {
+            selectedDetail = transactions.first { $0.id == initialTransactionID }
+            self.initialTransactionID = nil
+        }
         pollInProgressTransactions()
         resumeSwapTracking()
         loadLimitOrders()
@@ -111,21 +121,37 @@ class TransactionHistoryViewModel: ObservableObject {
     /// what triggered this, and `load()`'s polling side effects have no place
     /// on a data-changed notification.
     func reloadAfterLimitOrderChange() {
-        fetchRows()
+        reloadTransactions()
         loadLimitOrders()
     }
 
-    private func fetchRows() {
+    func reloadTransactions() {
         do {
+            let rows: [TransactionHistoryData]
             if let chain = chainFilter {
-                transactions = try storage.fetchByChain(pubKeyECDSA: pubKeyECDSA, chainRawValue: chain.rawValue)
+                rows = try storage.fetchByChain(pubKeyECDSA: pubKeyECDSA, chainRawValue: chain.rawValue)
             } else {
-                transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
+                rows = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
+            if transactions != rows { transactions = rows }
         } catch {
             logger.error("Failed to load: \(error)")
         }
         reconcileSelectedDetail()
+    }
+
+    func reloadTransactions(after event: TransactionHistoryActivityEvent) {
+        switch event {
+        case .saved(let row), .nativeStatus(let row, _), .swapStatus(let row, _), .delayed(let row):
+            guard row.pubKeyECDSA == pubKeyECDSA,
+                  transactions.first(where: { $0.id == row.id }) != row else { return }
+            reloadTransactions()
+        case .deleted:
+            selectedDetail = nil
+            reloadTransactions()
+        case .nativePending:
+            break
+        }
     }
 
     /// Re-point an open detail sheet at the row we just re-read.
@@ -154,7 +180,7 @@ class TransactionHistoryViewModel: ObservableObject {
     }
 
     /// Test-only — drives the reconcile without standing up SwiftData, which
-    /// `fetchRows` needs and a unit test can't provide.
+    /// `reloadTransactions` needs and a unit test can't provide.
     func reconcileSelectedDetailForTesting() {
         reconcileSelectedDetail()
     }

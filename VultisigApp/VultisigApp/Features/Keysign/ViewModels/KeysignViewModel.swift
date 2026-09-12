@@ -1138,6 +1138,15 @@ class KeysignViewModel: ObservableObject {
             return
         }
 
+        #if os(iOS)
+        // A cancelled broadcast can retain its deterministic hash without any
+        // positive chain evidence. Keep its pending lookup, but do not claim submission.
+        if !Self.isTerminalStatus(status) {
+            TransactionLiveActivityBroadcast.record(hash: txid, approveHash: approveTxid, payload: keysignPayload,
+                                                   vault: vault, isInitiator: isInitiateDevice)
+        }
+        #endif
+
         let storage = StoredPendingTransactionStorage.shared
         let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)
 

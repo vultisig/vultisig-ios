@@ -188,12 +188,18 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
 
     /// One-shot refresh — fires a single `/track` request immediately
     /// regardless of the backoff schedule. Used by pull-to-refresh.
-    func forceRefresh(tx: TransactionHistoryData) async {
+    func forceRefresh(tx: TransactionHistoryData, backgroundObservation: Bool = false, shouldApply: @escaping @MainActor () -> Bool = { true }) async {
         guard isOwnedByThisProvider(tx),
               let tracking = tx.swapTracking,
               let hash = tracking.broadcastHash,
               let chainId = tracking.sourceChainId else { return }
-        await pollOnce(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, broadcastHash: hash, chainId: chainId)
+        guard !Task.isCancelled, shouldApply() else { return }
+        let outcome = await pollOnce(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, broadcastHash: hash, chainId: chainId,
+                                     backgroundObservation: backgroundObservation, shouldApply: shouldApply)
+        if backgroundObservation, outcome.shouldStop, uiStatusByTxHash[tx.txHash]?.isTerminal == true {
+            // A terminal one-shot must not resume its suspended poller and rewrite the receipt time.
+            stop(txHash: tx.txHash)
+        }
     }
 
     /// Test-only state inspection. Returns the number of currently-tracked
@@ -282,7 +288,9 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
         txHash: String,
         pubKeyECDSA: String,
         broadcastHash: String,
-        chainId: String
+        chainId: String,
+        backgroundObservation: Bool = false,
+        shouldApply: @MainActor () -> Bool = { true }
     ) async -> PollOutcome {
         let request = SwapKitTrackRequest(hash: broadcastHash, chainId: chainId)
         do {
@@ -296,10 +304,15 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
             // already guards on the poller registry; success needs an explicit
             // check because `forceRefresh` legitimately calls `pollOnce` without a
             // registered poller.
-            if Task.isCancelled { return PollOutcome(shouldStop: true, nextDelay: 0) }
-            return handleSuccess(txHash: txHash, pubKeyECDSA: pubKeyECDSA, response: response.data)
+            if Task.isCancelled || !shouldApply() { return PollOutcome(shouldStop: true, nextDelay: 0) }
+            return handleSuccess(txHash: txHash, pubKeyECDSA: pubKeyECDSA, response: response.data, backgroundObservation: backgroundObservation)
         } catch {
-            if Task.isCancelled { return PollOutcome(shouldStop: true, nextDelay: 0) }
+            if Task.isCancelled || !shouldApply() { return PollOutcome(shouldStop: true, nextDelay: 0) }
+            if backgroundObservation {
+                // Sparse OS-granted observations are not continuous polling failures.
+                try? storage.touchSwapTrackingLastPolled(txHash: txHash, pubKeyECDSA: pubKeyECDSA, polledAt: clock())
+                return PollOutcome(shouldStop: true, nextDelay: 0)
+            }
             return handleFailure(txHash: txHash, pubKeyECDSA: pubKeyECDSA, error: error)
         }
     }
@@ -307,14 +320,15 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
     private func handleSuccess(
         txHash: String,
         pubKeyECDSA: String,
-        response: SwapKitTrackingResponse
+        response: SwapKitTrackingResponse,
+        backgroundObservation: Bool
     ) -> PollOutcome {
         let now = clock()
         var uiStatus = SwapKitTrackingStatusMapper.map(response)
 
         // Promote `unknown` → `failed` after the give-up window so the row
         // doesn't hang forever when SwapKit can't index the hash.
-        if uiStatus == .pending,
+        if !backgroundObservation, uiStatus == .pending,
            response.trackingStatus?.lowercased() == "unknown" || response.status == .unknown,
            let started = pollers[txHash]?.tx.swapTracking?.trackingStartedAt ?? trackingStartedFromStorage(txHash: txHash, pubKeyECDSA: pubKeyECDSA),
            now.timeIntervalSince(started) > Self.unknownGiveUpInterval {

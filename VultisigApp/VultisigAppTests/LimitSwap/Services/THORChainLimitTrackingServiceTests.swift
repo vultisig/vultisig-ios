@@ -13,6 +13,64 @@ import XCTest
 @MainActor
 final class THORChainLimitTrackingServiceTests: XCTestCase {
 
+    func testDonePollerDeliversLatestStatusAfterSynchronousBurst() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
+        service.setActive(false)
+        let poller = LimitOrderPoller(txHash: "limit-hash", pubKeyECDSA: "vault-pub", sourceChain: .thorChain, tracker: service)
+        defer { poller.stop(); service.stopAllTracking() }
+        let ready = expectation(description: "initial status delivered")
+        let completed = expectation(description: "latest terminal status delivered")
+        var received: [TransactionStatus] = []
+        poller.start { status in
+            received.append(status)
+            if received.count == 1 { ready.fulfill() }
+            if status == .confirmed { completed.fulfill() }
+        }
+        await fulfillment(of: [ready], timeout: 2)
+
+        // No suspension between writes: the consumer cannot request another
+        // value here. This crashed the old objectWillChange.values subscription.
+        for _ in 0..<100 {
+            service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.pending.rawValue))
+        }
+        service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.filled.rawValue))
+        await fulfillment(of: [completed], timeout: 2)
+        XCTAssertEqual(received.last, .confirmed)
+    }
+
+    func testDonePollerStopDiscardsQueuedStatusAndRestartUsesCurrentSnapshot() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
+        service.setActive(false)
+        let poller = LimitOrderPoller(txHash: "limit-hash", pubKeyECDSA: "vault-pub", sourceChain: .thorChain, tracker: service)
+        defer { poller.stop(); service.stopAllTracking() }
+        let ready = expectation(description: "initial subscription ready")
+        let unexpected = expectation(description: "no old callbacks after stop")
+        unexpected.isInverted = true
+        var initialDelivered = false
+        poller.start { _ in
+            if initialDelivered { unexpected.fulfill() } else {
+                initialDelivered = true
+                ready.fulfill()
+            }
+        }
+        await fulfillment(of: [ready], timeout: 2)
+        service.start(tx: Self.makeLimitTx(latestTrackingStatus: LimitOrderStatus.filled.rawValue))
+        poller.stop()
+        await fulfillment(of: [unexpected], timeout: 0.1)
+
+        let restarted = expectation(description: "restart receives latest cache")
+        poller.start { status in
+            XCTAssertEqual(status, .confirmed)
+            restarted.fulfill()
+        }
+        poller.start { _ in XCTFail("duplicate start installed a second subscription") }
+        await fulfillment(of: [restarted], timeout: 2)
+    }
+
     // MARK: - Provider identity
 
     func testProviderKindIsThorchainLimit() {
