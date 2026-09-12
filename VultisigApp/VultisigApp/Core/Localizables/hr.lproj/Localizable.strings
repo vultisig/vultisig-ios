@@ -140,7 +140,8 @@
 "beforeYouReshare" = "Prije ponovnog dijeljenja";
 "beforeYouReshareSubtitle" = "Ponovno dijeljenje ponovno stvara udjele vašeg trezora. Prvo trebate znati nekoliko stvari.";
 "beforeYouStart" = "Prije nego započnete...";
-"belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
+"belowExistentialDepositDestinationError" = "Ovaj prijenos doveo bi račun primatelja ispod minimalnog stanja (egzistencijalni depozit), pa bi ga mreža odbila. Povećajte iznos ili odaberite drugog primatelja.";
+"belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos tako da na računu ostane barem minimalno stanje.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
 "biometricUnlockTitle" = "Biometrijsko otključavanje";
 "bond" = "Veži";

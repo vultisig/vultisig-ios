@@ -140,7 +140,8 @@
 "beforeYouReshare" = "Before you reshare";
 "beforeYouReshareSubtitle" = "Resharing regenerates your vault shares. There are a few things to know first.";
 "beforeYouStart" = "Before you start...";
-"belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
+"belowExistentialDepositDestinationError" = "This send would leave the recipient's account below the minimum balance (existential deposit), so the network would reject it. Increase the amount or choose a different recipient.";
+"belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount so at least the minimum balance stays in your account.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
 "biometricUnlockTitle" = "Biometric Unlock";
 "bond" = "Bond";

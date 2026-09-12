@@ -140,7 +140,8 @@
 "beforeYouReshare" = "Bevor Sie erneut teilen";
 "beforeYouReshareSubtitle" = "Beim erneuten Teilen werden die Shares Ihres Tresors neu erzeugt. Vorher gibt es ein paar Dinge zu wissen.";
 "beforeYouStart" = "Bevor Sie beginnen...";
-"belowExistentialDepositError" = "Diese Überweisung würde weniger als das Mindestguthaben (Existenzminimum) auf Ihrem Konto belassen, sodass das Netzwerk sie ablehnen würde. Verringern Sie den Betrag oder senden Sie das gesamte Guthaben.";
+"belowExistentialDepositDestinationError" = "Diese Überweisung würde das Konto des Empfängers unter das Mindestguthaben (Existenzminimum) bringen, sodass das Netzwerk sie ablehnen würde. Erhöhen Sie den Betrag oder wählen Sie einen anderen Empfänger.";
+"belowExistentialDepositError" = "Diese Überweisung würde weniger als das Mindestguthaben (Existenzminimum) auf Ihrem Konto belassen, sodass das Netzwerk sie ablehnen würde. Verringern Sie den Betrag, sodass mindestens das Mindestguthaben auf Ihrem Konto verbleibt.";
 "biometricsFastSigning" = "Biometrie schnell unterschreiben";
 "biometricUnlockTitle" = "Biometrische Entsperrung";
 "bond" = "Binden";
