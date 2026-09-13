@@ -48,7 +48,8 @@ final class TronResourcesLoader: ObservableObject {
 
     @MainActor
     private func apply(_ resource: TronAccountResourceResponse) {
-        availableBandwidth = resource.calculateAvailableBandwidth()
+        let (freeBandwidth, stakedBandwidth) = resource.calculateAvailableBandwidth()
+        availableBandwidth = freeBandwidth + stakedBandwidth
         totalBandwidth = resource.freeNetLimit + resource.NetLimit
         availableEnergy = resource.EnergyLimit - resource.EnergyUsed
         totalEnergy = resource.EnergyLimit
