@@ -602,6 +602,42 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(gasFee, 100_000)
     }
 
+    /// TRON does not levy the activation fee on a `TriggerSmartContract`
+    /// (TRC20 transfer) — only on `AccountCreateContract` /
+    /// `TransferContract` / `TransferAssetContract`. A send to an
+    /// unactivated address must therefore quote only the simulated
+    /// energy/bandwidth cost, not the 1.1 TRX activation fee.
+    func testTrc20SendToUnactivatedAddressAddsNoActivationFee() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
+        stub.setResponse(path: "/wallet/getaccount", json: "{}")
+        let service = TronService(httpClient: stub)
+
+        let result = try await service.getBlockInfo(
+            coin: makeTrc20Coin(),
+            to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        )
+
+        XCTAssertEqual(extractGasFee(result), Self.trc20BandwidthFee)
+        XCTAssertEqual(extractFeeLimit(result), 35_490_000)
+    }
+
+    /// The native TRX path still charges activation for a genuinely
+    /// unactivated recipient — only the TRC20 path is gated off.
+    func testNativeSendToUnactivatedAddressStillAddsActivationFee() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccount", json: "{}")
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
+
+        // coin.feeDefault fallback (account-resource unavailable in this stub path is fine
+        // since it's still stubbed) + 100,000 + 1,000,000 activation fee.
+        XCTAssertEqual(extractGasFee(result), Self.memolessBandwidthBytes * 1000 + 1_100_000)
+    }
+
     // MARK: - Helpers
 
     private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
