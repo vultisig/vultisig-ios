@@ -171,7 +171,8 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
 
     @MainActor
     func apply(resource: TronAccountResourceResponse) {
-        availableBandwidth = resource.calculateAvailableBandwidth()
+        let (freeBandwidth, stakedBandwidth) = resource.calculateAvailableBandwidth()
+        availableBandwidth = freeBandwidth + stakedBandwidth
         totalBandwidth = resource.freeNetLimit + resource.NetLimit
         availableEnergy = resource.EnergyLimit - resource.EnergyUsed
         totalEnergy = resource.EnergyLimit

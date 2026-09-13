@@ -209,10 +209,13 @@ struct TronAccountResourceResponse: Codable {
         case EnergyLimit
     }
 
-    func calculateAvailableBandwidth() -> Int64 {
+    /// TRON never pools these: `BandwidthProcessor.consume()` tries the staked
+    /// pool then the free pool, each all-or-nothing, so coverage must be
+    /// checked per pool rather than against their sum.
+    func calculateAvailableBandwidth() -> (free: Int64, staked: Int64) {
         let freeBandwidthAvailable = freeNetLimit - freeNetUsed
         let netBandwidthAvailable = NetLimit - NetUsed
-        return freeBandwidthAvailable + netBandwidthAvailable
+        return (free: freeBandwidthAvailable, staked: netBandwidthAvailable)
     }
 
     func calculateAvailableEnergy() -> Int64 {
