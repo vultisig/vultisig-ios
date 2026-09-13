@@ -616,11 +616,12 @@ final class TronServiceFeeLimitTests: XCTestCase {
 
     private static let memoLength = 100
 
-    /// Measured bandwidth bytes (339) for a memo-less TRC20 transfer from
-    /// `makeTrc20Coin()` to `recipient`, times the test chain's 1000-sun
-    /// bandwidth price (`getTransactionFee` in `stubDefaults`) — close to the
-    /// ~345 bytes observed on mainnet for a real USDT transfer.
-    private static let trc20BandwidthFee: UInt64 = 339_000
+    /// Measured bandwidth bytes (345, including the signed `feeLimit`) for a
+    /// memo-less TRC20 transfer from `makeTrc20Coin()` to `recipient`, times
+    /// the test chain's 1000-sun bandwidth price (`getTransactionFee` in
+    /// `stubDefaults`) — matches the ~345 bytes observed on mainnet for a
+    /// real USDT transfer.
+    private static let trc20BandwidthFee: UInt64 = 345_000
 
     private func gasFee(
         coin: Coin,

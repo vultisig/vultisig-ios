@@ -299,13 +299,16 @@ enum TronHelper {
     /// Bandwidth, in bytes, that a TRC20 transfer consumes once signed. Same
     /// measurement approach as `nativeTransferBandwidthBytes`, but for
     /// `TransferTRC20Contract` — java-tron bills bandwidth for a contract
-    /// call on the same terms as any other transaction.
+    /// call on the same terms as any other transaction. `feeLimit` is part
+    /// of what actually gets signed and broadcast, so it must be sized here
+    /// too or the measurement undercounts the real bandwidth burn.
     /// See https://developers.tron.network/docs/resource-model#bandwidth-points.
     static func trc20TransferBandwidthBytes(
         ownerAddress: String,
         toAddress: String,
         contractAddress: String,
         amount: BigInt,
+        feeLimit: Int64,
         memo: String?,
         timestamp: UInt64,
         expiration: UInt64,
@@ -323,6 +326,7 @@ enum TronHelper {
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.transferTrc20Contract = contract
+                $0.feeLimit = feeLimit
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
                 $0.blockHeader = try buildBlockHeader(

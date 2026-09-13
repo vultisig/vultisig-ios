@@ -108,8 +108,11 @@ final class TronBandwidthEstimateTests: XCTestCase {
     private static let contractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 
     /// Hand-derived from TRON's wire format, same method as the native
-    /// constant above.
-    private static let trc20TransferBytes: Int64 = 339
+    /// constant above. Includes a representative `feeLimit` (35,490,000 sun,
+    /// the same ceiling used in `TronServiceFeeLimitTests`), since it's part
+    /// of what actually gets signed.
+    private static let trc20TransferBytes: Int64 = 345
+    private static let representativeFeeLimit: Int64 = 35_490_000
 
     func testTrc20MemolessTransferMatchesTheHandDerivedByteCount() throws {
         XCTAssertEqual(try trc20BandwidthBytes(memo: nil), Self.trc20TransferBytes)
@@ -133,6 +136,16 @@ final class TronBandwidthEstimateTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(zero, known)
     }
 
+    /// `feeLimit` is part of the signed transaction, so a wider one must grow
+    /// the measured bytes — leaving it out would undercount the real
+    /// bandwidth burn (the bug this sizing exists to avoid).
+    func testTrc20FeeLimitIsSizedIntoTheEstimate() throws {
+        let noFeeLimit = try trc20BandwidthBytes(memo: nil, feeLimit: 0)
+        let withFeeLimit = try trc20BandwidthBytes(memo: nil, feeLimit: Self.representativeFeeLimit)
+
+        XCTAssertGreaterThan(withFeeLimit, noFeeLimit)
+    }
+
     func testTrc20UnencodableRecipientThrowsSoCallersKeepTheirFallback() {
         XCTAssertThrowsError(try trc20BandwidthBytes(memo: nil, toAddress: ""))
     }
@@ -140,13 +153,15 @@ final class TronBandwidthEstimateTests: XCTestCase {
     private func trc20BandwidthBytes(
         memo: String?,
         toAddress: String = TronBandwidthEstimateTests.recipient,
-        amount: BigInt = BigInt(1_000_000)
+        amount: BigInt = BigInt(1_000_000),
+        feeLimit: Int64 = TronBandwidthEstimateTests.representativeFeeLimit
     ) throws -> Int64 {
         try TronHelper.trc20TransferBandwidthBytes(
             ownerAddress: Self.owner,
             toAddress: toAddress,
             contractAddress: Self.contractAddress,
             amount: amount,
+            feeLimit: feeLimit,
             memo: memo,
             timestamp: 1_757_000_000_000,
             expiration: 1_757_003_600_000,

@@ -111,8 +111,12 @@ class TronService {
             coin: coin,
             to: to,
             memo: memo,
+            amount: amount,
             isSwap: isSwap,
-            bandwidthBytes: bandwidthBytes
+            bandwidthBytes: bandwidthBytes,
+            timestamp: currentTimestampMillis,
+            expiration: UInt64(expiration),
+            block: response
         )
 
         return BlockChainSpecific.Tron(
@@ -217,8 +221,12 @@ class TronService {
         coin: Coin,
         to: String?,
         memo: String?,
+        amount: BigInt?,
         isSwap: Bool,
-        bandwidthBytes: Int64
+        bandwidthBytes: Int64,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse
     ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
@@ -251,7 +259,11 @@ class TronService {
             transactionEstimate = await calculateTrc20Fee(
                 coin: coin,
                 to: to,
-                bandwidthBytes: bandwidthBytes,
+                memo: memo,
+                amount: amount,
+                timestamp: timestamp,
+                expiration: expiration,
+                block: block,
                 energyPrice: energyPrice,
                 dynamicEnergyMaxFactor: dynamicEnergyMaxFactor,
                 maxFeeLimit: maxFeeLimit
@@ -294,38 +306,16 @@ class TronService {
         let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
         let fallback = Self.fallbackBandwidthBytes(memo: serializedMemo)
 
-        guard let to, !to.isEmpty else {
+        guard coin.isNativeToken, let to, !to.isEmpty else {
             return fallback
         }
         guard let rawData = block.block_header?.raw_data else {
             return fallback
         }
 
-        if coin.isNativeToken {
-            let bytes = try? TronHelper.nativeTransferBandwidthBytes(
-                ownerAddress: coin.address,
-                toAddress: to,
-                amount: amount ?? .zero,
-                memo: serializedMemo,
-                timestamp: timestamp,
-                expiration: expiration,
-                blockHeaderTimestamp: rawData.timestamp ?? 0,
-                blockHeaderNumber: rawData.number ?? 0,
-                blockHeaderVersion: UInt64(rawData.version ?? 0),
-                blockHeaderTxTrieRoot: rawData.txTrieRoot ?? "",
-                blockHeaderParentHash: rawData.parentHash ?? "",
-                blockHeaderWitnessAddress: rawData.witness_address ?? ""
-            )
-            return bytes ?? fallback
-        }
-
-        guard !coin.contractAddress.isEmpty else {
-            return fallback
-        }
-        let bytes = try? TronHelper.trc20TransferBandwidthBytes(
+        let bytes = try? TronHelper.nativeTransferBandwidthBytes(
             ownerAddress: coin.address,
             toAddress: to,
-            contractAddress: coin.contractAddress,
             amount: amount ?? .zero,
             memo: serializedMemo,
             timestamp: timestamp,
@@ -350,7 +340,11 @@ class TronService {
     private func calculateTrc20Fee(
         coin: Coin,
         to: String?,
-        bandwidthBytes: Int64,
+        memo: String?,
+        amount: BigInt?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse,
         energyPrice: Int64,
         dynamicEnergyMaxFactor: Int64,
         maxFeeLimit: Int64
@@ -402,19 +396,47 @@ class TronService {
             availableBandwidth = 0
         }
 
+        let feeLimit = Self.cappedFeeLimit(
+            Self.contractFeeLimit(energyUsed: totalEnergyUsed, energyPrice: energyPrice),
+            maxFeeLimit: maxFeeLimit
+        )
+
         // TRC20 pays bandwidth on the same terms as any other transaction —
         // only charged once the sender's quota can't cover it. This is
         // display-only, same as the energy discount above: `fee_limit` caps
-        // energy burn alone.
+        // energy burn alone. `feeLimit` is part of what gets signed, so it's
+        // sized into the measurement — otherwise the estimate undercounts
+        // the real bandwidth burn.
+        let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
+        let signedFeeLimit = Int64(exactly: feeLimit) ?? maxFeeLimit
+        let bandwidthBytes: Int64
+        if let rawData = block.block_header?.raw_data,
+           let bytes = try? TronHelper.trc20TransferBandwidthBytes(
+               ownerAddress: coin.address,
+               toAddress: to,
+               contractAddress: coin.contractAddress,
+               amount: amount ?? .zero,
+               feeLimit: signedFeeLimit,
+               memo: serializedMemo,
+               timestamp: timestamp,
+               expiration: expiration,
+               blockHeaderTimestamp: rawData.timestamp ?? 0,
+               blockHeaderNumber: rawData.number ?? 0,
+               blockHeaderVersion: UInt64(rawData.version ?? 0),
+               blockHeaderTxTrieRoot: rawData.txTrieRoot ?? "",
+               blockHeaderParentHash: rawData.parentHash ?? "",
+               blockHeaderWitnessAddress: rawData.witness_address ?? ""
+           ) {
+            bandwidthBytes = bytes
+        } else {
+            bandwidthBytes = Self.fallbackBandwidthBytes(memo: serializedMemo)
+        }
+
         let bandwidthFee = (try? await getBandwidthFeeDiscount(
             requiredBandwidth: bandwidthBytes,
             availableBandwidth: availableBandwidth
         )) ?? .zero
 
-        let feeLimit = Self.cappedFeeLimit(
-            Self.contractFeeLimit(energyUsed: totalEnergyUsed, energyPrice: energyPrice),
-            maxFeeLimit: maxFeeLimit
-        )
         let displayFee = Self.cappedFeeLimit(
             Self.trc20DisplayFee(
                 totalEnergyUsed: totalEnergyUsed,
