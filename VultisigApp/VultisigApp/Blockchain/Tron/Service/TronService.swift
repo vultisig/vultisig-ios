@@ -288,10 +288,11 @@ class TronService {
 
     private func calculateNativeTrxFee(coin: Coin, bandwidthBytes: Int64) async throws -> BigInt {
         let accountResource = try await apiService.getAccountResource(address: coin.address)
-        let availableBandwidth = accountResource.calculateAvailableBandwidth()
+        let (freeBandwidth, stakedBandwidth) = accountResource.calculateAvailableBandwidth()
         return try await getBandwidthFeeDiscount(
             requiredBandwidth: bandwidthBytes,
-            availableBandwidth: availableBandwidth
+            freeBandwidth: freeBandwidth,
+            stakedBandwidth: stakedBandwidth
         )
     }
 
@@ -387,18 +388,20 @@ class TronService {
         }
 
         let availableEnergy: Int64
-        let availableBandwidth: Int64
+        let freeBandwidth: Int64
+        let stakedBandwidth: Int64
         do {
             let accountResource = try await apiService.getAccountResource(address: coin.address)
             availableEnergy = accountResource.calculateAvailableEnergy()
-            availableBandwidth = accountResource.calculateAvailableBandwidth()
+            (freeBandwidth, stakedBandwidth) = accountResource.calculateAvailableBandwidth()
         } catch {
             // Unknown resources must never turn into a misleading zero-fee
             // estimate. Assuming no staked Energy/Bandwidth shows the full
             // simulated burn while leaving the independently-computed signed
             // ceiling intact.
             availableEnergy = 0
-            availableBandwidth = 0
+            freeBandwidth = 0
+            stakedBandwidth = 0
         }
 
         let feeLimit = Self.cappedFeeLimit(
@@ -439,7 +442,8 @@ class TronService {
 
         let bandwidthFee = (try? await getBandwidthFeeDiscount(
             requiredBandwidth: bandwidthBytes,
-            availableBandwidth: availableBandwidth
+            freeBandwidth: freeBandwidth,
+            stakedBandwidth: stakedBandwidth
         )) ?? .zero
 
         let displayFee = Self.cappedFeeLimit(
@@ -527,11 +531,18 @@ class TronService {
     /// Shared by native transfers (whole fee) and TRC20 transfers (bandwidth
     /// term added on top of the simulated Energy burn) — both consume
     /// bandwidth on the same terms.
-    private func getBandwidthFeeDiscount(requiredBandwidth: Int64, availableBandwidth: Int64) async throws -> BigInt {
+    private func getBandwidthFeeDiscount(
+        requiredBandwidth: Int64,
+        freeBandwidth: Int64,
+        stakedBandwidth: Int64
+    ) async throws -> BigInt {
         let chainParams = try await getCachedChainParameters()
         let required = max(requiredBandwidth, 0)
 
-        guard availableBandwidth < required else {
+        // TRON never pools these: each pool must cover the whole transfer on
+        // its own (see `calculateAvailableBandwidth`), so the sum of the two
+        // is never the right test.
+        guard freeBandwidth < required && stakedBandwidth < required else {
             return .zero
         }
         return BigInt(required) * BigInt(chainParams.bandwidthFeePrice)

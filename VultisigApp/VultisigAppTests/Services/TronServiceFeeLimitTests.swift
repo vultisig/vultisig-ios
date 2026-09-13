@@ -638,6 +638,55 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(extractGasFee(result), Self.memolessBandwidthBytes * 1000 + 1_100_000)
     }
 
+    /// TRON never pools the staked and free bandwidth pools (each must cover
+    /// the whole transfer alone), so 200 free + 200 staked against a
+    /// ~273-byte transfer must be charged in full, not treated as 400 >= 273.
+    func testNeitherPoolAloneCoversTransferChargesFullBandwidth() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":200,"NetUsed":0,"NetLimit":200,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: Self.recipient, memo: nil, isSwap: false)
+
+        XCTAssertEqual(extractGasFee(result), Self.memolessBandwidthBytes * 1000)
+    }
+
+    /// The free pool alone covers the transfer, so it's still free even with
+    /// no staked bandwidth.
+    func testFreePoolAloneCoveringTransferStaysFree() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":600,"NetUsed":0,"NetLimit":0,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: Self.recipient, memo: nil, isSwap: false)
+
+        XCTAssertEqual(extractGasFee(result), 0)
+    }
+
+    /// The staked pool alone covers the transfer, so it's still free even
+    /// with no free bandwidth.
+    func testStakedPoolAloneCoveringTransferStaysFree() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":0,"NetUsed":0,"NetLimit":600,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: Self.recipient, memo: nil, isSwap: false)
+
+        XCTAssertEqual(extractGasFee(result), 0)
+    }
+
     // MARK: - Helpers
 
     private static let recipient = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
