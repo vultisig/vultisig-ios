@@ -56,6 +56,13 @@ final class TonTransactionDecoderTests: XCTestCase {
         }
     }
 
+    func testJettonPoolCommentsNeverDecodeAsAStake() {
+        let decoder = TonTransactionDecoder()
+        for memo in ["Deposit", "d", "Withdraw", "w"] {
+            XCTAssertNil(decoder.decode(Self.payload(to: "EQpool", memo: memo, coin: Self.jettonCoin)), memo)
+        }
+    }
+
     func testTonConnectSignedDataMakesTheOuterCommentInert() {
         let payload = Self.payload(
             to: "EQpool",
@@ -112,13 +119,30 @@ final class TonTransactionDecoderTests: XCTestCase {
         )
     }
 
+    private static var jettonCoin: Coin {
+        Coin(
+            asset: CoinMeta(
+                chain: .ton,
+                ticker: "USDT",
+                logo: "usdt",
+                decimals: 6,
+                priceProviderId: "tether",
+                contractAddress: "EQjetton",
+                isNativeToken: false
+            ),
+            address: "EQfrom",
+            hexPublicKey: "00"
+        )
+    }
+
     private static func payload(
         to destination: String,
         memo: String,
+        coin: Coin = tonCoin,
         signData: SignData? = nil
     ) -> KeysignPayload {
         KeysignPayload(
-            coin: tonCoin,
+            coin: coin,
             toAddress: destination,
             toAmount: BigInt(1_000_000_000),
             chainSpecific: .Ton(sequenceNumber: 1, expireAt: 0, bounceable: true, sendMaxAmount: false),
