@@ -111,8 +111,12 @@ class TronService {
             coin: coin,
             to: to,
             memo: memo,
+            amount: amount,
             isSwap: isSwap,
-            bandwidthBytes: bandwidthBytes
+            bandwidthBytes: bandwidthBytes,
+            timestamp: currentTimestampMillis,
+            expiration: UInt64(expiration),
+            block: response
         )
 
         return BlockChainSpecific.Tron(
@@ -203,7 +207,10 @@ class TronService {
     /// safety multiplier, translate to sun via the on-chain `energyFeePrice`.
     /// Replaces the prior fixed 1 TRX / 18 TRX / 36 TRX ladder that
     /// triggered `OUT_OF_ENERGY` whenever the actual energy cost exceeded
-    /// `fee_limit / energy_price`.
+    /// `fee_limit / energy_price`. A contract call also pays bandwidth like
+    /// any other transaction, so the same bandwidth term used for native
+    /// transfers is added on top of the Energy burn when the sender's quota
+    /// can't cover it.
     ///
     /// **Opaque native swap** — pre-built transaction bytes arrive after this
     /// layer and cannot be simulated from the `isSwap` flag alone, so use the
@@ -214,8 +221,12 @@ class TronService {
         coin: Coin,
         to: String?,
         memo: String?,
+        amount: BigInt?,
         isSwap: Bool,
-        bandwidthBytes: Int64
+        bandwidthBytes: Int64,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse
     ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
         let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
@@ -248,6 +259,11 @@ class TronService {
             transactionEstimate = await calculateTrc20Fee(
                 coin: coin,
                 to: to,
+                memo: memo,
+                amount: amount,
+                timestamp: timestamp,
+                expiration: expiration,
+                block: block,
                 energyPrice: energyPrice,
                 dynamicEnergyMaxFactor: dynamicEnergyMaxFactor,
                 maxFeeLimit: maxFeeLimit
@@ -324,6 +340,11 @@ class TronService {
     private func calculateTrc20Fee(
         coin: Coin,
         to: String?,
+        memo: String?,
+        amount: BigInt?,
+        timestamp: UInt64,
+        expiration: UInt64,
+        block: TronNowBlockResponse,
         energyPrice: Int64,
         dynamicEnergyMaxFactor: Int64,
         maxFeeLimit: Int64
@@ -361,26 +382,67 @@ class TronService {
         }
 
         let availableEnergy: Int64
+        let availableBandwidth: Int64
         do {
             let accountResource = try await apiService.getAccountResource(address: coin.address)
             availableEnergy = accountResource.calculateAvailableEnergy()
+            availableBandwidth = accountResource.calculateAvailableBandwidth()
         } catch {
             // Unknown resources must never turn into a misleading zero-fee
-            // estimate. Assuming no staked Energy shows the full simulated burn
-            // while leaving the independently-computed signed ceiling intact.
+            // estimate. Assuming no staked Energy/Bandwidth shows the full
+            // simulated burn while leaving the independently-computed signed
+            // ceiling intact.
             availableEnergy = 0
+            availableBandwidth = 0
         }
 
         let feeLimit = Self.cappedFeeLimit(
             Self.contractFeeLimit(energyUsed: totalEnergyUsed, energyPrice: energyPrice),
             maxFeeLimit: maxFeeLimit
         )
+
+        // TRC20 pays bandwidth on the same terms as any other transaction —
+        // only charged once the sender's quota can't cover it. This is
+        // display-only, same as the energy discount above: `fee_limit` caps
+        // energy burn alone. `feeLimit` is part of what gets signed, so it's
+        // sized into the measurement — otherwise the estimate undercounts
+        // the real bandwidth burn.
+        let serializedMemo = memo.flatMap { TronHelper.isSystemContractRoutingMemo($0) ? nil : $0 }
+        let signedFeeLimit = Int64(exactly: feeLimit) ?? maxFeeLimit
+        let bandwidthBytes: Int64
+        if let rawData = block.block_header?.raw_data,
+           let bytes = try? TronHelper.trc20TransferBandwidthBytes(
+               ownerAddress: coin.address,
+               toAddress: to,
+               contractAddress: coin.contractAddress,
+               amount: amount ?? .zero,
+               feeLimit: signedFeeLimit,
+               memo: serializedMemo,
+               timestamp: timestamp,
+               expiration: expiration,
+               blockHeaderTimestamp: rawData.timestamp ?? 0,
+               blockHeaderNumber: rawData.number ?? 0,
+               blockHeaderVersion: UInt64(rawData.version ?? 0),
+               blockHeaderTxTrieRoot: rawData.txTrieRoot ?? "",
+               blockHeaderParentHash: rawData.parentHash ?? "",
+               blockHeaderWitnessAddress: rawData.witness_address ?? ""
+           ) {
+            bandwidthBytes = bytes
+        } else {
+            bandwidthBytes = Self.fallbackBandwidthBytes(memo: serializedMemo)
+        }
+
+        let bandwidthFee = (try? await getBandwidthFeeDiscount(
+            requiredBandwidth: bandwidthBytes,
+            availableBandwidth: availableBandwidth
+        )) ?? .zero
+
         let displayFee = Self.cappedFeeLimit(
             Self.trc20DisplayFee(
                 totalEnergyUsed: totalEnergyUsed,
                 availableEnergy: availableEnergy,
                 energyPrice: energyPrice
-            ),
+            ) + bandwidthFee,
             maxFeeLimit: maxFeeLimit
         )
         return FeeEstimate(displayFee: displayFee, feeLimit: feeLimit)
@@ -457,8 +519,9 @@ class TronService {
         return parameters
     }
 
-    /// TRC20 never reaches here: smart contracts get no free bandwidth and are
-    /// priced from simulated Energy in `calculateTrc20Fee`.
+    /// Shared by native transfers (whole fee) and TRC20 transfers (bandwidth
+    /// term added on top of the simulated Energy burn) — both consume
+    /// bandwidth on the same terms.
     private func getBandwidthFeeDiscount(requiredBandwidth: Int64, availableBandwidth: Int64) async throws -> BigInt {
         let chainParams = try await getCachedChainParameters()
         let required = max(requiredBandwidth, 0)

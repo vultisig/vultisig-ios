@@ -116,8 +116,9 @@ final class TronServiceFeeLimitTests: XCTestCase {
     // MARK: - Dispatch (TronService.getBlockInfo)
 
     /// A successful simulation keeps two figures: the user's staked Energy
-    /// reduces the displayed burn to zero, while the signed ceiling remains the
-    /// gross simulated total plus headroom.
+    /// reduces the displayed Energy burn to zero, while the signed ceiling
+    /// remains the gross simulated total plus headroom. `stubDefaults` leaves
+    /// no free Bandwidth, so the measured-bytes bandwidth term still shows.
     func testGetBlockInfo_trc20Transfer_usesSimulationResult() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
@@ -126,7 +127,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let coin = makeTrc20Coin()
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil)
 
-        XCTAssertEqual(extractGasFee(result), 0)
+        XCTAssertEqual(extractGasFee(result), Self.trc20BandwidthFee)
         XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
@@ -144,10 +145,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
             to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         )
 
-        XCTAssertEqual(extractGasFee(result), 27_300_000)
+        XCTAssertEqual(extractGasFee(result), 27_300_000 + Self.trc20BandwidthFee)
         XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
+    /// Fully staked Energy zeroes the Energy burn, but Bandwidth is a
+    /// separate resource — `stubDefaults` leaves none free, so the measured
+    /// bandwidth term still shows.
     func testFullStakedEnergyOnlyDiscountsDisplayedBurn() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
@@ -159,7 +163,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
             to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         )
 
-        XCTAssertEqual(extractGasFee(result), 0)
+        XCTAssertEqual(extractGasFee(result), Self.trc20BandwidthFee)
         XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
@@ -174,10 +178,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
             to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         )
 
-        XCTAssertEqual(extractGasFee(result), 14_700_000)
+        XCTAssertEqual(extractGasFee(result), 14_700_000 + Self.trc20BandwidthFee)
         XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
+    /// An account-resource fetch failure loses both Energy and Bandwidth
+    /// availability, so both fall back to "none available" and the full
+    /// burn of each shows — never a false zero.
     func testResourceFetchFailureShowsFullBurnWithoutLoweringCeiling() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 65_000, energyPenalty: 50_000)
@@ -189,7 +196,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
             to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         )
 
-        XCTAssertEqual(extractGasFee(result), 27_300_000)
+        XCTAssertEqual(extractGasFee(result), 27_300_000 + Self.trc20BandwidthFee)
         XCTAssertEqual(extractFeeLimit(result), 35_490_000)
     }
 
@@ -609,6 +616,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
 
     private static let memoLength = 100
 
+    /// Measured bandwidth bytes (345, including the signed `feeLimit`) for a
+    /// memo-less TRC20 transfer from `makeTrc20Coin()` to `recipient`, times
+    /// the test chain's 1000-sun bandwidth price (`getTransactionFee` in
+    /// `stubDefaults`) — matches the ~345 bytes observed on mainnet for a
+    /// real USDT transfer.
+    private static let trc20BandwidthFee: UInt64 = 345_000
+
     private func gasFee(
         coin: Coin,
         memo: String?,
@@ -632,6 +646,8 @@ final class TronServiceFeeLimitTests: XCTestCase {
         return extractGasFee(result)
     }
 
+    /// Must pass base58check: the bandwidth estimator builds a real signing
+    /// input from it, same as `makeNativeCoin`.
     private func makeTrc20Coin() -> Coin {
         let asset = CoinMeta.make(
             chain: .tron,
@@ -640,7 +656,7 @@ final class TronServiceFeeLimitTests: XCTestCase {
             isNativeToken: false,
             contractAddress: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         )
-        return Coin(asset: asset, address: "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8", hexPublicKey: "")
+        return Coin(asset: asset, address: "TLBaRhANQoJFTqre9Nf1mjuwNWjCJeYqUL", hexPublicKey: "")
     }
 
     /// Must pass base58check: the estimator builds a real signing input from
