@@ -1534,6 +1534,7 @@
 "swapAdvancedSettingsLockedTitle" = "Configurações avançadas de swap";
 "swapAmountTooSmall" = "Valor da troca muito pequeno";
 "swapAmountTooSmallRecommended" = "Valor da troca muito pequeno. Valor recomendado %@";
+"swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Descontos aplicados:";
 "swapEnterAmountIn" = "Inserir valor em %@";
 "swapErrorAddressScreeningTitle" = "Verificação de Endereço Falhou";
@@ -1565,6 +1566,7 @@
 "swapErrorUnexpectedTitle" = "Erro Inesperado";
 "swapFee" = "Taxa de troca";
 "swapFeePercentage" = "Taxa de troca (%.2f%%)";
+"swapFiatUnavailable" = "—";
 "swapInsufficientTokenBalance" = "Saldo de %@ insuficiente";
 "swapKitErrorAddressScreening" = "Falha na verificação de endereço — entre em contato com o suporte";
 "swapKitErrorApiKeyInvalid" = "A chave de API do SwapKit é inválida";

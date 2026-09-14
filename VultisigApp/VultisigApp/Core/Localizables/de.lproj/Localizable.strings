@@ -1534,6 +1534,7 @@
 "swapAdvancedSettingsLockedTitle" = "Erweiterte Swap-Einstellungen";
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
+"swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Angewandte Rabatte:";
 "swapEnterAmountIn" = "Betrag in %@ eingeben";
 "swapErrorAddressScreeningTitle" = "Adressprüfung fehlgeschlagen";
@@ -1565,6 +1566,7 @@
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";
 "swapFeePercentage" = "Tauschgebühr (%.2f%%)";
+"swapFiatUnavailable" = "—";
 "swapInsufficientTokenBalance" = "Unzureichendes %@-Guthaben";
 "swapKitErrorAddressScreening" = "Adressprüfung fehlgeschlagen — bitte Support kontaktieren";
 "swapKitErrorApiKeyInvalid" = "SwapKit-API-Schlüssel ist ungültig";

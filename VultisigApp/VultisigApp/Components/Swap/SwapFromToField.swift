@@ -40,8 +40,9 @@ struct SwapFromToField: View {
             balance: "\(coin.balanceString) \(coin.ticker)",
             amount: inputBinding,
             isEditable: isFromField,
+            maximumInputLength: nil,
             amountPrefix: isFromField && detailsViewModel.isFromInputFiat ? currencySymbol : nil,
-            amountAccessibilityLabel: isFromField ? "\(title.localized), \(inputUnit)" : nil,
+            amountAccessibilityLabel: isFromField ? String(format: "swapAmountUnit".localized, title.localized, inputUnit) : nil,
             onEditingChanged: editingChanged,
             fiat: equivalent,
             onTapEquivalent: equivalentAction,
@@ -73,10 +74,11 @@ struct SwapFromToField: View {
 
     private var inputBinding: Binding<String> {
         guard isFromField else { return $amount }
+        let renderedAsFiat = detailsViewModel.isFromInputFiat
         return Binding(
             get: { detailsViewModel.fromInputText },
             set: { text in
-                detailsViewModel.editFromInput(text, vault: vault)
+                detailsViewModel.editFromInput(text, vault: vault, renderedAsFiat: renderedAsFiat)
                 detailsViewModel.showAllPercentageButtons = true
             }
         )
@@ -90,7 +92,8 @@ struct SwapFromToField: View {
         if isFromField && detailsViewModel.isFromInputFiat {
             return "\(amount.isEmpty ? "0" : amount) \(coin.ticker)"
         }
-        return isFromField ? fiatAmount : fiatAmount.formatToFiat(includeCurrencySymbol: true)
+        if isFromField { return fiatAmount.isEmpty ? "swapFiatUnavailable".localized : fiatAmount }
+        return fiatAmount.formatToFiat(includeCurrencySymbol: true)
     }
 
     private var currencySymbol: String {
@@ -103,7 +106,7 @@ struct SwapFromToField: View {
 
     private func refreshCurrencyContext() {
         guard isFromField else { return }
-        detailsViewModel.refreshFromInputContext(currency: SettingsCurrency(rawValue: currencyCode) ?? .USD)
+        detailsViewModel.refreshFromInputContext()
     }
 }
 

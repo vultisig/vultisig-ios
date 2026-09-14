@@ -1534,6 +1534,7 @@
 "swapAdvancedSettingsLockedTitle" = "Napredne postavke zamjene";
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
+"swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Primijenjeni popusti:";
 "swapEnterAmountIn" = "Unesite iznos u %@";
 "swapErrorAddressScreeningTitle" = "Provjera Adrese Nije Uspjela";
@@ -1565,6 +1566,7 @@
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
 "swapFeePercentage" = "Naknada za zamjenu (%.2f%%)";
+"swapFiatUnavailable" = "—";
 "swapInsufficientTokenBalance" = "Nedovoljan saldo %@";
 "swapKitErrorAddressScreening" = "Provjera adrese nije uspjela — obratite se podršci";
 "swapKitErrorApiKeyInvalid" = "SwapKit API ključ je neispravan";
