@@ -83,6 +83,8 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
 
     var trackedSwapCountForTesting: Int { pollers.count }
 
+    func pollingTaskForTesting(tx: TransactionHistoryData) -> Task<Void, Never>? { pollers[RecordKey(tx)]?.task }
+
     private func spawn(key: RecordKey) {
         guard let entry = pollers[key], entry.task == nil else { return }
         let token = entry.token

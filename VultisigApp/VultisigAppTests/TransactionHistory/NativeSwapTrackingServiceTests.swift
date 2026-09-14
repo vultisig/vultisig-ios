@@ -189,10 +189,12 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
         let client = NativeSwapHTTPClient(payload: Self.response([Self.action()]), suspended: true)
         let service = NativeSwapTrackingService(httpClient: client, storage: storage)
         service.start(tx: tx)
+        let pollingTask = service.pollingTaskForTesting(tx: tx)
+        XCTAssertNotNil(pollingTask)
         await client.waitUntilRequested()
         service.setActive(false)
         await client.release()
-        for _ in 0..<10 { await Task.yield() }
+        await pollingTask?.value
         XCTAssertTrue(storage.statuses.isEmpty)
         XCTAssertEqual(service.trackedSwapCountForTesting, 1)
         service.stopAllTracking()
