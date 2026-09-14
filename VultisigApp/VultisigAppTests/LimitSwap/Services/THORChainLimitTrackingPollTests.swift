@@ -32,6 +32,125 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         }
     }
 
+    func testBackgroundObservationRequiresInactiveState() async {
+        let env = TestEnv(queueBody: .empty, scheduled: true)
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"))
+        XCTAssertEqual(env.http.requestCount, 0)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCadencePreservesTwoMissingPollsBeforeClosure() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertEqual(env.outcomes.resolveCount, 0)
+        now = now.addingTimeInterval(59)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        now = now.addingTimeInterval(1)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        now = now.addingTimeInterval(60)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2, "a stale snapshot must not restart a completed order")
+    }
+
+    func testBackgroundCadenceIncludesMostRecentForegroundObservation() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        env.service.start(tx: tx)
+        await env.service.pollOnceForTesting(sender: sender)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        now = now.addingTimeInterval(60)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+    }
+
+    func testBackgroundObservationDoesNotOverlapAnotherObservationForSender() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123", "DEF456"]), clock: { now })
+        let first = env.makeRow(txHash: "ABC123")
+        let second = env.makeRow(txHash: "DEF456")
+        env.http.onRequest = {
+            now = now.addingTimeInterval(60)
+            await env.service.forceRefresh(tx: second)
+        }
+        await env.service.forceRefresh(tx: first)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertEqual(env.orders.observations.count, 2)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundQueueResponseDiscardsIneligibleObservationAndFailure() async {
+        for shouldThrow in [false, true] {
+            let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+            var eligible = true
+            env.http.shouldThrow = shouldThrow
+            env.http.onRequest = { eligible = false }
+            await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"), shouldApply: { eligible })
+            XCTAssertTrue(env.orders.observations.isEmpty)
+            XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+            env.service.stopAllTracking()
+        }
+    }
+
+    func testBackgroundQueueCancellationDiscardsLateResponse() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.http.onRequest = { withUnsafeCurrentTask { $0?.cancel() } }
+        let task = Task { await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123")) }
+        await task.value
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCancelVerificationChecksEligibilityBeforeWriting() async {
+        let env = TestEnv(
+            queueBody: .restingMany(hashes: ["ABC123"]), pendingCancelHash: "CANCEL", cancelOutcome: .succeeded
+        )
+        var eligible = true
+        env.cancelVerifier.onVerify = { eligible = false }
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"), shouldApply: { eligible })
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 1)
+        XCTAssertTrue(env.cancelIntents.confirmedHashes.isEmpty)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundOutcomeLookupChecksEligibilityBeforeWriting() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        var eligible = true
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        now = now.addingTimeInterval(60)
+        env.outcomes.onResolve = { eligible = false }
+        await env.service.forceRefresh(tx: tx, shouldApply: { eligible })
+        XCTAssertEqual(env.outcomes.resolveCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        env.service.stopAllTracking()
+    }
+
+    func testResetInvalidatesBackgroundQueueResponse() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.http.onRequest = { env.service.stopAllTracking() }
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"))
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+        XCTAssertTrue(env.service.uiStatusByTxHash.isEmpty)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+    }
+
     // MARK: - Resting
 
     func testAnOrderStillInTheQueueIsRecordedAsResting() async {
@@ -772,7 +891,8 @@ private struct TestEnv {
         outcome: LimitOrderOutcome = .unresolved,
         scheduled: Bool = false,
         pendingCancelHash: String? = nil,
-        cancelOutcome: LimitOrderCancelTxOutcome = .unresolved
+        cancelOutcome: LimitOrderCancelTxOutcome = .unresolved,
+        clock: @escaping () -> Date = Date.init
     ) {
         http = StubQueueHTTPClient(body: queueBody.json)
         storage = RecordingTrackingStorage()
@@ -786,7 +906,8 @@ private struct TestEnv {
             orders: orders,
             outcomes: outcomes,
             cancelIntents: cancelIntents,
-            cancelVerifier: cancelVerifier
+            cancelVerifier: cancelVerifier,
+            clock: clock
         )
         if !scheduled {
             service.setActive(false)
@@ -886,6 +1007,7 @@ private enum QueueBody {
 private final class StubQueueHTTPClient: HTTPClientProtocol {
     var body: String
     var shouldThrow = false
+    var onRequest: (@MainActor () async -> Void)?
     private(set) var requestCount = 0
 
     struct StubError: Error {}
@@ -894,8 +1016,9 @@ private final class StubQueueHTTPClient: HTTPClientProtocol {
         self.body = body
     }
 
-    func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
+    func request(_: TargetType) async throws -> HTTPResponse<Data> {
         requestCount += 1
+        await onRequest?()
         if shouldThrow { throw StubError() }
         let url = URL(string: "https://example.invalid")!
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
@@ -1021,6 +1144,7 @@ private final class StubCancelVerifier: LimitOrderCancelVerifying {
 private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
     var outcome: LimitOrderOutcome
     private(set) var resolveCount = 0
+    var onResolve: (() -> Void)?
 
     init(outcome: LimitOrderOutcome) {
         self.outcome = outcome
@@ -1028,6 +1152,7 @@ private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
 
     func resolveOutcome(inboundTxHash _: String, sourceChain _: Chain) async -> LimitOrderOutcome { // swiftlint:disable:this async_without_await
         resolveCount += 1
+        onResolve?()
         return outcome
     }
 }
