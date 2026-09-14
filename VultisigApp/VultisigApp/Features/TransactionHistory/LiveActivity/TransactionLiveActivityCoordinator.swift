@@ -132,6 +132,7 @@ final class TransactionLiveActivityCoordinator {
         refresh()
         await waitForPendingUpdates()
         let ids = client.activities.compactMap { backgroundRecord(id: $0.recordID)?.id }
+        TransactionActivityDiagnostics.record("poll.eligibleRecords", detail: "count=\(ids.count)")
         for id in ids {
             guard !Task.isCancelled else { return }
             guard let row = backgroundRecord(id: id) else { continue }
@@ -179,7 +180,7 @@ final class TransactionLiveActivityCoordinator {
             resume(row)
             prepareImages(for: row)
         } catch {
-            Log.wallet.other.info("Live Activity could not be started; transaction remains in history")
+            TransactionActivityDiagnostics.record("activity.requestFailed", recordID: row.id, detail: "code=\((error as NSError).code)")
         }
     }
 
@@ -286,12 +287,18 @@ final class TransactionLiveActivityCoordinator {
                          phaseOverride: TransactionActivityState.Phase? = nil) async {
         let key = TransactionActivityPolicy.identity(row)
         guard var binding = bindings[key], binding.recordID == row.id, !binding.ended, !binding.phase.isTerminal,
-              let id = binding.activityID else { return }
+              let id = binding.activityID else {
+            TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=noWritableBinding")
+            return
+        }
+        TransactionActivityDiagnostics.record("publish.started", recordID: row.id, detail: "phase=\((phaseOverride ?? TransactionActivityPolicy.phase(for: row)).rawValue)")
         guard client.isAuthorized else {
+            TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=notAuthorized")
             await finish(key: key, immediately: true)
             return
         }
         guard let activity = client.activities.first(where: { $0.id == id && $0.isActive }) else {
+            TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=activityInactiveOrMissing")
             cancelImagePreparation(key: key)
             binding.ended = true
             bindings[key] = binding
@@ -302,13 +309,18 @@ final class TransactionLiveActivityCoordinator {
         binding = bindings[key] ?? binding
         do {
             guard try vaultExists(row.pubKeyECDSA), try lookup(row.id) != nil else {
+                TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=recordOrVaultMissing")
                 await finish(key: key, immediately: true)
                 return
             }
         } catch {
+            TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=lookupFailed")
             return
         }
-        if let observedAt, observedAt < binding.observedAt { return }
+        if let observedAt, observedAt < binding.observedAt {
+            TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=olderObservation")
+            return
+        }
         let next = phaseOverride ?? TransactionActivityPolicy.phase(for: row)
         // Delayed provider observations retain the last honest source-chain signal.
         if next.isTerminal || !delayed || next == .sourceConfirmed { binding.phase = next }

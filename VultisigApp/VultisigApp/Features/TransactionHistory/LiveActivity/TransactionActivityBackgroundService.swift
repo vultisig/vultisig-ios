@@ -36,7 +36,17 @@ final class TransactionActivityBackgroundService {
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
                 self.synchronizeProviderCadence(row)
-                guard self.pollingSchedule.shouldObserve(row) else { return }
+                guard self.pollingSchedule.shouldObserve(row) else {
+                    TransactionActivityDiagnostics.record("poll.skipped", recordID: row.id, detail: "reason=notDue")
+                    return
+                }
+                TransactionActivityDiagnostics.record("poll.started", recordID: row.id)
+                defer {
+                    if LogGate.isEnabled(.wallet, .service) {
+                        let phase = (try? TransactionHistoryStorage.shared.fetch(id: row.id)).map { TransactionActivityPolicy.phase(for: $0).rawValue } ?? "unavailable"
+                        TransactionActivityDiagnostics.record("poll.finished", recordID: row.id, detail: "phase=\(phase) cancelled=\(Task.isCancelled)")
+                    }
+                }
                 // The activity observer owns native transactions during the bounded window.
                 if TransactionActivityPolicy.usesNativeStatus(row) {
                     self.pausedNativeTransactions.insert(row.id)
@@ -64,17 +74,21 @@ final class TransactionActivityBackgroundService {
         guard !registered else { return }
         registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.refreshIdentifier, using: .main) { task in
             MainActor.assumeIsolated {
+                TransactionActivityDiagnostics.record("scheduled.delivered")
                 // Do not cache an unreadable ledger during a pre-unlock background launch.
                 guard TransactionActivityBackgroundService.shared.start() else {
+                    TransactionActivityDiagnostics.record("scheduled.skipped", detail: "reason=protectedDataUnavailable")
                     task.setTaskCompleted(success: false)
                     return
                 }
                 let expire = TransactionActivityBackgroundService.shared.runner.performScheduledRefresh {
+                    TransactionActivityDiagnostics.record("scheduled.completed", detail: "success=\($0)")
                     task.setTaskCompleted(success: $0)
                 }
                 task.expirationHandler = { Task { @MainActor in expire() } }
             }
         }
+        TransactionActivityDiagnostics.record("scheduler.registered", detail: "success=\(registered)")
     }
 
     @discardableResult
@@ -95,7 +109,11 @@ final class TransactionActivityBackgroundService {
     }
 
     func enteredBackground() {
-        guard start() else { return }
+        TransactionActivityDiagnostics.record("scene.background", detail: "refreshStatus=\(UIApplication.shared.backgroundRefreshStatus.rawValue)")
+        guard start() else {
+            TransactionActivityDiagnostics.record("window.skipped", detail: "reason=protectedDataUnavailable")
+            return
+        }
         runner.enteredBackground()
     }
 

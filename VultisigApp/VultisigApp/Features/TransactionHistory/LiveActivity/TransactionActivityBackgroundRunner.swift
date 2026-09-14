@@ -46,30 +46,40 @@ final class TransactionActivityBackgroundRunner {
     }
 
     func enteredBackground() {
-        guard !isForeground(), run == nil else { return }
+        TransactionActivityDiagnostics.record("background.enter", detail: "hasWork=\(hasWork()) running=\(run != nil)")
+        guard !isForeground(), run == nil else {
+            TransactionActivityDiagnostics.record("window.skipped", detail: "reason=\(isForeground() ? "foreground" : "alreadyRunning")")
+            return
+        }
         scheduleAttempted = false
         updateSchedule()
-        guard hasWork() else { return }
+        guard hasWork() else {
+            TransactionActivityDiagnostics.record("window.skipped", detail: "reason=noWork")
+            return
+        }
         let current = Run(completion: nil)
         run = current
-        let assertion = runtime.begin { [weak self] in self?.finish(id: current.id, success: false) }
+        let assertion = runtime.begin { [weak self] in self?.finish(id: current.id, success: false, reason: "osExpiration") }
         guard run?.id == current.id else {
             if let assertion { runtime.end(assertion) }
             return
         }
-        guard let assertion else { finish(id: current.id, success: false); return }
+        guard let assertion else { finish(id: current.id, success: false, reason: "assertionDenied"); return }
         current.assertion = assertion
+        TransactionActivityDiagnostics.record("window.acquired", runID: current.id)
         launch(current, repeating: true)
     }
 
     func enteredForeground() {
-        if let run { finish(id: run.id, success: false) }
+        TransactionActivityDiagnostics.record("foreground.enter")
+        if let run { finish(id: run.id, success: false, reason: "foreground") }
     }
 
     /// Returns the expiration hook for exactly this delivery, never a later replacement.
     func performScheduledRefresh(completion: @escaping (Bool) -> Void) -> () -> Void {
         scheduleAttempted = false
         if run != nil {
+            TransactionActivityDiagnostics.record("scheduled.skipped", detail: "reason=windowAlreadyRunning")
             // A scheduled delivery must not replace the immediate continuation window.
             completion(true)
             updateSchedule()
@@ -78,58 +88,64 @@ final class TransactionActivityBackgroundRunner {
         let current = Run(completion: completion)
         run = current
         if isForeground() || !hasWork() {
-            finish(id: current.id, success: true)
+            finish(id: current.id, success: true, reason: "foregroundOrNoWork")
         } else {
             launch(current, repeating: false)
         }
-        return { [weak self] in self?.finish(id: current.id, success: false) }
+        return { [weak self] in self?.finish(id: current.id, success: false, reason: "osExpiration") }
     }
 
     func trackingDidChange() {
         guard !hasWork() else { return }
-        if let run { finish(id: run.id, success: true) }
+        if let run { finish(id: run.id, success: true, reason: "noWork") }
         updateSchedule()
     }
 
     private func launch(_ current: Run, repeating: Bool) {
+        TransactionActivityDiagnostics.record("window.started", runID: current.id, detail: "mode=\(repeating ? "continuation" : "scheduled")")
         current.deadline = Task { [weak self, sleep] in
             do { try await sleep(.seconds(25)) } catch { return }
-            self?.finish(id: current.id, success: false)
+            self?.finish(id: current.id, success: false, reason: "executionDeadline")
         }
         current.observationDeadline = Task { [weak self, sleep] in
             do { try await sleep(.seconds(22)) } catch { return }
             guard let self, self.run?.id == current.id else { return }
+            TransactionActivityDiagnostics.record("window.observationDeadline", runID: current.id)
             current.worker?.cancel()
             current.draining = Task { [weak self, drain] in
                 await drain()
-                self?.finish(id: current.id, success: false)
+                self?.finish(id: current.id, success: false, reason: "observationDeadline")
             }
         }
         current.worker = Task { [weak self, refresh, sleep] in
             repeat {
                 guard !Task.isCancelled, let self, self.run?.id == current.id else { return }
                 guard !self.isForeground(), self.hasWork() else {
-                    self.finish(id: current.id, success: true)
+                    self.finish(id: current.id, success: true, reason: "foregroundOrNoWork")
                     return
                 }
+                TransactionActivityDiagnostics.record("poll.batchStarted", runID: current.id)
                 await refresh()
+                TransactionActivityDiagnostics.record("poll.batchReturned", runID: current.id, detail: "cancelled=\(Task.isCancelled)")
                 guard !Task.isCancelled, self.run?.id == current.id else { return }
                 if !repeating || !self.hasWork() {
-                    self.finish(id: current.id, success: true)
+                    self.finish(id: current.id, success: true, reason: "observationFinished")
                     return
                 }
                 let delay = Duration.seconds(self.nextPollDelay())
                 guard ContinuousClock.now.duration(to: current.observationEndsAt) > delay else {
-                    self.finish(id: current.id, success: true)
+                    self.finish(id: current.id, success: true, reason: "nextPollOutsideWindow")
                     return
                 }
+                TransactionActivityDiagnostics.record("poll.wait", runID: current.id, detail: "delay=\(delay)")
                 do { try await sleep(delay) } catch { return }
             } while !Task.isCancelled
         }
     }
 
-    private func finish(id: UUID, success: Bool) {
+    private func finish(id: UUID, success: Bool, reason: String) {
         guard let current = run, current.id == id else { return }
+        TransactionActivityDiagnostics.record("window.finished", runID: id, detail: "reason=\(reason) success=\(success)")
         run = nil
         current.worker?.cancel()
         current.deadline?.cancel()
@@ -150,9 +166,13 @@ final class TransactionActivityBackgroundRunner {
         scheduleAttempted = true
         do {
             // Use the foreground cadence; iOS still chooses the actual delivery time.
-            try runtime.schedule(Date().addingTimeInterval(nextPollDelay()))
+            let date = Date().addingTimeInterval(nextPollDelay())
+            try runtime.schedule(date)
+            TransactionActivityDiagnostics.record("schedule.accepted", detail: "earliest=\(date.ISO8601Format())")
         } catch {
-            // Denial (including Background App Refresh disabled) leaves local continuation usable.
+            // Do not log error descriptions/userInfo, which can include request data.
+            let code = (error as NSError).code
+            TransactionActivityDiagnostics.record("schedule.failed", detail: "code=\(code)")
         }
     }
 }
