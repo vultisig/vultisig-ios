@@ -6,7 +6,7 @@ import WidgetKit
 struct TransactionLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TransactionActivityAttributes.self) { context in
-            TransactionActivityCard(state: context.state, isStale: context.isStale)
+            TransactionActivityCard(state: context.state)
                 .padding(16)
                 .activityBackgroundTint(WidgetTheme.background)
                 .activitySystemActionForegroundColor(WidgetTheme.primaryText)
@@ -17,19 +17,19 @@ struct TransactionLiveActivityWidget: Widget {
                     TransactionActivityBrand()
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    TransactionActivityStatus(state: context.state, isStale: context.isStale, usesCircularProgress: true)
+                    TransactionActivityStatus(state: context.state)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    TransactionActivityCard(state: context.state, isStale: context.isStale, showsHeader: false)
+                    TransactionActivityCard(state: context.state, showsHeader: false)
                 }
             } compactLeading: {
                 HStack(spacing: 0) { WidgetBrandMark(size: 18) }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(String(localized: "widget.brand")))
             } compactTrailing: {
-                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false, usesCircularProgress: true)
+                TransactionActivityStatus(state: context.state, showsText: false)
             } minimal: {
-                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false, usesCircularProgress: true)
+                TransactionActivityStatus(state: context.state, showsText: false)
             }
             .widgetURL(TransactionActivityLink.url(recordID: context.attributes.recordID))
         }
@@ -50,17 +50,10 @@ private struct TransactionActivityBrand: View {
 
 private struct TransactionActivityStatus: View {
     let state: TransactionActivityState
-    let isStale: Bool
     var showsText = true
-    var usesCircularProgress = false
     var fontSize: CGFloat = 11
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     private var status: TransactionActivityState.DisplayStatus { state.phase.displayStatus }
-    private var animates: Bool {
-        !reduceMotion && !isLuminanceReduced && !isStale && !state.updateDelayed && !state.phase.isTerminal
-    }
     private var symbolName: String {
         switch status {
         case .inProgress: "arrow.triangle.2.circlepath"
@@ -78,15 +71,7 @@ private struct TransactionActivityStatus: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            if status == .inProgress && usesCircularProgress {
-                // Widget animations are finite; reuse the app's arc without a continuous timeline.
-                CircularProgressIndicator(size: 14, lineWidth: 1.5, tint: color, isAnimating: false)
-                    .rotationEffect(.degrees(animates ? Double(state.revision) * 180 : 0))
-                    .animation(animates ? .linear(duration: 1) : nil, value: state.revision)
-                    .accessibilityHidden(true)
-            } else {
-                Image(systemName: symbolName)
-            }
+            Image(systemName: symbolName)
             if showsText { Text(LocalizedStringKey(status.localizationKey)) }
         }
         .font(WidgetTheme.labelFont(size: fontSize))
@@ -100,7 +85,6 @@ private struct TransactionActivityStatus: View {
 
 struct TransactionActivityCard: View {
     let state: TransactionActivityState
-    var isStale = false
     var showsHeader = true
 
     var body: some View {
@@ -231,7 +215,7 @@ struct TransactionActivityCard: View {
     private func footer(showsDetails: Bool) -> some View {
         HStack(spacing: 8) {
             if showsHeader {
-                TransactionActivityStatus(state: state, isStale: isStale, fontSize: 12)
+                TransactionActivityStatus(state: state, fontSize: 12)
                     .layoutPriority(1)
             }
             Spacer(minLength: 0)
