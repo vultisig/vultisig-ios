@@ -53,17 +53,9 @@ enum TransactionHistoryRecording {
         guard payload.pubKeyECDSA.isNotEmpty else { return .skip }
         guard payload.hash.isNotEmpty else { return .skip }
 
-        // A limit-order CANCEL gets no row of its own. It is a step in an
-        // order's life, not a transfer the user made, and recording it produces
-        // a standalone "Send 0 RUNE" — or, on the L1 route, a send of dust —
-        // sitting in history with nothing connecting it to the order it closes.
-        // The order's own row already narrates the whole lifecycle, `.cancelling`
-        // included.
-        //
-        // ⚠️ Suppressed here, not hidden at the list. The transaction stays
-        // auditable: its hash is persisted on the `LimitOrder` and the order's
-        // detail sheet links it to the block explorer, so the fee and the
-        // transaction itself remain one tap away.
+        // Broadcast recording owns the generic cancellation receipt. Done must
+        // not describe that same hash as a second "Send 0 RUNE" or dust transfer.
+        // The order's own row separately tracks cancellation and settlement.
         guard !isLimitOrderCancel(payload) else { return .skip }
 
         // An XRPL trust-line activation is not a transfer. Asked BEFORE
@@ -71,10 +63,8 @@ enum TransactionHistoryRecording {
         // `recordSend` that would persist the trust-line LIMIT as an amount sent
         // — 1,000,000,000,000,000 USDC for a USDC activation.
         //
-        // ⚠️ Recorded, not suppressed. A limit-order cancel above can be dropped
-        // because the ORDER's row narrates its lifecycle and keeps the hash
-        // linked; a TrustSet has no parent row, so dropping it would erase the
-        // fee the user paid and the XRP owner reserve they locked.
+        // Keep the permissioning type when Done enriches its broadcast receipt;
+        // treating its trust limit as a transferred quantity would be misleading.
         //
         // One branch covers BOTH devices. The initiator's `SendDoneScreen` and
         // the cosigner's `JoinKeysignDoneView.sendBranch` build different
@@ -91,7 +81,7 @@ enum TransactionHistoryRecording {
             return .keysignPayload
         }
 
-        // QBTC claim opts out — no tx-history schema for claims today.
+        // QBTC claim receipts are recorded from the accepted proof-service result.
         guard payload.verb != .claim else { return .skip }
 
         // Swap initiator: records via `recordSwap` + `recordApprove`
