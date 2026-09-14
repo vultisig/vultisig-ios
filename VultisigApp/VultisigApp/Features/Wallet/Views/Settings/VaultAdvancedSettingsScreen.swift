@@ -12,6 +12,7 @@ struct VaultAdvancedSettingsScreen: View {
     @ObservedObject var vault: Vault
 
     @Environment(\.router) var router
+    @State private var resolvePresence = false
     @State private var showCustomRPCLockedSheet = false
     @State private var isLoading = false
     private let tierService = VultTierService()
@@ -26,6 +27,12 @@ struct VaultAdvancedSettingsScreen: View {
                     }
                 }
                 .commonListContainer()
+            }
+        }
+        .crossPlatformSheet(isPresented: $resolvePresence) {
+            FastVaultPresenceGate(vault: vault) { hosted in
+                resolvePresence = false
+                navigateKeygen(useServer: hosted)
             }
         }
         .screenTitle("advanced".localized)
@@ -98,34 +105,42 @@ struct VaultAdvancedSettingsScreen: View {
 
     var dilithiumKeygenRow: some View {
         Button {
-            if vault.isFastVault {
-                router.navigate(
-                    to: KeygenRoute.fastVaultPassword(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .fast,
-                        isExistingVault: true,
-                        singleKeygenType: .MLDSA
-                    )
-                )
+            if vault.hasServerSigner {
+                resolvePresence = true
             } else {
-                router.navigate(
-                    to: KeygenRoute.peerDiscovery(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .secure,
-                        fastSignConfig: nil,
-                        keyImportInput: nil,
-                        setupType: nil,
-                        singleKeygenType: .MLDSA
-                    )
-                )
+                navigateKeygen(useServer: false)
             }
         } label: {
             SettingsCommonOptionView(
                 icon: .atomShield,
                 title: "dilithiumKeygen".localized,
                 subtitle: "dilithiumKeygenSubtitle".localized
+            )
+        }
+    }
+
+    private func navigateKeygen(useServer: Bool) {
+        if useServer {
+            router.navigate(
+                to: KeygenRoute.fastVaultPassword(
+                    tssType: .SingleKeygen,
+                    vault: vault,
+                    selectedTab: .fast,
+                    isExistingVault: true,
+                    singleKeygenType: .MLDSA
+                )
+            )
+        } else {
+            router.navigate(
+                to: KeygenRoute.peerDiscovery(
+                    tssType: .SingleKeygen,
+                    vault: vault,
+                    selectedTab: .secure,
+                    fastSignConfig: nil,
+                    keyImportInput: nil,
+                    setupType: nil,
+                    singleKeygenType: .MLDSA
+                )
             )
         }
     }

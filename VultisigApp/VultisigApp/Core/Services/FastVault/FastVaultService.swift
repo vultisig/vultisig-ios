@@ -107,25 +107,21 @@ final class FastVaultService {
         return false
     }
 
-    func exist(pubKeyECDSA: String) async -> Bool {
+    /// Only a successful response proves presence. The deployed endpoint uses
+    /// the same 400 for missing shares and storage failures, so no error proves absence.
+    func presence(pubKeyECDSA: String) async -> FastVaultPresence {
         do {
-            _ = try await httpClient.request(FastVaultAPI.exists(pubKeyECDSA: pubKeyECDSA))
-            return true
+            let response = try await httpClient.request(FastVaultAPI.exists(pubKeyECDSA: pubKeyECDSA))
+            return response.response.statusCode == 200 ? .present : .unknown(.requestFailed)
+        } catch is CancellationError {
+            return .unknown(.cancelled)
         } catch {
-            logger.info("FastVault exist check returned false: \(error.localizedDescription, privacy: .public)")
-            return false
+            if Task.isCancelled {
+                return .unknown(.cancelled)
+            }
+            logger.error("FastVault presence lookup failed; confirmation remains unknown")
+            return .unknown(.requestFailed)
         }
-    }
-
-    /// Determines if a vault is eligible for fast signing
-    /// - Parameter vault: The vault to check
-    /// - Returns: `true` if the vault exists in the backend, is not a local backup, and is configured as a fast vault
-    func isEligibleForFastSign(vault: Vault) async -> Bool {
-        // Use the structural helper, NOT `vault.isFastVault`. The latter reads
-        // the cache that this method's result feeds — reading it here would
-        // permanently lock eligibility at the first cached value.
-        guard vault.hasServerSigner else { return false }
-        return await exist(pubKeyECDSA: vault.pubKeyECDSA)
     }
 
     func create(

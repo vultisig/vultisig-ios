@@ -13,8 +13,8 @@ struct VaultRouter {
     @ViewBuilder
     func build(_ route: VaultRoute) -> some View {
         switch route {
-        case .upgradeVault(let vault, let isFastVault):
-            viewBuilder.buildUpgradeVaultScreen(vault: vault, isFastVault: isFastVault)
+        case .upgradeVault(let vault):
+            viewBuilder.buildUpgradeVaultScreen(vault: vault)
         case .serverBackup(let vault):
             viewBuilder.buildServerBackupScreen(vault: vault)
         case .backupPasswordOptions(let tssType, let backupType, let isNewVault, let origin):

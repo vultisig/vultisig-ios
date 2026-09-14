@@ -327,7 +327,7 @@ struct SwapVerifyScreen: View {
 
     var signButton: some View {
         SigningCTAButtons(
-            isFastVault: vault.isFastVault,
+            isFastVault: vault.offersFastSigning,
             isDisabled: signButtonDisabled,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },

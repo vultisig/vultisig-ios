@@ -174,15 +174,14 @@ class AppViewModel: ObservableObject {
         }
     }
 
-    /// Triggers a fast-vault eligibility refresh for the currently selected vault
-    /// if its cache is stale. Called by the app's scenePhase `.active` hook so
-    /// the cache stays fresh after the app moves to the foreground.
+    /// Refresh every candidate on foreground, including vaults never selected.
     func refreshFastVaultEligibilityIfNeeded() {
-        guard let vault = selectedVault else { return }
-        Task { await FastVaultEligibilityRefresher.shared.refreshIfStale(vault) }
+        let vaults = Storage.shared.modelContext.fetchAllVaults()
+        Task { await FastVaultEligibilityRefresher.shared.refreshAllIfStale(vaults) }
     }
 
     func loadSelectedVault(for vaults: [Vault]) {
+        Task { await FastVaultEligibilityRefresher.shared.refreshAllIfStale(vaults) }
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
             // when vaultName is empty / selectedPubKeyECDSA is empty, select the first vault if available
             // otherwise the app have nothing to show

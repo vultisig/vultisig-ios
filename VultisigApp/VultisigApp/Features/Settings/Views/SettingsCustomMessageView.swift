@@ -189,8 +189,7 @@ struct SettingsCustomMessageView: View {
             vault: vault,
             customMessagePayload: customMessagePayload,
             fastVaultPassword: fastVaultPassword.nilIfEmpty,
-            title: viewModel.state.title,
-            isShareButtonVisible: !vault.isFastVault
+            title: viewModel.state.title
         ) { input in
             self.keysignView = KeysignView(
                 viewModel: keysignVM,
@@ -232,7 +231,7 @@ struct SettingsCustomMessageView: View {
 
     var signButton: some View {
         SigningCTAButtons(
-            isFastVault: vault.isFastVault,
+            isFastVault: vault.offersFastSigning,
             isDisabled: !signButtonEnabled,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },

@@ -2,9 +2,8 @@
 //  FastVaultServiceProtocol.swift
 //  VultisigApp
 //
-//  Test seam over `FastVaultService.exist(pubKeyECDSA:)` — the only call the
-//  Swap pilot makes against the FastVault server. Production wiring stays on
-//  `FastVaultService.shared`.
+//  Service injection marker retained by the Swap interactor. Presence lookups
+//  use FastVaultEligibilityRefresher and its typed result.
 //
 
 import Foundation

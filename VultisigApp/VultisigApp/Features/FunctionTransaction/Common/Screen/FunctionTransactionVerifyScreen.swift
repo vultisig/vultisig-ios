@@ -43,7 +43,7 @@ struct FunctionTransactionVerifyScreen: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if vault.isFastVault {
+            if vault.offersFastSigning {
                 fastVaultPassword = .empty
             }
         }
@@ -180,7 +180,7 @@ struct FunctionTransactionVerifyScreen: View {
 
     var pairedSignButton: some View {
         SigningCTAButtons(
-            isFastVault: vault.isFastVault,
+            isFastVault: vault.offersFastSigning,
             isDisabled: isSigningBlocked,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },
