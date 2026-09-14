@@ -253,7 +253,7 @@ enum SwapCryptoLogic {
     /// — only the firm `quote` does. Returns nil when either price is missing or
     /// the input amount is non-positive, so the view can fall back to empty/0.
     static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
-        toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmount.toDecimal())
+        toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero)
     }
 
     static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal) -> Decimal? {
@@ -548,7 +548,7 @@ enum SwapCryptoLogic {
     ) -> String {
         baseAffiliateFee(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount.toDecimal(), vultDiscountBps: vultDiscountBps,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -731,7 +731,7 @@ enum SwapCryptoLogic {
     ) -> String {
         vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount.toDecimal(), vultDiscountBps: vultDiscountBps,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -768,7 +768,7 @@ enum SwapCryptoLogic {
     ) -> String {
         referralDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount.toDecimal(), vultDiscountBps: vultDiscountBps,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -805,7 +805,7 @@ enum SwapCryptoLogic {
     ) -> AffiliateDiscountBreakdown {
         affiliateDiscountBreakdown(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount.toDecimal(), vultDiscountBps: vultDiscountBps,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }

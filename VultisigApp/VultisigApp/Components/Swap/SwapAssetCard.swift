@@ -293,7 +293,8 @@ struct SwapAssetCard<Focus: Hashable>: View {
 
     private var prefixedInputWidth: CGFloat? {
         guard amountPrefix != nil, amountColumnWidth > 0 else { return nil }
-        return min(amountTextWidth + 6, max(1, amountColumnWidth - amountPrefixWidth - 4))
+        let available = max(1, amountColumnWidth - amountPrefixWidth - 4)
+        return min(max(amountTextWidth + 6, 44), available)
     }
 
     @ViewBuilder
