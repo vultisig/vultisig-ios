@@ -61,7 +61,7 @@ final class RemoteImageTests: XCTestCase {
         let cache = RemoteImageCache(directory: directory)
         let data = Data(repeating: 1, count: RemoteImageCache.maximumImageBytes)
         let keys = (0..<129).map { String(format: "%064x", $0) }
-        // Populate the bounded directory directly; store performs the quota check under its cross-process lock.
+        // Populate the bounded directory directly; store performs its best-effort quota check before atomic replacement.
         for key in keys.prefix(128) { try data.write(to: directory.appendingPathComponent(key)) }
         XCTAssertThrowsError(try cache.store(data, forKey: keys[128])) { XCTAssertEqual($0 as? RemoteImageError, .cacheFull) }
         let oldFile = directory.appendingPathComponent(keys[0])
@@ -98,10 +98,23 @@ final class RemoteImageTests: XCTestCase {
         let properties = try XCTUnwrap(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
         XCTAssertEqual(properties[kCGImagePropertyPixelWidth] as? Int, 256)
         XCTAssertEqual(properties[kCGImagePropertyPixelHeight] as? Int, 128)
+        XCTAssertEqual(properties[kCGImagePropertyDepth] as? Int, 8)
         XCTAssertEqual(CGImageSourceGetType(source) as String?, UTType.png.identifier)
         let offline = RemoteImageLoader(cache: RemoteImageCache(directory: directory), downloader: RejectingDownloader())
         let reread = try await offline.load(url)
         XCTAssertEqual(png, reread)
+    }
+
+    func testPreparingCachedImageRenewsActivityRetention() async throws {
+        let cache = RemoteImageCache(directory: directory)
+        let key = try XCTUnwrap(RemoteImageCache.key(for: url))
+        try cache.store(try image(width: 10, height: 10), forKey: key)
+        let file = directory.appendingPathComponent(key)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-6 * 24 * 3_600)], ofItemAtPath: file.path)
+        let before = Date()
+        _ = try await RemoteImageLoader(cache: cache, downloader: RejectingDownloader()).load(url)
+        let modified = try XCTUnwrap(file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+        XCTAssertGreaterThanOrEqual(modified.timeIntervalSince1970, before.timeIntervalSince1970 - 1)
     }
 
     func testRejectsInvalidResponsesAndImageData() async throws {
@@ -165,15 +178,49 @@ final class RemoteImageTests: XCTestCase {
         defer { session.invalidateAndCancel() }
         let task = session.dataTask(with: url)
         let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 302, httpVersion: nil, headerFields: nil))
+        var callbackCount = 0
         for target in ["http://example.com/x", "https://user@example.com/x", "https://example.com/x"] {
             let request = URLRequest(url: URL(string: target)!)
             validator.urlSession(session, task: task, willPerformHTTPRedirection: response, newRequest: request) { accepted in
+                callbackCount += 1
                 XCTAssertEqual(accepted != nil, target == "https://example.com/x")
             }
         }
+        XCTAssertEqual(callbackCount, 3)
     }
 
-    private func image(width: Int, height: Int) throws -> Data {
+    func testFutureDatedAndAbandonedFilesAreRemoved() throws {
+        let cache = RemoteImageCache(directory: directory)
+        let key = try XCTUnwrap(RemoteImageCache.key(for: url))
+        let file = directory.appendingPathComponent(key)
+        try cache.store(Data([1]), forKey: key)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(3_600)], ofItemAtPath: file.path)
+        XCTAssertNil(cache.data(forKey: key))
+        let abandoned = directory.appendingPathComponent(".abandoned-atomic-write")
+        try Data([1]).write(to: abandoned)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-600)], ofItemAtPath: abandoned.path)
+        try cache.store(Data([2]), forKey: String(repeating: "1", count: 64))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: abandoned.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    func testPersistenceFailureStillReturnsPreparedImage() async throws {
+        let file = directory.appendingPathComponent("file-not-directory")
+        try Data([1]).write(to: file)
+        let loader = RemoteImageLoader(cache: .init(directory: file), downloader: StubDownloader(
+            result: .init(data: try image(width: 10, height: 10), responseURL: url)
+        ))
+        let png = try await loader.load(url)
+        XCTAssertNotNil(CGImageSourceCreateWithData(png as CFData, nil))
+    }
+
+    func testUnsupportedFormatAndExcessiveSourcePixelsAreRejected() throws {
+        for data in [try image(width: 10, height: 10, type: .tiff), try image(width: 2_001, height: 2_000)] {
+            XCTAssertThrowsError(try RemoteImageLoader.thumbnail(data)) { XCTAssertEqual($0 as? RemoteImageError, .invalidImage) }
+        }
+    }
+
+    private func image(width: Int, height: Int, type: UTType = .png) throws -> Data {
         let context = try XCTUnwrap(CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
                                              bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
                                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
@@ -181,7 +228,7 @@ final class RemoteImageTests: XCTestCase {
         context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         let image = try XCTUnwrap(context.makeImage())
         let data = NSMutableData()
-        let destination = try XCTUnwrap(CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil))
+        let destination = try XCTUnwrap(CGImageDestinationCreateWithData(data, type.identifier as CFString, 1, nil))
         CGImageDestinationAddImage(destination, image, nil)
         XCTAssertTrue(CGImageDestinationFinalize(destination))
         return data as Data

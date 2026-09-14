@@ -1,5 +1,4 @@
 import CryptoKit
-import Darwin
 import Foundation
 
 /// A file cache shared by the app and extensions. Only opaque SHA256 keys cross process boundaries.
@@ -22,7 +21,8 @@ public struct RemoteImageCache: Sendable {
         allowLocalFallback: Bool = false
     ) -> Self {
         let manager = FileManager.default
-        let root = manager.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)
+        let root = manager.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
+            .appendingPathComponent("Library/Caches", isDirectory: true)
             ?? (allowLocalFallback ? manager.urls(for: .cachesDirectory, in: .userDomainMask).first : nil)
         return Self(directory: root?.appendingPathComponent("SharedRemoteImages", isDirectory: true))
     }
@@ -48,7 +48,7 @@ public struct RemoteImageCache: Sendable {
         guard let values = try? file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .contentModificationDateKey]),
               values.isRegularFile == true, values.isSymbolicLink != true,
               let modified = values.contentModificationDate,
-              Date().timeIntervalSince(modified) < Self.retention,
+              (0..<Self.retention).contains(Date().timeIntervalSince(modified)),
               let handle = try? FileHandle(forReadingFrom: file) else { return nil }
         defer { try? handle.close() }
         guard let data = try? handle.read(upToCount: Self.maximumImageBytes + 1),
@@ -65,26 +65,33 @@ public struct RemoteImageCache: Sendable {
         guard let directory else { return }
         let manager = FileManager.default
         try manager.createDirectory(at: directory, withIntermediateDirectories: true)
-        // flock also serializes writers from the app and its extensions.
-        let descriptor = open(directory.appendingPathComponent(".lock").path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)
-        guard descriptor >= 0 else { throw RemoteImageError.cacheUnavailable }
-        defer { close(descriptor) }
-        guard flock(descriptor, LOCK_EX) == 0 else { throw RemoteImageError.cacheUnavailable }
-        defer { flock(descriptor, LOCK_UN) }
+        // Atomic replacement protects readers across processes without holding a file lock
+        // when iOS suspends an extension. The quota is best effort during concurrent writes.
         try Task.checkCancellation()
         let files = try manager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey])
         var entries: [(url: URL, bytes: Int, modified: Date)] = []
-        for file in files where Self.validKey(file.lastPathComponent) && file.lastPathComponent != key {
-            let values = try file.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
-            entries.append((file, values.fileSize ?? 0, values.contentModificationDate ?? .distantPast))
+        for file in files where file.lastPathComponent != key {
+            guard let values = try? file.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey]) else { continue }
+            let modified = values.contentModificationDate ?? .distantPast
+            let age = Date().timeIntervalSince(modified)
+            if !Self.validKey(file.lastPathComponent), age > 5 * 60 || age < 0 {
+                // Clean abandoned atomic-write files; allow in-progress writes time to finish.
+                try? manager.removeItem(at: file)
+                continue
+            }
+            entries.append((file, values.fileSize ?? 0, modified))
         }
         var total = entries.reduce(data.count) { $0 + $1.bytes }
         let now = Date()
         for entry in entries.sorted(by: { $0.modified < $1.modified }) {
             let age = now.timeIntervalSince(entry.modified)
-            if age >= Self.retention || (total > Self.maximumCacheBytes && age >= Self.minimumRetention) {
-                try manager.removeItem(at: entry.url)
-                total -= entry.bytes
+            if age < 0 || age >= Self.retention || (total > Self.maximumCacheBytes && age >= Self.minimumRetention) {
+                do {
+                    try manager.removeItem(at: entry.url)
+                    total -= entry.bytes
+                } catch CocoaError.fileNoSuchFile {
+                    total -= entry.bytes
+                }
             }
         }
         guard total <= Self.maximumCacheBytes else { throw RemoteImageError.cacheFull }

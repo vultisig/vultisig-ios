@@ -45,7 +45,11 @@ public actor RemoteImageLoader {
     public func load(_ url: URL) async throws -> Data {
         try Task.checkCancellation()
         guard let key = RemoteImageCache.key(for: url) else { throw RemoteImageError.invalidURL }
-        if let data = cache.data(forKey: key) { return data }
+        if let data = cache.data(forKey: key) {
+            // Preparing an existing image starts a fresh retention window for a new activity.
+            try persistIfAvailable(data, forKey: key)
+            return data
+        }
         let result = try await downloader.download(url, maximumBytes: Self.maximumDownloadBytes)
         try Task.checkCancellation()
         guard RemoteImageCache.isAllowed(result.responseURL), result.redirects.allSatisfy(RemoteImageCache.isAllowed) else {
@@ -55,24 +59,31 @@ public actor RemoteImageLoader {
         guard result.data.count <= Self.maximumDownloadBytes else { throw RemoteImageError.tooLarge }
         let png = try Self.thumbnail(result.data)
         try Task.checkCancellation()
+        try persistIfAvailable(png, forKey: key)
+        return png
+    }
+
+    private func persistIfAvailable(_ data: Data, forKey key: String) throws {
+        try Task.checkCancellation()
         do {
-            try cache.store(png, forKey: key)
+            try cache.store(data, forKey: key)
         } catch is CancellationError {
             throw CancellationError()
         } catch {
             // Persistence is optional: an unavailable/full cache must not hide a valid image in the app.
         }
         try Task.checkCancellation()
-        return png
     }
 
     static func thumbnail(_ data: Data) throws -> Data {
         guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary),
+              let type = CGImageSourceGetType(source) as String?,
+              [UTType.png, .jpeg, .webP, .gif, .heic].contains(where: { $0.identifier == type }),
               let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
               let width = properties[kCGImagePropertyPixelWidth] as? Int,
               let height = properties[kCGImagePropertyPixelHeight] as? Int,
-              width > 0, height > 0, width <= 32_768, height <= 32_768,
-              width * height <= 64_000_000 else { throw RemoteImageError.invalidImage }
+              width > 0, height > 0, width <= 4_096, height <= 4_096,
+              width * height <= 4_000_000 else { throw RemoteImageError.invalidImage }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: 256,
@@ -82,14 +93,21 @@ public actor RemoteImageLoader {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw RemoteImageError.invalidImage
         }
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
+                                      bytesPerRow: image.width * 4, space: colorSpace,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            throw RemoteImageError.invalidImage
+        }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let normalized = context.makeImage() else { throw RemoteImageError.invalidImage }
         let output = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(output, UTType.png.identifier as CFString, 1, nil) else {
             throw RemoteImageError.invalidImage
         }
-        CGImageDestinationAddImage(destination, image, nil)
-        guard CGImageDestinationFinalize(destination), output.length <= RemoteImageCache.maximumImageBytes else {
-            throw RemoteImageError.tooLarge
-        }
+        CGImageDestinationAddImage(destination, normalized, nil)
+        guard CGImageDestinationFinalize(destination) else { throw RemoteImageError.invalidImage }
+        guard output.length <= RemoteImageCache.maximumImageBytes else { throw RemoteImageError.tooLarge }
         return output as Data
     }
 }
@@ -97,11 +115,19 @@ public actor RemoteImageLoader {
 // This package is shared with extensions and cannot depend on the app HTTPClient.
 // swiftlint:disable no_raw_urlsession no_raw_urlrequest
 public struct HTTPSImageDownloader: RemoteImageDownloading {
-    public init() {}
+    private let configuration: URLSessionConfiguration
+
+    public init() {
+        configuration = .ephemeral
+    }
+
+    init(configuration: URLSessionConfiguration) {
+        self.configuration = configuration.copy() as! URLSessionConfiguration
+    }
 
     public func download(_ url: URL, maximumBytes: Int) async throws -> RemoteImageDownload {
         guard RemoteImageCache.isAllowed(url) else { throw RemoteImageError.invalidURL }
-        let configuration = URLSessionConfiguration.ephemeral
+        let configuration = configuration.copy() as! URLSessionConfiguration
         configuration.timeoutIntervalForRequest = 8
         configuration.timeoutIntervalForResource = 8
         configuration.httpCookieStorage = nil
