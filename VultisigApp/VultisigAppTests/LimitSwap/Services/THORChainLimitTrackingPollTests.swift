@@ -207,6 +207,23 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.orders.observations.last?.status, .filled)
     }
 
+    func testNewForegroundOrderForIdleSenderIsPolledImmediately() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        defer { env.service.stopAllTracking() }
+        let previous = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: previous)
+        now = now.addingTimeInterval(60)
+        await env.service.forceRefresh(tx: previous)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        let requested = expectation(description: "new foreground order requested without waiting a minute")
+        env.http.onRequest = { requested.fulfill() }
+        env.service.setActive(true)
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        await fulfillment(of: [requested], timeout: 2)
+        XCTAssertEqual(env.http.requestCount, 3)
+    }
+
     // MARK: - Resting
 
     func testAnOrderStillInTheQueueIsRecordedAsResting() async {

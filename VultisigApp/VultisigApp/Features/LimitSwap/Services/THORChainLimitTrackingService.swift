@@ -213,7 +213,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         backgroundTokens.removeAll()
         if active {
             for sender in Set(tracked.values.map(\.sender)) {
-                startPolling(sender: sender)
+                startPolling(sender: sender, respectCadence: true)
             }
         } else {
             // Keep `tracked` — it's what `setActive(true)` resumes from.
@@ -295,7 +295,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         return max(0, Self.baseInterval - clock().timeIntervalSince(previous))
     }
 
-    private func startPolling(sender: String) {
+    private func startPolling(sender: String, respectCadence: Bool = false) {
         guard isActive, senderTasks[sender] == nil else { return }
         let token = UUID()
         senderTokens[sender] = token
@@ -303,7 +303,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         senderTasks[sender] = Task { [weak self] in
             // A foreground resume can follow a background observation moments
             // later. Preserve spacing in both directions across that transition.
-            if let delay = self?.remainingPollDelay(sender: sender), delay > 0 {
+            if respectCadence, let delay = self?.remainingPollDelay(sender: sender), delay > 0 {
                 do { try await Task.sleep(for: .seconds(delay)) } catch { return }
             }
             // `self` is re-acquired per iteration and deliberately NOT held
