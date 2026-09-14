@@ -31,9 +31,13 @@ final class TransactionHistoryStorage {
         if let existing = try modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
             // A broadcast-first row can precede Done's richer receipt. Enrich only
             // missing display fields; preserve identity, outcome and tracking evidence.
-            guard existing.typeRawValue == data.type.rawValue, existing.chainRawValue == data.chainRawValue else { return }
+            let isGenericReceipt = existing.typeRawValue == TransactionHistoryType.transaction.rawValue
+            // Older Done paths describe contract/staking calls as sends. Their
+            // fee is useful, but their amount must not turn this into a transfer.
+            let compatibleType = existing.typeRawValue == data.type.rawValue || (isGenericReceipt && data.type == .send)
+            guard compatibleType, existing.chainRawValue == data.chainRawValue else { return }
             var enriched = false
-            if existing.amountCrypto.isEmpty, !data.amountCrypto.isEmpty {
+            if !isGenericReceipt, existing.amountCrypto.isEmpty, !data.amountCrypto.isEmpty {
                 existing.amountCrypto = data.amountCrypto
                 enriched = true
             }
@@ -45,11 +49,11 @@ final class TransactionHistoryStorage {
                 existing.feeFiat = data.feeFiat
                 enriched = true
             }
-            if existing.amountFiat.isEmpty, !data.amountFiat.isEmpty {
+            if !isGenericReceipt, existing.amountFiat.isEmpty, !data.amountFiat.isEmpty {
                 existing.amountFiat = data.amountFiat
                 enriched = true
             }
-            if existing.toAmountFiat?.isEmpty != false, let value = data.toAmountFiat, !value.isEmpty {
+            if !isGenericReceipt, existing.toAmountFiat?.isEmpty != false, let value = data.toAmountFiat, !value.isEmpty {
                 existing.toAmountFiat = value
                 enriched = true
             }
@@ -142,7 +146,7 @@ final class TransactionHistoryStorage {
         let predicate = #Predicate<TransactionHistoryItem> { $0.id == id }
         guard let item = try modelContext.fetch(FetchDescriptor(predicate: predicate)).first else { return false }
         let row = TransactionHistoryData(item: item)
-        guard row.swapTracking == nil, row.status == .inProgress,
+        guard TransactionActivityPolicy.usesNativeStatus(row), row.status == .inProgress,
               !TransactionActivityPolicy.phase(for: row).isTerminal else { return false }
         item.statusRawValue = status.rawValue
         item.errorMessage = errorMessage

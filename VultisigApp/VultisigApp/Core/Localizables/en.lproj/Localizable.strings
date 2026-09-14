@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Touch ID Unlock";
 "track" = "Track";
 "transaction" = "Transaction";
+"transactionActivityApproval" = "Approve";
+"transactionActivityCancelled" = "Cancelled";
 "transactionActivityCompleted" = "Swap completed";
 "transactionActivityConfirmed" = "Confirmed";
 "transactionActivityDelayed" = "Update delayed";
+"transactionActivityExpired" = "Expired";
 "transactionActivityFailed" = "Failed";
 "transactionActivityFee" = "Est. fee";
+"transactionActivityFilled" = "Order filled";
+"transactionActivityLimit" = "Limit";
 "transactionActivityPartiallyRefunded" = "Partially refunded";
 "transactionActivityPending" = "Pending";
 "transactionActivityRefunded" = "Refunded";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Swapping";
 "transactionActivityTitle" = "Transaction";
 "transactionActivityTrackingEnded" = "Tracking ended";
+"transactionActivityTransaction" = "Transaction";
 "transactionActivityUnavailable" = "This transaction is no longer available on this device.";
 "transactionActivityUpdated" = "Updated";
 "transactionBroadcasted" = "Transaction broadcasted";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
 "zipImportUnsafeVaults" = "Imported %1$d vault(s). Skipped %2$d. %3$@ could not be imported: it would overwrite a vault already on this device.";
-
-"transactionActivityApproval" = "Approve";
-
-"transactionActivityLimit" = "Limit";
-
-"transactionActivityTransaction" = "Transaction";
-
-"transactionActivityCancelled" = "Cancelled";
-
-"transactionActivityExpired" = "Expired";
-
-"transactionActivityFilled" = "Order filled";

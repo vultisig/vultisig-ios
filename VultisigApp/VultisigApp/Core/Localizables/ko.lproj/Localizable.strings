@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Touch ID로 잠금 해제";
 "track" = "추적";
 "transaction" = "트랜잭션";
+"transactionActivityApproval" = "승인";
+"transactionActivityCancelled" = "취소됨";
 "transactionActivityCompleted" = "스왑 완료";
 "transactionActivityConfirmed" = "확인됨";
 "transactionActivityDelayed" = "업데이트 지연";
+"transactionActivityExpired" = "만료됨";
 "transactionActivityFailed" = "실패";
 "transactionActivityFee" = "예상 수수료";
+"transactionActivityFilled" = "주문 체결됨";
+"transactionActivityLimit" = "지정가";
 "transactionActivityPartiallyRefunded" = "일부 환불됨";
 "transactionActivityPending" = "대기 중";
 "transactionActivityRefunded" = "환불됨";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "스왑 중";
 "transactionActivityTitle" = "거래";
 "transactionActivityTrackingEnded" = "추적 종료";
+"transactionActivityTransaction" = "트랜잭션";
 "transactionActivityUnavailable" = "이 기기에서 이 거래를 더 이상 사용할 수 없습니다.";
 "transactionActivityUpdated" = "업데이트";
 "transactionBroadcasted" = "트랜잭션이 브로드캐스트되었습니다";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "모든 볼트 %d개가 이미 존재하여 건너뛰었습니다: %@.";
 "zipImportPartialSuccess" = "%d개의 볼트를 가져왔습니다. %d개의 중복을 건너뛰었습니다: %@.";
 "zipImportUnsafeVaults" = "%1$d개의 볼트를 가져왔습니다. %2$d개를 건너뛰었습니다. %3$@은(는) 가져올 수 없습니다: 이 기기에 이미 있는 볼트를 덮어쓰게 됩니다.";
-
-"transactionActivityApproval" = "승인";
-
-"transactionActivityLimit" = "지정가";
-
-"transactionActivityTransaction" = "트랜잭션";
-
-"transactionActivityCancelled" = "취소됨";
-
-"transactionActivityExpired" = "만료됨";
-
-"transactionActivityFilled" = "주문 체결됨";

@@ -332,7 +332,7 @@ final class TransactionLiveActivityCoordinator {
     static func resumeTracking(_ row: TransactionHistoryData) {
         if let tracker = SwapTrackingRegistry.shared.service(for: row) {
             tracker.start(tx: row)
-        } else if row.swapTracking == nil, row.status == .inProgress {
+        } else if TransactionActivityPolicy.usesNativeStatus(row), row.status == .inProgress {
             TransactionStatusPoller.shared.poll(tx: row) { _, _ in }
         }
     }

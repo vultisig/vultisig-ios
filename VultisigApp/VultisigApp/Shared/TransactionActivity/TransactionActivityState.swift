@@ -5,23 +5,27 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     enum Phase: String, Codable, CaseIterable, Sendable {
         case submitted, pending, sourceConfirmed, swapping
         /// Transfer settlement and provider-confirmed swap settlement are distinct.
-        case confirmed, completed, refunded, partiallyRefunded, failed, filled, cancelled, expired, trackingEnded
+        case confirmed, completed, refunded, partiallyRefunded, failed, filled, cancelled, expired, sourceConfirmedOnly, trackingEnded
 
         var isTerminal: Bool {
             switch self {
-            case .confirmed, .completed, .refunded, .partiallyRefunded, .failed, .filled, .cancelled, .expired, .trackingEnded: true
+            case .confirmed, .completed, .refunded, .partiallyRefunded, .failed, .filled, .cancelled, .expired, .sourceConfirmedOnly, .trackingEnded: true
             default: false
             }
         }
 
-        var localizationKey: String { "transactionActivity" + rawValue.prefix(1).uppercased() + rawValue.dropFirst() }
+        var localizationKey: String {
+            if self == .sourceConfirmedOnly { return "transactionActivitySourceConfirmed" }
+            return "transactionActivity" + rawValue.prefix(1).uppercased() + rawValue.dropFirst()
+        }
 
         var symbol: String {
             switch self {
-            case .confirmed, .completed, .filled: "checkmark.circle.fill"
+            case .confirmed, .completed, .filled, .sourceConfirmedOnly: "checkmark.circle.fill"
             case .failed: "exclamationmark.circle.fill"
             case .refunded, .partiallyRefunded: "arrow.uturn.backward.circle"
-            case .trackingEnded: "clock"
+            case .cancelled: "xmark.circle"
+            case .expired, .trackingEnded: "clock"
             default: "arrow.triangle.2.circlepath"
             }
         }

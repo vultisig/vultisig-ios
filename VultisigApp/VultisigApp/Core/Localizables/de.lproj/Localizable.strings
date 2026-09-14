@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Entsperren mit Touch ID";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
+"transactionActivityApproval" = "Genehmigen";
+"transactionActivityCancelled" = "Storniert";
 "transactionActivityCompleted" = "Tausch abgeschlossen";
 "transactionActivityConfirmed" = "Bestätigt";
 "transactionActivityDelayed" = "Aktualisierung verzögert";
+"transactionActivityExpired" = "Abgelaufen";
 "transactionActivityFailed" = "Fehlgeschlagen";
 "transactionActivityFee" = "Geschätzte Gebühr";
+"transactionActivityFilled" = "Order ausgeführt";
+"transactionActivityLimit" = "Limit";
 "transactionActivityPartiallyRefunded" = "Teilweise erstattet";
 "transactionActivityPending" = "Ausstehend";
 "transactionActivityRefunded" = "Erstattet";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Tausch läuft";
 "transactionActivityTitle" = "Transaktion";
 "transactionActivityTrackingEnded" = "Verfolgung beendet";
+"transactionActivityTransaction" = "Transaktion";
 "transactionActivityUnavailable" = "Diese Transaktion ist auf diesem Gerät nicht mehr verfügbar.";
 "transactionActivityUpdated" = "Aktualisiert";
 "transactionBroadcasted" = "Transaktion übertragen";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
 "zipImportUnsafeVaults" = "%1$d Tresor(e) importiert. %2$d übersprungen. %3$@ konnte nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
-
-"transactionActivityApproval" = "Genehmigen";
-
-"transactionActivityLimit" = "Limit";
-
-"transactionActivityTransaction" = "Transaktion";
-
-"transactionActivityCancelled" = "Storniert";
-
-"transactionActivityExpired" = "Abgelaufen";
-
-"transactionActivityFilled" = "Order ausgeführt";

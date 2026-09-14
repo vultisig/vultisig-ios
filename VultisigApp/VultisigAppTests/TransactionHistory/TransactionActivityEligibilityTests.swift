@@ -96,10 +96,52 @@ final class TransactionActivityEligibilityTests: XCTestCase {
         XCTAssertEqual(row.swapTracking?.providerKind, THORChainLimitTrackingService.providerKind)
     }
 
-    private func payload(memo: String? = nil, skipBroadcast: Bool = false, qbtc: Bool = false,
+    func testOrdinaryTransfersRemainSendsWithoutASignedContentDecoder() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        for chain in [Chain.ripple, .sui, .polkadot, .bittensor, .cardano, .bitcoin, .ethereum] {
+            let coin = Coin(asset: CoinMeta(chain: chain, ticker: "COIN", logo: "", decimals: 8,
+                priceProviderId: "", contractAddress: "", isNativeToken: true), address: "source", hexPublicKey: "")
+            let row = try XCTUnwrap(TransactionBroadcastReceipt.rows(hash: "accepted", approveHash: nil,
+                payload: payload(coin: coin, memo: "payment note"), pubKey: "vault").first)
+            XCTAssertEqual(row.type, .send, chain.rawValue)
+            XCTAssertFalse(row.amountCrypto.isEmpty, chain.rawValue)
+        }
+    }
+
+    func testApprovalPlaceholdersCannotBecomeTransactionReceipts() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let input = payload(approve: ERC20ApprovePayload(amount: BigInt(1), spender: "spender"))
+        let sentinel = SubstrateBroadcast.alreadyBroadcastedSentinel
+        XCTAssertNil(TransactionBroadcastReceipt.approval(hash: sentinel, payload: input, pubKey: "vault"))
+        XCTAssertTrue(TransactionBroadcastReceipt.rows(hash: sentinel, approveHash: nil, payload: input, pubKey: "vault").isEmpty)
+    }
+
+    func testGenericSwapReceiptsDistinguishAtomicRoutesFromSourceOnlyTracking() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let source = SendFormFixture.makeETH()
+        let quote = EVMQuote(dstAmount: "1", tx: .init(from: "from", to: "router", data: "0x", value: "0", gasPrice: "1", gas: 200_000))
+        for (chain, provider, expected) in [(Chain.ethereum, SwapProviderId.oneInch, "atomic"),
+            (.ethereum, .kyberSwap, "atomic"), (.ethereum, .lifi, "atomic"), (.base, .lifi, "sourceOnly"),
+            (.ethereum, .unknown("future"), "sourceOnly")] {
+            let destination = Coin(asset: CoinMeta(chain: chain, ticker: "USDC", logo: "usdc", decimals: 6,
+                priceProviderId: "", contractAddress: "token", isNativeToken: false), address: "destination", hexPublicKey: "")
+            let swap = GenericSwapPayload(fromCoin: source, toCoin: destination, fromAmount: 1,
+                toAmountDecimal: 1, quote: quote, provider: provider)
+            let row = try XCTUnwrap(TransactionBroadcastReceipt.rows(hash: "accepted", approveHash: nil,
+                payload: payload(swap: .generic(swap)), pubKey: "vault").first)
+            XCTAssertEqual(row.type, .swap)
+            XCTAssertEqual(row.swapTracking?.providerKind, TransactionActivityPolicy.nativeSourceProviderKind)
+            XCTAssertEqual(row.swapTracking?.subProvider, expected)
+        }
+    }
+
+    private func payload(coin: Coin? = nil, memo: String? = nil, skipBroadcast: Bool = false, qbtc: Bool = false,
                          approve: ERC20ApprovePayload? = nil, swap: SwapPayload? = nil, maxSend: Bool = false) -> KeysignPayload {
         KeysignPayload(
-            coin: swap?.fromCoin ?? SendFormFixture.makeETH(), toAddress: "0x1234567890123456789012345678901234567890",
+            coin: coin ?? swap?.fromCoin ?? SendFormFixture.makeETH(), toAddress: "0x1234567890123456789012345678901234567890",
             toAmount: BigInt(1_000_000_000_000_000_000),
             chainSpecific: maxSend ? .UTXO(byteFee: 1, sendMaxAmount: true)
                 : .Ethereum(maxFeePerGasWei: 1, priorityFeeWei: 1, nonce: 0, gasLimit: 21_000),

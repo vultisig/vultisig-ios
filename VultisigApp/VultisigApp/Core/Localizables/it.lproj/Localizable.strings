@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Sblocco con Touch ID";
 "track" = "Traccia";
 "transaction" = "Transazione";
+"transactionActivityApproval" = "Approva";
+"transactionActivityCancelled" = "Annullato";
 "transactionActivityCompleted" = "Scambio completato";
 "transactionActivityConfirmed" = "Confermata";
 "transactionActivityDelayed" = "Aggiornamento in ritardo";
+"transactionActivityExpired" = "Scaduto";
 "transactionActivityFailed" = "Non riuscita";
 "transactionActivityFee" = "Commissione stimata";
+"transactionActivityFilled" = "Ordine eseguito";
+"transactionActivityLimit" = "Limite";
 "transactionActivityPartiallyRefunded" = "Rimborso parziale";
 "transactionActivityPending" = "In attesa";
 "transactionActivityRefunded" = "Rimborsata";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Scambio in corso";
 "transactionActivityTitle" = "Transazione";
 "transactionActivityTrackingEnded" = "Monitoraggio terminato";
+"transactionActivityTransaction" = "Transazione";
 "transactionActivityUnavailable" = "Questa transazione non è più disponibile su questo dispositivo.";
 "transactionActivityUpdated" = "Aggiornato";
 "transactionBroadcasted" = "Transazione trasmessa";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
 "zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";
 "zipImportUnsafeVaults" = "Importati %1$d vault. Saltati %2$d. %3$@ non è stato importato: sovrascriverebbe un vault già presente su questo dispositivo.";
-
-"transactionActivityApproval" = "Approva";
-
-"transactionActivityLimit" = "Limite";
-
-"transactionActivityTransaction" = "Transazione";
-
-"transactionActivityCancelled" = "Annullato";
-
-"transactionActivityExpired" = "Scaduto";
-
-"transactionActivityFilled" = "Ordine eseguito";

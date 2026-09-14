@@ -35,6 +35,23 @@ final class TransactionActivityStatusRefresherTests: XCTestCase {
         }
     }
 
+    func testGenericSwapNativeConfirmationCompletesOnlyTheProvenScope() async throws {
+        for (scope, expected) in [("atomic", TransactionActivityState.Phase.completed), ("sourceOnly", .sourceConfirmedOnly)] {
+            let (container, storage) = try storage()
+            let row = ActivityTestFixture.row(type: .swap,
+                tracking: .init(providerKind: TransactionActivityPolicy.nativeSourceProviderKind, subProvider: scope))
+            try storage.save(row)
+            let worker = refresher(storage, checker: NativeActivityChecker(status: .confirmed))
+            await worker.refresh(row)
+            let completed = try XCTUnwrap(storage.fetch(id: row.id))
+            XCTAssertEqual(TransactionActivityPolicy.phase(for: completed), expected)
+            XCTAssertTrue(expected.isTerminal)
+            await worker.refresh(row)
+            XCTAssertEqual(try storage.fetch(id: row.id)?.completedAt, completed.completedAt)
+            withExtendedLifetime(container) {}
+        }
+    }
+
     func testSendObservationsKeepOutcomeSeparateFromFreshness() async throws {
         let statuses: [TransactionStatusResult.TransactionConfirmationStatus?] = [.confirmed, .failed(reason: "reverted"), .pending, .notFound, nil]
         for (index, status) in statuses.enumerated() {

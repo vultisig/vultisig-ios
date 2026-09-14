@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Desbloquear com Touch ID";
 "track" = "Acompanhar";
 "transaction" = "Transação";
+"transactionActivityApproval" = "Aprovar";
+"transactionActivityCancelled" = "Cancelada";
 "transactionActivityCompleted" = "Troca concluída";
 "transactionActivityConfirmed" = "Confirmada";
 "transactionActivityDelayed" = "Atualização atrasada";
+"transactionActivityExpired" = "Expirada";
 "transactionActivityFailed" = "Falhou";
 "transactionActivityFee" = "Taxa estimada";
+"transactionActivityFilled" = "Ordem executada";
+"transactionActivityLimit" = "Limite";
 "transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendente";
 "transactionActivityRefunded" = "Reembolsada";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Trocando";
 "transactionActivityTitle" = "Transação";
 "transactionActivityTrackingEnded" = "Acompanhamento encerrado";
+"transactionActivityTransaction" = "Transação";
 "transactionActivityUnavailable" = "Esta transação não está mais disponível neste dispositivo.";
 "transactionActivityUpdated" = "Atualizado";
 "transactionBroadcasted" = "Transação difundida";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
 "zipImportUnsafeVaults" = "Importados %1$d cofre(s). Ignorados %2$d. %3$@ não pôde ser importado: substituiria um cofre que já está neste dispositivo.";
-
-"transactionActivityApproval" = "Aprovar";
-
-"transactionActivityLimit" = "Limite";
-
-"transactionActivityTransaction" = "Transação";
-
-"transactionActivityCancelled" = "Cancelada";
-
-"transactionActivityExpired" = "Expirada";
-
-"transactionActivityFilled" = "Ordem executada";

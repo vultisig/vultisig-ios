@@ -30,6 +30,30 @@ final class TransactionActivityStorageTests: XCTestCase {
         XCTAssertEqual(try storage.fetch(id: broadcast.id)?.feeCrypto, "0.001 ETH")
     }
 
+    func testGenericReceiptAcceptsDoneFeesWithoutInventingATransfer() throws {
+        let container = try container()
+        let storage = TransactionHistoryStorage(modelContext: container.mainContext)
+        let broadcast = ActivityTestFixture.row(type: .transaction, amountCrypto: "", amountFiat: "")
+        try storage.save(broadcast)
+        try storage.save(ActivityTestFixture.row(hash: broadcast.txHash, amountCrypto: "100 ETH", amountFiat: "250000", fee: "0.001 ETH"))
+        let row = try XCTUnwrap(storage.fetch(id: broadcast.id))
+        XCTAssertEqual(row.type, .transaction)
+        XCTAssertEqual(row.feeCrypto, "0.001 ETH")
+        XCTAssertTrue(row.amountCrypto.isEmpty)
+        XCTAssertTrue(row.amountFiat.isEmpty)
+    }
+
+    func testUnknownMaximumSendAmountCanBeEnrichedWithoutReplacingTheReceipt() throws {
+        let container = try container()
+        let storage = TransactionHistoryStorage(modelContext: container.mainContext)
+        let broadcast = ActivityTestFixture.row(amountCrypto: "", amountFiat: "")
+        try storage.save(broadcast)
+        try storage.save(ActivityTestFixture.row(hash: broadcast.txHash, amountCrypto: "0.999 ETH", fee: "0.001 ETH"))
+        let row = try XCTUnwrap(storage.fetch(id: broadcast.id))
+        XCTAssertEqual(row.amountCrypto, "0.999 ETH")
+        XCTAssertEqual(row.id, broadcast.id)
+    }
+
     func testLateDoneTrackingIdentifiersPreserveObservedSettlement() throws {
         let container = try container()
         let storage = TransactionHistoryStorage(modelContext: container.mainContext)

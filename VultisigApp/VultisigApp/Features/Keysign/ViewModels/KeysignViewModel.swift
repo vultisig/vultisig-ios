@@ -1100,7 +1100,9 @@ class KeysignViewModel: ObservableObject {
 
             case .regularWithApprove(let approve, let transaction):
                 let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
-                let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                let approvalResult = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                let approveTxHash = approvalResult == SubstrateBroadcast.alreadyBroadcastedSentinel
+                    ? approve.transactionHash : approvalResult
                 self.approveTxid = approveTxHash
                 #if os(iOS)
                 TransactionLiveActivityBroadcast.recordApproval(hash: approveTxHash, payload: keysignPayload, vault: vault)

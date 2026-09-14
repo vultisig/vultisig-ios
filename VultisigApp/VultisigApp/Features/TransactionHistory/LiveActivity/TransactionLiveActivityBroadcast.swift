@@ -18,7 +18,7 @@ enum TransactionLiveActivityBroadcast {
     }
 
     static func recordClaim(hash: String, coin: Coin, vault: Vault) {
-        guard !hash.isEmpty else { return }
+        guard TransactionBroadcastReceipt.isBroadcastHash(hash) else { return }
         saveAndTrack(TransactionBroadcastReceipt.transaction(hash: hash, coin: coin, pubKey: vault.pubKeyECDSA))
     }
 
@@ -28,6 +28,8 @@ enum TransactionLiveActivityBroadcast {
             let rows = try TransactionHistoryStorage.shared.fetchByChain(pubKeyECDSA: row.pubKeyECDSA,
                                                                         chainRawValue: row.chainRawValue)
             guard let saved = rows.first(where: { $0.txHash == row.txHash }) else { return }
+            // History tracking survives ActivityKit denial or system capacity limits.
+            TransactionLiveActivityCoordinator.resumeTracking(saved)
             TransactionLiveActivityCoordinator.shared.trackBroadcast(saved)
         } catch {
             Log.wallet.other.info("Live Activity could not persist the broadcast receipt")

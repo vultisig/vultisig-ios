@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "触控 ID 解锁";
 "track" = "跟踪";
 "transaction" = "交易";
+"transactionActivityApproval" = "批准";
+"transactionActivityCancelled" = "已取消";
 "transactionActivityCompleted" = "兑换完成";
 "transactionActivityConfirmed" = "已确认";
 "transactionActivityDelayed" = "更新延迟";
+"transactionActivityExpired" = "已过期";
 "transactionActivityFailed" = "失败";
 "transactionActivityFee" = "预计费用";
+"transactionActivityFilled" = "订单已成交";
+"transactionActivityLimit" = "限价";
 "transactionActivityPartiallyRefunded" = "已部分退款";
 "transactionActivityPending" = "待处理";
 "transactionActivityRefunded" = "已退款";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "兑换中";
 "transactionActivityTitle" = "交易";
 "transactionActivityTrackingEnded" = "跟踪已结束";
+"transactionActivityTransaction" = "交易";
 "transactionActivityUnavailable" = "此设备上已无法查看这笔交易。";
 "transactionActivityUpdated" = "已更新";
 "transactionBroadcasted" = "交易已广播";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
 "zipImportUnsafeVaults" = "已导入 %1$d 个保险库。跳过 %2$d 个。无法导入 %3$@：它会覆盖此设备上已有的保险库。";
-
-"transactionActivityApproval" = "批准";
-
-"transactionActivityLimit" = "限价";
-
-"transactionActivityTransaction" = "交易";
-
-"transactionActivityCancelled" = "已取消";
-
-"transactionActivityExpired" = "已过期";
-
-"transactionActivityFilled" = "订单已成交";

@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 
 enum TransactionActivityPolicy {
+    static let nativeSourceProviderKind = "nativeSource"
     static let ledgerKey = "transactionLiveActivitiesLedgerV1"
     static let maximumAge: TimeInterval = 7.5 * 60 * 60
 
@@ -26,6 +27,10 @@ enum TransactionActivityPolicy {
         !payload.skipBroadcast
     }
 
+    static func usesNativeStatus(_ row: TransactionHistoryData) -> Bool {
+        row.swapTracking == nil || row.swapTracking?.providerKind == nativeSourceProviderKind
+    }
+
     static func phase(for row: TransactionHistoryData) -> TransactionActivityState.Phase {
         if row.type == .limit {
             switch row.swapTracking?.latestStatus?.lowercased() {
@@ -37,6 +42,11 @@ enum TransactionActivityPolicy {
             }
         }
         if row.type == .swap {
+            if row.swapTracking?.providerKind == nativeSourceProviderKind, row.status == .successful {
+                // Only known same-chain routes settle atomically with this tx.
+                // Other routes finish observing the broadcast source explicitly.
+                return row.swapTracking?.subProvider == "atomic" ? .completed : .sourceConfirmedOnly
+            }
             // A native fallback updates the coarse row, but never proves swap settlement.
             let fine = row.swapTracking?.latestTrackingStatus?.lowercased()
             let raw = fine?.isEmpty == false ? fine : row.swapTracking?.latestStatus?.lowercased()
@@ -49,7 +59,7 @@ enum TransactionActivityPolicy {
             default:
                 // Without provider metadata, a durable coarse failure came from
                 // native tracking. Provider operational errors remain ambiguous.
-                if row.swapTracking == nil, row.status == .error,
+                if usesNativeStatus(row), row.status == .error,
                    !TransactionHistoryLegacyTimeout.localizedMessages().contains(row.errorMessage ?? "") {
                     return .failed
                 }
@@ -87,11 +97,12 @@ enum TransactionActivityPolicy {
 
     static func state(for row: TransactionHistoryData, phase: TransactionActivityState.Phase,
                       observedAt: Date, revision: Int, delayed: Bool, showDetails: Bool) -> TransactionActivityState {
-        let summary = row.type == .swap || row.type == .limit
+        let hasDestination = row.toCoinTicker?.isEmpty == false
+        let summary = (row.type == .swap || row.type == .limit) && hasDestination
             ? "\(row.amountCrypto) → \(row.toCoinTicker ?? "")" : row.amountCrypto
         return TransactionActivityState(
             phase: phase, observedAt: observedAt, revision: revision, updateDelayed: delayed,
-            summary: summary, network: row.network, showDetails: showDetails,
+            summary: summary.isEmpty ? row.coinTicker : summary, network: row.network, showDetails: showDetails,
             operation: operation(for: row.type),
             recipient: row.type == .send ? row.toAddress : nil,
             fee: row.feeCrypto.isEmpty ? nil : row.feeCrypto,

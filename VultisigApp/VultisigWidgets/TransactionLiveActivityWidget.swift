@@ -65,10 +65,10 @@ private struct TransactionActivityStatus: View {
     private var color: Color {
         if delayed { return WidgetTheme.warning }
         switch state.phase {
-        case .confirmed, .completed: return WidgetTheme.positive
+        case .confirmed, .completed, .filled: return WidgetTheme.positive
         case .failed: return WidgetTheme.negative
         case .refunded, .partiallyRefunded: return WidgetTheme.warning
-        case .trackingEnded: return WidgetTheme.secondaryText
+        case .cancelled, .expired, .trackingEnded: return WidgetTheme.secondaryText
         default: return WidgetTheme.activityAccent
         }
     }

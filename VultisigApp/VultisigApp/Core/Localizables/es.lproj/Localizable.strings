@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Desbloqueo con Touch ID";
 "track" = "Rastrear";
 "transaction" = "Transacción";
+"transactionActivityApproval" = "Aprobar";
+"transactionActivityCancelled" = "Cancelada";
 "transactionActivityCompleted" = "Intercambio completado";
 "transactionActivityConfirmed" = "Confirmada";
 "transactionActivityDelayed" = "Actualización retrasada";
+"transactionActivityExpired" = "Vencida";
 "transactionActivityFailed" = "Fallida";
 "transactionActivityFee" = "Comisión estimada";
+"transactionActivityFilled" = "Orden ejecutada";
+"transactionActivityLimit" = "Límite";
 "transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendiente";
 "transactionActivityRefunded" = "Reembolsada";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Intercambiando";
 "transactionActivityTitle" = "Transacción";
 "transactionActivityTrackingEnded" = "Seguimiento finalizado";
+"transactionActivityTransaction" = "Transacción";
 "transactionActivityUnavailable" = "Esta transacción ya no está disponible en este dispositivo.";
 "transactionActivityUpdated" = "Actualizado";
 "transactionBroadcasted" = "Transacción difundida";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "Las %d bóveda(s) ya existen y fueron omitidas: %@.";
 "zipImportPartialSuccess" = "Se importaron %d bóveda(s). Se omitieron %d duplicado(s): %@.";
 "zipImportUnsafeVaults" = "Se importaron %1$d bóveda(s). Se omitieron %2$d. %3$@ no se pudo importar: sobrescribiría una bóveda que ya está en este dispositivo.";
-
-"transactionActivityApproval" = "Aprobar";
-
-"transactionActivityLimit" = "Límite";
-
-"transactionActivityTransaction" = "Transacción";
-
-"transactionActivityCancelled" = "Cancelada";
-
-"transactionActivityExpired" = "Vencida";
-
-"transactionActivityFilled" = "Orden ejecutada";

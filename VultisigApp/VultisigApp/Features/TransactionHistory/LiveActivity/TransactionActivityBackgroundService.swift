@@ -34,7 +34,7 @@ final class TransactionActivityBackgroundService {
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
                 // The activity observer owns native transactions during the bounded window.
-                if row.swapTracking == nil {
+                if TransactionActivityPolicy.usesNativeStatus(row) {
                     self.pausedNativeTransactions.insert(row.id)
                     TransactionStatusPoller.shared.stopPolling(txHash: row.txHash)
                 }

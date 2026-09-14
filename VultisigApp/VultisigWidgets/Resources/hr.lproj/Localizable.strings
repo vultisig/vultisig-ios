@@ -1,8 +1,13 @@
+"transactionActivityApproval" = "Odobri";
+"transactionActivityCancelled" = "Otkazano";
 "transactionActivityCompleted" = "Zamjena dovršena";
 "transactionActivityConfirmed" = "Potvrđeno";
 "transactionActivityDelayed" = "Ažuriranje kasni";
+"transactionActivityExpired" = "Isteklo";
 "transactionActivityFailed" = "Neuspjelo";
 "transactionActivityFee" = "Procijenjena naknada";
+"transactionActivityFilled" = "Nalog izvršen";
+"transactionActivityLimit" = "Limit";
 "transactionActivityPartiallyRefunded" = "Djelomično vraćeno";
 "transactionActivityPending" = "Na čekanju";
 "transactionActivityRefunded" = "Vraćeno";
@@ -13,6 +18,7 @@
 "transactionActivitySwapping" = "Zamjena u tijeku";
 "transactionActivityTitle" = "Transakcija";
 "transactionActivityTrackingEnded" = "Praćenje završeno";
+"transactionActivityTransaction" = "Transakcija";
 "transactionActivityUpdated" = "Ažurirano";
 "widget.accessibility.asset" = "%@, %@, cijena %@, promjena %@, sedmodnevni trend";
 "widget.accessibility.change" = "%@ %@ 24H";
@@ -47,15 +53,3 @@
 "widget.watchlist.configure" = "Odaberi imovinu u postavkama Vultisiga";
 "widget.watchlist.description" = "Prati do pet kriptovaluta odabranih u Vultisigu.";
 "widget.watchlist.marketDataUnavailable" = "Tržišni podaci popisa privremeno nisu dostupni";
-
-"transactionActivityApproval" = "Odobri";
-
-"transactionActivityLimit" = "Limit";
-
-"transactionActivityTransaction" = "Transakcija";
-
-"transactionActivityCancelled" = "Otkazano";
-
-"transactionActivityExpired" = "Isteklo";
-
-"transactionActivityFilled" = "Nalog izvršen";

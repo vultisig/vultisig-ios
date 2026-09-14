@@ -80,6 +80,19 @@ final class TransactionActivityPolicyTests: XCTestCase {
         }
     }
 
+    func testPermissionAndGenericReceiptsHaveNonemptySummaries() {
+        for type in [TransactionHistoryType.approve, .trustLineActivation, .transaction, .limit] {
+            let row = ActivityTestFixture.row(type: type, amountCrypto: "")
+            let state = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                revision: 1, delayed: false, showDetails: true)
+            XCTAssertEqual(state.summary, "ETH")
+            XCTAssertFalse(state.summary?.contains("→") == true)
+        }
+        let source = TransactionActivityState(phase: .sourceConfirmedOnly, observedAt: Date(), revision: 1)
+        XCTAssertNil(source.staleDate)
+        XCTAssertEqual(source.phase.localizationKey, "transactionActivitySourceConfirmed")
+    }
+
     func testIdentityIncludesVaultAndChain() {
         let first = ActivityTestFixture.row(hash: "same", vault: "one", chain: .ethereum)
         let otherVault = ActivityTestFixture.row(hash: "same", vault: "two", chain: .ethereum)

@@ -5,7 +5,7 @@ import Foundation
 enum TransactionBroadcastReceipt {
     static func rows(hash: String, approveHash: String?, payload: KeysignPayload,
                      pubKey: String) -> [TransactionHistoryData] {
-        guard !hash.isEmpty, TransactionActivityPolicy.isEligible(payload) else { return [] }
+        guard isBroadcastHash(hash), TransactionActivityPolicy.isEligible(payload) else { return [] }
         let coin = payload.coin
         let swap = payload.swapPayload
         let tracking = trackingMetadata(hash: hash, payload: payload)
@@ -49,7 +49,7 @@ enum TransactionBroadcastReceipt {
     }
 
     static func approval(hash: String, payload: KeysignPayload, pubKey: String) -> TransactionHistoryData? {
-        guard !hash.isEmpty, !payload.skipBroadcast, let approval = payload.approvePayload else { return nil }
+        guard isBroadcastHash(hash), !payload.skipBroadcast, let approval = payload.approvePayload else { return nil }
         return transaction(hash: hash, coin: payload.coin, pubKey: pubKey, type: .approve, toAddress: approval.spender)
     }
 
@@ -86,8 +86,20 @@ enum TransactionBroadcastReceipt {
         case .swapkit:
             return swapKitMetadata(hash: hash, chain: payload.coin.chain)
         case .generic(let generic):
-            return generic.provider == .swapkit ? swapKitMetadata(hash: hash, chain: payload.coin.chain) : nil
+            if generic.provider == .swapkit { return swapKitMetadata(hash: hash, chain: payload.coin.chain) }
+            let sameChain = generic.fromCoin.chain == generic.toCoin.chain
+            let knownAtomicProvider: Bool
+            switch generic.provider {
+            case .oneInch, .kyberSwap, .jupiter, .lifi: knownAtomicProvider = true
+            default: knownAtomicProvider = false
+            }
+            return SwapTrackingMetadataData(providerKind: TransactionActivityPolicy.nativeSourceProviderKind,
+                broadcastHash: hash, subProvider: sameChain && knownAtomicProvider ? "atomic" : "sourceOnly")
         }
+    }
+
+    static func isBroadcastHash(_ hash: String) -> Bool {
+        !hash.isEmpty && hash != SubstrateBroadcast.alreadyBroadcastedSentinel
     }
 
     private static func swapKitMetadata(hash: String, chain: Chain) -> SwapTrackingMetadataData? {
@@ -103,7 +115,18 @@ enum TransactionBroadcastReceipt {
               !isModifyLimitSwapMemo(payload.memo) else { return false }
         let operation = SignedTransactionDecoder.decode(payload).operation
         if operation == .transfer { return true }
-        return operation == .unknown && (payload.memo ?? "").isEmpty
-            && (payload.coin.chainType == .EVM || payload.coin.chainType == .UTXO)
+        guard operation == .unknown else { return false }
+        // These send builders have no signed-content decoder yet. Explicit
+        // staking/contract/dapp shapes were excluded above; a missing decoder
+        // must not erase ordinary transfers from transaction history.
+        switch payload.coin.chain {
+        case .ripple, .sui, .polkadot, .bittensor, .cardano: return true
+        default:
+            if payload.coin.chainType == .UTXO { return true }
+            if payload.coin.chainType == .EVM {
+                return !(payload.memo ?? "").hasPrefix("0x")
+            }
+            return false
+        }
     }
 }

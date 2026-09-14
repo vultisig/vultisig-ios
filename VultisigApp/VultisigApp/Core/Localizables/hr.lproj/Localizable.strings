@@ -1639,11 +1639,16 @@
 "touchIDUnlockTitle" = "Otključavanje Touch ID-jem";
 "track" = "Prati";
 "transaction" = "Transakcija";
+"transactionActivityApproval" = "Odobri";
+"transactionActivityCancelled" = "Otkazano";
 "transactionActivityCompleted" = "Zamjena dovršena";
 "transactionActivityConfirmed" = "Potvrđeno";
 "transactionActivityDelayed" = "Ažuriranje kasni";
+"transactionActivityExpired" = "Isteklo";
 "transactionActivityFailed" = "Neuspjelo";
 "transactionActivityFee" = "Procijenjena naknada";
+"transactionActivityFilled" = "Nalog izvršen";
+"transactionActivityLimit" = "Limit";
 "transactionActivityPartiallyRefunded" = "Djelomično vraćeno";
 "transactionActivityPending" = "Na čekanju";
 "transactionActivityRefunded" = "Vraćeno";
@@ -1654,6 +1659,7 @@
 "transactionActivitySwapping" = "Zamjena u tijeku";
 "transactionActivityTitle" = "Transakcija";
 "transactionActivityTrackingEnded" = "Praćenje završeno";
+"transactionActivityTransaction" = "Transakcija";
 "transactionActivityUnavailable" = "Ova transakcija više nije dostupna na ovom uređaju.";
 "transactionActivityUpdated" = "Ažurirano";
 "transactionBroadcasted" = "Transakcija odaslana";
@@ -1945,15 +1951,3 @@
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
 "zipImportUnsafeVaults" = "Uvezeno %1$d trezor(a). Preskočeno %2$d. %3$@ nije moguće uvesti: prebrisalo bi trezor koji već postoji na ovom uređaju.";
-
-"transactionActivityApproval" = "Odobri";
-
-"transactionActivityLimit" = "Limit";
-
-"transactionActivityTransaction" = "Transakcija";
-
-"transactionActivityCancelled" = "Otkazano";
-
-"transactionActivityExpired" = "Isteklo";
-
-"transactionActivityFilled" = "Nalog izvršen";

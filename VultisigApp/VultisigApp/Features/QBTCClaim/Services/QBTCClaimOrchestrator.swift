@@ -52,7 +52,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
     private let generateProof: GenerateProof
     private let runBtcRound: RunBtcRound
     private let pushTxHash: PushTxHash?
-    private let recordBroadcast: (String, QBTCClaimRunInput) -> Void
+    private let recordBroadcast: @MainActor (String, QBTCClaimRunInput) -> Void
 
     private let logger = Log.qbtc.other
 
@@ -60,7 +60,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
         generateProof: @escaping GenerateProof,
         runBtcRound: @escaping RunBtcRound,
         pushTxHash: PushTxHash? = nil,
-        recordBroadcast: @escaping (String, QBTCClaimRunInput) -> Void = { _, _ in }
+        recordBroadcast: @escaping @MainActor (String, QBTCClaimRunInput) -> Void = { _, _ in }
     ) {
         self.generateProof = generateProof
         self.runBtcRound = runBtcRound

@@ -1,8 +1,13 @@
+"transactionActivityApproval" = "Aprovar";
+"transactionActivityCancelled" = "Cancelada";
 "transactionActivityCompleted" = "Troca concluída";
 "transactionActivityConfirmed" = "Confirmada";
 "transactionActivityDelayed" = "Atualização atrasada";
+"transactionActivityExpired" = "Expirada";
 "transactionActivityFailed" = "Falhou";
 "transactionActivityFee" = "Taxa estimada";
+"transactionActivityFilled" = "Ordem executada";
+"transactionActivityLimit" = "Limite";
 "transactionActivityPartiallyRefunded" = "Reembolso parcial";
 "transactionActivityPending" = "Pendente";
 "transactionActivityRefunded" = "Reembolsada";
@@ -13,6 +18,7 @@
 "transactionActivitySwapping" = "Trocando";
 "transactionActivityTitle" = "Transação";
 "transactionActivityTrackingEnded" = "Acompanhamento encerrado";
+"transactionActivityTransaction" = "Transação";
 "transactionActivityUpdated" = "Atualizado";
 "widget.accessibility.asset" = "%@, %@, preço %@, variação %@, tendência de sete dias";
 "widget.accessibility.change" = "%@ %@ 24H";
@@ -47,15 +53,3 @@
 "widget.watchlist.configure" = "Escolha ativos nos Ajustes do Vultisig";
 "widget.watchlist.description" = "Acompanhe até cinco criptomoedas selecionadas no Vultisig.";
 "widget.watchlist.marketDataUnavailable" = "Os dados de mercado da lista estão temporariamente indisponíveis";
-
-"transactionActivityApproval" = "Aprovar";
-
-"transactionActivityLimit" = "Limite";
-
-"transactionActivityTransaction" = "Transação";
-
-"transactionActivityCancelled" = "Cancelada";
-
-"transactionActivityExpired" = "Expirada";
-
-"transactionActivityFilled" = "Ordem executada";
