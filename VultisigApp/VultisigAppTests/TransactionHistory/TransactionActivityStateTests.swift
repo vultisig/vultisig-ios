@@ -6,7 +6,8 @@ final class TransactionActivityStateTests: XCTestCase {
         let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
                                              summary: "secret amount", network: "secret network",
                                              operation: .swap, recipient: "secret recipient", fee: "secret fee",
-                                             provider: "secret provider", submittedAt: Date(), sourceAssetID: "usdc", destinationAssetID: "eth")
+                                             provider: "secret provider", submittedAt: Date(), sourceAssetID: "usdc", destinationAssetID: "eth",
+                                             sourceSummary: "secret amount", destinationTicker: "secret token")
         let encoded = try XCTUnwrap(String(data: JSONEncoder().encode(state), encoding: .utf8))
         XCTAssertFalse(encoded.contains("secret"))
         XCTAssertNil(state.summary)
@@ -25,7 +26,9 @@ final class TransactionActivityStateTests: XCTestCase {
                                              fee: String(repeating: "\"", count: 500), provider: String(repeating: "\"", count: 500),
                                              submittedAt: Date(), sourceAssetID: "usdc", destinationAssetID: "solana",
                                              sourceImageKey: String(repeating: "a", count: 64),
-                                             destinationImageKey: String(repeating: "b", count: 64))
+                                             destinationImageKey: String(repeating: "b", count: 64),
+                                             sourceSummary: String(repeating: "\"", count: 500),
+                                             destinationTicker: String(repeating: "\"", count: 500))
         #if os(iOS)
         let attributes = TransactionActivityAttributes(recordID: UUID())
         let size = try JSONEncoder().encode(attributes).count + JSONEncoder().encode(state).count
@@ -77,6 +80,8 @@ final class TransactionActivityStateTests: XCTestCase {
         XCTAssertEqual(state.summary, "1 ETH")
         XCTAssertNil(state.sourceAssetID)
         XCTAssertNil(state.destinationAssetID)
+        XCTAssertNil(state.sourceSummary)
+        XCTAssertNil(state.destinationTicker)
         XCTAssertNil(state.sourceImageKey)
         XCTAssertNil(state.destinationImageKey)
         XCTAssertEqual(try JSONDecoder().decode(TransactionActivityState.self, from: JSONEncoder().encode(state)), state)
@@ -107,6 +112,15 @@ final class TransactionActivityStateTests: XCTestCase {
         XCTAssertFalse(encoded.contains("ImageKey"))
         XCTAssertFalse(encoded.contains("AssetID"))
         XCTAssertFalse(state.hasDetails)
+    }
+
+    func testRouteLabelsRemainBoundedAndRoundTripWithoutParsingSummary() throws {
+        let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
+            summary: "legacy summary", showDetails: true, operation: .swap,
+            sourceSummary: String(repeating: "界", count: 100), destinationTicker: String(repeating: "界", count: 100))
+        XCTAssertLessThanOrEqual(try XCTUnwrap(state.sourceSummary).utf8.count, 160)
+        XCTAssertLessThanOrEqual(try XCTUnwrap(state.destinationTicker).utf8.count, 80)
+        XCTAssertEqual(try JSONDecoder().decode(TransactionActivityState.self, from: JSONEncoder().encode(state)), state)
     }
 
     func testDisplayStatusesRequireVerifiedSettlementAndKeepWirePhasesIntact() {

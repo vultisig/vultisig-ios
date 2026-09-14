@@ -59,6 +59,9 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     /// Omitted at the data boundary in private mode, including from updates.
     let summary: String?
     let network: String?
+    /// Structured route labels avoid parsing the localized legacy summary.
+    let sourceSummary: String?
+    let destinationTicker: String?
     let operation: Operation?
     let recipient: String?
     let fee: String?
@@ -76,13 +79,16 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
          operation: Operation? = nil, recipient: String? = nil, fee: String? = nil,
          provider: String? = nil, submittedAt: Date? = nil,
          sourceAssetID: String? = nil, destinationAssetID: String? = nil,
-         sourceImageKey: String? = nil, destinationImageKey: String? = nil) {
+         sourceImageKey: String? = nil, destinationImageKey: String? = nil,
+         sourceSummary: String? = nil, destinationTicker: String? = nil) {
         self.schemaVersion = 1
         self.phase = phase
         self.observedAt = observedAt
         self.revision = revision
         self.updateDelayed = updateDelayed
         self.summary = showDetails ? summary.map { Self.bounded($0, bytes: 240) } : nil
+        self.sourceSummary = showDetails ? sourceSummary.map { Self.bounded($0, bytes: 160) } : nil
+        self.destinationTicker = showDetails ? destinationTicker.map { Self.bounded($0, bytes: 80) } : nil
         self.network = showDetails ? network.map { Self.bounded($0, bytes: 80) } : nil
         self.operation = showDetails ? operation : nil
         self.recipient = showDetails ? recipient.flatMap { address in
@@ -100,7 +106,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     }
 
     var hasDetails: Bool {
-        summary != nil || network != nil || operation != nil || recipient != nil
+        summary != nil || sourceSummary != nil || destinationTicker != nil || network != nil || operation != nil || recipient != nil
             || fee != nil || provider != nil || submittedAt != nil
             || sourceAssetID != nil || destinationAssetID != nil
             || sourceImageKey != nil || destinationImageKey != nil
@@ -126,6 +132,8 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         case updateDelayed
         case summary
         case network
+        case sourceSummary
+        case destinationTicker
         case operation
         case recipient
         case fee
@@ -145,6 +153,8 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         revision = try values.decode(Int.self, forKey: .revision)
         updateDelayed = try values.decode(Bool.self, forKey: .updateDelayed)
         summary = try values.decodeIfPresent(String.self, forKey: .summary)
+        sourceSummary = try values.decodeIfPresent(String.self, forKey: .sourceSummary).map { Self.bounded($0, bytes: 160) }
+        destinationTicker = try values.decodeIfPresent(String.self, forKey: .destinationTicker).map { Self.bounded($0, bytes: 80) }
         network = try values.decodeIfPresent(String.self, forKey: .network)
         operation = try values.decodeIfPresent(Operation.self, forKey: .operation)
         recipient = try values.decodeIfPresent(String.self, forKey: .recipient)

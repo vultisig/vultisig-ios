@@ -53,6 +53,7 @@ private struct TransactionActivityStatus: View {
     let isStale: Bool
     var showsText = true
     var usesCircularProgress = false
+    var fontSize: CGFloat = 11
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
@@ -88,7 +89,7 @@ private struct TransactionActivityStatus: View {
             }
             if showsText { Text(LocalizedStringKey(status.localizationKey)) }
         }
-        .font(WidgetTheme.labelFont(size: 11))
+        .font(WidgetTheme.labelFont(size: fontSize))
         .foregroundStyle(color)
         .lineLimit(1)
         .minimumScaleFactor(0.8)
@@ -114,60 +115,138 @@ struct TransactionActivityCard: View {
     }
 
     private func card(showsDetails: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
             if showsHeader {
                 HStack(spacing: 8) {
                     TransactionActivityBrand()
                     Spacer(minLength: 4)
-                    TransactionActivityStatus(state: state, isStale: isStale)
+                    if let operation = state.operation {
+                        Text(LocalizedStringKey(operation.localizationKey))
+                            .font(WidgetTheme.labelFont(size: 12))
+                            .foregroundStyle(WidgetTheme.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
                 }
             }
-            hero
-            if showsDetails { receiptDetails }
+            route(showsDetails: showsDetails)
+            if showsHeader || (showsDetails && state.fee != nil) {
+                Rectangle().fill(WidgetTheme.separator).frame(height: 0.5)
+                footer(showsDetails: showsDetails)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var hero: some View {
-        HStack(spacing: 10) {
-            if state.summary != nil {
-                HStack(spacing: -8) {
-                    tokenAvatar(state.sourceAssetID, imageKey: state.sourceImageKey, size: hasDestination ? 34 : 40)
-                    if hasDestination {
-                        tokenAvatar(state.destinationAssetID, imageKey: state.destinationImageKey, size: 34)
+    private var hasDestination: Bool {
+        (state.operation == .swap || state.operation == .limit)
+            && state.sourceSummary != nil && state.destinationTicker?.isEmpty == false
+    }
+
+    private var hasRecipient: Bool { state.operation == .send && state.recipient != nil }
+
+    private func route(showsDetails: Bool) -> some View {
+        HStack(spacing: 8) {
+            if let summary = state.summary {
+                assetColumn(title: state.sourceSummary ?? summary,
+                            subtitle: showsDetails ? state.network : nil,
+                            assetID: state.sourceAssetID, imageKey: state.sourceImageKey)
+                    .layoutPriority(1)
+                if hasDestination || hasRecipient {
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.right")
+                        .font(WidgetTheme.iconFont(size: 16))
+                        .foregroundStyle(WidgetTheme.secondaryText)
+                        .accessibilityHidden(true)
+                    Spacer(minLength: 0)
+                    if hasDestination, let ticker = state.destinationTicker {
+                        // History does not store the destination network. Do not infer it from a ticker or logo.
+                        assetColumn(title: ticker, subtitle: showsDetails && state.provider != state.network ? state.provider : nil,
+                                    assetID: state.destinationAssetID, imageKey: state.destinationImageKey)
+                            .frame(maxWidth: 125)
+                            .layoutPriority(1)
+                    } else if let recipient = state.recipient {
+                        recipientColumn(recipient, showsDetails: showsDetails)
+                            .frame(maxWidth: 125)
+                            .layoutPriority(1)
                     }
                 }
-                .accessibilityHidden(true)
             } else {
                 Image(systemName: "lock.shield")
-                    .font(WidgetTheme.iconFont(size: 20))
+                    .font(WidgetTheme.iconFont(size: 24))
                     .foregroundStyle(WidgetTheme.activityAccent)
-                    .frame(width: 40, height: 40)
-                    .background(WidgetTheme.activitySurface, in: Circle())
                     .accessibilityHidden(true)
+                Text("transactionActivityTitle")
+                    .font(WidgetTheme.labelFont(size: 19))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Spacer(minLength: 0)
             }
-            VStack(alignment: .leading, spacing: 1) {
-                if let operation = state.operation {
-                    Text(LocalizedStringKey(operation.localizationKey))
-                        .font(WidgetTheme.labelFont(size: 10))
+        }
+        .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
+    }
+
+    private func assetColumn(title: String, subtitle: String?, assetID: String?, imageKey: String?) -> some View {
+        HStack(spacing: 7) {
+            tokenAvatar(assetID, imageKey: imageKey, size: 32).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(WidgetTheme.priceFont(size: 20))
+                    .minimumScaleFactor(0.65)
+                    .truncationMode(.middle)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(WidgetTheme.labelFont(size: 11))
                         .foregroundStyle(WidgetTheme.secondaryText)
-                }
-                if let summary = state.summary {
-                    Text(summary)
-                        .font(WidgetTheme.priceFont(size: 23))
-                } else {
-                    Text("transactionActivityTitle")
-                        .font(WidgetTheme.labelFont(size: 19))
+                        .minimumScaleFactor(0.8)
                 }
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.65)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minHeight: 40)
+        .accessibilityElement(children: .combine)
     }
 
-    private var hasDestination: Bool { state.operation == .swap || state.operation == .limit }
+    private func recipientColumn(_ recipient: String, showsDetails: Bool) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: "person")
+                .font(WidgetTheme.iconFont(size: 20))
+                .foregroundStyle(WidgetTheme.secondaryText)
+                .frame(width: 32, height: 32)
+                .background(WidgetTheme.activitySurface, in: Circle())
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(recipient).font(WidgetTheme.priceFont(size: 17))
+                if showsDetails {
+                    Text("recipient")
+                        .font(WidgetTheme.labelFont(size: 11))
+                        .foregroundStyle(WidgetTheme.secondaryText)
+                }
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func footer(showsDetails: Bool) -> some View {
+        HStack(spacing: 8) {
+            if showsHeader {
+                TransactionActivityStatus(state: state, isStale: isStale, fontSize: 12)
+                    .layoutPriority(1)
+            }
+            Spacer(minLength: 0)
+            if showsDetails, let fee = state.fee {
+                HStack(spacing: 4) {
+                    Text("transactionActivityFee")
+                    Text(fee)
+                }
+                .font(WidgetTheme.labelFont(size: 11))
+                .foregroundStyle(WidgetTheme.secondaryText)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            }
+        }
+    }
 
     private func tokenAvatar(_ assetID: String?, imageKey: String?, size: CGFloat) -> some View {
         ZStack {
@@ -192,30 +271,6 @@ struct TransactionActivityCard: View {
             if showsHeader { Circle().stroke(WidgetTheme.background, lineWidth: 2) }
         }
     }
-
-    private var receiptDetails: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            if state.network != nil || state.recipient != nil {
-                HStack(spacing: 6) {
-                    if let network = state.network { Text(network) }
-                    if let recipient = state.recipient { Label(recipient, systemImage: "arrow.up.right") }
-                }
-            }
-            if state.provider != nil || state.fee != nil {
-                HStack(spacing: 6) {
-                    if let provider = state.provider { Text(provider) }
-                    if let fee = state.fee {
-                        Text("transactionActivityFee")
-                        Text(fee).layoutPriority(1)
-                    }
-                }
-            }
-        }
-        .lineLimit(1)
-        .minimumScaleFactor(0.75)
-        .font(WidgetTheme.labelFont(size: 10))
-        .foregroundStyle(WidgetTheme.secondaryText)
-    }
 }
 
 #if DEBUG
@@ -227,7 +282,8 @@ private enum TransactionActivityPreview {
             summary: swap ? "125.123456 USDC → ETH" : "125.123456 USDC", network: "Base", showDetails: !privateMode,
             operation: swap ? .swap : .send, recipient: swap ? nil : "0x1234567890123456789012345678901234567890",
             fee: "0.000004 ETH", provider: swap ? "SwapKit" : nil, submittedAt: Date().addingTimeInterval(-35),
-            sourceAssetID: "usdc", destinationAssetID: swap ? "eth" : nil
+            sourceAssetID: "usdc", destinationAssetID: swap ? "eth" : nil,
+            sourceSummary: "125.123456 USDC", destinationTicker: swap ? "ETH" : nil
         )
     }
 }

@@ -1,4 +1,5 @@
 "inProgress" = "In progress";
+"recipient" = "Recipient";
 "success" = "Success";
 "transactionActivityApproval" = "Approve";
 "transactionActivityFailed" = "Failed";
@@ -19,11 +20,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "unavailable";
 "widget.changeUnavailableDisplay" = "— 24H";
-"widget.cryptocurrency" = "Cryptocurrency";
 "widget.cryptoMarketDataUnavailable" = "Crypto market data is temporarily unavailable";
 "widget.cryptoTicker" = "Crypto Ticker";
 "widget.cryptoTicker.choose" = "Choose the cryptocurrency shown in this widget.";
 "widget.cryptoTicker.description" = "Track the price and seven-day trend of a cryptocurrency.";
+"widget.cryptocurrency" = "Cryptocurrency";
 "widget.down" = "down";
 "widget.marketCap" = "Market Cap";
 "widget.marketData" = "Market data";

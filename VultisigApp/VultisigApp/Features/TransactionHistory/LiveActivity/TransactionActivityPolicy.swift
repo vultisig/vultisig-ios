@@ -112,7 +112,9 @@ enum TransactionActivityPolicy {
             provider: row.type == .swap ? row.swapProvider : nil, submittedAt: row.createdAt,
             sourceAssetID: row.coinLogo, destinationAssetID: destinationLogo,
             sourceImageKey: showDetails ? preparedImageKey(row.coinLogo) : nil,
-            destinationImageKey: showDetails ? destinationLogo.flatMap(preparedImageKey) : nil
+            destinationImageKey: showDetails ? destinationLogo.flatMap(preparedImageKey) : nil,
+            sourceSummary: row.amountCrypto.isEmpty ? row.coinTicker : row.amountCrypto,
+            destinationTicker: (row.type == .swap || row.type == .limit) && hasDestination ? row.toCoinTicker : nil
         )
     }
 

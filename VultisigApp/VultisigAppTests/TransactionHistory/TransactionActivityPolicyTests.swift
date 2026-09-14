@@ -4,6 +4,26 @@ import XCTest
 
 @MainActor
 final class TransactionActivityPolicyTests: XCTestCase {
+    func testRouteLabelsUseDurableReceiptFieldsAndRespectPrivacy() {
+        for type in [TransactionHistoryType.send, .swap, .limit, .approve, .transaction] {
+            let row = ActivityTestFixture.row(type: type, amountCrypto: "1.234 ETH", toCoinTicker: "BTC")
+            let state = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                revision: 1, delayed: false, showDetails: true)
+            XCTAssertEqual(state.sourceSummary, "1.234 ETH")
+            XCTAssertEqual(state.destinationTicker, type == .swap || type == .limit ? "BTC" : nil)
+            XCTAssertEqual(state.recipient, type == .send ? "0x12…7890" : nil)
+            let hidden = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                revision: 2, delayed: false, showDetails: false)
+            XCTAssertNil(hidden.sourceSummary)
+            XCTAssertNil(hidden.destinationTicker)
+            XCTAssertFalse(hidden.hasDetails)
+        }
+        let unknownAmount = ActivityTestFixture.row(type: .transaction, amountCrypto: "")
+        let state = TransactionActivityPolicy.state(for: unknownAmount, phase: .pending, observedAt: unknownAmount.createdAt,
+            revision: 1, delayed: false, showDetails: true)
+        XCTAssertEqual(state.sourceSummary, "ETH")
+    }
+
     func testAvailabilityIsPlatformBasedRatherThanBuildConfiguration() {
         #if os(iOS)
         XCTAssertTrue(TransactionActivityPolicy.isSupportedPlatform)

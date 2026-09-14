@@ -1,4 +1,5 @@
 "inProgress" = "Em andamento";
+"recipient" = "Destinatário";
 "success" = "Sucesso";
 "transactionActivityApproval" = "Aprovar";
 "transactionActivityFailed" = "Falhou";
@@ -19,11 +20,11 @@
 "widget.change" = "%@ 24H";
 "widget.changeUnavailable" = "indisponível";
 "widget.changeUnavailableDisplay" = "— 24H";
-"widget.cryptocurrency" = "Criptomoeda";
 "widget.cryptoMarketDataUnavailable" = "Os dados do mercado cripto estão temporariamente indisponíveis";
 "widget.cryptoTicker" = "Ticker cripto";
 "widget.cryptoTicker.choose" = "Escolha a criptomoeda exibida neste widget.";
 "widget.cryptoTicker.description" = "Acompanhe o preço e a tendência de sete dias de uma criptomoeda.";
+"widget.cryptocurrency" = "Criptomoeda";
 "widget.down" = "caiu";
 "widget.marketCap" = "Capitalização";
 "widget.marketData" = "Dados de mercado";
