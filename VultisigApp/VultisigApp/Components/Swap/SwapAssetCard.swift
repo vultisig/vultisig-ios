@@ -70,6 +70,9 @@ struct SwapAssetCard<Focus: Hashable>: View {
     @Binding var amount: String
     let isEditable: Bool
     var placeholder: String = "0"
+    var amountPrefix: String?
+    var amountAccessibilityLabel: String?
+    var onEditingChanged: ((Bool) -> Void)?
     /// Fires ONLY on a user edit of the editable field (typed/pasted), with the
     /// old and new text — never on a programmatic `amount` change. The adapter puts
     /// its form-specific side effects here so a programmatic set (e.g. a percentage
@@ -83,6 +86,9 @@ struct SwapAssetCard<Focus: Hashable>: View {
 
     /// Always-shown fiat sub-line under the amount.
     let fiat: String
+    /// Market may turn the equivalent into an input-unit selector.
+    var onTapEquivalent: (() -> Void)?
+    var equivalentAccessibilityLabel: String?
 
     /// The Buy/To card is the same shape rotated 180° so its notch sits on the top
     /// edge; both cards' notches then meet as one circle around the shared toggle.
@@ -189,11 +195,30 @@ struct SwapAssetCard<Focus: Hashable>: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.trailing)
                     .frame(height: amountLineHeight)
-                Text(fiat)
+                equivalentView
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var equivalentView: some View {
+        if let onTapEquivalent {
+            Button(action: onTapEquivalent) {
+                HStack(spacing: 4) {
+                    Text(fiat)
+                    Image(systemName: "chevron.down")
+                        .font(Theme.fonts.caption10)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(equivalentAccessibilityLabel ?? fiat)
+            .accessibilityValue(fiat)
+            .accessibilityIdentifier("swap.amount.equivalentToggle")
+        } else {
+            Text(fiat)
         }
     }
 
@@ -229,7 +254,14 @@ struct SwapAssetCard<Focus: Hashable>: View {
     @ViewBuilder
     private var amountView: some View {
         if isEditable {
-            editableAmount
+            // Keep the editor in one structural position when the unit changes,
+            // preserving focus and the keyboard across a fiat/token toggle.
+            HStack(spacing: 4) {
+                if let amountPrefix {
+                    Text(amountPrefix).fixedSize()
+                }
+                editableAmount
+            }
         } else {
             // Read-only side (the computed Buy / quoted To amount): scalable so a
             // long number shrinks to fit instead of truncating.
@@ -282,7 +314,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
                 guard value != text.wrappedValue else { return }
                 text.wrappedValue = value
             }
-        ))
+        ), onEditingChanged: { onEditingChanged?($0) })
             .onAppear { amountDraft = text.wrappedValue }
             .onChange(of: text.wrappedValue) { _, value in amountDraft = value }
             .onChange(of: amountDraft) { _, value in
@@ -298,9 +330,10 @@ struct SwapAssetCard<Focus: Hashable>: View {
                         .accessibilityHidden(true)
                 }
             }
-            .accessibilityLabel(Text(label))
+            .accessibilityLabel(Text(amountAccessibilityLabel ?? label))
         #else
-        TextField(placeholder, text: text)
+        TextField(placeholder, text: text, onEditingChanged: { onEditingChanged?($0) })
+            .accessibilityLabel(Text(amountAccessibilityLabel ?? placeholder))
         #endif
     }
 }

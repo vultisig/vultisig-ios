@@ -1535,6 +1535,7 @@
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
 "swapAppliedDiscounts" = "Angewandte Rabatte:";
+"swapEnterAmountIn" = "Betrag in %@ eingeben";
 "swapErrorAddressScreeningTitle" = "Adressprüfung fehlgeschlagen";
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
 "swapErrorAmountTooSmallTitle" = "Betrag zu klein";

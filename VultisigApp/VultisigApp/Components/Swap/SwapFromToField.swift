@@ -9,9 +9,7 @@ import SwiftUI
 
 /// Market-swap adapter over the shared `SwapAssetCard`. Maps the Market
 /// `SwapDetailsViewModel` / `Coin` / `Chain` state onto the presentational card
-/// and keeps the Market-only keystroke side-effects (immediate-vs-debounced quote
-/// fetch) here, out of the shared card. The public init is unchanged so
-/// `SwapDetailsScreen` keeps working as-is.
+/// and keeps input-unit selection and quote side effects out of the shared card.
 struct SwapFromToField: View {
     let title: String
     let vault: Vault
@@ -23,6 +21,8 @@ struct SwapFromToField: View {
     @Binding var showCoinSelectSheet: Bool
     @Bindable var detailsViewModel: SwapDetailsViewModel
     let handlePercentageSelection: ((Int) -> Void)?
+
+    @AppStorage("currency") private var currencyCode = SettingsCurrency.USD.rawValue
 
     private var isFromField: Bool { title == "from" }
 
@@ -38,12 +38,14 @@ struct SwapFromToField: View {
             onTapCoin: { showCoinSelectSheet = true },
             // Market shows the balance on both the From and To rows.
             balance: "\(coin.balanceString) \(coin.ticker)",
-            amount: $amount,
+            amount: inputBinding,
             isEditable: isFromField,
-            // Runs on USER edits only (not the programmatic percentage-button set,
-            // which would otherwise double-fetch and clear the selected pill).
-            onEdit: isFromField ? handleAmountEdit : nil,
-            fiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            amountPrefix: isFromField && detailsViewModel.isFromInputFiat ? currencySymbol : nil,
+            amountAccessibilityLabel: isFromField ? "\(title.localized), \(inputUnit)" : nil,
+            onEditingChanged: editingChanged,
+            fiat: equivalent,
+            onTapEquivalent: equivalentAction,
+            equivalentAccessibilityLabel: String(format: "swapEnterAmountIn".localized, alternateUnit),
             isSecondRow: !isFromField
         )
         // Crossfade the To amount + its fiat as the quote lands (the To value is
@@ -52,18 +54,56 @@ struct SwapFromToField: View {
         // typing isn't animated.
         .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: amount)
         .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: fiatAmount)
+        .onAppear { refreshCurrencyContext() }
+        .onChange(of: currencyCode) { _, _ in refreshCurrencyContext() }
+        .onDisappear {
+            if isFromField { detailsViewModel.setFromInputEditing(false) }
+        }
     }
 
-    private func handleAmountEdit(oldValue: String, newValue: String) {
-        // A multi-character jump (paste, autofill, or clearing the field to a
-        // value) is a discrete action — fetch immediately instead of waiting out
-        // the keystroke debounce. Single-char edits stay debounced.
-        let immediate = abs(newValue.count - oldValue.count) > 1
-        detailsViewModel.updateFromAmount(
-            vault: vault,
-            immediate: immediate
+    private var editingChanged: ((Bool) -> Void)? {
+        guard isFromField else { return nil }
+        return { detailsViewModel.setFromInputEditing($0) }
+    }
+
+    private var equivalentAction: (() -> Void)? {
+        guard canToggle else { return nil }
+        return { detailsViewModel.toggleFromInputMode() }
+    }
+
+    private var inputBinding: Binding<String> {
+        guard isFromField else { return $amount }
+        return Binding(
+            get: { detailsViewModel.fromInputText },
+            set: { text in
+                detailsViewModel.editFromInput(text, vault: vault)
+                detailsViewModel.showAllPercentageButtons = true
+            }
         )
-        detailsViewModel.showAllPercentageButtons = true
+    }
+
+    private var canToggle: Bool { isFromField && detailsViewModel.canToggleFromInputMode }
+    private var inputUnit: String { detailsViewModel.isFromInputFiat ? detailsViewModel.fromInputCurrencyCode : coin.ticker }
+    private var alternateUnit: String { detailsViewModel.isFromInputFiat ? coin.ticker : detailsViewModel.fromInputCurrencyCode }
+
+    private var equivalent: String {
+        if isFromField && detailsViewModel.isFromInputFiat {
+            return "\(amount.isEmpty ? "0" : amount) \(coin.ticker)"
+        }
+        return isFromField ? fiatAmount : fiatAmount.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    private var currencySymbol: String {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .currency
+        formatter.currencyCode = detailsViewModel.fromInputCurrencyCode
+        return formatter.currencySymbol ?? detailsViewModel.fromInputCurrencyCode
+    }
+
+    private func refreshCurrencyContext() {
+        guard isFromField else { return }
+        detailsViewModel.refreshFromInputContext(currency: SettingsCurrency(rawValue: currencyCode) ?? .USD)
     }
 }
 

@@ -1535,6 +1535,7 @@
 "swapAmountTooSmall" = "Valor da troca muito pequeno";
 "swapAmountTooSmallRecommended" = "Valor da troca muito pequeno. Valor recomendado %@";
 "swapAppliedDiscounts" = "Descontos aplicados:";
+"swapEnterAmountIn" = "Inserir valor em %@";
 "swapErrorAddressScreeningTitle" = "Verificação de Endereço Falhou";
 "swapErrorAmountTooSmallDescription" = "O valor da troca é muito pequeno. Por favor, aumente o valor.";
 "swapErrorAmountTooSmallTitle" = "Valor Muito Pequeno";

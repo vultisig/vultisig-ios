@@ -1535,6 +1535,7 @@
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapAppliedDiscounts" = "Primijenjeni popusti:";
+"swapEnterAmountIn" = "Unesite iznos u %@";
 "swapErrorAddressScreeningTitle" = "Provjera Adrese Nije Uspjela";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorAmountTooSmallTitle" = "Iznos Premali";

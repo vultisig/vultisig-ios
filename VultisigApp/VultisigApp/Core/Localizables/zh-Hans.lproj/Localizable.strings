@@ -1535,6 +1535,7 @@
 "swapAmountTooSmall" = "交换金额太小";
 "swapAmountTooSmallRecommended" = "交换金额太小。推荐金额 %@";
 "swapAppliedDiscounts" = "已应用的折扣：";
+"swapEnterAmountIn" = "输入以 %@ 计价的金额";
 "swapErrorAddressScreeningTitle" = "地址筛查失败";
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
 "swapErrorAmountTooSmallTitle" = "金额太小";
