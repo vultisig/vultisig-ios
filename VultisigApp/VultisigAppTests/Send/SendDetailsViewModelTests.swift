@@ -316,6 +316,7 @@ final class SendDetailsViewModelTests: XCTestCase {
 
     func testVaultIsFastVaultReflectsCachedTrue() {
         let vault = SendFormFixture.makeVault()
+        vault.signers = [vault.localPartyID, "server-fixture"]
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = Date()
         let vm = SendFormFixture.make(vault: vault)

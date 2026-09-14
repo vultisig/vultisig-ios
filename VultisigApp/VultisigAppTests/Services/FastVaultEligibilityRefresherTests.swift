@@ -13,17 +13,63 @@ import XCTest
 @MainActor
 final class FastVaultEligibilityRefresherTests: XCTestCase {
 
+    private var store: TestContextToken?
+
+    override func setUp() async throws {
+        store = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() async throws {
+        TestStore.restore(store)
+        store = nil
+    }
+
+    private func makeVault() -> Vault {
+        let vault = TestStore.makeVault(pubKey: UUID().uuidString)
+        vault.localPartyID = "device"
+        vault.signers = ["device", "server-fixture"]
+        return vault
+    }
+
+    func testUnknownPreservesConfirmationAndRetriesWhileFresh() async {
+        let vault = makeVault()
+        let confirmedAt = Date()
+        vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = confirmedAt
+        var calls = 0
+        let refresher = FastVaultEligibilityRefresher(
+            checkEligibility: { _ in calls += 1; return .unknown(.requestFailed) },
+            saveStorage: { XCTFail("Unknown must not save confirmation") }
+        )
+        await refresher.refresh(vault)
+        await refresher.refreshIfStale(vault)
+        XCTAssertEqual(calls, 2)
+        XCTAssertTrue(vault.fastVaultEligibility)
+        XCTAssertEqual(vault.fastVaultEligibilityCheckedAt, confirmedAt)
+        XCTAssertTrue(vault.offersFastSigning)
+    }
+
+    func testColdStructuralIdentityAndServerLocalExclusion() {
+        let vault = makeVault()
+        XCTAssertTrue(vault.offersFastSigning)
+        vault.localPartyID = "SERVER-fixture"
+        XCTAssertFalse(vault.offersFastSigning)
+        vault.localPartyID = "device"
+        vault.signers = ["device", "other"]
+        XCTAssertFalse(vault.offersFastSigning)
+    }
+
     // MARK: - refresh
 
     func testRefreshUpdatesCacheAndTimestamp() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         XCTAssertFalse(vault.fastVaultEligibility)
         XCTAssertNil(vault.fastVaultEligibilityCheckedAt)
 
         let fixedDate = Date(timeIntervalSince1970: 1_000_000)
         var saveCalls = 0
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in true },
+            checkEligibility: { _ in .present },
             saveStorage: { saveCalls += 1 },
             now: { fixedDate }
         )
@@ -36,12 +82,12 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
     }
 
     func testRefreshCanFlipFromTrueToFalse() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = Date(timeIntervalSince1970: 0)
 
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in false },
+            checkEligibility: { _ in .absent },
             saveStorage: { },
             now: { Date(timeIntervalSince1970: 100) }
         )
@@ -53,14 +99,14 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
     }
 
     func testRefreshPassesVaultToCheckClosure() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         vault.pubKeyECDSA = "specific-pubkey"
 
         var receivedVault: Vault?
         let refresher = FastVaultEligibilityRefresher(
             checkEligibility: { v in
                 receivedVault = v
-                return true
+                return .present
             },
             saveStorage: { },
             now: { Date() }
@@ -74,12 +120,12 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
     // MARK: - refreshIfStale
 
     func testRefreshIfStaleRunsWhenNeverChecked() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         XCTAssertNil(vault.fastVaultEligibilityCheckedAt)
 
         var checkCalls = 0
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in checkCalls += 1; return true },
+            checkEligibility: { _ in checkCalls += 1; return .present },
             saveStorage: { },
             now: { Date() }
         )
@@ -90,7 +136,7 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
     }
 
     func testRefreshIfStaleSkipsWhenWithinThreshold() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         let lastCheck = Date(timeIntervalSince1970: 1_000_000)
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = lastCheck
@@ -98,7 +144,7 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         var checkCalls = 0
         // Threshold = 24h; now = lastCheck + 1h → within threshold
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in checkCalls += 1; return false },
+            checkEligibility: { _ in checkCalls += 1; return .absent },
             saveStorage: { },
             now: { lastCheck.addingTimeInterval(60 * 60) },
             stalenessThreshold: 24 * 60 * 60
@@ -112,7 +158,7 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
     }
 
     func testRefreshIfStaleRunsWhenExpired() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         let lastCheck = Date(timeIntervalSince1970: 1_000_000)
         vault.fastVaultEligibility = false
         vault.fastVaultEligibilityCheckedAt = lastCheck
@@ -121,7 +167,7 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         // Threshold = 24h; now = lastCheck + 25h → expired
         let now = lastCheck.addingTimeInterval(25 * 60 * 60)
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in checkCalls += 1; return true },
+            checkEligibility: { _ in checkCalls += 1; return .present },
             saveStorage: { },
             now: { now },
             stalenessThreshold: 24 * 60 * 60
@@ -136,13 +182,13 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
 
     func testRefreshIfStaleRunsAtExactThresholdBoundary() async {
         // At exactly `stalenessThreshold` elapsed, treat as stale (>=).
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         let lastCheck = Date(timeIntervalSince1970: 1_000_000)
         vault.fastVaultEligibilityCheckedAt = lastCheck
 
         var checkCalls = 0
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in checkCalls += 1; return true },
+            checkEligibility: { _ in checkCalls += 1; return .present },
             saveStorage: { },
             now: { lastCheck.addingTimeInterval(24 * 60 * 60) },  // exactly at threshold
             stalenessThreshold: 24 * 60 * 60

@@ -17,8 +17,7 @@ final class FastVaultEligibilityRefresher {
 
     static let shared = FastVaultEligibilityRefresher()
 
-    private let logger = Log.chain.store
-    private let checkEligibility: @MainActor (Vault) async -> Bool
+    private let checkEligibility: @MainActor (Vault) async -> FastVaultPresence
     private let saveStorage: @MainActor () -> Void
     private let now: @MainActor () -> Date
     private let stalenessThreshold: TimeInterval
@@ -26,7 +25,7 @@ final class FastVaultEligibilityRefresher {
     nonisolated static let defaultStalenessThreshold: TimeInterval = 24 * 60 * 60  // 24h
 
     init(
-        checkEligibility: @MainActor @escaping (Vault) async -> Bool = { await FastVaultService.shared.isEligibleForFastSign(vault: $0) },
+        checkEligibility: @MainActor @escaping (Vault) async -> FastVaultPresence = { await FastVaultService.shared.presence(pubKeyECDSA: $0.pubKeyECDSA) },
         saveStorage: @MainActor @escaping () -> Void = FastVaultEligibilityRefresher.defaultSaveStorage,
         now: @MainActor @escaping () -> Date = { Date() },
         stalenessThreshold: TimeInterval = FastVaultEligibilityRefresher.defaultStalenessThreshold
@@ -37,23 +36,27 @@ final class FastVaultEligibilityRefresher {
         self.stalenessThreshold = stalenessThreshold
     }
 
-    /// Refreshes the cached eligibility for the vault unconditionally. The
-    /// underlying `FastVaultService.isEligibleForFastSign(vault:)` short-circuits
-    /// to `false` locally if `vault.isFastVault` is false, so non-FastVaults
-    /// don't pay the network round-trip.
+    /// Unknown attempts never overwrite the last confirmed result or timestamp.
     func refresh(_ vault: Vault) async {
-        let isEligible = await checkEligibility(vault)
-        vault.fastVaultEligibility = isEligible
-        vault.fastVaultEligibilityCheckedAt = now()
-        saveStorage()
-        logger.debug("refreshed eligibility for vault=\(vault.pubKeyECDSA, privacy: .public): \(isEligible)")
+        guard vault.hasServerSigner else { return }
+        let outcome = await checkEligibility(vault)
+        vault.fastVaultPresenceOutcome = outcome
+        switch outcome {
+        case .present, .absent:
+            vault.fastVaultEligibility = outcome == .present
+            vault.fastVaultEligibilityCheckedAt = now()
+            saveStorage()
+        case .unknown:
+            break
+        }
     }
 
     /// Refreshes only if the cache is empty or older than `stalenessThreshold`.
     /// Use this on app foreground + vault switch — cheap when fresh, network
     /// hit on staleness.
     func refreshIfStale(_ vault: Vault) async {
-        if let checkedAt = vault.fastVaultEligibilityCheckedAt,
+        if vault.fastVaultPresenceOutcome?.isUnknown != true,
+           let checkedAt = vault.fastVaultEligibilityCheckedAt,
            now().timeIntervalSince(checkedAt) < stalenessThreshold {
             return
         }
