@@ -20,6 +20,73 @@ final class SwapFiatInputViewModelTests: XCTestCase {
         XCTAssertEqual(vm.makeTransaction()?.fromAmount, exact)
     }
 
+    func testExplicitLocaleParsedTokensKeepExactQuoteAndTransactionAmount() async throws {
+        let (vm, interactor) = makeVM(rate: 3)
+        let vault = try makeVault()
+        let inputs: [(String, Decimal)] = [
+            ("1.5", Decimal(string: "1.5")!),
+            ("1,5", Decimal(string: "1.5")!),
+            ("1.500", 1500),
+            ("123456789.123456789012345678", Decimal(string: "123456789.123456789012345678")!)
+        ]
+        for (input, amount) in inputs {
+            let parsed = try XCTUnwrap(SwapAmountInput.parseToken(input, locale: Locale(identifier: "de_DE")))
+            XCTAssertEqual(parsed, amount)
+            let text = SwapAmountInput.text(parsed)
+            vm.editFromInput(text, vault: vault, immediate: true)
+            await settle(vm)
+            XCTAssertEqual(vm.fromAmount, text)
+            XCTAssertEqual(vm.fromAmountDecimal, amount)
+            XCTAssertEqual(interactor.amounts.last, amount)
+            XCTAssertEqual(vm.makeTransaction()?.fromAmount, amount)
+            vm.toggleFromInputMode()
+            vm.toggleFromInputMode()
+            XCTAssertEqual(vm.fromAmount, text)
+        }
+    }
+
+    func testTokenPresetsKeepExactCanonicalValueAcrossLocaleParsing() async throws {
+        let (vm, interactor) = makeVM(rate: 3)
+        let vault = try makeVault()
+        vm.fromCoin.rawBalance = "6000000000000000000"
+        for percentage in [25, 50, 75, 100] {
+            let text = try XCTUnwrap(SwapCryptoLogic.percentageAmountText(percentage: percentage, fromCoin: vm.fromCoin, fee: 0))
+            vm.fromAmount = text
+            vm.updateFromAmount(vault: vault, immediate: true)
+            await settle(vm)
+            let expected = Decimal(6 * percentage) / 100
+            let germanText = text.replacingOccurrences(of: Locale.current.decimalSeparator ?? ".", with: ",")
+            XCTAssertEqual(SwapAmountInput.parseToken(germanText, locale: Locale(identifier: "de_DE")), expected)
+            XCTAssertEqual(interactor.amounts.last, expected)
+            XCTAssertEqual(vm.fromAmountDecimal, expected)
+            XCTAssertEqual(vm.fromAmount, text)
+        }
+        vm.fromCoin.rawBalance = "6123456789012345678"
+        let maxText = try XCTUnwrap(SwapCryptoLogic.percentageAmountText(percentage: 100, fromCoin: vm.fromCoin, fee: 1))
+        vm.fromAmount = maxText
+        vm.updateFromAmount(vault: vault, immediate: true)
+        await settle(vm)
+        XCTAssertEqual(interactor.amounts.last, Decimal(string: "6.123456789012345677"))
+        XCTAssertEqual(vm.fromAmount, maxText)
+    }
+
+    func testMalformedTokenCannotRemainActionable() async throws {
+        let (vm, interactor) = makeVM(rate: 3)
+        let vault = try makeVault()
+        vm.editFromInput("1", vault: vault, immediate: true)
+        await settle(vm)
+        let count = interactor.amounts.count
+        for text in ["1.5.6", "12abc", "1.234,5.6"] {
+            vm.editFromInput(text, vault: vault, immediate: true)
+            XCTAssertEqual(vm.fromAmountDecimal, 0)
+            XCTAssertNil(vm.quote)
+            XCTAssertFalse(vm.validateForm())
+            XCTAssertNil(vm.makeTransaction())
+            XCTAssertEqual(interactor.amounts.count, count)
+            XCTAssertFalse(vm.isLoadingQuotes)
+        }
+    }
+
     func testTogglesAndRateRefreshNeverRequestOrRevalueTokens() throws {
         var rate: Double? = 3
         let interactor = FiatInputInteractor()

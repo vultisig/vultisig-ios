@@ -491,7 +491,7 @@ final class SwapDetailsViewModel {
         return SwapCryptoLogic.validateForm(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount,
+            fromAmount: fromAmountDecimal,
             quote: quote,
             fee: fee,
             toAmount: toAmountDecimal,
@@ -572,7 +572,7 @@ extension SwapDetailsViewModel {
     }
 
     var fromAmountDecimal: Decimal {
-        SwapAmountInput.parse(fromAmount) ?? .zero
+        SwapAmountInput.parseToken(fromAmount) ?? .zero
     }
 
     var amountInCoinDecimal: BigInt {
@@ -589,7 +589,7 @@ extension SwapDetailsViewModel {
     /// field instantly while the firm quote loads. Never read by validation or
     /// `makeTransaction()`.
     var toAmountIndicative: Decimal? {
-        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmount)
+        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmountDecimal)
     }
 
     /// The string the "to" field renders. Firm value when a quote exists;
@@ -722,7 +722,7 @@ extension SwapDetailsViewModel {
     var baseAffiliateFee: String {
         SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -749,7 +749,7 @@ extension SwapDetailsViewModel {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -757,7 +757,7 @@ extension SwapDetailsViewModel {
     var referralDiscount: String {
         SwapCryptoLogic.referralDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }

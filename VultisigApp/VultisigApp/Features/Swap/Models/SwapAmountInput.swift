@@ -89,6 +89,13 @@ struct SwapAmountInput {
         latestContext = nil
     }
 
+    /// Token entry historically accepts a POSIX paste after trying the current
+    /// locale. Keep that ordering (so de_DE 1.500 remains grouped 1500), while
+    /// validating the whole string and retaining Decimal precision in both paths.
+    static func parseToken(_ text: String, locale: Locale = .current) -> Decimal? {
+        parse(text, locale: locale) ?? parse(text, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
     /// Strict whole-input parsing avoids NumberFormatter's partial matches and
     /// Double intermediates. Accept localized decimal digits and valid grouping.
     static func parse(_ text: String, locale: Locale = .current) -> Decimal? {

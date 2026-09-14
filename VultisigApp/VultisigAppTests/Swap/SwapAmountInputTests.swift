@@ -14,6 +14,30 @@ final class SwapAmountInputTests: XCTestCase {
         XCTAssertEqual(context(rate: 0.00001234)?.rate, Decimal(string: "0.00001234"))
     }
 
+    func testTokenParsingPreservesLocaleFirstAndExactPosixFallback() {
+        let german = Locale(identifier: "de_DE")
+        for text in ["1.5", "1,5"] {
+            XCTAssertEqual(SwapAmountInput.parseToken(text, locale: german), Decimal(string: "1.5"))
+        }
+        XCTAssertEqual(SwapAmountInput.parseToken("1.500", locale: german), 1500)
+        XCTAssertEqual(SwapAmountInput.parseToken("1,500", locale: locale), 1500)
+        XCTAssertEqual(SwapAmountInput.parseToken("1.234,5", locale: german), Decimal(string: "1234.5"))
+        let exact = "123456789.123456789012345678"
+        XCTAssertEqual(SwapAmountInput.parseToken(exact, locale: german), Decimal(string: exact))
+        XCTAssertEqual(SwapAmountInput.parseToken(exact, locale: Locale(identifier: "fr_FR")), Decimal(string: exact))
+        XCTAssertNil(SwapAmountInput.parse("1.5", locale: german), "Fiat drafts remain strict current-locale")
+    }
+
+    func testTokenFallbackStillRejectsMalformedWholeInput() {
+        for identifier in ["en_US", "de_DE", "fr_FR"] {
+            for text in ["12abc", "1.5.6", "1,23.4", "1.234,5.6", "-1", "1e5"] {
+                XCTAssertNil(SwapAmountInput.parseToken(text, locale: Locale(identifier: identifier)), text)
+            }
+        }
+        XCTAssertNil(SwapAmountInput.parseToken("12,34", locale: locale))
+        XCTAssertEqual(SwapAmountInput.parseToken("12,34", locale: Locale(identifier: "de_DE")), Decimal(string: "12.34"))
+    }
+
     func testFiatConversionTruncatesDownToBaseUnits() {
         var input = makeInput(rate: 2.5)
         XCTAssertEqual(input.editFiat("10", locale: locale), "4")

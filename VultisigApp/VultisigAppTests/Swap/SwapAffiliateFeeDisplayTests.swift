@@ -595,6 +595,45 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertFalse(undiscounted.hasAppliedDiscounts)
     }
 
+    func testAuthoritativeDecimalFeedsIndicativeAndDiscountCalculationsExactly() throws {
+        let coin = makeCoin(.thorChain, ticker: UUID().uuidString, decimals: 18, isNative: true)
+        setPrice(1, for: coin)
+        let amount = try XCTUnwrap(SwapAmountInput.parseToken(
+            "123456789.123456789012345678", locale: Locale(identifier: "de_DE")
+        ))
+        let quote = SwapQuote.thorchain(makeThorQuote())
+        XCTAssertEqual(SwapCryptoLogic.toAmountIndicative(fromCoin: coin, toCoin: coin, fromAmount: amount), amount)
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: coin, toCoin: coin, feeCoin: coin,
+            fromAmount: amount, vultDiscountBps: 10, referralDiscountBps: 5
+        )
+        XCTAssertEqual(breakdown.vult, amount * 10 / 10000)
+        XCTAssertEqual(breakdown.referral, amount * 5 / 10000)
+        XCTAssertEqual(SwapCryptoLogic.baseAffiliateFee(
+            quote: quote, fromCoin: coin, toCoin: coin, feeCoin: coin,
+            fromAmount: amount, vultDiscountBps: 10, referralDiscountBps: 5
+        ), (amount * 15 / 10000).formatToFiatForFee(includeCurrencySymbol: true))
+    }
+
+    func testRejectedTokenAmountCannotProduceIndicativeOrDiscountValues() {
+        let coin = makeCoin(.thorChain, ticker: UUID().uuidString, decimals: 18, isNative: true)
+        setPrice(1, for: coin)
+        XCTAssertEqual(SwapCryptoLogic.toAmountIndicative(fromCoin: coin, toCoin: coin, fromAmount: Decimal(1)), 1)
+        let amount = SwapAmountInput.parseToken("1.234,5.6", locale: Locale(identifier: "de_DE")) ?? .zero
+        let quote = SwapQuote.thorchain(makeThorQuote())
+        XCTAssertNil(SwapCryptoLogic.toAmountIndicative(fromCoin: coin, toCoin: coin, fromAmount: amount))
+        let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
+            quote: quote, fromCoin: coin, toCoin: coin, feeCoin: coin,
+            fromAmount: amount, vultDiscountBps: 10, referralDiscountBps: 5
+        )
+        XCTAssertEqual(breakdown.vult, 0)
+        XCTAssertEqual(breakdown.referral, 0)
+        XCTAssertFalse(SwapCryptoLogic.validateForm(
+            fromCoin: coin, toCoin: makeCoin(.bitcoin, ticker: UUID().uuidString, decimals: 8, isNative: true),
+            fromAmount: amount, quote: quote, fee: 1, toAmount: 1, isSufficientBalance: true, isLoading: false
+        ))
+    }
+
     // MARK: - Display-only invariant: signed payload unchanged
 
     func testDisplayFeeInputsDoNotAlterSignedPayload() async throws {
