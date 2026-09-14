@@ -253,14 +253,17 @@ enum SwapCryptoLogic {
     /// — only the firm `quote` does. Returns nil when either price is missing or
     /// the input amount is non-positive, so the view can fall back to empty/0.
     static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
-        let amount = fromAmount.toDecimal()
-        guard amount > 0 else { return nil }
+        toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero)
+    }
+
+    static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal) -> Decimal? {
+        guard fromAmount > 0 else { return nil }
 
         let fromPrice = Decimal(fromCoin.price)
         let toPrice = Decimal(toCoin.price)
         guard fromPrice > 0, toPrice > 0 else { return nil }
 
-        return amount * (fromPrice / toPrice)
+        return fromAmount * (fromPrice / toPrice)
     }
 
     static func inboundFeeDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal? {
@@ -543,6 +546,22 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
+        baseAffiliateFee(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func baseAffiliateFee(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
         guard let quote else { return .empty }
         if case .swapkit = quote {
             return "swap.included_in_rate".localized
@@ -710,6 +729,22 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
+        vultDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func vultDiscount(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
         let breakdown = affiliateDiscountBreakdown(
             quote: quote,
             fromCoin: fromCoin,
@@ -728,6 +763,22 @@ enum SwapCryptoLogic {
         toCoin: Coin,
         feeCoin: Coin,
         fromAmount: String,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
+        referralDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func referralDiscount(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
@@ -752,11 +803,27 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> AffiliateDiscountBreakdown {
+        affiliateDiscountBreakdown(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func affiliateDiscountBreakdown(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> AffiliateDiscountBreakdown {
         guard let quote else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
         if case let .jupiter(_, _, _, feeOnInput) = quote, feeOnInput {
             return AffiliateDiscountBreakdown(vult: 0, referral: 0)
         }
-        let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
+        let inputFiat = fromCoin.fiat(decimal: fromAmount)
         guard inputFiat > 0 else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
 
         let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
@@ -944,6 +1011,27 @@ enum SwapCryptoLogic {
             && fromCoin != .example
             && toCoin != .example
             && !fromAmount.isEmpty
+            && !toAmount.isZero
+            && quote != nil
+            && fee != .zero
+            && isSufficientBalance
+            && !isLoading
+    }
+
+    static func validateForm(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?,
+        fee: BigInt,
+        toAmount: Decimal,
+        isSufficientBalance: Bool,
+        isLoading: Bool
+    ) -> Bool {
+        fromCoin != toCoin
+            && fromCoin != .example
+            && toCoin != .example
+            && fromAmount > 0
             && !toAmount.isZero
             && quote != nil
             && fee != .zero

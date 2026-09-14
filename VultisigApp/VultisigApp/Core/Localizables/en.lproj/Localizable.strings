@@ -1534,7 +1534,9 @@
 "swapAdvancedSettingsLockedTitle" = "Advanced Swap Settings";
 "swapAmountTooSmall" = "Swap amount too small";
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
+"swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Applied Discounts:";
+"swapEnterAmountIn" = "Enter amount in %@";
 "swapErrorAddressScreeningTitle" = "Address Check Failed";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
 "swapErrorAmountTooSmallTitle" = "Amount Too Small";
@@ -1564,6 +1566,7 @@
 "swapErrorUnexpectedTitle" = "Unexpected Error";
 "swapFee" = "Swap Fee";
 "swapFeePercentage" = "Swap Fee (%.2f%%)";
+"swapFiatUnavailable" = "—";
 "swapInsufficientTokenBalance" = "Insufficient %@ balance";
 "swapKitErrorAddressScreening" = "Address screening failed — contact support";
 "swapKitErrorApiKeyInvalid" = "SwapKit API key is invalid";
