@@ -81,7 +81,9 @@ public actor RemoteImageLoader {
         try Task.checkCancellation()
     }
 
-    static func thumbnail(_ data: Data) throws -> Data {
+    /// Validates and normalizes image bytes for a bounded raster presentation.
+    public static func thumbnail(_ data: Data, maximumPixelSize: Int = 256) throws -> Data {
+        guard (1...256).contains(maximumPixelSize) else { throw RemoteImageError.invalidImage }
         guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary),
               let type = CGImageSourceGetType(source) as String?,
               [UTType.png, .jpeg, .webP, .gif, .heic].contains(where: { $0.identifier == type }),
@@ -92,7 +94,7 @@ public actor RemoteImageLoader {
               width * height <= 4_000_000 else { throw RemoteImageError.invalidImage }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: 256,
+            kCGImageSourceThumbnailMaxPixelSize: maximumPixelSize,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceShouldCacheImmediately: true
         ]

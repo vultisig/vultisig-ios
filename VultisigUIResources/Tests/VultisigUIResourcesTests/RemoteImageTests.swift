@@ -247,6 +247,26 @@ final class RemoteImageTests: XCTestCase {
         }
     }
 
+    func testThumbnailSupportsSmallerInlineWidgetImages() throws {
+        let png = try RemoteImageLoader.thumbnail(image(width: 250, height: 200), maximumPixelSize: 120)
+        let source = try XCTUnwrap(CGImageSourceCreateWithData(png as CFData, nil))
+        let properties = try XCTUnwrap(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
+        XCTAssertEqual(properties[kCGImagePropertyPixelWidth] as? Int, 120)
+        XCTAssertEqual(properties[kCGImagePropertyPixelHeight] as? Int, 96)
+        XCTAssertLessThanOrEqual(png.count, 64 * 1_024)
+    }
+
+    func testThumbnailRejectsInvalidPixelBounds() throws {
+        let png = try image(width: 10, height: 10)
+        for maximumPixelSize in [-1, 0, 257, Int.max] {
+            XCTAssertThrowsError(try RemoteImageLoader.thumbnail(png, maximumPixelSize: maximumPixelSize)) {
+                XCTAssertEqual($0 as? RemoteImageError, .invalidImage)
+            }
+        }
+        XCTAssertNoThrow(try RemoteImageLoader.thumbnail(png, maximumPixelSize: 1))
+        XCTAssertNoThrow(try RemoteImageLoader.thumbnail(png, maximumPixelSize: 256))
+    }
+
     private func image(width: Int, height: Int, type: UTType = .png) throws -> Data {
         let context = try XCTUnwrap(CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
                                              bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
