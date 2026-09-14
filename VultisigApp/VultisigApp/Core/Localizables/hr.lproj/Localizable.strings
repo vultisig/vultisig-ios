@@ -1945,3 +1945,15 @@
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
 "zipImportUnsafeVaults" = "Uvezeno %1$d trezor(a). Preskočeno %2$d. %3$@ nije moguće uvesti: prebrisalo bi trezor koji već postoji na ovom uređaju.";
+
+"transactionActivityApproval" = "Odobri";
+
+"transactionActivityLimit" = "Limit";
+
+"transactionActivityTransaction" = "Transakcija";
+
+"transactionActivityCancelled" = "Otkazano";
+
+"transactionActivityExpired" = "Isteklo";
+
+"transactionActivityFilled" = "Nalog izvršen";

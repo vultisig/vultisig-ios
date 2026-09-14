@@ -146,7 +146,7 @@ struct TransactionActivityCard: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 if let operation = state.operation {
-                    Text(LocalizedStringKey(operation == .swap ? "transactionActivitySwap" : "transactionActivitySending"))
+                    Text(LocalizedStringKey(operation.localizationKey))
                         .font(WidgetTheme.labelFont(size: 10))
                         .foregroundStyle(WidgetTheme.secondaryText)
                 }

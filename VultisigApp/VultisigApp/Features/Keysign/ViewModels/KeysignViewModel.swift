@@ -1101,8 +1101,11 @@ class KeysignViewModel: ObservableObject {
             case .regularWithApprove(let approve, let transaction):
                 let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
                 let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.approveTxid = approveTxHash
+                #if os(iOS)
+                TransactionLiveActivityBroadcast.recordApproval(hash: approveTxHash, payload: keysignPayload, vault: vault)
+                #endif
+                let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.txid = regularTxHash
             }
         } catch {
@@ -1143,7 +1146,7 @@ class KeysignViewModel: ObservableObject {
         // positive chain evidence. Keep its pending lookup, but do not claim submission.
         if !Self.isTerminalStatus(status) {
             TransactionLiveActivityBroadcast.record(hash: txid, approveHash: approveTxid, payload: keysignPayload,
-                                                   vault: vault, isInitiator: isInitiateDevice)
+                                                   vault: vault)
         }
         #endif
 

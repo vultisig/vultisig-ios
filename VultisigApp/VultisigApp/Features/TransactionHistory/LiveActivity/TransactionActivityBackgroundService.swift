@@ -8,14 +8,22 @@ final class TransactionActivityBackgroundService {
     static let refreshIdentifier = "com.vultisig.wallet.transaction-activity.refresh"
     private var registered = false
     private var connected = false
-    private var pausedSends = Set<UUID>()
+    private var pausedNativeTransactions = Set<UUID>()
     private let system = TransactionActivityBackgroundSystem()
     private lazy var coordinator = TransactionLiveActivityCoordinator.shared
     private lazy var observer = TransactionActivityStatusRefresher(
         storage: .shared, checker: TransactionStatusService.shared,
         lookup: { TransactionLiveActivityCoordinator.shared.backgroundRecord(id: $0) },
         refreshSwap: { row, shouldApply in
-            await SwapKitTrackingService.shared.forceRefresh(tx: row, backgroundObservation: true, shouldApply: shouldApply)
+            switch row.swapTracking?.providerKind {
+            case SwapKitTrackingService.providerKind:
+                await SwapKitTrackingService.shared.forceRefresh(tx: row, backgroundObservation: true, shouldApply: shouldApply)
+            case NativeSwapTrackingService.providerKind:
+                await NativeSwapTrackingService.shared.forceRefresh(tx: row, backgroundObservation: true, shouldApply: shouldApply)
+            case THORChainLimitTrackingService.providerKind:
+                await THORChainLimitTrackingService.shared.forceRefresh(tx: row, shouldApply: shouldApply)
+            default: break
+            }
         }, didCompleteSend: { TransactionStatusPoller.shared.notifyTransactionCompleted() }
     )
     private lazy var runner = TransactionActivityBackgroundRunner(
@@ -25,9 +33,9 @@ final class TransactionActivityBackgroundService {
         refresh: { [weak self] in
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
-                // The activity observer owns these sends during the bounded window.
-                if row.type == .send {
-                    self.pausedSends.insert(row.id)
+                // The activity observer owns native transactions during the bounded window.
+                if row.swapTracking == nil {
+                    self.pausedNativeTransactions.insert(row.id)
                     TransactionStatusPoller.shared.stopPolling(txHash: row.txHash)
                 }
                 await self.observer.refresh(row)
@@ -78,13 +86,13 @@ final class TransactionActivityBackgroundService {
         guard start() else { return }
         runner.enteredForeground()
         // Activity dismissal/permission changes must not disable normal wallet tracking.
-        for id in pausedSends {
+        for id in pausedNativeTransactions {
             do {
                 if let row = try TransactionHistoryStorage.shared.fetch(id: id), row.status == .inProgress,
                    try TransactionLiveActivityBroadcast.vaultExists(pubKey: row.pubKeyECDSA) {
                     TransactionStatusPoller.shared.poll(tx: row) { _, _ in }
                 }
-                pausedSends.remove(id)
+                pausedNativeTransactions.remove(id)
             } catch { continue }
         }
     }

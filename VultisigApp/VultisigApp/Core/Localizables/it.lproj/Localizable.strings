@@ -1945,3 +1945,15 @@
 "zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
 "zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";
 "zipImportUnsafeVaults" = "Importati %1$d vault. Saltati %2$d. %3$@ non è stato importato: sovrascriverebbe un vault già presente su questo dispositivo.";
+
+"transactionActivityApproval" = "Approva";
+
+"transactionActivityLimit" = "Limite";
+
+"transactionActivityTransaction" = "Transazione";
+
+"transactionActivityCancelled" = "Annullato";
+
+"transactionActivityExpired" = "Scaduto";
+
+"transactionActivityFilled" = "Ordine eseguito";

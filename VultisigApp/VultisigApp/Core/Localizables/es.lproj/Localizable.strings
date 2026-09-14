@@ -1945,3 +1945,15 @@
 "zipImportAllDuplicates" = "Las %d bóveda(s) ya existen y fueron omitidas: %@.";
 "zipImportPartialSuccess" = "Se importaron %d bóveda(s). Se omitieron %d duplicado(s): %@.";
 "zipImportUnsafeVaults" = "Se importaron %1$d bóveda(s). Se omitieron %2$d. %3$@ no se pudo importar: sobrescribiría una bóveda que ya está en este dispositivo.";
+
+"transactionActivityApproval" = "Aprobar";
+
+"transactionActivityLimit" = "Límite";
+
+"transactionActivityTransaction" = "Transacción";
+
+"transactionActivityCancelled" = "Cancelada";
+
+"transactionActivityExpired" = "Vencida";
+
+"transactionActivityFilled" = "Orden ejecutada";

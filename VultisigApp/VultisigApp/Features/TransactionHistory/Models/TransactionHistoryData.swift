@@ -11,6 +11,8 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     case send
     case swap
     case approve
+    /// A broadcast contract, staking, claim, or other non-transfer operation.
+    case transaction
     /// A THORChain limit (`=<`) order — a RESTING order, not a swap that
     /// happened.
     ///

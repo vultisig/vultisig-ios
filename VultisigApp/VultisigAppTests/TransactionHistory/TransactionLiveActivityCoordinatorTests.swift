@@ -201,7 +201,19 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         XCTAssertEqual(client.requestCount, 1)
     }
 
-    func testTwoActivityCapDoesNotAutoPromoteOverflow() async {
+    func testAdmissionCoversEveryBroadcastOperation() {
+        let manager = coordinator()
+        for type in [TransactionHistoryType.send, .swap, .approve, .transaction, .limit, .trustLineActivation] {
+            let row = ActivityTestFixture.row(type: type)
+            rows[row.id] = row
+            manager.admit(row)
+        }
+        XCTAssertEqual(client.requestCount, 6)
+        XCTAssertEqual(Set(client.activities.compactMap { $0.state.operation?.rawValue }),
+                       Set(["send", "swap", "approval", "limit", "transaction"]))
+    }
+
+    func testEveryBroadcastIsOfferedToSystemCapacityWithoutResurrectingDismissals() async {
         let manager = coordinator()
         manager.admit(addRow())
         manager.admit(addRow())
@@ -210,7 +222,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         client.activities = []
         await manager.reconcile()
         manager.admit(overflow)
-        XCTAssertEqual(client.requestCount, 2)
+        XCTAssertEqual(client.requestCount, 3)
     }
 
     func testPrivateModeRedactsRunningAndRetainedTerminalContent() async {

@@ -5,11 +5,11 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     enum Phase: String, Codable, CaseIterable, Sendable {
         case submitted, pending, sourceConfirmed, swapping
         /// Transfer settlement and provider-confirmed swap settlement are distinct.
-        case confirmed, completed, refunded, partiallyRefunded, failed, trackingEnded
+        case confirmed, completed, refunded, partiallyRefunded, failed, filled, cancelled, expired, trackingEnded
 
         var isTerminal: Bool {
             switch self {
-            case .confirmed, .completed, .refunded, .partiallyRefunded, .failed, .trackingEnded: true
+            case .confirmed, .completed, .refunded, .partiallyRefunded, .failed, .filled, .cancelled, .expired, .trackingEnded: true
             default: false
             }
         }
@@ -18,7 +18,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
 
         var symbol: String {
             switch self {
-            case .confirmed, .completed: "checkmark.circle.fill"
+            case .confirmed, .completed, .filled: "checkmark.circle.fill"
             case .failed: "exclamationmark.circle.fill"
             case .refunded, .partiallyRefunded: "arrow.uturn.backward.circle"
             case .trackingEnded: "clock"
@@ -27,7 +27,19 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         }
     }
 
-    enum Operation: String, Codable, Sendable { case send, swap }
+    enum Operation: String, Codable, Sendable {
+        case send, swap, approval, limit, transaction
+
+        var localizationKey: String {
+            switch self {
+            case .send: "transactionActivitySending"
+            case .swap: "transactionActivitySwap"
+            case .approval: "transactionActivityApproval"
+            case .limit: "transactionActivityLimit"
+            case .transaction: "transactionActivityTransaction"
+            }
+        }
+    }
 
     let schemaVersion: Int
     let phase: Phase

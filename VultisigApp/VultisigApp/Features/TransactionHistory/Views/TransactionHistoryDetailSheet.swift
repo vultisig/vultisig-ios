@@ -127,6 +127,10 @@ struct TransactionHistoryDetailSheet: View {
 
                 if isTrustLineActivation {
                     trustLineHeadline
+                } else if transaction.type == .transaction || transaction.amountCrypto.isEmpty {
+                    Text("transaction".localized)
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
                 } else {
                     Text(transaction.amountCrypto)
                         .font(Theme.fonts.priceTitle1)

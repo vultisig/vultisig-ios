@@ -47,3 +47,15 @@
 "widget.watchlist.configure" = "Vultisig 설정에서 자산을 선택하세요";
 "widget.watchlist.description" = "Vultisig에서 선택한 암호화폐를 최대 5개 추적하세요.";
 "widget.watchlist.marketDataUnavailable" = "관심 목록 시장 데이터를 일시적으로 사용할 수 없습니다";
+
+"transactionActivityApproval" = "승인";
+
+"transactionActivityLimit" = "지정가";
+
+"transactionActivityTransaction" = "트랜잭션";
+
+"transactionActivityCancelled" = "취소됨";
+
+"transactionActivityExpired" = "만료됨";
+
+"transactionActivityFilled" = "주문 체결됨";

@@ -5,37 +5,32 @@ import SwiftData
 /// Runs after positive broadcast evidence, independently of the Done view lifecycle.
 @MainActor
 enum TransactionLiveActivityBroadcast {
-    static func record(hash: String, approveHash: String?, payload: KeysignPayload, vault: Vault, isInitiator: Bool) {
-        guard isInitiator, !hash.isEmpty, TransactionActivityPolicy.isEligible(payload) else { return }
-        TransactionLiveActivityCoordinator.shared.start()
-        if let swap = payload.swapPayload {
-            guard let chainID = SwapKitChainIdentifier.chainId(for: payload.coin.chain) else { return }
-            let tracking = SwapTrackingMetadataData(
-                providerKind: SwapKitTrackingService.providerKind, broadcastHash: hash, sourceChainId: chainID
-            )
-            TransactionHistoryRecorder.shared.recordSwap(
-                txHash: hash, approveTxHash: approveHash, pubKeyECDSA: vault.pubKeyECDSA,
-                fromCoin: swap.fromCoin, toCoin: swap.toCoin,
-                fromAmountCrypto: payload.fromAmountString, fromAmountFiat: payload.fromAmountFiatString,
-                toAmountCrypto: "\(swap.toAmountDecimal.formatForDisplay()) \(swap.toCoin.ticker)",
-                toAmountFiat: payload.toSwapAmountFiatString,
-                fromAddress: payload.coin.address, toAddress: swap.toCoin.address,
-                feeCrypto: "", feeFiat: "", chain: payload.coin.chain,
-                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: payload.coin.chain, txid: hash),
-                provider: swap.providerName, swapTracking: tracking
-            )
-        } else {
-            TransactionHistoryRecorder.shared.recordFromKeysignPayload(
-                txHash: hash, approveTxHash: approveHash, vault: vault, keysignPayload: payload
-            )
-        }
+    static func record(hash: String, approveHash: String?, payload: KeysignPayload, vault: Vault) {
+        // Every device that actually broadcasts can observe its receipt.
+        let rows = TransactionBroadcastReceipt.rows(hash: hash, approveHash: approveHash, payload: payload,
+                                                   pubKey: vault.pubKeyECDSA)
+        rows.forEach(saveAndTrack)
+    }
+
+    static func recordApproval(hash: String, payload: KeysignPayload, vault: Vault) {
+        guard let row = TransactionBroadcastReceipt.approval(hash: hash, payload: payload, pubKey: vault.pubKeyECDSA) else { return }
+        saveAndTrack(row)
+    }
+
+    static func recordClaim(hash: String, coin: Coin, vault: Vault) {
+        guard !hash.isEmpty else { return }
+        saveAndTrack(TransactionBroadcastReceipt.transaction(hash: hash, coin: coin, pubKey: vault.pubKeyECDSA))
+    }
+
+    private static func saveAndTrack(_ row: TransactionHistoryData) {
         do {
-            let rows = try TransactionHistoryStorage.shared.fetchByChain(pubKeyECDSA: vault.pubKeyECDSA,
-                                                                        chainRawValue: payload.coin.chain.rawValue)
-            guard let row = rows.first(where: { $0.txHash == hash }) else { return }
-            TransactionLiveActivityCoordinator.shared.trackBroadcast(row)
+            try TransactionHistoryStorage.shared.save(row)
+            let rows = try TransactionHistoryStorage.shared.fetchByChain(pubKeyECDSA: row.pubKeyECDSA,
+                                                                        chainRawValue: row.chainRawValue)
+            guard let saved = rows.first(where: { $0.txHash == row.txHash }) else { return }
+            TransactionLiveActivityCoordinator.shared.trackBroadcast(saved)
         } catch {
-            Log.wallet.other.info("Live Activity could not read the saved receipt")
+            Log.wallet.other.info("Live Activity could not persist the broadcast receipt")
         }
     }
 

@@ -24,20 +24,20 @@ final class TransactionActivityStatusRefresher {
 
     func refresh(_ original: TransactionHistoryData) async {
         guard !Task.isCancelled, let row = current(original) else { return }
-        if row.type == .swap {
-            guard row.swapTracking?.providerKind == SwapKitTrackingService.providerKind else { return }
+        if let metadata = row.swapTracking {
             await refreshSwap(row) { [weak self] in
                 guard !Task.isCancelled, let fresh = self?.current(row) else { return false }
                 return fresh.swapTracking?.broadcastHash == row.swapTracking?.broadcastHash
                     && fresh.swapTracking?.sourceChainId == row.swapTracking?.sourceChainId
-                    && fresh.swapTracking?.providerKind == SwapKitTrackingService.providerKind
+                    && fresh.swapTracking?.providerKind == metadata.providerKind
+                    && fresh.swapTracking?.subProvider == metadata.subProvider
             }
             return
         }
-        guard row.type == .send, row.swapTracking == nil, let chain = Chain(rawValue: row.chainRawValue) else { return }
+        guard row.status == .inProgress, row.swapTracking == nil, let chain = Chain(rawValue: row.chainRawValue) else { return }
         do {
             let result = try await checker.checkTransactionStatus(txHash: row.txHash, chain: chain)
-            guard !Task.isCancelled, let fresh = current(row), fresh.type == .send, fresh.swapTracking == nil else { return }
+            guard !Task.isCancelled, let fresh = current(row), fresh.status == .inProgress, fresh.swapTracking == nil else { return }
             switch result.status {
             case .confirmed:
                 if try storage.updateActivitySendStatus(id: fresh.id, status: .successful, errorMessage: nil, observedAt: Date()) {

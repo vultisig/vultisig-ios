@@ -19,6 +19,22 @@ final class TransactionActivityStatusRefresherTests: XCTestCase {
                                            refreshSwap: { _, _ in XCTFail("Native sends must not call the swap tracker") })
     }
 
+    func testNativeBackgroundObservationCoversEveryUntrackedOperation() async throws {
+        for type in [TransactionHistoryType.send, .approve, .transaction, .trustLineActivation, .swap] {
+            let (container, storage) = try storage()
+            let row = ActivityTestFixture.row(type: type)
+            try storage.save(row)
+            let worker = refresher(storage, checker: NativeActivityChecker(status: .confirmed))
+            await worker.refresh(row)
+            let completed = try XCTUnwrap(storage.fetch(id: row.id))
+            XCTAssertEqual(completed.status, .successful)
+            XCTAssertEqual(TransactionActivityPolicy.phase(for: completed), type == .swap ? .sourceConfirmed : .confirmed)
+            await worker.refresh(row)
+            XCTAssertEqual(try storage.fetch(id: row.id)?.completedAt, completed.completedAt)
+            withExtendedLifetime(container) {}
+        }
+    }
+
     func testSendObservationsKeepOutcomeSeparateFromFreshness() async throws {
         let statuses: [TransactionStatusResult.TransactionConfirmationStatus?] = [.confirmed, .failed(reason: "reverted"), .pending, .notFound, nil]
         for (index, status) in statuses.enumerated() {

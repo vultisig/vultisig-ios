@@ -47,3 +47,15 @@
 "widget.watchlist.configure" = "Wähle Assets in den Vultisig-Einstellungen";
 "widget.watchlist.description" = "Verfolge bis zu fünf in Vultisig ausgewählte Kryptowährungen.";
 "widget.watchlist.marketDataUnavailable" = "Marktdaten der Beobachtungsliste sind vorübergehend nicht verfügbar";
+
+"transactionActivityApproval" = "Genehmigen";
+
+"transactionActivityLimit" = "Limit";
+
+"transactionActivityTransaction" = "Transaktion";
+
+"transactionActivityCancelled" = "Storniert";
+
+"transactionActivityExpired" = "Abgelaufen";
+
+"transactionActivityFilled" = "Order ausgeführt";

@@ -1945,3 +1945,15 @@
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
 "zipImportUnsafeVaults" = "Importados %1$d cofre(s). Ignorados %2$d. %3$@ não pôde ser importado: substituiria um cofre que já está neste dispositivo.";
+
+"transactionActivityApproval" = "Aprovar";
+
+"transactionActivityLimit" = "Limite";
+
+"transactionActivityTransaction" = "Transação";
+
+"transactionActivityCancelled" = "Cancelada";
+
+"transactionActivityExpired" = "Expirada";
+
+"transactionActivityFilled" = "Ordem executada";

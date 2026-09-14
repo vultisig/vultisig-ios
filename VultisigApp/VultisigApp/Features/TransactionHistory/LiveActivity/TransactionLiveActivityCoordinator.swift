@@ -103,7 +103,6 @@ final class TransactionLiveActivityCoordinator {
         refresh()
         await waitForPendingUpdates()
         let ids = client.activities.compactMap { backgroundRecord(id: $0.recordID)?.id }
-            .prefix(TransactionActivityPolicy.maximumActivities)
         for id in ids {
             guard !Task.isCancelled else { return }
             guard let row = backgroundRecord(id: id) else { continue }
@@ -138,9 +137,8 @@ final class TransactionLiveActivityCoordinator {
         bindings[key] = Binding(recordID: row.id, phase: .submitted, observedAt: row.createdAt, revision: 1, ended: true)
         persist()
         guard client.isAuthorized, client.isForeground,
-              row.status == .inProgress, row.type == .send || row.type == .swap,
+              row.status == .inProgress,
               now.timeIntervalSince(row.createdAt) < TransactionActivityPolicy.maximumAge,
-              client.activities.filter(\.isActive).count < TransactionActivityPolicy.maximumActivities,
               (try? lookup(row.id)) != nil, (try? vaultExists(row.pubKeyECDSA)) == true else { return }
         let state = TransactionActivityPolicy.state(for: row, phase: .submitted, observedAt: row.createdAt,
                                                     revision: 1, delayed: false, showDetails: showDetails)
@@ -334,7 +332,7 @@ final class TransactionLiveActivityCoordinator {
     static func resumeTracking(_ row: TransactionHistoryData) {
         if let tracker = SwapTrackingRegistry.shared.service(for: row) {
             tracker.start(tx: row)
-        } else if row.type == .send {
+        } else if row.swapTracking == nil, row.status == .inProgress {
             TransactionStatusPoller.shared.poll(tx: row) { _, _ in }
         }
     }

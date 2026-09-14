@@ -71,6 +71,15 @@ final class TransactionActivityPolicyTests: XCTestCase {
         XCTAssertNil(fallback.destinationAssetID)
     }
 
+    func testLimitOrderConfirmationCannotMasqueradeAsAFill() {
+        for (status, phase) in [("pending", TransactionActivityState.Phase.pending), ("cancelling", .pending),
+                                ("filled", .filled), ("refunded", .refunded), ("cancelled", .cancelled), ("expired", .expired)] {
+            let row = ActivityTestFixture.row(type: .limit, status: .successful,
+                tracking: .init(providerKind: THORChainLimitTrackingService.providerKind, latestStatus: status))
+            XCTAssertEqual(TransactionActivityPolicy.phase(for: row), phase)
+        }
+    }
+
     func testIdentityIncludesVaultAndChain() {
         let first = ActivityTestFixture.row(hash: "same", vault: "one", chain: .ethereum)
         let otherVault = ActivityTestFixture.row(hash: "same", vault: "two", chain: .ethereum)

@@ -47,3 +47,15 @@
 "widget.watchlist.configure" = "Choose assets in Vultisig Settings";
 "widget.watchlist.description" = "Follow up to five cryptocurrencies selected in Vultisig.";
 "widget.watchlist.marketDataUnavailable" = "Watchlist market data is temporarily unavailable";
+
+"transactionActivityApproval" = "Approve";
+
+"transactionActivityLimit" = "Limit";
+
+"transactionActivityTransaction" = "Transaction";
+
+"transactionActivityCancelled" = "Cancelled";
+
+"transactionActivityExpired" = "Expired";
+
+"transactionActivityFilled" = "Order filled";

@@ -125,6 +125,23 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
         )
     }
 
+    func testReceiptIsEmittedOnlyForAnAcceptedClaimBroadcast() async {
+        for hash in [Self.mockServiceTxHash.lowercased(), nil, ""] {
+            var receipts: [String] = []
+            let orchestrator = QBTCClaimOrchestrator(
+                generateProof: { _ in Self.makeProofResponse(txHash: hash) },
+                runBtcRound: { _ in QBTCClaimBtcRoundResult(rHex: String(repeating: "01", count: 32),
+                                                         sHex: String(repeating: "02", count: 32)) },
+                recordBroadcast: { txHash, input in
+                    receipts.append(txHash)
+                    XCTAssertEqual(input.qbtcCoin.chain, .qbtc)
+                }
+            )
+            await orchestrator.run(Self.makeRunInput())
+            XCTAssertEqual(receipts, hash?.isEmpty == false ? [Self.mockServiceTxHash] : [])
+        }
+    }
+
     // MARK: - Round runner receives expected inputs
 
     func testBtcRoundReceivesComputedMessageHash() async throws {

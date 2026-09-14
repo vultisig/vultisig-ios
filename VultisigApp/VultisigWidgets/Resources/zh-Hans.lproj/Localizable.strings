@@ -47,3 +47,15 @@
 "widget.watchlist.configure" = "请在 Vultisig 设置中选择资产";
 "widget.watchlist.description" = "关注最多五种在 Vultisig 中选择的加密货币。";
 "widget.watchlist.marketDataUnavailable" = "关注列表市场数据暂时不可用";
+
+"transactionActivityApproval" = "批准";
+
+"transactionActivityLimit" = "限价";
+
+"transactionActivityTransaction" = "交易";
+
+"transactionActivityCancelled" = "已取消";
+
+"transactionActivityExpired" = "已过期";
+
+"transactionActivityFilled" = "订单已成交";

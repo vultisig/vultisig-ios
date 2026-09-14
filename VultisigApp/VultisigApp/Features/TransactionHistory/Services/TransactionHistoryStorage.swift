@@ -33,6 +33,10 @@ final class TransactionHistoryStorage {
             // missing display fields; preserve identity, outcome and tracking evidence.
             guard existing.typeRawValue == data.type.rawValue, existing.chainRawValue == data.chainRawValue else { return }
             var enriched = false
+            if existing.amountCrypto.isEmpty, !data.amountCrypto.isEmpty {
+                existing.amountCrypto = data.amountCrypto
+                enriched = true
+            }
             if existing.feeCrypto.isEmpty, !data.feeCrypto.isEmpty {
                 existing.feeCrypto = data.feeCrypto
                 enriched = true
@@ -138,7 +142,7 @@ final class TransactionHistoryStorage {
         let predicate = #Predicate<TransactionHistoryItem> { $0.id == id }
         guard let item = try modelContext.fetch(FetchDescriptor(predicate: predicate)).first else { return false }
         let row = TransactionHistoryData(item: item)
-        guard row.type == .send, row.swapTracking == nil,
+        guard row.swapTracking == nil, row.status == .inProgress,
               !TransactionActivityPolicy.phase(for: row).isTerminal else { return false }
         item.statusRawValue = status.rawValue
         item.errorMessage = errorMessage
