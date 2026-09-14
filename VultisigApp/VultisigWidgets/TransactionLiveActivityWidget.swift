@@ -17,7 +17,7 @@ struct TransactionLiveActivityWidget: Widget {
                     TransactionActivityBrand()
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    TransactionActivityStatus(state: context.state, isStale: context.isStale)
+                    TransactionActivityStatus(state: context.state, isStale: context.isStale, usesCircularProgress: true)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     TransactionActivityCard(state: context.state, isStale: context.isStale, showsHeader: false)
@@ -27,9 +27,9 @@ struct TransactionLiveActivityWidget: Widget {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(String(localized: "widget.brand")))
             } compactTrailing: {
-                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false)
+                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false, usesCircularProgress: true)
             } minimal: {
-                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false)
+                TransactionActivityStatus(state: context.state, isStale: context.isStale, showsText: false, usesCircularProgress: true)
             }
             .widgetURL(TransactionActivityLink.url(recordID: context.attributes.recordID))
         }
@@ -52,12 +52,20 @@ private struct TransactionActivityStatus: View {
     let state: TransactionActivityState
     let isStale: Bool
     var showsText = true
+    var usesCircularProgress = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     private var status: TransactionActivityState.DisplayStatus { state.phase.displayStatus }
     private var animates: Bool {
         !reduceMotion && !isLuminanceReduced && !isStale && !state.updateDelayed && !state.phase.isTerminal
+    }
+    private var symbolName: String {
+        switch status {
+        case .inProgress: "arrow.triangle.2.circlepath"
+        case .success: "checkmark.circle.fill"
+        case .failed: "exclamationmark.circle.fill"
+        }
     }
     private var color: Color {
         switch status {
@@ -69,14 +77,14 @@ private struct TransactionActivityStatus: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            if status == .inProgress {
+            if status == .inProgress && usesCircularProgress {
                 // Widget animations are finite; reuse the app's arc without a continuous timeline.
                 CircularProgressIndicator(size: 14, lineWidth: 1.5, tint: color, isAnimating: false)
                     .rotationEffect(.degrees(animates ? Double(state.revision) * 180 : 0))
                     .animation(animates ? .linear(duration: 1) : nil, value: state.revision)
                     .accessibilityHidden(true)
             } else {
-                Image(systemName: status == .success ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                Image(systemName: symbolName)
             }
             if showsText { Text(LocalizedStringKey(status.localizationKey)) }
         }
