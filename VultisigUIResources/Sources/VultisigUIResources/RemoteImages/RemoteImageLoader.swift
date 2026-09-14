@@ -86,21 +86,23 @@ public actor RemoteImageLoader {
         guard (1...256).contains(maximumPixelSize) else { throw RemoteImageError.invalidImage }
         guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary),
               let type = CGImageSourceGetType(source) as String?,
-              [UTType.png, .jpeg, .webP, .gif, .heic].contains(where: { $0.identifier == type }),
-              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-              let width = properties[kCGImagePropertyPixelWidth] as? Int,
-              let height = properties[kCGImagePropertyPixelHeight] as? Int,
-              width > 0, height > 0, width <= 4_096, height <= 4_096,
-              width * height <= 4_000_000 else { throw RemoteImageError.invalidImage }
+              [UTType.png, .jpeg, .webP, .gif, .heic, .ico, .bmp].contains(where: { $0.identifier == type }) else {
+            throw RemoteImageError.invalidImage
+        }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: maximumPixelSize,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceShouldCacheImmediately: true
         ]
-        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
-            throw RemoteImageError.invalidImage
+        var decoded: CGImage?
+        for index in frameIndices(in: source, type: type) {
+            if let image = CGImageSourceCreateThumbnailAtIndex(source, index, options as CFDictionary) {
+                decoded = image
+                break
+            }
         }
+        guard let image = decoded else { throw RemoteImageError.invalidImage }
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
                                       bytesPerRow: image.width * 4, space: colorSpace,
@@ -117,6 +119,22 @@ public actor RemoteImageLoader {
         guard CGImageDestinationFinalize(destination) else { throw RemoteImageError.invalidImage }
         guard output.length <= RemoteImageCache.maximumImageBytes else { throw RemoteImageError.tooLarge }
         return output as Data
+    }
+
+    private static func frameIndices(in source: CGImageSource, type: String) -> [Int] {
+        // ICO directories can list a small representation first. Inspect a bounded set
+        // of frames and prefer the largest raster that meets the same source limits.
+        let count = type == UTType.ico.identifier ? min(CGImageSourceGetCount(source), 256) : 1
+        var candidates: [(index: Int, pixels: Int)] = []
+        for index in 0..<count {
+            guard let properties = CGImageSourceCopyPropertiesAtIndex(source, index, nil) as? [CFString: Any],
+                  let width = properties[kCGImagePropertyPixelWidth] as? Int,
+                  let height = properties[kCGImagePropertyPixelHeight] as? Int,
+                  width > 0, height > 0, width <= 4_096, height <= 4_096,
+                  width * height <= 4_000_000 else { continue }
+            candidates.append((index, width * height))
+        }
+        return candidates.sorted { $0.pixels > $1.pixels }.map(\.index)
     }
 }
 
