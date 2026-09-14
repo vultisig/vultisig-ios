@@ -23,7 +23,7 @@ struct StakingValidatorAvatar: View {
             ZStack {
                 monogramAvatar(monogram)
                 if let url {
-                    CachedAsyncImage(url: url, urlCache: .imageCache) { image in
+                    CachedAsyncImage(url: url) { image in
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
