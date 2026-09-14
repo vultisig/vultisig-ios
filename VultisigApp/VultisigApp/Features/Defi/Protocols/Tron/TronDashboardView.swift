@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct TronDashboardView: View {
     let vault: Vault
@@ -123,7 +124,7 @@ struct TronDashboardView: View {
                 Spacer()
 
                 // Logo on top of the rings
-                Image("tron")
+                Image("tron", bundle: VultisigResources.bundle)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 70, height: 70)
@@ -156,7 +157,7 @@ struct TronDashboardView: View {
         VStack(spacing: 16) {
             // Header: Logo + Title + Fiat Balance
             HStack(spacing: 12) {
-                Image("tron")
+                Image("tron", bundle: VultisigResources.bundle)
                     .resizable()
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())

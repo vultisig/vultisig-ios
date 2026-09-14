@@ -122,7 +122,7 @@ struct AsyncImageView: View {
                     .frame(width: size.width, height: size.height)
             } else {
                 #if os(iOS)
-                if let image = UIImage(named: logoName) {
+                if let image = VultisigResources.platformImage(named: logoName) {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -131,7 +131,7 @@ struct AsyncImageView: View {
                     fallbackText
                 }
                 #else
-                if let image = NSImage(named: logoName) {
+                if let image = VultisigResources.platformImage(named: logoName) {
                     Image(nsImage: image)
                         .resizable()
                         .scaledToFit()

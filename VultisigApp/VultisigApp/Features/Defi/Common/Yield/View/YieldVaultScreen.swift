@@ -4,6 +4,7 @@
 //
 
 import OSLog
+import VultisigUIResources
 import SwiftUI
 import BigInt
 
@@ -139,7 +140,7 @@ struct YieldVaultScreen: View {
 
     private var depositedSection: some View {
         HStack(spacing: 12) {
-            Image("usdc")
+            Image("usdc", bundle: VultisigResources.bundle)
                 .resizable()
                 .frame(width: 48, height: 48)
                 .clipShape(Circle())
@@ -231,7 +232,7 @@ struct YieldVaultScreen: View {
     private var setupCard: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                Image("usdc")
+                Image("usdc", bundle: VultisigResources.bundle)
                     .resizable()
                     .frame(width: 32, height: 32)
                     .clipShape(Circle())

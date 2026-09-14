@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SwapFromToChain: View {
     let chain: Chain?
@@ -19,7 +20,7 @@ struct SwapFromToChain: View {
     }
 
     var icon: some View {
-        Image(chain?.logo ?? "")
+        Image(chain?.logo ?? "", bundle: VultisigResources.bundle)
             .resizable()
             .frame(width: 16, height: 16)
     }

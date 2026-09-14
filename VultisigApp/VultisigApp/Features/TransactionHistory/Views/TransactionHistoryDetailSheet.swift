@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct TransactionHistoryDetailSheet: View {
     let transaction: TransactionHistoryData
@@ -376,7 +377,7 @@ struct TransactionHistoryDetailSheet: View {
 
             if let expiry = expiryChipText(order) {
                 HStack(spacing: 4) {
-                    Image("calendar-clock")
+                    Image("calendar-clock", bundle: VultisigResources.bundle)
                         .resizable()
                         .frame(width: 16, height: 16)
                     Text(expiry)

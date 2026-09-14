@@ -7,6 +7,7 @@ public enum VultisigImage: String, CaseIterable, Sendable {
     case logoOutline = "logo-outline"
     case solana
     case tether = "usdt"
+    case usdCoin = "usdc"
 
     public var resource: ImageResource {
         ImageResource(name: rawValue, bundle: VultisigResources.bundle)

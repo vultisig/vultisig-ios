@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 import SwiftData
 
 struct AddressBookCell: View {
@@ -56,7 +57,7 @@ struct AddressBookCell: View {
     }
 
     var logo: some View {
-        Image(address.coinMeta.logo)
+        Image(address.coinMeta.logo, bundle: VultisigResources.bundle)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(Theme.radius.pill)

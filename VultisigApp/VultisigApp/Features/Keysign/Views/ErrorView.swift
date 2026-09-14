@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ErrorScreen: View {
     let type: ErrorView.ErrorType
@@ -126,7 +127,7 @@ private extension ErrorView {
             .frame(width: 24, height: 24)
             .foregroundStyle(color)
             .animation(.easeInOut(duration: 0.3), value: type)
-            .background(Image("CirclesBackground"))
+            .background(Image("CirclesBackground", bundle: VultisigResources.bundle))
             .padding(.bottom, 12)
             .scaleEffect(heroScale)
             .opacity(heroOpacity)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ReferralOnboardingBanner: View {
     let onNext: () -> Void
@@ -31,7 +32,7 @@ struct ReferralOnboardingBanner: View {
     }
 
     var image: some View {
-        Image("ReferralOnboardingBanner")
+        Image("ReferralOnboardingBanner", bundle: VultisigResources.bundle)
             .resizable()
             .frame(width: 240, height: 194)
             .padding(.bottom, 12)

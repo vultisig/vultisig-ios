@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct BannerView<Content: View>: View {
     let bgImage: String
@@ -39,7 +40,7 @@ struct BannerView<Content: View>: View {
     }
 
     var image: some View {
-        Image(bgImage)
+        Image(bgImage, bundle: VultisigResources.bundle)
             .resizable()
             .aspectRatio(contentMode: .fill)
     }

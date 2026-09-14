@@ -4,6 +4,7 @@
 //
 
 import OSLog
+import VultisigUIResources
 import SwiftUI
 import RiveRuntime
 
@@ -163,9 +164,9 @@ struct KeysignAnimationView: View {
 
     private func localAssetPNGData(named assetName: String) -> Data? {
         #if os(iOS)
-        return UIImage(named: assetName)?.pngData()
+        return VultisigResources.platformImage(named: assetName)?.pngData()
         #elseif os(macOS)
-        guard let image = NSImage(named: assetName),
+        guard let image = VultisigResources.platformImage(named: assetName),
               let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff) else {
             return nil

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct VaultPairDetailCard: View {
     let vault: Vault
@@ -26,7 +27,7 @@ struct VaultPairDetailCard: View {
         VStack(spacing: 24) {
             if isForSharing {
                 // Header for sharing
-                Image("vultisig-logo")
+                Image("vultisig-logo", bundle: VultisigResources.bundle)
                     .resizable()
                     .frame(width: 48, height: 48)
                     .foregroundStyle(Theme.colors.textPrimary)

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct TransactionHistoryTypePill: View {
     let type: TransactionHistoryType
@@ -41,7 +42,7 @@ struct TransactionHistoryTypePill: View {
                 .resizable()
                 .frame(width: 12, height: 12)
         case .limit:
-            Image("clock-rotate-clockwise-3")
+            Image("clock-rotate-clockwise-3", bundle: VultisigResources.bundle)
                 .resizable()
                 .frame(width: 12, height: 12)
         case .trustLineActivation:

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct VultDiscountTierView: View {
     let tier: VultDiscountTier
@@ -107,7 +108,7 @@ private extension VultDiscountTierView {
     var accentFill: some View {
         switch tier {
         case .ultimate:
-            Image("vult-ultimate-box-overlay")
+            Image("vult-ultimate-box-overlay", bundle: VultisigResources.bundle)
                 .resizable()
         default:
             LinearGradient(

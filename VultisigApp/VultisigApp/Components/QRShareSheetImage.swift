@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 enum QRShareSheetType {
     case Keygen
@@ -181,7 +182,7 @@ struct QRShareSheetImage: View {
 
     var signature: some View {
         VStack(spacing: 8) {
-            Image("vultisig-logo")
+            Image("vultisig-logo", bundle: VultisigResources.bundle)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 33, height: 33)
@@ -213,7 +214,7 @@ private extension QRShareSheetImage {
 
 #Preview {
     QRShareSheetImage(
-        image: Image("vultisig-logo"),
+        image: Image("vultisig-logo", bundle: VultisigResources.bundle),
         type: .Send,
         vaultName: Vault.example.name,
         amount: "100 USDC",

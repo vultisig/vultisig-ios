@@ -4,6 +4,7 @@
 //
 
 import SwiftData
+import VultisigUIResources
 import SwiftUI
 
 struct NotificationsIntroSheet: View {
@@ -66,7 +67,7 @@ struct NotificationsIntroSheet: View {
 
     var welcomeContent: some View {
         VStack(spacing: 36) {
-            Image("notifications-intro")
+            Image("notifications-intro", bundle: VultisigResources.bundle)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: 270)

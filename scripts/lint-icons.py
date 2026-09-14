@@ -33,16 +33,15 @@ import re
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSETS = os.path.join(REPO, "VultisigApp", "VultisigApp", "Assets.xcassets")
+ASSETS = os.path.join(REPO, "VultisigUIResources", "Sources", "VultisigUIResources", "Resources", "Images.xcassets")
 SRC = os.path.join(REPO, "VultisigApp")
 
 # Assets referenced only via remote/runtime data (Coin.logo, Chain.logo) or built
 # dynamically; their names never appear as literals, so (b) cannot see their use.
 DYNAMIC_PREFIXES = ("vult-",)
 
-# `terra-defi-banner` intentionally exists in two groups; the generator emits one
-# symbol and both copies are the same art.
-KNOWN_DUPLICATES = {"terra-defi-banner"}
+# All targets use a single source catalog; duplicate names are always an error.
+KNOWN_DUPLICATES = set()
 
 
 def asset_names():
@@ -83,7 +82,7 @@ def swift_files():
 
 
 # Image("literal") — deliberately NOT Image(systemName:) and NOT Icon(...)
-IMAGE_LITERAL = re.compile(r'\bImage\(\s*"([^"]+)"\s*\)')
+IMAGE_LITERAL = re.compile(r'\bImage\(\s*"([^"]+)"\s*(?:,\s*bundle:\s*VultisigResources\.bundle\s*)?\)')
 
 
 def main():
