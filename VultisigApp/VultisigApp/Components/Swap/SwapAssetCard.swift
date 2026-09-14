@@ -214,12 +214,8 @@ struct SwapAssetCard<Focus: Hashable>: View {
     private var equivalentView: some View {
         if let onTapEquivalent {
             Button(action: onTapEquivalent) {
-                HStack(spacing: 4) {
-                    Text(fiat)
-                    Image(systemName: "chevron.down")
-                        .font(Theme.fonts.caption10)
-                }
-                .contentShape(Rectangle())
+                Text(fiat)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(equivalentAccessibilityLabel ?? fiat)
