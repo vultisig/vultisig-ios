@@ -88,16 +88,19 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         let second = addRow()
         manager.admit(first)
         manager.admit(second)
-        manager.admit(addRow())
+        let third = addRow()
+        manager.admit(third)
+        client.activities.append(.init(id: "unrecognized", recordID: UUID(),
+            state: .init(phase: .pending, observedAt: Date(), revision: 1), isActive: true))
         client.isForeground = false
         var observed = Set<UUID>()
         await manager.refreshInBackground { observed.insert($0.id) }
-        XCTAssertEqual(observed, [first.id, second.id])
-        XCTAssertEqual(client.requestCount, 2)
+        XCTAssertEqual(observed, [first.id, second.id, third.id])
+        XCTAssertEqual(client.requestCount, 3)
         client.activities = []
         await manager.refreshInBackground { _ in XCTFail("Dismissed activities must not fetch or restart") }
         XCTAssertFalse(manager.hasBackgroundWork)
-        XCTAssertEqual(client.requestCount, 2)
+        XCTAssertEqual(client.requestCount, 3)
     }
 
     func testBackgroundLookupFailsClosedForUnreadableOrMissingVault() {
