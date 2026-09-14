@@ -151,6 +151,62 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
     }
 
+    func testRemovingAnOrderDuringCancelLookupDoesNotStopSiblingPolling() async {
+        let env = TestEnv(
+            queueBody: .restingMany(hashes: ["ABC123", "DEF456"]), pendingCancelHash: "CANCEL", cancelOutcome: .succeeded
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        env.cancelVerifier.onVerify = { env.service.stop(txHash: "ABC123") }
+        let shouldStop = await env.service.pollOnceForTesting(sender: sender)
+        XCTAssertFalse(shouldStop, "the sender loop must continue for the remaining sibling")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        XCTAssertEqual(env.orders.observations.map(\.inboundTxHash), ["DEF456"])
+        env.service.stopAllTracking()
+    }
+
+    func testRemovingAnOrderDuringOutcomeLookupDoesNotStopSiblingPolling() async {
+        let env = TestEnv(queueBody: .empty)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        await env.service.pollOnceForTesting(sender: sender)
+        env.outcomes.onResolve = { env.service.stop(txHash: "ABC123") }
+        let shouldStop = await env.service.pollOnceForTesting(sender: sender)
+        XCTAssertFalse(shouldStop, "the unresolved sibling still needs this sender's loop")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundRefreshDoesNotReplaceNewerCachedNonterminalStatus() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.orders.effectiveStatus = .cancelling
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.service.uiStatusByTxHash[tx.txHash], .cancelling)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.service.uiStatusByTxHash[tx.txHash], .cancelling)
+        XCTAssertEqual(env.http.requestCount, 1)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCadenceStartsAfterSlowQueueResponse() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        env.http.onRequest = { now = Date(timeIntervalSince1970: 150) }
+        await env.service.forceRefresh(tx: tx)
+        env.http.onRequest = nil
+        now = Date(timeIntervalSince1970: 160)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        now = Date(timeIntervalSince1970: 210)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+    }
+
     // MARK: - Resting
 
     func testAnOrderStillInTheQueueIsRecordedAsResting() async {

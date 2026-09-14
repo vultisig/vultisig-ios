@@ -255,7 +255,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
               !sender.isEmpty else { return }
         // Register every eligible row even when another row already started this
         // sender's request; that shared queue response can observe both orders.
-        start(tx: tx)
+        if tracked[tx.txHash] == nil { start(tx: tx) }
         guard senderTasks[sender] == nil, backgroundTokens[sender] == nil else { return }
         if let previous = senderLastPollAt[sender], clock().timeIntervalSince(previous) < Self.baseInterval { return }
         let token = UUID()
@@ -283,11 +283,17 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     /// Drives exactly one poll cycle for `sender`, bypassing the schedule, so
     /// tests can exercise the state machine without sleeping.
-    func pollOnceForTesting(sender: String) async {
-        _ = await pollOnce(sender: sender)
+    @discardableResult
+    func pollOnceForTesting(sender: String) async -> Bool {
+        await pollOnce(sender: sender).shouldStop
     }
 
     // MARK: - Polling lifecycle
+
+    private func remainingPollDelay(sender: String) -> TimeInterval {
+        guard let previous = senderLastPollAt[sender] else { return 0 }
+        return max(0, Self.baseInterval - clock().timeIntervalSince(previous))
+    }
 
     private func startPolling(sender: String) {
         guard isActive, senderTasks[sender] == nil else { return }
@@ -295,6 +301,11 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         senderTokens[sender] = token
         senderBackoff.removeValue(forKey: sender)
         senderTasks[sender] = Task { [weak self] in
+            // A foreground resume can follow a background observation moments
+            // later. Preserve spacing in both directions across that transition.
+            if let delay = self?.remainingPollDelay(sender: sender), delay > 0 {
+                do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+            }
             // `self` is re-acquired per iteration and deliberately NOT held
             // across the sleep: a loop that waits a minute between polls would
             // otherwise keep the service alive for that minute after everything
@@ -362,6 +373,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             guard isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else {
                 return PollOutcome(shouldStop: true, nextDelay: 0)
             }
+            senderLastPollAt[sender] = clock()
             guard let resting = response.data.limitSwaps else {
                 // The `limit_swaps` key was absent: a response we don't
                 // understand, NOT an empty queue. Reading it as empty would
@@ -382,6 +394,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             guard isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else {
                 return PollOutcome(shouldStop: true, nextDelay: 0)
             }
+            senderLastPollAt[sender] = clock()
             return backoff(sender: sender)
         }
     }
@@ -395,10 +408,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         return senderTokens[sender] == token
     }
 
-    private func canApply(order: TrackedOrder, sender: String, token: UUID?, shouldApply: @MainActor () -> Bool) -> Bool {
-        isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply)
-            && tracked[order.txHash]?.pubKeyECDSA == order.pubKeyECDSA
-            && tracked[order.txHash]?.sender == sender
+    private func isTracked(_ order: TrackedOrder) -> Bool {
+        tracked[order.txHash]?.pubKeyECDSA == order.pubKeyECDSA
+            && tracked[order.txHash]?.sender == order.sender
+            && tracked[order.txHash]?.sourceChain == order.sourceChain
     }
 
     /// Compare what the queue reports against what we're tracking.
@@ -424,9 +437,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         )
 
         for order in Array(tracked.values) where order.sender == sender {
-            guard canApply(order: order, sender: sender, token: token, shouldApply: shouldApply) else {
+            guard isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else {
                 return PollOutcome(shouldStop: true, nextDelay: 0)
             }
+            guard isTracked(order) else { continue }
             if let entry = restingByHash[order.txHash.uppercased()] {
                 // Back in the queue, so any absence recorded earlier was wrong.
                 // This reset is the self-correcting half of the guard, and a
@@ -442,9 +456,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 // the row saying "Cancelling…" for an order whose authoritative
                 // record is back to `.pending` until the next poll repairs it.
                 guard await verifyPendingCancel(order: order, sender: sender, token: token, shouldApply: shouldApply),
-                      canApply(order: order, sender: sender, token: token, shouldApply: shouldApply) else {
+                      isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else {
                     return PollOutcome(shouldStop: true, nextDelay: 0)
                 }
+                guard isTracked(order) else { continue }
                 observeResting(order: order, entry: entry)
             } else {
                 // Clamped once corroborated. An order can stay absent for many
@@ -523,7 +538,8 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             return true
         }
         let outcome = await cancelVerifier.verifyCancelTransaction(txHash: cancelHash, chain: sourceChain)
-        guard canApply(order: order, sender: sender, token: token, shouldApply: shouldApply) else { return false }
+        guard isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else { return false }
+        guard isTracked(order) else { return true }
         switch outcome {
         case .succeeded, .delivered:
             // Persist the confirmation FIRST, so `reconcile`'s no-reason refund
@@ -586,7 +602,8 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         let outcome = await outcomes.resolveOutcome(inboundTxHash: order.txHash, sourceChain: sourceChain)
         // The lookup is a network round-trip: re-check before writing or
         // releasing anything on the strength of it.
-        guard canApply(order: order, sender: sender, token: token, shouldApply: shouldApply) else { return false }
+        guard isCurrentGeneration(sender: sender, token: token, shouldApply: shouldApply) else { return false }
+        guard isTracked(order) else { return true }
         // Visible at `notice` so the moment of resolution — the exact thing that
         // was invisible while debugging a stuck order — shows up without turning
         // on debug logging.
