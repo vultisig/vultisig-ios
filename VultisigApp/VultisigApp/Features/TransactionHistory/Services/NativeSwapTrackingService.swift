@@ -5,6 +5,7 @@ import Foundation
 @MainActor
 final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
     nonisolated static let providerKind = "nativeSwap"
+    nonisolated static let baseInterval: TimeInterval = 10
     static let shared = NativeSwapTrackingService(httpClient: HTTPClient(), storage: TransactionHistoryStorage.shared)
 
     @Published private(set) var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
@@ -95,7 +96,7 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
                     self?.isActive == true && self?.pollers[key]?.token == token
                 })
                 guard !Task.isCancelled, self.isActive, self.pollers[key]?.token == token else { return }
-                do { try await Task.sleep(for: .seconds(10)) } catch { return }
+                do { try await Task.sleep(for: .seconds(Self.baseInterval)) } catch { return }
                 guard !Task.isCancelled, self.isActive, self.pollers[key]?.token == token else { return }
             }
         }

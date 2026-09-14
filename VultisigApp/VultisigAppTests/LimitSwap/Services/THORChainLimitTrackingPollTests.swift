@@ -70,7 +70,17 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         await env.service.forceRefresh(tx: tx)
         XCTAssertEqual(env.http.requestCount, 1)
         XCTAssertTrue(env.orders.observations.isEmpty)
-        now = now.addingTimeInterval(60)
+        now = now.addingTimeInterval(50)
+        var schedule = TransactionActivityPollingSchedule()
+        if let previous = env.service.lastPollDate(sender: sender) {
+            schedule.didObserve(tx, now: previous)
+        } else {
+            XCTFail("A foreground observation must supply the background cadence anchor")
+        }
+        XCTAssertFalse(schedule.shouldObserve(tx, now: now))
+        XCTAssertEqual(schedule.nextDelay(for: [tx], now: now), 10)
+        now = now.addingTimeInterval(10)
+        XCTAssertTrue(schedule.shouldObserve(tx, now: now))
         await env.service.forceRefresh(tx: tx)
         XCTAssertEqual(env.orders.observations.last?.status, .filled)
     }

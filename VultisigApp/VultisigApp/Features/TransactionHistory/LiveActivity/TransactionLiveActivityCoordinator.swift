@@ -106,6 +106,10 @@ final class TransactionLiveActivityCoordinator {
         await queue?.value
     }
 
+    var backgroundRecords: [TransactionHistoryData] {
+        client.activities.compactMap { backgroundRecord(id: $0.recordID) }
+    }
+
     var hasBackgroundWork: Bool {
         client.activities.contains { backgroundRecord(id: $0.recordID) != nil }
     }

@@ -56,7 +56,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// Polling cadence. Far slower than SwapKit's 10s: an order rests for hours
     /// or days waiting on a price, so a tighter loop would burn battery and rate
     /// limit for a state that moves on the scale of blocks.
-    private static let baseInterval: TimeInterval = 60
+    nonisolated static let baseInterval: TimeInterval = 60
     /// Backoff applied after the first transient failure.
     private static let backoffInitial: TimeInterval = 30
     /// Never sleep longer than this between polls.
@@ -271,6 +271,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             self?.isActive == false && shouldApply()
         })
     }
+
+    /// Shared cadence anchor for background scheduling; reading it never performs a poll.
+    func lastPollDate(sender: String) -> Date? { senderLastPollAt[sender] }
 
     // MARK: - Test-only inspection
 

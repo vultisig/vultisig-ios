@@ -65,7 +65,7 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
 
     /// Polling cadence on the happy path. Conservative pick per
     /// `track-in-tx-history-plan.md` §"Polling cadence".
-    private static let baseInterval: TimeInterval = 10
+    nonisolated static let baseInterval: TimeInterval = 10
     /// Initial backoff applied after the first transient failure.
     private static let backoffInitial: TimeInterval = 15
     /// Backoff cap — never sleep longer than this between polls.

@@ -13,6 +13,7 @@ final class TransactionActivityBackgroundRunner {
 
     private final class Run {
         let id = UUID()
+        let observationEndsAt = ContinuousClock.now.advanced(by: .seconds(22))
         var assertion: UUID?
         var worker: Task<Void, Never>?
         var deadline: Task<Void, Never>?
@@ -25,6 +26,7 @@ final class TransactionActivityBackgroundRunner {
     private let runtime: Runtime
     private let hasWork: () -> Bool
     private let isForeground: () -> Bool
+    private let nextPollDelay: () -> TimeInterval
     private let refresh: () async -> Void
     private let drain: () async -> Void
     private let sleep: (Duration) async throws -> Void
@@ -32,11 +34,12 @@ final class TransactionActivityBackgroundRunner {
     private var scheduleAttempted = false
 
     init(runtime: Runtime, hasWork: @escaping () -> Bool, isForeground: @escaping () -> Bool,
-         refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
+         nextPollDelay: @escaping () -> TimeInterval, refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
          sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }) {
         self.runtime = runtime
         self.hasWork = hasWork
         self.isForeground = isForeground
+        self.nextPollDelay = nextPollDelay
         self.refresh = refresh
         self.drain = drain
         self.sleep = sleep
@@ -115,7 +118,12 @@ final class TransactionActivityBackgroundRunner {
                     self.finish(id: current.id, success: true)
                     return
                 }
-                do { try await sleep(.seconds(10)) } catch { return }
+                let delay = Duration.seconds(self.nextPollDelay())
+                guard ContinuousClock.now.duration(to: current.observationEndsAt) > delay else {
+                    self.finish(id: current.id, success: true)
+                    return
+                }
+                do { try await sleep(delay) } catch { return }
             } while !Task.isCancelled
         }
     }
@@ -141,7 +149,8 @@ final class TransactionActivityBackgroundRunner {
         guard !isForeground(), !scheduleAttempted else { return }
         scheduleAttempted = true
         do {
-            try runtime.schedule(Date().addingTimeInterval(15 * 60))
+            // Use the foreground cadence; iOS still chooses the actual delivery time.
+            try runtime.schedule(Date().addingTimeInterval(nextPollDelay()))
         } catch {
             // Denial (including Background App Refresh disabled) leaves local continuation usable.
         }

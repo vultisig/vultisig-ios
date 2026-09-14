@@ -8,17 +8,20 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     private var clock: BackgroundTestClock!
     private var work = true
     private var foreground = false
+    private var pollDelay: TimeInterval = 5
 
     override func setUp() async throws {
         system = BackgroundRuntimeSpy()
         clock = BackgroundTestClock()
         work = true
         foreground = false
+        pollDelay = 5
     }
 
     private func runner(drain: @escaping () async -> Void = {}, refresh: @escaping () async -> Void = {}) -> TransactionActivityBackgroundRunner {
         TransactionActivityBackgroundRunner(runtime: system.runtime, hasWork: { [unowned self] in self.work },
-                                            isForeground: { [unowned self] in self.foreground }, refresh: refresh, drain: drain,
+                                            isForeground: { [unowned self] in self.foreground },
+                                            nextPollDelay: { [unowned self] in self.pollDelay }, refresh: refresh, drain: drain,
                                             sleep: { [clock] in try await clock!.sleep($0) })
     }
 
@@ -36,12 +39,15 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testContinuationRefreshesThenEndsWhenWorkCompletes() async {
         let observed = expectation(description: "observed")
         let runner = runner { self.work = false; observed.fulfill() }
+        let requestedAfter = Date()
         runner.enteredBackground()
+        let requestedBefore = Date()
         await fulfillment(of: [observed], timeout: 2)
         await drain()
         XCTAssertEqual(system.ended.count, 1)
         XCTAssertEqual(system.scheduled.count, 1)
-        XCTAssertGreaterThan(system.scheduled[0].timeIntervalSinceNow, 890)
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], requestedAfter.addingTimeInterval(5))
+        XCTAssertLessThanOrEqual(system.scheduled[0], requestedBefore.addingTimeInterval(5))
         runner.enteredForeground()
         XCTAssertEqual(system.ended.count, 1)
     }
@@ -63,6 +69,18 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         expire()
         XCTAssertEqual(results, [true])
         XCTAssertEqual(system.scheduled.count, 1)
+    }
+
+    func testScheduledDeliveryRequestsNextWakeUsingUpdatedPollingDelay() async {
+        let observed = expectation(description: "observed")
+        let runner = runner { self.pollDelay = 30; observed.fulfill() }
+        let before = Date()
+        _ = runner.performScheduledRefresh { _ in }
+        await fulfillment(of: [observed], timeout: 2)
+        await drain()
+        XCTAssertEqual(system.scheduled.count, 1)
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], before.addingTimeInterval(30))
+        XCTAssertLessThanOrEqual(system.scheduled[0], Date().addingTimeInterval(30))
     }
 
     func testExpirationCompletesWithoutWaitingForUncooperativeNetwork() async {
@@ -104,7 +122,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         runner.enteredBackground()
         await drain()
         XCTAssertEqual(observations, 1)
-        clock.advance(.seconds(10))
+        clock.advance(.seconds(5))
         await drain()
         XCTAssertEqual(observations, 2)
         runner.trackingDidChange()
@@ -114,6 +132,17 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         clock.advance(.seconds(25))
         await drain()
         XCTAssertEqual(system.ended.count, 1)
+    }
+
+    func testSlowPollingReleasesContinuationWhenNoFurtherObservationFits() async {
+        pollDelay = ChainStatusConfig.config(for: .bitcoin).pollInterval
+        var observations = 0
+        let runner = runner { observations += 1 }
+        runner.enteredBackground()
+        await drain()
+        XCTAssertEqual(observations, 1)
+        XCTAssertEqual(system.ended.count, 1)
+        XCTAssertEqual(system.scheduled.count, 1)
     }
 
     func testSchedulingDenialDoesNotPreventContinuationAndInvalidAssertionDoesNotRun() async {

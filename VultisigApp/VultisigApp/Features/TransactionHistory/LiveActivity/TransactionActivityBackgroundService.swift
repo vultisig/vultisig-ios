@@ -10,6 +10,7 @@ final class TransactionActivityBackgroundService {
     private var connected = false
     private var pausedNativeTransactions = Set<UUID>()
     private let system = TransactionActivityBackgroundSystem()
+    private var pollingSchedule = TransactionActivityPollingSchedule()
     private lazy var coordinator = TransactionLiveActivityCoordinator.shared
     private lazy var observer = TransactionActivityStatusRefresher(
         storage: .shared, checker: TransactionStatusService.shared,
@@ -30,18 +31,34 @@ final class TransactionActivityBackgroundService {
         runtime: system.runtime,
         hasWork: { TransactionLiveActivityCoordinator.shared.hasBackgroundWork },
         isForeground: { UIApplication.shared.applicationState != .background },
+        nextPollDelay: { [unowned self] in self.nextPollDelay() },
         refresh: { [weak self] in
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
+                self.synchronizeProviderCadence(row)
+                guard self.pollingSchedule.shouldObserve(row) else { return }
                 // The activity observer owns native transactions during the bounded window.
                 if TransactionActivityPolicy.usesNativeStatus(row) {
                     self.pausedNativeTransactions.insert(row.id)
                     TransactionStatusPoller.shared.stopPolling(txHash: row.txHash)
                 }
                 await self.observer.refresh(row)
+                if !Task.isCancelled { self.pollingSchedule.didObserve(row) }
             }
         }, drain: { await TransactionLiveActivityCoordinator.shared.waitForPendingUpdates() }
     )
+
+    private func synchronizeProviderCadence(_ row: TransactionHistoryData) {
+        guard row.swapTracking?.providerKind == THORChainLimitTrackingService.providerKind,
+              let previous = THORChainLimitTrackingService.shared.lastPollDate(sender: row.fromAddress) else { return }
+        pollingSchedule.didObserve(row, now: previous)
+    }
+
+    private func nextPollDelay() -> TimeInterval {
+        let rows = coordinator.backgroundRecords
+        for row in rows { synchronizeProviderCadence(row) }
+        return pollingSchedule.nextDelay(for: rows)
+    }
 
     func register() {
         guard !registered else { return }
@@ -85,6 +102,7 @@ final class TransactionActivityBackgroundService {
     func enteredForeground() {
         guard start() else { return }
         runner.enteredForeground()
+        pollingSchedule = TransactionActivityPollingSchedule()
         // Activity dismissal/permission changes must not disable normal wallet tracking.
         for id in pausedNativeTransactions {
             do {
