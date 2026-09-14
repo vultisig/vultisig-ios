@@ -45,7 +45,7 @@ public actor RemoteImageLoader {
     public func load(_ url: URL) async throws -> Data {
         try Task.checkCancellation()
         guard let key = RemoteImageCache.key(for: url) else { throw RemoteImageError.invalidURL }
-        if let data = cache.data(forKey: key) {
+        if let cached = cache.data(forKey: key), let data = try? Self.thumbnail(cached) {
             // Preparing an existing image starts a fresh retention window for a new activity.
             try persistIfAvailable(data, forKey: key)
             return data

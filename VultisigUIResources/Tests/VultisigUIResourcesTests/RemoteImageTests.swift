@@ -105,6 +105,18 @@ final class RemoteImageTests: XCTestCase {
         XCTAssertEqual(png, reread)
     }
 
+    func testCorruptCachedImageIsDownloadedAndReplaced() async throws {
+        let cache = RemoteImageCache(directory: directory)
+        let key = try XCTUnwrap(RemoteImageCache.key(for: url))
+        try cache.store(Data([0, 1, 2]), forKey: key)
+        let loader = RemoteImageLoader(cache: cache, downloader: StubDownloader(
+            result: .init(data: try image(width: 10, height: 10), responseURL: url)
+        ))
+        let png = try await loader.load(url)
+        XCTAssertNotNil(CGImageSourceCreateWithData(png as CFData, nil))
+        XCTAssertEqual(cache.data(forKey: key), png)
+    }
+
     func testPreparingCachedImageRenewsActivityRetention() async throws {
         let cache = RemoteImageCache(directory: directory)
         let key = try XCTUnwrap(RemoteImageCache.key(for: url))
