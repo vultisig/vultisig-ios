@@ -113,14 +113,16 @@ enum ActivityTestFixture {
                     status: TransactionHistoryStatus = .inProgress, createdAt: Date = Date(),
                     amountCrypto: String = "1 ETH", amountFiat: String = "2500",
                     fee: String = "", error: String? = nil, coinLogo: String = "", toCoinLogo: String? = nil,
-                    tracking: SwapTrackingMetadataData? = nil) -> TransactionHistoryData {
+                    tracking: SwapTrackingMetadataData? = nil, toCoinTicker: String? = nil,
+                    toAmountCrypto: String? = nil, toAmountFiat: String? = nil,
+                    toAddress: String = "0x1234567890123456789012345678901234567890") -> TransactionHistoryData {
         TransactionHistoryData(
             id: id, txHash: hash, approveTxHash: nil, pubKeyECDSA: vault, type: type, status: status,
             chainRawValue: chain.rawValue, coinTicker: "ETH", coinLogo: coinLogo, coinChainLogo: nil,
             amountCrypto: amountCrypto, amountFiat: amountFiat, fromAddress: "source",
-            toAddress: "0x1234567890123456789012345678901234567890",
-            toCoinTicker: type == .swap ? "BTC" : nil, toCoinLogo: toCoinLogo, toCoinChainLogo: nil,
-            toAmountCrypto: nil, toAmountFiat: nil, swapProvider: type == .swap ? "SwapKit" : nil,
+            toAddress: toAddress,
+            toCoinTicker: toCoinTicker ?? (type == .swap ? "BTC" : nil), toCoinLogo: toCoinLogo, toCoinChainLogo: nil,
+            toAmountCrypto: toAmountCrypto, toAmountFiat: toAmountFiat, swapProvider: type == .swap ? "SwapKit" : nil,
             feeCrypto: fee, feeFiat: "", network: chain.rawValue, explorerLink: "", createdAt: createdAt,
             completedAt: status == .inProgress ? nil : Date(), estimatedTime: nil, errorMessage: error,
             swapTracking: tracking

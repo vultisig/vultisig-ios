@@ -57,6 +57,30 @@ final class TransactionHistoryStorage {
                 existing.toAmountFiat = value
                 enriched = true
             }
+            if data.type == .limit || data.type == .swap,
+               let ticker = data.toCoinTicker, !ticker.isEmpty,
+               existing.toCoinTicker?.isEmpty != false || existing.toCoinTicker == ticker {
+                // Native-source limit payloads contain only the inbound side.
+                // Done can supply the initiator's destination without replacing
+                // the receipt's identity, observed outcome or tracker evidence.
+                if existing.toCoinTicker?.isEmpty != false {
+                    existing.toCoinTicker = ticker
+                    if !data.toAddress.isEmpty { existing.toAddress = data.toAddress }
+                    enriched = true
+                }
+                if existing.toCoinLogo?.isEmpty != false, let logo = data.toCoinLogo, !logo.isEmpty {
+                    existing.toCoinLogo = logo
+                    enriched = true
+                }
+                if existing.toCoinChainLogo?.isEmpty != false, let logo = data.toCoinChainLogo, !logo.isEmpty {
+                    existing.toCoinChainLogo = logo
+                    enriched = true
+                }
+                if existing.toAmountCrypto?.isEmpty != false, let amount = data.toAmountCrypto, !amount.isEmpty {
+                    existing.toAmountCrypto = amount
+                    enriched = true
+                }
+            }
             guard enriched else { return }
             try modelContext.save()
             emit(.saved(TransactionHistoryData(item: existing)))

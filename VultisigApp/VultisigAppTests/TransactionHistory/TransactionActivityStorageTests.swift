@@ -54,6 +54,32 @@ final class TransactionActivityStorageTests: XCTestCase {
         XCTAssertEqual(row.id, broadcast.id)
     }
 
+    func testNativeLimitReceiptAcquiresTheInitiatorsDestinationFromDone() throws {
+        let container = try container()
+        let storage = TransactionHistoryStorage(modelContext: container.mainContext)
+        let metadata = SwapTrackingMetadataData(providerKind: THORChainLimitTrackingService.providerKind,
+            latestStatus: "filled", latestTrackingStatus: "filled")
+        let broadcast = ActivityTestFixture.row(type: .limit, tracking: metadata, toAddress: "inbound-vault")
+        try storage.save(broadcast)
+        try storage.updateStatus(txHash: broadcast.txHash, pubKeyECDSA: broadcast.pubKeyECDSA, status: .successful)
+        let done = ActivityTestFixture.row(hash: broadcast.txHash, type: .limit, toCoinLogo: "btc",
+            toCoinTicker: "BTC", toAmountCrypto: "0.01 BTC", toAmountFiat: "1000", toAddress: "receiver")
+        try storage.save(done)
+        let row = try XCTUnwrap(storage.fetch(id: broadcast.id))
+        XCTAssertEqual(row.toCoinTicker, "BTC")
+        XCTAssertEqual(row.toCoinLogo, "btc")
+        XCTAssertEqual(row.toAmountCrypto, "0.01 BTC")
+        XCTAssertEqual(row.toAmountFiat, "1000")
+        XCTAssertEqual(row.toAddress, "receiver")
+        XCTAssertEqual(row.status, .successful)
+        XCTAssertEqual(row.swapTracking?.latestTrackingStatus, "filled")
+        XCTAssertEqual(row.id, broadcast.id)
+        try storage.save(ActivityTestFixture.row(hash: broadcast.txHash, type: .limit,
+            toCoinTicker: "BTC", toAmountCrypto: "99 BTC", toAddress: "different"))
+        XCTAssertEqual(try storage.fetch(id: row.id)?.toAmountCrypto, "0.01 BTC")
+        XCTAssertEqual(try storage.fetch(id: row.id)?.toAddress, "receiver")
+    }
+
     func testLateDoneTrackingIdentifiersPreserveObservedSettlement() throws {
         let container = try container()
         let storage = TransactionHistoryStorage(modelContext: container.mainContext)
