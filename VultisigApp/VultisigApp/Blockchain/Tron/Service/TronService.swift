@@ -229,7 +229,12 @@ class TronService {
         block: TronNowBlockResponse
     ) async throws -> FeeEstimate {
         let memoFee = (try? await getTronFeeMemo(memo: memo)) ?? .zero
-        let activationFee = (try? await getTronInactiveDestinationFee(to: to)) ?? .zero
+        // ponytail: TRON only charges account activation on AccountCreateContract /
+        // TransferContract / TransferAssetContract, not on a TriggerSmartContract
+        // (TRC20 send), so only fetch/apply it for native transfers.
+        let activationFee = coin.isNativeToken
+            ? ((try? await getTronInactiveDestinationFee(to: to)) ?? .zero)
+            : .zero
         let chainParams = try? await getCachedChainParameters()
         let energyPrice = chainParams?.energyFeePrice ?? TronChainParametersResponse.defaultEnergyFeePrice
         let dynamicEnergyMaxFactor = chainParams?.dynamicEnergyMaxFactor
