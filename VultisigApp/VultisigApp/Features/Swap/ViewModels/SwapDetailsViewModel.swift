@@ -185,13 +185,14 @@ final class SwapDetailsViewModel {
 
     /// The UI sends one draft edit here, without also invoking updateFromAmount.
     /// Paste detection uses draft length, never expanded converted-token length.
-    func editFromInput(_ text: String, vault: Vault, immediate: Bool? = nil) {
-        let wasFiat = amountInput.isFiat
+    func editFromInput(_ text: String, vault: Vault, immediate: Bool? = nil, renderedAsFiat: Bool? = nil) {
+        let expectedFiat = renderedAsFiat ?? amountInput.isFiat
         let oldText = fromInputText
         refreshFromInputContext()
-        // A preference/source change cannot reinterpret a stale fiat edit as
-        // token input. Preserve canonical tokens and show their current mode.
-        guard wasFiat == amountInput.isFiat else { return }
+        // Compare the unit the field rendered, since a reset or toggle may have
+        // happened before this callback arrived. Never reinterpret a stale edit
+        // in the newly selected unit.
+        guard expectedFiat == amountInput.isFiat else { return }
         if amountInput.isFiat {
             fromAmount = amountInput.editFiat(text)
         } else {

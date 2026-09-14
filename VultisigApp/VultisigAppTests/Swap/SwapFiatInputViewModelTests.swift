@@ -96,6 +96,63 @@ final class SwapFiatInputViewModelTests: XCTestCase {
         XCTAssertEqual(vm.fromAmount, "4")
     }
 
+    func testStaleRenderedFiatEditAfterRateLossPreservesTokens() throws {
+        var rate: Double? = 2.5
+        let interactor = FiatInputInteractor()
+        let vm = SwapDetailsViewModel(interactor: interactor, inputRate: { _, _ in rate })
+        vm.fromCoin = makeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8)
+        vm.fromAmount = "4"
+        vm.toggleFromInputMode()
+        let renderedAsFiat = vm.isFromInputFiat
+        XCTAssertTrue(renderedAsFiat)
+        rate = nil
+        vm.refreshFromInputContext()
+        XCTAssertFalse(vm.isFromInputFiat)
+
+        vm.editFromInput("123", vault: try makeVault(), renderedAsFiat: renderedAsFiat)
+
+        XCTAssertEqual(vm.fromAmount, "4")
+        XCTAssertFalse(vm.isLoadingQuotes)
+        XCTAssertNil(vm.quote)
+        XCTAssertTrue(interactor.amounts.isEmpty)
+    }
+
+    func testStaleRenderedFiatEditAfterCurrencyResetPreservesTokens() throws {
+        let (vm, interactor) = makeVM(rate: 2.5)
+        vm.fromAmount = "4"
+        vm.toggleFromInputMode()
+        let renderedAsFiat = vm.isFromInputFiat
+        XCTAssertTrue(renderedAsFiat)
+        let differentCurrency: SettingsCurrency = SettingsCurrency.current == .USD ? .EUR : .USD
+        vm.refreshFromInputContext(currency: differentCurrency)
+        XCTAssertFalse(vm.isFromInputFiat)
+
+        vm.editFromInput("123", vault: try makeVault(), renderedAsFiat: renderedAsFiat)
+
+        XCTAssertEqual(vm.fromAmount, "4")
+        XCTAssertFalse(vm.isLoadingQuotes)
+        XCTAssertNil(vm.quote)
+        XCTAssertTrue(interactor.amounts.isEmpty)
+    }
+
+    func testStaleRenderedTokenEditAfterTogglePreservesTokens() throws {
+        let (vm, interactor) = makeVM(rate: 2.5)
+        vm.fromAmount = "4"
+        let renderedAsFiat = vm.isFromInputFiat
+        XCTAssertFalse(renderedAsFiat)
+        vm.toggleFromInputMode()
+        XCTAssertTrue(vm.isFromInputFiat)
+
+        vm.editFromInput("123", vault: try makeVault(), renderedAsFiat: renderedAsFiat)
+
+        XCTAssertEqual(vm.fromAmount, "4")
+        XCTAssertTrue(vm.isFromInputFiat)
+        XCTAssertFalse(vm.isLoadingQuotes)
+        XCTAssertNil(vm.quote)
+        XCTAssertTrue(interactor.amounts.isEmpty)
+    }
+
     func testDestinationChangePreservesSourceInputMode() {
         let (vm, _) = makeVM(rate: 2.5)
         vm.fromAmount = "4"
