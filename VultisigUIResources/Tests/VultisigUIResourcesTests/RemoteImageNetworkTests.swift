@@ -33,6 +33,15 @@ final class RemoteImageNetworkTests: XCTestCase {
         XCTAssertEqual(result.data, Data([1, 2, 3]))
     }
 
+    func testRealSessionCancellationUsesCancellationError() async throws {
+        let loader = RemoteImageLoader(cache: .init(directory: nil), downloader: downloader())
+        let task = Task { try await loader.load(URL(string: "https://images.example.com/pending")!) }
+        var started = RemoteImageURLProtocol.pendingStarted.stream.makeAsyncIterator()
+        _ = await started.next()
+        task.cancel()
+        do { _ = try await task.value; XCTFail("Expected cancellation") } catch { XCTAssertTrue(error is CancellationError) }
+    }
+
     private func assertError(path: String, expected: RemoteImageError) async {
         do {
             _ = try await downloader().download(URL(string: "https://images.example.com/\(path)")!, maximumBytes: 1_024)
@@ -49,12 +58,17 @@ final class RemoteImageNetworkTests: XCTestCase {
 
 private class RemoteImageURLProtocol: URLProtocol, @unchecked Sendable {
     static let insecureRequests = RequestCounter()
+    static let pendingStarted = AsyncStream<Void>.makeStream()
     override class func canInit(with _: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
         guard let url = request.url else { return }
         if url.scheme == "http" { Self.insecureRequests.increment() }
+        if url.path == "/pending" {
+            Self.pendingStarted.continuation.yield(())
+            return
+        }
         if url.path.hasPrefix("/redirect-") {
             let scheme = url.path == "/redirect-http" ? "http" : "https"
             let target = URL(string: "\(scheme)://images.example.com/success")!

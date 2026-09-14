@@ -7,6 +7,7 @@ public struct RemoteImageCache: Sendable {
     private static let maximumCacheBytes = 64 * 1_024 * 1_024
     private static let retention: TimeInterval = 7 * 24 * 60 * 60
     private static let minimumRetention: TimeInterval = 8 * 60 * 60
+    private static let clockSkewAllowance: TimeInterval = 5 * 60
     private let directory: URL?
 
     /// A nil directory disables persistence, including synchronous widget reads.
@@ -48,7 +49,7 @@ public struct RemoteImageCache: Sendable {
         guard let values = try? file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .contentModificationDateKey]),
               values.isRegularFile == true, values.isSymbolicLink != true,
               let modified = values.contentModificationDate,
-              (0..<Self.retention).contains(Date().timeIntervalSince(modified)),
+              (-Self.clockSkewAllowance..<Self.retention).contains(Date().timeIntervalSince(modified)),
               let handle = try? FileHandle(forReadingFrom: file) else { return nil }
         defer { try? handle.close() }
         guard let data = try? handle.read(upToCount: Self.maximumImageBytes + 1),
@@ -74,7 +75,7 @@ public struct RemoteImageCache: Sendable {
             guard let values = try? file.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey]) else { continue }
             let modified = values.contentModificationDate ?? .distantPast
             let age = Date().timeIntervalSince(modified)
-            if !Self.validKey(file.lastPathComponent), age > 5 * 60 || age < 0 {
+            if !Self.validKey(file.lastPathComponent), age > 5 * 60 || age < -Self.clockSkewAllowance {
                 // Clean abandoned atomic-write files; allow in-progress writes time to finish.
                 try? manager.removeItem(at: file)
                 continue
@@ -85,7 +86,7 @@ public struct RemoteImageCache: Sendable {
         let now = Date()
         for entry in entries.sorted(by: { $0.modified < $1.modified }) {
             let age = now.timeIntervalSince(entry.modified)
-            if age < 0 || age >= Self.retention || (total > Self.maximumCacheBytes && age >= Self.minimumRetention) {
+            if age < -Self.clockSkewAllowance || age >= Self.retention || (total > Self.maximumCacheBytes && age >= Self.minimumRetention) {
                 do {
                     try manager.removeItem(at: entry.url)
                     total -= entry.bytes

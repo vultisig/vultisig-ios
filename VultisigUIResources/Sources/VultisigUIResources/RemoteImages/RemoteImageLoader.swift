@@ -50,7 +50,13 @@ public actor RemoteImageLoader {
             try persistIfAvailable(data, forKey: key)
             return data
         }
-        let result = try await downloader.download(url, maximumBytes: Self.maximumDownloadBytes)
+        let result: RemoteImageDownload
+        do {
+            result = try await downloader.download(url, maximumBytes: Self.maximumDownloadBytes)
+        } catch {
+            try Task.checkCancellation()
+            throw error
+        }
         try Task.checkCancellation()
         guard RemoteImageCache.isAllowed(result.responseURL), result.redirects.allSatisfy(RemoteImageCache.isAllowed) else {
             throw RemoteImageError.invalidURL

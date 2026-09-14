@@ -216,6 +216,21 @@ final class RemoteImageTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 
+    func testSmallClockChangesPreserveRecentImagesAndTemporaryFiles() throws {
+        let cache = RemoteImageCache(directory: directory)
+        let key = try XCTUnwrap(RemoteImageCache.key(for: url))
+        try cache.store(Data([1]), forKey: key)
+        let temporary = directory.appendingPathComponent(".in-progress-write")
+        try Data([2]).write(to: temporary)
+        for file in [directory.appendingPathComponent(key), temporary] {
+            try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(60)], ofItemAtPath: file.path)
+        }
+        XCTAssertEqual(cache.data(forKey: key), Data([1]))
+        try cache.store(Data([3]), forKey: String(repeating: "1", count: 64))
+        XCTAssertEqual(cache.data(forKey: key), Data([1]))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: temporary.path))
+    }
+
     func testPersistenceFailureStillReturnsPreparedImage() async throws {
         let file = directory.appendingPathComponent("file-not-directory")
         try Data([1]).write(to: file)
