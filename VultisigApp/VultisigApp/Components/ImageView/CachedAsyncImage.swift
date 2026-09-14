@@ -62,6 +62,11 @@ struct CachedAsyncImage<Content: View>: View {
             .task(id: url) {
                 let requestedURL = url
                 guard let requestedURL else { return }
+                if let cachedPhase {
+                    loadedURL = requestedURL
+                    phase = cachedPhase
+                    return
+                }
                 do {
                     let data = try await loader.load(requestedURL)
                     try Task.checkCancellation()

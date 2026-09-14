@@ -132,7 +132,10 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     }
 
     func iconData(from url: URL) async throws -> Data {
-        try await imageLoader.load(WidgetMarketAPI.validatedImageURL(url))
+        let data = try await imageLoader.load(WidgetMarketAPI.validatedImageURL(url))
+        // Timeline entries and the market JSON cache carry image bytes inline.
+        guard data.count <= 64 * 1_024 else { throw WidgetMarketError.imageTooLarge }
+        return data
     }
 
     func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
