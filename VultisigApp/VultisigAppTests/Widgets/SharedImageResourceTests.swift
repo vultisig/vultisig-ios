@@ -2,6 +2,7 @@ import XCTest
 import UIKit
 import SwiftUI
 import VultisigUIResources
+@testable import VultisigApp
 
 final class SharedImageResourceTests: XCTestCase {
     func testEveryCatalogImageLoadsFromTheSharedBundle() {
