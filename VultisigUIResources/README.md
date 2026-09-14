@@ -19,3 +19,15 @@ package bundle. Do not edit generated names or maintain separate allowlists.
 
 Register custom fonts with `VultisigResources.registerFonts()` when creating
 fonts directly by PostScript name outside SwiftUI.
+
+Remote raster images use `RemoteImageLoader(cache:)`. The containing app and
+widget timeline preparation share `RemoteImageCache.shared()` through the App
+Group. Only the app may opt into a local fallback if group access is unavailable.
+Widget rendering reads prepared files synchronously; it does not start downloads.
+
+HTTPS requests are bounded to 2 MiB and eight seconds, including secure redirect
+validation. Supported raster input is normalized to a PNG thumbnail up to 256px
+and 512 KiB. Cache files use opaque URL-derived keys, atomic replacement, a
+best-effort 64 MiB budget, eight-hour retention protection and seven-day expiry.
+Cache misses, invalid images and unavailable storage retain caller fallbacks.
+Remote SVG decoding is not provided.
