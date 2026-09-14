@@ -105,6 +105,10 @@ struct SwapAssetCard<Focus: Hashable>: View {
     /// as `amountLineHeight` and the fonts inside the card.
     @ScaledMetric private var cardTextHeight: CGFloat = swapCardTextHeight
 
+    #if os(macOS)
+    @State private var amountDraft = ""
+    #endif
+
     /// Card height: fixed chrome plus the text-driven part, floored at the Figma
     /// height. So the card is exactly 116pt at the default text size, never shrinks
     /// below it, and grows only as Dynamic Type grows. It stays constant for a given
@@ -248,7 +252,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
                 onEdit?(old, newValue)
             }
         )
-        let field = TextField(placeholder, text: decimal)
+        let field = amountTextField(text: decimal)
             .textFieldStyle(.plain)
             .maxLength(decimal)
             .disableAutocorrection(true)
@@ -263,6 +267,41 @@ struct SwapAssetCard<Focus: Hashable>: View {
         } else {
             field
         }
+    }
+
+    @ViewBuilder
+    private func amountTextField(text: Binding<String>) -> some View {
+        #if os(macOS)
+        // AppKit clips the custom-font placeholder even though entered text and
+        // the field editor fit this line box. Draw the empty value with SwiftUI
+        // text, keeping the native field for focus, selection and horizontal scroll.
+        TextField("", text: Binding(
+            get: { amountDraft },
+            set: { value in
+                amountDraft = value
+                guard value != text.wrappedValue else { return }
+                text.wrappedValue = value
+            }
+        ))
+            .onAppear { amountDraft = text.wrappedValue }
+            .onChange(of: text.wrappedValue) { _, value in amountDraft = value }
+            .onChange(of: amountDraft) { _, value in
+                // Reconcile only: programmatic synchronization must never pose
+                // as an edit and overwrite a newer upstream amount.
+                if value != text.wrappedValue { amountDraft = text.wrappedValue }
+            }
+            .overlay(alignment: .trailing) {
+                if amountDraft.isEmpty {
+                    Text(placeholder)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityLabel(Text(label))
+        #else
+        TextField(placeholder, text: text)
+        #endif
     }
 }
 
