@@ -290,6 +290,8 @@ struct CoinService {
             return
         }
 
+        let discoverer = TokenDiscovererRegistry.discoverer(for: nativeToken.chain)
+
         do {
             let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
 
@@ -312,8 +314,17 @@ struct CoinService {
                         continue
                     }
 
-                    // Check for spam tokens
-                    if await isSpamToken(token) {
+                    // Check for spam tokens.
+                    //
+                    // Skipped when the chain's discoverer vouches for what it
+                    // returns (TON, which matches every jetton against a
+                    // curated + community-reviewed address registry). An
+                    // address match is a strictly stronger statement than these
+                    // heuristics, so running them afterwards can only produce
+                    // false negatives — and it would produce them here: the
+                    // ticker rule rejects any non-ASCII character, and the real
+                    // Tether jetton's on-chain symbol is `USD₮`.
+                    if !discoverer.vouchesForResults, await isSpamToken(token) {
                         continue
                     }
 

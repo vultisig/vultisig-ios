@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ReferralSendOverviewView: View {
     let transaction: SendTransaction
@@ -39,7 +40,7 @@ struct ReferralSendOverviewView: View {
 
     var assetDetail: some View {
         HStack {
-            Image("rune")
+            Image("rune", bundle: VultisigResources.bundle)
                 .resizable()
                 .frame(width: 24, height: 24)
                 .cornerRadius(Theme.radius.pill)
@@ -104,7 +105,7 @@ struct ReferralSendOverviewView: View {
             Spacer()
 
             if let icon {
-                Image(icon)
+                Image(icon, bundle: VultisigResources.bundle)
                     .resizable()
                     .frame(width: 16, height: 16)
                     .cornerRadius(Theme.radius.pill)

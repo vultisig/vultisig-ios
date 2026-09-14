@@ -4,6 +4,7 @@
 //
 
 import OSLog
+import VultisigUIResources
 import SwiftUI
 import RiveRuntime
 
@@ -132,40 +133,28 @@ struct KeysignAnimationView: View {
     }
 
     private func imageData(for logo: String) async -> Data? {
-        if logo.hasPrefix("https://"), let url = URL(string: logo) {
+        if logo.lowercased().hasPrefix("https://"), let url = URL(string: logo) {
             return await remoteImageData(url: url)
         }
         return localAssetPNGData(named: logo)
     }
 
     private func remoteImageData(url: URL) async -> Data? {
-        // URLCache.cachedResponse(for:) requires a request as the cache key;
-        // not a typed HTTP call.
-        // swiftlint:disable:next no_raw_urlrequest
-        let request = URLRequest(url: url)
-        if let cached = URLCache.imageCache.cachedResponse(for: request) {
-            return cached.data
-        }
         do {
-            // swiftlint:disable:next no_raw_urlsession
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                logger.warning("Non-success response for coin logo \(url.absoluteString, privacy: .public)")
-                return nil
-            }
-            URLCache.imageCache.storeCachedResponse(CachedURLResponse(response: response, data: data), for: request)
-            return data
+            return try await SharedImageLoading.loader.load(url)
+        } catch is CancellationError {
+            return nil
         } catch {
-            logger.warning("Failed to fetch coin logo from \(url.absoluteString, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            logger.warning("Failed to prepare coin logo: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }
 
     private func localAssetPNGData(named assetName: String) -> Data? {
         #if os(iOS)
-        return UIImage(named: assetName)?.pngData()
+        return VultisigResources.platformImage(named: assetName)?.pngData()
         #elseif os(macOS)
-        guard let image = NSImage(named: assetName),
+        guard let image = VultisigResources.platformImage(named: assetName),
               let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff) else {
             return nil

@@ -10,6 +10,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
     private var rows: [UUID: TransactionHistoryData] = [:]
     private var hasVault = true
     private var lookupFails = false
+    private var lookupFailureObserved: XCTestExpectation?
     private var vaultLookupFails = false
     private var resumedIDs: [UUID] = []
 
@@ -21,6 +22,7 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         rows = [:]
         hasVault = true
         lookupFails = false
+        lookupFailureObserved = nil
         vaultLookupFails = false
         resumedIDs = []
     }
@@ -30,23 +32,242 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         try await super.tearDown()
     }
 
-    private func coordinator() -> TransactionLiveActivityCoordinator {
+    private func coordinator(preparedImageKey: @escaping @MainActor (String) -> String? = { _ in nil },
+                             prepareImage: @escaping @MainActor (URL) async -> Void = { _ in }) -> TransactionLiveActivityCoordinator {
         TransactionLiveActivityCoordinator(client: client, defaults: defaults,
                                            lookup: { [unowned self] in
-                                               if self.lookupFails { throw NSError(domain: "fixture", code: 1) }
+                                               if self.lookupFails {
+                                                   self.lookupFailureObserved?.fulfill()
+                                                   throw NSError(domain: "fixture", code: 1)
+                                               }
                                                return self.rows[$0]
                                            },
                                            vaultExists: { [unowned self] _ in
                                                if self.vaultLookupFails { throw NSError(domain: "fixture", code: 2) }
                                                return self.hasVault
                                            },
-                                           resume: { [unowned self] in self.resumedIDs.append($0.id) })
+                                           resume: { [unowned self] in self.resumedIDs.append($0.id) },
+                                           preparedImageKey: preparedImageKey, prepareImage: prepareImage)
     }
 
     private func addRow() -> TransactionHistoryData {
         let row = ActivityTestFixture.row()
         rows[row.id] = row
         return row
+    }
+
+    func testImagePreparationDoesNotBlockAdmissionOrStatusAndPreservesDelayedFreshness() async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let gate = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { _ in gate.key }, prepareImage: { _ in await gate.load() })
+        manager.admit(row)
+        XCTAssertEqual(client.requestCount, 1)
+        XCTAssertNil(client.activities.first?.state.sourceImageKey)
+        await fulfillment(of: [gate.started], timeout: 2)
+        let observedAt = row.createdAt.addingTimeInterval(20)
+        await manager.receive(.nativePending(row, observedAt))
+        await manager.receive(.delayed(row))
+        await manager.reconcile()
+        XCTAssertEqual(gate.loads, 1)
+        XCTAssertEqual(client.activities.first?.state.observedAt, observedAt)
+        XCTAssertTrue(client.activities.first?.state.updateDelayed == true)
+        rows[row.id] = ActivityTestFixture.row(id: row.id, hash: row.txHash, createdAt: row.createdAt,
+            amountCrypto: "2 ETH", coinLogo: row.coinLogo)
+        gate.complete()
+        await fulfillment(of: [gate.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertEqual(client.activities.first?.state.summary, "2 ETH")
+        XCTAssertEqual(client.activities.first?.state.sourceImageKey, gate.key)
+        XCTAssertEqual(client.activities.first?.state.observedAt, observedAt)
+        XCTAssertTrue(client.activities.first?.state.updateDelayed == true)
+        XCTAssertEqual(client.requestCount, 1)
+    }
+
+    func testAdmissionUsesPrewarmedImagesAndRenewsCacheProtectionOnce() async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let key = String(repeating: "a", count: 64)
+        let renewed = expectation(description: "cached image retention renewed")
+        var preparations = 0
+        let manager = coordinator(preparedImageKey: { _ in key }, prepareImage: { _ in
+            preparations += 1
+            if preparations == 1 { renewed.fulfill() }
+        })
+        manager.admit(row)
+        XCTAssertEqual(client.activities.first?.state.sourceImageKey, key)
+        XCTAssertEqual(client.activities.first?.state.revision, 1)
+        await fulfillment(of: [renewed], timeout: 2)
+        await manager.waitForPendingUpdates()
+        // The same key can now hold repaired bytes, requiring a new ActivityKit render.
+        XCTAssertEqual(client.activities.first?.state.revision, 2)
+        XCTAssertEqual(client.activities.first?.state.observedAt, row.createdAt)
+        await manager.reconcile()
+        await manager.waitForPendingUpdates()
+        // Let a wrongly duplicated image task run before checking the attempt count.
+        await Task.yield()
+        XCTAssertEqual(preparations, 1)
+    }
+
+    func testImagePreparationRetriesAfterTemporaryStoreFailure() async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let gate = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { _ in gate.key }, prepareImage: { _ in await gate.load() })
+        manager.admit(row)
+        lookupFailureObserved = expectation(description: "temporary lookup failed")
+        lookupFails = true
+        await fulfillment(of: [lookupFailureObserved!], timeout: 2)
+        lookupFailureObserved = nil
+        lookupFails = false
+        await manager.reconcile()
+        await fulfillment(of: [gate.started], timeout: 2)
+        gate.complete()
+        await fulfillment(of: [gate.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertEqual(client.activities.first?.state.sourceImageKey, gate.key)
+        XCTAssertEqual(gate.loads, 1)
+        XCTAssertEqual(client.requestCount, 1)
+    }
+
+    func testImageCompletionPreservesFreshSwapPhase() async {
+        let row = ActivityTestFixture.row(type: .swap, coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let gate = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { _ in gate.key }, prepareImage: { _ in await gate.load() })
+        manager.admit(row)
+        await fulfillment(of: [gate.started], timeout: 2)
+        let updated = ActivityTestFixture.row(id: row.id, hash: row.txHash, type: .swap,
+            createdAt: row.createdAt, coinLogo: row.coinLogo,
+            tracking: .init(providerKind: "swapKit", latestTrackingStatus: "swapping"))
+        rows[row.id] = updated
+        let observedAt = row.createdAt.addingTimeInterval(20)
+        await manager.receive(.swapStatus(updated, observedAt))
+        XCTAssertEqual(client.activities.first?.state.phase, .swapping)
+        gate.complete()
+        await fulfillment(of: [gate.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertEqual(client.activities.first?.state.phase, .swapping)
+        XCTAssertEqual(client.activities.first?.state.observedAt, observedAt)
+    }
+
+    func testImageCompletionRevalidatesPrivacyWithoutReconcile() async {
+        await assertUnreconciledImageCannotPublish(hideBalances: true)
+    }
+
+    func testImageCompletionRevalidatesDeletionWithoutReconcile() async {
+        await assertUnreconciledImageCannotPublish(hideBalances: false)
+    }
+
+    private func assertUnreconciledImageCannotPublish(hideBalances: Bool) async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let gate = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { _ in gate.key }, prepareImage: { _ in await gate.load() })
+        manager.admit(row)
+        await fulfillment(of: [gate.started], timeout: 2)
+        let previous = client.activities.first?.state
+        if hideBalances { defaults.set(true, forKey: "showVaultBalance") } else { rows.removeValue(forKey: row.id) }
+        gate.complete()
+        await fulfillment(of: [gate.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertFalse(gate.wasCancelled)
+        XCTAssertEqual(client.activities.first?.state, previous)
+        XCTAssertNil(client.activities.first?.state.sourceImageKey)
+        XCTAssertEqual(client.requestCount, 1)
+    }
+
+    func testChangedImageURLCancelsOldJobAndOnlyPublishesCurrentResource() async {
+        let oldURL = "https://example.com/old.png"
+        let newURL = "https://example.com/new.png"
+        let row = ActivityTestFixture.row(coinLogo: oldURL)
+        rows[row.id] = row
+        let oldImage = ImagePreparationGate()
+        let newImage = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { $0 == oldURL ? oldImage.key : newImage.key },
+            prepareImage: { await ($0.absoluteString == oldURL ? oldImage : newImage).load() })
+        manager.admit(row)
+        await fulfillment(of: [oldImage.started], timeout: 2)
+        let replacement = ActivityTestFixture.row(id: row.id, hash: row.txHash,
+            createdAt: row.createdAt, coinLogo: newURL)
+        rows[row.id] = replacement
+        await manager.receive(.saved(replacement))
+        await fulfillment(of: [newImage.started], timeout: 2)
+        oldImage.complete()
+        await fulfillment(of: [oldImage.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertTrue(oldImage.wasCancelled)
+        XCTAssertNil(client.activities.first?.state.sourceImageKey)
+        newImage.complete(key: String(repeating: "b", count: 64))
+        await fulfillment(of: [newImage.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertEqual(client.activities.first?.state.sourceImageKey, newImage.key)
+        XCTAssertEqual(client.requestCount, 1)
+        XCTAssertEqual(oldImage.loads, 1)
+        XCTAssertEqual(newImage.loads, 1)
+    }
+
+    func testRejectedAndHiddenActivitiesDoNotPrepareImages() async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let manager = coordinator(prepareImage: { _ in XCTFail("Not accepted with visible details") })
+        client.failRequest = true
+        manager.admit(row)
+        client.failRequest = false
+        defaults.set(true, forKey: "showVaultBalance")
+        let hidden = ActivityTestFixture.row(coinLogo: row.coinLogo)
+        rows[hidden.id] = hidden
+        manager.admit(hidden)
+        await manager.reconcile()
+        XCTAssertFalse(client.activities.first?.state.hasDetails ?? true)
+    }
+
+    func testLateImageAfterHidingBalancesIsCancelledAndCannotRevealDetails() async {
+        await assertLateImageCannotPublish("privacy")
+    }
+
+    func testLateImageAfterDeletionCannotResurrectActivity() async { await assertLateImageCannotPublish("deletion") }
+    func testLateImageAfterDismissalCannotResurrectActivity() async { await assertLateImageCannotPublish("dismissal") }
+    func testLateImageAfterTerminalStatusCannotResurrectActivity() async { await assertLateImageCannotPublish("terminal") }
+    func testLateImageAfterIdentityChangeCannotResurrectActivity() async { await assertLateImageCannotPublish("identity") }
+    func testLateImageAfterExpiryCannotResurrectActivity() async { await assertLateImageCannotPublish("expiry") }
+    func testLateImageAfterPermissionRevokedCannotResurrectActivity() async { await assertLateImageCannotPublish("permission") }
+
+    private func assertLateImageCannotPublish(_ reason: String) async {
+        let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
+        rows[row.id] = row
+        let gate = ImagePreparationGate()
+        let manager = coordinator(preparedImageKey: { _ in gate.key }, prepareImage: { _ in await gate.load() })
+        manager.admit(row)
+        await fulfillment(of: [gate.started], timeout: 2)
+        switch reason {
+        case "privacy": defaults.set(true, forKey: "showVaultBalance")
+        case "deletion": rows.removeValue(forKey: row.id)
+        case "dismissal": client.activities.removeAll()
+        case "permission": client.isAuthorized = false
+        case "identity":
+            let replacement = ActivityTestFixture.row(id: row.id, coinLogo: row.coinLogo)
+            rows[row.id] = replacement
+            await manager.receive(.saved(replacement))
+        case "terminal":
+            let completed = ActivityTestFixture.row(id: row.id, hash: row.txHash, status: .successful,
+                createdAt: row.createdAt, coinLogo: row.coinLogo)
+            rows[row.id] = completed
+            await manager.receive(.nativeStatus(completed, Date()))
+        default: break
+        }
+        if reason != "identity" {
+            await manager.reconcile(now: reason == "expiry" ? row.createdAt.addingTimeInterval(TransactionActivityPolicy.maximumAge + 1) : Date())
+        }
+        let stateBeforeCompletion = client.activities.first?.state
+        gate.complete()
+        await fulfillment(of: [gate.finished], timeout: 2)
+        await manager.waitForPendingUpdates()
+        XCTAssertTrue(gate.wasCancelled)
+        XCTAssertEqual(client.activities.first?.state, stateBeforeCompletion)
+        XCTAssertNil(client.activities.first?.state.sourceImageKey)
+        XCTAssertEqual(client.requestCount, 1)
+        if reason == "privacy" { XCTAssertFalse(client.activities.first?.state.hasDetails ?? true) }
     }
 
     func testReconcileDoesNotResumeARecordThatJustSettled() async {
@@ -412,6 +633,32 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         manager.admit(second)
         await manager.reconcile(now: second.createdAt.addingTimeInterval(TransactionActivityPolicy.maximumAge + 1))
         XCTAssertEqual(client.activities.last?.state.phase, .trackingEnded)
+    }
+}
+
+@MainActor
+private final class ImagePreparationGate {
+    let started = XCTestExpectation(description: "image preparation started")
+    let finished = XCTestExpectation(description: "image preparation returned")
+    var key: String?
+    var loads = 0
+    var wasCancelled = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    func load() async {
+        loads += 1
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            started.fulfill()
+        }
+        wasCancelled = Task.isCancelled
+        finished.fulfill()
+    }
+
+    func complete(key: String = String(repeating: "a", count: 64)) {
+        self.key = key
+        continuation?.resume()
+        continuation = nil
     }
 }
 

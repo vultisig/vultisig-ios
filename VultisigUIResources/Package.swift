@@ -19,6 +19,7 @@ let package = Package(
             name: "VultisigUIResources",
             resources: [
                 .process("Resources/Images.xcassets"),
+                .process("Resources/image-catalog.json"),
                 .copy("Resources/Fonts")
             ]
         ),

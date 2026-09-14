@@ -18,6 +18,11 @@ struct TonTransactionDecoder: TransactionContentDecoder {
     private static let precedence: MemoPrecedence = .memoIsInertWhenRoutedEarlier
 
     func decode(_ tx: SignedTransactionContent) -> DecodedTransaction? {
+        // A jetton carries its comment in the forward payload and its amount in
+        // jetton units, so a pool comment on one names neither a deposit the pool
+        // accepts nor a GRAM figure to show for it.
+        guard tx.isNativeCoin else { return nil }
+
         // TonConnect BOCs and earlier routes make the outer memo a sidecar.
         guard let content = tx.corroborated else { return nil }
 

@@ -23,7 +23,9 @@ final class TransactionActivityStateTests: XCTestCase {
                                              network: String(repeating: "界", count: 500), showDetails: true,
                                              operation: .swap, recipient: String(repeating: "x", count: 100),
                                              fee: String(repeating: "\"", count: 500), provider: String(repeating: "\"", count: 500),
-                                             submittedAt: Date(), sourceAssetID: "usdc", destinationAssetID: "solana")
+                                             submittedAt: Date(), sourceAssetID: "usdc", destinationAssetID: "solana",
+                                             sourceImageKey: String(repeating: "a", count: 64),
+                                             destinationImageKey: String(repeating: "b", count: 64))
         #if os(iOS)
         let attributes = TransactionActivityAttributes(recordID: UUID())
         let size = try JSONEncoder().encode(attributes).count + JSONEncoder().encode(state).count
@@ -57,13 +59,13 @@ final class TransactionActivityStateTests: XCTestCase {
     }
 
     func testAssetIDsRejectURLsArbitraryPathsAndTickerAliases() {
-        for invalid in ["https://example.com/eth.svg", "../eth", "ETH", "ethereum", "logo-outline", String(repeating: "x", count: 10_000)] {
+        for invalid in ["https://example.com/eth.svg", "../eth", "ETH", "ethereum", "definitely-not-an-asset", String(repeating: "x", count: 10_000)] {
             let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
                                                  showDetails: true, sourceAssetID: invalid, destinationAssetID: invalid)
             XCTAssertNil(state.sourceAssetID)
             XCTAssertNil(state.destinationAssetID)
         }
-        for logo in ["btc", "eth", "usdc", "usdt", "bsc", "solana"] {
+        for logo in ["btc", "eth", "usdc", "usdt", "bsc", "solana", "rune", "chain-rune", "logo-outline"] {
             XCTAssertEqual(TransactionActivityState.bundledAssetID(for: logo), logo)
         }
     }
@@ -75,7 +77,36 @@ final class TransactionActivityStateTests: XCTestCase {
         XCTAssertEqual(state.summary, "1 ETH")
         XCTAssertNil(state.sourceAssetID)
         XCTAssertNil(state.destinationAssetID)
+        XCTAssertNil(state.sourceImageKey)
+        XCTAssertNil(state.destinationImageKey)
         XCTAssertEqual(try JSONDecoder().decode(TransactionActivityState.self, from: JSONEncoder().encode(state)), state)
+    }
+
+    func testImageKeysValidateAtConstructionAndDecode() throws {
+        let valid = String(repeating: "a1", count: 32)
+        for key in [valid, String(repeating: "A", count: 64), String(repeating: "g", count: 64),
+                    String(repeating: "a", count: 63), "../image", "https://example.com/image.png"] {
+            let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
+                showDetails: true, sourceImageKey: key, destinationImageKey: key)
+            XCTAssertEqual(state.sourceImageKey, key == valid ? valid : nil)
+            XCTAssertEqual(state.destinationImageKey, key == valid ? valid : nil)
+            var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Any])
+            payload["sourceImageKey"] = key
+            payload["destinationImageKey"] = key
+            let decoded = try JSONDecoder().decode(TransactionActivityState.self, from: JSONSerialization.data(withJSONObject: payload))
+            XCTAssertEqual(decoded.sourceImageKey, key == valid ? valid : nil)
+            XCTAssertEqual(decoded.destinationImageKey, key == valid ? valid : nil)
+        }
+    }
+
+    func testPrivatePayloadOmitsCachedImageKeys() throws {
+        let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
+            sourceAssetID: "rune", destinationAssetID: "chain-rune",
+            sourceImageKey: String(repeating: "a", count: 64), destinationImageKey: String(repeating: "b", count: 64))
+        let encoded = try XCTUnwrap(String(data: JSONEncoder().encode(state), encoding: .utf8))
+        XCTAssertFalse(encoded.contains("ImageKey"))
+        XCTAssertFalse(encoded.contains("AssetID"))
+        XCTAssertFalse(state.hasDetails)
     }
 
     func testEveryPhaseHasLocalizedCopy() {

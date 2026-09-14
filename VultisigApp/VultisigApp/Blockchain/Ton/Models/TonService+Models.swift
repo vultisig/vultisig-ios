@@ -7,6 +7,13 @@
 
 struct JettonWalletsResponse: Codable {
     let jetton_wallets: [JettonWalletInfo]
+    /// Indexer metadata for every address in the response — the owner's jetton
+    /// wallets *and* the masters behind them. Present on the owner-filtered
+    /// listing, which is what lets discovery read a jetton's symbol, name and
+    /// decimals without a follow-up call per jetton. See
+    /// `TonJettonMasterMetadata.index(from:)` for how master entries are picked
+    /// out of it.
+    let metadata: [String: JettonMasterMetadata]?
 }
 
 struct JettonWalletInfo: Codable {
@@ -215,11 +222,16 @@ struct JettonMasterMetadata: Codable {
 /// Only entries where `valid == true` should be trusted for display.
 struct JettonTokenInfo: Codable {
     let valid: Bool?
+    /// `"jetton_masters"` or `"jetton_wallets"`. Both come back `valid: true`,
+    /// so this is the field that says which one an entry describes.
     let type: String?
     let name: String?
     let symbol: String?
     let description: String?
     let image: String?
+    /// Toncenter's own scam flag. Unreliable on its own — see
+    /// `TonJettonMasterMetadata.isFlaggedScam`.
+    let is_scam: Bool?
     let extra: JettonTokenInfoExtra?
 }
 
@@ -227,4 +239,17 @@ struct JettonTokenInfo: Codable {
 struct JettonTokenInfoExtra: Codable {
     let decimals: String?
     let uri: String?
+    /// Toncenter imgproxy renditions of the jetton logo. Normalized PNGs served
+    /// with permissive CORS headers, unlike the original `image` URL.
+    let imageSmall: String?
+    let imageMedium: String?
+    let imageBig: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case decimals
+        case uri
+        case imageSmall = "_image_small"
+        case imageMedium = "_image_medium"
+        case imageBig = "_image_big"
+    }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct VultDiscountTierIcon: View {
     enum IconSize {
@@ -71,7 +72,7 @@ struct VultDiscountTierIcon: View {
                 endPoint: .bottom
             )
         case .ultimate:
-            Image("vult-ultimate-icon-overlay")
+            Image("vult-ultimate-icon-overlay", bundle: VultisigResources.bundle)
                 .resizable()
         }
     }

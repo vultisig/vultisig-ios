@@ -199,8 +199,25 @@ extension SwapCryptoLogic {
             streamingQuantity: memoTerms.streamingQuantity,
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
             isAffiliate: SwapCryptoLogic.isAffiliate,
-            fee: nativeSwapPayloadFee(quote: quote)
+            fee: nativeSwapPayloadFee(quote: quote),
+            slippageBps: nativeSwapPayloadSlippageBps(quote: quote)
         )
+    }
+
+    /// Price impact in basis points, carried so a co-signer shows what the
+    /// initiator was quoted rather than re-deriving it from a pool that has moved.
+    ///
+    /// Reads the quote's TOP-LEVEL `slippage_bps` — the field
+    /// `SwapQuote.priceImpact` renders here — and deliberately NOT
+    /// `fees.slippage_bps`, which the node reports separately and which can
+    /// differ (THORChain's streaming example: 41 against a nested 9). Switching
+    /// them hands the co-signer a different number from the initiator's.
+    ///
+    /// A reported `0` is carried as `0`; out-of-range is dropped rather than
+    /// wrapped, since `uint32` would land a negative as ~4 billion bps.
+    static func nativeSwapPayloadSlippageBps(quote: ThorchainSwapQuote) -> UInt32? {
+        guard let bps = quote.slippageBps else { return nil }
+        return UInt32(exactly: bps)
     }
 
     /// Sums exactly the two components the verify screens itemize, so a co-signer
@@ -397,13 +414,13 @@ extension SwapCryptoLogic {
                     swapResponse: swapResponse,
                     fallback: approvePayload
                 )
-                let payload = GenericSwapPayload(
+                let payload = buildSwapKitGenericPayload(
                     fromCoin: fromCoin,
                     toCoin: toCoin,
-                    fromAmount: amountInCoin,
+                    fromAmountInCoin: amountInCoin,
                     toAmountDecimal: toDecimal,
                     quote: evmQuote,
-                    provider: .swapkit
+                    swapResponse: swapResponse
                 )
                 return try await keysignFactory.buildTransfer(
                     coin: fromCoin,
@@ -720,6 +737,28 @@ extension SwapCryptoLogic {
                 vault: vault
             )
         }
+    }
+
+    /// SwapKit's EVM and Solana routes: their wire shape matches
+    /// `OneInchSwapPayload` 1:1, so they ride the shared aggregator payload and
+    /// carry the same route tag the non-EVM SwapKit payload does.
+    static func buildSwapKitGenericPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        quote: EVMQuote,
+        swapResponse: SwapKitSwapResponse
+    ) -> GenericSwapPayload {
+        return GenericSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            quote: quote,
+            provider: .swapkit,
+            subProvider: swapResponse.subProvider
+        )
     }
 
     /// Build a `SwapKitSwapPayload` for the BTC PSBT path: base64-decode the

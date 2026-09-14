@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SecurityScannerBottomSheet: View & BottomSheetProperties {
     let securityScannerModel: SecurityScannerResult?
@@ -56,7 +57,7 @@ struct SecurityScannerBottomSheetContent: View {
                     Text("securityScannerPoweredBy".localized)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodySMedium)
-                    Image(securityScannerProvider)
+                    Image(securityScannerProvider, bundle: VultisigResources.bundle)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                 }

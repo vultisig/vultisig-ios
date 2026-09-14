@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ReferralInitialScreen: View {
     @StateObject var referredViewModel = ReferredViewModel()
@@ -42,7 +43,7 @@ struct ReferralInitialScreen: View {
     }
 
     var image: some View {
-        Image("referral-initial")
+        Image("referral-initial", bundle: VultisigResources.bundle)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 375)

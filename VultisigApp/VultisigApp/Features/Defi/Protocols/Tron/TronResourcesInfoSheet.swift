@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct TronResourcesInfoSheet: View {
 
@@ -55,7 +56,7 @@ struct TronResourcesInfoSheet: View {
     private var header: some View {
         VStack(spacing: 24) {
             HStack(spacing: 8) {
-                Image("tron")
+                Image("tron", bundle: VultisigResources.bundle)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)

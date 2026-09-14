@@ -14,6 +14,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct QBTCClaimSelectionView: View {
     @ObservedObject var viewModel: QBTCClaimViewModel
@@ -73,7 +74,7 @@ struct QBTCClaimSelectionView: View {
             // the right of the card. Bound to the existing QBTC chain
             // asset; gracefully no-ops if the asset hasn't shipped yet.
             ZStack {
-                Image("qbtc")
+                Image("qbtc", bundle: VultisigResources.bundle)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 71, height: 71)

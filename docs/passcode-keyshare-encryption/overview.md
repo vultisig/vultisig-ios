@@ -125,11 +125,10 @@ Nothing. Not "an encrypted store with the key lying around" — nothing:
   alignment still runs afterwards either way. The biometric copy has no tri-state
   to report, because presence is checked without authentication, so a `false`
   there is as close to a confirmed absence as that item gets;
-- the whole feature is additionally behind `PasscodeFeatureFlag`, off by default
-  (`SettingsViewModel.passcodeFeatureEnabled`, toggled from Settings →
-  Advanced), so the Settings entry does not appear at all unless the flag is on
-  or a passcode is already set — the second disjunct exists so turning the flag
-  back off cannot strand someone behind a passcode they can no longer remove.
+- Settings → Security → Passcode is available to everyone. Setting a passcode
+  remains voluntary: opening Settings does not create a key or encrypt shares.
+  The former Advanced opt-in flag is no longer read, so its saved value cannot
+  hide passcode setup or management.
 
 ## Who owns what
 

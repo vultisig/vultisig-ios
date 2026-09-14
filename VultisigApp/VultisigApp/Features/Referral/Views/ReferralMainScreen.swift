@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 import SwiftData
 
 struct ReferralMainScreen: View {
@@ -202,7 +203,7 @@ struct ReferralMainScreen: View {
                 router.navigate(to: ReferralRoute.vaultSelection(selectedVaultViewModel: vaultSelectionViewModel))
             } label: {
                 HStack(spacing: 10) {
-                    Image("vault-icon")
+                    Image("vault-icon", bundle: VultisigResources.bundle)
                         .resizable()
                         .aspectRatio(1, contentMode: .fit)
                         .frame(width: 28)

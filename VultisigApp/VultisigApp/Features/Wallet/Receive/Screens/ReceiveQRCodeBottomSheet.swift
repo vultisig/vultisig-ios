@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
@@ -51,7 +52,7 @@ struct ReceiveQRCodeBottomSheet: View {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
                 size: CGSize(width: 200, height: 200),
-                logoImage: PlatformImage(named: coinLogo),
+                logoImage: VultisigResources.platformImage(named: coinLogo),
                 scale: displayScale
             )
 
@@ -98,7 +99,7 @@ struct ReceiveQRCodeBottomSheet: View {
         .padding(.top, 8)
         .padding(.bottom, 16)
         .frame(width: 216, height: 247)
-        .background(Image("qr-code-container").resizable())
+        .background(Image("qr-code-container", bundle: VultisigResources.bundle).resizable())
     }
 
     var bottomSection: some View {

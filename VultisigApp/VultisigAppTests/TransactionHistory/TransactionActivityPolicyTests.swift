@@ -71,6 +71,36 @@ final class TransactionActivityPolicyTests: XCTestCase {
         XCTAssertNil(fallback.destinationAssetID)
     }
 
+    func testRUNEAndLimitDestinationUseActualResourceIdentity() {
+        let row = ActivityTestFixture.row(type: .limit, coinLogo: "rune", toCoinLogo: "chain-rune")
+        let state = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+            revision: 1, delayed: false, showDetails: true)
+        XCTAssertEqual(state.sourceAssetID, "rune")
+        XCTAssertEqual(state.destinationAssetID, "chain-rune")
+    }
+
+    func testPreparedKeysAreInjectedAndPrivateModeNeverReadsCache() {
+        let source = "https://example.com/source.png"
+        let destination = "https://example.com/destination.png"
+        let sourceKey = String(repeating: "a", count: 64)
+        let destinationKey = String(repeating: "b", count: 64)
+        for type in [TransactionHistoryType.swap, .limit] {
+            let row = ActivityTestFixture.row(type: type, coinLogo: source, toCoinLogo: destination)
+            let state = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                revision: 1, delayed: false, showDetails: true,
+                preparedImageKey: { $0 == source ? sourceKey : destinationKey })
+            XCTAssertNil(state.sourceAssetID)
+            XCTAssertNil(state.destinationAssetID)
+            XCTAssertEqual(state.sourceImageKey, sourceKey)
+            XCTAssertEqual(state.destinationImageKey, destinationKey)
+            XCTAssertEqual(TransactionActivityPolicy.remoteImageURLs(for: row).map(\.absoluteString), [source, destination])
+            let hidden = TransactionActivityPolicy.state(for: row, phase: .pending, observedAt: row.createdAt,
+                revision: 1, delayed: false, showDetails: false,
+                preparedImageKey: { _ in XCTFail("Private state must not inspect images"); return sourceKey })
+            XCTAssertFalse(hidden.hasDetails)
+        }
+    }
+
     func testLimitOrderConfirmationCannotMasqueradeAsAFill() {
         for (status, phase) in [("pending", TransactionActivityState.Phase.pending), ("cancelling", .pending),
                                 ("filled", .filled), ("refunded", .refunded), ("cancelled", .cancelled), ("expired", .expired)] {

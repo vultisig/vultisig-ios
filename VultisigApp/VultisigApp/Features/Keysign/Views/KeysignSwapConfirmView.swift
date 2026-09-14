@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 import BigInt
 
 struct KeysignSwapConfirmView: View {
@@ -42,7 +43,7 @@ struct KeysignSwapConfirmView: View {
             separator
             getValueCell(
                 for: "provider",
-                with: viewModel.providerName,
+                with: viewModel.providerDisplayName,
                 showIcon: true
             )
 
@@ -53,6 +54,11 @@ struct KeysignSwapConfirmView: View {
 
             separator
             getNetworkFeeCell()
+
+            if !viewModel.priceImpactString.isEmpty {
+                separator
+                priceImpactRow
+            }
 
             if let totalFee = viewModel.getSwapTotalFee() {
                 separator
@@ -156,7 +162,7 @@ struct KeysignSwapConfirmView: View {
             Spacer()
 
             if showIcon {
-                Image(value)
+                Image(value, bundle: VultisigResources.bundle)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
@@ -169,6 +175,20 @@ struct KeysignSwapConfirmView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
             }
 
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var priceImpactRow: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(viewModel.priceImpactString)
+                .foregroundStyle(viewModel.priceImpactColor)
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -232,7 +252,7 @@ struct KeysignSwapConfirmView: View {
                                 .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
-                            Image(chain.logo)
+                            Image(chain.logo, bundle: VultisigResources.bundle)
                                 .resizable()
                                 .frame(width: 12, height: 12)
 

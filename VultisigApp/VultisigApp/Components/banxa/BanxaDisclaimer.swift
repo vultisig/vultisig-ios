@@ -5,6 +5,7 @@
 //  Created by Johnny Luo on 26/8/2025.
 //
 import SwiftUI
+import VultisigUIResources
 
 struct BanxaDisclaimer: View {
     let url: URL
@@ -27,7 +28,7 @@ struct BanxaDisclaimer: View {
     var content: some View {
         if !continueToBanxa {
             VStack(spacing: 8) {
-                Image("banxa-logo")
+                Image("banxa-logo", bundle: VultisigResources.bundle)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160)

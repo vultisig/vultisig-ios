@@ -1,4 +1,5 @@
 import Foundation
+import VultisigUIResources
 
 /// Versioned value-only contract. Never add wallet identity, hashes, full addresses or memos.
 struct TransactionActivityState: Codable, Hashable, Sendable {
@@ -61,12 +62,16 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     /// Exact identifiers for bundled art, never image bytes, URLs or ticker guesses.
     let sourceAssetID: String?
     let destinationAssetID: String?
+    /// Validated opaque keys of prepared shared-cache thumbnails.
+    let sourceImageKey: String?
+    let destinationImageKey: String?
 
     init(phase: Phase, observedAt: Date, revision: Int, updateDelayed: Bool = false,
          summary: String? = nil, network: String? = nil, showDetails: Bool = false,
          operation: Operation? = nil, recipient: String? = nil, fee: String? = nil,
          provider: String? = nil, submittedAt: Date? = nil,
-         sourceAssetID: String? = nil, destinationAssetID: String? = nil) {
+         sourceAssetID: String? = nil, destinationAssetID: String? = nil,
+         sourceImageKey: String? = nil, destinationImageKey: String? = nil) {
         self.schemaVersion = 1
         self.phase = phase
         self.observedAt = observedAt
@@ -85,18 +90,66 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         self.submittedAt = showDetails ? submittedAt : nil
         self.sourceAssetID = showDetails ? Self.bundledAssetID(for: sourceAssetID) : nil
         self.destinationAssetID = showDetails ? Self.bundledAssetID(for: destinationAssetID) : nil
+        self.sourceImageKey = showDetails ? Self.validatedImageKey(sourceImageKey) : nil
+        self.destinationImageKey = showDetails ? Self.validatedImageKey(destinationImageKey) : nil
     }
 
     var hasDetails: Bool {
         summary != nil || network != nil || operation != nil || recipient != nil
             || fee != nil || provider != nil || submittedAt != nil
             || sourceAssetID != nil || destinationAssetID != nil
+            || sourceImageKey != nil || destinationImageKey != nil
     }
 
-    /// Allowlisting bounds the payload and prevents remote or arbitrary bundle lookups.
+    /// Generated catalog membership prevents remote or arbitrary bundle lookups.
     static func bundledAssetID(for logo: String?) -> String? {
-        guard let logo, ["btc", "eth", "usdc", "usdt", "bsc", "solana"].contains(logo) else { return nil }
+        guard let logo, VultisigResources.containsImage(named: logo) else { return nil }
         return logo
+    }
+
+    static func validatedImageKey(_ key: String?) -> String? {
+        guard let key, key.utf8.count == 64,
+              key.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else { return nil }
+        return key
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case phase
+        case observedAt
+        case revision
+        case updateDelayed
+        case summary
+        case network
+        case operation
+        case recipient
+        case fee
+        case provider
+        case submittedAt
+        case sourceAssetID
+        case destinationAssetID
+        case sourceImageKey
+        case destinationImageKey
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
+        phase = try values.decode(Phase.self, forKey: .phase)
+        observedAt = try values.decode(Date.self, forKey: .observedAt)
+        revision = try values.decode(Int.self, forKey: .revision)
+        updateDelayed = try values.decode(Bool.self, forKey: .updateDelayed)
+        summary = try values.decodeIfPresent(String.self, forKey: .summary)
+        network = try values.decodeIfPresent(String.self, forKey: .network)
+        operation = try values.decodeIfPresent(Operation.self, forKey: .operation)
+        recipient = try values.decodeIfPresent(String.self, forKey: .recipient)
+        fee = try values.decodeIfPresent(String.self, forKey: .fee)
+        provider = try values.decodeIfPresent(String.self, forKey: .provider)
+        submittedAt = try values.decodeIfPresent(Date.self, forKey: .submittedAt)
+        sourceAssetID = Self.bundledAssetID(for: try values.decodeIfPresent(String.self, forKey: .sourceAssetID))
+        destinationAssetID = Self.bundledAssetID(for: try values.decodeIfPresent(String.self, forKey: .destinationAssetID))
+        sourceImageKey = Self.validatedImageKey(try values.decodeIfPresent(String.self, forKey: .sourceImageKey))
+        destinationImageKey = Self.validatedImageKey(try values.decodeIfPresent(String.self, forKey: .destinationImageKey))
     }
 
     /// Scalar-wise byte bounding also handles a single huge combining grapheme.

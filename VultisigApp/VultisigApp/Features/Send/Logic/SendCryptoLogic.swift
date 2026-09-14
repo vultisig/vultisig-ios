@@ -64,8 +64,9 @@ enum SendCryptoLogic {
 
     /// Existential deposit for the coin's chain, or `.zero` for chains that
     /// don't reap. Scoped by `chain`, NOT `chainType`: Bittensor (TAO) shares
-    /// `chainType == .Polkadot` with DOT but signs `transfer_allow_death`, so it
-    /// permits full-balance sends and has no enforced ED here.
+    /// `chainType == .Polkadot` with DOT and, like DOT, now defaults to signing
+    /// `transfer_keep_alive` (see `BittensorHelper`), so it reserves its own
+    /// 500-rao ED here rather than DOT's.
     ///
     /// XRP deliberately reserves nothing here: its `rawBalance` is already the
     /// reserve-net available balance — owner-aware, computed live in
@@ -77,20 +78,32 @@ enum SendCryptoLogic {
         switch coin.chain {
         case .polkadot:
             return PolkadotHelper.defaultExistentialDeposit
+        case .bittensor:
+            return BittensorHelper.existentialDeposit
         default:
             return .zero
         }
     }
 
-    /// Polkadot has an existential deposit: the chain reaps accounts whose
-    /// remaining balance falls below it (and the app signs
-    /// `transfer_keep_alive` on DOT, which the chain rejects outright when it
-    /// would reap the sender). Other chains never reap — XRPL included: its
-    /// reserve is a spending floor, not a deletion threshold, and it is
-    /// already netted out of `rawBalance`, so for XRP "would drop below the
-    /// reserve" is exactly `amount + fee > rawBalance`, which the
+    /// Polkadot and Bittensor both have an existential deposit: the chain
+    /// reaps accounts whose remaining balance falls below it, and both now
+    /// default to signing `transfer_keep_alive`, which the chain rejects
+    /// outright when it would reap the sender. Other chains never reap — XRPL
+    /// included: its reserve is a spending floor, not a deletion threshold,
+    /// and it is already netted out of `rawBalance`, so for XRP "would drop
+    /// below the reserve" is exactly `amount + fee > rawBalance`, which the
     /// amount-exceeded checks block. Returns true when the requested send
     /// would leave the *sender* below the existential deposit.
+    ///
+    /// A remainder of exactly zero counts as reaped, not safe: `transfer_
+    /// keep_alive` requires the resulting balance to clear the ED, and zero
+    /// never does (ED is always positive here). `computeMaxAmount` already
+    /// reserves the ED on top of the fee, so a MAX send never lands here; a
+    /// manually typed `balance − fee` amount is what this guards — without
+    /// it, that amount passes validation and fails on-chain post-ceremony,
+    /// with the fee already burned. A negative remainder (insufficient
+    /// balance) is caught earlier by the amount-exceeded check at both call
+    /// sites, so it never reaches here in practice.
     static func canBeReaped(coin: Coin, amount: String, gas: BigInt) -> Bool {
         let existentialDeposit = existentialDeposit(for: coin)
         guard existentialDeposit > .zero else { return false }
@@ -99,7 +112,7 @@ enum SendCryptoLogic {
         let totalTransactionCost = amountInRaw(coin: coin, amount: amount) + gas
         let remainingBalance = totalBalance - totalTransactionCost
 
-        return remainingBalance > .zero && remainingBalance < existentialDeposit
+        return remainingBalance < existentialDeposit
     }
 
     /// Some chains enforce a protocol minimum value on every output (e.g.
@@ -168,11 +181,11 @@ enum SendCryptoLogic {
             maxValue = terraClassicMaxValue(coin: coin, baseGasFee: fee)
         } else {
             // Reserve the existential deposit on chains that reap the sender (DOT
-            // signs `transfer_keep_alive`, which fails outright if the send would
-            // drop the sender below ED). Reserved on top of the fee so max-send
-            // settles at `balance − fee − ED`. Zero for every other chain:
-            // Bittensor/TAO signs `transfer_allow_death`, and XRP's rawBalance
-            // is already reserve-net, so both settle at `balance − fee`.
+            // and Bittensor/TAO both sign `transfer_keep_alive`, which fails
+            // outright if the send would drop the sender below ED). Reserved on
+            // top of the fee so max-send settles at `balance − fee − ED`. Zero
+            // for every other chain: XRP's rawBalance is already reserve-net, so
+            // it settles at `balance − fee`.
             maxValue = coin.getMaxValue(fee + existentialDeposit(for: coin))
         }
         let digits = coin.decimals > 8 ? 8 : coin.decimals

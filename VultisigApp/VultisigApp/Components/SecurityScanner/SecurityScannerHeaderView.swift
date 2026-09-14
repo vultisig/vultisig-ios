@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SecurityScannerHeaderView: View {
     let state: SecurityScannerState
@@ -61,7 +62,7 @@ struct SecurityScannerHeaderView: View {
     }
 
     func providerImage(_ provider: String) -> some View {
-        Image(provider)
+        Image(provider, bundle: VultisigResources.bundle)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .tint(Theme.colors.textSecondary)

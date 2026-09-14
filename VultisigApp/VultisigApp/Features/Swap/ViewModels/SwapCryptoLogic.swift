@@ -436,7 +436,7 @@ enum SwapCryptoLogic {
 
     static func swapFeeString(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> String {
         if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            return evmFee.formatToFiat(includeCurrencySymbol: true)
+            return evmFee.formatToFiatForFee(includeCurrencySymbol: true)
         }
 
         guard let inboundFee = inboundFeeDecimal(quote: quote, toCoin: toCoin), !inboundFee.isZero else {
@@ -444,7 +444,7 @@ enum SwapCryptoLogic {
         }
 
         let inboundFeeRaw = toCoin.raw(for: inboundFee)
-        return toCoin.fiat(value: inboundFeeRaw).formatToFiat(includeCurrencySymbol: true)
+        return toCoin.fiat(value: inboundFeeRaw).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     static func swapGasString(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, fee: BigInt) -> String {
@@ -472,7 +472,7 @@ enum SwapCryptoLogic {
     }
 
     static func approveFeeString(feeCoin: Coin, fee: BigInt) -> String {
-        feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
+        feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     static func isApproveFeeZero(fee: BigInt) -> Bool {
@@ -490,7 +490,7 @@ enum SwapCryptoLogic {
         let networkFee = feeCoin.fiat(gas: fee)
         let affiliateFee = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
         let outboundFee = outboundFeeFiat(quote: quote, toCoin: toCoin)
-        return (networkFee + affiliateFee + outboundFee).formatToFiat(includeCurrencySymbol: true)
+        return (networkFee + affiliateFee + outboundFee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: limit-order network fee
@@ -511,7 +511,7 @@ enum SwapCryptoLogic {
     /// fee cell's fiat (`approveFeeString`). Empty when no estimate is available.
     static func limitNetworkFeeFiat(feeCoin: Coin, fee: BigInt) -> String {
         guard fee > 0 else { return .empty }
-        return feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
+        return feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: misc
@@ -557,7 +557,7 @@ enum SwapCryptoLogic {
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
-        return (net + discounts.total).formatToFiat(includeCurrencySymbol: true)
+        return (net + discounts.total).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     /// Whether the "Vultisig Fee" affiliate row should render. Every real market
@@ -592,8 +592,11 @@ enum SwapCryptoLogic {
     static func affiliateFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
         guard let quote else { return .zero }
         switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q):
             let feeDecimal = q.fees.affiliate.toDecimal() / pow(10, 8)
+            return toCoin.fiat(decimal: feeDecimal)
+        case let .mayachain(q):
+            let feeDecimal = q.fees.affiliate.toDecimal() / toCoin.thorswapMultiplier
             return toCoin.fiat(decimal: feeDecimal)
         case .oneinch, .kyberswap:
             let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
@@ -649,8 +652,10 @@ enum SwapCryptoLogic {
     static func outboundFeeFiat(quote: SwapQuote?, toCoin: Coin) -> Decimal {
         guard let quote else { return .zero }
         switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q):
             return toCoin.fiat(decimal: q.fees.outbound.toDecimal() / pow(10, 8))
+        case let .mayachain(q):
+            return toCoin.fiat(decimal: q.fees.outbound.toDecimal() / toCoin.thorswapMultiplier)
         default:
             return .zero
         }
@@ -660,7 +665,7 @@ enum SwapCryptoLogic {
         guard let quote else { return .empty }
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
-            return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiat(includeCurrencySymbol: true)
+            return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiatForFee(includeCurrencySymbol: true)
         default:
             return .empty
         }
@@ -803,7 +808,14 @@ enum SwapCryptoLogic {
     // MARK: - Price impact
 
     static func priceImpactString(quote: SwapQuote?) -> String {
-        guard let impact = quote?.priceImpact else { return .empty }
+        priceImpactString(impact: quote?.priceImpact)
+    }
+
+    /// Shared by the initiator (live quote) and the co-signer (carried
+    /// `slippage_bps`) so the two verify screens cannot drift in wording or
+    /// quality band. `.empty` for an unknown impact — callers hide the row.
+    static func priceImpactString(impact: Decimal?) -> String {
+        guard let impact else { return .empty }
         // THORChain returns positive slippage bps; we negate for consistent display.
         let displayImpact = -impact
         let formatter = NumberFormatter()
@@ -826,7 +838,12 @@ enum SwapCryptoLogic {
     }
 
     static func priceImpactColor(quote: SwapQuote?) -> Color {
-        guard let impact = quote?.priceImpact else { return Theme.colors.textSecondary }
+        priceImpactColor(impact: quote?.priceImpact)
+    }
+
+    /// Colour bands for `priceImpactString(impact:)`, shared for the same reason.
+    static func priceImpactColor(impact: Decimal?) -> Color {
+        guard let impact else { return Theme.colors.textSecondary }
         let displayImpact = -impact
 
         if displayImpact > -0.01 {

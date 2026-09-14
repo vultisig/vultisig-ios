@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import VultisigUIResources
 
 enum TransactionActivityPolicy {
     static let nativeSourceProviderKind = "nativeSource"
@@ -96,7 +97,9 @@ enum TransactionActivityPolicy {
     }
 
     static func state(for row: TransactionHistoryData, phase: TransactionActivityState.Phase,
-                      observedAt: Date, revision: Int, delayed: Bool, showDetails: Bool) -> TransactionActivityState {
+                      observedAt: Date, revision: Int, delayed: Bool, showDetails: Bool,
+                      preparedImageKey: (String) -> String? = { _ in nil }) -> TransactionActivityState {
+        let destinationLogo = destinationLogo(for: row)
         let hasDestination = row.toCoinTicker?.isEmpty == false
         let summary = (row.type == .swap || row.type == .limit) && hasDestination
             ? "\(row.amountCrypto) → \(row.toCoinTicker ?? "")" : row.amountCrypto
@@ -107,9 +110,26 @@ enum TransactionActivityPolicy {
             recipient: row.type == .send ? row.toAddress : nil,
             fee: row.feeCrypto.isEmpty ? nil : row.feeCrypto,
             provider: row.type == .swap ? row.swapProvider : nil, submittedAt: row.createdAt,
-            sourceAssetID: row.coinLogo, destinationAssetID: row.type == .swap ? row.toCoinLogo : nil
+            sourceAssetID: row.coinLogo, destinationAssetID: destinationLogo,
+            sourceImageKey: showDetails ? preparedImageKey(row.coinLogo) : nil,
+            destinationImageKey: showDetails ? destinationLogo.flatMap(preparedImageKey) : nil
         )
     }
+
+    static func destinationLogo(for row: TransactionHistoryData) -> String? {
+        row.type == .swap || row.type == .limit ? row.toCoinLogo : nil
+    }
+
+    static func remoteImageURLs(for row: TransactionHistoryData) -> [URL] {
+        var urls: [URL] = []
+        for logo in [row.coinLogo, destinationLogo(for: row)].compactMap({ $0 }) {
+            guard let url = URL(string: logo), RemoteImageCache.key(for: url) != nil,
+                  !urls.contains(url) else { continue }
+            urls.append(url)
+        }
+        return urls
+    }
+
 }
 
 /// Value events are emitted only after successful saves, never from a view's appearance.

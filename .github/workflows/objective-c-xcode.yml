@@ -38,6 +38,9 @@ jobs:
         # Idempotent: skip `brew install` if xcodegen is already on the runner.
         run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
 
+      - name: Check generated image resources
+        run: python3 scripts/generate-image-resources.py --check
+
       - name: Generate Xcode project
         run: make generate
 
@@ -107,6 +110,9 @@ jobs:
 
       - name: Install XcodeGen
         run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+
+      - name: Check generated image resources
+        run: python3 scripts/generate-image-resources.py --check
 
       - name: Generate Xcode project
         run: make generate

@@ -40,7 +40,7 @@ struct TronResourcesCardView: View {
                 title: NSLocalizedString("tronEnergy", comment: "Energy"),
                 icon: "bolt.fill",
                 available: availableEnergy,
-                total: max(totalEnergy, 1),
+                total: totalEnergy,
                 accentColor: Theme.colors.alertWarning,
                 unit: ""
             )

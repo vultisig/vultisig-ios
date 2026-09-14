@@ -14,13 +14,6 @@ struct SettingsMainScreen: View {
 
     @StateObject var referredViewModel = ReferredViewModel()
 
-    var passcodeService: PasscodeService = .shared
-
-    /// Mirrors `PasscodeService.isSet`, which is actor-isolated and so cannot be
-    /// read from `body`. Refreshed on appear, the same way `ManagePasscodeScreen`
-    /// does it.
-    @State private var passcodeIsSet = false
-
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showReferralBannerSheet = false
@@ -38,15 +31,6 @@ struct SettingsMainScreen: View {
         #endif
         generalOptions.append(.addressBook)
 
-        // Hidden until a tester opts in from Settings → Advanced, so merging
-        // this layer does not put the feature in front of anyone. Shown anyway
-        // once a passcode exists, otherwise turning the flag back off would
-        // strand someone inside a passcode with no screen left to disable it.
-        let securityGroups: [SettingsOptionGroup] =
-            settingsViewModel.passcodeFeatureEnabled || passcodeIsSet
-            ? [SettingsOptionGroup(title: "security", options: [.managePasscode])]
-            : []
-
         return [
             SettingsOptionGroup(
                 title: "vault",
@@ -60,7 +44,7 @@ struct SettingsMainScreen: View {
                 options: generalOptions
             )
         ]
-        + securityGroups
+        + [SettingsOptionGroup(title: "security", options: [.managePasscode])]
         + [
         SettingsOptionGroup(
             title: "support",
@@ -103,7 +87,6 @@ struct SettingsMainScreen: View {
                 }
             }
         }
-        .task { passcodeIsSet = await passcodeService.isSet }
         .accessibilityIdentifier(AccessibilityID.Settings.container)
         .screenTitle("settings".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))

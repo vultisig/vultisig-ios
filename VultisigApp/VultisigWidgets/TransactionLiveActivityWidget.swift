@@ -130,9 +130,9 @@ struct TransactionActivityCard: View {
         HStack(spacing: 10) {
             if state.summary != nil {
                 HStack(spacing: -8) {
-                    tokenAvatar(state.sourceAssetID, size: state.operation == .swap ? 34 : 40)
-                    if state.operation == .swap {
-                        tokenAvatar(state.destinationAssetID, size: 34)
+                    tokenAvatar(state.sourceAssetID, imageKey: state.sourceImageKey, size: hasDestination ? 34 : 40)
+                    if hasDestination {
+                        tokenAvatar(state.destinationAssetID, imageKey: state.destinationImageKey, size: 34)
                     }
                 }
                 .accessibilityHidden(true)
@@ -165,12 +165,18 @@ struct TransactionActivityCard: View {
         .frame(minHeight: 40)
     }
 
-    private func tokenAvatar(_ assetID: String?, size: CGFloat) -> some View {
+    private var hasDestination: Bool { state.operation == .swap || state.operation == .limit }
+
+    private func tokenAvatar(_ assetID: String?, imageKey: String?, size: CGFloat) -> some View {
         ZStack {
             Circle().fill(WidgetTheme.activitySurface)
             if let safeID = TransactionActivityState.bundledAssetID(for: assetID),
-               let image = VultisigImage(rawValue: safeID) {
-                image.image.resizable().scaledToFit()
+               let image = VultisigResources.image(named: safeID) {
+                image.resizable().scaledToFit()
+            } else if let key = TransactionActivityState.validatedImageKey(imageKey),
+                      let data = SharedImageLoading.cache.data(forKey: key),
+                      let image = UIImage(data: data) {
+                Image(uiImage: image).resizable().scaledToFit()
             } else {
                 // A neutral asset glyph avoids assigning a known logo by ticker alone.
                 Image(systemName: "circle.hexagongrid.fill")

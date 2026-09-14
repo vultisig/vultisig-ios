@@ -24,4 +24,8 @@ struct GenericSwapPayload: Codable, Hashable {
     var swapFeeChain: String? = nil
     var swapFeeTokenId: String? = nil
     var swapFeeDecimals: Int? = nil
+
+    /// Route tag under `provider` — "NEAR", "CHAINFLIP", "GARDEN". nil for
+    /// aggregators that route directly and for senders predating the field.
+    var subProvider: String? = nil
 }
