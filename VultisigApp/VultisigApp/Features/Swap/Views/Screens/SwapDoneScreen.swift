@@ -75,8 +75,9 @@ struct SwapDoneScreen: View {
         // `TransactionHistoryItem` doesn't yet exist. Running
         // `recordTxHistory` from `.onAppear` (outer) racks up after the
         // inner appear, so the attach call missed and the `/track`
-        // poll never started. `storage.save` short-circuits on
-        // `exists(txHash:pubKeyECDSA:)`, so repeated re-inits are safe.
+        // poll never started. `storage.save` preserves an existing row's
+        // identity and tracking evidence, enriching only missing receipt values;
+        // repeated re-inits with unchanged values do not write again.
         Self.recordTxHistory(
             hash: hash,
             approveHash: approveHash,

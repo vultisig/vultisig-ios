@@ -45,6 +45,9 @@ struct TransactionHistoryTypePill: View {
             VultisigImage("clock-rotate-clockwise-3")
                 .resizable()
                 .frame(width: 12, height: 12)
+        case .transaction:
+            Image(systemName: "doc.text")
+                .font(Theme.fonts.caption12)
         case .trustLineActivation:
             // A trust line is a link between an account and an issuer, which is
             // what this row records — not a check mark, which is the approve
@@ -65,6 +68,8 @@ struct TransactionHistoryTypePill: View {
             return "approve".localized
         case .limit:
             return "limitSwap.typePill".localized
+        case .transaction:
+            return "transaction".localized
         case .trustLineActivation:
             return "rippleTrustLineTypePill".localized
         }

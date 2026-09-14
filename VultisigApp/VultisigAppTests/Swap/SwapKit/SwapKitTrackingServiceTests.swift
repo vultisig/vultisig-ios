@@ -20,7 +20,123 @@ import XCTest
 @MainActor
 final class SwapKitTrackingServiceTests: XCTestCase {
 
+    func testDonePollerDeliversLatestStatusAfterSynchronousBurst() async throws {
+        let service = SwapKitTrackingService(httpClient: StubHTTPClient(), storage: FakeSwapTrackingStorage())
+        service.setActive(false)
+        let poller = SwapKitPoller(txHash: "0xbroadcast", sourceChain: .ethereum, tracker: service, attach: {})
+        defer { poller.stop(); service.stopAllTracking() }
+        let ready = expectation(description: "initial status delivered")
+        let completed = expectation(description: "latest terminal status delivered")
+        var received: [TransactionStatus] = []
+        poller.start { status in
+            received.append(status)
+            if received.count == 1 { ready.fulfill() }
+            if status == .confirmed { completed.fulfill() }
+        }
+        await fulfillment(of: [ready], timeout: 2)
+
+        // No suspension between writes: the consumer cannot request another
+        // value here. This crashed the old objectWillChange.values subscription.
+        for _ in 0..<100 {
+            service.start(tx: Self.makeSwapKitTx(latestTrackingStatus: "swapping"))
+        }
+        service.start(tx: Self.makeSwapKitTx(latestTrackingStatus: "completed"))
+        await fulfillment(of: [completed], timeout: 2)
+        XCTAssertEqual(received.last, .confirmed)
+    }
+
+    func testDonePollerStopDiscardsQueuedStatusAndRestartUsesCurrentSnapshot() async throws {
+        let service = SwapKitTrackingService(httpClient: StubHTTPClient(), storage: FakeSwapTrackingStorage())
+        service.setActive(false)
+        let poller = SwapKitPoller(txHash: "0xbroadcast", sourceChain: .ethereum, tracker: service, attach: {})
+        defer { poller.stop(); service.stopAllTracking() }
+        let ready = expectation(description: "initial subscription ready")
+        let unexpected = expectation(description: "no old callbacks after stop")
+        unexpected.isInverted = true
+        var initialDelivered = false
+        poller.start { _ in
+            if initialDelivered { unexpected.fulfill() } else {
+                initialDelivered = true
+                ready.fulfill()
+            }
+        }
+        await fulfillment(of: [ready], timeout: 2)
+        service.start(tx: Self.makeSwapKitTx(latestTrackingStatus: "completed"))
+        poller.stop()
+        await fulfillment(of: [unexpected], timeout: 0.1)
+
+        let restarted = expectation(description: "restart receives latest cache")
+        poller.start { status in
+            XCTAssertEqual(status, .confirmed)
+            restarted.fulfill()
+        }
+        poller.start { _ in XCTFail("duplicate start installed a second subscription") }
+        await fulfillment(of: [restarted], timeout: 2)
+    }
+
     // MARK: - State-transition coverage
+
+    func testOneShotDiscardsResponseWhenBackgroundActivityBecomesIneligible() async {
+        for shouldFail in [false, true] {
+            let client = StubHTTPClient()
+            let storage = FakeSwapTrackingStorage()
+            if shouldFail {
+                client.shouldThrow = URLError(.notConnectedToInternet)
+            } else {
+                client.responses = [Self.makeResponse(status: .completed, trackingStatus: "completed")]
+            }
+            let service = SwapKitTrackingService(httpClient: client, storage: storage)
+            var checks = 0
+            await service.forceRefresh(tx: Self.makeSwapKitTx(), shouldApply: {
+                checks += 1
+                return checks == 1
+            })
+            XCTAssertEqual(client.requestCount, 1)
+            XCTAssertTrue(storage.observations.isEmpty)
+            XCTAssertEqual(storage.touchCount, 0)
+            XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+        }
+    }
+
+    func testSparseBackgroundFailuresDoNotExhaustSuspendedPoller() async {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        http.shouldThrow = URLError(.notConnectedToInternet)
+        var now = Date()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { now })
+        let tx = Self.makeSwapKitTx()
+        service.setActive(false)
+        service.start(tx: tx)
+        let initialStatus = service.uiStatusByTxHash[tx.txHash]
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        now = now.addingTimeInterval(3600)
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        XCTAssertEqual(storage.touchCount, 2)
+        XCTAssertTrue(storage.observations.isEmpty)
+        XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], initialStatus)
+        // The ordinary refresh still gets its initial failure window.
+        await service.forceRefresh(tx: tx)
+        XCTAssertTrue(storage.observations.isEmpty)
+        service.stopAllTracking()
+    }
+
+    func testBackgroundCompletionRemovesPausedPollerBeforeForegroundResume() async {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        http.responses = [Self.makeResponse(status: .completed, trackingStatus: "completed")]
+        let service = SwapKitTrackingService(httpClient: http, storage: storage)
+        service.setActive(false)
+        let tx = Self.makeSwapKitTx()
+        service.start(tx: tx)
+        await service.forceRefresh(tx: tx, backgroundObservation: true)
+        XCTAssertEqual(service.trackedSwapCountForTesting, 0)
+        service.setActive(true)
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(http.requestCount, 1)
+        XCTAssertEqual(storage.observations.count, 1)
+        XCTAssertEqual(storage.observations.first?.uiStatus, .completed)
+        service.stopAllTracking()
+    }
 
     func testHappyPathTransitionsThroughFullSequence() async throws {
         let storage = FakeSwapTrackingStorage()

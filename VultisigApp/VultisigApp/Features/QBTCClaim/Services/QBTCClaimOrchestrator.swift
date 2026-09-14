@@ -52,17 +52,20 @@ final class QBTCClaimOrchestrator: ObservableObject {
     private let generateProof: GenerateProof
     private let runBtcRound: RunBtcRound
     private let pushTxHash: PushTxHash?
+    private let recordBroadcast: @MainActor (String, QBTCClaimRunInput) -> Void
 
     private let logger = Log.qbtc.other
 
     init(
         generateProof: @escaping GenerateProof,
         runBtcRound: @escaping RunBtcRound,
-        pushTxHash: PushTxHash? = nil
+        pushTxHash: PushTxHash? = nil,
+        recordBroadcast: @escaping @MainActor (String, QBTCClaimRunInput) -> Void = { _, _ in }
     ) {
         self.generateProof = generateProof
         self.runBtcRound = runBtcRound
         self.pushTxHash = pushTxHash
+        self.recordBroadcast = recordBroadcast
     }
 
     /// Resets to `.idle`. Call when the user dismisses an error and
@@ -159,6 +162,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
 
         let totalSats = input.utxos.reduce(UInt64(0)) { $0 + $1.amount }
         let uppercasedTxHash = txHash.uppercased()
+        recordBroadcast(uppercasedTxHash, input)
 
         // Best-effort propagation to the peer device — the co-signer's
         // join driver polls the relay for this hash after DKLS so its

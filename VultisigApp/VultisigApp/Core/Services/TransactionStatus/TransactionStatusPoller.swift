@@ -109,7 +109,13 @@ final class TransactionStatusPoller: ObservableObject {
                         checker: self.service,
                         txHash: txHash,
                         chain: chain,
-                        deadlineReached: elapsed >= config.maxWaitTime
+                        deadlineReached: elapsed >= config.maxWaitTime,
+                        createdAt: createdAt,
+                        onObservation: { [weak self] isPending in
+                            guard !Task.isCancelled else { return }
+                            self?.historyStorage.publishObservation(txHash: txHash, pubKeyECDSA: pubKeyECDSA,
+                                                                    chain: chain, isPending: isPending)
+                        }
                     )
 
                     // `stopAll()` (e.g. the global reset) cancels this task while
@@ -159,6 +165,9 @@ final class TransactionStatusPoller: ObservableObject {
         }
         activeTasks[txHash] = task
     }
+
+    /// Preserve the wallet balance-refresh signal for observations completed by native runtime.
+    func notifyTransactionCompleted() { completedTransactionCount += 1 }
 
     func stopPolling(txHash: String) {
         activeTasks[txHash]?.cancel()
@@ -227,6 +236,12 @@ final class TransactionStatusPoller: ObservableObject {
             && tx.swapTracking?.trackerOutage != true
     }
 
+    /// A just-broadcast hash can take a polling interval to reach the queried node.
+    /// Missing it during that grace period conveys neither freshness nor delay.
+    static func shouldReportNotFound(createdAt: Date, chain: Chain, now: Date = Date()) -> Bool {
+        now.timeIntervalSince(createdAt) >= ChainStatusConfig.config(for: chain).pollInterval
+    }
+
     /// Resolve one polling iteration. The chain lookup always happens before
     /// the client deadline is interpreted, including when a row is already old
     /// when the app opens.
@@ -234,7 +249,9 @@ final class TransactionStatusPoller: ObservableObject {
         checker: TransactionStatusChecking,
         txHash: String,
         chain: Chain,
-        deadlineReached: Bool
+        deadlineReached: Bool,
+        createdAt: Date = .distantPast,
+        onObservation: (Bool) -> Void = { _ in }
     ) async -> PollAction {
         do {
             let result = try await checker.checkTransactionStatus(txHash: txHash, chain: chain)
@@ -243,12 +260,17 @@ final class TransactionStatusPoller: ObservableObject {
                 return .complete(.successful, nil)
             case let .failed(reason):
                 return .complete(.error, reason)
-            case .notFound, .pending:
+            case .pending:
+                onObservation(true)
+                return deadlineReached ? .stop : .retry
+            case .notFound:
+                if shouldReportNotFound(createdAt: createdAt, chain: chain) { onObservation(false) }
                 return deadlineReached ? .stop : .retry
             }
         } catch is CancellationError {
             return .stop
         } catch {
+            onObservation(false)
             return deadlineReached ? .stop : .retry
         }
     }

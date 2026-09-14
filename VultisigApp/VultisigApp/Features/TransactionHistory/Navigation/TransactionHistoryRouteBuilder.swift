@@ -8,11 +8,12 @@ import SwiftUI
 struct TransactionHistoryRouteBuilder {
 
     @ViewBuilder
-    func buildListScreen(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) -> some View {
+    func buildListScreen(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?, initialTransactionID: UUID? = nil) -> some View {
         TransactionHistoryScreen(
             pubKeyECDSA: pubKeyECDSA,
             vaultName: vaultName,
-            chainFilter: chainFilter
+            chainFilter: chainFilter,
+            initialTransactionID: initialTransactionID
         )
     }
 }
