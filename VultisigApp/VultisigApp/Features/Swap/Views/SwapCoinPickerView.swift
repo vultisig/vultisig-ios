@@ -291,7 +291,7 @@ struct SwapCoinPickerView: View {
                     onSelect(chain: chain)
                 } label: {
                     HStack(spacing: 4) {
-                        Image(chain.logo, bundle: VultisigResources.bundle)
+                        VultisigImage(chain.logo)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 28)

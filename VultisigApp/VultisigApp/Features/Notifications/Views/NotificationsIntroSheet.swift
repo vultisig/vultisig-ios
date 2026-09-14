@@ -67,7 +67,7 @@ struct NotificationsIntroSheet: View {
 
     var welcomeContent: some View {
         VStack(spacing: 36) {
-            Image("notifications-intro", bundle: VultisigResources.bundle)
+            VultisigImage("notifications-intro")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: 270)

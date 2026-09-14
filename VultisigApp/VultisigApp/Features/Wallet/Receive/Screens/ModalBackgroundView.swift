@@ -36,7 +36,7 @@ struct ModalBackgroundView: View {
     }
 
     var magicPattern: some View {
-        Image("magic-pattern", bundle: VultisigResources.bundle)
+        VultisigImage("magic-pattern")
             .resizable()
             .scaledToFill()
             .opacity(0.2)

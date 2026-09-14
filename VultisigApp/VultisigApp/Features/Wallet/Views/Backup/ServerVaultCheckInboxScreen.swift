@@ -21,7 +21,7 @@ struct ServerVaultCheckInboxScreen: View {
             VStack {
                 Spacer()
                 VStack(spacing: 40) {
-                    Image("check-inbox", bundle: VultisigResources.bundle)
+                    VultisigImage("check-inbox")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 365)

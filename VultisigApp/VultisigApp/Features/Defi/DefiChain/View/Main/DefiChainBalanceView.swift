@@ -73,7 +73,7 @@ struct DefiChainBalanceView: View {
     @ViewBuilder
     var imageView: some View {
         if let defiBanner {
-            Image(defiBanner, bundle: VultisigResources.bundle)
+            VultisigImage(defiBanner)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 200, height: 200)
@@ -125,7 +125,7 @@ private struct DefiChainHeaderImageView: View {
     }
 
     var image: some View {
-        Image(name, bundle: VultisigResources.bundle)
+        VultisigImage(name)
             .resizable()
             .scaledToFit()
             .clipShape(Circle())

@@ -124,7 +124,7 @@ struct TronDashboardView: View {
                 Spacer()
 
                 // Logo on top of the rings
-                Image("tron", bundle: VultisigResources.bundle)
+                VultisigImage("tron")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 70, height: 70)
@@ -157,7 +157,7 @@ struct TronDashboardView: View {
         VStack(spacing: 16) {
             // Header: Logo + Title + Fiat Balance
             HStack(spacing: 12) {
-                Image("tron", bundle: VultisigResources.bundle)
+                VultisigImage("tron")
                     .resizable()
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())

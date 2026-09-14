@@ -81,7 +81,7 @@ private extension VultDiscountTiersScreen {
                 endPoint: .topTrailing
             )
             .overlay(
-                Image("vult-tiers-hero-coins", bundle: VultisigResources.bundle)
+                VultisigImage("vult-tiers-hero-coins")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 169)

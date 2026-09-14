@@ -203,7 +203,7 @@ struct ReferralMainScreen: View {
                 router.navigate(to: ReferralRoute.vaultSelection(selectedVaultViewModel: vaultSelectionViewModel))
             } label: {
                 HStack(spacing: 10) {
-                    Image("vault-icon", bundle: VultisigResources.bundle)
+                    VultisigImage("vault-icon")
                         .resizable()
                         .aspectRatio(1, contentMode: .fit)
                         .frame(width: 28)

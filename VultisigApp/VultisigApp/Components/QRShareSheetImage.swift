@@ -182,7 +182,7 @@ struct QRShareSheetImage: View {
 
     var signature: some View {
         VStack(spacing: 8) {
-            Image("vultisig-logo", bundle: VultisigResources.bundle)
+            VultisigImage("vultisig-logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 33, height: 33)
@@ -214,7 +214,7 @@ private extension QRShareSheetImage {
 
 #Preview {
     QRShareSheetImage(
-        image: Image("vultisig-logo", bundle: VultisigResources.bundle),
+        image: VultisigImage("vultisig-logo").image,
         type: .Send,
         vaultName: Vault.example.name,
         amount: "100 USDC",

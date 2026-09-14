@@ -13,7 +13,7 @@ struct ChainIconView: View {
     let size: CGFloat
 
     var body: some View {
-        Image(icon, bundle: VultisigResources.bundle)
+        VultisigImage(icon)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: size)

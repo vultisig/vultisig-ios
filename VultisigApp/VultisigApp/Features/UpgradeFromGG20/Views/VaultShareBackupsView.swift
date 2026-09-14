@@ -21,7 +21,7 @@ struct VaultShareBackupsView: View {
     }
 
     var image: some View {
-        Image("VaultShareBackupsImage", bundle: VultisigResources.bundle)
+        VultisigImage("VaultShareBackupsImage")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 512, maxHeight: 512)

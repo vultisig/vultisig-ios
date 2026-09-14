@@ -97,7 +97,7 @@ struct ForegroundNotificationBannerView: View {
                 endPoint: UnitPoint(x: 0.5, y: 1)
             )
 
-            Image("magic-pattern", bundle: VultisigResources.bundle)
+            VultisigImage("magic-pattern")
                 .resizable()
                 .scaledToFill()
                 .frame(maxHeight: 200)

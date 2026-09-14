@@ -74,7 +74,7 @@ struct QBTCClaimSelectionView: View {
             // the right of the card. Bound to the existing QBTC chain
             // asset; gracefully no-ops if the asset hasn't shipped yet.
             ZStack {
-                Image("qbtc", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 71, height: 71)

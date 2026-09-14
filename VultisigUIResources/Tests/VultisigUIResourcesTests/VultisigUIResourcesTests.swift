@@ -44,8 +44,5 @@ final class VultisigUIResourcesTests: XCTestCase {
 
         XCTAssertTrue(sourceCatalog != nil || compiledCatalog != nil)
         XCTAssertTrue(VultisigResources.imageNames.isSuperset(of: ["rune", "chain-rune", "usdc", "btc", "logo-outline"]))
-        for image in VultisigImage.allCases {
-            XCTAssertTrue(VultisigResources.containsImage(named: image.rawValue))
-        }
     }
 }

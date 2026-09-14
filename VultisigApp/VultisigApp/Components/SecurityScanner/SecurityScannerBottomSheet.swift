@@ -57,7 +57,7 @@ struct SecurityScannerBottomSheetContent: View {
                     Text("securityScannerPoweredBy".localized)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodySMedium)
-                    Image(securityScannerProvider, bundle: VultisigResources.bundle)
+                    VultisigImage(securityScannerProvider)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                 }

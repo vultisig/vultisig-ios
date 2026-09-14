@@ -33,7 +33,7 @@ struct HighlightedTextWithImage: View {
                     .font(font)
                     .foregroundStyle(.clear)
                     .overlay {
-                        Image(imageName, bundle: VultisigResources.bundle)
+                        VultisigImage(imageName)
                             .resizable()
                             .scaledToFill()
                             .mask(

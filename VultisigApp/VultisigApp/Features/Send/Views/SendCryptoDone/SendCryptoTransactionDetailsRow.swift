@@ -56,7 +56,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                 } else {
                     HStack(spacing: 2) {
                         if let icon {
-                            Image(icon, bundle: VultisigResources.bundle)
+                            VultisigImage(icon)
                                 .resizable()
                                 .frame(width: 16, height: 16)
                                 .cornerRadius(Theme.radius.pill)

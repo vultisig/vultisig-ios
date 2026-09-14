@@ -32,7 +32,7 @@ struct ReferralOnboardingBanner: View {
     }
 
     var image: some View {
-        Image("ReferralOnboardingBanner", bundle: VultisigResources.bundle)
+        VultisigImage("ReferralOnboardingBanner")
             .resizable()
             .frame(width: 240, height: 194)
             .padding(.bottom, 12)

@@ -40,7 +40,7 @@ struct ReferralSendOverviewView: View {
 
     var assetDetail: some View {
         HStack {
-            Image("rune", bundle: VultisigResources.bundle)
+            VultisigImage("rune")
                 .resizable()
                 .frame(width: 24, height: 24)
                 .cornerRadius(Theme.radius.pill)
@@ -105,7 +105,7 @@ struct ReferralSendOverviewView: View {
             Spacer()
 
             if let icon {
-                Image(icon, bundle: VultisigResources.bundle)
+                VultisigImage(icon)
                     .resizable()
                     .frame(width: 16, height: 16)
                     .cornerRadius(Theme.radius.pill)

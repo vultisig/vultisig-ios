@@ -55,7 +55,7 @@ struct SendCryptoAddressBookCell: View {
     var image: some View {
         ZStack {
             if let icon {
-                Image(icon, bundle: VultisigResources.bundle)
+                VultisigImage(icon)
                     .resizable()
             } else {
                 placeholderImage

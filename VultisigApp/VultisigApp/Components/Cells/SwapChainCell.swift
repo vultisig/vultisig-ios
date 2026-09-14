@@ -49,7 +49,7 @@ struct SwapChainCell: View {
     }
 
     var icon: some View {
-        Image(chain.logo, bundle: VultisigResources.bundle)
+        VultisigImage(chain.logo)
             .resizable()
             .frame(width: 32, height: 32)
     }

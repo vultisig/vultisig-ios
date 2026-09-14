@@ -20,7 +20,7 @@ struct SwapFromToChain: View {
     }
 
     var icon: some View {
-        Image(chain?.logo ?? "", bundle: VultisigResources.bundle)
+        VultisigImage(chain?.logo ?? "")
             .resizable()
             .frame(width: 16, height: 16)
     }
