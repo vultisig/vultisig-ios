@@ -10,6 +10,10 @@ final class SwapAmountInputTests: XCTestCase {
         }
     }
 
+    func testSubCentRateKeepsDecimalExponentPrecision() {
+        XCTAssertEqual(context(rate: 0.00001234)?.rate, Decimal(string: "0.00001234"))
+    }
+
     func testFiatConversionTruncatesDownToBaseUnits() {
         var input = makeInput(rate: 2.5)
         XCTAssertEqual(input.editFiat("10", locale: locale), "4")
