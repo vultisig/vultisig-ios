@@ -10,8 +10,13 @@ import SwiftUI
 struct CircularProgressIndicator: View {
     var size: CGFloat = 24
     var lineWidth: CGFloat = 2
+    #if WIDGET_EXTENSION
+    var tint: Color = WidgetTheme.secondaryText
+    #else
     var tint: Color = Theme.colors.textSecondary
+    #endif
     var speed: Double = 1.0 // <1 slower, >1 faster
+    var isAnimating = true
 
     // Material-ish constants
     private let rotationDuration: Double = 1.332  // seconds per rotation
@@ -24,39 +29,40 @@ struct CircularProgressIndicator: View {
     @State private var startTime = Date()
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0/60.0, paused: false)) { context in
-            let now = context.date
-            let elapsed = max(0, now.timeIntervalSince(startTime)) / max(speed, 0.0001)
-
-            // Per-rotation timing
-            let rDur = rotationDuration
-            let rIndex = floor(elapsed / rDur)                   // 0,1,2...
-            let localT = elapsed - rIndex * rDur                 // 0..rDur
-            let f = localT / rDur                                // 0..1
-
-            // Base rotation within this rotation (always forward)
-            let base = f * baseRotationAngle
-
-            // Head moves in first half, tail in second half (both strictly forward)
-            let headPhase = min(f * 2, 1)                        // 0→1 over first half
-            let tailPhase = max((f - 0.5) * 2, 0)                // 0→1 over second half
-
-            let head = smooth(headPhase) * jumpRotationAngle     // degrees forward
-            let tail = smooth(tailPhase) * jumpRotationAngle     // degrees forward
-
-            // Arc
-            let sweep = max(0.1, head - tail)                    // length; stays > 0
-            let rotationOffset = (rIndex.truncatingRemainder(dividingBy: Double(rotationsPerCycle)) * rotationAngleOffset)
-                .truncatingRemainder(dividingBy: 360)
-
-            let startDeg = startAngleOffset + rotationOffset + base + tail
-
-            Arc(startAngle: startDeg, sweep: sweep)
-                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .frame(width: size, height: size)
-                .accessibilityLabel("Loading")
+        if isAnimating {
+            TimelineView(.animation(minimumInterval: 1.0/60.0, paused: false)) { context in
+                let elapsed = max(0, context.date.timeIntervalSince(startTime)) / max(speed, 0.0001)
+                indicator(elapsed: elapsed)
+            }
+            .onAppear { startTime = Date() }
+        } else {
+            // A visible arc for surfaces that cannot run a continuous SwiftUI timeline.
+            indicator(elapsed: rotationDuration / 4)
         }
-        .onAppear { startTime = Date() }
+    }
+
+    private func indicator(elapsed: TimeInterval) -> some View {
+        // Per-rotation timing
+        let rDur = rotationDuration
+        let rIndex = floor(elapsed / rDur)
+        let localT = elapsed - rIndex * rDur
+        let f = localT / rDur
+        let base = f * baseRotationAngle
+
+        // Head moves in first half, tail in second half (both strictly forward).
+        let headPhase = min(f * 2, 1)
+        let tailPhase = max((f - 0.5) * 2, 0)
+        let head = smooth(headPhase) * jumpRotationAngle
+        let tail = smooth(tailPhase) * jumpRotationAngle
+        let sweep = max(0.1, head - tail)
+        let rotationOffset = (rIndex.truncatingRemainder(dividingBy: Double(rotationsPerCycle)) * rotationAngleOffset)
+            .truncatingRemainder(dividingBy: 360)
+        let startDeg = startAngleOffset + rotationOffset + base + tail
+
+        return Arc(startAngle: startDeg, sweep: sweep)
+            .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+            .frame(width: size, height: size)
+            .accessibilityLabel("Loading")
     }
 
     // Smooth easing (close to cubic-bezier(0.4,0,0.2,1), but simpler)

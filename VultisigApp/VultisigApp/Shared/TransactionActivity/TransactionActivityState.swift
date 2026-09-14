@@ -15,19 +15,24 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
             }
         }
 
-        var localizationKey: String {
-            if self == .sourceConfirmedOnly { return "transactionActivitySourceConfirmed" }
-            return "transactionActivity" + rawValue.prefix(1).uppercased() + rawValue.dropFirst()
-        }
-
-        var symbol: String {
+        var displayStatus: DisplayStatus {
             switch self {
-            case .confirmed, .completed, .filled, .sourceConfirmedOnly: "checkmark.circle.fill"
-            case .failed: "exclamationmark.circle.fill"
-            case .refunded, .partiallyRefunded: "arrow.uturn.backward.circle"
-            case .cancelled: "xmark.circle"
-            case .expired, .trackingEnded: "clock"
-            default: "arrow.triangle.2.circlepath"
+            case .confirmed, .completed, .filled: .success
+            case .failed, .refunded, .partiallyRefunded, .cancelled, .expired: .failed
+            // Source-only confirmation and tracking expiry do not prove swap settlement.
+            case .submitted, .pending, .sourceConfirmed, .swapping, .sourceConfirmedOnly, .trackingEnded: .inProgress
+            }
+        }
+    }
+
+    enum DisplayStatus: CaseIterable, Hashable, Sendable {
+        case inProgress, success, failed
+
+        var localizationKey: String {
+            switch self {
+            case .inProgress: "inProgress"
+            case .success: "success"
+            case .failed: "transactionActivityFailed"
             }
         }
     }

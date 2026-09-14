@@ -109,9 +109,24 @@ final class TransactionActivityStateTests: XCTestCase {
         XCTAssertFalse(state.hasDetails)
     }
 
+    func testDisplayStatusesRequireVerifiedSettlementAndKeepWirePhasesIntact() {
+        let outcomes: [TransactionActivityState.DisplayStatus: [TransactionActivityState.Phase]] = [
+            .inProgress: [.submitted, .pending, .sourceConfirmed, .swapping, .sourceConfirmedOnly, .trackingEnded],
+            .success: [.confirmed, .completed, .filled],
+            .failed: [.failed, .refunded, .partiallyRefunded, .cancelled, .expired]
+        ]
+        XCTAssertEqual(outcomes.values.flatMap { $0 }.count, TransactionActivityState.Phase.allCases.count)
+        for (display, phases) in outcomes {
+            for phase in phases { XCTAssertEqual(phase.displayStatus, display) }
+        }
+        XCTAssertTrue(TransactionActivityState.Phase.sourceConfirmedOnly.isTerminal)
+        XCTAssertTrue(TransactionActivityState.Phase.trackingEnded.isTerminal)
+        XCTAssertFalse(TransactionActivityState.Phase.swapping.isTerminal)
+    }
+
     func testEveryPhaseHasLocalizedCopy() {
         for phase in TransactionActivityState.Phase.allCases {
-            XCTAssertNotEqual(phase.localizationKey.localized, phase.localizationKey)
+            XCTAssertNotEqual(phase.displayStatus.localizationKey.localized, phase.displayStatus.localizationKey)
         }
     }
 

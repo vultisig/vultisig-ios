@@ -55,42 +55,37 @@ private struct TransactionActivityStatus: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
-    private var delayed: Bool { !state.phase.isTerminal && (isStale || state.updateDelayed) }
-    private var statusLabel: Text {
-        let phase = Text(LocalizedStringKey(state.phase.localizationKey))
-        return delayed ? phase + Text(" · ") + Text("transactionActivityDelayed") : phase
+    private var status: TransactionActivityState.DisplayStatus { state.phase.displayStatus }
+    private var animates: Bool {
+        !reduceMotion && !isLuminanceReduced && !isStale && !state.updateDelayed && !state.phase.isTerminal
     }
-    private var symbolName: String { delayed ? "clock" : state.phase.symbol }
-    private var animates: Bool { !reduceMotion && !isLuminanceReduced && !delayed && !state.phase.isTerminal }
     private var color: Color {
-        if delayed { return WidgetTheme.warning }
-        switch state.phase {
-        case .confirmed, .completed, .filled: return WidgetTheme.positive
-        case .failed: return WidgetTheme.negative
-        case .refunded, .partiallyRefunded: return WidgetTheme.warning
-        case .cancelled, .expired, .trackingEnded: return WidgetTheme.secondaryText
-        default: return WidgetTheme.activityAccent
+        switch status {
+        case .inProgress: WidgetTheme.activityAccent
+        case .success: WidgetTheme.positive
+        case .failed: WidgetTheme.negative
         }
     }
 
     var body: some View {
         HStack(spacing: 4) {
-            if animates {
-                // A finite pulse follows fresh observations; it does not imply
-                // that the suspended app is still polling in the background.
-                Image(systemName: symbolName)
-                    .symbolEffect(.pulse, options: .nonRepeating.speed(2), value: state.observedAt)
+            if status == .inProgress {
+                // Widget animations are finite; reuse the app's arc without a continuous timeline.
+                CircularProgressIndicator(size: 14, lineWidth: 1.5, tint: color, isAnimating: false)
+                    .rotationEffect(.degrees(animates ? Double(state.revision) * 180 : 0))
+                    .animation(animates ? .linear(duration: 1) : nil, value: state.revision)
+                    .accessibilityHidden(true)
             } else {
-                Image(systemName: symbolName)
+                Image(systemName: status == .success ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
             }
-            if showsText { Text(LocalizedStringKey(state.phase.localizationKey)) }
+            if showsText { Text(LocalizedStringKey(status.localizationKey)) }
         }
         .font(WidgetTheme.labelFont(size: 11))
         .foregroundStyle(color)
         .lineLimit(1)
         .minimumScaleFactor(0.8)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(statusLabel)
+        .accessibilityLabel(Text(LocalizedStringKey(status.localizationKey)))
     }
 }
 
@@ -121,7 +116,6 @@ struct TransactionActivityCard: View {
             }
             hero
             if showsDetails { receiptDetails }
-            freshness
         }
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -214,26 +208,6 @@ struct TransactionActivityCard: View {
         .font(WidgetTheme.labelFont(size: 10))
         .foregroundStyle(WidgetTheme.secondaryText)
     }
-
-    private var freshness: some View {
-        HStack(spacing: 4) {
-            if (isStale || state.updateDelayed) && !state.phase.isTerminal {
-                Text("transactionActivityDelayed")
-                Spacer(minLength: 4)
-            } else if let submittedAt = state.submittedAt, !state.phase.isTerminal {
-                Text("transactionActivitySubmitted")
-                Text(submittedAt, style: .time)
-                Spacer(minLength: 4)
-            }
-            Text("transactionActivityUpdated")
-            Text(state.observedAt, style: .time)
-                .layoutPriority(1)
-        }
-        .lineLimit(1)
-        .minimumScaleFactor(0.8)
-        .font(WidgetTheme.labelFont(size: 10))
-        .foregroundStyle(WidgetTheme.tertiaryText)
-    }
 }
 
 #if DEBUG
@@ -268,7 +242,7 @@ private enum TransactionActivityPreview {
     TransactionActivityPreview.state(privateMode: true)
 }
 
-#Preview("Delayed", as: .content, using: TransactionActivityAttributes(recordID: UUID())) {
+#Preview("Stale in progress", as: .content, using: TransactionActivityAttributes(recordID: UUID())) {
     TransactionLiveActivityWidget()
 } contentStates: {
     TransactionActivityPreview.state(delayed: true)

@@ -120,7 +120,7 @@ final class TransactionActivityPolicyTests: XCTestCase {
         }
         let source = TransactionActivityState(phase: .sourceConfirmedOnly, observedAt: Date(), revision: 1)
         XCTAssertNil(source.staleDate)
-        XCTAssertEqual(source.phase.localizationKey, "transactionActivitySourceConfirmed")
+        XCTAssertEqual(source.phase.displayStatus, .inProgress)
     }
 
     func testIdentityIncludesVaultAndChain() {
