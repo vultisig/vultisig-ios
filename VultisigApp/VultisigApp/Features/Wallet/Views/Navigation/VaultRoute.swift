@@ -11,7 +11,7 @@ enum VaultBackupOrigin: Hashable {
 }
 
 enum VaultRoute: Hashable {
-    case upgradeVault(vault: Vault, isFastVault: Bool)
+    case upgradeVault(vault: Vault)
     case serverBackup(vault: Vault)
     case backupPasswordOptions(
         tssType: TssType,

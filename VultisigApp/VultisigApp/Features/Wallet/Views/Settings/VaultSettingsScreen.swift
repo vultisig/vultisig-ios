@@ -49,8 +49,7 @@ struct VaultSettingsScreen: View {
                 showSheet: $showUpgradeYourVaultSheet,
                 onUpgrade: {
                     router.navigate(to: VaultRoute.upgradeVault(
-                        vault: vault,
-                        isFastVault: vault.isFastVault
+                        vault: vault
                     ))
                 }
             )

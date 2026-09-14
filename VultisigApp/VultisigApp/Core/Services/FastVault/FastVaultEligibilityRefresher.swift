@@ -38,7 +38,11 @@ final class FastVaultEligibilityRefresher {
 
     /// Unknown attempts never overwrite the last confirmed result or timestamp.
     func refresh(_ vault: Vault) async {
-        guard vault.hasServerSigner else { return }
+        _ = await resolvePresence(vault)
+    }
+
+    func resolvePresence(_ vault: Vault) async -> FastVaultPresence {
+        guard vault.hasServerSigner else { return .absent }
         let outcome = await checkEligibility(vault)
         vault.fastVaultPresenceOutcome = outcome
         switch outcome {
@@ -49,6 +53,7 @@ final class FastVaultEligibilityRefresher {
         case .unknown:
             break
         }
+        return outcome
     }
 
     /// Refreshes only if the cache is empty or older than `stalenessThreshold`.

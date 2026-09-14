@@ -54,7 +54,7 @@ struct HomeMainHeaderView: View {
         HStack(spacing: 32) {
             VaultSelectorView(
                 vaultName: vault.name,
-                isFastVault: vault.isFastVault,
+                isFastVault: vault.offersFastSigning,
                 action: vaultSelectorAction
             )
 

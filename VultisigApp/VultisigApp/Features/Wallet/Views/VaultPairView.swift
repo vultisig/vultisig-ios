@@ -12,7 +12,7 @@ struct VaultPartView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
-            VaultIconTypeView(isFastVault: vault.isFastVault)
+            VaultIconTypeView(isFastVault: vault.offersFastSigning)
             Text(vault.signerPartDescription)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)

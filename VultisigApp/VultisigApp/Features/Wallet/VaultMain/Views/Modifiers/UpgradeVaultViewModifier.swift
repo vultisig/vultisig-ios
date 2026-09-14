@@ -19,8 +19,7 @@ struct UpgradeVaultViewModifier: ViewModifier {
                     showSheet: $shouldShow,
                     onUpgrade: {
                         router.navigate(to: VaultRoute.upgradeVault(
-                            vault: vault,
-                            isFastVault: vault.isFastVault
+                            vault: vault
                         ))
                     }
                 )

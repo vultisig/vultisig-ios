@@ -20,6 +20,7 @@ struct QuantumSecurityIntroScreen: View {
     let vault: Vault
 
     @Environment(\.router) private var router
+    @State private var resolvePresence = false
     @State private var animationVM: RiveViewModel?
 
     init(vault: Vault) {
@@ -43,6 +44,12 @@ struct QuantumSecurityIntroScreen: View {
                 PrimaryButton(title: "quantumSecurityIntroCta".localized) {
                     onGetStarted()
                 }
+            }
+        }
+        .crossPlatformSheet(isPresented: $resolvePresence) {
+            FastVaultPresenceGate(vault: vault) { hosted in
+                resolvePresence = false
+                navigateKeygen(useServer: hosted)
             }
         }
         .onAppear {
@@ -94,12 +101,15 @@ struct QuantumSecurityIntroScreen: View {
     // MARK: - Actions
 
     private func onGetStarted() {
-        // Matches the existing branch in `VaultAdvancedSettingsScreen`'s
-        // `dilithiumKeygenRow`: FastVault uses the password screen,
-        // SecureVault goes through peer discovery. The MLDSA pubkey
-        // lands on the vault inside `KeygenViewModel.startMldsaKeygen`,
-        // which is also where the completion notification fires.
-        if vault.isFastVault {
+        if vault.hasServerSigner {
+            resolvePresence = true
+        } else {
+            navigateKeygen(useServer: false)
+        }
+    }
+
+    private func navigateKeygen(useServer: Bool) {
+        if useServer {
             router.navigate(
                 to: KeygenRoute.fastVaultPassword(
                     tssType: .SingleKeygen,

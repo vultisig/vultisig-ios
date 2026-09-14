@@ -9,6 +9,8 @@ import SwiftUI
 
 struct VaultShareBackupsView: View {
     let vault: Vault
+    var useServer = false
+    @State private var resolvePresence = false
 
     @Environment(\.router) var router
 
@@ -16,6 +18,12 @@ struct VaultShareBackupsView: View {
         ZStack {
             Background()
             content
+        }
+        .crossPlatformSheet(isPresented: $resolvePresence) {
+            FastVaultPresenceGate(vault: vault) { hosted in
+                resolvePresence = false
+                if hosted { navigateHosted() } else { navigatePaired() }
+            }
         }
     }
 
@@ -41,7 +49,7 @@ struct VaultShareBackupsView: View {
 
     var button: some View {
         ZStack {
-            if vault.isFastVault {
+            if useServer {
                 migrateFastVault
             } else {
                 migrateSecureVault
@@ -52,30 +60,39 @@ struct VaultShareBackupsView: View {
 
     var migrateSecureVault: some View {
         PrimaryButton(title: "next") {
-            router.navigate(to: KeygenRoute.peerDiscovery(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: nil,
-                keyImportInput: nil,
-                setupType: nil,
-                singleKeygenType: nil
-            ))
+            navigatePaired()
         }
         .frame(width: 120)
     }
 
     var migrateFastVault: some View {
         PrimaryButton(title: "next") {
-            router.navigate(to: KeygenRoute.fastVaultPassword(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: vault.signers.count == 2 ? .fast : .active,
-                isExistingVault: true,
-                singleKeygenType: nil
-            ))
+            resolvePresence = true
         }
     }
+
+    private func navigatePaired() {
+        router.navigate(to: KeygenRoute.peerDiscovery(
+            tssType: .Migrate,
+            vault: vault,
+            selectedTab: .secure,
+            fastSignConfig: nil,
+            keyImportInput: nil,
+            setupType: nil,
+            singleKeygenType: nil
+        ))
+    }
+
+    private func navigateHosted() {
+        router.navigate(to: KeygenRoute.fastVaultPassword(
+            tssType: .Migrate,
+            vault: vault,
+            selectedTab: vault.signers.count == 2 ? .fast : .active,
+            isExistingVault: true,
+            singleKeygenType: nil
+        ))
+    }
+
 }
 
 #Preview {

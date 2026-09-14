@@ -10,7 +10,7 @@
 //  Layout mirrors Figma `Claimable QBTC` (nodes 74880:112667 +
 //  75164:107632): a Claimable-QBTC hero card on top, a single "Claim"
 //  tab strip, a description paragraph, an "Eligible UTXOs" header, and
-//  rounded UTXO rows on `bgSurface1`. Bottom-anchored PrimaryButton.
+//  rounded UTXO rows on `bgSurface1`. Bottom-anchored signing controls.
 //
 
 import SwiftUI
@@ -44,10 +44,18 @@ struct QBTCClaimSelectionView: View {
                 .padding(.bottom, 16)
             }
 
-            PrimaryButton(title: viewModel.confirmTitle) {
-                viewModel.confirmTapped()
+            if viewModel.vault.offersFastSigning {
+                Text(viewModel.confirmTitle)
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textSecondary)
             }
-            .disabled(!viewModel.canConfirm)
+            SigningCTAButtons(
+                isFastVault: viewModel.vault.offersFastSigning,
+                isDisabled: !viewModel.canConfirm,
+                singleSignTitle: viewModel.confirmTitle,
+                onFastSign: { viewModel.confirmTapped() },
+                onPairedSign: { viewModel.confirmTapped(usePairedDevices: true) }
+            )
             .padding(.bottom, legacyTabBarBottomInset)
         }
     }

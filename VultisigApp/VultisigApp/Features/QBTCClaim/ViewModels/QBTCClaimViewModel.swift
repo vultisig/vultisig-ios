@@ -263,14 +263,12 @@ final class QBTCClaimViewModel: ObservableObject {
         }
     }
 
-    /// Triggered when the user taps the Confirm button. Branches by
-    /// vault type — FastVault collects the password first; SecureVault
-    /// provisions a relay session and signals the screen to push the
-    /// pair route.
-    func confirmTapped() {
+    /// Starts the selected signing mode. Fast signing collects the password;
+    /// explicit paired signing provisions a relay session for the other devices.
+    func confirmTapped(usePairedDevices: Bool = false) {
         guard canConfirm else { return }
         lastClaimError = nil
-        if vault.isFastVault {
+        if vault.offersFastSigning && !usePairedDevices {
             isPasswordSheetPresented = true
         } else {
             Task { await prepareSecureVaultPair() }
