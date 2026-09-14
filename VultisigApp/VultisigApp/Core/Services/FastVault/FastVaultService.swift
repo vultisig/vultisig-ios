@@ -124,21 +124,6 @@ final class FastVaultService {
         }
     }
 
-    func exist(pubKeyECDSA: String) async -> Bool {
-        await presence(pubKeyECDSA: pubKeyECDSA) == .present
-    }
-
-    /// Determines if a vault is eligible for fast signing
-    /// - Parameter vault: The vault to check
-    /// - Returns: `true` if the vault exists in the backend, is not a local backup, and is configured as a fast vault
-    func isEligibleForFastSign(vault: Vault) async -> Bool {
-        // Use the structural helper, NOT `vault.isFastVault`. The latter reads
-        // the cache that this method's result feeds — reading it here would
-        // permanently lock eligibility at the first cached value.
-        guard vault.hasServerSigner else { return false }
-        return await exist(pubKeyECDSA: vault.pubKeyECDSA)
-    }
-
     func create(
         name: String,
         sessionID: String,

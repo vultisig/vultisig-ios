@@ -6,7 +6,8 @@ final class FastVaultPresenceTests: XCTestCase {
     private struct Client: HTTPClientProtocol {
         let failure: HTTPError?
         var cancelled = false
-        func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        func request(_: TargetType) async throws -> HTTPResponse<Data> {
+            await Task.yield()
             if cancelled { throw CancellationError() }
             if let failure { throw failure }
             return HTTPResponse(data: Data(), response: HTTPURLResponse(

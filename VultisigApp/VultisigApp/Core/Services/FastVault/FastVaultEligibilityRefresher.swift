@@ -2,21 +2,29 @@
 //  FastVaultEligibilityRefresher.swift
 //  VultisigApp
 //
-//  Refreshes the cached `fastVaultEligibility` field on the `Vault` model.
-//  Reads are sync (`vault.fastVaultEligibility`); refreshes happen only at
-//  planned trigger points (app foreground, vault switch). Replaces the
-//  pattern where every Send / FunctionCall / Referral / QBTC screen called
-//  `FastVaultService.isEligibleForFastSign(vault:)` on mount.
-//
+//  Session-only confirmation, bounded refreshes and action-time presence lookup.
 
 import Foundation
-import OSLog
+import SwiftData
 
 @MainActor
 final class FastVaultEligibilityRefresher {
 
     static let shared = FastVaultEligibilityRefresher()
 
+    private struct Flight {
+        let id: UUID
+        let topology: FastVaultTopology
+        let task: Task<FastVaultPresence, Never>
+        var consumers: Set<UUID>
+    }
+
+    private var flights: [ObjectIdentifier: Flight] = [:]
+    private var activeRequests = 0
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    private var sweep: Task<Void, Never>?
+    private var sweepCandidates: [ObjectIdentifier: (vault: Vault, context: ModelContext?)] = [:]
+    private var sweepCurrentKey: ObjectIdentifier?
     private let checkEligibility: @MainActor (Vault) async -> FastVaultPresence
     private let saveStorage: @MainActor () -> Void
     private let now: @MainActor () -> Date
@@ -43,24 +51,128 @@ final class FastVaultEligibilityRefresher {
 
     func resolvePresence(_ vault: Vault) async -> FastVaultPresence {
         guard vault.hasServerSigner else { return .absent }
-        let outcome = await checkEligibility(vault)
-        vault.fastVaultPresenceOutcome = outcome
-        switch outcome {
-        case .present, .absent:
-            vault.fastVaultEligibility = outcome == .present
-            vault.fastVaultEligibilityCheckedAt = now()
-            saveStorage()
-        case .unknown:
-            break
+        let key = ObjectIdentifier(vault)
+        let topology = FastVaultTopology(vault)
+        let task: Task<FastVaultPresence, Never>
+        let consumer = UUID()
+        let flightID: UUID
+        if var flight = flights[key], flight.topology == topology, !flight.task.isCancelled {
+            flight.consumers.insert(consumer)
+            flights[key] = flight
+            task = flight.task
+            flightID = flight.id
+        } else {
+            flights[key]?.task.cancel()
+            let id = UUID()
+            flightID = id
+            let context = vault.modelContext
+            task = Task { @MainActor in
+                await acquireRequestSlot()
+                defer {
+                    releaseRequestSlot()
+                    if flights[key]?.id == id { flights[key] = nil }
+                }
+                // A saved deletion invalidates model properties; establish membership
+                // before reading topology or handing the model to the lookup.
+                guard flights[key]?.id == id,
+                      context == nil || context?.fetchAllVaults().contains(where: { $0 === vault }) == true,
+                      FastVaultTopology(vault) == topology else {
+                    return .unknown(.requestFailed)
+                }
+                let checked: FastVaultPresence = Task.isCancelled ? .unknown(.cancelled) : await checkEligibility(vault)
+                let outcome: FastVaultPresence = Task.isCancelled ? .unknown(.cancelled) : checked
+                guard flights[key]?.id == id,
+                      context == nil || context?.fetchAllVaults().contains(where: { $0 === vault }) == true,
+                      FastVaultTopology(vault) == topology else {
+                    return .unknown(.requestFailed)
+                }
+                vault.fastVaultPresenceOutcome = outcome
+                switch outcome {
+                case .present, .absent:
+                    vault.fastVaultEligibility = outcome == .present
+                    vault.fastVaultEligibilityCheckedAt = now()
+                    vault.fastVaultCheckedTopology = topology
+                    saveStorage()
+                case .unknown:
+                    break
+                }
+                return outcome
+            }
+            flights[key] = Flight(id: id, topology: topology, task: task, consumers: [consumer])
         }
-        return outcome
+        let result = await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            Task { @MainActor in
+                cancelConsumer(consumer, key: key, flightID: flightID)
+            }
+        }
+        return Task.isCancelled ? .unknown(.cancelled) : result
     }
 
-    /// Refreshes only if the cache is empty or older than `stalenessThreshold`.
-    /// Use this on app foreground + vault switch — cheap when fresh, network
-    /// hit on staleness.
+    private func cancelConsumer(_ consumer: UUID, key: ObjectIdentifier, flightID: UUID) {
+        guard var flight = flights[key], flight.id == flightID else { return }
+        flight.consumers.remove(consumer)
+        if flight.consumers.isEmpty { flight.task.cancel() }
+        flights[key] = flight
+    }
+
+    /// One sequential coalesced sweep leaves a slot available for selection or
+    /// action-time lookups. Across all callers, at most two lookups run at once.
+    func refreshAllIfStale(_ vaults: [Vault]) async {
+        for vault in vaults where vault.hasServerSigner {
+            let key = ObjectIdentifier(vault)
+            if key != sweepCurrentKey {
+                sweepCandidates[key] = (vault, vault.modelContext)
+            }
+        }
+        if let sweep {
+            await sweep.value
+            return
+        }
+        let task = Task { @MainActor in
+            defer {
+                sweep = nil
+                sweepCurrentKey = nil
+                sweepCandidates.removeAll()
+            }
+            while let (key, candidate) = sweepCandidates.first {
+                sweepCandidates[key] = nil
+                sweepCurrentKey = key
+                guard !Task.isCancelled else { break }
+                if let context = candidate.context,
+                   !context.fetchAllVaults().contains(where: { $0 === candidate.vault }) {
+                    continue
+                }
+                await refreshIfStale(candidate.vault)
+                sweepCurrentKey = nil
+            }
+        }
+        sweep = task
+        await task.value
+    }
+
+    private func acquireRequestSlot() async {
+        if activeRequests < 2 {
+            activeRequests += 1
+        } else {
+            await withCheckedContinuation { waiters.append($0) }
+        }
+    }
+
+    private func releaseRequestSlot() {
+        if waiters.isEmpty {
+            activeRequests -= 1
+        } else {
+            waiters.removeFirst().resume()
+        }
+    }
+
+    /// Unknown and changed-topology results retry on each lifecycle trigger.
+    /// Confirmed results retain the background freshness threshold.
     func refreshIfStale(_ vault: Vault) async {
-        if vault.fastVaultPresenceOutcome?.isUnknown != true,
+        if vault.fastVaultCheckedTopology == nil || vault.fastVaultCheckedTopology == FastVaultTopology(vault),
+           vault.fastVaultPresenceOutcome?.isUnknown != true,
            let checkedAt = vault.fastVaultEligibilityCheckedAt,
            now().timeIntervalSince(checkedAt) < stalenessThreshold {
             return

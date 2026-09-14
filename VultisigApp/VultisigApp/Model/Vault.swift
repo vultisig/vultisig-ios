@@ -64,12 +64,19 @@ final class Vault: ObservableObject, Codable {
     // trigger points rather than per-screen-mount. Local-only state, not part of
     // the schema — repopulated on every cold start by the refresher.
     //
-    // The pair lives on `ObservedTransient` boxes rather than in `@Transient`
+    // The cache lives on `ObservedTransient` boxes rather than in `@Transient`
     // stored properties. SwiftData does not observation-track `@Transient`, so
     // the refresher's write published nothing at all and every view branching on
     // `isFastVault` stayed stale until an unrelated save happened to re-render
     // the tree. The boxes are still per-instance, still session scoped, and
     // still absent from the schema — only the publication changes.
+    @Transient private var fastVaultCheckedTopologyBox = ObservedTransient<FastVaultTopology?>(nil)
+
+    var fastVaultCheckedTopology: FastVaultTopology? {
+        get { fastVaultCheckedTopologyBox.value }
+        set { fastVaultCheckedTopologyBox.value = newValue }
+    }
+
     @Transient private var fastVaultPresenceOutcomeBox = ObservedTransient<FastVaultPresence?>(nil)
 
     var fastVaultPresenceOutcome: FastVaultPresence? {
@@ -80,7 +87,9 @@ final class Vault: ObservableObject, Codable {
     /// Ordinary signing and identity are local-first. Only confirmed absence
     /// suppresses Fast signing; an unavailable server check must not change identity.
     var offersFastSigning: Bool {
-        hasServerSigner && (fastVaultEligibilityCheckedAt == nil || fastVaultEligibility)
+        guard hasServerSigner else { return false }
+        if let topology = fastVaultCheckedTopology, topology != FastVaultTopology(self) { return true }
+        return fastVaultEligibilityCheckedAt == nil || fastVaultEligibility
     }
 
     @Transient private var fastVaultEligibilityBox = ObservedTransient(false)
@@ -306,6 +315,7 @@ final class Vault: ObservableObject, Codable {
     /// and ordinary signing use `offersFastSigning`; mutations revalidate on action.
     var isFastVault: Bool {
         guard hasServerSigner else { return false }
+        if let topology = fastVaultCheckedTopology, topology != FastVaultTopology(self) { return false }
         guard fastVaultEligibilityCheckedAt != nil else { return false }
         return fastVaultEligibility
     }

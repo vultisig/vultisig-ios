@@ -17,3 +17,16 @@ enum FastVaultPresence: Equatable, Sendable {
         return false
     }
 }
+
+/// The cache and any in-flight response belong to this exact signer topology.
+struct FastVaultTopology: Equatable {
+    let publicKey: String
+    let localParty: String
+    let signers: [String]
+
+    init(_ vault: Vault) {
+        publicKey = vault.pubKeyECDSA
+        localParty = vault.localPartyID
+        signers = vault.signers
+    }
+}

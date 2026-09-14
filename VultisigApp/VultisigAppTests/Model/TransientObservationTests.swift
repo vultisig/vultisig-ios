@@ -101,6 +101,25 @@ final class TransientObservationTests: XCTestCase {
         XCTAssertFalse(vault.offersFastSigning)
     }
 
+    func testTopologyChangesPublishToConfirmedPresence() async {
+        let vault = makeVault()
+        let refresher = FastVaultEligibilityRefresher(
+            checkEligibility: { _ in .present }, saveStorage: {}
+        )
+        await refresher.refresh(vault)
+        XCTAssertTrue(publishesChange {
+            _ = vault.isFastVault
+        } writing: {
+            vault.signers = ["device", "server-replacement"]
+        })
+        XCTAssertFalse(vault.isFastVault)
+        XCTAssertTrue(publishesChange {
+            _ = vault.isFastVault
+        } writing: {
+            vault.fastVaultCheckedTopology = FastVaultTopology(vault)
+        })
+    }
+
     // MARK: - Vault.isFastVault
 
     /// The acceptance case: a view branching on `isFastVault` is invalidated when
