@@ -26,46 +26,51 @@ struct SlippageSettingsView: View {
         VStack(spacing: 12) {
             AdvancedSwapSheetHeader(title: "slippage".localized, showBack: true, onClose: onBack)
 
-            Text("slippageHelperText".localized)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text("slippageHelperText".localized)
+                        .font(Theme.fonts.bodySRegular)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
 
-            VStack(spacing: 0) {
-                radioRow(title: "auto".localized, isSelected: isAuto) {
-                    slippage = .auto
-                    customFocused = false
-                }
-                Separator()
+                    VStack(spacing: 0) {
+                        radioRow(title: "auto".localized, isSelected: isAuto) {
+                            slippage = .auto
+                            customFocused = false
+                        }
+                        Separator()
 
-                ForEach(SwapSlippage.presets, id: \.self) { bps in
-                    radioRow(title: SwapSlippage.format(bps: bps), isSelected: isPreset(bps)) {
-                        slippage = .preset(bps: bps)
-                        customFocused = false
+                        ForEach(SwapSlippage.presets, id: \.self) { bps in
+                            radioRow(title: SwapSlippage.format(bps: bps), isSelected: isPreset(bps)) {
+                                slippage = .preset(bps: bps)
+                                customFocused = false
+                            }
+                            Separator()
+                        }
+
+                        customRow
                     }
-                    Separator()
+                    .background(Theme.colors.bgSurface1)
+                    .clipShape(Theme.radius.xl.shape)
+                    .overlay(
+                        Theme.radius.xl.shape
+                            .stroke(Theme.colors.borderLight, lineWidth: 1)
+                    )
+                    .padding(.horizontal, 16)
+
+                    if didClampCustom {
+                        Text(String(format: "slippageMaxNote".localized, SwapSlippage.format(bps: SwapSlippage.maxCustomBps)))
+                            .font(Theme.fonts.bodySRegular)
+                            .foregroundStyle(Theme.colors.alertWarning)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
                 }
-
-                customRow
+                .padding(.bottom, 16)
             }
-            .background(Theme.colors.bgSurface1)
-            .clipShape(Theme.radius.xl.shape)
-            .overlay(
-                Theme.radius.xl.shape
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
-            .padding(.horizontal, 16)
-
-            if didClampCustom {
-                Text(String(format: "slippageMaxNote".localized, SwapSlippage.format(bps: SwapSlippage.maxCustomBps)))
-                    .font(Theme.fonts.bodySRegular)
-                    .foregroundStyle(Theme.colors.alertWarning)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-            }
-
-            Spacer(minLength: 0)
+            .scrollDismissesKeyboard(.interactively)
+            .scrollBounceBehavior(.basedOnSize)
         }
         .onLoad {
             if case let .custom(bps) = slippage {
