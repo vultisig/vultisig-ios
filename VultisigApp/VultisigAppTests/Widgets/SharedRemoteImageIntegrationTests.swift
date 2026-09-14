@@ -32,6 +32,37 @@ final class SharedRemoteImageIntegrationTests: XCTestCase {
         XCTAssertEqual(offlineDownloads, 0)
     }
 
+    @MainActor
+    func testDetailedImageFitsWidgetInlineBudgetAfterPreparation() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 250, height: 250), format: format)
+        let jpeg = renderer.jpegData(withCompressionQuality: 0.3) { context in
+            for y in 0..<250 {
+                for x in 0..<250 {
+                    let seed = (x * 73 + y * 157 + x * y * 13) % 256
+                    UIColor(red: CGFloat(x) / 250, green: CGFloat(y) / 250,
+                            blue: CGFloat(seed) / 255, alpha: 1).setFill()
+                    context.fill(CGRect(x: x, y: y, width: 1, height: 1))
+                }
+            }
+        }
+        XCTAssertLessThan(jpeg.count, 64 * 1_024)
+        let prepared = try RemoteImageLoader.thumbnail(jpeg)
+        XCTAssertGreaterThan(prepared.count, 64 * 1_024, "Fixture must exercise PNG expansion")
+        let downloader = SharedImageTestDownloader(data: jpeg)
+        let loader = RemoteImageLoader(cache: RemoteImageCache(directory: nil), downloader: downloader)
+        let widget = WidgetMarketClient(imageLoader: loader)
+        let url = try XCTUnwrap(URL(string: "https://images.example.org/detailed.jpg"))
+
+        let inline = try await widget.iconData(from: url)
+
+        XCTAssertLessThanOrEqual(inline.count, 64 * 1_024)
+        let image = try XCTUnwrap(UIImage(data: inline))
+        XCTAssertEqual(image.size.width, 120)
+        XCTAssertEqual(image.size.height, 120)
+    }
+
     func testWidgetRejectsInsecureImageBeforeDownloading() async throws {
         let downloader = SharedImageTestDownloader(data: nil)
         let loader = RemoteImageLoader(cache: RemoteImageCache(directory: nil), downloader: downloader)

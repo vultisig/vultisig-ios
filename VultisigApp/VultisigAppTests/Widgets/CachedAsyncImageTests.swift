@@ -6,6 +6,7 @@ import VultisigUIResources
 
 @MainActor
 final class CachedAsyncImageTests: XCTestCase {
+    private weak var previousKeyWindow: UIWindow?
     func testCachedAppearanceDoesNotRewritePreparedImage() async throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -23,7 +24,10 @@ final class CachedAsyncImageTests: XCTestCase {
             if $0 { rendered.fulfill() }
         }
         let window = try host(view)
-        defer { window.isHidden = true }
+        defer {
+            window.isHidden = true
+            previousKeyWindow?.makeKeyAndVisible()
+        }
         await fulfillment(of: [rendered], timeout: 2)
         try await Task.sleep(for: .milliseconds(100))
         let after = try file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
@@ -50,7 +54,10 @@ final class CachedAsyncImageTests: XCTestCase {
             if secondReleased { secondRendered.fulfill() } else { unexpectedImage.fulfill() }
         }
         let window = try host(view)
-        defer { window.isHidden = true }
+        defer {
+            window.isHidden = true
+            previousKeyWindow?.makeKeyAndVisible()
+        }
         await fulfillment(of: [firstStarted], timeout: 2)
         model.url = second
         await fulfillment(of: [secondStarted], timeout: 2)
@@ -70,6 +77,7 @@ final class CachedAsyncImageTests: XCTestCase {
 
     private func host(_ view: some View) throws -> UIWindow {
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        previousKeyWindow = scene.windows.first(where: \.isKeyWindow)
         let window = UIWindow(windowScene: scene)
         window.rootViewController = UIHostingController(rootView: view)
         window.makeKeyAndVisible()

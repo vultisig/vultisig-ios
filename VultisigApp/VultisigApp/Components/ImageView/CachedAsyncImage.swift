@@ -10,6 +10,35 @@ enum SharedImageLoading {
     #endif
     static let loader = RemoteImageLoader(cache: cache)
 
+    @MainActor private static let displayedImages: NSCache<NSString, DisplayedImage> = {
+        let cache = NSCache<NSString, DisplayedImage>()
+        cache.countLimit = 160
+        cache.totalCostLimit = 16 * 1_024 * 1_024
+        return cache
+    }()
+
+    @MainActor
+    static func cachedImage(forKey key: String, cache: RemoteImageCache) -> Image? {
+        if let stored = displayedImages.object(forKey: key as NSString), stored.expiresAt > Date() {
+            return stored.image
+        }
+        guard let data = cache.data(forKey: key), let image = image(from: data) else { return nil }
+        remember(image, forKey: key)
+        return image
+    }
+
+    @MainActor
+    static func remember(_ image: Image, forKey key: String) {
+        // Normalized images are at most 256px RGBA; bound decoded memory separately from disk.
+        displayedImages.setObject(DisplayedImage(image: image), forKey: key as NSString, cost: 256 * 256 * 4)
+    }
+
+    private final class DisplayedImage {
+        let image: Image
+        let expiresAt = Date().addingTimeInterval(5 * 60)
+        init(image: Image) { self.image = image }
+    }
+
     static func image(from data: Data) -> Image? {
         #if os(iOS)
         return UIImage(data: data).map { Image(uiImage: $0) }
@@ -73,6 +102,9 @@ struct CachedAsyncImage<Content: View>: View {
                     guard let image = SharedImageLoading.image(from: data) else {
                         throw RemoteImageError.invalidImage
                     }
+                    if let key = RemoteImageCache.key(for: requestedURL) {
+                        SharedImageLoading.remember(image, forKey: key)
+                    }
                     loadedURL = requestedURL
                     phase = .success(image)
                 } catch {
@@ -86,8 +118,7 @@ struct CachedAsyncImage<Content: View>: View {
 
     private var cachedPhase: AsyncImagePhase? {
         guard let url, let key = RemoteImageCache.key(for: url),
-              let data = cache.data(forKey: key),
-              let image = SharedImageLoading.image(from: data) else { return nil }
+              let image = SharedImageLoading.cachedImage(forKey: key, cache: cache) else { return nil }
         return .success(image)
     }
 }

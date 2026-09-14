@@ -140,7 +140,14 @@ struct KeysignAnimationView: View {
     }
 
     private func remoteImageData(url: URL) async -> Data? {
-        try? await SharedImageLoading.loader.load(url)
+        do {
+            return try await SharedImageLoading.loader.load(url)
+        } catch is CancellationError {
+            return nil
+        } catch {
+            logger.warning("Failed to prepare coin logo: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 
     private func localAssetPNGData(named assetName: String) -> Data? {

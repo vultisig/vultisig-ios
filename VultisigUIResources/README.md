@@ -31,3 +31,8 @@ and 512 KiB. Cache files use opaque URL-derived keys, atomic replacement, a
 best-effort 64 MiB budget, eight-hour retention protection and seven-day expiry.
 Cache misses, invalid images and unavailable storage retain caller fallbacks.
 Remote SVG decoding is not provided.
+
+App views keep a bounded decoded-image memory cache to avoid repeated disk reads
+while scrolling. Widget timelines downsample prepared images to 120px before
+embedding them, preserving the existing 64 KiB inline image limit. CI checks
+generated resources before regeneration so missing generated changes fail early.
