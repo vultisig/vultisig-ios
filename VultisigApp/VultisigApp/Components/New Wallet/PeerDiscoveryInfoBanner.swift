@@ -40,7 +40,7 @@ struct PeerDiscoveryInfoBanner: View {
     }
 
     var image: some View {
-        Image("secure-qr-tutorial", bundle: VultisigResources.bundle)
+        VultisigImage("secure-qr-tutorial")
             .resizable()
             .frame(width: 290, height: 230)
     }

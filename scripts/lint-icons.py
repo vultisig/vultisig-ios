@@ -81,8 +81,8 @@ def swift_files():
                 yield os.path.join(dirpath, f)
 
 
-# Image("literal") — deliberately NOT Image(systemName:) and NOT Icon(...)
-IMAGE_LITERAL = re.compile(r'\bImage\(\s*"([^"]+)"\s*(?:,\s*bundle:\s*VultisigResources\.bundle\s*)?\)')
+# Image/VultisigImage("literal") — not system images or typed Icon(...)
+IMAGE_LITERAL = re.compile(r'\b(?:Image|VultisigImage)\(\s*"([^"]+)"\s*(?:,\s*bundle:\s*VultisigResources\.bundle\s*)?\)')
 
 
 def main():

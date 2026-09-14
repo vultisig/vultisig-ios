@@ -52,7 +52,7 @@ struct YieldTopBanner: View {
     }
 
     private var logo: some View {
-        Image(logoAsset, bundle: VultisigResources.bundle)
+        VultisigImage(logoAsset)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 200, height: 200)

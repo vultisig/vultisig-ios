@@ -406,7 +406,7 @@ struct TransactionHistoryCardView: View {
 
     private var sendToRow: some View {
         HStack(spacing: 12) {
-            Image("vault", bundle: VultisigResources.bundle)
+            VultisigImage("vault")
                 .resizable()
                 .frame(width: 24, height: 24)
                 .foregroundStyle(Theme.colors.textTertiary)

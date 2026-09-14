@@ -56,7 +56,7 @@ struct TronResourcesInfoSheet: View {
     private var header: some View {
         VStack(spacing: 24) {
             HStack(spacing: 8) {
-                Image("tron", bundle: VultisigResources.bundle)
+                VultisigImage("tron")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)

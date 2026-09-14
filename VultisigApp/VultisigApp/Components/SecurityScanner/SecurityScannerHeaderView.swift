@@ -62,7 +62,7 @@ struct SecurityScannerHeaderView: View {
     }
 
     func providerImage(_ provider: String) -> some View {
-        Image(provider, bundle: VultisigResources.bundle)
+        VultisigImage(provider)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .tint(Theme.colors.textSecondary)

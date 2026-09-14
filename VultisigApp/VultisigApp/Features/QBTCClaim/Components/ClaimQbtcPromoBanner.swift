@@ -58,17 +58,17 @@ struct ClaimQbtcPromoBanner: View {
 
         HStack {
             ZStack(alignment: .leading) {
-                Image("qbtc-3d", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc-3d")
                     .resizable()
                     .frame(width: 40, height: 45)
                     .rotationEffect(Angle(degrees: -26.5))
                     .offset(x: 7, y: -55)
-                Image("qbtc-3d", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc-3d")
                     .resizable()
                     .frame(width: 90, height: 100)
                     .rotationEffect(Angle(degrees: 13))
                     .offset(x: -30, y: 11)
-                Image("qbtc-3d", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc-3d")
                     .resizable()
                     .frame(width: 50, height: 55)
                     .rotationEffect(Angle(degrees: 8.5))
@@ -76,11 +76,11 @@ struct ClaimQbtcPromoBanner: View {
             }
             Spacer()
             ZStack(alignment: .trailing) {
-                Image("qbtc-3d", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc-3d")
                     .resizable()
                     .frame(width: 87, height: 98)
                     .offset(x: 17, y: -50)
-                Image("qbtc-3d", bundle: VultisigResources.bundle)
+                VultisigImage("qbtc-3d")
                     .resizable()
                     .frame(width: 50, height: 55)
                     .rotationEffect(Angle(degrees: -6.84))

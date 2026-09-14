@@ -42,7 +42,7 @@ struct TransactionHistoryTypePill: View {
                 .resizable()
                 .frame(width: 12, height: 12)
         case .limit:
-            Image("clock-rotate-clockwise-3", bundle: VultisigResources.bundle)
+            VultisigImage("clock-rotate-clockwise-3")
                 .resizable()
                 .frame(width: 12, height: 12)
         case .transaction:

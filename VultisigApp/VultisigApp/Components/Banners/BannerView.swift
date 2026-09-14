@@ -40,7 +40,7 @@ struct BannerView<Content: View>: View {
     }
 
     var image: some View {
-        Image(bgImage, bundle: VultisigResources.bundle)
+        VultisigImage(bgImage)
             .resizable()
             .aspectRatio(contentMode: .fill)
     }

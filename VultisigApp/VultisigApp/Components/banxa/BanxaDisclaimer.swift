@@ -28,7 +28,7 @@ struct BanxaDisclaimer: View {
     var content: some View {
         if !continueToBanxa {
             VStack(spacing: 8) {
-                Image("banxa-logo", bundle: VultisigResources.bundle)
+                VultisigImage("banxa-logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160)

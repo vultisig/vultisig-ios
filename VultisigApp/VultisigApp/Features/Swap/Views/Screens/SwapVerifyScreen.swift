@@ -520,7 +520,7 @@ struct SwapVerifyScreen: View {
             Spacer()
 
             if showIcon {
-                Image(value, bundle: VultisigResources.bundle)
+                VultisigImage(value)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
@@ -603,7 +603,7 @@ struct SwapVerifyScreen: View {
                                 .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
-                            Image(chain.logo, bundle: VultisigResources.bundle)
+                            VultisigImage(chain.logo)
                                 .resizable()
                                 .frame(width: 12, height: 12)
 

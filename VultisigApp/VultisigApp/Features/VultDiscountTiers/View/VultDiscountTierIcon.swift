@@ -72,7 +72,7 @@ struct VultDiscountTierIcon: View {
                 endPoint: .bottom
             )
         case .ultimate:
-            Image("vult-ultimate-icon-overlay", bundle: VultisigResources.bundle)
+            VultisigImage("vult-ultimate-icon-overlay")
                 .resizable()
         }
     }

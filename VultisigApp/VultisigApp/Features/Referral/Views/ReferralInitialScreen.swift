@@ -43,7 +43,7 @@ struct ReferralInitialScreen: View {
     }
 
     var image: some View {
-        Image("referral-initial", bundle: VultisigResources.bundle)
+        VultisigImage("referral-initial")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 375)

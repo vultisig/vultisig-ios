@@ -173,7 +173,7 @@ struct CosmosStakingVerifySummaryView: View {
             } else if let bracketValue {
                 HStack(spacing: 4) {
                     if let image {
-                        Image(image, bundle: VultisigResources.bundle)
+                        VultisigImage(image)
                             .resizable()
                             .frame(width: 16, height: 16)
                     }
@@ -194,7 +194,7 @@ struct CosmosStakingVerifySummaryView: View {
             } else {
                 HStack(spacing: 4) {
                     if let image {
-                        Image(image, bundle: VultisigResources.bundle)
+                        VultisigImage(image)
                             .resizable()
                             .frame(width: 16, height: 16)
                     }

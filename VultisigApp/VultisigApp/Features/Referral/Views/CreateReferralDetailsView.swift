@@ -134,7 +134,7 @@ struct CreateReferralDetailsView: View {
 
     var selectedAsset: some View {
         HStack(spacing: 8) {
-            Image("rune", bundle: VultisigResources.bundle)
+            VultisigImage("rune")
                 .resizable()
                 .frame(width: 32, height: 32)
 

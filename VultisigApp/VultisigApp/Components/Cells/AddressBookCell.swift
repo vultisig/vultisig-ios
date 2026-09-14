@@ -57,7 +57,7 @@ struct AddressBookCell: View {
     }
 
     var logo: some View {
-        Image(address.coinMeta.logo, bundle: VultisigResources.bundle)
+        VultisigImage(address.coinMeta.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(Theme.radius.pill)

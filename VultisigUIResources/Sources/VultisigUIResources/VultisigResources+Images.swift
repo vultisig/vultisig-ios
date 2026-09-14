@@ -21,7 +21,7 @@ extension VultisigResources {
 
     public static func image(named name: String) -> Image? {
         guard containsImage(named: name) else { return nil }
-        return Image(name, bundle: bundle)
+        return VultisigImage(name).image
     }
 
     #if canImport(UIKit)

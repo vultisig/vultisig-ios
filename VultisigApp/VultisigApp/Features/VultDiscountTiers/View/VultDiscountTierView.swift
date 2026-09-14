@@ -108,7 +108,7 @@ private extension VultDiscountTierView {
     var accentFill: some View {
         switch tier {
         case .ultimate:
-            Image("vult-ultimate-box-overlay", bundle: VultisigResources.bundle)
+            VultisigImage("vult-ultimate-box-overlay")
                 .resizable()
         default:
             LinearGradient(

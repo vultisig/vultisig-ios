@@ -31,7 +31,7 @@ struct UpdateCheckUpdateNowView: View {
     }
 
     var updateLogo: some View {
-        Image("vultisig-logo", bundle: VultisigResources.bundle)
+        VultisigImage("vultisig-logo")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 72)

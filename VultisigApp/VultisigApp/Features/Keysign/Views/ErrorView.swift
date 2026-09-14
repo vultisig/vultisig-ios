@@ -127,7 +127,7 @@ private extension ErrorView {
             .frame(width: 24, height: 24)
             .foregroundStyle(color)
             .animation(.easeInOut(duration: 0.3), value: type)
-            .background(Image("CirclesBackground", bundle: VultisigResources.bundle))
+            .background(VultisigImage("CirclesBackground"))
             .padding(.bottom, 12)
             .scaleEffect(heroScale)
             .opacity(heroOpacity)

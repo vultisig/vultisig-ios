@@ -99,7 +99,7 @@ struct ReceiveQRCodeBottomSheet: View {
         .padding(.top, 8)
         .padding(.bottom, 16)
         .frame(width: 216, height: 247)
-        .background(Image("qr-code-container", bundle: VultisigResources.bundle).resizable())
+        .background(VultisigImage("qr-code-container").resizable())
     }
 
     var bottomSection: some View {
