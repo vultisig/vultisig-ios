@@ -4,6 +4,7 @@
 //
 
 import OSLog
+import VultisigUIResources
 import SwiftUI
 
 private let logger = Log.defi.view
@@ -27,7 +28,7 @@ struct DefiYieldProviderRow: View {
     var body: some View {
         HStack {
             HStack(spacing: 12) {
-                Image(presentation.rowLogoAsset)
+                VultisigImage(presentation.rowLogoAsset)
                     .resizable()
                     .frame(width: 36, height: 36)
                     .clipShape(Circle())

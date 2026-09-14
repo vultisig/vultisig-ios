@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct HighlightedTextWithImage: View {
     let text: String
@@ -32,7 +33,7 @@ struct HighlightedTextWithImage: View {
                     .font(font)
                     .foregroundStyle(.clear)
                     .overlay {
-                        Image(imageName)
+                        VultisigImage(imageName)
                             .resizable()
                             .scaledToFill()
                             .mask(

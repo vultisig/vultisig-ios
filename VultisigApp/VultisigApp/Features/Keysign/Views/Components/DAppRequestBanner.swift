@@ -40,7 +40,7 @@ struct DAppRequestBanner: View {
     @ViewBuilder
     private var icon: some View {
         if let url = remoteIconURL {
-            CachedAsyncImage(url: url, urlCache: .imageCache) { image in
+            CachedAsyncImage(url: url) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)

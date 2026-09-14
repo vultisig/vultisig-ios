@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
     let title: String
@@ -55,7 +56,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                 } else {
                     HStack(spacing: 2) {
                         if let icon {
-                            Image(icon)
+                            VultisigImage(icon)
                                 .resizable()
                                 .frame(width: 16, height: 16)
                                 .cornerRadius(Theme.radius.pill)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
@@ -30,7 +31,7 @@ struct UpdateCheckUpdateNowView: View {
     }
 
     var updateLogo: some View {
-        Image("vultisig-logo")
+        VultisigImage("vultisig-logo")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 72)

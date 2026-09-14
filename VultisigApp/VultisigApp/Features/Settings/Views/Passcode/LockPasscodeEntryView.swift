@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 #if os(iOS)
 import UIKit
 #endif
@@ -61,7 +62,7 @@ struct LockPasscodeEntryView: View {
 
     private var lockContent: some View {
         VStack(spacing: 0) {
-            Image("vultisig-logo")
+            VultisigImage("vultisig-logo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 47.5, height: 47.5)
@@ -162,7 +163,7 @@ struct LockPasscodeEntryView: View {
 
     private var biometricIcon: Image {
         #if os(iOS)
-        Image("passcode-face-id")
+        VultisigImage("passcode-face-id").image
         #else
         Image(systemName: "touchid")
         #endif

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 import BigInt
 
 struct KeysignSwapConfirmView: View {
@@ -161,7 +162,7 @@ struct KeysignSwapConfirmView: View {
             Spacer()
 
             if showIcon {
-                Image(value)
+                VultisigImage(value)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
@@ -251,7 +252,7 @@ struct KeysignSwapConfirmView: View {
                                 .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
-                            Image(chain.logo)
+                            VultisigImage(chain.logo)
                                 .resizable()
                                 .frame(width: 12, height: 12)
 

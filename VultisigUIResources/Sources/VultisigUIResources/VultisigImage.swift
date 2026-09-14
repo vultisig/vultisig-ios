@@ -1,18 +1,19 @@
 import SwiftUI
 
-public enum VultisigImage: String, CaseIterable, Sendable {
-    case binanceSmartChain = "bsc"
-    case bitcoin = "btc"
-    case ethereum = "eth"
-    case logoOutline = "logo-outline"
-    case solana
-    case tether = "usdt"
+/// A named image from the shared app and widget resource catalog.
+public struct VultisigImage: View {
+    public let image: Image
 
-    public var resource: ImageResource {
-        ImageResource(name: rawValue, bundle: VultisigResources.bundle)
+    public init(_ name: String) {
+        image = Image(name, bundle: VultisigResources.bundle)
     }
 
-    public var image: Image {
-        Image(resource)
+    public var body: some View {
+        image
+    }
+
+    public func resizable(capInsets: EdgeInsets = EdgeInsets(),
+                          resizingMode: Image.ResizingMode = .stretch) -> Image {
+        image.resizable(capInsets: capInsets, resizingMode: resizingMode)
     }
 }
