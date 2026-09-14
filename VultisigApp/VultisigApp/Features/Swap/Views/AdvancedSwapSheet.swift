@@ -10,7 +10,7 @@
 
 import SwiftUI
 
-private enum AdvancedSwapSheetType: Equatable {
+enum AdvancedSwapSheetType: CaseIterable {
     case main
     case slippage
     case gasLimit
@@ -25,7 +25,7 @@ struct AdvancedSwapSheet: View {
     @Binding var settings: SwapAdvancedSettings
     @Bindable var detailsViewModel: SwapDetailsViewModel
 
-    @State private var sheetType: AdvancedSwapSheetType = .main
+    @State var sheetType: AdvancedSwapSheetType = .main
     @State private var shouldUseMoveTransition = true
 
     private var vm: SwapDetailsViewModel { detailsViewModel }
@@ -64,6 +64,10 @@ struct AdvancedSwapSheet: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        #if os(macOS)
+        // Native macOS sheets size to content instead of honoring detents.
+        .frame(width: 480, height: Self.sessionHeight)
+        #endif
         .presentationDragIndicator(.visible)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .background(Theme.colors.bgPrimary)

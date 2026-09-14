@@ -2,7 +2,7 @@
 //  AdvancedSwapSheetLayoutTests.swift
 //  VultisigAppTests
 //
-//  Measure real rows and preserve the supported visibility combinations.
+//  Measure the intrinsic height of a row with a wrapping label.
 //
 
 import SwiftUI
@@ -20,8 +20,8 @@ final class AdvancedSwapSheetLayoutTests: XCTestCase {
     private let sheetWidth: CGFloat = 375
     private var cardWidth: CGFloat { sheetWidth - 32 }
 
-    /// Preserve the wrapped-row measurement: content must keep its intrinsic
-    /// height inside the new scroll view rather than truncate a long label.
+    /// Preserve the intrinsic wrapped-row measurement so a label change
+    /// cannot silently truncate the recipient title.
     func testRecipientRowGrowsWhenItsLabelWraps() {
         let rowHeight = measuredHeight(
             of: AdvancedSwapMainRow(icon: .bolt, title: "slippageTolerance".localized, value: "auto".localized) {},
