@@ -4,11 +4,20 @@ This package owns the canonical image catalog and fonts used by the app and its
 extensions. Source artwork lives only in `Resources/Images.xcassets`; application
 icons and accent configuration remain in the app catalog.
 
-Use `VultisigResources.image(named:)` for optional runtime names, or
-`Image(name, bundle: VultisigResources.bundle)` when the asset is known. Native
-image callers use `VultisigResources.platformImage(named:)`. `VultisigImage`
-retains convenient names for commonly used brand/token artwork; it does not
-restrict which images are available.
+Use `VultisigImage("vultisig-logo")` for named artwork. This SwiftUI component
+selects the package bundle internally and supports normal view modifiers:
+
+```swift
+VultisigImage("vultisig-logo")
+    .resizable()
+    .scaledToFit()
+```
+
+Use `.image` when an API requires a concrete SwiftUI `Image`, or when applying
+image-only modifiers before `.resizable()`. `VultisigResources.image(named:)`
+returns an optional Image after validating a runtime name against the catalog.
+Native callers use `VultisigResources.platformImage(named:)`. There is no separate
+image enum or restricted set of token cases.
 
 `make generate` derives the bundled name index and shared typed `ImageResource`
 properties from the catalog using Xcode's symbol names. App and widget compile
