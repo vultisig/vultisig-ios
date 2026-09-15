@@ -123,7 +123,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
             fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: nil, inboundConfirmationBlocks: nil, inboundConfirmationSeconds: nil,
             memo: "memo", notes: "", outboundDelayBlocks: 0, outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0", slippageBps: nil, totalSwapSeconds: nil, warning: "",
+            recommendedMinAmountIn: "0", totalSwapSeconds: nil, warning: "",
             router: nil, maxStreamingQuantity: nil
         )
     }
@@ -157,7 +157,7 @@ private final class RefetchMockInteractor: SwapInteractor {
             fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: nil, inboundConfirmationBlocks: nil, inboundConfirmationSeconds: nil,
             memo: "memo", notes: "", outboundDelayBlocks: 0, outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0", slippageBps: nil, totalSwapSeconds: nil, warning: "",
+            recommendedMinAmountIn: "0", totalSwapSeconds: nil, warning: "",
             router: nil, maxStreamingQuantity: nil
         ))
         return SwapQuoteResult(quote: quote, vultDiscountBps: 0, referralDiscountBps: 0)

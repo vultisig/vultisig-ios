@@ -272,7 +272,7 @@ enum SwapQuote: Hashable {
     var priceImpact: Decimal? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
-            guard let slippageBps = quote.slippageBps else { return nil }
+            guard let slippageBps = quote.fees.slippageBps else { return nil }
             return Decimal(slippageBps) / 10000
         case .oneinch, .kyberswap, .lifi, .jupiter:
             return nil
