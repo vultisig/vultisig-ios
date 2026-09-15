@@ -91,6 +91,9 @@ jobs:
             ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
+      - name: Test native tab-bar hiding
+        run: make test-macos-hidden-tabs
+
   # ---------------------------------------------------------------------------
   # iOS: build + static analysis + unit tests (iOS Simulator). Runs in parallel
   # with the macOS job.

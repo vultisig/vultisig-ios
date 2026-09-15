@@ -107,6 +107,15 @@ private extension VultiTabBar {
                     // through TabView's layout, especially on macOS's grouped
                     // style. See vultisig-ios#4341.
                     content(item)
+                        #if os(macOS)
+                        .background {
+                            if #available(macOS 27.0, *) {
+                                MacHiddenTabBar()
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        #endif
                         .safeAreaInset(edge: .bottom, spacing: 0) {
                             Color.clear.frame(height: legacyTabBarReservedHeight)
                         }

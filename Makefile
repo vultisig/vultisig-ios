@@ -14,7 +14,7 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eo pipefail -c
 
-.PHONY: help bootstrap generate open build-check test ui_test lint-icons
+.PHONY: help bootstrap generate open build-check test ui_test test-macos-hidden-tabs lint-icons
 
 # Paths
 VULTISIG_APP_DIR := VultisigApp
@@ -102,6 +102,9 @@ ui_test: ## Run UI tests
 		-destination '$(DESTINATION)' \
 		-skipPackagePluginValidation \
 		CODE_SIGNING_ALLOWED=NO
+
+test-macos-hidden-tabs: ## Run standalone AppKit tab-bar regression checks
+	@scripts/test-macos-hidden-tab-bar.sh
 
 lint-icons: ## Lint asset-catalog icon usage (unknown-asset literals, dead art, duplicate names)
 	@python3 scripts/lint-icons.py
