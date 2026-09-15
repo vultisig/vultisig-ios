@@ -74,7 +74,7 @@ final class TransactionActivityBackgroundService {
         guard !registered else { return }
         registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.refreshIdentifier, using: .main) { task in
             MainActor.assumeIsolated {
-                TransactionActivityDiagnostics.record("scheduled.delivered")
+                TransactionActivityDiagnostics.record("scheduled.delivered", detail: "identifier=\(Self.refreshIdentifier)")
                 // Do not cache an unreadable ledger during a pre-unlock background launch.
                 guard TransactionActivityBackgroundService.shared.start() else {
                     TransactionActivityDiagnostics.record("scheduled.skipped", detail: "reason=protectedDataUnavailable")
@@ -85,7 +85,12 @@ final class TransactionActivityBackgroundService {
                     TransactionActivityDiagnostics.record("scheduled.completed", detail: "success=\($0)")
                     task.setTaskCompleted(success: $0)
                 }
-                task.expirationHandler = { Task { @MainActor in expire() } }
+                task.expirationHandler = {
+                    Task { @MainActor in
+                        TransactionActivityDiagnostics.record("scheduled.expired", detail: "identifier=\(Self.refreshIdentifier)")
+                        expire()
+                    }
+                }
             }
         }
         TransactionActivityDiagnostics.record("scheduler.registered", detail: "success=\(registered)")

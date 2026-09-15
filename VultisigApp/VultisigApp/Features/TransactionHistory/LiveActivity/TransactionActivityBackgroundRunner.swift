@@ -158,21 +158,33 @@ final class TransactionActivityBackgroundRunner {
 
     private func updateSchedule() {
         guard hasWork() else {
+            TransactionActivityDiagnostics.record("schedule.cancelRequested", detail: "reason=noBackgroundWork")
             runtime.cancelScheduled()
+            // Cancellation has no result payload; do not claim a pending request existed.
+            TransactionActivityDiagnostics.record("schedule.cancelReturned", detail: "reason=noBackgroundWork")
             scheduleAttempted = false
             return
         }
-        guard !isForeground(), !scheduleAttempted else { return }
+        guard !isForeground() else {
+            TransactionActivityDiagnostics.record("schedule.skipped", detail: "reason=foreground")
+            return
+        }
+        guard !scheduleAttempted else {
+            TransactionActivityDiagnostics.record("schedule.skipped", detail: "reason=alreadyAttempted")
+            return
+        }
         scheduleAttempted = true
+        // This is the earliest permitted start, not a promised delivery time.
+        let delay = nextPollDelay()
+        let date = Date().addingTimeInterval(delay)
+        TransactionActivityDiagnostics.record("schedule.requested", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")
         do {
-            // Use the foreground cadence; iOS still chooses the actual delivery time.
-            let date = Date().addingTimeInterval(nextPollDelay())
             try runtime.schedule(date)
-            TransactionActivityDiagnostics.record("schedule.accepted", detail: "earliest=\(date.ISO8601Format())")
+            TransactionActivityDiagnostics.record("schedule.accepted", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")
         } catch {
             // Do not log error descriptions/userInfo, which can include request data.
             let code = (error as NSError).code
-            TransactionActivityDiagnostics.record("schedule.failed", detail: "code=\(code)")
+            TransactionActivityDiagnostics.record("schedule.failed", detail: "earliestBegin=\(date.ISO8601Format()) code=\(code)")
         }
     }
 }
