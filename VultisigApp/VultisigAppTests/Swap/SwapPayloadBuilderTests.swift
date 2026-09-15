@@ -500,6 +500,53 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(generic.swapFeeDecimals, 6)
     }
 
+    func testKyberSwapStatedZeroReachesTheCoSignerAsAZeroRow() async throws {
+        let vault = makeVault()
+        let quote = SwapQuote.kyberswap(
+            makeEVMQuote(toAddress: "0xKyber", swapFee: "0", swapFeeTokenContract: usdcContract),
+            fee: BigInt(1_000)
+        )
+        let transaction = makeNativeToTokenTransaction(quote: quote)
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+        let relayed = try SwapPayload(proto: try XCTUnwrap(payload.swapPayload?.mapToProtobuff()))
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: relayed, vault: vault)
+
+        XCTAssertEqual(
+            SwapCryptoLogic.affiliateFeeFiat(
+                quote: quote, fromCoin: transaction.fromCoin, toCoin: transaction.toCoin, feeCoin: transaction.feeCoin
+            ),
+            0
+        )
+        XCTAssertEqual(resolved?.amount, 0, "The co-signer renders the same $0.00 row the initiator shows")
+        XCTAssertEqual(resolved?.coin.ticker, transaction.toCoin.ticker)
+    }
+
+    func testOneInchAbsentSwapFeeHidesTheCoSignerRow() async throws {
+        let vault = makeVault()
+        let transaction = makeNativeToTokenTransaction(
+            quote: .oneinch(
+                makeEVMQuote(toAddress: "0x1inch", swapFee: nil, swapFeeTokenContract: ""),
+                fee: BigInt(1_000)
+            )
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+        let relayed = try SwapPayload(proto: try XCTUnwrap(payload.swapPayload?.mapToProtobuff()))
+
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: relayed, vault: vault))
+    }
+
     func testOneInchAbsentSwapFeeLeavesFeeContextNil() async throws {
         let vault = makeVault()
         let transaction = makeNativeToTokenTransaction(

@@ -118,12 +118,21 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         XCTAssertEqual(resolved?.coin.ticker, "BCH")
     }
 
-    /// The generic path keeps hiding a zero: `EVMQuote.Transaction.swapFee`
-    /// defaults to "0" when a quote omits the key, so a zero there cannot be
-    /// told from "never quoted".
-    func testGenericPathStillHidesAZero() {
-        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(
+    /// The generic path shares the rule: `EVMQuote.Transaction.swapFee` is
+    /// optional, so nil is "never quoted" and "0" is a sender stating the route
+    /// charges nothing.
+    func testGenericPathRendersAStatedZero() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
             swapPayload: .generic(makeGenericPayload(swapFee: "0")),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, 0)
+        XCTAssertEqual(resolved?.coin.ticker, "USDC")
+    }
+
+    func testGenericPathHidesAnAbsentFee() {
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .generic(makeGenericPayload(swapFee: nil)),
             vault: nil
         ))
     }

@@ -72,9 +72,180 @@ final class GenericSwapStatedZeroFeeTests: XCTestCase {
         XCTAssertEqual(extracted.tokenContract, usdcContract)
     }
 
+    // MARK: - Wire
+
+    func testStatedZeroTravelsWithItsCoinContext() throws {
+        let proto = SwapPayload.generic(makeGenericPayload(swapFee: "0", withContext: true)).mapToProtobuff()
+        guard case let .oneinchSwapPayload(value) = proto else {
+            XCTFail("Expected .oneinchSwapPayload"); return
+        }
+        XCTAssertEqual(value.quote.tx.swapFee, "0")
+        XCTAssertTrue(value.quote.tx.hasSwapFeeChain)
+        XCTAssertTrue(value.quote.tx.hasSwapFeeTokenID)
+        XCTAssertTrue(value.quote.tx.hasSwapFeeDecimals)
+        XCTAssertNotNil(
+            try value.quote.tx.serializedData().range(of: Data([0x3a, 0x01, 0x30])),
+            "field 7, length 1, \"0\" — the zero is present on the wire"
+        )
+
+        guard case let .generic(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .generic"); return
+        }
+        XCTAssertEqual(decoded.quote.tx.swapFee, "0")
+        XCTAssertEqual(decoded.swapFeeChain, "Ethereum")
+        XCTAssertEqual(decoded.swapFeeTokenId, usdcContract)
+        XCTAssertEqual(decoded.swapFeeDecimals, 6)
+    }
+
+    func testAbsentFeeLeavesTheWholeGroupOffTheWire() throws {
+        let proto = SwapPayload.generic(makeGenericPayload(swapFee: nil, withContext: true)).mapToProtobuff()
+        guard case let .oneinchSwapPayload(value) = proto else {
+            XCTFail("Expected .oneinchSwapPayload"); return
+        }
+        XCTAssertTrue(value.quote.tx.swapFee.isEmpty)
+        XCTAssertFalse(value.quote.tx.hasSwapFeeChain, "Coin context without an amount describes nothing")
+        XCTAssertFalse(value.quote.tx.hasSwapFeeTokenID)
+        XCTAssertFalse(value.quote.tx.hasSwapFeeDecimals)
+
+        guard case let .generic(decoded) = try SwapPayload(proto: proto) else {
+            XCTFail("Expected .generic"); return
+        }
+        XCTAssertNil(decoded.quote.tx.swapFee, "An empty wire string reads back as absent, not as \"\"")
+    }
+
+    func testLegacyWireBytesDecodeToAbsentAndReEncodeByteIdentical() throws {
+        let originalBytes = try makeLegacyProto().serializedData()
+        let decoded = try SwapPayload(proto: .oneinchSwapPayload(
+            try VSOneInchSwapPayload(serializedBytes: originalBytes)
+        ))
+        guard case let .generic(payload) = decoded else {
+            XCTFail("Expected .generic"); return
+        }
+        XCTAssertNil(payload.quote.tx.swapFee)
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: decoded, vault: nil))
+
+        guard case let .oneinchSwapPayload(reEncoded) = decoded.mapToProtobuff() else {
+            XCTFail("Expected .oneinchSwapPayload"); return
+        }
+        XCTAssertEqual(
+            try reEncoded.serializedData(), originalBytes,
+            "A relayed legacy payload must re-serialize to the sender's exact bytes"
+        )
+    }
+
+    func testKyberSwapProtoHasNoFeeFieldSoItDecodesToAbsent() throws {
+        var proto = VSKyberSwapPayload()
+        proto.fromCoin = ProtoCoinResolver.proto(from: makeETH())
+        proto.toCoin = ProtoCoinResolver.proto(from: makeUSDC())
+        proto.fromAmount = "1000000000000000000"
+        proto.toAmountDecimal = "3000"
+        proto.quote = .with {
+            $0.dstAmount = "3000000000"
+            $0.tx = .with {
+                $0.from = "0xFrom"
+                $0.to = "0xRouter"
+                $0.data = "0x"
+                $0.value = "0"
+                $0.gasPrice = "1"
+                $0.gas = 100_000
+            }
+        }
+        guard case let .generic(decoded) = try SwapPayload(proto: .kyberswapSwapPayload(proto)) else {
+            XCTFail("Expected .generic"); return
+        }
+        XCTAssertNil(decoded.quote.tx.swapFee)
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: .generic(decoded), vault: nil))
+    }
+
+    // MARK: - Co-signer
+
+    func testCoSignerRendersAStatedZeroInTheContextCoin() {
+        let resolved = JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .generic(makeGenericPayload(swapFee: "0", withContext: true)),
+            vault: nil
+        )
+        XCTAssertEqual(resolved?.amount, 0)
+        XCTAssertEqual(resolved?.coin.ticker, "USDC")
+    }
+
+    func testCoSignerHidesAnAbsentFee() {
+        XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(
+            swapPayload: .generic(makeGenericPayload(swapFee: nil, withContext: true)),
+            vault: nil
+        ))
+    }
+
+    func testCoSignerHidesAZeroWithoutCoinContext() {
+        XCTAssertNil(
+            JoinKeysignSwapFeeViewModel().resolveSwapFee(
+                swapPayload: .generic(makeGenericPayload(swapFee: "0", withContext: false)),
+                vault: nil
+            ),
+            "Never guess a coin, not even for a zero"
+        )
+    }
+
     // MARK: - Fixtures
 
     private let usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+    private func makeGenericPayload(swapFee: String?, withContext: Bool) -> GenericSwapPayload {
+        GenericSwapPayload(
+            fromCoin: makeETH(),
+            toCoin: makeUSDC(),
+            fromAmount: BigInt("1000000000000000000"),
+            toAmountDecimal: 3000,
+            quote: makeQuote(swapFee: swapFee),
+            provider: .kyberSwap,
+            swapFeeChain: withContext ? "Ethereum" : nil,
+            swapFeeTokenId: withContext ? usdcContract : nil,
+            swapFeeDecimals: withContext ? 6 : nil
+        )
+    }
+
+    /// Fields 1-7 only, `swap_fee` unset — the shape a sender predating the
+    /// coin context sends for a route it states no fee on.
+    private func makeLegacyProto() -> VSOneInchSwapPayload {
+        var legacy = VSOneInchSwapPayload()
+        legacy.fromCoin = ProtoCoinResolver.proto(from: makeETH())
+        legacy.toCoin = ProtoCoinResolver.proto(from: makeUSDC())
+        legacy.fromAmount = "1000000000000000000"
+        legacy.toAmountDecimal = "3000"
+        legacy.quote = .with {
+            $0.dstAmount = "3000000000"
+            $0.tx = .with {
+                $0.from = "0xFrom"
+                $0.to = "0xRouter"
+                $0.data = "0x"
+                $0.value = "0"
+                $0.gasPrice = "1"
+                $0.gas = 100_000
+            }
+        }
+        legacy.provider = "1inch"
+        return legacy
+    }
+
+    private func makeETH() -> Coin {
+        makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+    }
+
+    private func makeUSDC() -> Coin {
+        makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: usdcContract)
+    }
+
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, contract: String = "") -> Coin {
+        let asset = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: "logo",
+            decimals: decimals,
+            priceProviderId: "stated-zero-\(ticker.lowercased())",
+            contractAddress: contract,
+            isNativeToken: isNative
+        )
+        return Coin(asset: asset, address: "stated-zero-\(ticker)", hexPublicKey: "")
+    }
 
     private let baseTxJSON = #""from": "0xFrom", "to": "0xTo", "data": "0x", "value": "0", "gasPrice": "1", "gas": 100000"#
 
