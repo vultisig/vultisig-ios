@@ -277,7 +277,7 @@ private final class FiatInputInteractor: SwapInteractor {
             fees: Fees(affiliate: "0", asset: "BTC", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: nil, inboundConfirmationBlocks: nil, inboundConfirmationSeconds: nil,
             memo: "memo", notes: "", outboundDelayBlocks: 0, outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0", slippageBps: nil, totalSwapSeconds: nil,
+            recommendedMinAmountIn: "0", totalSwapSeconds: nil,
             warning: "", router: nil, maxStreamingQuantity: nil
         )
         return SwapQuoteResult(quote: .thorchain(quote), vultDiscountBps: 0, referralDiscountBps: 0)
