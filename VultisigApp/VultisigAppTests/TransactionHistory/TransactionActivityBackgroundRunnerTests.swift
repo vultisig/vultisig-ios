@@ -8,20 +8,18 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     private var clock: BackgroundTestClock!
     private var work = true
     private var foreground = false
-    private var pollDelay: TimeInterval = 5
 
     override func setUp() async throws {
         system = BackgroundRuntimeSpy()
         clock = BackgroundTestClock()
         work = true
         foreground = false
-        pollDelay = 5
     }
 
     private func runner(drain: @escaping () async -> Void = {}, refresh: @escaping () async -> Void = {}) -> TransactionActivityBackgroundRunner {
         TransactionActivityBackgroundRunner(runtime: system.runtime, hasWork: { [unowned self] in self.work },
                                             isForeground: { [unowned self] in self.foreground },
-                                            nextPollDelay: { [unowned self] in self.pollDelay }, refresh: refresh, drain: drain,
+                                            refresh: refresh, drain: drain,
                                             sleep: { [clock] in try await clock!.sleep($0) })
     }
 
@@ -46,8 +44,8 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         await drain()
         XCTAssertEqual(system.ended.count, 1)
         XCTAssertEqual(system.scheduled.count, 1)
-        XCTAssertGreaterThanOrEqual(system.scheduled[0], requestedAfter.addingTimeInterval(5))
-        XCTAssertLessThanOrEqual(system.scheduled[0], requestedBefore.addingTimeInterval(5))
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], requestedAfter.addingTimeInterval(60))
+        XCTAssertLessThanOrEqual(system.scheduled[0], requestedBefore.addingTimeInterval(60))
         runner.enteredForeground()
         XCTAssertEqual(system.ended.count, 1)
     }
@@ -71,16 +69,16 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         XCTAssertEqual(system.scheduled.count, 1)
     }
 
-    func testScheduledDeliveryRequestsNextWakeUsingUpdatedPollingDelay() async {
+    func testScheduledDeliveryRequestsNextWakeAfterOneMinute() async {
         let observed = expectation(description: "observed")
-        let runner = runner { self.pollDelay = 30; observed.fulfill() }
+        let runner = runner { observed.fulfill() }
         let before = Date()
         _ = runner.performScheduledRefresh { _ in }
         await fulfillment(of: [observed], timeout: 2)
         await drain()
         XCTAssertEqual(system.scheduled.count, 1)
-        XCTAssertGreaterThanOrEqual(system.scheduled[0], before.addingTimeInterval(30))
-        XCTAssertLessThanOrEqual(system.scheduled[0], Date().addingTimeInterval(30))
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], before.addingTimeInterval(60))
+        XCTAssertLessThanOrEqual(system.scheduled[0], Date().addingTimeInterval(60))
     }
 
     func testExpirationCompletesWithoutWaitingForUncooperativeNetwork() async {
@@ -116,31 +114,37 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         XCTAssertEqual(system.ended.count, 2)
     }
 
-    func testDeadlineStopsContinuationAndDoesNotRenewFromStatusEvents() async {
+    func testBackgroundEntryChecksOnceAndDoesNotRepeatWhileWorkRemains() async {
         var observations = 0
         let runner = runner { observations += 1 }
         runner.enteredBackground()
         await drain()
         XCTAssertEqual(observations, 1)
+        XCTAssertEqual(system.ended.count, 1)
+        XCTAssertTrue(work)
         clock.advance(.seconds(5))
-        await drain()
-        XCTAssertEqual(observations, 2)
+        clock.advance(.seconds(10))
+        clock.advance(.seconds(22))
+        clock.advance(.seconds(25))
         runner.trackingDidChange()
-        runner.enteredBackground()
+        await drain()
+        XCTAssertEqual(observations, 1)
         XCTAssertEqual(system.scheduled.count, 1)
         XCTAssertEqual(system.expirations.count, 1)
-        clock.advance(.seconds(25))
-        await drain()
         XCTAssertEqual(system.ended.count, 1)
     }
 
-    func testSlowPollingReleasesContinuationWhenNoFurtherObservationFits() async {
-        pollDelay = ChainStatusConfig.config(for: .bitcoin).pollInterval
-        var observations = 0
-        let runner = runner { observations += 1 }
+    func testBackgroundEntryWaitsForObservationBeforeReleasingRuntime() async {
+        let entered = expectation(description: "entered")
+        var release: CheckedContinuation<Void, Never>?
+        let runner = runner {
+            await withCheckedContinuation { release = $0; entered.fulfill() }
+        }
         runner.enteredBackground()
+        await fulfillment(of: [entered], timeout: 2)
+        XCTAssertTrue(system.ended.isEmpty)
+        release?.resume()
         await drain()
-        XCTAssertEqual(observations, 1)
         XCTAssertEqual(system.ended.count, 1)
         XCTAssertEqual(system.scheduled.count, 1)
     }
@@ -173,11 +177,16 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testSoftDeadlineDrainsButHardDeadlineAlwaysReleasesRuntime() async {
         let draining = expectation(description: "draining")
         var release: CheckedContinuation<Void, Never>?
+        var releaseObservation: CheckedContinuation<Void, Never>?
+        let entered = expectation(description: "entered")
         let runner = runner(drain: {
             await withCheckedContinuation { release = $0; draining.fulfill() }
+        }, refresh: {
+            await withCheckedContinuation { releaseObservation = $0; entered.fulfill() }
         })
         runner.enteredBackground()
         await drain()
+        await fulfillment(of: [entered], timeout: 2)
         clock.advance(.seconds(22))
         await fulfillment(of: [draining], timeout: 2)
         XCTAssertTrue(system.ended.isEmpty)
@@ -185,6 +194,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         await drain()
         XCTAssertEqual(system.ended.count, 1)
         release?.resume()
+        releaseObservation?.resume()
         await drain()
         XCTAssertEqual(system.ended.count, 1)
     }

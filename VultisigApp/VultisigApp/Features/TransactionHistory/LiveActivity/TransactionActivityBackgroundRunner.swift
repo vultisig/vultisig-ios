@@ -13,7 +13,6 @@ final class TransactionActivityBackgroundRunner {
 
     private final class Run {
         let id = UUID()
-        let observationEndsAt = ContinuousClock.now.advanced(by: .seconds(22))
         var assertion: UUID?
         var worker: Task<Void, Never>?
         var deadline: Task<Void, Never>?
@@ -26,7 +25,6 @@ final class TransactionActivityBackgroundRunner {
     private let runtime: Runtime
     private let hasWork: () -> Bool
     private let isForeground: () -> Bool
-    private let nextPollDelay: () -> TimeInterval
     private let refresh: () async -> Void
     private let drain: () async -> Void
     private let sleep: (Duration) async throws -> Void
@@ -34,12 +32,11 @@ final class TransactionActivityBackgroundRunner {
     private var scheduleAttempted = false
 
     init(runtime: Runtime, hasWork: @escaping () -> Bool, isForeground: @escaping () -> Bool,
-         nextPollDelay: @escaping () -> TimeInterval, refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
+         refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
          sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }) {
         self.runtime = runtime
         self.hasWork = hasWork
         self.isForeground = isForeground
-        self.nextPollDelay = nextPollDelay
         self.refresh = refresh
         self.drain = drain
         self.sleep = sleep
@@ -67,7 +64,7 @@ final class TransactionActivityBackgroundRunner {
         guard let assertion else { finish(id: current.id, success: false, reason: "assertionDenied"); return }
         current.assertion = assertion
         TransactionActivityDiagnostics.record("window.acquired", runID: current.id)
-        launch(current, repeating: true)
+        launch(current, mode: "backgroundEntry")
     }
 
     func enteredForeground() {
@@ -90,7 +87,7 @@ final class TransactionActivityBackgroundRunner {
         if isForeground() || !hasWork() {
             finish(id: current.id, success: true, reason: "foregroundOrNoWork")
         } else {
-            launch(current, repeating: false)
+            launch(current, mode: "scheduled")
         }
         return { [weak self] in self?.finish(id: current.id, success: false, reason: "osExpiration") }
     }
@@ -101,8 +98,8 @@ final class TransactionActivityBackgroundRunner {
         updateSchedule()
     }
 
-    private func launch(_ current: Run, repeating: Bool) {
-        TransactionActivityDiagnostics.record("window.started", runID: current.id, detail: "mode=\(repeating ? "continuation" : "scheduled")")
+    private func launch(_ current: Run, mode: String) {
+        TransactionActivityDiagnostics.record("window.started", runID: current.id, detail: "mode=\(mode)")
         current.deadline = Task { [weak self, sleep] in
             do { try await sleep(.seconds(25)) } catch { return }
             self?.finish(id: current.id, success: false, reason: "executionDeadline")
@@ -117,29 +114,17 @@ final class TransactionActivityBackgroundRunner {
                 self?.finish(id: current.id, success: false, reason: "observationDeadline")
             }
         }
-        current.worker = Task { [weak self, refresh, sleep] in
-            repeat {
-                guard !Task.isCancelled, let self, self.run?.id == current.id else { return }
-                guard !self.isForeground(), self.hasWork() else {
-                    self.finish(id: current.id, success: true, reason: "foregroundOrNoWork")
-                    return
-                }
-                TransactionActivityDiagnostics.record("poll.batchStarted", runID: current.id)
-                await refresh()
-                TransactionActivityDiagnostics.record("poll.batchReturned", runID: current.id, detail: "cancelled=\(Task.isCancelled)")
-                guard !Task.isCancelled, self.run?.id == current.id else { return }
-                if !repeating || !self.hasWork() {
-                    self.finish(id: current.id, success: true, reason: "observationFinished")
-                    return
-                }
-                let delay = Duration.seconds(self.nextPollDelay())
-                guard ContinuousClock.now.duration(to: current.observationEndsAt) > delay else {
-                    self.finish(id: current.id, success: true, reason: "nextPollOutsideWindow")
-                    return
-                }
-                TransactionActivityDiagnostics.record("poll.wait", runID: current.id, detail: "delay=\(delay)")
-                do { try await sleep(delay) } catch { return }
-            } while !Task.isCancelled
+        current.worker = Task { [weak self, refresh] in
+            guard !Task.isCancelled, let self, self.run?.id == current.id else { return }
+            guard !self.isForeground(), self.hasWork() else {
+                self.finish(id: current.id, success: true, reason: "foregroundOrNoWork")
+                return
+            }
+            TransactionActivityDiagnostics.record("poll.batchStarted", runID: current.id)
+            await refresh()
+            TransactionActivityDiagnostics.record("poll.batchReturned", runID: current.id, detail: "cancelled=\(Task.isCancelled)")
+            guard !Task.isCancelled, self.run?.id == current.id else { return }
+            self.finish(id: current.id, success: true, reason: "observationFinished")
         }
     }
 
@@ -174,8 +159,8 @@ final class TransactionActivityBackgroundRunner {
             return
         }
         scheduleAttempted = true
-        // This is the earliest permitted start, not a promised delivery time.
-        let delay = nextPollDelay()
+        // Request a wake one minute from now; iOS decides the actual delivery time.
+        let delay: TimeInterval = 60
         let date = Date().addingTimeInterval(delay)
         TransactionActivityDiagnostics.record("schedule.requested", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")
         do {

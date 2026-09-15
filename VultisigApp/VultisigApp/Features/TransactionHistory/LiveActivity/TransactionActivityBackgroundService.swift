@@ -31,7 +31,6 @@ final class TransactionActivityBackgroundService {
         runtime: system.runtime,
         hasWork: { TransactionLiveActivityCoordinator.shared.hasBackgroundWork },
         isForeground: { UIApplication.shared.applicationState != .background },
-        nextPollDelay: { [unowned self] in self.nextPollDelay() },
         refresh: { [weak self] in
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
@@ -62,12 +61,6 @@ final class TransactionActivityBackgroundService {
         guard row.swapTracking?.providerKind == THORChainLimitTrackingService.providerKind,
               let previous = THORChainLimitTrackingService.shared.lastPollDate(sender: row.fromAddress) else { return }
         pollingSchedule.didObserve(row, now: previous)
-    }
-
-    private func nextPollDelay() -> TimeInterval {
-        let rows = coordinator.backgroundRecords
-        for row in rows { synchronizeProviderCadence(row) }
-        return pollingSchedule.nextDelay(for: rows)
     }
 
     func register() {
