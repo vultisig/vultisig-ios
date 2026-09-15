@@ -409,7 +409,7 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
 
     private let usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 
-    private func makeGenericPayload(swapFee: String) -> GenericSwapPayload {
+    private func makeGenericPayload(swapFee: String?) -> GenericSwapPayload {
         GenericSwapPayload(
             fromCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
             toCoin: makeUSDC(),

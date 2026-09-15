@@ -622,10 +622,8 @@ enum SwapCryptoLogic {
             let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
             return coin.fiat(decimal: feeDecimal)
         case let .lifi(evmQuote, _, integratorFee):
-            // EVM LiFi carries the fee as a token amount in `tx.swapFee`. Solana
-            // LiFi deliberately reports `swapFee` "0" and charges the integrator
-            // fee as a fraction of the output amount instead — so fall back to
-            // that, or the fee row and Total would drop the charged fee.
+            // Solana LiFi states no `swapFee`; its integrator fee is a fraction
+            // of the output.
             if let evmFee = quote.evmSwapFeeBigInt {
                 let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
                 return coin.fiat(decimal: coin.decimal(for: evmFee))

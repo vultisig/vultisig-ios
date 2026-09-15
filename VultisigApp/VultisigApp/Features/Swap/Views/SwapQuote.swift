@@ -187,7 +187,7 @@ enum SwapQuote: Hashable {
     var evmSwapFeeBigInt: BigInt? {
         switch self {
         case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
-            guard let fee = BigInt(quote.tx.swapFee), fee > 0 else { return nil }
+            guard let raw = quote.tx.swapFee, let fee = BigInt(raw), fee >= 0 else { return nil }
             return fee
         case .swapkit:
             // SwapKit's affiliate fee is dashboard-driven, no per-tx swap-fee

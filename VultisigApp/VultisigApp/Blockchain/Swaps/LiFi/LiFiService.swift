@@ -81,8 +81,7 @@ struct LiFiService {
 
             let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
 
-            // Extract swap fee and token contract from LiFi response
-            let (swapFee, swapFeeTokenContract) = extractSwapFee(from: quote)
+            let (swapFee, swapFeeTokenContract) = Self.extractSwapFee(from: quote, integratorFee: integratorFee)
 
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
@@ -113,9 +112,7 @@ struct LiFiService {
                     data: quote.transactionRequest.data,
                     value: .empty,
                     gasPrice: .empty,
-                    gas: gas,
-                    swapFee: "0",
-                    swapFeeTokenContract: ""
+                    gas: gas
                 )
             )
 
@@ -160,12 +157,18 @@ private extension LiFiService {
         let formattedFee: Decimal = Decimal(feeInt) / 10_000
         return formattedFee
     }
+}
 
-    func extractSwapFee(from response: LifiQuoteResponse.EvmQuoteResponse) -> (fee: String, tokenContract: String) {
-        // Find "LIFI Fixed Fee" in feeCosts array (case-insensitive)
+extension LiFiService {
+
+    static func extractSwapFee(
+        from response: LifiQuoteResponse.EvmQuoteResponse,
+        integratorFee: Decimal?
+    ) -> (fee: String?, tokenContract: String) {
         guard let feeCosts = response.estimate.feeCosts,
               let swapFeeCost = feeCosts.first(where: { $0.name.lowercased() == "lifi fixed fee" }) else {
-            return ("0", "")
+            // A missing entry is a stated zero only when the app asked for none.
+            return (integratorFee == 0 ? "0" : nil, "")
         }
 
         let feeAmount = swapFeeCost.amount

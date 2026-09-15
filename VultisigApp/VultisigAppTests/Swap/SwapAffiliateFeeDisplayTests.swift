@@ -396,7 +396,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let sol = makeCoin(.solana, ticker: "SOLLIFI", decimals: 9, isNative: true)
         let usdc = makeCoin(.solana, ticker: "USDCLIFI", decimals: 6, isNative: false)
         setPrice(1, for: usdc) // 1 USDC = $1
-        // LiFi-Solana: swapFee "0"; integrator fee 0.005 of the 100-USDC output
+        // LiFi-Solana: no stated swapFee; integrator fee 0.005 of the 100-USDC output
         // (dstAmount 100_000_000 at 6 dp) → 0.5 USDC → $0.50. Must appear in the
         // row and the Total (network 0 + affiliate 0.5 + outbound 0).
         let quote = makeLiFiSolanaQuote(integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000")
@@ -752,15 +752,14 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         return .oneinch(evm, fee: nil)
     }
 
-    /// LiFi-Solana quote fixture: `swapFee` is "0" and the affiliate fee is
-    /// carried as `integratorFee` (a fraction of the output amount), mirroring
-    /// `LiFiService`'s Solana branch.
+    /// LiFi-Solana quote fixture: no `swapFee` is stated and the affiliate fee
+    /// is carried as `integratorFee` (a fraction of the output amount),
+    /// mirroring `LiFiService`'s Solana branch.
     private func makeLiFiSolanaQuote(integratorFee: Decimal, dstAmount: String) -> SwapQuote {
         let evm = EVMQuote(
             dstAmount: dstAmount,
             tx: EVMQuote.Transaction(
-                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0,
-                swapFee: "0", swapFeeTokenContract: ""
+                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0
             )
         )
         return .lifi(evm, fee: nil, integratorFee: integratorFee)

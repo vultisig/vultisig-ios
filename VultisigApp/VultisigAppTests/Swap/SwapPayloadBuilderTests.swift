@@ -469,11 +469,42 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(generic.swapFeeDecimals, 18)
     }
 
-    func testOneInchZeroSwapFeeLeavesFeeContextNil() async throws {
+    func testKyberSwapStatedZeroFeeStillCarriesDestinationTokenContext() async throws {
+        // Ultimate tier: KyberSwap computes a 0 fee in the destination token.
+        // The zero is a claim, so its coin context must travel with it.
+        let vault = makeVault()
+        let transaction = makeNativeToTokenTransaction(
+            quote: .kyberswap(
+                makeEVMQuote(
+                    toAddress: "0xKyber",
+                    swapFee: "0",
+                    swapFeeTokenContract: usdcContract
+                ),
+                fee: BigInt(1_000)
+            )
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+
+        guard case let .generic(generic) = payload.swapPayload else {
+            XCTFail("Expected .generic swapPayload"); return
+        }
+        XCTAssertEqual(generic.quote.tx.swapFee, "0")
+        XCTAssertEqual(generic.swapFeeChain, "Ethereum")
+        XCTAssertEqual(generic.swapFeeTokenId, usdcContract)
+        XCTAssertEqual(generic.swapFeeDecimals, 6)
+    }
+
+    func testOneInchAbsentSwapFeeLeavesFeeContextNil() async throws {
         let vault = makeVault()
         let transaction = makeNativeToTokenTransaction(
             quote: .oneinch(
-                makeEVMQuote(toAddress: "0x1inch", swapFee: "0", swapFeeTokenContract: ""),
+                makeEVMQuote(toAddress: "0x1inch", swapFee: nil, swapFeeTokenContract: ""),
                 fee: BigInt(1_000)
             )
         )
@@ -711,7 +742,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     private func makeEVMQuote(
         toAddress: String,
-        swapFee: String = "0",
+        swapFee: String? = nil,
         swapFeeTokenContract: String = ""
     ) -> EVMQuote {
         EVMQuote(

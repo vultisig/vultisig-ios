@@ -493,7 +493,7 @@ final class SwapCryptoLogicTests: XCTestCase {
     private func makeEVMQuote(
         dstAmount: String = "0",
         toAddress: String = "0xTo",
-        swapFee: String = "0",
+        swapFee: String? = nil,
         swapFeeTokenContract: String = "",
         gas: Int64 = 0,
         gasPrice: String = "0"

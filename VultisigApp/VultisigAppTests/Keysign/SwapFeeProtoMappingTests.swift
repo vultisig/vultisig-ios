@@ -364,7 +364,7 @@ final class SwapFeeProtoMappingTests: XCTestCase {
     }
 
     private func makeGenericPayload(
-        swapFee: String,
+        swapFee: String?,
         swapFeeChain: String?,
         swapFeeTokenId: String?,
         swapFeeDecimals: Int?
