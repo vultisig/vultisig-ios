@@ -186,7 +186,7 @@ enum SwapQuote: Hashable {
 
     var evmSwapFeeBigInt: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
             guard let raw = quote.tx.swapFee, let fee = BigInt(raw), fee >= 0 else { return nil }
             return fee
         case .swapkit:
@@ -252,7 +252,7 @@ enum SwapQuote: Hashable {
 
     var swapFeeTokenContract: String? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
             let contract = quote.tx.swapFeeTokenContract
             return contract.isEmpty ? nil : contract
         default:

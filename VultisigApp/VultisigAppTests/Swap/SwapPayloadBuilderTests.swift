@@ -372,6 +372,98 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
+    func testJupiterPayloadCarriesOutputMintFeeContext() async throws {
+        let vault = makeVault()
+        let usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        let transaction = makeSolanaJupiterTransaction(
+            quote: .jupiter(
+                makeSolanaEVMQuote(base64: "AQIDBA==", swapFee: "7500", swapFeeTokenContract: usdcMint),
+                fee: nil,
+                platformFee: Decimal(string: "0.0075") ?? .zero,
+                feeOnInput: false
+            )
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: solanaChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+
+        guard case let .generic(generic) = payload.swapPayload else {
+            XCTFail("Expected .generic swapPayload"); return
+        }
+        XCTAssertEqual(generic.quote.tx.swapFee, "7500")
+        XCTAssertEqual(generic.swapFeeChain, "Solana")
+        XCTAssertEqual(generic.swapFeeTokenId, usdcMint)
+        XCTAssertEqual(generic.swapFeeDecimals, 6)
+        XCTAssertEqual(generic.quote.tx.data, "AQIDBA==", "The signed bytes are untouched by the fee context")
+    }
+
+    func testJupiterFeeOnInputLeavesFeeContextNil() async throws {
+        let vault = makeVault()
+        let transaction = makeSolanaJupiterTransaction(
+            quote: .jupiter(makeSolanaEVMQuote(base64: "AQIDBA=="), fee: nil, platformFee: .zero, feeOnInput: true)
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: solanaChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+
+        guard case let .generic(generic) = payload.swapPayload else {
+            XCTFail("Expected .generic swapPayload"); return
+        }
+        XCTAssertNil(generic.quote.tx.swapFee)
+        XCTAssertNil(generic.swapFeeChain)
+        XCTAssertNil(generic.swapFeeTokenId)
+        XCTAssertNil(generic.swapFeeDecimals)
+    }
+
+    func testLiFiSolanaNativeDestinationFeeContextNamesTheDestinationChain() async throws {
+        // SOL → ETH via LiFi: the integrator fee is stated in ETH, which has no
+        // contract to match on. The context must still name Ethereum, not the
+        // Solana gas coin.
+        let vault = makeVault()
+        let sol = makeContractCoin(.solana, ticker: "SOL", decimals: 9, isNative: true, contract: "")
+        let eth = makeContractCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, contract: "")
+        let quote = SwapQuote.lifi(
+            makeSolanaEVMQuote(base64: "AQIDBA==", swapFee: "5000000000000000", swapFeeTokenContract: ""),
+            fee: nil,
+            integratorFee: Decimal(string: "0.005")
+        )
+        let transaction = SwapTransaction(
+            fromCoin: sol,
+            toCoin: eth,
+            fromAmount: 1.0,
+            kind: .market(quote),
+            gas: 0,
+            gasLimit: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: sol,
+            advancedSettings: .default
+        )
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: solanaChainSpecific(),
+            vault: vault,
+            now: fixedNow
+        )
+
+        guard case let .generic(generic) = payload.swapPayload else {
+            XCTFail("Expected .generic swapPayload"); return
+        }
+        XCTAssertEqual(generic.swapFeeChain, "Ethereum")
+        XCTAssertNil(generic.swapFeeTokenId)
+        XCTAssertEqual(generic.swapFeeDecimals, 18)
+    }
+
     // MARK: - Swap-fee coin context
 
     func testKyberSwapPayloadCarriesDestinationTokenFeeContext() async throws {
@@ -827,7 +919,11 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    private func makeSolanaEVMQuote(base64: String) -> EVMQuote {
+    private func makeSolanaEVMQuote(
+        base64: String,
+        swapFee: String? = nil,
+        swapFeeTokenContract: String = ""
+    ) -> EVMQuote {
         EVMQuote(
             dstAmount: "1000000",
             tx: EVMQuote.Transaction(
@@ -836,7 +932,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
                 data: base64,
                 value: "0",
                 gasPrice: "0",
-                gas: 0
+                gas: 0,
+                swapFee: swapFee,
+                swapFeeTokenContract: swapFeeTokenContract
             )
         )
     }

@@ -185,6 +185,19 @@ final class GenericSwapStatedZeroFeeTests: XCTestCase {
         )
     }
 
+    // MARK: - LiFi Solana: the integrator fee stated in toCoin
+
+    func testLiFiSolanaFeeIsTheIntegratorFractionOfTheOutputInToCoinUnits() {
+        let usdc = makeCoin(.solana, ticker: "USDC", decimals: 6, isNative: false, contract: "EPjF")
+        XCTAssertEqual(
+            LiFiService.solanaSwapFee(toAmount: "100000000", integratorFee: Decimal(5) / 1000, toCoin: usdc),
+            "500000"
+        )
+        XCTAssertEqual(LiFiService.solanaSwapFee(toAmount: "100000000", integratorFee: 0, toCoin: usdc), "0")
+        XCTAssertNil(LiFiService.solanaSwapFee(toAmount: "100000000", integratorFee: nil, toCoin: usdc))
+        XCTAssertNil(LiFiService.solanaSwapFee(toAmount: "not-a-number", integratorFee: 0, toCoin: usdc))
+    }
+
     // MARK: - Fixtures
 
     private let usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"

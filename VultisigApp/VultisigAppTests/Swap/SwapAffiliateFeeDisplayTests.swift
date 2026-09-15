@@ -422,6 +422,21 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         )
     }
 
+    func testAffiliateFeeFiatLifiSolanaUsesTheStatedFeeWhenPresent() {
+        let sol = makeCoin(.solana, ticker: "SOLLIFI2", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCLIFI2", decimals: 6, isNative: false)
+        setPrice(1, for: usdc)
+        // The payload states 0.5 USDC; the output-fraction fallback would say
+        // the same, so both devices agree by construction.
+        let quote = makeLiFiSolanaQuote(
+            integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000", swapFee: "500000"
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol),
+            Decimal(5) / Decimal(10)
+        )
+    }
+
     func testLiFiSolanaGoldDiscountReconcilesGrossAndNet() {
         let sol = makeCoin(.solana, ticker: "SOLLIFIGOLD", decimals: 9, isNative: true)
         let usdc = makeCoin(.solana, ticker: "USDCLIFIGOLD", decimals: 6, isNative: false)
@@ -755,11 +770,16 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
     /// LiFi-Solana quote fixture: no `swapFee` is stated and the affiliate fee
     /// is carried as `integratorFee` (a fraction of the output amount),
     /// mirroring `LiFiService`'s Solana branch.
-    private func makeLiFiSolanaQuote(integratorFee: Decimal, dstAmount: String) -> SwapQuote {
+    private func makeLiFiSolanaQuote(
+        integratorFee: Decimal,
+        dstAmount: String,
+        swapFee: String? = nil
+    ) -> SwapQuote {
         let evm = EVMQuote(
             dstAmount: dstAmount,
             tx: EVMQuote.Transaction(
-                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0
+                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0,
+                swapFee: swapFee
             )
         )
         return .lifi(evm, fee: nil, integratorFee: integratorFee)

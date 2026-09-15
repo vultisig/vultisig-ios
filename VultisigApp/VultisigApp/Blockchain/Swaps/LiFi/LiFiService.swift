@@ -103,6 +103,7 @@ struct LiFiService {
             if !quote.estimate.gasCosts.isEmpty {
                 gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
             }
+            let swapFee = Self.solanaSwapFee(toAmount: quote.estimate.toAmount, integratorFee: integratorFee, toCoin: toCoin)
 
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
@@ -112,7 +113,9 @@ struct LiFiService {
                     data: quote.transactionRequest.data,
                     value: .empty,
                     gasPrice: .empty,
-                    gas: gas
+                    gas: gas,
+                    swapFee: swapFee,
+                    swapFeeTokenContract: swapFee == nil ? "" : toCoin.contractAddress
                 )
             )
 
@@ -160,6 +163,13 @@ private extension LiFiService {
 }
 
 extension LiFiService {
+
+    /// Solana routes take the integrator fee as a fraction of the output, so it
+    /// is stated in `toCoin`.
+    static func solanaSwapFee(toAmount: String, integratorFee: Decimal?, toCoin: Coin) -> String? {
+        guard let integratorFee, let toAmount = BigInt(toAmount) else { return nil }
+        return toCoin.raw(for: toCoin.decimal(for: toAmount) * integratorFee).description
+    }
 
     static func extractSwapFee(
         from response: LifiQuoteResponse.EvmQuoteResponse,
