@@ -10,6 +10,9 @@
 //      quote, and never across a pair change.
 //   3. The immediate fetch path (percentage / paste) skips the keystroke
 //      debounce while free typing stays debounced.
+//   4. The `~` estimate follows the payout fit of the pair's last firm quote
+//      (fee-aware), falls back to spot for a pair without one, and still never
+//      satisfies validation.
 //
 
 import BigInt
@@ -388,7 +391,108 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertFalse(vm.error is SwapCryptoLogic.Errors, "A generic fee failure must not be relabeled as a money error")
     }
 
+    // MARK: - Item 4: the `~` estimate follows the pair's last firm quote
+
+    /// 1 RUNE → 0.98 BTC after 0.02 BTC of fees, 0.01 of it the flat outbound
+    /// fee: rate 1, proportional 1%, flat 0.01.
+    private var feeBearingQuote: SwapQuote {
+        .thorchain(makeThorQuote(expectedAmountOut: "98000000", feesTotal: "2000000", feesOutbound: "1000000"))
+    }
+
+    func testIndicativeFollowsTheFittedPayoutAfterAnAmountEdit() async {
+        let vm = await makeQuotedVM(quote: feeBearingQuote)
+        XCTAssertEqual(vm.toAmountDecimal, Decimal(string: "0.98"), "Precondition: the firm quote landed")
+
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault())
+
+        XCTAssertNil(vm.quote, "Precondition: an amount edit blanks the firm quote")
+        XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "1.97"), "2 × 1 × (1 − 0.01) − 0.01, not a spot ratio")
+        XCTAssertTrue(vm.isShowingIndicativeAmount)
+        XCTAssertTrue(vm.toAmountDisplayString.hasPrefix("~"))
+    }
+
+    func testIndicativeFitIsScopedToThePairItWasFittedOn() async {
+        let vm = await makeQuotedVM(quote: feeBearingQuote)
+        let btc = vm.toCoin
+
+        vm.updateToCoin(coin: makeCoin(.ethereum, ticker: "ETH"), vault: makeVault())
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault())
+        XCTAssertEqual(vm.toAmountIndicative, spotIndicative(vm), "RUNE→ETH has no fit of its own, so it falls back to spot")
+
+        vm.updateToCoin(coin: btc, vault: makeVault())
+        XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "1.97"), "Flipping back to the fitted pair restores its fit")
+    }
+
+    func testIndicativeFollowsThePickedRoute() async {
+        let vm = await makeQuotedVM(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
+        vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")))
+
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault())
+
+        XCTAssertEqual(vm.toAmountIndicative, 1, "The picked route paid 0.5 per unit, so 2 units estimate to 1")
+    }
+
+    func testQuoteLandingAfterAPairChangeIsFittedToThePairItWasFetchedFor() async {
+        let interactor = MockSwapInteractor(quote: feeBearingQuote)
+        interactor.holdFetch = true
+        let vm = makeVM(interactor: interactor)
+        let rune = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        let btc = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromCoin = rune
+        vm.toCoin = btc
+        vm.fromAmount = "1"
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        for _ in 0..<200 where interactor.fetchQuoteCallCount == 0 {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertEqual(interactor.fetchQuoteCallCount, 1, "Precondition: the RUNE→BTC fetch is in flight")
+
+        // A chain-picker change assigns the coin directly; the screen's onChange
+        // that cancels the fetch has not run yet when the old quote lands.
+        vm.toCoin = makeCoin(.ethereum, ticker: "ETH")
+        interactor.holdFetch = false
+        await vm.waitForQuoteTask()
+
+        XCTAssertEqual(vm.payoutFit?.pair, SwapPairIdentity(fromCoin: rune, toCoin: btc), "The fit belongs to the pair the quote was fetched for")
+        XCTAssertEqual(vm.toAmountIndicative, spotIndicative(vm), "RUNE→ETH must not be priced off a RUNE→BTC quote")
+        vm.toCoin = btc
+        XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "0.98"), "Fitted with BTC's units, so it prices RUNE→BTC exactly")
+    }
+
+    func testFittedIndicativeNeverSatisfiesValidationOrSigning() async {
+        let vm = await makeQuotedVM(quote: feeBearingQuote)
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault())
+
+        XCTAssertNotNil(vm.toAmountIndicative, "Precondition: a fitted estimate is on screen")
+        XCTAssertNil(vm.quote)
+        XCTAssertFalse(vm.validateForm())
+        XCTAssertEqual(vm.toAmountDecimal, 0)
+        XCTAssertNil(vm.makeTransaction())
+    }
+
     // MARK: - Fixtures
+
+    /// The spot-only estimate for the view model's current input. Other suites
+    /// seed `RateProvider.shared` in-process, so whether spot is nil or a number
+    /// depends on test order; comparing against it keeps the assertion exact.
+    private func spotIndicative(_ vm: SwapDetailsViewModel) -> Decimal? {
+        SwapCryptoLogic.toAmountIndicative(fromCoin: vm.fromCoin, toCoin: vm.toCoin, fromAmount: vm.fromAmountDecimal)
+    }
+
+    /// RUNE → BTC with `quote` landed for 1 RUNE.
+    private func makeQuotedVM(quote: SwapQuote) async -> SwapDetailsViewModel {
+        let vm = makeVM(interactor: MockSwapInteractor(quote: quote))
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        await vm.waitForQuoteTask()
+        return vm
+    }
 
     private func makeVM(interactor: SwapInteractor? = nil) -> SwapDetailsViewModel {
         SwapDetailsViewModel(interactor: interactor ?? MockSwapInteractor(quote: nil))
@@ -419,7 +523,11 @@ final class SwapDetailsViewModelTests: XCTestCase {
         return coin
     }
 
-    private func makeThorQuote(expectedAmountOut: String = "0") -> ThorchainSwapQuote {
+    private func makeThorQuote(
+        expectedAmountOut: String = "0",
+        feesTotal: String = "0",
+        feesOutbound: String = "0"
+    ) -> ThorchainSwapQuote {
         ThorchainSwapQuote(
             dustThreshold: nil,
             expectedAmountOut: expectedAmountOut,
@@ -427,8 +535,8 @@ final class SwapDetailsViewModelTests: XCTestCase {
             fees: Fees(
                 affiliate: "0",
                 asset: "RUNE",
-                outbound: "0",
-                total: "0",
+                outbound: feesOutbound,
+                total: feesTotal,
                 liquidity: nil,
                 slippageBps: nil,
                 totalBps: nil
@@ -474,6 +582,9 @@ private final class MockSwapInteractor: SwapInteractor {
     private let computeFeeError: Error?
     private(set) var fetchQuoteCallCount = 0
     private(set) var lastReferredCode: String?
+    /// While set, `fetchQuote` parks after being counted, so a test can act
+    /// mid-flight and then release it.
+    var holdFetch = false
 
     init(quote: SwapQuote?, computeFeeError: Error? = nil) {
         self.stubbedQuote = quote
@@ -491,6 +602,9 @@ private final class MockSwapInteractor: SwapInteractor {
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         lastReferredCode = referredCode
+        while holdFetch {
+            try await Task.sleep(for: .milliseconds(5))
+        }
         guard let stubbedQuote else { return nil }
         return SwapQuoteResult(quote: stubbedQuote, vultDiscountBps: 0, referralDiscountBps: 0)
     }

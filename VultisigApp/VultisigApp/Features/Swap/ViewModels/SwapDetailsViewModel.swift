@@ -89,6 +89,11 @@ final class SwapDetailsViewModel {
     /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
 
+    /// Payout fit from the last firm quote shown, keyed by the pair it was fitted
+    /// on. Deliberately outlives the quote reset an amount edit performs: it is
+    /// what makes the `~` estimate for the next amount fee-aware instead of spot.
+    private(set) var payoutFit: (pair: SwapPairIdentity, model: SwapPayoutModel)?
+
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
     /// auto-selected best. Writing it replaces the slot wholesale and clears the
     /// override without a notice — no production path writes it; use
@@ -268,9 +273,13 @@ final class SwapDetailsViewModel {
         allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick.
+    /// Apply a manual provider pick. The next edit's estimate follows the route
+    /// the "to" field is now showing.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
+        if let quotedAmount {
+            refitPayoutModel(fromAmount: quotedAmount, pair: currentPair, toCoin: toCoin)
+        }
     }
 
     enum RouteSelectionDropReason {
@@ -585,11 +594,16 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
-    /// Display-only indicative out-amount from spot prices. Used to fill the "to"
-    /// field instantly while the firm quote loads. Never read by validation or
-    /// `makeTransaction()`.
+    /// Display-only indicative out-amount: this pair's last payout fit, else spot.
+    /// Used to fill the "to" field instantly while the firm quote loads. Never
+    /// read by validation or `makeTransaction()`.
     var toAmountIndicative: Decimal? {
-        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmountDecimal)
+        SwapCryptoLogic.toAmountIndicative(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountDecimal,
+            payoutModel: currentPayoutModel
+        )
     }
 
     /// The string the "to" field renders. Firm value when a quote exists;
@@ -787,6 +801,22 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
+    /// Scoped at read time rather than cleared on pair change, so flipping back
+    /// to a pair keeps its fit.
+    var currentPayoutModel: SwapPayoutModel? {
+        guard let payoutFit, payoutFit.pair == currentPair else { return nil }
+        return payoutFit.model
+    }
+
+    /// Fit on the displayed quote (`selectedQuote ?? bestQuote`) at the amount and
+    /// pair it was fetched for — callers pass the values captured before any
+    /// await, since a coin binding can change while a fetch is in flight. An
+    /// unreadable quote drops the fit rather than keeping a stale one.
+    func refitPayoutModel(fromAmount: Decimal, pair: SwapPairIdentity, toCoin: Coin) {
+        let model = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
+        payoutFit = model.map { (pair: pair, model: $0) }
+    }
+
     /// Clear the full quote slot: the manual override, the best, and the ranked
     /// set. Keeps the three in lock-step so a stale provider list can't outlive
     /// the quote it belonged to.
@@ -881,6 +911,8 @@ private extension SwapDetailsViewModel {
 
         // Parse once so the requested amount and the ownership stamp can't disagree.
         let requestedAmount = fromAmountDecimal
+        let requestedPair = currentPair
+        let requestedToCoin = toCoin
 
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
@@ -892,6 +924,7 @@ private extension SwapDetailsViewModel {
             allQuotes = [bestQuote].compactMap { $0 }
             quotedPair = currentPair
             quotedAmount = requestedAmount
+            refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
             vultDiscountBps = 0
             referralDiscountBps = 0
             return
@@ -924,6 +957,7 @@ private extension SwapDetailsViewModel {
                 allQuotes = result.allQuotes
                 quotedPair = currentPair
                 quotedAmount = requestedAmount
+                refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
             }
