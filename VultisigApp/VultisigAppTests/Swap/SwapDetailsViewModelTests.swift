@@ -425,6 +425,24 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "1.97"), "Flipping back to the fitted pair restores its fit")
     }
 
+    func testAFirmQuoteOnAnotherPairKeepsTheFirstPairsFit() async {
+        let vm = await makeQuotedVM(quote: feeBearingQuote)
+        let btc = vm.toCoin
+
+        // RUNE→ETH lands its own firm quote, so it gets its own fit.
+        vm.updateToCoin(coin: makeCoin(.ethereum, ticker: "ETH"), vault: makeVault())
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(vm.payoutFits.count, 2, "Precondition: both pairs have been fitted")
+
+        vm.updateToCoin(coin: btc, vault: makeVault())
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: makeVault())
+
+        XCTAssertNil(vm.quote, "Precondition: the amount edit blanks the firm quote")
+        XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "1.97"), "RUNE→BTC keeps its fit after RUNE→ETH was quoted")
+    }
+
     func testIndicativeFollowsThePickedRoute() async {
         let vm = await makeQuotedVM(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
         vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")))
@@ -456,7 +474,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
         interactor.holdFetch = false
         await vm.waitForQuoteTask()
 
-        XCTAssertEqual(vm.payoutFit?.pair, SwapPairIdentity(fromCoin: rune, toCoin: btc), "The fit belongs to the pair the quote was fetched for")
+        XCTAssertEqual(Array(vm.payoutFits.keys), [SwapPairIdentity(fromCoin: rune, toCoin: btc)], "The fit belongs to the pair the quote was fetched for")
         XCTAssertEqual(vm.toAmountIndicative, spotIndicative(vm), "RUNE→ETH must not be priced off a RUNE→BTC quote")
         vm.toCoin = btc
         XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "0.98"), "Fitted with BTC's units, so it prices RUNE→BTC exactly")

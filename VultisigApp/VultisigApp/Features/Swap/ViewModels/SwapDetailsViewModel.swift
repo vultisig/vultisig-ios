@@ -89,8 +89,8 @@ final class SwapDetailsViewModel {
     /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
 
-    /// Fit from the last firm quote shown; survives the quote reset on edit so the next "~" estimate is fee-aware.
-    private(set) var payoutFit: (pair: SwapPairIdentity, model: SwapPayoutModel)?
+    /// Fit from each pair's last firm quote; survives the quote reset on edit so the next "~" estimate is fee-aware.
+    private(set) var payoutFits: [SwapPairIdentity: SwapPayoutModel] = [:]
 
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
     /// auto-selected best. Writing it replaces the slot wholesale and clears the
@@ -798,16 +798,15 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
-    /// Scoped at read time so flipping back to a pair keeps its fit.
+    /// Keyed by pair so flipping back to a pair keeps its fit.
     var currentPayoutModel: SwapPayoutModel? {
-        guard let payoutFit, payoutFit.pair == currentPair else { return nil }
-        return payoutFit.model
+        payoutFits[currentPair]
     }
 
     /// Takes values captured before any await; a coin binding can change mid-fetch.
+    /// A quote that cannot be fitted drops only this pair's entry.
     func refitPayoutModel(fromAmount: Decimal, pair: SwapPairIdentity, toCoin: Coin) {
-        let model = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
-        payoutFit = model.map { (pair: pair, model: $0) }
+        payoutFits[pair] = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
     }
 
     /// Clear the full quote slot: the manual override, the best, and the ranked
@@ -1014,7 +1013,7 @@ private extension SwapDetailsViewModel {
 /// Stable identity of a (from, to) coin pair, independent of the mutable `Coin`
 /// reference. Used to decide whether a held quote still belongs to the current
 /// pair so stale-while-revalidate never shows a quote from a different pair.
-struct SwapPairIdentity: Equatable {
+struct SwapPairIdentity: Hashable {
     let fromChain: Chain
     let fromTicker: String
     let fromContract: String
