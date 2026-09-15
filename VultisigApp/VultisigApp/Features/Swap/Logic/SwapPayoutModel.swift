@@ -2,9 +2,6 @@
 //  SwapPayoutModel.swift
 //  VultisigApp
 //
-//  Every term comes from the firm quote, never from the price oracle, so the
-//  fit cannot drift with spot or absorb the oracle/pool gap as if it were a fee.
-//
 
 import Foundation
 
@@ -16,8 +13,7 @@ struct SwapPayoutModel: Equatable {
     /// Destination units withheld regardless of trade size.
     let flatFee: Decimal
 
-    /// A proportional fee this large describes no swap anyone would take, so the
-    /// quote is treated as unreadable and the caller falls back to spot.
+    /// Above this the quote is unreadable; caller falls back to spot.
     static let implausibleProportionalFeeFraction: Decimal = 0.5
 
     static func fit(quote: SwapQuote, fromAmount: Decimal, toCoin: Coin) -> SwapPayoutModel? {
@@ -45,14 +41,11 @@ struct SwapPayoutModel: Equatable {
                 flatFee: outbound / multiplier
             )
         case .oneinch, .kyberswap, .lifi, .jupiter, .swapkit:
-            // Aggregators report only the net payout, so the whole cost folds
-            // into the rate.
             return SwapPayoutModel(rate: output / fromAmount, proportionalFeeFraction: 0, flatFee: 0)
         }
     }
 
-    /// Exact at the fitted amount, linear elsewhere, floored at zero: below the
-    /// flat fee the trade pays out nothing.
+    /// Exact at the fitted amount; floored at zero below the flat fee.
     func estimate(fromAmount: Decimal) -> Decimal {
         max(fromAmount * rate * (1 - proportionalFeeFraction) - flatFee, 0)
     }

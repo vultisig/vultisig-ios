@@ -89,9 +89,7 @@ final class SwapDetailsViewModel {
     /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
 
-    /// Payout fit from the last firm quote shown, keyed by the pair it was fitted
-    /// on. Deliberately outlives the quote reset an amount edit performs: it is
-    /// what makes the `~` estimate for the next amount fee-aware instead of spot.
+    /// Fit from the last firm quote shown; survives the quote reset on edit so the next "~" estimate is fee-aware.
     private(set) var payoutFit: (pair: SwapPairIdentity, model: SwapPayoutModel)?
 
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
@@ -273,8 +271,7 @@ final class SwapDetailsViewModel {
         allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick. The next edit's estimate follows the route
-    /// the "to" field is now showing.
+    /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
         if let quotedAmount {
@@ -801,17 +798,13 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
-    /// Scoped at read time rather than cleared on pair change, so flipping back
-    /// to a pair keeps its fit.
+    /// Scoped at read time so flipping back to a pair keeps its fit.
     var currentPayoutModel: SwapPayoutModel? {
         guard let payoutFit, payoutFit.pair == currentPair else { return nil }
         return payoutFit.model
     }
 
-    /// Fit on the displayed quote (`selectedQuote ?? bestQuote`) at the amount and
-    /// pair it was fetched for — callers pass the values captured before any
-    /// await, since a coin binding can change while a fetch is in flight. An
-    /// unreadable quote drops the fit rather than keeping a stale one.
+    /// Takes values captured before any await; a coin binding can change mid-fetch.
     func refitPayoutModel(fromAmount: Decimal, pair: SwapPairIdentity, toCoin: Coin) {
         let model = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
         payoutFit = model.map { (pair: pair, model: $0) }
