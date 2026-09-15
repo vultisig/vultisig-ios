@@ -379,7 +379,7 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
                 dstAmount: "3000",
                 tx: EVMQuote.Transaction(
                     from: "0xfrom", to: "0xto", data: "0x", value: "0",
-                    gasPrice: "0", gas: 0, swapFee: "0", swapFeeTokenContract: ""
+                    gasPrice: "0", gas: 0
                 )
             ),
             provider: .oneInch

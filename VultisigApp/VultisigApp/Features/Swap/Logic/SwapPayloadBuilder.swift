@@ -718,13 +718,30 @@ extension SwapCryptoLogic {
             // injection → MPC byte-parity). The affiliate fee ATA is provisioned
             // off the signed path (see `JupiterService`); nothing here builds an
             // instruction. Mirrors `buildEVMQuoteFromSwapKit`'s `.solana` branch.
+            var swapFeeChain: String?
+            var swapFeeTokenId: String?
+            var swapFeeDecimals: Int?
+            if quote.evmSwapFeeBigInt != nil {
+                let resolvedFeeCoin = swapFeeCoin(
+                    quote: quote,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    feeCoin: transaction.feeCoin
+                )
+                swapFeeChain = resolvedFeeCoin.chain.name
+                swapFeeTokenId = resolvedFeeCoin.contractAddress.nilIfEmpty
+                swapFeeDecimals = resolvedFeeCoin.decimals
+            }
             let payload = GenericSwapPayload(
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 fromAmount: amountInCoin,
                 toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: .jupiter
+                provider: .jupiter,
+                swapFeeChain: swapFeeChain,
+                swapFeeTokenId: swapFeeTokenId,
+                swapFeeDecimals: swapFeeDecimals
             )
             return try await keysignFactory.buildTransfer(
                 coin: fromCoin,

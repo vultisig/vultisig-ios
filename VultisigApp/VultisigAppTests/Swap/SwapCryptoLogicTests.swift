@@ -265,6 +265,16 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertEqual(result.ticker, "ETH")
     }
 
+    func testSwapFeeCoinLiFiSolanaSourceIsToCoinEvenWithoutContract() {
+        // A native destination has no contract to match on; the fee is still
+        // denominated in it, not in the source gas coin.
+        let sol = makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let quote = SwapQuote.lifi(makeEVMQuote(swapFee: "5000000000000000"), fee: nil, integratorFee: nil)
+        let result = SwapCryptoLogic.swapFeeCoin(quote: quote, fromCoin: sol, toCoin: eth, feeCoin: sol)
+        XCTAssertEqual(result.ticker, "ETH")
+    }
+
     // MARK: - EVM displayed network fee (shared initiator/co-signer derivation)
 
     func testDisplayedNetworkFeeForEvmAggregatorUsesSignedGasNotQuoteGasPrice() {
@@ -493,7 +503,7 @@ final class SwapCryptoLogicTests: XCTestCase {
     private func makeEVMQuote(
         dstAmount: String = "0",
         toAddress: String = "0xTo",
-        swapFee: String = "0",
+        swapFee: String? = nil,
         swapFeeTokenContract: String = "",
         gas: Int64 = 0,
         gasPrice: String = "0"
