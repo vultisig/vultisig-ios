@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SwapChainCell: View {
     let vault: Vault
@@ -48,7 +49,7 @@ struct SwapChainCell: View {
     }
 
     var icon: some View {
-        Image(chain.logo)
+        VultisigImage(chain.logo)
             .resizable()
             .frame(width: 32, height: 32)
     }

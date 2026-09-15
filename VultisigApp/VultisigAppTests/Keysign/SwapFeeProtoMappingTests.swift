@@ -77,9 +77,9 @@ final class SwapFeeProtoMappingTests: XCTestCase {
         XCTAssertNil(decodedPayload.swapFeeDecimals)
     }
 
-    func testZeroSwapFeeSetsNeitherFeeNorContextOnProto() {
+    func testAbsentSwapFeeSetsNeitherFeeNorContextOnProto() {
         let payload = makeGenericPayload(
-            swapFee: "0",
+            swapFee: nil,
             swapFeeChain: "Ethereum",
             swapFeeTokenId: usdcContract,
             swapFeeDecimals: 6
@@ -89,7 +89,7 @@ final class SwapFeeProtoMappingTests: XCTestCase {
         guard case let .oneinchSwapPayload(value) = proto else {
             XCTFail("Expected .oneinchSwapPayload"); return
         }
-        XCTAssertEqual(value.quote.tx.swapFee, "", "Zero fee stays off the wire")
+        XCTAssertEqual(value.quote.tx.swapFee, "", "Nothing stated, nothing on the wire")
         XCTAssertFalse(value.quote.tx.hasSwapFeeChain)
         XCTAssertFalse(value.quote.tx.hasSwapFeeTokenID)
         XCTAssertFalse(value.quote.tx.hasSwapFeeDecimals)
@@ -274,9 +274,9 @@ final class SwapFeeProtoMappingTests: XCTestCase {
         XCTAssertNil(JoinKeysignSwapFeeViewModel().resolveSwapFee(swapPayload: .generic(payload), vault: nil))
     }
 
-    func testResolverZeroFeeYieldsNoRow() {
+    func testResolverAbsentFeeYieldsNoRow() {
         let payload = makeGenericPayload(
-            swapFee: "0",
+            swapFee: nil,
             swapFeeChain: "Ethereum",
             swapFeeTokenId: usdcContract,
             swapFeeDecimals: 6
@@ -364,7 +364,7 @@ final class SwapFeeProtoMappingTests: XCTestCase {
     }
 
     private func makeGenericPayload(
-        swapFee: String,
+        swapFee: String?,
         swapFeeChain: String?,
         swapFeeTokenId: String?,
         swapFeeDecimals: Int?

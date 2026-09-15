@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 /// Shared "DeFi Banners" header card for the yield screens (Figma 343×158, the
 /// 118-tall gradient card + the underlined "Deposited" tab below it). Provider
@@ -51,7 +52,7 @@ struct YieldTopBanner: View {
     }
 
     private var logo: some View {
-        Image(logoAsset)
+        VultisigImage(logoAsset)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 200, height: 200)

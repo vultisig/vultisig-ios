@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ChainIconView: View {
     let icon: String
     let size: CGFloat
 
     var body: some View {
-        Image(icon)
+        VultisigImage(icon)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: size)

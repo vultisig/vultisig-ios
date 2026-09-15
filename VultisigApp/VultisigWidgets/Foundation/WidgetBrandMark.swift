@@ -10,7 +10,7 @@ struct WidgetBrandMark: View {
     let size: CGFloat
 
     var body: some View {
-        VultisigImage.logoOutline.image
+        VultisigImage("logo-outline").image
             .renderingMode(.template)
             .resizable()
             .scaledToFit()

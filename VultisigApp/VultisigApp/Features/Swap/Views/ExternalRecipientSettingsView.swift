@@ -32,22 +32,27 @@ struct ExternalRecipientSettingsView: View {
         VStack(spacing: 12) {
             AdvancedSwapSheetHeader(title: "useExternalRecipient".localized, showBack: true, onClose: onBack)
 
-            AddressTextField(
-                address: addressBinding,
-                label: "sendToDifferentAddress".localized,
-                coin: coin,
-                error: errorBinding,
-                onAddressResult: handle
-            )
-            .padding(.horizontal, 16)
+            ScrollView {
+                VStack(spacing: 12) {
+                    AddressTextField(
+                        address: addressBinding,
+                        label: "sendToDifferentAddress".localized,
+                        coin: coin,
+                        error: errorBinding,
+                        onAddressResult: handle
+                    )
+                    .padding(.horizontal, 16)
 
-            if viewModel.isResolving {
-                resolvingLabel
-            } else if let name = viewModel.resolvedNameLabel {
-                resolvedLabel(name: name)
+                    if viewModel.isResolving {
+                        resolvingLabel
+                    } else if let name = viewModel.resolvedNameLabel {
+                        resolvedLabel(name: name)
+                    }
+                }
+                .padding(.bottom, 16)
             }
-
-            Spacer(minLength: 0)
+            .scrollDismissesKeyboard(.interactively)
+            .scrollBounceBehavior(.basedOnSize)
         }
         .onLoad {
             resolveAndPersist()

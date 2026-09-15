@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ForegroundNotificationBannerView: View {
     let data: ForegroundNotificationData
@@ -96,7 +97,7 @@ struct ForegroundNotificationBannerView: View {
                 endPoint: UnitPoint(x: 0.5, y: 1)
             )
 
-            Image("magic-pattern")
+            VultisigImage("magic-pattern")
                 .resizable()
                 .scaledToFill()
                 .frame(maxHeight: 200)

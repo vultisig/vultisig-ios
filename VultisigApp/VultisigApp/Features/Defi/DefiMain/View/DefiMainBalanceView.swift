@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct DefiMainBalanceView: View {
     /// Height of the banner card.
@@ -83,7 +84,7 @@ struct DefiMainBalanceView: View {
     var coinImages: some View {
         GeometryReader { geometry in
             // Top left corner - BNB
-            Image("defi-bnb")
+            VultisigImage("defi-bnb")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 40)
@@ -93,7 +94,7 @@ struct DefiMainBalanceView: View {
                 )
 
             // Mid left - Solana
-            Image("defi-solana")
+            VultisigImage("defi-solana")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 40)
@@ -103,7 +104,7 @@ struct DefiMainBalanceView: View {
                 )
 
             // Bottom left corner - Ethereum
-            Image("defi-eth")
+            VultisigImage("defi-eth")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 60)
@@ -113,7 +114,7 @@ struct DefiMainBalanceView: View {
                 )
 
             // Top right corner - Bitcoin
-            Image("defi-btc")
+            VultisigImage("defi-btc")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80)
@@ -123,7 +124,7 @@ struct DefiMainBalanceView: View {
                 )
 
             // Bottom right corner - XRP
-            Image("defi-xrp")
+            VultisigImage("defi-xrp")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 40)

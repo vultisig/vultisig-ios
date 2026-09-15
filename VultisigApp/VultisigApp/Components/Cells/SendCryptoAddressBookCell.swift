@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SendCryptoAddressBookCell: View {
     let title: String
@@ -54,7 +55,7 @@ struct SendCryptoAddressBookCell: View {
     var image: some View {
         ZStack {
             if let icon {
-                Image(icon)
+                VultisigImage(icon)
                     .resizable()
             } else {
                 placeholderImage

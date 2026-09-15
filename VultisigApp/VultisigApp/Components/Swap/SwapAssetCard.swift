@@ -70,6 +70,11 @@ struct SwapAssetCard<Focus: Hashable>: View {
     @Binding var amount: String
     let isEditable: Bool
     var placeholder: String = "0"
+    /// Nil lets a form own input bounds without truncating generated displays.
+    var maximumInputLength: Int? = 108
+    var amountPrefix: String?
+    var amountAccessibilityLabel: String?
+    var onEditingChanged: ((Bool) -> Void)?
     /// Fires ONLY on a user edit of the editable field (typed/pasted), with the
     /// old and new text — never on a programmatic `amount` change. The adapter puts
     /// its form-specific side effects here so a programmatic set (e.g. a percentage
@@ -81,8 +86,11 @@ struct SwapAssetCard<Focus: Hashable>: View {
     var focus: FocusState<Focus?>.Binding?
     var focusValue: Focus?
 
-    /// Always-shown fiat sub-line under the amount.
+    /// Secondary equivalent under the amount; the adapter chooses its unit.
     let fiat: String
+    /// Market may turn the equivalent into an input-unit selector.
+    var onTapEquivalent: (() -> Void)?
+    var equivalentAccessibilityLabel: String?
 
     /// The Buy/To card is the same shape rotated 180° so its notch sits on the top
     /// edge; both cards' notches then meet as one circle around the shared toggle.
@@ -104,6 +112,15 @@ struct SwapAssetCard<Focus: Hashable>: View {
     /// Text-driven share of the card height, scaled by the same Dynamic Type factor
     /// as `amountLineHeight` and the fonts inside the card.
     @ScaledMetric private var cardTextHeight: CGFloat = swapCardTextHeight
+
+    @FocusState private var isAmountFocused: Bool
+    @State private var amountTextWidth: CGFloat = 32
+    @State private var amountPrefixWidth: CGFloat = 0
+    @State private var amountColumnWidth: CGFloat = 0
+
+    #if os(macOS)
+    @State private var amountDraft = ""
+    #endif
 
     /// Card height: fixed chrome plus the text-driven part, floored at the Figma
     /// height. So the card is exactly 116pt at the default text size, never shrinks
@@ -185,11 +202,27 @@ struct SwapAssetCard<Focus: Hashable>: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.trailing)
                     .frame(height: amountLineHeight)
-                Text(fiat)
+                equivalentView
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var equivalentView: some View {
+        if let onTapEquivalent {
+            Button(action: onTapEquivalent) {
+                Text(fiat)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(equivalentAccessibilityLabel ?? fiat)
+            .accessibilityValue(fiat)
+            .accessibilityIdentifier("swap.amount.equivalentToggle")
+        } else {
+            Text(fiat)
         }
     }
 
@@ -225,7 +258,30 @@ struct SwapAssetCard<Focus: Hashable>: View {
     @ViewBuilder
     private var amountView: some View {
         if isEditable {
-            editableAmount
+            // Keep the editor in one structural position when the unit changes,
+            // preserving focus and the keyboard across a fiat/token toggle.
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if let amountPrefix {
+                    Text(amountPrefix)
+                        .fixedSize()
+                        .accessibilityHidden(true)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { amountPrefixWidth = $0 }
+                }
+                editableAmount
+                    .frame(width: prefixedInputWidth, height: amountLineHeight)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { amountColumnWidth = $0 }
+            .overlay {
+                // Measure the displayed text with the same scaled font. The
+                // editor stays bounded, retaining native scrolling for long input.
+                Text(amount.isEmpty ? placeholder : amount)
+                    .fixedSize()
+                    .hidden()
+                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { amountTextWidth = $0 }
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
+            }
         } else {
             // Read-only side (the computed Buy / quoted To amount): scalable so a
             // long number shrinks to fit instead of truncating.
@@ -235,6 +291,12 @@ struct SwapAssetCard<Focus: Hashable>: View {
         }
     }
 
+    private var prefixedInputWidth: CGFloat? {
+        guard amountPrefix != nil, amountColumnWidth > 0 else { return nil }
+        let available = max(1, amountColumnWidth - amountPrefixWidth - 4)
+        return min(max(amountTextWidth + 6, 44), available)
+    }
+
     @ViewBuilder
     private var editableAmount: some View {
         // Decimal-only: reject any non-numeric edit (typed or pasted). The iOS
@@ -242,15 +304,15 @@ struct SwapAssetCard<Focus: Hashable>: View {
         let decimal = Binding<String>(
             get: { amount },
             set: { newValue in
-                guard newValue.isDecimalInput() else { return }
+                guard newValue != amount, newValue.isDecimalInput() else { return }
                 let old = amount
                 amount = newValue
                 onEdit?(old, newValue)
             }
         )
-        let field = TextField(placeholder, text: decimal)
+        let field = amountTextField(text: decimal)
             .textFieldStyle(.plain)
-            .maxLength(decimal)
+            .maxLength(decimal, maximumInputLength ?? .max)
             .disableAutocorrection(true)
             .lineLimit(1)
             #if os(iOS)
@@ -262,7 +324,54 @@ struct SwapAssetCard<Focus: Hashable>: View {
             field.focused(focus, equals: focusValue)
         } else {
             field
+                .focused($isAmountFocused)
+                .onChange(of: isAmountFocused) { _, focused in onEditingChanged?(focused) }
         }
+    }
+
+    private var hasAmountFocus: Bool {
+        if let focus, let focusValue { return focus.wrappedValue == focusValue }
+        return isAmountFocused
+    }
+
+    @ViewBuilder
+    private func amountTextField(text: Binding<String>) -> some View {
+        #if os(macOS)
+        // AppKit's inactive cell and active editor use different custom-font
+        // baselines. SwiftUI renders the inactive value and placeholder on the
+        // same line as the currency; the focused native editor retains selection
+        // and horizontal scrolling.
+        TextField("", text: Binding(
+            get: { amountDraft },
+            set: { value in
+                amountDraft = value
+                guard value != text.wrappedValue else { return }
+                text.wrappedValue = value
+            }
+        ))
+            .foregroundStyle(hasAmountFocus || amountDraft.isEmpty ? Theme.colors.textPrimary : .clear)
+            .onAppear { amountDraft = text.wrappedValue }
+            .onChange(of: text.wrappedValue) { _, value in amountDraft = value }
+            .onChange(of: amountDraft) { _, value in
+                // Reconcile only: programmatic synchronization must never pose
+                // as an edit and overwrite a newer upstream amount.
+                if value != text.wrappedValue { amountDraft = text.wrappedValue }
+            }
+            .overlay(alignment: .trailing) {
+                if amountDraft.isEmpty || !hasAmountFocus {
+                    Text(amountDraft.isEmpty ? placeholder : amountDraft)
+                        .foregroundStyle(amountDraft.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityLabel(Text(amountAccessibilityLabel ?? label))
+        #else
+        TextField(placeholder, text: text)
+            .accessibilityLabel(Text(amountAccessibilityLabel ?? placeholder))
+        #endif
     }
 }
 

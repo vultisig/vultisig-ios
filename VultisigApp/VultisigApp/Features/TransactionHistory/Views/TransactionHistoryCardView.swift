@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct TransactionHistoryCardView: View {
     let transaction: TransactionHistoryData
@@ -405,7 +406,7 @@ struct TransactionHistoryCardView: View {
 
     private var sendToRow: some View {
         HStack(spacing: 12) {
-            Image("vault")
+            VultisigImage("vault")
                 .resizable()
                 .frame(width: 24, height: 24)
                 .foregroundStyle(Theme.colors.textTertiary)

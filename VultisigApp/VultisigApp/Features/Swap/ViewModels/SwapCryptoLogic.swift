@@ -253,14 +253,17 @@ enum SwapCryptoLogic {
     /// — only the firm `quote` does. Returns nil when either price is missing or
     /// the input amount is non-positive, so the view can fall back to empty/0.
     static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
-        let amount = fromAmount.toDecimal()
-        guard amount > 0 else { return nil }
+        toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero)
+    }
+
+    static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: Decimal) -> Decimal? {
+        guard fromAmount > 0 else { return nil }
 
         let fromPrice = Decimal(fromCoin.price)
         let toPrice = Decimal(toCoin.price)
         guard fromPrice > 0, toPrice > 0 else { return nil }
 
-        return amount * (fromPrice / toPrice)
+        return fromAmount * (fromPrice / toPrice)
     }
 
     static func inboundFeeDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal? {
@@ -542,6 +545,22 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
+        baseAffiliateFee(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func baseAffiliateFee(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
         guard let quote else { return .empty }
         if case .swapkit = quote {
             return "swap.included_in_rate".localized
@@ -602,10 +621,8 @@ enum SwapCryptoLogic {
             let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
             return coin.fiat(decimal: feeDecimal)
         case let .lifi(evmQuote, _, integratorFee):
-            // EVM LiFi carries the fee as a token amount in `tx.swapFee`. Solana
-            // LiFi deliberately reports `swapFee` "0" and charges the integrator
-            // fee as a fraction of the output amount instead — so fall back to
-            // that, or the fee row and Total would drop the charged fee.
+            // Quotes predating the stated Solana fee fall back to the same
+            // fraction of the output the payload now carries.
             if let evmFee = quote.evmSwapFeeBigInt {
                 let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
                 return coin.fiat(decimal: coin.decimal(for: evmFee))
@@ -709,6 +726,22 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
+        vultDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func vultDiscount(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
         let breakdown = affiliateDiscountBreakdown(
             quote: quote,
             fromCoin: fromCoin,
@@ -727,6 +760,22 @@ enum SwapCryptoLogic {
         toCoin: Coin,
         feeCoin: Coin,
         fromAmount: String,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> String {
+        referralDiscount(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func referralDiscount(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> String {
@@ -751,11 +800,27 @@ enum SwapCryptoLogic {
         vultDiscountBps: Int,
         referralDiscountBps: Int
     ) -> AffiliateDiscountBreakdown {
+        affiliateDiscountBreakdown(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
+            referralDiscountBps: referralDiscountBps
+        )
+    }
+
+    static func affiliateDiscountBreakdown(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: Decimal,
+        vultDiscountBps: Int,
+        referralDiscountBps: Int
+    ) -> AffiliateDiscountBreakdown {
         guard let quote else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
         if case let .jupiter(_, _, _, feeOnInput) = quote, feeOnInput {
             return AffiliateDiscountBreakdown(vult: 0, referral: 0)
         }
-        let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
+        let inputFiat = fromCoin.fiat(decimal: fromAmount)
         guard inputFiat > 0 else { return AffiliateDiscountBreakdown(vult: 0, referral: 0) }
 
         let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
@@ -876,6 +941,11 @@ enum SwapCryptoLogic {
     /// payload — serializing this output guarantees the initiator's fiat
     /// display and the co-signer's agree by construction.
     static func swapFeeCoin(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Coin {
+        // LiFi's Solana routes state the fee in `toCoin`, which has no contract
+        // to match on when it is a native coin.
+        if case .lifi = quote, fromCoin.chain == .solana {
+            return toCoin
+        }
         guard let contract = quote?.swapFeeTokenContract else {
             return feeCoin
         }
@@ -943,6 +1013,27 @@ enum SwapCryptoLogic {
             && fromCoin != .example
             && toCoin != .example
             && !fromAmount.isEmpty
+            && !toAmount.isZero
+            && quote != nil
+            && fee != .zero
+            && isSufficientBalance
+            && !isLoading
+    }
+
+    static func validateForm(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: Decimal,
+        quote: SwapQuote?,
+        fee: BigInt,
+        toAmount: Decimal,
+        isSufficientBalance: Bool,
+        isLoading: Bool
+    ) -> Bool {
+        fromCoin != toCoin
+            && fromCoin != .example
+            && toCoin != .example
+            && fromAmount > 0
             && !toAmount.isZero
             && quote != nil
             && fee != .zero

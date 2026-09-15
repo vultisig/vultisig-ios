@@ -9,10 +9,6 @@ import SwiftUI
 import Foundation
 import VultisigUIResources
 
-extension URLCache {
-    static let imageCache = URLCache(memoryCapacity: 100_000_000, diskCapacity: 500_000_000)
-}
-
 struct AsyncImageView: View {
     let logo: String
     let size: CGSize
@@ -35,7 +31,7 @@ struct AsyncImageView: View {
     }
 
     var source: Source {
-        if logo.hasPrefix("https://") {
+        if logo.lowercased().hasPrefix("https://") {
             return .remote(URL(string: logo))
         } else {
             return .resource(logo)
@@ -62,7 +58,7 @@ struct AsyncImageView: View {
                         // the ticker fallback instead of spinning forever. Long-tail
                         // catalog tokens routinely carry a logo URL that 404s or serves
                         // a non-image body — both surface here as `.failure`.
-                        CachedAsyncImage(url: url, urlCache: .imageCache) { phase in
+                        CachedAsyncImage(url: url) { phase in
                             switch phase {
                             case .success(let image):
                                 fittedImage(image)
@@ -113,34 +109,12 @@ struct AsyncImageView: View {
         #endif
     }
 
+    @ViewBuilder
     func imageContainer(_ logoName: String) -> some View {
-        ZStack {
-            if let image = VultisigImage(rawValue: logoName) {
-                image.image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: size.width, height: size.height)
-            } else {
-                #if os(iOS)
-                if let image = UIImage(named: logoName) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: size.width, height: size.height)
-                } else {
-                    fallbackText
-                }
-                #else
-                if let image = NSImage(named: logoName) {
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: size.width, height: size.height)
-                } else {
-                    fallbackText
-                }
-                #endif
-            }
+        if let image = VultisigResources.image(named: logoName) {
+            fittedImage(image)
+        } else {
+            fallbackText
         }
     }
 
