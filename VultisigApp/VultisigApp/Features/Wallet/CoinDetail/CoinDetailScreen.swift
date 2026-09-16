@@ -18,11 +18,6 @@ struct CoinDetailScreen: View {
     @State var addressToCopy: Coin?
     @State var showContractCopiedBanner: Bool = false
 
-    /// Where the sheet is resting. Purely presentation state — it never leaves
-    /// the view, so it stays here rather than in the view model.
-    @State private var detent: PresentationDetent = CoinDetailScreen.initialDetent
-    @State private var hasExpanded = false
-
     @StateObject var viewModel: CoinDetailViewModel
 
     @Environment(\.openURL) var openURL
@@ -59,86 +54,10 @@ struct CoinDetailScreen: View {
 #endif
     }
 
-    /// Resting height of the sheet on iPhone, as a fraction of its full height.
-    ///
-    /// Measured against a rendered sheet rather than picked as a ratio: 0.50
-    /// puts the sheet at ~405pt on an iPhone 16 Pro, the shortest height that
-    /// still clears the balance, the whole action row and the top of the price
-    /// chart — what the sheet is opened for. A third of the screen, the first
-    /// guess, cuts through the action labels and shows no chart at all.
-    private static let partialFraction: CGFloat = 0.50
-
-    /// iPad presents this as a large sheet and macOS sizes it with
-    /// `applySheetSize`; only iPhone has a partial resting height.
-    private static var supportsPartialDetent: Bool {
-        !isIPadOS && !isMacOS
-    }
-
-    /// Both detents are available for the first expansion. Once expanded, the
-    /// partial detent is removed so the next pull-down dismisses the sheet
-    /// instead of collapsing it back to its initial resting height.
-    private var detents: Set<PresentationDetent> {
-        Self.supportsPartialDetent && !hasExpanded ? [.fraction(Self.partialFraction), .large] : [.large]
-    }
-
-    private static var initialDetent: PresentationDetent {
-        supportsPartialDetent ? .fraction(partialFraction) : .large
-    }
-
-    /// Whether the sheet is resting below its full height.
-    private var isPartial: Bool {
-        Self.supportsPartialDetent && detent != .large
-    }
-
-    /// Scroll target for the top of the content, used to rewind the scroll
-    /// view when the sheet returns to its resting height.
-    private static let topAnchor = "coinDetailTop"
-
-    @ViewBuilder
-    private var bottomFade: some View {
-        if Self.supportsPartialDetent {
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Theme.colors.bgSurface1, location: 0.0),
-                    Gradient.Stop(color: Theme.colors.bgSurface1.opacity(0.55), location: 0.40),
-                    Gradient.Stop(color: Theme.colors.bgSurface1.opacity(0), location: 1.0)
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-            .frame(height: 64)
-            .frame(maxHeight: .infinity, alignment: .bottom)
-            .allowsHitTesting(false)
-            .opacity(isPartial ? 1 : 0)
-            .animation(.easeInOut(duration: 0.2), value: isPartial)
-            .ignoresSafeArea(edges: .bottom)
-        }
-    }
-
     var content: some View {
-        ScrollViewReader { proxy in
-            scrollView
-                // Collapsing while scrolled would otherwise strand the user
-                // mid-content with scrolling switched off — and the actions,
-                // which are what the sheet is opened for, off the top of it.
-                .onChange(of: isPartial) { _, isNowPartial in
-                    guard isNowPartial else { return }
-                    proxy.scrollTo(Self.topAnchor, anchor: .top)
-                }
-                .onChange(of: detent) { _, newDetent in
-                    guard newDetent == .large else { return }
-                    hasExpanded = true
-                }
-        }
-    }
-
-    /// The sheet's scrolling body. Split out of `content` so the
-    /// `ScrollViewReader` that rewinds it stays a thin wrapper.
-    private var scrollView: some View {
         ScrollView {
             VStack(spacing: 24) {
                 CoinDetailHeaderView(coin: coin)
-                    .id(Self.topAnchor)
                 CoinActionsView(
                     actions: viewModel.availableActions,
                     onAction: onAction
@@ -161,8 +80,6 @@ struct CoinDetailScreen: View {
             .padding(.top, isMacOS ? 40 : 0)
             .padding(.bottom, 24)
         }
-        .scrollDisabled(isPartial)
-        .overlay(bottomFade)
         .task {
             viewModel.setup()
             await refreshAndRecordIncomingAfterDwell()
@@ -177,7 +94,7 @@ struct CoinDetailScreen: View {
             .showIf(showContractCopiedBanner)
             .zIndex(2)
         )
-        .presentationDetents(detents, selection: $detent)
+        .presentationDetents([.large])
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)

@@ -184,34 +184,25 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         XCTAssertEqual(builtPayload(slippageBps: 125).slippageBps, 125)
     }
 
-    /// The quote reports impact in two places and they can differ; the one that
-    /// travels must be the one this device renders.
-    func testBuilderCarriesTheTopLevelSlippageNotTheNestedFeeSlippage() {
-        let quote = makeThorQuote(topLevel: 41, nested: 9)
-        XCTAssertEqual(SwapCryptoLogic.nativeSwapPayloadSlippageBps(quote: quote), 41)
-
-        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
-            fromCoin: makeBTC(),
-            toCoin: makeTRX(),
-            fromAmountInCoin: BigInt(100_000),
-            toAmountDecimal: 3000,
-            quote: quote
-        )
-        XCTAssertEqual(payload.slippageBps, 41)
-        XCTAssertEqual(
-            SwapPayload.thorchain(payload).priceImpact,
-            SwapQuote.thorchain(quote).priceImpact,
-            "Co-signer and initiator must read the same source"
-        )
+    func testCurrentNestedQuoteImpactSurvivesBothNativeWireVariants() throws {
+        try assertDecodedQuoteImpact(nested: 19, topLevel: nil)
     }
 
-    /// Presence follows the top-level field alone: a nested value with no
-    /// top-level one is not a substitute.
-    func testNestedFeeSlippageAloneCarriesNothing() {
-        XCTAssertNil(
-            SwapCryptoLogic.nativeSwapPayloadSlippageBps(quote: makeThorQuote(topLevel: nil, nested: 9))
-        )
-        XCTAssertNil(SwapQuote.thorchain(makeThorQuote(topLevel: nil, nested: 9)).priceImpact)
+    func testLegacyTopLevelImpactDoesNotOverrideNestedImpact() throws {
+        try assertDecodedQuoteImpact(nested: 9, topLevel: 41)
+    }
+
+    func testNestedZeroRemainsPresentOnBothNativeWireVariants() throws {
+        try assertDecodedQuoteImpact(nested: 0, topLevel: 41)
+    }
+
+    func testMissingNestedImpactDoesNotFallBackToTopLevelOrTotalFees() throws {
+        try assertDecodedQuoteImpact(nested: nil, topLevel: 41)
+        try assertDecodedQuoteImpact(nested: nil, topLevel: nil)
+    }
+
+    func testMaximumWireImpactSurvivesBothNativeWireVariants() throws {
+        try assertDecodedQuoteImpact(nested: Int(UInt32.max), topLevel: nil)
     }
 
     func testBuilderCarriesAQuotedZero() {
@@ -379,7 +370,7 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
                 dstAmount: "3000",
                 tx: EVMQuote.Transaction(
                     from: "0xfrom", to: "0xto", data: "0x", value: "0",
-                    gasPrice: "0", gas: 0, swapFee: "0", swapFeeTokenContract: ""
+                    gasPrice: "0", gas: 0
                 )
             ),
             provider: .oneInch
@@ -426,13 +417,74 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
         )
     }
 
-    /// The two price-impact sources are deliberately given DIFFERENT values: a
-    /// fixture that set both the same passes whichever one the builder reads.
-    private func makeThorQuote(slippageBps: Int?) -> ThorchainSwapQuote {
-        makeThorQuote(topLevel: slippageBps, nested: slippageBps.map { $0 + 7 })
+    /// Decode the current API shape, optionally retaining an obsolete extra field.
+    /// Total fees deliberately differ so they cannot accidentally stand in for impact.
+    private func decodedQuote(nested: Int?, topLevel: Int?) throws -> ThorchainSwapQuote {
+        var fees: [String: Any] = [
+            "affiliate": "0", "asset": "TRX.TRX", "outbound": "0",
+            "total": "0", "total_bps": 23
+        ]
+        fees["slippage_bps"] = nested
+        var json: [String: Any] = [
+            "expected_amount_out": "300000000000", "expiry": 1_757_000_000,
+            "fees": fees, "inbound_address": "bc1qasgard",
+            "memo": "=:TRX.TRX:addr:0/1/0", "notes": "",
+            "outbound_delay_blocks": 0, "outbound_delay_seconds": 0,
+            "recommended_min_amount_in": "0", "warning": ""
+        ]
+        json["slippage_bps"] = topLevel
+        return try JSONDecoder().decode(ThorchainSwapQuote.self, from: JSONSerialization.data(withJSONObject: json))
     }
 
-    private func makeThorQuote(topLevel: Int?, nested: Int?) -> ThorchainSwapQuote {
+    private func assertDecodedQuoteImpact(
+        nested: Int?, topLevel: Int?, file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let inputs = "nested=\(String(describing: nested)), topLevel=\(String(describing: topLevel))"
+        let quote = try decodedQuote(nested: nested, topLevel: topLevel)
+        XCTAssertEqual(quote.fees.slippageBps, nested, inputs, file: file, line: line)
+        XCTAssertEqual(quote.fees.totalBps, 23, inputs, file: file, line: line)
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeBTC(), toCoin: makeTRX(), fromAmountInCoin: BigInt(100_000),
+            toAmountDecimal: 3000, quote: quote
+        )
+        XCTAssertEqual(payload.slippageBps, nested.flatMap(UInt32.init(exactly:)), inputs, file: file, line: line)
+        let expectedImpact = nested.map { Decimal($0) / 10000 }
+        let variants: [(SwapQuote, SwapPayload)] = [
+            (.thorchain(quote), .thorchain(payload)),
+            (.mayachain(quote), .mayachain(payload)),
+            (.thorchainChainnet(quote), .thorchainChainnet(payload)),
+            (.thorchainStagenet(quote), .thorchainStagenet(payload))
+        ]
+        for (index, variant) in variants.enumerated() {
+            let (initiator, outbound) = variant
+            let context = "native variant \(index), \(inputs)"
+            XCTAssertEqual(initiator.priceImpact, expectedImpact, context, file: file, line: line)
+            let decoded: SwapPayload
+            switch outbound.mapToProtobuff() {
+            case .thorchainSwapPayload(let proto):
+                let reparsed = try VSTHORChainSwapPayload(serializedBytes: proto.serializedData())
+                XCTAssertEqual(reparsed.hasSlippageBps, nested != nil, context, file: file, line: line)
+                XCTAssertEqual(reparsed.slippageBps, nested.flatMap(UInt32.init(exactly:)) ?? 0, context, file: file, line: line)
+                decoded = try SwapPayload(proto: .thorchainSwapPayload(reparsed))
+            case .mayachainSwapPayload(let proto):
+                let reparsed = try VSTHORChainSwapPayload(serializedBytes: proto.serializedData())
+                XCTAssertEqual(reparsed.hasSlippageBps, nested != nil, context, file: file, line: line)
+                XCTAssertEqual(reparsed.slippageBps, nested.flatMap(UInt32.init(exactly:)) ?? 0, context, file: file, line: line)
+                decoded = try SwapPayload(proto: .mayachainSwapPayload(reparsed))
+            default:
+                throw FixtureError.unexpectedProtoCase
+            }
+            XCTAssertEqual(decoded.priceImpact, expectedImpact, context, file: file, line: line)
+            let viewModel = JoinKeysignViewModel()
+            viewModel.keysignPayload = makeKeysignPayload(swapPayload: decoded)
+            let initiatorString = SwapCryptoLogic.priceImpactString(quote: initiator)
+            XCTAssertEqual(initiatorString.isEmpty, nested == nil, context, file: file, line: line)
+            XCTAssertEqual(viewModel.priceImpactString, initiatorString, context, file: file, line: line)
+            XCTAssertEqual(viewModel.priceImpactColor, SwapCryptoLogic.priceImpactColor(quote: initiator), context, file: file, line: line)
+        }
+    }
+
+    private func makeThorQuote(slippageBps: Int?) -> ThorchainSwapQuote {
         ThorchainSwapQuote(
             dustThreshold: nil,
             expectedAmountOut: "300000000000",
@@ -443,7 +495,7 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
                 outbound: "0",
                 total: "0",
                 liquidity: nil,
-                slippageBps: nested,
+                slippageBps: slippageBps,
                 totalBps: nil
             ),
             inboundAddress: "bc1qasgard",
@@ -454,7 +506,6 @@ final class NativeSwapPriceImpactProtoMappingTests: XCTestCase {
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
             recommendedMinAmountIn: "0",
-            slippageBps: topLevel,
             totalSwapSeconds: nil,
             warning: "",
             router: nil,

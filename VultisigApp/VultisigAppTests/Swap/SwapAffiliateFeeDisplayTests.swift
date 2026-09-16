@@ -396,7 +396,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let sol = makeCoin(.solana, ticker: "SOLLIFI", decimals: 9, isNative: true)
         let usdc = makeCoin(.solana, ticker: "USDCLIFI", decimals: 6, isNative: false)
         setPrice(1, for: usdc) // 1 USDC = $1
-        // LiFi-Solana: swapFee "0"; integrator fee 0.005 of the 100-USDC output
+        // LiFi-Solana: no stated swapFee; integrator fee 0.005 of the 100-USDC output
         // (dstAmount 100_000_000 at 6 dp) → 0.5 USDC → $0.50. Must appear in the
         // row and the Total (network 0 + affiliate 0.5 + outbound 0).
         let quote = makeLiFiSolanaQuote(integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000")
@@ -419,6 +419,21 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
                 fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
             ),
             Decimal(0).formatToFiat(includeCurrencySymbol: true)
+        )
+    }
+
+    func testAffiliateFeeFiatLifiSolanaUsesTheStatedFeeWhenPresent() {
+        let sol = makeCoin(.solana, ticker: "SOLLIFI2", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCLIFI2", decimals: 6, isNative: false)
+        setPrice(1, for: usdc)
+        // The payload states 0.5 USDC; the output-fraction fallback would say
+        // the same, so both devices agree by construction.
+        let quote = makeLiFiSolanaQuote(
+            integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000", swapFee: "500000"
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol),
+            Decimal(5) / Decimal(10)
         )
     }
 
@@ -716,7 +731,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             dustThreshold: nil,
             expectedAmountOut: expectedAmountOut,
             expiry: 0,
-            fees: Fees(affiliate: affiliate, asset: "RUNE", outbound: outbound, total: total, liquidity: nil, slippageBps: nil, totalBps: nil),
+            fees: Fees(affiliate: affiliate, asset: "RUNE", outbound: outbound, total: total, liquidity: nil, slippageBps: slippageBps, totalBps: nil),
             inboundAddress: "thor-vault",
             inboundConfirmationBlocks: nil,
             inboundConfirmationSeconds: nil,
@@ -725,7 +740,6 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
             recommendedMinAmountIn: "0",
-            slippageBps: slippageBps,
             totalSwapSeconds: nil,
             warning: "",
             router: router,
@@ -752,15 +766,19 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         return .oneinch(evm, fee: nil)
     }
 
-    /// LiFi-Solana quote fixture: `swapFee` is "0" and the affiliate fee is
-    /// carried as `integratorFee` (a fraction of the output amount), mirroring
-    /// `LiFiService`'s Solana branch.
-    private func makeLiFiSolanaQuote(integratorFee: Decimal, dstAmount: String) -> SwapQuote {
+    /// LiFi-Solana quote fixture: no `swapFee` is stated and the affiliate fee
+    /// is carried as `integratorFee` (a fraction of the output amount),
+    /// mirroring `LiFiService`'s Solana branch.
+    private func makeLiFiSolanaQuote(
+        integratorFee: Decimal,
+        dstAmount: String,
+        swapFee: String? = nil
+    ) -> SwapQuote {
         let evm = EVMQuote(
             dstAmount: dstAmount,
             tx: EVMQuote.Transaction(
                 from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0,
-                swapFee: "0", swapFeeTokenContract: ""
+                swapFee: swapFee
             )
         )
         return .lifi(evm, fee: nil, integratorFee: integratorFee)

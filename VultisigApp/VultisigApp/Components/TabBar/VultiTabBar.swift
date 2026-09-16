@@ -73,7 +73,7 @@ private extension VultiTabBar {
                 }
 
                 if let accessory {
-                    Tab(value: accessory, role: .search) {
+                    Tab(value: accessory, role: accessoryRole) {
                         EmptyView()
                     } label: {
                         tabBarItem(for: accessory)
@@ -81,6 +81,17 @@ private extension VultiTabBar {
                 }
             }
         }
+    }
+
+    @available(iOS 26.0, macOS 26.0, *)
+    var accessoryRole: TabRole {
+        // Xcode 26 SDKs do not declare the explicit detached-tab role.
+        #if compiler(>=6.4)
+        if #available(iOS 27.0, macOS 27.0, *) {
+            return .prominent
+        }
+        #endif
+        return .search
     }
 }
 
@@ -107,6 +118,15 @@ private extension VultiTabBar {
                     // through TabView's layout, especially on macOS's grouped
                     // style. See vultisig-ios#4341.
                     content(item)
+                        #if os(macOS)
+                        .background {
+                            if #available(macOS 27.0, *) {
+                                MacHiddenTabBar()
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        #endif
                         .safeAreaInset(edge: .bottom, spacing: 0) {
                             Color.clear.frame(height: legacyTabBarReservedHeight)
                         }

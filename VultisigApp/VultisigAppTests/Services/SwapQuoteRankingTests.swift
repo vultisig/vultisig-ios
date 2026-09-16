@@ -341,7 +341,6 @@ final class SwapQuoteRankingTests: XCTestCase {
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
             recommendedMinAmountIn: "0",
-            slippageBps: nil,
             totalSwapSeconds: nil,
             warning: "",
             router: nil,
