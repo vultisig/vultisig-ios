@@ -480,6 +480,39 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.toAmountIndicative, Decimal(string: "0.98"), "Fitted with BTC's units, so it prices RUNE→BTC exactly")
     }
 
+    func testQuoteLandingAfterAPairChangeIsNeverPublishedAsTheNewPairsQuote() async {
+        let interactor = MockSwapInteractor(quote: feeBearingQuote)
+        interactor.holdFetch = true
+        let vm = makeVM(interactor: interactor)
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+        vm.updateFromAmount(vault: makeVault(), immediate: true)
+        for _ in 0..<200 where interactor.fetchQuoteCallCount == 0 {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertEqual(interactor.fetchQuoteCallCount, 1, "Precondition: the RUNE→BTC fetch is in flight")
+
+        let eth = makeCoin(.ethereum, ticker: "ETH")
+        vm.toCoin = eth
+        interactor.holdFetch = false
+        await vm.waitForQuoteTask()
+
+        XCTAssertNil(vm.quote, "A RUNE→BTC quote must not be published while the form shows RUNE→ETH")
+        XCTAssertEqual(vm.toAmountDecimal, 0)
+        XCTAssertFalse(vm.validateForm())
+        XCTAssertNil(vm.makeTransaction())
+
+        // The screen's onChange runs next: it must start a fresh RUNE→ETH fetch,
+        // not treat the discarded quote as a silent refresh of the new pair.
+        vm.updateToCoin(coin: eth, vault: makeVault())
+        XCTAssertNil(vm.quote)
+        XCTAssertTrue(vm.isLoadingQuotes)
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(interactor.fetchQuoteCallCount, 2)
+        XCTAssertNotNil(vm.quote, "The RUNE→ETH fetch publishes normally")
+    }
+
     func testFittedIndicativeNeverSatisfiesValidationOrSigning() async {
         let vm = await makeQuotedVM(quote: feeBearingQuote)
         vm.fromAmount = "2"

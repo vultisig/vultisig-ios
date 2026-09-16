@@ -914,7 +914,7 @@ private extension SwapDetailsViewModel {
             dropRouteSelection(.routeUnavailable)
             bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
-            quotedPair = currentPair
+            quotedPair = requestedPair
             quotedAmount = requestedAmount
             refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
             vultDiscountBps = 0
@@ -936,6 +936,15 @@ private extension SwapDetailsViewModel {
             // quote over the state the new fetch is about to populate.
             guard !Task.isCancelled else { return }
             if let result {
+                // A coin picker assigns the coin one view update before the
+                // screen's onChange cancels this fetch, so the pair can move on
+                // while the quote is in flight. Keep that pair's fit; never
+                // publish its quote under the new pair, where `validateForm`
+                // would accept it and the signed memo would follow the old one.
+                guard currentPair == requestedPair else {
+                    payoutFits[requestedPair] = SwapPayoutModel.fit(quote: result.quote, fromAmount: requestedAmount, toCoin: requestedToCoin)
+                    return
+                }
                 // Re-point at the object out of `result.allQuotes`, never the one
                 // the user tapped: that is what keeps signing on current numbers.
                 if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) {
@@ -947,7 +956,7 @@ private extension SwapDetailsViewModel {
                 }
                 bestQuote = result.quote
                 allQuotes = result.allQuotes
-                quotedPair = currentPair
+                quotedPair = requestedPair
                 quotedAmount = requestedAmount
                 refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
                 vultDiscountBps = result.vultDiscountBps
