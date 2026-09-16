@@ -16,6 +16,7 @@ struct SwapVerifyScreen: View {
     @State private var fastPasswordPresented = false
     @State private var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
+    @State private var signingTask: Task<Void, Never>?
     @State private var retryBannerText: String?
 
     @Environment(\.router) var router
@@ -79,6 +80,8 @@ struct SwapVerifyScreen: View {
             consumePendingRetry()
         }
         .onDisappear {
+            signingTask?.cancel()
+            signingTask = nil
             verifyViewModel.isLoading = false
             fastVaultPassword = .empty
         }
@@ -367,10 +370,14 @@ struct SwapVerifyScreen: View {
         guard verifyViewModel.canStartSigning, !signButtonDisabled else { return }
         signButtonDisabled = true
         let password = fastVaultPassword.nilIfEmpty
-        Task { @MainActor in
-            defer { signButtonDisabled = false }
+        signingTask = Task { @MainActor in
+            defer {
+                signButtonDisabled = false
+                signingTask = nil
+            }
             guard let prepared = await verifyViewModel.prepareSigning(vault: vault, retrySignal: retrySignal) else { return }
             defer { verifyViewModel.finishSigning() }
+            guard !Task.isCancelled else { return }
             // Preparation freezes the transaction for both the payload and the
             // downstream preview/history. Do not re-read the live display state.
             if let password {

@@ -291,6 +291,31 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         vm.finishSigning()
     }
 
+    func testCancelledHaltCheckDoesNotBuildPayloadOrNavigationContext() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let gate = RefreshRequestGate()
+        var builds = 0
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeHalt: { try await gate.wait() },
+                onBuild: { _ in builds += 1 }
+            )
+        )
+        confirm(vm)
+        let signing = Task { await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal()) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        signing.cancel()
+        gate.finish()
+        let prepared = await signing.value
+        XCTAssertNil(prepared)
+        XCTAssertEqual(builds, 0)
+        XCTAssertFalse(vm.isPreparingSigning)
+        XCTAssertTrue(vm.canStartSigning)
+        XCTAssertNil(vm.error)
+    }
+
     func testCancelledBuildDoesNotProduceNavigationContext() async {
         let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
         let gate = RefreshRequestGate()
