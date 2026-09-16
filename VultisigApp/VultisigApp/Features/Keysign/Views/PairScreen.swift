@@ -27,10 +27,6 @@ struct PairScreen: View {
     /// flow, which shows the running keysign state title instead.
     var title: String?
 
-    /// Overrides the default share-button visibility (`fastVaultPassword == nil`).
-    /// The custom-message flow gates on `!vault.isFastVault` instead.
-    var isShareButtonVisible: Bool?
-
     let onKeysignInput: (KeysignInput) -> Void
 
     init(
@@ -43,7 +39,6 @@ struct PairScreen: View {
         swapTransaction: SwapTransaction? = nil,
         presetSession: KeysignSessionInfo? = nil,
         title: String? = nil,
-        isShareButtonVisible: Bool? = nil,
         onKeysignInput: @escaping (KeysignInput) -> Void
     ) {
         self.vault = vault
@@ -55,7 +50,6 @@ struct PairScreen: View {
         self.swapTransaction = swapTransaction
         self.presetSession = presetSession
         self.title = title
-        self.isShareButtonVisible = isShareButtonVisible
         self.onKeysignInput = onKeysignInput
     }
 
@@ -88,7 +82,7 @@ struct PairScreen: View {
                     type: .Keysign,
                     viewModel: shareSheetViewModel
                 )
-                .showIf(isShareButtonVisible ?? (fastVaultPassword == nil))
+                .showIf(fastVaultPassword == nil)
             }
         }
     }

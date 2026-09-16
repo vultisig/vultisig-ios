@@ -50,6 +50,76 @@ private func publishesChange(reading read: () -> Void, writing write: () -> Void
 @MainActor
 final class TransientObservationTests: XCTestCase {
 
+    private var store: TestContextToken?
+
+    override func setUp() async throws {
+        store = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() async throws {
+        TestStore.restore(store)
+        store = nil
+    }
+
+    private func makeVault(localPartyID: String = "device") -> Vault {
+        let vault = TestStore.makeVault(pubKey: UUID().uuidString)
+        vault.localPartyID = localPartyID
+        vault.signers = ["device", "server-fixture"]
+        return vault
+    }
+
+    func testPresenceOutcomePublishesAndColdIdentityRemainsFast() async {
+        let vault = makeVault()
+        let recorder = ChangeRecorder()
+        withObservationTracking {
+            _ = vault.fastVaultPresenceOutcome
+        } onChange: {
+            recorder.record()
+        }
+        let refresher = FastVaultEligibilityRefresher(
+            checkEligibility: { _ in .unknown(.requestFailed) }, saveStorage: {}
+        )
+        XCTAssertTrue(vault.offersFastSigning)
+        await refresher.refresh(vault)
+        XCTAssertTrue(recorder.didChange)
+        XCTAssertTrue(vault.offersFastSigning)
+    }
+
+    func testAuthoritativeAbsencePublishesToSigningAffordance() async {
+        let vault = makeVault()
+        let recorder = ChangeRecorder()
+        withObservationTracking {
+            _ = vault.offersFastSigning
+        } onChange: {
+            recorder.record()
+        }
+        let refresher = FastVaultEligibilityRefresher(
+            checkEligibility: { _ in .absent }, saveStorage: {}
+        )
+        await refresher.refresh(vault)
+        XCTAssertTrue(recorder.didChange)
+        XCTAssertFalse(vault.offersFastSigning)
+    }
+
+    func testTopologyChangesPublishToConfirmedPresence() async {
+        let vault = makeVault()
+        let refresher = FastVaultEligibilityRefresher(
+            checkEligibility: { _ in .present }, saveStorage: {}
+        )
+        await refresher.refresh(vault)
+        XCTAssertTrue(publishesChange {
+            _ = vault.isFastVault
+        } writing: {
+            vault.signers = ["device", "server-replacement"]
+        })
+        XCTAssertFalse(vault.isFastVault)
+        XCTAssertTrue(publishesChange {
+            _ = vault.isFastVault
+        } writing: {
+            vault.fastVaultCheckedTopology = FastVaultTopology(vault)
+        })
+    }
+
     // MARK: - Vault.isFastVault
 
     /// The acceptance case: a view branching on `isFastVault` is invalidated when
@@ -58,9 +128,9 @@ final class TransientObservationTests: XCTestCase {
     /// the tree — the write itself has to publish. Fails against a
     /// `@Transient`-backed cache, which publishes nothing at all.
     func testRefresherResolvingEligibilityPublishesIsFastVault() async {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in true },
+            checkEligibility: { _ in .present },
             saveStorage: { },
             now: { Date(timeIntervalSince1970: 1_000_000) }
         )
@@ -82,7 +152,7 @@ final class TransientObservationTests: XCTestCase {
     /// on a cold vault the stamp is the only one of the two inputs the reader
     /// reaches. It has to publish on its own.
     func testStampAlonePublishesIsFastVault() {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
 
         let published = publishesChange {
             _ = vault.isFastVault
@@ -96,7 +166,7 @@ final class TransientObservationTests: XCTestCase {
     /// Once the cache is warm the flag is reached too, and flipping it — the
     /// eligibility genuinely changing between refreshes — must publish.
     func testEligibilityFlagAlonePublishesIsFastVault() {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         vault.fastVaultEligibilityCheckedAt = Date(timeIntervalSince1970: 1)
 
         let published = publishesChange {
@@ -113,7 +183,7 @@ final class TransientObservationTests: XCTestCase {
     /// write, which is the shape that drives a runaway re-render when the writer
     /// is deferred.
     func testRedundantEligibilityWriteDoesNotPublish() {
-        let vault = SendFormFixture.makeVault()
+        let vault = makeVault()
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = Date(timeIntervalSince1970: 1)
 
@@ -132,8 +202,8 @@ final class TransientObservationTests: XCTestCase {
     /// across vaults — would cross-talk, invalidating every reader of the other
     /// vault and reporting the wrong answer.
     func testEligibilityIsPerVault() {
-        let vaultA = SendFormFixture.makeVault()
-        let vaultB = SendFormFixture.makeVault()
+        let vaultA = makeVault()
+        let vaultB = makeVault()
 
         let published = publishesChange {
             _ = vaultB.isFastVault
@@ -151,7 +221,7 @@ final class TransientObservationTests: XCTestCase {
     /// A server-side share is never fast-signable regardless of what the cache
     /// says, and that short-circuit has to survive the storage change.
     func testServerPartyIsNeverFastVault() {
-        let vault = SendFormFixture.makeVault(localPartyID: "Server-1")
+        let vault = makeVault(localPartyID: "Server-1")
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = Date(timeIntervalSince1970: 1)
 

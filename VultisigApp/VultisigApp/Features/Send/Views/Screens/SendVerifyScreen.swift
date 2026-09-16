@@ -221,7 +221,7 @@ struct SendVerifyScreen: View {
 
     var pairedSignButton: some View {
         SigningCTAButtons(
-            isFastVault: vault.isFastVault,
+            isFastVault: vault.offersFastSigning,
             isDisabled: sendCryptoVerifyViewModel.signButtonDisabled,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },

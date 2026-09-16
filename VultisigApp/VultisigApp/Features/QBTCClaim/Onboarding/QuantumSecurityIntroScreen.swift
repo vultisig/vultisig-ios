@@ -20,6 +20,7 @@ struct QuantumSecurityIntroScreen: View {
     let vault: Vault
 
     @Environment(\.router) private var router
+    @State private var routingState: FastVaultRoutingState = .idle
     @State private var animationVM: RiveViewModel?
 
     init(vault: Vault) {
@@ -40,11 +41,27 @@ struct QuantumSecurityIntroScreen: View {
                     .padding(.bottom, 24)
                 }
 
-                PrimaryButton(title: "quantumSecurityIntroCta".localized) {
-                    onGetStarted()
+                if routingState == .idle {
+                    PrimaryButton(title: "quantumSecurityIntroCta".localized, action: onGetStarted)
                 }
+                FastVaultRoutingFeedback(
+                    state: routingState,
+                    onRetry: onGetStarted,
+                    onPaired: {
+                        routingState = .idle
+                        navigateKeygen(useServer: false)
+                    }
+                )
             }
         }
+        .task { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
+        .task(id: routingState) {
+            guard routingState == .checking else { return }
+            let presence = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault)
+            guard !Task.isCancelled, routingState == .checking else { return }
+            handlePresence(presence)
+        }
+        .onDisappear { routingState = .idle }
         .onAppear {
             guard animationVM == nil else { return }
             animationVM = RiveViewModel(fileName: "quantum_key_pair", autoPlay: true)
@@ -94,12 +111,25 @@ struct QuantumSecurityIntroScreen: View {
     // MARK: - Actions
 
     private func onGetStarted() {
-        // Matches the existing branch in `VaultAdvancedSettingsScreen`'s
-        // `dilithiumKeygenRow`: FastVault uses the password screen,
-        // SecureVault goes through peer discovery. The MLDSA pubkey
-        // lands on the vault inside `KeygenViewModel.startMldsaKeygen`,
-        // which is also where the completion notification fires.
-        if vault.isFastVault {
+        if let presence = FastVaultEligibilityRefresher.shared.confirmedPresenceForRouting(vault) {
+            handlePresence(presence)
+        } else {
+            routingState = .checking
+        }
+    }
+
+    private func handlePresence(_ presence: FastVaultPresence) {
+        switch presence {
+        case .present, .absent:
+            routingState = .idle
+            navigateKeygen(useServer: presence == .present)
+        case .unknown:
+            routingState = .failed
+        }
+    }
+
+    private func navigateKeygen(useServer: Bool) {
+        if useServer {
             router.navigate(
                 to: KeygenRoute.fastVaultPassword(
                     tssType: .SingleKeygen,

@@ -99,6 +99,9 @@ final class SwapDetailsViewModel {
     /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
 
+    /// Fit from each pair's last firm quote; survives the quote reset on edit so the next "~" estimate is fee-aware.
+    private(set) var payoutFits: [SwapPairIdentity: SwapPayoutModel] = [:]
+
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
     /// auto-selected best. Writing it replaces the slot wholesale and clears the
     /// override without a notice — no production path writes it; use
@@ -284,6 +287,9 @@ final class SwapDetailsViewModel {
     func selectProvider(_ quote: SwapQuote) {
         pendingSelectedProvider = nil
         selectedQuote = quote
+        if let quotedAmount {
+            refitPayoutModel(fromAmount: quotedAmount, pair: currentPair, toCoin: toCoin)
+        }
     }
 
     enum RouteSelectionDropReason {
@@ -600,11 +606,16 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
-    /// Display-only indicative out-amount from spot prices. Used to fill the "to"
-    /// field instantly while the firm quote loads. Never read by validation or
-    /// `makeTransaction()`.
+    /// Display-only indicative out-amount: this pair's last payout fit, else spot.
+    /// Used to fill the "to" field instantly while the firm quote loads. Never
+    /// read by validation or `makeTransaction()`.
     var toAmountIndicative: Decimal? {
-        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmountDecimal)
+        SwapCryptoLogic.toAmountIndicative(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountDecimal,
+            payoutModel: currentPayoutModel
+        )
     }
 
     /// The string the "to" field renders. Firm value when a quote exists;
@@ -802,6 +813,17 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
+    /// Keyed by pair so flipping back to a pair keeps its fit.
+    var currentPayoutModel: SwapPayoutModel? {
+        payoutFits[currentPair]
+    }
+
+    /// Takes values captured before any await; a coin binding can change mid-fetch.
+    /// A quote that cannot be fitted drops only this pair's entry.
+    func refitPayoutModel(fromAmount: Decimal, pair: SwapPairIdentity, toCoin: Coin) {
+        payoutFits[pair] = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
+    }
+
     /// Clear the full quote slot: the manual override, the best, and the ranked
     /// set. Keeps the three in lock-step so a stale provider list can't outlive
     /// the quote it belonged to.
@@ -918,6 +940,7 @@ private extension SwapDetailsViewModel {
         let requestedAmount = fromAmountDecimal
         let requestedPair = currentPair
         let requestedSettings = advancedSettings
+        let requestedToCoin = toCoin
 
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
@@ -927,9 +950,10 @@ private extension SwapDetailsViewModel {
             dropRouteSelection(.routeUnavailable)
             bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
-            quotedPair = currentPair
+            quotedPair = requestedPair
             quotedAmount = requestedAmount
             quotedSettings = requestedSettings
+            refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
             vultDiscountBps = 0
             referralDiscountBps = 0
             return true
@@ -947,9 +971,18 @@ private extension SwapDetailsViewModel {
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.
-            guard !Task.isCancelled, currentPair == requestedPair,
-                  fromAmountDecimal == requestedAmount, advancedSettings == requestedSettings else { return false }
+            guard !Task.isCancelled else { return false }
             guard let result else { throw SwapError.routeUnavailable }
+            // A coin picker assigns the coin one view update before the
+            // screen's onChange cancels this fetch, so the pair can move on
+            // while the quote is in flight. Keep that pair's fit; never
+            // publish its quote under the new pair, where `validateForm`
+            // would accept it and the signed memo would follow the old one.
+            guard currentPair == requestedPair else {
+                payoutFits[requestedPair] = SwapPayoutModel.fit(quote: result.quote, fromAmount: requestedAmount, toCoin: requestedToCoin)
+                return false
+            }
+            guard fromAmountDecimal == requestedAmount, advancedSettings == requestedSettings else { return false }
             // Re-point at the object out of `result.allQuotes`, never the one
             // the user tapped: that is what keeps signing on current numbers.
             if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) ?? pendingSelectedProvider?.provider {
@@ -962,9 +995,10 @@ private extension SwapDetailsViewModel {
             }
             bestQuote = result.quote
             allQuotes = result.allQuotes
-            quotedPair = currentPair
+            quotedPair = requestedPair
             quotedAmount = requestedAmount
             quotedSettings = requestedSettings
+            refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
             vultDiscountBps = result.vultDiscountBps
             referralDiscountBps = result.referralDiscountBps
             return true
@@ -1039,7 +1073,7 @@ private extension SwapDetailsViewModel {
 /// Stable identity of a (from, to) coin pair, independent of the mutable `Coin`
 /// reference. Used to decide whether a held quote still belongs to the current
 /// pair so stale-while-revalidate never shows a quote from a different pair.
-struct SwapPairIdentity: Equatable {
+struct SwapPairIdentity: Hashable {
     let fromChain: Chain
     let fromTicker: String
     let fromContract: String

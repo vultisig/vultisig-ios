@@ -191,7 +191,7 @@ struct KeysignDiscoveryView: View {
         }
         .disabled(isDisabled)
         .padding(.bottom, 8)
-        .showIf(!vault.isFastVault)
+        .showIf(keysignState != .fast)
     }
 
     @ViewBuilder
@@ -285,7 +285,7 @@ struct KeysignDiscoveryView: View {
         self.qrCodeString = qrCodeData
         self.qrCodeImage = qrCodeImage
 
-        if !vault.isFastVault {
+        if keysignState != .fast {
             notifyVaultDevices()
         }
 

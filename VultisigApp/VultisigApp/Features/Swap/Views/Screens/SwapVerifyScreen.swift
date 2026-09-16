@@ -16,6 +16,7 @@ struct SwapVerifyScreen: View {
     @State private var fastPasswordPresented = false
     @State private var fastVaultPassword: String = .empty
     @State private var signButtonDisabled = false
+    @State private var signingTask: Task<Void, Never>?
     @State private var retryBannerText: String?
 
     @Environment(\.router) var router
@@ -35,7 +36,7 @@ struct SwapVerifyScreen: View {
             VStack(spacing: 16) {
                 fields
                 signButton
-                    .disabled(!verifyViewModel.isValidForm(shouldApprove: currentTransaction.isApproveRequired) || verifyViewModel.isLoadingFees || signButtonDisabled)
+                    .disabled(!verifyViewModel.canStartSigning || signButtonDisabled)
             }
         }
         .withLoading(isLoading: $vm.isLoadingFees)
@@ -48,7 +49,7 @@ struct SwapVerifyScreen: View {
         .withBanner(text: $retryBannerText, style: .error)
         .withBanner(text: $vm.routeSelectionNotice, style: .error)
         // Surface build-side failures so the user doesn't see "nothing
-        // happens" after entering the FastVault password. `buildSwapKeysignPayload`
+        // happens" after entering the FastVault password. `prepareSigning`
         // catches errors into `verifyViewModel.error`; without this binding
         // the catch becomes silent.
         .alert(
@@ -79,6 +80,8 @@ struct SwapVerifyScreen: View {
             consumePendingRetry()
         }
         .onDisappear {
+            signingTask?.cancel()
+            signingTask = nil
             verifyViewModel.isLoading = false
             fastVaultPassword = .empty
         }
@@ -328,7 +331,7 @@ struct SwapVerifyScreen: View {
 
     var signButton: some View {
         SigningCTAButtons(
-            isFastVault: vault.isFastVault,
+            isFastVault: vault.offersFastSigning,
             isDisabled: signButtonDisabled,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },
@@ -356,6 +359,7 @@ struct SwapVerifyScreen: View {
     }
 
     private func onSignPress() {
+        guard verifyViewModel.canStartSigning, !signButtonDisabled else { return }
         let canSign = verifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
@@ -363,43 +367,32 @@ struct SwapVerifyScreen: View {
     }
 
     func signAndMoveToNextView() {
+        guard verifyViewModel.canStartSigning, !signButtonDisabled else { return }
         signButtonDisabled = true
-        Task {
-            // Fund-safety pre-flight: re-check live inbound (cache-bypassing) for
-            // the source chain before building the keysign payload. A confirmed
-            // halt sets verifyViewModel.error and aborts without navigating.
-            guard await verifyViewModel.isSourceChainSafeToSign() else {
-                await MainActor.run { signButtonDisabled = false }
-                return
+        let password = fastVaultPassword.nilIfEmpty
+        signingTask = Task { @MainActor in
+            defer {
+                signButtonDisabled = false
+                signingTask = nil
             }
-            if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
-                await MainActor.run {
-                    // Fast vaults sign server-side with no peer to pair with,
-                    // so route straight into keysign (the bootstrap runs there)
-                    // and skip the pairing screen. A present fast password is
-                    // the fast-sign signal; an empty one means paired-sign,
-                    // which keeps the QR pairing screen.
-                    let context = SigningTxContext.swap(
-                        vaultPubKeyECDSA: vault.pubKeyECDSA,
-                        transaction: currentTransaction,
-                        retry: retrySignal
-                    )
-                    if let fastPassword = fastVaultPassword.nilIfEmpty {
-                        router.navigate(to: SigningRoute.keysign(.fast(
-                            context: context,
-                            keysignPayload: payload,
-                            fastVaultPassword: fastPassword
-                        )))
-                    } else {
-                        router.navigate(to: SigningRoute.pair(
-                            context: context,
-                            keysignPayload: payload,
-                            fastVaultPassword: nil
-                        ))
-                    }
-                }
+            guard let prepared = await verifyViewModel.prepareSigning(vault: vault, retrySignal: retrySignal) else { return }
+            defer { verifyViewModel.finishSigning() }
+            guard !Task.isCancelled else { return }
+            // Preparation freezes the transaction for both the payload and the
+            // downstream preview/history. Do not re-read the live display state.
+            if let password {
+                router.navigate(to: SigningRoute.keysign(.fast(
+                    context: prepared.context,
+                    keysignPayload: prepared.payload,
+                    fastVaultPassword: password
+                )))
+            } else {
+                router.navigate(to: SigningRoute.pair(
+                    context: prepared.context,
+                    keysignPayload: prepared.payload,
+                    fastVaultPassword: nil
+                ))
             }
-            await MainActor.run { signButtonDisabled = false }
         }
     }
 

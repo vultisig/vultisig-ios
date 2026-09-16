@@ -10,6 +10,8 @@ import VultisigUIResources
 
 struct VaultShareBackupsView: View {
     let vault: Vault
+    var resolveHostedRouting = false
+    @State private var routingState: FastVaultRoutingState = .idle
 
     @Environment(\.router) var router
 
@@ -18,6 +20,16 @@ struct VaultShareBackupsView: View {
             Background()
             content
         }
+        .task {
+            if resolveHostedRouting { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
+        }
+        .task(id: routingState) {
+            guard routingState == .checking else { return }
+            let presence = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault)
+            guard !Task.isCancelled, routingState == .checking else { return }
+            handlePresence(presence)
+        }
+        .onDisappear { routingState = .idle }
     }
 
     var image: some View {
@@ -41,42 +53,71 @@ struct VaultShareBackupsView: View {
     }
 
     var button: some View {
-        ZStack {
-            if vault.isFastVault {
-                migrateFastVault
-            } else {
-                migrateSecureVault
+        VStack(spacing: 16) {
+            if routingState == .idle {
+                PrimaryButton(title: "next", action: continueUpgrade)
+                    .frame(width: resolveHostedRouting ? nil : 120)
             }
+            FastVaultRoutingFeedback(
+                state: routingState,
+                onRetry: continueUpgrade,
+                onPaired: choosePairedUpgrade
+            )
         }
         .padding(.vertical, 36)
     }
 
-    var migrateSecureVault: some View {
-        PrimaryButton(title: "next") {
-            router.navigate(to: KeygenRoute.peerDiscovery(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: nil,
-                keyImportInput: nil,
-                setupType: nil,
-                singleKeygenType: nil
-            ))
+    private func continueUpgrade() {
+        guard resolveHostedRouting else {
+            navigatePaired()
+            return
         }
-        .frame(width: 120)
+        if let presence = FastVaultEligibilityRefresher.shared.confirmedPresenceForRouting(vault) {
+            handlePresence(presence)
+        } else {
+            routingState = .checking
+        }
     }
 
-    var migrateFastVault: some View {
-        PrimaryButton(title: "next") {
-            router.navigate(to: KeygenRoute.fastVaultPassword(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: vault.signers.count == 2 ? .fast : .active,
-                isExistingVault: true,
-                singleKeygenType: nil
-            ))
+    private func handlePresence(_ presence: FastVaultPresence) {
+        switch presence {
+        case .present:
+            routingState = .idle
+            navigateHosted()
+        case .absent:
+            choosePairedUpgrade()
+        case .unknown:
+            routingState = .failed
         }
     }
+
+    private func choosePairedUpgrade() {
+        routingState = .idle
+        router.navigate(to: VaultRoute.allDevicesUpgrade(vault: vault, hasReviewedBackups: true))
+    }
+
+    private func navigatePaired() {
+        router.navigate(to: KeygenRoute.peerDiscovery(
+            tssType: .Migrate,
+            vault: vault,
+            selectedTab: .secure,
+            fastSignConfig: nil,
+            keyImportInput: nil,
+            setupType: nil,
+            singleKeygenType: nil
+        ))
+    }
+
+    private func navigateHosted() {
+        router.navigate(to: KeygenRoute.fastVaultPassword(
+            tssType: .Migrate,
+            vault: vault,
+            selectedTab: vault.signers.count == 2 ? .fast : .active,
+            isExistingVault: true,
+            singleKeygenType: nil
+        ))
+    }
+
 }
 
 #Preview {
