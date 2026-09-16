@@ -13,8 +13,8 @@ struct VaultRouter {
     @ViewBuilder
     func build(_ route: VaultRoute) -> some View {
         switch route {
-        case .upgradeVault(let vault, let isFastVault):
-            viewBuilder.buildUpgradeVaultScreen(vault: vault, isFastVault: isFastVault)
+        case .upgradeVault(let vault):
+            viewBuilder.buildUpgradeVaultScreen(vault: vault)
         case .serverBackup(let vault):
             viewBuilder.buildServerBackupScreen(vault: vault)
         case .backupPasswordOptions(let tssType, let backupType, let isNewVault, let origin):
@@ -39,8 +39,8 @@ struct VaultRouter {
             viewBuilder.buildCreateVaultScreen(showBackButton: showBackButton)
         case .swap(let fromCoin, let toCoin, let vault):
             viewBuilder.buildSwapScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
-        case .allDevicesUpgrade(let vault):
-            viewBuilder.buildAllDevicesUpgradeScreen(vault: vault)
+        case .allDevicesUpgrade(let vault, let hasReviewedBackups):
+            viewBuilder.buildAllDevicesUpgradeScreen(vault: vault, hasReviewedBackups: hasReviewedBackups)
         case .vaultShareBackups(let vault):
             viewBuilder.buildVaultShareBackupsScreen(vault: vault)
         case .reshare(let vault):

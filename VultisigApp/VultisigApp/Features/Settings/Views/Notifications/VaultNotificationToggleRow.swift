@@ -18,7 +18,7 @@ struct VaultNotificationToggleRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VaultIconTypeView(isFastVault: vault.isFastVault)
+            VaultIconTypeView(isFastVault: vault.offersFastSigning)
                 .padding(12)
                 .overlay(Circle().stroke(Theme.colors.borderLight, lineWidth: 1))
 
