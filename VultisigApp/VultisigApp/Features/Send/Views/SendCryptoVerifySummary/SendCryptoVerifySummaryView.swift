@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     let input: SendCryptoVerifySummary
@@ -261,7 +262,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             } else if let bracketValue {
                 HStack(spacing: 4) {
                     if let image {
-                        Image(image)
+                        VultisigImage(image)
                             .resizable()
                             .frame(width: 16, height: 16)
                     }
@@ -282,7 +283,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             } else {
                 HStack(spacing: 4) {
                     if let image {
-                        Image(image)
+                        VultisigImage(image)
                             .resizable()
                             .frame(width: 16, height: 16)
                     }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 import RiveRuntime
 
 struct VultisigLogoAnimation: View {
@@ -32,7 +33,7 @@ struct VultisigLogoAnimation: View {
                 // Bounded rather than free-scaling. Left to `scaledToFit` alone
                 // the mark took whatever width the container offered, which on
                 // the privacy cover meant a logo the height of the screen.
-                Image("vultisig-logo")
+                VultisigImage("vultisig-logo")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 64, maxHeight: 64)

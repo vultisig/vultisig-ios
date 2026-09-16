@@ -66,6 +66,7 @@ struct DefiChainMainScreen: View {
             }
             .padding(.top, isMacOS ? 60 : 16)
             .padding(.horizontal, 16)
+            .padding(.bottom, 32)
         }
         .background(MainBackgroundWithNotification())
         .overlay(bottomGradient, alignment: .bottom)

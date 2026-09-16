@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct VaultShareBackupsView: View {
     let vault: Vault
@@ -32,7 +33,7 @@ struct VaultShareBackupsView: View {
     }
 
     var image: some View {
-        Image("VaultShareBackupsImage")
+        VultisigImage("VaultShareBackupsImage")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 512, maxHeight: 512)

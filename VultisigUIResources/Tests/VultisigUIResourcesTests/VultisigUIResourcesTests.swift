@@ -43,6 +43,6 @@ final class VultisigUIResourcesTests: XCTestCase {
         )
 
         XCTAssertTrue(sourceCatalog != nil || compiledCatalog != nil)
-        XCTAssertEqual(VultisigImage.allCases.count, 6)
+        XCTAssertTrue(VultisigResources.imageNames.isSuperset(of: ["rune", "chain-rune", "usdc", "btc", "logo-outline"]))
     }
 }

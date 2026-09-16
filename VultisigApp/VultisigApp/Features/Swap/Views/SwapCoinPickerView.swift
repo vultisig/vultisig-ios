@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SwapCoinPickerView: View {
     let vault: Vault
@@ -290,7 +291,7 @@ struct SwapCoinPickerView: View {
                     onSelect(chain: chain)
                 } label: {
                     HStack(spacing: 4) {
-                        Image(chain.logo)
+                        VultisigImage(chain.logo)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 28)

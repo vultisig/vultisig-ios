@@ -85,16 +85,18 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(url.absoluteString, "https://api.vultisig.com/coingeicko/api/v3/search?query=bitcoin%20cash")
     }
 
-    func testIconURLAcceptsOnlyCoinGeckoHTTPSCDN() throws {
+    func testIconURLAcceptsHTTPSHostsAndRejectsInsecureURLs() throws {
         let approved = try XCTUnwrap(
             URL(string: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
         )
-        let unapproved = try XCTUnwrap(URL(string: "https://example.com/bitcoin.png"))
+        let otherHost = try XCTUnwrap(URL(string: "https://example.com/bitcoin.png"))
+        let unapproved = try XCTUnwrap(URL(string: "https://user:password@example.com/bitcoin.png"))
         let insecure = try XCTUnwrap(
             URL(string: "http://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
         )
 
         XCTAssertEqual(try WidgetMarketAPI.validatedImageURL(approved), approved)
+        XCTAssertEqual(try WidgetMarketAPI.validatedImageURL(otherHost), otherHost)
         XCTAssertThrowsError(try WidgetMarketAPI.validatedImageURL(unapproved)) { error in
             XCTAssertEqual(error as? WidgetMarketError, .unapprovedImageURL)
         }

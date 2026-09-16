@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct CreateReferralDetailsView: View {
     @Bindable var viewModel: ReferralDetailsViewModel
@@ -133,7 +134,7 @@ struct CreateReferralDetailsView: View {
 
     var selectedAsset: some View {
         HStack(spacing: 8) {
-            Image("rune")
+            VultisigImage("rune")
                 .resizable()
                 .frame(width: 32, height: 32)
 

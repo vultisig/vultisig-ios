@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct PeerDiscoveryInfoBanner: View {
     @Binding var isPresented: Bool
@@ -39,7 +40,7 @@ struct PeerDiscoveryInfoBanner: View {
     }
 
     var image: some View {
-        Image("secure-qr-tutorial")
+        VultisigImage("secure-qr-tutorial")
             .resizable()
             .frame(width: 290, height: 230)
     }

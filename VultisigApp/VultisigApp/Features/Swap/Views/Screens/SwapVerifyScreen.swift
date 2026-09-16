@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct SwapVerifyScreen: View {
     let transaction: SwapTransaction
@@ -519,7 +520,7 @@ struct SwapVerifyScreen: View {
             Spacer()
 
             if showIcon {
-                Image(value)
+                VultisigImage(value)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
@@ -602,7 +603,7 @@ struct SwapVerifyScreen: View {
                                 .foregroundStyle(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
 
-                            Image(chain.logo)
+                            VultisigImage(chain.logo)
                                 .resizable()
                                 .frame(width: 12, height: 12)
 

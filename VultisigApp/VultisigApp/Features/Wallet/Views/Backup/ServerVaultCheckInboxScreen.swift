@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 #if os(macOS)
 import AppKit
 #endif
@@ -20,7 +21,7 @@ struct ServerVaultCheckInboxScreen: View {
             VStack {
                 Spacer()
                 VStack(spacing: 40) {
-                    Image("check-inbox")
+                    VultisigImage("check-inbox")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 365)

@@ -109,9 +109,10 @@ struct JupiterService {
         // output-mint fee (Ultimate tier) is a real 0, shown as a $0.00 row.
         // Ranking uses `outAmount` (already net of the fee) regardless.
         let feeOnInput = feeMint != outputMint
-        let platformFee: Decimal = (!chargedFee || feeOnInput)
+        let platformFeeRaw: BigInt = (!chargedFee || feeOnInput)
             ? .zero
-            : (platformFeeDecimal(from: quoteResponse, toCoin: toCoin) ?? .zero)
+            : (Self.platformFeeRaw(from: quoteResponse) ?? .zero)
+        let platformFee = toCoin.decimal(for: platformFeeRaw)
 
         let evmQuote = EVMQuote(
             dstAmount: quoteResponse.outAmount,
@@ -121,7 +122,9 @@ struct JupiterService {
                 data: swapBase64,
                 value: "0",
                 gasPrice: "0",
-                gas: 0
+                gas: 0,
+                swapFee: feeOnInput ? nil : platformFeeRaw.description,
+                swapFeeTokenContract: feeOnInput ? "" : toCoin.contractAddress
             )
         )
         return (evmQuote, nil, platformFee, feeOnInput)
@@ -195,15 +198,14 @@ private extension JupiterService {
         return feeAccount
     }
 
-    /// The affiliate platform fee in `toCoin` units, from Jupiter's
-    /// `platformFee.amount` (output-mint raw base units). `nil` when no fee was
-    /// charged.
-    func platformFeeDecimal(from response: JupiterQuoteResponse, toCoin: Coin) -> Decimal? {
+    /// Jupiter's `platformFee.amount` in output-mint raw base units. `nil` when
+    /// no fee was charged.
+    static func platformFeeRaw(from response: JupiterQuoteResponse) -> BigInt? {
         guard let amountStr = response.platformFee?.amount,
               let amount = BigInt(amountStr), amount > 0 else {
             return nil
         }
-        return toCoin.decimal(for: amount)
+        return amount
     }
 
     func fetchQuoteData(params: JupiterQuoteParams) async throws -> (data: Data, chargedFee: Bool) {

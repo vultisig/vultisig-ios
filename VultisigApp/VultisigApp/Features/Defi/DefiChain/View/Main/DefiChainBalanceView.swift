@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct DefiChainBalanceView: View {
     @ObservedObject var vault: Vault
@@ -72,7 +73,7 @@ struct DefiChainBalanceView: View {
     @ViewBuilder
     var imageView: some View {
         if let defiBanner {
-            Image(defiBanner)
+            VultisigImage(defiBanner)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 200, height: 200)
@@ -124,7 +125,7 @@ private struct DefiChainHeaderImageView: View {
     }
 
     var image: some View {
-        Image(name)
+        VultisigImage(name)
             .resizable()
             .scaledToFit()
             .clipShape(Circle())

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct VultDiscountTiersScreen: View {
     @ObservedObject var vault: Vault
@@ -80,7 +81,7 @@ private extension VultDiscountTiersScreen {
                 endPoint: .topTrailing
             )
             .overlay(
-                Image("vult-tiers-hero-coins")
+                VultisigImage("vult-tiers-hero-coins")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 169)

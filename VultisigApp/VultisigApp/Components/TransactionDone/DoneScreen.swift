@@ -131,6 +131,9 @@ struct DoneScreen<
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
 
                 bottomBarContent()
+                    // Desktop windows have no home-indicator inset. Keep the
+                    // footer clear even when its host overrides Screen's padding.
+                    .padding(.bottom, isMacOS ? 16 : 0)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
 

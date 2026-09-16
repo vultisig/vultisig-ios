@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import VultisigUIResources
 
 enum WidgetMarketError: Error, Equatable {
     case invalidURL
@@ -18,7 +19,6 @@ enum WidgetMarketError: Error, Equatable {
 enum WidgetMarketAPI: TargetType {
     case marketData(query: WidgetMarketQuery, currency: String)
     case search(query: String)
-    case icon(URL)
 
     private static let proxyBaseURL: URL = {
         guard let url = URL(string: "https://api.vultisig.com") else {
@@ -26,7 +26,6 @@ enum WidgetMarketAPI: TargetType {
         }
         return url
     }()
-    private static let approvedImageHost = "coin-images.coingecko.com"
 
     static func markets(query: WidgetMarketQuery, currency: String) throws -> Self {
         if case .ids = query, query.normalizedIDs.isEmpty {
@@ -36,26 +35,16 @@ enum WidgetMarketAPI: TargetType {
     }
 
     static func validatedImageURL(_ url: URL) throws -> URL {
-        guard url.scheme?.lowercased() == "https",
-              url.host?.lowercased() == approvedImageHost,
-              url.user == nil,
-              url.password == nil,
-              url.port == nil else {
+        guard RemoteImageCache.key(for: url) != nil else {
             throw WidgetMarketError.unapprovedImageURL
         }
         return url
-    }
-
-    static func validatedIcon(_ url: URL) throws -> Self {
-        .icon(try validatedImageURL(url))
     }
 
     var baseURL: URL {
         switch self {
         case .marketData, .search:
             Self.proxyBaseURL
-        case .icon(let url):
-            url
         }
     }
 
@@ -65,8 +54,6 @@ enum WidgetMarketAPI: TargetType {
             "/coingeicko/api/v3/coins/markets"
         case .search:
             "/coingeicko/api/v3/search"
-        case .icon:
-            ""
         }
     }
 
@@ -93,8 +80,6 @@ enum WidgetMarketAPI: TargetType {
             return .requestParameters(parameters, .urlEncoding)
         case .search(let query):
             return .requestParameters(["query": query], .urlEncoding)
-        case .icon:
-            return .requestPlain
         }
     }
 
@@ -102,7 +87,7 @@ enum WidgetMarketAPI: TargetType {
         switch self {
         case .marketData:
             12
-        case .search, .icon:
+        case .search:
             8
         }
     }
@@ -128,16 +113,16 @@ protocol WidgetMarketLookup: WidgetMarketRemote, WidgetAssetSearching {}
 final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     private let httpClient: any HTTPClientProtocol
     private let decoder: JSONDecoder
-    private let maximumIconByteCount: Int
+    private let imageLoader: RemoteImageLoader
 
     init(
         httpClient: any HTTPClientProtocol = HTTPClient(),
         decoder: JSONDecoder = JSONDecoder(),
-        maximumIconByteCount: Int = 64 * 1_024
+        imageLoader: RemoteImageLoader = SharedImageLoading.loader
     ) {
         self.httpClient = httpClient
         self.decoder = decoder
-        self.maximumIconByteCount = maximumIconByteCount
+        self.imageLoader = imageLoader
     }
 
     func markets(query: WidgetMarketQuery, currency: String) async throws -> [WidgetMarketAsset] {
@@ -147,10 +132,10 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
     }
 
     func iconData(from url: URL) async throws -> Data {
-        let response = try await httpClient.request(WidgetMarketAPI.validatedIcon(url))
-        let data = response.data
-        guard !data.isEmpty else { throw WidgetMarketError.emptyResponse }
-        guard data.count <= maximumIconByteCount else { throw WidgetMarketError.imageTooLarge }
+        let prepared = try await imageLoader.load(WidgetMarketAPI.validatedImageURL(url))
+        let data = try RemoteImageLoader.thumbnail(prepared, maximumPixelSize: 120)
+        // Timeline entries and the market JSON cache carry image bytes inline.
+        guard data.count <= 64 * 1_024 else { throw WidgetMarketError.imageTooLarge }
         return data
     }
 

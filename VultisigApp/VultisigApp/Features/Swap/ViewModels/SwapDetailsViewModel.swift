@@ -10,6 +10,7 @@
 //
 
 import BigInt
+import Combine
 import OSLog
 import SwiftUI
 
@@ -18,6 +19,8 @@ import SwiftUI
 final class SwapDetailsViewModel {
     @ObservationIgnored private let logger = Log.swap.other
     @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored private let inputRate: (Coin, SettingsCurrency) -> Double?
+    @ObservationIgnored private var rateSubscription: AnyCancellable?
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
@@ -33,7 +36,13 @@ final class SwapDetailsViewModel {
     // MARK: - Form fields (mutable while the user is editing)
 
     var fromAmount: String = .empty
-    var fromCoin: Coin = .example
+    var fromCoin: Coin = .example {
+        didSet {
+            if oldValue.id != fromCoin.id { amountInput.reset() }
+            refreshFromInputContext()
+        }
+    }
+    private(set) var amountInput = SwapAmountInput()
     var toCoin: Coin = .example
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
@@ -132,8 +141,65 @@ final class SwapDetailsViewModel {
         && !showAdvancedSettingsSheet
     }
 
-    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        inputRate: @escaping (Coin, SettingsCurrency) -> Double? = { coin, currency in
+            RateProvider.shared.rate(for: coin, currency: currency)?.value
+        }
+    ) {
         self.interactor = interactor
+        self.inputRate = inputRate
+        rateSubscription = RateProvider.shared.ratesDidChange.sink { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.refreshFromInputContext()
+            }
+        }
+    }
+
+    // MARK: - Amount input presentation
+
+    var fromInputText: String { amountInput.isFiat ? amountInput.draft : fromAmount }
+    var isFromInputFiat: Bool { amountInput.isFiat }
+    var canToggleFromInputMode: Bool { amountInput.context != nil }
+    var fromInputCurrencyCode: String { amountInput.context?.currency ?? SettingsCurrency.current.rawValue }
+
+    /// Also called by the screen when the selected currency preference changes.
+    /// Rate updates are display-only: canonical tokens and quotes stay unchanged.
+    func refreshFromInputContext(currency: SettingsCurrency = .current) {
+        let context = SwapAmountInput.Context(
+            sourceID: fromCoin.id, currency: currency.rawValue,
+            decimals: fromCoin.decimals, rate: inputRate(fromCoin, currency)
+        )
+        amountInput.refresh(context: context, tokenAmount: fromAmountDecimal)
+    }
+
+    func setFromInputEditing(_ editing: Bool) {
+        amountInput.setEditing(editing, tokenAmount: fromAmountDecimal)
+    }
+
+    func toggleFromInputMode() {
+        // Use exactly the context that rendered the tappable equivalent, rather
+        // than a second live lookup that might have a different price.
+        amountInput.toggle(tokenAmount: fromAmountDecimal)
+    }
+
+    /// The UI sends one draft edit here, without also invoking updateFromAmount.
+    /// Paste detection uses draft length, never expanded converted-token length.
+    func editFromInput(_ text: String, vault: Vault, immediate: Bool? = nil, renderedAsFiat: Bool? = nil) {
+        let expectedFiat = renderedAsFiat ?? amountInput.isFiat
+        let oldText = fromInputText
+        refreshFromInputContext()
+        // Compare the unit the field rendered, since a reset or toggle may have
+        // happened before this callback arrived. Never reinterpret a stale edit
+        // in the newly selected unit.
+        guard expectedFiat == amountInput.isFiat else { return }
+        if amountInput.isFiat {
+            fromAmount = amountInput.editFiat(text)
+        } else {
+            fromAmount = text
+            amountInput.synchronize(tokenAmount: fromAmountDecimal)
+        }
+        fetchQuotes(vault: vault, immediate: immediate ?? (abs(text.count - oldText.count) > 1))
     }
 
     // MARK: - Loading
@@ -303,6 +369,7 @@ final class SwapDetailsViewModel {
     // MARK: - User actions
 
     func switchCoins(vault: Vault) {
+        amountInput.reset()
         // Flipping the pair is a new swap — a custom slippage / gas limit /
         // external recipient must never leak across it. In particular the
         // recipient was validated for the OLD destination chain, which is now the
@@ -324,6 +391,7 @@ final class SwapDetailsViewModel {
     /// (percentage buttons, paste) that set a final value in one shot. Free typing
     /// stays debounced.
     func updateFromAmount(vault: Vault, immediate: Bool = false) {
+        amountInput.synchronize(tokenAmount: fromAmountDecimal)
         fetchQuotes(vault: vault, immediate: immediate)
     }
 
@@ -419,10 +487,11 @@ final class SwapDetailsViewModel {
     // MARK: - Validation + transaction hand-off
 
     func validateForm() -> Bool {
-        SwapCryptoLogic.validateForm(
+        guard fromAmountDecimal > 0 else { return false }
+        return SwapCryptoLogic.validateForm(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount,
+            fromAmount: fromAmountDecimal,
             quote: quote,
             fee: fee,
             toAmount: toAmountDecimal,
@@ -438,7 +507,7 @@ final class SwapDetailsViewModel {
         return SwapTransaction(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount.toDecimal(),
+            fromAmount: fromAmountDecimal,
             kind: .market(quote),
             mode: isSecuredMint ? .securedMint : .standard,
             gas: gas,
@@ -503,11 +572,13 @@ extension SwapDetailsViewModel {
     }
 
     var fromAmountDecimal: Decimal {
-        SwapCryptoLogic.fromAmountDecimal(fromAmount: fromAmount)
+        SwapAmountInput.parseToken(fromAmount) ?? .zero
     }
 
     var amountInCoinDecimal: BigInt {
-        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmount, fromCoin: fromCoin)
+        let raw = fromCoin.raw(for: fromAmountDecimal)
+        let balance = fromCoin.rawBalance.toBigInt()
+        return balance > 0 ? min(raw, balance) : raw
     }
 
     var toAmountDecimal: Decimal {
@@ -518,7 +589,7 @@ extension SwapDetailsViewModel {
     /// field instantly while the firm quote loads. Never read by validation or
     /// `makeTransaction()`.
     var toAmountIndicative: Decimal? {
-        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmount)
+        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmountDecimal)
     }
 
     /// The string the "to" field renders. Firm value when a quote exists;
@@ -573,11 +644,17 @@ extension SwapDetailsViewModel {
     /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
     /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: displayedNetworkFeeWei)
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: displayedNetworkFeeWei)
     }
 
     var fromFiatAmount: String {
-        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmount)
+        guard let context = amountInput.context else { return .empty }
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .currency
+        formatter.currencyCode = context.currency
+        let value = fromAmountDecimal * context.rate
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? .empty
     }
 
     var toFiatAmount: String {
@@ -645,7 +722,7 @@ extension SwapDetailsViewModel {
     var baseAffiliateFee: String {
         SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -672,7 +749,7 @@ extension SwapDetailsViewModel {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -680,7 +757,7 @@ extension SwapDetailsViewModel {
     var referralDiscount: String {
         SwapCryptoLogic.referralDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -725,7 +802,7 @@ private extension SwapDetailsViewModel {
         // Empty or non-positive amount: drop any leftover quote/fee/discount
         // state from a prior valid input so `validateForm` doesn't pass on
         // a stale combination of new amount + old downstream values.
-        if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
+        if fromAmount.isEmpty || fromAmountDecimal.isZero {
             clearQuoteState()
             quotedPair = nil
             quotedAmount = nil
@@ -746,7 +823,7 @@ private extension SwapDetailsViewModel {
         // "to" field falls back to the instant indicative estimate and the
         // summary shows its loading skeleton (`showsQuoteSkeleton` =
         // isLoadingQuotes && quote == nil) until the fresh quote lands.
-        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount.toDecimal()
+        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmountDecimal
         if !isSilentRefresh {
             clearQuoteState()
             quotedPair = nil
@@ -803,7 +880,7 @@ private extension SwapDetailsViewModel {
         guard !fromAmount.isEmpty else { return }
 
         // Parse once so the requested amount and the ownership stamp can't disagree.
-        let requestedAmount = fromAmount.toDecimal()
+        let requestedAmount = fromAmountDecimal
 
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
@@ -864,7 +941,7 @@ private extension SwapDetailsViewModel {
         // Don't zero `gas`/`thorchainFee` up front: during a same-pair refresh the
         // previous fee stays meaningful (stale-while-revalidate) and is replaced
         // on success below. A pair change already zeroed them in `fetchQuotes`.
-        let amountDecimal = fromAmount.toDecimal()
+        let amountDecimal = fromAmountDecimal
         guard !fromAmount.isEmpty, !amountDecimal.isZero else { return }
 
         do {

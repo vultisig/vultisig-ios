@@ -29,7 +29,7 @@ struct KeybaseAvatarView: View {
         ZStack {
             monogramAvatar
             if let url = resolvedURL {
-                CachedAsyncImage(url: url, urlCache: .imageCache) { image in
+                CachedAsyncImage(url: url) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)

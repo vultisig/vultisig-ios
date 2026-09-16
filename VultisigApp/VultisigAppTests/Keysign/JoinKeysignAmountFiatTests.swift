@@ -158,9 +158,7 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
                     data: "0x",
                     value: "0",
                     gasPrice: "1",
-                    gas: 100_000,
-                    swapFee: "0",
-                    swapFeeTokenContract: ""
+                    gas: 100_000
                 )
             ),
             provider: .oneInch,

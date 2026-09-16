@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VultisigUIResources
 
 struct ModalBackgroundView: View {
     let width: CGFloat
@@ -35,7 +36,7 @@ struct ModalBackgroundView: View {
     }
 
     var magicPattern: some View {
-        Image("magic-pattern")
+        VultisigImage("magic-pattern")
             .resizable()
             .scaledToFill()
             .opacity(0.2)

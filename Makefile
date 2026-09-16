@@ -71,6 +71,7 @@ generate: ## Regenerate the Xcode project from project.yml
 		echo "error: xcodegen not installed. Run: make bootstrap"; \
 		exit 1; \
 	fi
+	@python3 scripts/generate-image-resources.py
 	@cd $(VULTISIG_APP_DIR) && xcodegen generate --spec project.yml
 
 open: generate ## Regenerate the project and open it in Xcode
