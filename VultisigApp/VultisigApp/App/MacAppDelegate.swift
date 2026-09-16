@@ -10,6 +10,11 @@ import OSLog
 class MacAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         PushNotificationManager.shared.setupNotificationDelegate()
+
+        // The toolbar background is forced dark (see VultisigApp.swift), so the
+        // title text needs to be forced to the dark-appearance's white to stay
+        // readable when the system is in light mode.
+        NSApp.appearance = NSAppearance(named: .darkAqua)
     }
 
     func application(
