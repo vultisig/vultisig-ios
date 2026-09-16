@@ -9,8 +9,8 @@ import SwiftUI
 
 struct VaultShareBackupsView: View {
     let vault: Vault
-    var useServer = false
-    @State private var resolvePresence = false
+    var resolveHostedRouting = false
+    @StateObject private var routing = FastVaultRoutingViewModel()
 
     @Environment(\.router) var router
 
@@ -19,12 +19,10 @@ struct VaultShareBackupsView: View {
             Background()
             content
         }
-        .crossPlatformSheet(isPresented: $resolvePresence) {
-            FastVaultPresenceGate(vault: vault) { hosted in
-                resolvePresence = false
-                if hosted { navigateHosted() } else { navigatePaired() }
-            }
+        .task {
+            if resolveHostedRouting { await routing.prefetch(vault) }
         }
+        .onDisappear { routing.cancel() }
     }
 
     var image: some View {
@@ -48,27 +46,34 @@ struct VaultShareBackupsView: View {
     }
 
     var button: some View {
-        ZStack {
-            if useServer {
-                migrateFastVault
-            } else {
-                migrateSecureVault
+        VStack(spacing: 16) {
+            if !routing.isChecking && !routing.hasError {
+                PrimaryButton(title: "next", action: continueUpgrade)
+                    .frame(width: resolveHostedRouting ? nil : 120)
             }
+            FastVaultRoutingFeedback(
+                isChecking: routing.isChecking,
+                hasError: routing.hasError,
+                onRetry: continueUpgrade,
+                onPaired: choosePairedUpgrade
+            )
         }
         .padding(.vertical, 36)
     }
 
-    var migrateSecureVault: some View {
-        PrimaryButton(title: "next") {
+    private func continueUpgrade() {
+        guard resolveHostedRouting else {
             navigatePaired()
+            return
         }
-        .frame(width: 120)
+        routing.resolve(vault) { hosted in
+            if hosted { navigateHosted() } else { choosePairedUpgrade() }
+        }
     }
 
-    var migrateFastVault: some View {
-        PrimaryButton(title: "next") {
-            resolvePresence = true
-        }
+    private func choosePairedUpgrade() {
+        routing.cancel()
+        router.navigate(to: VaultRoute.allDevicesUpgrade(vault: vault, hasReviewedBackups: true))
     }
 
     private func navigatePaired() {

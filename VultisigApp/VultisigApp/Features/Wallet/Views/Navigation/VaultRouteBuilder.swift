@@ -11,7 +11,11 @@ struct VaultRouteBuilder {
 
     @ViewBuilder
     func buildUpgradeVaultScreen(vault: Vault) -> some View {
-        UpgradeVaultRoutingScreen(vault: vault)
+        if vault.hasServerSigner {
+            VaultShareBackupsView(vault: vault, resolveHostedRouting: true)
+        } else {
+            AllDevicesUpgradeView(vault: vault)
+        }
     }
 
     @ViewBuilder
@@ -72,8 +76,8 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
-    func buildAllDevicesUpgradeScreen(vault: Vault) -> some View {
-        AllDevicesUpgradeView(vault: vault)
+    func buildAllDevicesUpgradeScreen(vault: Vault, hasReviewedBackups: Bool) -> some View {
+        AllDevicesUpgradeView(vault: vault, hasReviewedBackups: hasReviewedBackups)
     }
 
     @ViewBuilder

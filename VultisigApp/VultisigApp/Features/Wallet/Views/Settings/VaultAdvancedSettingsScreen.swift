@@ -12,7 +12,7 @@ struct VaultAdvancedSettingsScreen: View {
     @ObservedObject var vault: Vault
 
     @Environment(\.router) var router
-    @State private var resolvePresence = false
+    @StateObject private var routing = FastVaultRoutingViewModel()
     @State private var showCustomRPCLockedSheet = false
     @State private var isLoading = false
     private let tierService = VultTierService()
@@ -29,12 +29,10 @@ struct VaultAdvancedSettingsScreen: View {
                 .commonListContainer()
             }
         }
-        .crossPlatformSheet(isPresented: $resolvePresence) {
-            FastVaultPresenceGate(vault: vault) { hosted in
-                resolvePresence = false
-                navigateKeygen(useServer: hosted)
-            }
+        .task {
+            if vault.publicKeyMLDSA44 == nil { await routing.prefetch(vault) }
         }
+        .onDisappear { routing.cancel() }
         .screenTitle("advanced".localized)
         .withLoading(isLoading: $isLoading)
         .crossPlatformSheet(isPresented: $showCustomRPCLockedSheet) {
@@ -104,19 +102,29 @@ struct VaultAdvancedSettingsScreen: View {
     }
 
     var dilithiumKeygenRow: some View {
-        Button {
-            if vault.hasServerSigner {
-                resolvePresence = true
-            } else {
-                navigateKeygen(useServer: false)
+        VStack(spacing: 16) {
+            Button(action: startKeygen) {
+                SettingsCommonOptionView(
+                    icon: .atomShield,
+                    title: "dilithiumKeygen".localized,
+                    subtitle: "dilithiumKeygenSubtitle".localized
+                )
             }
-        } label: {
-            SettingsCommonOptionView(
-                icon: .atomShield,
-                title: "dilithiumKeygen".localized,
-                subtitle: "dilithiumKeygenSubtitle".localized
+            .disabled(routing.isChecking || routing.hasError)
+            FastVaultRoutingFeedback(
+                isChecking: routing.isChecking,
+                hasError: routing.hasError,
+                onRetry: startKeygen,
+                onPaired: {
+                    routing.cancel()
+                    navigateKeygen(useServer: false)
+                }
             )
         }
+    }
+
+    private func startKeygen() {
+        routing.resolve(vault) { navigateKeygen(useServer: $0) }
     }
 
     private func navigateKeygen(useServer: Bool) {

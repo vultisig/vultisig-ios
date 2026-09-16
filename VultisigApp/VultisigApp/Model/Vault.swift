@@ -312,7 +312,7 @@ final class Vault: ObservableObject, Codable {
     }
 
     /// Compatibility accessor for confirmed server availability. Presentation
-    /// and ordinary signing use `offersFastSigning`; mutations revalidate on action.
+    /// and ordinary signing use `offersFastSigning`; setup uses a short-lived confirmation.
     var isFastVault: Bool {
         guard hasServerSigner else { return false }
         if let topology = fastVaultCheckedTopology, topology != FastVaultTopology(self) { return false }

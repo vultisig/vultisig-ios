@@ -49,6 +49,24 @@ final class FastVaultEligibilityRefresher {
         _ = await resolvePresence(vault)
     }
 
+    /// Routing uses a short confirmation window, independent of the daily
+    /// lifecycle refresh. Unknown attempts and changed topology invalidate it.
+    func confirmedPresenceForRouting(_ vault: Vault) -> FastVaultPresence? {
+        guard vault.hasServerSigner else { return .absent }
+        guard vault.fastVaultCheckedTopology == FastVaultTopology(vault),
+              vault.fastVaultPresenceOutcome?.isUnknown == false,
+              let checkedAt = vault.fastVaultEligibilityCheckedAt else { return nil }
+        let age = now().timeIntervalSince(checkedAt)
+        guard age >= 0, age < 60 else { return nil }
+        return vault.fastVaultEligibility ? .present : .absent
+    }
+
+    /// Reuses completed background work or joins the same in-flight request.
+    func presenceForRouting(_ vault: Vault) async -> FastVaultPresence {
+        if let confirmed = confirmedPresenceForRouting(vault) { return confirmed }
+        return await resolvePresence(vault)
+    }
+
     func resolvePresence(_ vault: Vault) async -> FastVaultPresence {
         guard vault.hasServerSigner else { return .absent }
         let key = ObjectIdentifier(vault)

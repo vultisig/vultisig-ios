@@ -20,7 +20,7 @@ struct QuantumSecurityIntroScreen: View {
     let vault: Vault
 
     @Environment(\.router) private var router
-    @State private var resolvePresence = false
+    @StateObject private var routing = FastVaultRoutingViewModel()
     @State private var animationVM: RiveViewModel?
 
     init(vault: Vault) {
@@ -41,17 +41,22 @@ struct QuantumSecurityIntroScreen: View {
                     .padding(.bottom, 24)
                 }
 
-                PrimaryButton(title: "quantumSecurityIntroCta".localized) {
-                    onGetStarted()
+                if !routing.isChecking && !routing.hasError {
+                    PrimaryButton(title: "quantumSecurityIntroCta".localized, action: onGetStarted)
                 }
+                FastVaultRoutingFeedback(
+                    isChecking: routing.isChecking,
+                    hasError: routing.hasError,
+                    onRetry: onGetStarted,
+                    onPaired: {
+                        routing.cancel()
+                        navigateKeygen(useServer: false)
+                    }
+                )
             }
         }
-        .crossPlatformSheet(isPresented: $resolvePresence) {
-            FastVaultPresenceGate(vault: vault) { hosted in
-                resolvePresence = false
-                navigateKeygen(useServer: hosted)
-            }
-        }
+        .task { await routing.prefetch(vault) }
+        .onDisappear { routing.cancel() }
         .onAppear {
             guard animationVM == nil else { return }
             animationVM = RiveViewModel(fileName: "quantum_key_pair", autoPlay: true)
@@ -101,11 +106,7 @@ struct QuantumSecurityIntroScreen: View {
     // MARK: - Actions
 
     private func onGetStarted() {
-        if vault.hasServerSigner {
-            resolvePresence = true
-        } else {
-            navigateKeygen(useServer: false)
-        }
+        routing.resolve(vault) { navigateKeygen(useServer: $0) }
     }
 
     private func navigateKeygen(useServer: Bool) {

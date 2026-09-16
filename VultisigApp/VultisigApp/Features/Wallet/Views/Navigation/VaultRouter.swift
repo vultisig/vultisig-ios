@@ -39,8 +39,8 @@ struct VaultRouter {
             viewBuilder.buildCreateVaultScreen(showBackButton: showBackButton)
         case .swap(let fromCoin, let toCoin, let vault):
             viewBuilder.buildSwapScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
-        case .allDevicesUpgrade(let vault):
-            viewBuilder.buildAllDevicesUpgradeScreen(vault: vault)
+        case .allDevicesUpgrade(let vault, let hasReviewedBackups):
+            viewBuilder.buildAllDevicesUpgradeScreen(vault: vault, hasReviewedBackups: hasReviewedBackups)
         case .vaultShareBackups(let vault):
             viewBuilder.buildVaultShareBackupsScreen(vault: vault)
         case .reshare(let vault):
