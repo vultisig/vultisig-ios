@@ -35,7 +35,7 @@ final class SwapVerifyViewModel {
     var routeSelectionNotice: String?
     var isLoading = false
     var isLoadingFees = false
-    var isLoadingTransaction = false
+    private(set) var isPreparingSigning = false
     var timer: Int = 59
 
     init(
@@ -79,7 +79,7 @@ final class SwapVerifyViewModel {
     }
 
     func updateTimer(vault: Vault) async {
-        guard !transaction.isLimit, !isLoadingFees else { return }
+        guard !transaction.isLimit, !isLoadingFees, !isPreparingSigning else { return }
         timer -= 1
         if timer < 1 {
             await refreshData(vault: vault)
@@ -93,7 +93,7 @@ final class SwapVerifyViewModel {
         // `quote == nil` limit invariant (the signed artifact is the pre-built
         // limit memo; a refreshed quote would only render misleading
         // provider/fee rows). Covers the 60s ticker and the retry path.
-        guard !transaction.isLimit, !isLoadingFees else { return }
+        guard !transaction.isLimit, !isLoadingFees, !isPreparingSigning else { return }
 
         isLoadingFees = true
         defer { isLoadingFees = false }
@@ -191,25 +191,48 @@ final class SwapVerifyViewModel {
         }
     }
 
-    /// Sign-time fund-safety gate: delegates the live inbound re-check to the
-    /// interactor (which owns the THORChain / Maya services), keeping this VM
-    /// free of any chain-service dependency. Returns `true` when it's safe to
-    /// sign; on a halt (or an unverifiable fetch) it sets `error` and returns
-    /// `false` so the caller does NOT build the payload or navigate.
-    func isSourceChainSafeToSign() async -> Bool {
+    var canStartSigning: Bool {
+        !isLoadingFees && !isPreparingSigning && isValidForm(shouldApprove: transaction.isApproveRequired)
+    }
+
+    /// A successful preparation holds refresh exclusion until the caller has
+    /// synchronously navigated using this context and payload. Call
+    /// `finishSigning()` in a defer around that navigation; failures release it here.
+    func prepareSigning(vault: Vault, retrySignal: SwapRetrySignal) async -> (context: SigningTxContext, payload: KeysignPayload)? {
+        guard canStartSigning else { return nil }
+        isPreparingSigning = true
+        let snapshot = transaction
+        var didPrepare = false
+        defer {
+            if !didPrepare { finishSigning() }
+        }
+
         do {
-            try await interactor.assertSourceChainNotHalted(transaction: transaction)
-            return true
+            try Task.checkCancellation()
+            try await interactor.assertSourceChainNotHalted(transaction: snapshot)
+            try Task.checkCancellation()
+            guard let payload = await buildSwapKeysignPayload(transaction: snapshot, vault: vault) else { return nil }
+            try Task.checkCancellation()
+            let context = SigningTxContext.swap(
+                vaultPubKeyECDSA: vault.pubKeyECDSA,
+                transaction: snapshot,
+                retry: retrySignal
+            )
+            error = nil
+            didPrepare = true
+            return (context, payload)
         } catch {
+            guard !(error is CancellationError), (error as? URLError)?.code != .cancelled else { return nil }
             self.error = error
-            return false
+            return nil
         }
     }
 
-    func buildSwapKeysignPayload(vault: Vault) async -> KeysignPayload? {
-        isLoadingTransaction = true
-        defer { isLoadingTransaction = false }
+    func finishSigning() {
+        isPreparingSigning = false
+    }
 
+    private func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async -> KeysignPayload? {
         do {
             // Limit orders take a different builder — no market quote, memo
             // is pre-built on the entry screen. Everything else (route to
@@ -286,6 +309,7 @@ final class SwapVerifyViewModel {
             }
             return try await interactor.buildSwapKeysignPayload(transaction: transaction, vault: vault)
         } catch {
+            guard !(error is CancellationError), (error as? URLError)?.code != .cancelled else { return nil }
             self.error = error
             return nil
         }

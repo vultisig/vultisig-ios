@@ -163,6 +163,172 @@ final class SwapVerifyRouteSelectionTests: XCTestCase {
         XCTAssertEqual(vm.transaction.quote, quote)
     }
 
+    func testRefreshCannotReplaceTransactionDuringPayloadBuild() async {
+        let stale = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let fresh = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "200000000"))
+        let gate = RefreshRequestGate()
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: stale, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: fresh, allQuotes: [fresh]),
+                beforeBuild: { try await gate.wait() }
+            )
+        )
+        let vault = makeVault()
+        confirm(vm)
+        let signing = Task { await vm.prepareSigning(vault: vault, retrySignal: SwapRetrySignal()) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        await vm.refreshData(vault: vault)
+        XCTAssertEqual(vm.transaction.quote, stale, "Refresh must not replace the quote being signed")
+        gate.finish()
+        let prepared = await signing.value
+        XCTAssertEqual(prepared?.context.swapTransaction?.quote, stale)
+        XCTAssertTrue(vm.isPreparingSigning, "Keep refresh excluded until navigation consumes the result")
+        vm.finishSigning()
+        await vm.refreshData(vault: vault)
+        XCTAssertEqual(vm.transaction.quote, fresh)
+        XCTAssertEqual(prepared?.context.swapTransaction?.quote, stale, "History retains the signed snapshot after refresh resumes")
+    }
+
+    func testPayloadBuildIsRejectedWhileRefreshIsInFlight() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let gate = RefreshRequestGate()
+        var builds = 0
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeFetch: { try await gate.wait() },
+                beforeBuild: { builds += 1 }
+            )
+        )
+        let vault = makeVault()
+        let refresh = Task { await vm.refreshData(vault: vault) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        confirm(vm)
+        let rejected = await vm.prepareSigning(vault: vault, retrySignal: SwapRetrySignal())
+        XCTAssertNil(rejected)
+        XCTAssertFalse(vm.isPreparingSigning)
+        XCTAssertNil(vm.error)
+        XCTAssertEqual(builds, 0, "Password and security callbacks must not build during refresh")
+        gate.finish()
+        await refresh.value
+    }
+
+    func testHaltCheckExcludesRefreshAndDuplicateSigning() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let fresh = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "200000000"))
+        let gate = RefreshRequestGate()
+        var builtQuote: SwapQuote?
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: fresh, allQuotes: [fresh]),
+                beforeHalt: { try await gate.wait() },
+                onBuild: { builtQuote = $0.quote }
+            )
+        )
+        confirm(vm)
+        vm.timer = 1
+        let vault = makeVault()
+        let retry = SwapRetrySignal()
+        let signing = Task { await vm.prepareSigning(vault: vault, retrySignal: retry) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        await vm.updateTimer(vault: vault)
+        await vm.refreshData(vault: vault)
+        let duplicate = await vm.prepareSigning(vault: vault, retrySignal: retry)
+        XCTAssertNil(duplicate)
+        XCTAssertEqual(gate.calls, 1)
+        XCTAssertEqual(vm.timer, 1)
+        XCTAssertEqual(vm.transaction.quote, quote)
+        gate.finish()
+        let prepared = await signing.value
+        XCTAssertEqual(builtQuote, quote)
+        XCTAssertEqual(prepared?.context, .swap(vaultPubKeyECDSA: vault.pubKeyECDSA, transaction: vm.transaction, retry: retry))
+        vm.finishSigning()
+        XCTAssertTrue(vm.canStartSigning)
+    }
+
+    func testFailedHaltReleasesSigningForRetry() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        var shouldFail = true
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeHalt: { if shouldFail { throw SwapError.tradingHalted } }
+            )
+        )
+        confirm(vm)
+        let failed = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNil(failed)
+        XCTAssertFalse(vm.isPreparingSigning)
+        XCTAssertEqual(vm.error as? SwapError, .tradingHalted)
+        shouldFail = false
+        let retry = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNotNil(retry)
+        XCTAssertNil(vm.error)
+        vm.finishSigning()
+    }
+
+    func testFailedBuildReleasesSigningForRetry() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        var shouldFail = true
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeBuild: { if shouldFail { throw URLError(.timedOut) } }
+            )
+        )
+        confirm(vm)
+        let failed = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNil(failed)
+        XCTAssertFalse(vm.isPreparingSigning)
+        shouldFail = false
+        let retry = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNotNil(retry)
+        vm.finishSigning()
+    }
+
+    func testCancelledBuildDoesNotProduceNavigationContext() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let gate = RefreshRequestGate()
+        let vm = SwapVerifyViewModel(
+            transaction: makeTransaction(quote: quote, pickedProvider: nil),
+            interactor: RouteSelectionStubInteractor(
+                refreshed: makeResult(best: quote, allQuotes: [quote]),
+                beforeBuild: { try await gate.wait() }
+            )
+        )
+        confirm(vm)
+        let signing = Task { await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal()) }
+        await fulfillment(of: [gate.started], timeout: 2)
+        signing.cancel()
+        gate.finish()
+        let prepared = await signing.value
+        XCTAssertNil(prepared)
+        XCTAssertFalse(vm.isPreparingSigning)
+        XCTAssertTrue(vm.canStartSigning)
+        XCTAssertNil(vm.error)
+    }
+
+    func testSheetCallbackCannotSignAfterConfirmationsReset() async {
+        let quote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "100000000"))
+        let vm = makeVM(transaction: makeTransaction(quote: quote, pickedProvider: nil), refreshed: makeResult(best: quote, allQuotes: [quote]))
+        confirm(vm)
+        vm.isAmountCorrect = false
+        let prepared = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNil(prepared)
+        XCTAssertFalse(vm.isPreparingSigning)
+    }
+
+    private func confirm(_ vm: SwapVerifyViewModel) {
+        vm.isAmountCorrect = true
+        vm.isFeeCorrect = true
+        vm.isApproveCorrect = true
+    }
+
     // MARK: - Fixtures
 
     private func makeVM(transaction: SwapTransaction, refreshed: SwapQuoteResult) -> SwapVerifyViewModel {
@@ -257,6 +423,9 @@ private struct RouteSelectionStubInteractor: SwapInteractor {
     let refreshed: SwapQuoteResult
     var beforeFetch: (() async throws -> Void)? = nil
     var beforeFees: (() async throws -> Void)? = nil
+    var beforeBuild: (() async throws -> Void)? = nil
+    var beforeHalt: (() async throws -> Void)? = nil
+    var onBuild: ((SwapTransaction) -> Void)? = nil
 
     func fetchQuote(
         amount: Decimal,
@@ -290,10 +459,21 @@ private struct RouteSelectionStubInteractor: SwapInteractor {
         .zero
     }
 
-    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {}
+    func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
+        try await beforeHalt?()
+    }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        throw CancellationError()
+        onBuild?(transaction)
+        try await beforeBuild?()
+        return KeysignPayload(
+            coin: transaction.fromCoin, toAddress: "test", toAmount: 1,
+            chainSpecific: .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
+            utxos: [], memo: nil, swapPayload: nil, approvePayload: nil,
+            vaultPubKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID, libType: "DKLS",
+            wasmExecuteContractPayload: nil, tronTransferContractPayload: nil, tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil, qbtcClaimPayload: nil, isQbtcClaim: false, skipBroadcast: false, signData: nil
+        )
     }
 
     func updateBalance(for coin: Coin) async {}
