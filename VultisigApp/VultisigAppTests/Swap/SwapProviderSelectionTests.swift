@@ -258,6 +258,8 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.snapshotAdvancedSettings()
         vm.advancedSettings.gasLimit = 100_000
         vm.advancedSettingsSheetDidClose(vault: makeVault())
+        XCTAssertNil(vm.quote, "Changed settings invalidate payload bytes immediately")
+        XCTAssertEqual(vm.selectedProviderDisplayName, stale.displayName, "The pending route keeps its label")
         await vm.waitForQuoteTask()
 
         XCTAssertEqual(interactor.fetchCount, 2, "The settings change must have re-fetched")

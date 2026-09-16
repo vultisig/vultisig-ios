@@ -153,9 +153,10 @@ struct AdvancedSwapSheet: View {
 
     /// "Auto" until the user manually overrides the route; then the picked
     /// provider's name. The pick survives a refresh, so this keeps naming the
-    /// provider until the route stops being offered or the swap itself changes.
+    /// provider while its payload is revalidated, until the route stops being
+    /// offered or the swap itself changes.
     private var selectRouteValue: String {
-        guard let selected = vm.selectedQuote?.displayName else { return "auto".localized }
+        guard let selected = vm.selectedProviderDisplayName else { return "auto".localized }
         return selected
     }
 
