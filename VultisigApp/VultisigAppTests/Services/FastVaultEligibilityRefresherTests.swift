@@ -199,21 +199,6 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         XCTAssertEqual(checkCalls, 1)
     }
 
-    func testLaunchSweepRefreshesEveryStructuralCandidate() async {
-        let secure = makeVault()
-        secure.signers = ["device", "other"]
-        let vaults = [makeVault(), makeVault(), makeVault(), secure]
-        var checked = Set<String>()
-        let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { vault in checked.insert(vault.pubKeyECDSA); return .present },
-            saveStorage: {}
-        )
-        await refresher.refreshAllIfStale(vaults)
-        XCTAssertEqual(checked.count, 3)
-        XCTAssertTrue(vaults.filter(\.hasServerSigner).allSatisfy { $0.fastVaultEligibility })
-        XCTAssertNil(secure.fastVaultEligibilityCheckedAt)
-    }
-
     func testConcurrentRequestsCoalesce() async {
         let vault = makeVault()
         var calls = 0
@@ -258,7 +243,7 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         XCTAssertTrue(vault.offersFastSigning)
     }
 
-    func testCancelledAttemptRetriesDespiteRecentSuccess() async {
+    func testCancelledCallerStillLetsLookupPopulateCache() async {
         let vault = makeVault()
         vault.fastVaultEligibility = true
         vault.fastVaultEligibilityCheckedAt = Date()
@@ -279,8 +264,10 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         release?.resume(returning: .present)
         let result = await task.value
         XCTAssertEqual(result, .unknown(.cancelled))
+        XCTAssertEqual(vault.fastVaultPresenceOutcome, .present)
+        XCTAssertEqual(refresher.confirmedPresenceForRouting(vault), .present)
         await refresher.refreshIfStale(vault)
-        XCTAssertEqual(calls, 2)
+        XCTAssertEqual(calls, 1)
     }
 
     func testDeletedVaultIgnoresLateResponse() async throws {
@@ -334,33 +321,6 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         XCTAssertTrue(vault.offersFastSigning)
     }
 
-    func testRequestsAreBoundedAcrossDistinctVaults() async {
-        let vaults = [makeVault(), makeVault(), makeVault()]
-        var releases: [CheckedContinuation<FastVaultPresence, Never>] = []
-        let firstTwoStarted = expectation(description: "two lookups start")
-        firstTwoStarted.expectedFulfillmentCount = 2
-        let thirdStarted = expectation(description: "third lookup starts after release")
-        var calls = 0
-        let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { _ in
-                calls += 1
-                return await withCheckedContinuation { continuation in
-                    releases.append(continuation)
-                    if calls <= 2 { firstTwoStarted.fulfill() } else { thirdStarted.fulfill() }
-                }
-            }, saveStorage: {}
-        )
-        let tasks = vaults.map { vault in Task { await refresher.resolvePresence(vault) } }
-        await fulfillment(of: [firstTwoStarted], timeout: 2)
-        await Task.yield()
-        XCTAssertEqual(calls, 2)
-        releases.removeFirst().resume(returning: .present)
-        await fulfillment(of: [thirdStarted], timeout: 2)
-        releases.forEach { $0.resume(returning: .present) }
-        for task in tasks { _ = await task.value }
-        XCTAssertEqual(calls, 3)
-    }
-
     func testNewServerSignerDoesNotInheritSecureTopologyConfirmation() async {
         let vault = makeVault()
         vault.signers = ["device", "other-device"]
@@ -388,39 +348,6 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         let result = await refresher.resolvePresence(vault)
         XCTAssertEqual(result, .unknown(.requestFailed))
         XCTAssertTrue(vault.offersFastSigning)
-    }
-
-    func testQueuedLookupDoesNotReadDeletedVault() async throws {
-        let vaults = [makeVault(), makeVault(), makeVault()]
-        var startedVaults: [Vault] = []
-        var releases: [CheckedContinuation<FastVaultPresence, Never>] = []
-        let started = expectation(description: "two active requests")
-        started.expectedFulfillmentCount = 2
-        let refresher = FastVaultEligibilityRefresher(
-            checkEligibility: { vault in
-                startedVaults.append(vault)
-                return await withCheckedContinuation { continuation in
-                    releases.append(continuation)
-                    started.fulfill()
-                }
-            }, saveStorage: {}
-        )
-        let tasks = vaults.map { vault in Task { await refresher.resolvePresence(vault) } }
-        await fulfillment(of: [started], timeout: 2)
-        await Task.yield()
-        let queued = try XCTUnwrap(vaults.first { candidate in
-            !startedVaults.contains(where: { $0 === candidate })
-        })
-        let context = Storage.shared.modelContext!
-        context.delete(queued)
-        try context.save()
-        releases.forEach { $0.resume(returning: .present) }
-        var unknownResults = 0
-        for task in tasks {
-            if await task.value.isUnknown { unknownResults += 1 }
-        }
-        XCTAssertEqual(startedVaults.count, 2)
-        XCTAssertEqual(unknownResults, 1)
     }
 
     func testCancellingOneConsumerPreservesOtherConsumer() async {
@@ -451,98 +378,38 @@ final class FastVaultEligibilityRefresherTests: XCTestCase {
         XCTAssertEqual(vault.fastVaultPresenceOutcome, .present)
     }
 
-    func testNewConsumerDoesNotJoinCancelledFlight() async {
+    func testReplacementLookupSurvivesOldTopologyCompletion() async {
         let vault = makeVault()
-        var release: CheckedContinuation<FastVaultPresence, Never>?
+        var releases: [CheckedContinuation<FastVaultPresence, Never>] = []
+        let firstStarted = expectation(description: "original topology starts")
+        let replacementStarted = expectation(description: "replacement topology starts")
         var calls = 0
-        let started = expectation(description: "lookup starts")
         let refresher = FastVaultEligibilityRefresher(checkEligibility: { _ in
             calls += 1
-            if calls > 1 { return .present }
-            return await withCheckedContinuation { release = $0; started.fulfill() }
+            return await withCheckedContinuation { continuation in
+                releases.append(continuation)
+                if calls == 1 { firstStarted.fulfill() } else { replacementStarted.fulfill() }
+            }
         }, saveStorage: {})
         let first = Task { await refresher.resolvePresence(vault) }
-        await fulfillment(of: [started], timeout: 2)
-        first.cancel()
-        await Task.yield()
-        let replacement = await refresher.resolvePresence(vault)
-        release?.resume(returning: .present)
-        _ = await first.value
-        XCTAssertEqual(replacement, .present)
-        XCTAssertEqual(calls, 2)
-        XCTAssertEqual(vault.fastVaultPresenceOutcome, .present)
-    }
-
-    func testOverlappingSweepsMergeNewCandidatesAndCoalesceAction() async {
-        let firstVault = makeVault()
-        let secondVault = makeVault()
-        var release: CheckedContinuation<FastVaultPresence, Never>?
-        var checked: [ObjectIdentifier] = []
-        let started = expectation(description: "first sweep lookup starts")
-        let joined = expectation(description: "second sweep joins")
-        let actionJoined = expectation(description: "action joins")
-        let refresher = FastVaultEligibilityRefresher(checkEligibility: { vault in
-            checked.append(ObjectIdentifier(vault))
-            if vault === secondVault { return .present }
-            return await withCheckedContinuation { release = $0; started.fulfill() }
-        }, saveStorage: {})
-        let first = Task { await refresher.refreshAllIfStale([firstVault]) }
-        await fulfillment(of: [started], timeout: 2)
-        let second = Task {
-            joined.fulfill()
-            await refresher.refreshAllIfStale([firstVault, secondVault])
-        }
-        let action = Task {
-            actionJoined.fulfill()
-            return await refresher.resolvePresence(firstVault)
-        }
-        await fulfillment(of: [joined, actionJoined], timeout: 2)
-        release?.resume(returning: .unknown(.requestFailed))
-        await first.value
-        await second.value
-        let actionResult = await action.value
-        XCTAssertTrue(actionResult.isUnknown)
-        XCTAssertEqual(checked.count, 2)
-        XCTAssertTrue(secondVault.fastVaultEligibility)
-    }
-
-    func testLaterLifecycleRetriesCompletedUnknownDuringSlowSweep() async {
-        let firstVault = makeVault()
-        let secondVault = makeVault()
-        var releaseFirst: CheckedContinuation<FastVaultPresence, Never>?
-        var releaseSecond: CheckedContinuation<FastVaultPresence, Never>?
-        var firstCalls = 0
-        let firstStarted = expectation(description: "first lookup starts")
-        let secondStarted = expectation(description: "slow lookup starts")
-        let merged = expectation(description: "slow candidate merges")
-        let joined = expectation(description: "later lifecycle joins")
-        let refresher = FastVaultEligibilityRefresher(checkEligibility: { vault in
-            if vault === firstVault {
-                firstCalls += 1
-                if firstCalls > 1 { return .unknown(.requestFailed) }
-                return await withCheckedContinuation { releaseFirst = $0; firstStarted.fulfill() }
-            }
-            return await withCheckedContinuation { releaseSecond = $0; secondStarted.fulfill() }
-        }, saveStorage: {})
-        let first = Task { await refresher.refreshAllIfStale([firstVault]) }
         await fulfillment(of: [firstStarted], timeout: 2)
-        let second = Task {
-            merged.fulfill()
-            await refresher.refreshAllIfStale([secondVault])
-        }
-        await fulfillment(of: [merged], timeout: 2)
-        releaseFirst?.resume(returning: .unknown(.requestFailed))
-        await fulfillment(of: [secondStarted], timeout: 2)
-        let third = Task {
+        vault.signers = ["device", "server-replacement"]
+        let replacement = Task { await refresher.resolvePresence(vault) }
+        await fulfillment(of: [replacementStarted], timeout: 2)
+        releases[0].resume(returning: .absent)
+        let discarded = await first.value
+        XCTAssertTrue(discarded.isUnknown)
+        let joined = expectation(description: "caller joins replacement")
+        let consumer = Task {
             joined.fulfill()
-            await refresher.refreshAllIfStale([firstVault, secondVault])
+            return await refresher.resolvePresence(vault)
         }
         await fulfillment(of: [joined], timeout: 2)
-        releaseSecond?.resume(returning: .present)
-        await first.value
-        await second.value
-        await third.value
-        XCTAssertEqual(firstCalls, 2)
+        releases[1].resume(returning: .present)
+        let results = await [replacement.value, consumer.value]
+        XCTAssertEqual(results, [.present, .present])
+        XCTAssertEqual(calls, 2)
+        XCTAssertEqual(vault.fastVaultCheckedTopology, FastVaultTopology(vault))
     }
 
 }

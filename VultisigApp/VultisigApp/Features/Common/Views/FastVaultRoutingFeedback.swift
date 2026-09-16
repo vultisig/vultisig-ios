@@ -1,20 +1,24 @@
 import SwiftUI
 
-/// Presentation only: the owning screen keeps its content and navigation while
-/// the routing view model resolves server presence.
+enum FastVaultRoutingState {
+    case idle
+    case checking
+    case failed
+}
+
+/// Presentation only; the screen owns the async lookup and navigation.
 struct FastVaultRoutingFeedback: View {
-    let isChecking: Bool
-    let hasError: Bool
+    let state: FastVaultRoutingState
     let onRetry: () -> Void
     let onPaired: () -> Void
 
     var body: some View {
-        if isChecking || hasError {
+        if state != .idle {
             VStack(spacing: 16) {
-                if isChecking {
+                if state == .checking {
                     ProgressView()
                 }
-                if hasError {
+                if state == .failed {
                     Text("errorNetworkUnstableTitle".localized)
                         .font(Theme.fonts.title2)
                     Text("errorNetworkUnstableDescription".localized)

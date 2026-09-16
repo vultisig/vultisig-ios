@@ -169,19 +169,15 @@ class AppViewModel: ObservableObject {
         self.showingVaultSelector = showingVaultSelector
         self.restartNavigation = restartNavigation
 
-        if let vault = selectedVault {
-            Task { await FastVaultEligibilityRefresher.shared.refreshIfStale(vault) }
-        }
+        refreshFastVaultEligibilityIfNeeded()
     }
 
-    /// Refresh every candidate on foreground, including vaults never selected.
     func refreshFastVaultEligibilityIfNeeded() {
-        let vaults = Storage.shared.modelContext.fetchAllVaults()
-        Task { await FastVaultEligibilityRefresher.shared.refreshAllIfStale(vaults) }
+        guard let vault = selectedVault else { return }
+        Task { await FastVaultEligibilityRefresher.shared.refreshIfStale(vault) }
     }
 
     func loadSelectedVault(for vaults: [Vault]) {
-        Task { await FastVaultEligibilityRefresher.shared.refreshAllIfStale(vaults) }
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
             // when vaultName is empty / selectedPubKeyECDSA is empty, select the first vault if available
             // otherwise the app have nothing to show

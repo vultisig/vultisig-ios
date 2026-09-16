@@ -20,7 +20,7 @@ struct QuantumSecurityIntroScreen: View {
     let vault: Vault
 
     @Environment(\.router) private var router
-    @StateObject private var routing = FastVaultRoutingViewModel()
+    @State private var routingState: FastVaultRoutingState = .idle
     @State private var animationVM: RiveViewModel?
 
     init(vault: Vault) {
@@ -41,22 +41,27 @@ struct QuantumSecurityIntroScreen: View {
                     .padding(.bottom, 24)
                 }
 
-                if !routing.isChecking && !routing.hasError {
+                if routingState == .idle {
                     PrimaryButton(title: "quantumSecurityIntroCta".localized, action: onGetStarted)
                 }
                 FastVaultRoutingFeedback(
-                    isChecking: routing.isChecking,
-                    hasError: routing.hasError,
+                    state: routingState,
                     onRetry: onGetStarted,
                     onPaired: {
-                        routing.cancel()
+                        routingState = .idle
                         navigateKeygen(useServer: false)
                     }
                 )
             }
         }
-        .task { await routing.prefetch(vault) }
-        .onDisappear { routing.cancel() }
+        .task { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
+        .task(id: routingState) {
+            guard routingState == .checking else { return }
+            let presence = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault)
+            guard !Task.isCancelled, routingState == .checking else { return }
+            handlePresence(presence)
+        }
+        .onDisappear { routingState = .idle }
         .onAppear {
             guard animationVM == nil else { return }
             animationVM = RiveViewModel(fileName: "quantum_key_pair", autoPlay: true)
@@ -106,7 +111,21 @@ struct QuantumSecurityIntroScreen: View {
     // MARK: - Actions
 
     private func onGetStarted() {
-        routing.resolve(vault) { navigateKeygen(useServer: $0) }
+        if let presence = FastVaultEligibilityRefresher.shared.confirmedPresenceForRouting(vault) {
+            handlePresence(presence)
+        } else {
+            routingState = .checking
+        }
+    }
+
+    private func handlePresence(_ presence: FastVaultPresence) {
+        switch presence {
+        case .present, .absent:
+            routingState = .idle
+            navigateKeygen(useServer: presence == .present)
+        case .unknown:
+            routingState = .failed
+        }
     }
 
     private func navigateKeygen(useServer: Bool) {

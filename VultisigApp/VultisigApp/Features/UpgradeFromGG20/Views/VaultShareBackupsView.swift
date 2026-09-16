@@ -10,7 +10,7 @@ import SwiftUI
 struct VaultShareBackupsView: View {
     let vault: Vault
     var resolveHostedRouting = false
-    @StateObject private var routing = FastVaultRoutingViewModel()
+    @State private var routingState: FastVaultRoutingState = .idle
 
     @Environment(\.router) var router
 
@@ -20,9 +20,15 @@ struct VaultShareBackupsView: View {
             content
         }
         .task {
-            if resolveHostedRouting { await routing.prefetch(vault) }
+            if resolveHostedRouting { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
         }
-        .onDisappear { routing.cancel() }
+        .task(id: routingState) {
+            guard routingState == .checking else { return }
+            let presence = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault)
+            guard !Task.isCancelled, routingState == .checking else { return }
+            handlePresence(presence)
+        }
+        .onDisappear { routingState = .idle }
     }
 
     var image: some View {
@@ -47,13 +53,12 @@ struct VaultShareBackupsView: View {
 
     var button: some View {
         VStack(spacing: 16) {
-            if !routing.isChecking && !routing.hasError {
+            if routingState == .idle {
                 PrimaryButton(title: "next", action: continueUpgrade)
                     .frame(width: resolveHostedRouting ? nil : 120)
             }
             FastVaultRoutingFeedback(
-                isChecking: routing.isChecking,
-                hasError: routing.hasError,
+                state: routingState,
                 onRetry: continueUpgrade,
                 onPaired: choosePairedUpgrade
             )
@@ -66,13 +71,27 @@ struct VaultShareBackupsView: View {
             navigatePaired()
             return
         }
-        routing.resolve(vault) { hosted in
-            if hosted { navigateHosted() } else { choosePairedUpgrade() }
+        if let presence = FastVaultEligibilityRefresher.shared.confirmedPresenceForRouting(vault) {
+            handlePresence(presence)
+        } else {
+            routingState = .checking
+        }
+    }
+
+    private func handlePresence(_ presence: FastVaultPresence) {
+        switch presence {
+        case .present:
+            routingState = .idle
+            navigateHosted()
+        case .absent:
+            choosePairedUpgrade()
+        case .unknown:
+            routingState = .failed
         }
     }
 
     private func choosePairedUpgrade() {
-        routing.cancel()
+        routingState = .idle
         router.navigate(to: VaultRoute.allDevicesUpgrade(vault: vault, hasReviewedBackups: true))
     }
 
