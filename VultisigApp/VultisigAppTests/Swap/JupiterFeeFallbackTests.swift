@@ -35,6 +35,8 @@ final class JupiterFeeFallbackTests: XCTestCase {
         XCTAssertFalse(http.swapRequestedFeeAccount, "missing ATA must omit feeAccount on /swap")
         XCTAssertEqual(result.quote.dstAmount, "1500000")
         XCTAssertEqual(result.platformFee, 0)
+        XCTAssertEqual(result.quote.tx.swapFee, "0", "Uncharged on the output mint is a stated zero")
+        XCTAssertEqual(result.quote.tx.swapFeeTokenContract, usdc)
     }
 
     func testProvisionedFeeAtaSendsPlatformFee() async throws {
@@ -54,7 +56,9 @@ final class JupiterFeeFallbackTests: XCTestCase {
 
         XCTAssertEqual(http.quotedFeeBps, [50])
         XCTAssertTrue(http.swapRequestedFeeAccount)
-        XCTAssertGreaterThan(result.platformFee, 0)
+        XCTAssertEqual(result.platformFee, Decimal(string: "0.0075"))
+        XCTAssertEqual(result.quote.tx.swapFee, "7500", "Raw output-mint units, as Jupiter reports them")
+        XCTAssertEqual(result.quote.tx.swapFeeTokenContract, usdc)
     }
 
     func testProvisionedFeeAtaStillSendsFeeAccountWhenQuotedFeeRoundsToZero() async throws {
@@ -75,6 +79,7 @@ final class JupiterFeeFallbackTests: XCTestCase {
         XCTAssertEqual(http.quotedFeeBps, [50])
         XCTAssertTrue(http.swapRequestedFeeAccount)
         XCTAssertEqual(result.platformFee, 0)
+        XCTAssertEqual(result.quote.tx.swapFee, "0")
     }
 
     func testFeeBearingQuote4xxRetriesWithoutFee() async throws {
@@ -121,6 +126,29 @@ final class JupiterFeeFallbackTests: XCTestCase {
         XCTAssertEqual(http.quotedFeeBps, [50, nil])
         XCTAssertFalse(http.swapRequestedFeeAccount, "retry did not request a fee, so /swap must not send feeAccount")
         XCTAssertEqual(result.platformFee, 0)
+    }
+
+    func testFeeOnInputMintStatesNoFee() async throws {
+        // Native-SOL output: the fee is collected on the input mint, so it is
+        // not expressible in toCoin and the quote states nothing.
+        let accounts = StubSolanaAccounts(feeAtaExists: true)
+        let http = JupiterScriptedHTTPClient(
+            quoteScript: [(200, quoteJSON(input: usdc, output: wsol, feeAmount: "7500"))]
+        )
+        let service = JupiterService(httpClient: http, solanaService: accounts)
+
+        let result = try await service.fetchQuote(
+            fromCoin: makeUSDC(),
+            toCoin: makeSOL(),
+            fromAmount: 1_000_000,
+            vultTierDiscount: 0,
+            slippageBps: 50
+        )
+
+        XCTAssertTrue(result.feeOnInput)
+        XCTAssertEqual(result.platformFee, 0)
+        XCTAssertNil(result.quote.tx.swapFee)
+        XCTAssertEqual(result.quote.tx.swapFeeTokenContract, "")
     }
 
     private func makeSOL() -> Coin {

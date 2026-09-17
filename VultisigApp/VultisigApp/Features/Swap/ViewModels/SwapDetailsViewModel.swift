@@ -10,6 +10,7 @@
 //
 
 import BigInt
+import Combine
 import OSLog
 import SwiftUI
 
@@ -18,7 +19,13 @@ import SwiftUI
 final class SwapDetailsViewModel {
     @ObservationIgnored private let logger = Log.swap.other
     @ObservationIgnored private let interactor: SwapInteractor
+    @ObservationIgnored private let inputRate: (Coin, SettingsCurrency) -> Double?
+    @ObservationIgnored private var rateSubscription: AnyCancellable?
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
+    // Fee-only refresh kicked off by `selectProvider`. Kept separate from
+    // `updateQuoteTask`, which `advancedSettingsSheetDidClose` reads as "a real
+    // quote fetch is tracked" to decide whether to revalidate on close.
+    @ObservationIgnored private var providerFeeTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
     // Stale-while-revalidate keeps a quote on screen only across a true silent
@@ -29,11 +36,21 @@ final class SwapDetailsViewModel {
     /// The PARSED amount the held quote was fetched for — the same value sent to
     /// the provider, so re-typing an equivalent amount is not a new swap.
     @ObservationIgnored private var quotedAmount: Decimal?
+    @ObservationIgnored private var quotedSettings: SwapAdvancedSettings?
+    /// A displayed quote may survive an outage; only a completed quote + fee
+    /// refresh can authorize handoff. Dismissing the tooltip cannot change this.
+    private var hasValidatedQuote = false
 
     // MARK: - Form fields (mutable while the user is editing)
 
     var fromAmount: String = .empty
-    var fromCoin: Coin = .example
+    var fromCoin: Coin = .example {
+        didSet {
+            if oldValue.id != fromCoin.id { amountInput.reset() }
+            refreshFromInputContext()
+        }
+    }
+    private(set) var amountInput = SwapAmountInput()
     var toCoin: Coin = .example
     var fromCoins: [Coin] = []
     var toCoins: [Coin] = []
@@ -73,12 +90,21 @@ final class SwapDetailsViewModel {
     var allQuotes: [SwapQuote] = []
     /// Auto-selected winner for the current pair/amount.
     var bestQuote: SwapQuote?
-    /// Manual provider override. `nil` means "use Auto". Every path that drops it
-    /// goes through `dropRouteSelection`, so it can never vanish silently.
+    /// Manual provider override. Settings invalidation temporarily parks its
+    /// identity for revalidation; dropping the choice posts a route notice.
     var selectedQuote: SwapQuote?
+    /// Settings can invalidate payload bytes without changing the user's route.
+    private var pendingSelectedProvider: (provider: SwapProvider, displayName: String?)?
+
+    var selectedProviderDisplayName: String? {
+        selectedQuote?.displayName ?? pendingSelectedProvider?.displayName
+    }
 
     /// Set when a route pick was dropped; the screen renders and clears it.
     var routeSelectionNotice: String?
+
+    /// Fit from each pair's last firm quote; survives the quote reset on edit so the next "~" estimate is fee-aware.
+    private(set) var payoutFits: [SwapPairIdentity: SwapPayoutModel] = [:]
 
     /// The active quote the whole flow reads. A manual pick wins; otherwise the
     /// auto-selected best. Writing it replaces the slot wholesale and clears the
@@ -87,6 +113,8 @@ final class SwapDetailsViewModel {
     var quote: SwapQuote? {
         get { selectedQuote ?? bestQuote }
         set {
+            hasValidatedQuote = false
+            pendingSelectedProvider = nil
             selectedQuote = nil
             bestQuote = newValue
             if newValue == nil {
@@ -132,8 +160,65 @@ final class SwapDetailsViewModel {
         && !showAdvancedSettingsSheet
     }
 
-    init(interactor: SwapInteractor = DefaultSwapInteractor.live) {
+    init(
+        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        inputRate: @escaping (Coin, SettingsCurrency) -> Double? = { coin, currency in
+            RateProvider.shared.rate(for: coin, currency: currency)?.value
+        }
+    ) {
         self.interactor = interactor
+        self.inputRate = inputRate
+        rateSubscription = RateProvider.shared.ratesDidChange.sink { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.refreshFromInputContext()
+            }
+        }
+    }
+
+    // MARK: - Amount input presentation
+
+    var fromInputText: String { amountInput.isFiat ? amountInput.draft : fromAmount }
+    var isFromInputFiat: Bool { amountInput.isFiat }
+    var canToggleFromInputMode: Bool { amountInput.context != nil }
+    var fromInputCurrencyCode: String { amountInput.context?.currency ?? SettingsCurrency.current.rawValue }
+
+    /// Also called by the screen when the selected currency preference changes.
+    /// Rate updates are display-only: canonical tokens and quotes stay unchanged.
+    func refreshFromInputContext(currency: SettingsCurrency = .current) {
+        let context = SwapAmountInput.Context(
+            sourceID: fromCoin.id, currency: currency.rawValue,
+            decimals: fromCoin.decimals, rate: inputRate(fromCoin, currency)
+        )
+        amountInput.refresh(context: context, tokenAmount: fromAmountDecimal)
+    }
+
+    func setFromInputEditing(_ editing: Bool) {
+        amountInput.setEditing(editing, tokenAmount: fromAmountDecimal)
+    }
+
+    func toggleFromInputMode() {
+        // Use exactly the context that rendered the tappable equivalent, rather
+        // than a second live lookup that might have a different price.
+        amountInput.toggle(tokenAmount: fromAmountDecimal)
+    }
+
+    /// The UI sends one draft edit here, without also invoking updateFromAmount.
+    /// Paste detection uses draft length, never expanded converted-token length.
+    func editFromInput(_ text: String, vault: Vault, immediate: Bool? = nil, renderedAsFiat: Bool? = nil) {
+        let expectedFiat = renderedAsFiat ?? amountInput.isFiat
+        let oldText = fromInputText
+        refreshFromInputContext()
+        // Compare the unit the field rendered, since a reset or toggle may have
+        // happened before this callback arrived. Never reinterpret a stale edit
+        // in the newly selected unit.
+        guard expectedFiat == amountInput.isFiat else { return }
+        if amountInput.isFiat {
+            fromAmount = amountInput.editFiat(text)
+        } else {
+            fromAmount = text
+            amountInput.synchronize(tokenAmount: fromAmountDecimal)
+        }
+        fetchQuotes(vault: vault, immediate: immediate ?? (abs(text.count - oldText.count) > 1))
     }
 
     // MARK: - Loading
@@ -202,9 +287,26 @@ final class SwapDetailsViewModel {
         allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick.
-    func selectProvider(_ quote: SwapQuote) {
+    /// Apply a manual provider pick. The new quote carries the previous
+    /// selection's `gas`/`gasLimit`/`thorchainFee` until its own fees land, so
+    /// `hasValidatedQuote` drops until that refresh completes — otherwise
+    /// Continue could re-enable immediately with fees for the old route.
+    func selectProvider(_ quote: SwapQuote, vault: Vault) {
+        pendingSelectedProvider = nil
         selectedQuote = quote
+        hasValidatedQuote = false
+        if let quotedAmount {
+            refitPayoutModel(fromAmount: quotedAmount, pair: currentPair, toCoin: toCoin)
+        }
+        providerFeeTask?.cancel()
+        isLoadingFees = true
+        providerFeeTask = Task { [weak self] in
+            guard let self else { return }
+            let feesSucceeded = await self.updateFees(vault: vault)
+            guard !Task.isCancelled else { return }
+            self.hasValidatedQuote = feesSucceeded && self.quoteMatchesCurrentRequest
+            self.isLoadingFees = false
+        }
     }
 
     enum RouteSelectionDropReason {
@@ -224,8 +326,9 @@ final class SwapDetailsViewModel {
     /// No-op without a pick, so a repeating invalidation (`fetchQuotes` runs on
     /// every keystroke) still surfaces at most one notice per pick.
     func dropRouteSelection(_ reason: RouteSelectionDropReason) {
-        guard selectedQuote != nil else { return }
+        guard selectedQuote != nil || pendingSelectedProvider != nil else { return }
         selectedQuote = nil
+        pendingSelectedProvider = nil
         routeSelectionNotice = reason.message
     }
 
@@ -295,7 +398,8 @@ final class SwapDetailsViewModel {
     /// route never reaches here — it only chooses among the quotes already fetched.
     /// No-op when nothing relevant changed (byte-identical to no interaction).
     func advancedSettingsSheetDidClose(vault: Vault) {
-        guard advancedSettings != advancedSettingsSnapshot else { return }
+        let needsRevalidation = updateQuoteTask != nil && !hasValidatedQuote && fromAmountDecimal > 0
+        guard advancedSettings != advancedSettingsSnapshot || needsRevalidation else { return }
         advancedSettingsSnapshot = advancedSettings
         fetchQuotes(vault: vault, immediate: true)
     }
@@ -303,6 +407,7 @@ final class SwapDetailsViewModel {
     // MARK: - User actions
 
     func switchCoins(vault: Vault) {
+        amountInput.reset()
         // Flipping the pair is a new swap — a custom slippage / gas limit /
         // external recipient must never leak across it. In particular the
         // recipient was validated for the OLD destination chain, which is now the
@@ -324,6 +429,7 @@ final class SwapDetailsViewModel {
     /// (percentage buttons, paste) that set a final value in one shot. Free typing
     /// stays debounced.
     func updateFromAmount(vault: Vault, immediate: Bool = false) {
+        amountInput.synchronize(tokenAmount: fromAmountDecimal)
         fetchQuotes(vault: vault, immediate: immediate)
     }
 
@@ -358,11 +464,10 @@ final class SwapDetailsViewModel {
         }
     }
 
-    /// The refresh countdown is meaningful only against a live quote. Until the
-    /// user enters an amount and a valid quote comes back, there's nothing to
-    /// refresh, so the counter stays hidden and parked.
+    /// A structural rejection clears the displayed quote but keeps retrying a
+    /// previously quoted request, so a lifted halt can recover automatically.
     var showRefreshCounter: Bool {
-        quote != nil
+        quote != nil || (fromAmountDecimal > 0 && quotedPair == currentPair && quotedAmount == fromAmountDecimal)
     }
 
     func updateTimer(vault: Vault) {
@@ -419,10 +524,12 @@ final class SwapDetailsViewModel {
     // MARK: - Validation + transaction hand-off
 
     func validateForm() -> Bool {
-        SwapCryptoLogic.validateForm(
+        guard hasValidatedQuote, quoteMatchesCurrentRequest, error == nil,
+              !isLoadingQuotes, !isLoadingFees, fromAmountDecimal > 0 else { return false }
+        return SwapCryptoLogic.validateForm(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount,
+            fromAmount: fromAmountDecimal,
             quote: quote,
             fee: fee,
             toAmount: toAmountDecimal,
@@ -438,7 +545,7 @@ final class SwapDetailsViewModel {
         return SwapTransaction(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount.toDecimal(),
+            fromAmount: fromAmountDecimal,
             kind: .market(quote),
             mode: isSecuredMint ? .securedMint : .standard,
             gas: gas,
@@ -503,22 +610,29 @@ extension SwapDetailsViewModel {
     }
 
     var fromAmountDecimal: Decimal {
-        SwapCryptoLogic.fromAmountDecimal(fromAmount: fromAmount)
+        SwapAmountInput.parseToken(fromAmount) ?? .zero
     }
 
     var amountInCoinDecimal: BigInt {
-        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmount, fromCoin: fromCoin)
+        let raw = fromCoin.raw(for: fromAmountDecimal)
+        let balance = fromCoin.rawBalance.toBigInt()
+        return balance > 0 ? min(raw, balance) : raw
     }
 
     var toAmountDecimal: Decimal {
         SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
-    /// Display-only indicative out-amount from spot prices. Used to fill the "to"
-    /// field instantly while the firm quote loads. Never read by validation or
-    /// `makeTransaction()`.
+    /// Display-only indicative out-amount: this pair's last payout fit, else spot.
+    /// Used to fill the "to" field instantly while the firm quote loads. Never
+    /// read by validation or `makeTransaction()`.
     var toAmountIndicative: Decimal? {
-        SwapCryptoLogic.toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: fromAmount)
+        SwapCryptoLogic.toAmountIndicative(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountDecimal,
+            payoutModel: currentPayoutModel
+        )
     }
 
     /// The string the "to" field renders. Firm value when a quote exists;
@@ -573,11 +687,17 @@ extension SwapDetailsViewModel {
     /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
     /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: displayedNetworkFeeWei)
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: displayedNetworkFeeWei)
     }
 
     var fromFiatAmount: String {
-        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmount)
+        guard let context = amountInput.context else { return .empty }
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .currency
+        formatter.currencyCode = context.currency
+        let value = fromAmountDecimal * context.rate
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? .empty
     }
 
     var toFiatAmount: String {
@@ -645,7 +765,7 @@ extension SwapDetailsViewModel {
     var baseAffiliateFee: String {
         SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -672,7 +792,7 @@ extension SwapDetailsViewModel {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -680,7 +800,7 @@ extension SwapDetailsViewModel {
     var referralDiscount: String {
         SwapCryptoLogic.referralDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmountDecimal, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -710,25 +830,51 @@ private extension SwapDetailsViewModel {
         SwapPairIdentity(fromCoin: fromCoin, toCoin: toCoin)
     }
 
+    /// Keyed by pair so flipping back to a pair keeps its fit.
+    var currentPayoutModel: SwapPayoutModel? {
+        payoutFits[currentPair]
+    }
+
+    /// Takes values captured before any await; a coin binding can change mid-fetch.
+    /// A quote that cannot be fitted drops only this pair's entry.
+    func refitPayoutModel(fromAmount: Decimal, pair: SwapPairIdentity, toCoin: Coin) {
+        payoutFits[pair] = quote.flatMap { SwapPayoutModel.fit(quote: $0, fromAmount: fromAmount, toCoin: toCoin) }
+    }
+
     /// Clear the full quote slot: the manual override, the best, and the ranked
     /// set. Keeps the three in lock-step so a stale provider list can't outlive
     /// the quote it belonged to.
-    func clearQuoteState() {
-        dropRouteSelection(.swapChanged)
+    func clearQuoteState(reason: RouteSelectionDropReason = .swapChanged, preservingProvider: Bool = false) {
+        hasValidatedQuote = false
+        if preservingProvider {
+            if let selectedQuote {
+                pendingSelectedProvider = (selectedQuote.provider(fromChain: fromCoin.chain), selectedQuote.displayName)
+            }
+            selectedQuote = nil
+        } else {
+            dropRouteSelection(reason)
+        }
         bestQuote = nil
         allQuotes = []
     }
 
+    var quoteMatchesCurrentRequest: Bool {
+        quotedPair == currentPair && quotedAmount == fromAmountDecimal && quotedSettings == advancedSettings
+    }
+
     func fetchQuotes(vault: Vault, immediate: Bool = false) {
         updateQuoteTask?.cancel()
+        providerFeeTask?.cancel()
+        hasValidatedQuote = false
 
         // Empty or non-positive amount: drop any leftover quote/fee/discount
         // state from a prior valid input so `validateForm` doesn't pass on
         // a stale combination of new amount + old downstream values.
-        if fromAmount.isEmpty || fromAmount.toDecimal().isZero {
+        if fromAmount.isEmpty || fromAmountDecimal.isZero {
             clearQuoteState()
             quotedPair = nil
             quotedAmount = nil
+            quotedSettings = nil
             gas = .zero
             gasLimit = .zero
             thorchainFee = .zero
@@ -741,16 +887,20 @@ private extension SwapDetailsViewModel {
         }
 
         // Stale-while-revalidate is for the silent periodic auto-refresh only:
-        // keep the previous quote + summary on screen when the pair AND amount
-        // are unchanged. On any pair or amount change, blank the quote so the
+        // keep the previous quote + summary on screen when pair, amount and
+        // advanced settings are unchanged. Otherwise blank the quote so the
         // "to" field falls back to the instant indicative estimate and the
         // summary shows its loading skeleton (`showsQuoteSkeleton` =
         // isLoadingQuotes && quote == nil) until the fresh quote lands.
-        let isSilentRefresh = quotedPair == currentPair && quotedAmount == fromAmount.toDecimal()
+        let isSilentRefresh = quoteMatchesCurrentRequest
         if !isSilentRefresh {
-            clearQuoteState()
-            quotedPair = nil
-            quotedAmount = nil
+            let samePairAndAmount = quotedPair == currentPair && quotedAmount == fromAmountDecimal
+            clearQuoteState(preservingProvider: samePairAndAmount)
+            if !samePairAndAmount {
+                quotedPair = nil
+                quotedAmount = nil
+            }
+            quotedSettings = nil
             gas = .zero
             gasLimit = .zero
             thorchainFee = .zero
@@ -779,9 +929,10 @@ private extension SwapDetailsViewModel {
             // as a preview, but a fee you can't pay would surface the UTXO
             // `notEnoughUTXO` / `insufficientGas` fee errors. Insufficiency is
             // reflected only on the disabled Continue button, never as a fee error.
-            await self.updateQuotes(vault: vault)
-            if self.balanceError == nil, self.error == nil, self.quote != nil {
-                await self.updateFees(vault: vault)
+            let quoteSucceeded = await self.updateQuotes(vault: vault)
+            var feesSucceeded = false
+            if quoteSucceeded, !Task.isCancelled, self.balanceError == nil {
+                feesSucceeded = await self.updateFees(vault: vault)
             }
 
             // Only the winning task clears the loading state. A superseded task
@@ -789,21 +940,25 @@ private extension SwapDetailsViewModel {
             // its successor — otherwise clearing the flag unmasks the in-between
             // reset values and the previous quote flashes through.
             guard !Task.isCancelled else { return }
+            self.hasValidatedQuote = quoteSucceeded && feesSucceeded && self.quoteMatchesCurrentRequest
             self.isLoadingQuotes = false
             self.isLoadingFees = false
         }
     }
 
-    func updateQuotes(vault: Vault) async {
+    func updateQuotes(vault: Vault) async -> Bool {
         // Don't clear `quote` here: stale-while-revalidate keeps the previous
         // quote (and its summary) on screen until the fresh one lands. The pair
         // change in `fetchQuotes` already cleared it when it would be misleading.
         error = nil
 
-        guard !fromAmount.isEmpty else { return }
+        guard !fromAmount.isEmpty else { return false }
 
         // Parse once so the requested amount and the ownership stamp can't disagree.
-        let requestedAmount = fromAmount.toDecimal()
+        let requestedAmount = fromAmountDecimal
+        let requestedPair = currentPair
+        let requestedSettings = advancedSettings
+        let requestedToCoin = toCoin
 
         // Same-underlying secured selection: there's no meaningful pool swap, so
         // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
@@ -813,11 +968,13 @@ private extension SwapDetailsViewModel {
             dropRouteSelection(.routeUnavailable)
             bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: requestedAmount, toCoin: toCoin)
             allQuotes = [bestQuote].compactMap { $0 }
-            quotedPair = currentPair
+            quotedPair = requestedPair
             quotedAmount = requestedAmount
+            quotedSettings = requestedSettings
+            refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
             vultDiscountBps = 0
             referralDiscountBps = 0
-            return
+            return true
         }
 
         do {
@@ -827,45 +984,66 @@ private extension SwapDetailsViewModel {
                 toCoin: toCoin,
                 vault: vault,
                 referredCode: vault.referredCode?.code ?? .empty,
-                slippageBps: advancedSettings.slippage.bps,
-                recipientAddress: advancedSettings.externalRecipient
+                slippageBps: requestedSettings.slippage.bps,
+                recipientAddress: requestedSettings.externalRecipient
             )
             // A superseding edit cancelled this fetch — don't write its stale
             // quote over the state the new fetch is about to populate.
-            guard !Task.isCancelled else { return }
-            if let result {
-                // Re-point at the object out of `result.allQuotes`, never the one
-                // the user tapped: that is what keeps signing on current numbers.
-                if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) {
-                    if let refreshed = result.allQuotes.first(where: { $0.provider(fromChain: fromCoin.chain) == picked }) {
-                        selectedQuote = refreshed
-                    } else {
-                        dropRouteSelection(.routeUnavailable)
-                    }
-                }
-                bestQuote = result.quote
-                allQuotes = result.allQuotes
-                quotedPair = currentPair
-                quotedAmount = requestedAmount
-                vultDiscountBps = result.vultDiscountBps
-                referralDiscountBps = result.referralDiscountBps
+            guard !Task.isCancelled else { return false }
+            guard let result else { throw SwapError.routeUnavailable }
+            // A coin picker assigns the coin one view update before the
+            // screen's onChange cancels this fetch, so the pair can move on
+            // while the quote is in flight. Keep that pair's fit; never
+            // publish its quote under the new pair, where `validateForm`
+            // would accept it and the signed memo would follow the old one.
+            guard currentPair == requestedPair else {
+                payoutFits[requestedPair] = SwapPayoutModel.fit(quote: result.quote, fromAmount: requestedAmount, toCoin: requestedToCoin)
+                return false
             }
+            guard fromAmountDecimal == requestedAmount, advancedSettings == requestedSettings else { return false }
+            // Re-point at the object out of `result.allQuotes`, never the one
+            // the user tapped: that is what keeps signing on current numbers.
+            if let picked = selectedQuote?.provider(fromChain: fromCoin.chain) ?? pendingSelectedProvider?.provider {
+                if let refreshed = result.allQuotes.first(where: { $0.provider(fromChain: fromCoin.chain) == picked }) {
+                    selectedQuote = refreshed
+                    pendingSelectedProvider = nil
+                } else {
+                    dropRouteSelection(.routeUnavailable)
+                }
+            }
+            bestQuote = result.quote
+            allQuotes = result.allQuotes
+            quotedPair = requestedPair
+            quotedAmount = requestedAmount
+            quotedSettings = requestedSettings
+            refitPayoutModel(fromAmount: requestedAmount, pair: requestedPair, toCoin: requestedToCoin)
+            vultDiscountBps = result.vultDiscountBps
+            referralDiscountBps = result.referralDiscountBps
+            return true
         } catch {
             // Ignore cancellation from a superseding amount edit — surfacing it
             // would overwrite the next fetch's state with a stale error.
+            guard !Task.isCancelled, currentPair == requestedPair,
+                  fromAmountDecimal == requestedAmount, advancedSettings == requestedSettings else { return false }
             if error is CancellationError || (error as? URLError)?.code == .cancelled {
-                return
+                return false
+            }
+            // Transport/provider outages may retain an estimate for display;
+            // a structural rejection invalidates every candidate. Neither can sign.
+            if error is SwapCryptoLogic.Errors || !SwapService.isTransientQuoteError(error) {
+                clearQuoteState(reason: .routeUnavailable)
             }
             self.error = error
+            return false
         }
     }
 
-    func updateFees(vault: Vault) async {
+    func updateFees(vault: Vault) async -> Bool {
         // Don't zero `gas`/`thorchainFee` up front: during a same-pair refresh the
         // previous fee stays meaningful (stale-while-revalidate) and is replaced
         // on success below. A pair change already zeroed them in `fetchQuotes`.
-        let amountDecimal = fromAmount.toDecimal()
-        guard !fromAmount.isEmpty, !amountDecimal.isZero else { return }
+        let amountDecimal = fromAmountDecimal
+        guard !fromAmount.isEmpty, !amountDecimal.isZero else { return false }
 
         do {
             let chainSpecific = try await interactor.fetchChainSpecific(
@@ -874,7 +1052,7 @@ private extension SwapDetailsViewModel {
                 fromAmount: amountDecimal,
                 quote: quote
             )
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return false }
             let computedFee = try await interactor.computeThorchainFee(
                 chainSpecific: chainSpecific,
                 fromCoin: fromCoin,
@@ -882,16 +1060,18 @@ private extension SwapDetailsViewModel {
                 vault: vault
             )
             // A superseding edit cancelled this fetch — don't write stale fees.
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return false }
             gas = chainSpecific.gas
             gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
+            return true
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation
             // must not surface as a fee error — it was previously mapped to the
             // misleading `insufficientGas`, which is what users saw while typing.
+            guard !Task.isCancelled else { return false }
             if error is CancellationError || (error as? URLError)?.code == .cancelled {
-                return
+                return false
             }
 
             logger.warning("Update fees error: \(error.localizedDescription)")
@@ -901,6 +1081,7 @@ private extension SwapDetailsViewModel {
             // previously relabeled as `insufficientGas` — a confident money
             // verdict the app cannot actually justify.
             self.error = error
+            return false
         }
     }
 }
@@ -910,7 +1091,7 @@ private extension SwapDetailsViewModel {
 /// Stable identity of a (from, to) coin pair, independent of the mutable `Coin`
 /// reference. Used to decide whether a held quote still belongs to the current
 /// pair so stale-while-revalidate never shows a quote from a different pair.
-struct SwapPairIdentity: Equatable {
+struct SwapPairIdentity: Hashable {
     let fromChain: Chain
     let fromTicker: String
     let fromContract: String

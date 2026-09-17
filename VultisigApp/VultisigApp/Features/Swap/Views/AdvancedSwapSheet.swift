@@ -4,13 +4,13 @@
 //
 //  One sheet with internal sub-states (Main / Slippage / Gas Limit / External
 //  Recipient), mirroring `VaultManagementSheet`'s `sheetType` + switch +
-//  `.transition` pattern and using `animatedPresentationDetents` for the height
-//  changes between states. Settings are bound to the swap details view model.
+//  `.transition` pattern. One presentation height is shared by every state;
+//  settings are bound to the swap details view model.
 //
 
 import SwiftUI
 
-private enum AdvancedSwapSheetType: Equatable {
+enum AdvancedSwapSheetType: CaseIterable {
     case main
     case slippage
     case gasLimit
@@ -24,8 +24,9 @@ struct AdvancedSwapSheet: View {
     let isGasLimitSupported: Bool
     @Binding var settings: SwapAdvancedSettings
     @Bindable var detailsViewModel: SwapDetailsViewModel
+    let vault: Vault
 
-    @State private var sheetType: AdvancedSwapSheetType = .main
+    @State var sheetType: AdvancedSwapSheetType = .main
     @State private var shouldUseMoveTransition = true
 
     private var vm: SwapDetailsViewModel { detailsViewModel }
@@ -48,7 +49,7 @@ struct AdvancedSwapSheet: View {
                     }
                     .transition(transition(forward: true))
                 case .selectRoute:
-                    SelectRouteSettingsView(detailsViewModel: detailsViewModel) {
+                    SelectRouteSettingsView(detailsViewModel: detailsViewModel, vault: vault) {
                         updateSheet(.main)
                     }
                     .transition(transition(forward: true))
@@ -64,84 +65,22 @@ struct AdvancedSwapSheet: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        #if os(macOS)
+        // Native macOS sheets size to content instead of honoring detents.
+        .frame(width: 480, height: Self.sessionHeight)
+        #endif
         .presentationDragIndicator(.visible)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .background(Theme.colors.bgPrimary)
-        .animatedPresentationDetents(target: detent, alwaysAvailable: [.medium])
+        .presentationDetents([.height(Self.sessionHeight)])
     }
 
-    private var detent: PresentationDetent {
-        switch sheetType {
-        case .main:
-            return .height(mainDetentHeight)
-        case .slippage:
-            return .height(520)
-        case .gasLimit:
-            return .height(280)
-        case .selectRoute:
-            return .height(559)
-        case .externalRecipient:
-            return .height(330)
-        }
-    }
+    // A single content detent keeps navigation and quote refreshes from moving
+    // the sheet. The system bounds it to available height on compact screens.
+    static let sessionHeight: CGFloat = 559
 
-    private var mainDetentHeight: CGFloat {
-        Self.mainDetentHeight(
-            isGasLimitSupported: isGasLimitSupported,
-            canSelectProvider: vm.canSelectProvider,
-            isSecuredMint: vm.isSecuredMint
-        )
-    }
-
-    /// Fixed heights the main state is built from. The detent sizes the content
-    /// area — the system adds the bottom safe area on top of it — so everything
-    /// the card needs has to be accounted for here, the inset below it included:
-    /// content is top-aligned, so anything that doesn't fit is clipped by the
-    /// sheet edge rather than compressed.
     enum MainLayout {
-        /// The header, plus headroom. The header itself measures 76pt; the rest
-        /// absorbs a row wrapping onto a second line, which a long title does in
-        /// several locales (and in English once the External Recipient row shows
-        /// an address). Unused headroom only ever becomes extra space below the
-        /// card, so it's cheaper than clipping the card when a row grows.
-        static let chrome: CGFloat = 120
-        /// One `AdvancedSwapMainRow` — 68pt on one line — plus its 1pt separator.
-        static let rowHeight: CGFloat = 70
-        /// The card's inset from the sheet's edges — the same value on the sides
-        /// and below, so the card reads as inset rather than clipped by the
-        /// sheet edge.
         static let cardInset: CGFloat = 16
-    }
-
-    /// Rows the card renders. Mirrors the conditions in `mainView` and has to
-    /// stay in step with them: Slippage is always shown, Gas Limit is EVM-only,
-    /// Select route needs more than one quote to pick from, and a secured mint
-    /// drops External Recipient.
-    static func mainRowCount(
-        isGasLimitSupported: Bool,
-        canSelectProvider: Bool,
-        isSecuredMint: Bool
-    ) -> Int {
-        var rows = 1
-        if isGasLimitSupported { rows += 1 }
-        if canSelectProvider { rows += 1 }
-        if !isSecuredMint { rows += 1 }
-        return rows
-    }
-
-    /// Main-sheet height: fixed chrome, one row per row the card actually
-    /// renders, and the inset that keeps the card off the sheet's bottom edge.
-    static func mainDetentHeight(
-        isGasLimitSupported: Bool,
-        canSelectProvider: Bool,
-        isSecuredMint: Bool
-    ) -> CGFloat {
-        let rows = mainRowCount(
-            isGasLimitSupported: isGasLimitSupported,
-            canSelectProvider: canSelectProvider,
-            isSecuredMint: isSecuredMint
-        )
-        return MainLayout.chrome + CGFloat(rows) * MainLayout.rowHeight + MainLayout.cardInset
     }
 
     private var mainView: some View {
@@ -150,59 +89,62 @@ struct AdvancedSwapSheet: View {
                 isPresented = false
             }
 
-            VStack(spacing: 0) {
-                AdvancedSwapMainRow(
-                    icon: .bolt,
-                    title: "slippageTolerance".localized,
-                    value: settings.slippage.displayValue
-                ) {
-                    updateSheet(.slippage)
-                }
-
-                if isGasLimitSupported {
-                    Separator()
+            ScrollView {
+                VStack(spacing: 0) {
                     AdvancedSwapMainRow(
-                        icon: .gasPump,
-                        title: "gasLimit".localized,
-                        value: gasLimitValue
+                        icon: .bolt,
+                        title: "slippageTolerance".localized,
+                        value: settings.slippage.displayValue
                     ) {
-                        updateSheet(.gasLimit)
+                        updateSheet(.slippage)
+                    }
+
+                    if isGasLimitSupported {
+                        Separator()
+                        AdvancedSwapMainRow(
+                            icon: .gasPump,
+                            title: "gasLimit".localized,
+                            value: gasLimitValue
+                        ) {
+                            updateSheet(.gasLimit)
+                        }
+                    }
+
+                    if vm.canSelectProvider {
+                        Separator()
+                        AdvancedSwapMainRow(
+                            icon: .branchOut,
+                            title: "selectRoute".localized,
+                            value: selectRouteValue
+                        ) {
+                            updateSheet(.selectRoute)
+                        }
+                    }
+
+                    // A secured mint always deposits to the vault's own THORChain
+                    // address (the SECURE+ memo target); an external recipient has no
+                    // meaning and is ignored by the mint builder, so don't offer it.
+                    if !vm.isSecuredMint {
+                        Separator()
+                        AdvancedSwapMainRow(
+                            icon: .clone2,
+                            title: "useExternalRecipient".localized,
+                            value: externalRecipientValue
+                        ) {
+                            updateSheet(.externalRecipient)
+                        }
                     }
                 }
-
-                if vm.canSelectProvider {
-                    Separator()
-                    AdvancedSwapMainRow(
-                        icon: .branchOut,
-                        title: "selectRoute".localized,
-                        value: selectRouteValue
-                    ) {
-                        updateSheet(.selectRoute)
-                    }
-                }
-
-                // A secured mint always deposits to the vault's own THORChain
-                // address (the SECURE+ memo target); an external recipient has no
-                // meaning and is ignored by the mint builder, so don't offer it.
-                if !vm.isSecuredMint {
-                    Separator()
-                    AdvancedSwapMainRow(
-                        icon: .clone2,
-                        title: "useExternalRecipient".localized,
-                        value: externalRecipientValue
-                    ) {
-                        updateSheet(.externalRecipient)
-                    }
-                }
+                .background(Theme.colors.bgSurface1)
+                .clipShape(Theme.radius.xl.shape)
+                .overlay(
+                    Theme.radius.xl.shape
+                        .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+                )
+                .padding(.horizontal, MainLayout.cardInset)
+                .padding(.bottom, MainLayout.cardInset)
             }
-            .background(Theme.colors.bgSurface1)
-            .clipShape(Theme.radius.xl.shape)
-            .overlay(
-                Theme.radius.xl.shape
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
-            .padding(.horizontal, MainLayout.cardInset)
-            .padding(.bottom, MainLayout.cardInset)
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
@@ -212,9 +154,10 @@ struct AdvancedSwapSheet: View {
 
     /// "Auto" until the user manually overrides the route; then the picked
     /// provider's name. The pick survives a refresh, so this keeps naming the
-    /// provider until the route stops being offered or the swap itself changes.
+    /// provider while its payload is revalidated, until the route stops being
+    /// offered or the swap itself changes.
     private var selectRouteValue: String {
-        guard let selected = vm.selectedQuote?.displayName else { return "auto".localized }
+        guard let selected = vm.selectedProviderDisplayName else { return "auto".localized }
         return selected
     }
 
@@ -234,6 +177,7 @@ struct AdvancedSwapSheet: View {
     }
 
     private func updateSheet(_ newType: AdvancedSwapSheetType) {
+        hideKeyboard()
         shouldUseMoveTransition = true
         withAnimation(.interpolatingSpring) {
             sheetType = newType
@@ -306,7 +250,8 @@ struct AdvancedSwapMainRow: View {
                         coin: .example,
                         isGasLimitSupported: true,
                         settings: $settings,
-                        detailsViewModel: SwapDetailsViewModel()
+                        detailsViewModel: SwapDetailsViewModel(),
+                        vault: Vault(name: "Preview Vault")
                     )
                 }
         }

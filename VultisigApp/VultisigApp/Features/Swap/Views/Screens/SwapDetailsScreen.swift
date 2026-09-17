@@ -61,7 +61,8 @@ struct SwapDetailsScreen: View {
                 coin: detailsViewModel.toCoin,
                 isGasLimitSupported: detailsViewModel.isGasLimitSupported,
                 settings: $vm.advancedSettings,
-                detailsViewModel: detailsViewModel
+                detailsViewModel: detailsViewModel,
+                vault: vault
             )
         }
         .screenToolbar {
@@ -265,11 +266,7 @@ struct SwapDetailsScreen: View {
     @ViewBuilder
     var continueButton: some View {
         let isFormValid = detailsViewModel.validateForm()
-        // Block Continue while the fee estimate is still in flight — the
-        // form already has a non-zero fee from the previous quote in that
-        // window, but using it advances with stale data. validateForm()
-        // doesn't see `isLoadingFees` since it's a screen-local concern.
-        let isDisabled = !isFormValid || detailsViewModel.isLoading || detailsViewModel.isLoadingFees
+        let isDisabled = !isFormValid
 
         if detailsViewModel.isLoadingTransaction {
             CircularProgressIndicator(size: 32)

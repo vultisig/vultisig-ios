@@ -10,6 +10,7 @@ import RiveRuntime
 
 struct AllDevicesUpgradeView: View {
     let vault: Vault
+    var hasReviewedBackups = false
 
     @State var animationVM: RiveViewModel? = nil
     @Environment(\.router) var router
@@ -61,10 +62,27 @@ struct AllDevicesUpgradeView: View {
 
     var button: some View {
         PrimaryButton(title: "next") {
-            router.navigate(to: VaultRoute.vaultShareBackups(vault: vault))
+            router.navigate(to: nextRoute)
         }
         .frame(width: 120)
         .padding(.vertical, 36)
+    }
+
+    /// Switching to paired after the backup instructions should show the
+    /// all-devices guidance once, then continue directly to discovery.
+    var nextRoute: any NavPath {
+        if hasReviewedBackups {
+            return KeygenRoute.peerDiscovery(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastSignConfig: nil,
+                keyImportInput: nil,
+                setupType: nil,
+                singleKeygenType: nil
+            )
+        }
+        return VaultRoute.vaultShareBackups(vault: vault)
     }
 
     private func setData() {

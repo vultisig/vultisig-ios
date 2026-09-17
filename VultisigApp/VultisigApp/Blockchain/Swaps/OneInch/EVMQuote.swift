@@ -15,10 +15,10 @@ struct EVMQuote: Codable, Hashable {
         let value: String
         let gasPrice: String
         let gas: Int64
-        let swapFee: String
+        let swapFee: String?
         let swapFeeTokenContract: String
 
-        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64, swapFee: String = "0", swapFeeTokenContract: String = "") {
+        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64, swapFee: String? = nil, swapFeeTokenContract: String = "") {
             self.from = from
             self.to = to
             self.data = data
@@ -41,8 +41,7 @@ struct EVMQuote: Codable, Hashable {
             let gasValue = try container.decode(Int64.self, forKey: EVMQuote.Transaction.CodingKeys.gas)
             self.gas = gasValue == 0 ? EVMHelper.defaultETHSwapGasUnit : gasValue
 
-            // New fields with defaults for backward compatibility
-            self.swapFee = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.swapFee) ?? "0"
+            self.swapFee = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.swapFee)
             self.swapFeeTokenContract = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.swapFeeTokenContract) ?? ""
         }
     }

@@ -207,16 +207,13 @@ extension SwapCryptoLogic {
     /// Price impact in basis points, carried so a co-signer shows what the
     /// initiator was quoted rather than re-deriving it from a pool that has moved.
     ///
-    /// Reads the quote's TOP-LEVEL `slippage_bps` — the field
-    /// `SwapQuote.priceImpact` renders here — and deliberately NOT
-    /// `fees.slippage_bps`, which the node reports separately and which can
-    /// differ (THORChain's streaming example: 41 against a nested 9). Switching
-    /// them hands the co-signer a different number from the initiator's.
+    /// Reads `fees.slippage_bps`, the quoted route's impact and the same source
+    /// as `SwapQuote.priceImpact`. Total fees include charges beyond price impact.
     ///
     /// A reported `0` is carried as `0`; out-of-range is dropped rather than
     /// wrapped, since `uint32` would land a negative as ~4 billion bps.
     static func nativeSwapPayloadSlippageBps(quote: ThorchainSwapQuote) -> UInt32? {
-        guard let bps = quote.slippageBps else { return nil }
+        guard let bps = quote.fees.slippageBps else { return nil }
         return UInt32(exactly: bps)
     }
 
@@ -718,13 +715,30 @@ extension SwapCryptoLogic {
             // injection → MPC byte-parity). The affiliate fee ATA is provisioned
             // off the signed path (see `JupiterService`); nothing here builds an
             // instruction. Mirrors `buildEVMQuoteFromSwapKit`'s `.solana` branch.
+            var swapFeeChain: String?
+            var swapFeeTokenId: String?
+            var swapFeeDecimals: Int?
+            if quote.evmSwapFeeBigInt != nil {
+                let resolvedFeeCoin = swapFeeCoin(
+                    quote: quote,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    feeCoin: transaction.feeCoin
+                )
+                swapFeeChain = resolvedFeeCoin.chain.name
+                swapFeeTokenId = resolvedFeeCoin.contractAddress.nilIfEmpty
+                swapFeeDecimals = resolvedFeeCoin.decimals
+            }
             let payload = GenericSwapPayload(
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 fromAmount: amountInCoin,
                 toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: .jupiter
+                provider: .jupiter,
+                swapFeeChain: swapFeeChain,
+                swapFeeTokenId: swapFeeTokenId,
+                swapFeeDecimals: swapFeeDecimals
             )
             return try await keysignFactory.buildTransfer(
                 coin: fromCoin,

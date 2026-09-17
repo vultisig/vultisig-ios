@@ -301,7 +301,7 @@ extension SwapPayload {
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
                         gas: value.quote.tx.gas,
-                        swapFee: value.quote.tx.swapFee,
+                        swapFee: value.quote.tx.swapFee.nilIfEmpty,
                         swapFeeTokenContract: swapFeeTokenId ?? ""
                     )
                 ),
@@ -325,9 +325,7 @@ extension SwapPayload {
                         data: value.quote.tx.data,
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
-                        gas: value.quote.tx.gas,
-                        swapFee: "0",
-                        swapFeeTokenContract: ""
+                        gas: value.quote.tx.gas
                     )
                 ),
                 provider: .kyberSwap
@@ -404,8 +402,8 @@ extension SwapPayload {
                         $0.value = payload.quote.tx.value
                         $0.gasPrice = payload.quote.tx.gasPrice
                         $0.gas = payload.quote.tx.gas
-                        if payload.quote.tx.swapFee != "0" {
-                            $0.swapFee = payload.quote.tx.swapFee
+                        if let swapFee = payload.quote.tx.swapFee {
+                            $0.swapFee = swapFee
                             // Explicit presence matters: receivers treat
                             // absent fields as "legacy sender → render no
                             // fee", while a present-but-empty token id breaks

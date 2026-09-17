@@ -14,7 +14,7 @@ struct VaultCellMainView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VaultIconTypeView(isFastVault: vault.isFastVault)
+            VaultIconTypeView(isFastVault: vault.offersFastSigning)
                 .padding(12)
                 .background(Circle().fill(Theme.colors.bgSurface2))
                 .overlay(

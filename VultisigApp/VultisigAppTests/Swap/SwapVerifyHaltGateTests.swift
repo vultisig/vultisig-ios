@@ -99,7 +99,8 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             transaction: makeLimitTransaction(),
             interactor: StubGateInteractor(throwError: nil)
         )
-        let payload = await vm.buildSwapKeysignPayload(vault: makeVault())
+        confirm(vm)
+        let payload = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
         XCTAssertNil(payload, "A shortfall must block payload construction")
         XCTAssertEqual(vm.error as? SwapCryptoLogic.Errors, .insufficientFunds)
     }
@@ -108,16 +109,25 @@ final class SwapVerifyHaltGateTests: XCTestCase {
 
     func testVMReturnsFalseAndSetsErrorWhenGateThrows() async {
         let vm = SwapVerifyViewModel(transaction: makeTransaction(), interactor: StubGateInteractor(throwError: SwapError.tradingHalted))
-        let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertFalse(safe)
+        confirm(vm)
+        let prepared = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNil(prepared)
         XCTAssertEqual((vm.error as? SwapError), .tradingHalted)
     }
 
     func testVMReturnsTrueWhenGatePasses() async {
         let vm = SwapVerifyViewModel(transaction: makeTransaction(), interactor: StubGateInteractor(throwError: nil))
-        let safe = await vm.isSourceChainSafeToSign()
-        XCTAssertTrue(safe)
+        confirm(vm)
+        let prepared = await vm.prepareSigning(vault: makeVault(), retrySignal: SwapRetrySignal())
+        XCTAssertNotNil(prepared)
+        vm.finishSigning()
         XCTAssertNil(vm.error)
+    }
+
+    private func confirm(_ vm: SwapVerifyViewModel) {
+        vm.isAmountCorrect = true
+        vm.isFeeCorrect = true
+        vm.isApproveCorrect = true
     }
 
     // MARK: - Helpers
@@ -258,7 +268,6 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
             recommendedMinAmountIn: "0",
-            slippageBps: nil,
             totalSwapSeconds: nil,
             warning: "",
             router: nil,
@@ -281,7 +290,16 @@ private struct StubGateInteractor: SwapInteractor {
     func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
         if let throwError { throw throwError }
     }
-    func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload { throw CancellationError() }
+    func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
+        KeysignPayload(
+            coin: transaction.fromCoin, toAddress: "test", toAmount: 1,
+            chainSpecific: .Cosmos(accountNumber: 0, sequence: 0, gas: 0, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
+            utxos: [], memo: nil, swapPayload: nil, approvePayload: nil,
+            vaultPubKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID, libType: "DKLS",
+            wasmExecuteContractPayload: nil, tronTransferContractPayload: nil, tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil, qbtcClaimPayload: nil, isQbtcClaim: false, skipBroadcast: false, signData: nil
+        )
+    }
     func updateBalance(for coin: Coin) async {}
     func warmDiscountTier(for vault: Vault) async {}
 }

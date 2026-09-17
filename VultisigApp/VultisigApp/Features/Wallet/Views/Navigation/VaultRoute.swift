@@ -11,7 +11,7 @@ enum VaultBackupOrigin: Hashable {
 }
 
 enum VaultRoute: Hashable {
-    case upgradeVault(vault: Vault, isFastVault: Bool)
+    case upgradeVault(vault: Vault)
     case serverBackup(vault: Vault)
     case backupPasswordOptions(
         tssType: TssType,
@@ -29,7 +29,7 @@ enum VaultRoute: Hashable {
     case backupSuccess(tssType: TssType, vault: Vault)
     case createVault(showBackButton: Bool)
     case swap(fromCoin: Coin?, toCoin: Coin?, vault: Vault)
-    case allDevicesUpgrade(vault: Vault)
+    case allDevicesUpgrade(vault: Vault, hasReviewedBackups: Bool = false)
     case vaultShareBackups(vault: Vault)
     case reshare(vault: Vault)
     case passwordHint(vault: Vault)

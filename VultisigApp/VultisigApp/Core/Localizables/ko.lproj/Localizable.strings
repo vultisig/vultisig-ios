@@ -1534,7 +1534,9 @@
 "swapAdvancedSettingsLockedTitle" = "고급 스왑 설정";
 "swapAmountTooSmall" = "스왑 금액이 너무 작습니다";
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
+"swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "적용된 할인:";
+"swapEnterAmountIn" = "%@ 단위로 금액 입력";
 "swapErrorAddressScreeningTitle" = "주소 확인 실패";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";
 "swapErrorAmountTooSmallTitle" = "금액이 너무 작음";
@@ -1564,6 +1566,7 @@
 "swapErrorUnexpectedTitle" = "예상치 못한 오류";
 "swapFee" = "스왑 수수료";
 "swapFeePercentage" = "스왑 수수료 (%.2f%%)";
+"swapFiatUnavailable" = "—";
 "swapInsufficientTokenBalance" = "%@ 잔액 부족";
 "swapKitErrorAddressScreening" = "주소 검증에 실패했습니다 — 지원팀에 문의하세요";
 "swapKitErrorApiKeyInvalid" = "SwapKit API 키가 유효하지 않습니다";

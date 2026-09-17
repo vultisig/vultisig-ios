@@ -64,12 +64,34 @@ final class Vault: ObservableObject, Codable {
     // trigger points rather than per-screen-mount. Local-only state, not part of
     // the schema — repopulated on every cold start by the refresher.
     //
-    // The pair lives on `ObservedTransient` boxes rather than in `@Transient`
+    // The cache lives on `ObservedTransient` boxes rather than in `@Transient`
     // stored properties. SwiftData does not observation-track `@Transient`, so
     // the refresher's write published nothing at all and every view branching on
     // `isFastVault` stayed stale until an unrelated save happened to re-render
     // the tree. The boxes are still per-instance, still session scoped, and
     // still absent from the schema — only the publication changes.
+    @Transient private var fastVaultCheckedTopologyBox = ObservedTransient<FastVaultTopology?>(nil)
+
+    var fastVaultCheckedTopology: FastVaultTopology? {
+        get { fastVaultCheckedTopologyBox.value }
+        set { fastVaultCheckedTopologyBox.value = newValue }
+    }
+
+    @Transient private var fastVaultPresenceOutcomeBox = ObservedTransient<FastVaultPresence?>(nil)
+
+    var fastVaultPresenceOutcome: FastVaultPresence? {
+        get { fastVaultPresenceOutcomeBox.value }
+        set { fastVaultPresenceOutcomeBox.value = newValue }
+    }
+
+    /// Ordinary signing and identity are local-first. Only confirmed absence
+    /// suppresses Fast signing; an unavailable server check must not change identity.
+    var offersFastSigning: Bool {
+        guard hasServerSigner else { return false }
+        if let topology = fastVaultCheckedTopology, topology != FastVaultTopology(self) { return true }
+        return fastVaultEligibilityCheckedAt == nil || fastVaultEligibility
+    }
+
     @Transient private var fastVaultEligibilityBox = ObservedTransient(false)
     @Transient private var fastVaultEligibilityCheckedAtBox = ObservedTransient<Date?>(nil)
 
@@ -289,29 +311,16 @@ final class Vault: ObservableObject, Codable {
         return coins.first(where: { $0.chain == chain && $0.isNativeToken })
     }
 
-    /// Whether this vault can be signed via the FastVault path. Single
-    /// source of truth — readers everywhere route on this. The value is
-    /// cached on the model (`fastVaultEligibility` + `fastVaultEligibilityCheckedAt`,
-    /// populated by `FastVaultEligibilityRefresher` on vault open + scenePhase
-    /// active). Returns `false` until the cache is populated — an extra
-    /// paired-sign round trip in that narrow window is preferable to
-    /// incorrectly routing a non-eligible vault into the FastVault path
-    /// based on the structural `hasServerSigner` alone.
-    ///
-    /// Never true for the server-side party itself; only the user-side
-    /// devices ever route to FastVault signing.
+    /// Compatibility accessor for confirmed server availability. Presentation
+    /// and ordinary signing use `offersFastSigning`; setup uses a short-lived confirmation.
     var isFastVault: Bool {
-        guard !localPartyID.lowercased().starts(with: "server-") else { return false }
+        guard hasServerSigner else { return false }
+        if let topology = fastVaultCheckedTopology, topology != FastVaultTopology(self) { return false }
         guard fastVaultEligibilityCheckedAt != nil else { return false }
         return fastVaultEligibility
     }
 
-    /// Structural-only check: is there a `server-` party in this vault's
-    /// signer list (and we're not the server ourselves)? Internal helper —
-    /// used by `FastVaultService.isEligibleForFastSign` to compute the
-    /// canonical eligibility (`isExist && hasServerSigner`) before writing
-    /// the result to the cache. Reading `isFastVault` here would create a
-    /// circular dependency on the cached value the refresher is computing.
+    /// Local signer topology, excluding a locally imported server share.
     var hasServerSigner: Bool {
         if localPartyID.lowercased().starts(with: "server-") {
             return false

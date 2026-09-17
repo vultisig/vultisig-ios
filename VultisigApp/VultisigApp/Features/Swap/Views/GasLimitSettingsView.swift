@@ -20,26 +20,31 @@ struct GasLimitSettingsView: View {
         VStack(spacing: 12) {
             AdvancedSwapSheetHeader(title: "gasLimit".localized, showBack: true, onClose: onBack)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("gasLimit".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
+            ScrollView {
+                VStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("gasLimit".localized)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
 
-                numberField
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .padding(16)
-                    .background(Theme.colors.bgSurface1)
-                    .clipShape(Theme.radius.md.shape)
-                    .overlay(
-                        Theme.radius.md.shape
-                            .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
-                    )
-                    .onChange(of: text) { _, newValue in apply(newValue) }
+                        numberField
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .padding(16)
+                            .background(Theme.colors.bgSurface1)
+                            .clipShape(Theme.radius.md.shape)
+                            .overlay(
+                                Theme.radius.md.shape
+                                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
+                            )
+                            .onChange(of: text) { _, newValue in apply(newValue) }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 16)
             }
-            .padding(.horizontal, 16)
-
-            Spacer(minLength: 0)
+            .scrollDismissesKeyboard(.interactively)
+            .scrollBounceBehavior(.basedOnSize)
         }
         .onLoad {
             text = gasLimit.map(String.init) ?? .empty

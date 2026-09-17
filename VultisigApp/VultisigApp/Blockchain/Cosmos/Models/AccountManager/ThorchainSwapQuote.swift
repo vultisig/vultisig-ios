@@ -20,7 +20,6 @@ struct ThorchainSwapQuote: Codable, Hashable {
     let outboundDelayBlocks: Int
     let outboundDelaySeconds: Int
     let recommendedMinAmountIn: String
-    let slippageBps: Int?
     let totalSwapSeconds: Int?
     let warning: String
     let router: String?
@@ -39,7 +38,6 @@ struct ThorchainSwapQuote: Codable, Hashable {
         case outboundDelayBlocks = "outbound_delay_blocks"
         case outboundDelaySeconds = "outbound_delay_seconds"
         case recommendedMinAmountIn = "recommended_min_amount_in"
-        case slippageBps = "slippage_bps"
         case totalSwapSeconds = "total_swap_seconds"
         case warning
         case router

@@ -10,9 +10,9 @@ import SwiftUI
 struct VaultRouteBuilder {
 
     @ViewBuilder
-    func buildUpgradeVaultScreen(vault: Vault, isFastVault: Bool) -> some View {
-        if isFastVault {
-            VaultShareBackupsView(vault: vault)
+    func buildUpgradeVaultScreen(vault: Vault) -> some View {
+        if vault.hasServerSigner {
+            VaultShareBackupsView(vault: vault, resolveHostedRouting: true)
         } else {
             AllDevicesUpgradeView(vault: vault)
         }
@@ -76,8 +76,8 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
-    func buildAllDevicesUpgradeScreen(vault: Vault) -> some View {
-        AllDevicesUpgradeView(vault: vault)
+    func buildAllDevicesUpgradeScreen(vault: Vault, hasReviewedBackups: Bool) -> some View {
+        AllDevicesUpgradeView(vault: vault, hasReviewedBackups: hasReviewedBackups)
     }
 
     @ViewBuilder

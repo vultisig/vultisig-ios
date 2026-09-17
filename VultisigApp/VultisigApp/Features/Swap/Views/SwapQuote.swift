@@ -186,8 +186,8 @@ enum SwapQuote: Hashable {
 
     var evmSwapFeeBigInt: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
-            guard let fee = BigInt(quote.tx.swapFee), fee > 0 else { return nil }
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
+            guard let raw = quote.tx.swapFee, let fee = BigInt(raw), fee >= 0 else { return nil }
             return fee
         case .swapkit:
             // SwapKit's affiliate fee is dashboard-driven, no per-tx swap-fee
@@ -252,7 +252,7 @@ enum SwapQuote: Hashable {
 
     var swapFeeTokenContract: String? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
             let contract = quote.tx.swapFeeTokenContract
             return contract.isEmpty ? nil : contract
         default:
@@ -272,7 +272,7 @@ enum SwapQuote: Hashable {
     var priceImpact: Decimal? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
-            guard let slippageBps = quote.slippageBps else { return nil }
+            guard let slippageBps = quote.fees.slippageBps else { return nil }
             return Decimal(slippageBps) / 10000
         case .oneinch, .kyberswap, .lifi, .jupiter:
             return nil

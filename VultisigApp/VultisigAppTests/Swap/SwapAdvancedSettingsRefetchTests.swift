@@ -67,7 +67,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         XCTAssertEqual(interactor.fetchQuoteCallCount, before, "No relevant change must not re-fetch")
     }
 
-    func testRouteSelectionDoesNotTriggerRefetch() {
+    func testRouteSelectionDoesNotTriggerRefetch() async {
         let (vm, interactor) = makeVM()
         // Two quotes so a provider pick is possible.
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
@@ -77,8 +77,10 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
 
         vm.snapshotAdvancedSettings()
         // Pick a route while the sheet is "open" — selectedQuote is NOT part of
-        // advancedSettings, so the close must not re-fetch.
-        vm.selectProvider(alt)
+        // advancedSettings, so the close must not re-fetch a quote. It does
+        // refresh fees for the newly picked route; wait for that before checking.
+        vm.selectProvider(alt, vault: makeVault())
+        await vm.waitForQuoteTask()
 
         let before = interactor.fetchQuoteCallCount
         vm.advancedSettingsSheetDidClose(vault: makeVault())
@@ -123,7 +125,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
             fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: nil, inboundConfirmationBlocks: nil, inboundConfirmationSeconds: nil,
             memo: "memo", notes: "", outboundDelayBlocks: 0, outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0", slippageBps: nil, totalSwapSeconds: nil, warning: "",
+            recommendedMinAmountIn: "0", totalSwapSeconds: nil, warning: "",
             router: nil, maxStreamingQuantity: nil
         )
     }
@@ -135,7 +137,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
 
 private extension SwapDetailsViewModel {
     func waitForQuoteTask() async {
-        for _ in 0..<200 where isLoadingQuotes {
+        for _ in 0..<200 where isLoadingQuotes || isLoadingFees {
             try? await Task.sleep(for: .milliseconds(10))
         }
     }
@@ -157,7 +159,7 @@ private final class RefetchMockInteractor: SwapInteractor {
             fees: Fees(affiliate: "0", asset: "RUNE", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
             inboundAddress: nil, inboundConfirmationBlocks: nil, inboundConfirmationSeconds: nil,
             memo: "memo", notes: "", outboundDelayBlocks: 0, outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0", slippageBps: nil, totalSwapSeconds: nil, warning: "",
+            recommendedMinAmountIn: "0", totalSwapSeconds: nil, warning: "",
             router: nil, maxStreamingQuantity: nil
         ))
         return SwapQuoteResult(quote: quote, vultDiscountBps: 0, referralDiscountBps: 0)

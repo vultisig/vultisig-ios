@@ -12,6 +12,7 @@ struct VaultAdvancedSettingsScreen: View {
     @ObservedObject var vault: Vault
 
     @Environment(\.router) var router
+    @State private var routingState: FastVaultRoutingState = .idle
     @State private var showCustomRPCLockedSheet = false
     @State private var isLoading = false
     private let tierService = VultTierService()
@@ -28,6 +29,16 @@ struct VaultAdvancedSettingsScreen: View {
                 .commonListContainer()
             }
         }
+        .task {
+            if vault.publicKeyMLDSA44 == nil { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
+        }
+        .task(id: routingState) {
+            guard routingState == .checking else { return }
+            let presence = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault)
+            guard !Task.isCancelled, routingState == .checking else { return }
+            handlePresence(presence)
+        }
+        .onDisappear { routingState = .idle }
         .screenTitle("advanced".localized)
         .withLoading(isLoading: $isLoading)
         .crossPlatformSheet(isPresented: $showCustomRPCLockedSheet) {
@@ -97,35 +108,66 @@ struct VaultAdvancedSettingsScreen: View {
     }
 
     var dilithiumKeygenRow: some View {
-        Button {
-            if vault.isFastVault {
-                router.navigate(
-                    to: KeygenRoute.fastVaultPassword(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .fast,
-                        isExistingVault: true,
-                        singleKeygenType: .MLDSA
-                    )
-                )
-            } else {
-                router.navigate(
-                    to: KeygenRoute.peerDiscovery(
-                        tssType: .SingleKeygen,
-                        vault: vault,
-                        selectedTab: .secure,
-                        fastSignConfig: nil,
-                        keyImportInput: nil,
-                        setupType: nil,
-                        singleKeygenType: .MLDSA
-                    )
+        VStack(spacing: 16) {
+            Button(action: startKeygen) {
+                SettingsCommonOptionView(
+                    icon: .atomShield,
+                    title: "dilithiumKeygen".localized,
+                    subtitle: "dilithiumKeygenSubtitle".localized
                 )
             }
-        } label: {
-            SettingsCommonOptionView(
-                icon: .atomShield,
-                title: "dilithiumKeygen".localized,
-                subtitle: "dilithiumKeygenSubtitle".localized
+            .disabled(routingState != .idle)
+            FastVaultRoutingFeedback(
+                state: routingState,
+                onRetry: startKeygen,
+                onPaired: {
+                    routingState = .idle
+                    navigateKeygen(useServer: false)
+                }
+            )
+        }
+    }
+
+    private func startKeygen() {
+        if let presence = FastVaultEligibilityRefresher.shared.confirmedPresenceForRouting(vault) {
+            handlePresence(presence)
+        } else {
+            routingState = .checking
+        }
+    }
+
+    private func handlePresence(_ presence: FastVaultPresence) {
+        switch presence {
+        case .present, .absent:
+            routingState = .idle
+            navigateKeygen(useServer: presence == .present)
+        case .unknown:
+            routingState = .failed
+        }
+    }
+
+    private func navigateKeygen(useServer: Bool) {
+        if useServer {
+            router.navigate(
+                to: KeygenRoute.fastVaultPassword(
+                    tssType: .SingleKeygen,
+                    vault: vault,
+                    selectedTab: .fast,
+                    isExistingVault: true,
+                    singleKeygenType: .MLDSA
+                )
+            )
+        } else {
+            router.navigate(
+                to: KeygenRoute.peerDiscovery(
+                    tssType: .SingleKeygen,
+                    vault: vault,
+                    selectedTab: .secure,
+                    fastSignConfig: nil,
+                    keyImportInput: nil,
+                    setupType: nil,
+                    singleKeygenType: .MLDSA
+                )
             )
         }
     }

@@ -338,8 +338,13 @@ struct SwapDoneSummaryCard: View {
                     logo: coin.logo,
                     size: CGSize(width: 32, height: 32),
                     ticker: coin.ticker,
-                    tokenChainLogo: coin.tokenChainLogo
+                    tokenChainLogo: nil
                 )
+                .overlay {
+                    // Both assets need chain context, including native tokens with matching logos.
+                    ChainIconView(icon: "chain-" + coin.chain.logo, size: 32 / 4.5)
+                        .offset(x: 32 / 2.5, y: 32 / 2.5)
+                }
                 .padding(.bottom, 8)
             }
 

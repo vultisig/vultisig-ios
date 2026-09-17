@@ -345,6 +345,8 @@ extension VultisigApp {
             .environmentObject(deeplinkViewModel)
             .environmentObject(pushNotificationManager)
             .buttonStyle(BorderlessButtonStyle())
+            .toolbarBackground(Theme.colors.bgPrimary, for: .windowToolbar)
+            .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
             .frame(minWidth: 900, minHeight: 600)
             // macOS does not reliably report scenePhase `.background` when the
             // app is hidden or switched away from, so the shared scene-phase
