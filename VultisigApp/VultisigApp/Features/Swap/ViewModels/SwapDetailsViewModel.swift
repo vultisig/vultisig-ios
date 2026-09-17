@@ -22,6 +22,10 @@ final class SwapDetailsViewModel {
     @ObservationIgnored private let inputRate: (Coin, SettingsCurrency) -> Double?
     @ObservationIgnored private var rateSubscription: AnyCancellable?
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
+    // Fee-only refresh kicked off by `selectProvider`. Kept separate from
+    // `updateQuoteTask`, which `advancedSettingsSheetDidClose` reads as "a real
+    // quote fetch is tracked" to decide whether to revalidate on close.
+    @ObservationIgnored private var providerFeeTask: Task<Void, Never>?
 
     // Identity of the coin pair + amount the currently-held `quote` belongs to.
     // Stale-while-revalidate keeps a quote on screen only across a true silent
@@ -283,12 +287,25 @@ final class SwapDetailsViewModel {
         allQuotes.count > 1
     }
 
-    /// Apply a manual provider pick.
-    func selectProvider(_ quote: SwapQuote) {
+    /// Apply a manual provider pick. The new quote carries the previous
+    /// selection's `gas`/`gasLimit`/`thorchainFee` until its own fees land, so
+    /// `hasValidatedQuote` drops until that refresh completes — otherwise
+    /// Continue could re-enable immediately with fees for the old route.
+    func selectProvider(_ quote: SwapQuote, vault: Vault) {
         pendingSelectedProvider = nil
         selectedQuote = quote
+        hasValidatedQuote = false
         if let quotedAmount {
             refitPayoutModel(fromAmount: quotedAmount, pair: currentPair, toCoin: toCoin)
+        }
+        providerFeeTask?.cancel()
+        isLoadingFees = true
+        providerFeeTask = Task { [weak self] in
+            guard let self else { return }
+            let feesSucceeded = await self.updateFees(vault: vault)
+            guard !Task.isCancelled else { return }
+            self.hasValidatedQuote = feesSucceeded && self.quoteMatchesCurrentRequest
+            self.isLoadingFees = false
         }
     }
 
@@ -847,6 +864,7 @@ private extension SwapDetailsViewModel {
 
     func fetchQuotes(vault: Vault, immediate: Bool = false) {
         updateQuoteTask?.cancel()
+        providerFeeTask?.cancel()
         hasValidatedQuote = false
 
         // Empty or non-positive amount: drop any leftover quote/fee/discount

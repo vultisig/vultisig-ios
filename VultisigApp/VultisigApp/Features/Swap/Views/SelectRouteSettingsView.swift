@@ -14,6 +14,7 @@ import SwiftUI
 
 struct SelectRouteSettingsView: View {
     @Bindable var detailsViewModel: SwapDetailsViewModel
+    let vault: Vault
     let onBack: () -> Void
 
     private var vm: SwapDetailsViewModel { detailsViewModel }
@@ -57,7 +58,7 @@ struct SelectRouteSettingsView: View {
     private func routeRow(for quote: SwapQuote) -> some View {
         let selected = isSelected(quote)
         return Button {
-            vm.selectProvider(quote)
+            vm.selectProvider(quote, vault: vault)
             onBack()
         } label: {
             HStack(spacing: 12) {
@@ -144,5 +145,5 @@ struct SelectRouteSettingsView: View {
 }
 
 #Preview {
-    SelectRouteSettingsView(detailsViewModel: SwapDetailsViewModel()) {}
+    SelectRouteSettingsView(detailsViewModel: SwapDetailsViewModel(), vault: Vault(name: "Preview Vault")) {}
 }

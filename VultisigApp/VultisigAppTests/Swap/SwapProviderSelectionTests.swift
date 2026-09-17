@@ -71,7 +71,7 @@ final class SwapProviderSelectionTests: XCTestCase {
 
         XCTAssertEqual(vm.quote, best, "With no override, the active quote is Best")
 
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         XCTAssertEqual(vm.selectedQuote, alt)
         XCTAssertEqual(vm.quote, alt, "A manual pick must become the active quote")
@@ -88,7 +88,8 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.fromAmount = "1"
         await landQuotes(on: vm)
 
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
+        await vm.waitForQuoteTask()
         let transaction = vm.makeTransaction()
 
         XCTAssertNotNil(transaction, "Form should validate with a firm quote")
@@ -104,7 +105,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         vm.fromAmount = "1"
         vm.updateFromAmount(vault: makeVault(), immediate: true)
         await vm.waitForQuoteTask()
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         vm.fromAmount = ""
         vm.updateFromAmount(vault: makeVault())
@@ -123,7 +124,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         let (vm, interactor) = makeVM(script: [candidates, candidates])
         await landQuotes(on: vm)
 
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
         XCTAssertEqual(vm.quote, alt)
 
         await landQuotes(on: vm)
@@ -158,7 +159,7 @@ final class SwapProviderSelectionTests: XCTestCase {
             return XCTFail("The first landing must offer the 1inch route")
         }
         XCTAssertEqual(landed, stale, "…and it must be the stale payload, not the refreshed one")
-        vm.selectProvider(landed)
+        vm.selectProvider(landed, vault: makeVault())
 
         await landQuotes(on: vm)
 
@@ -180,7 +181,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         ])
         await landQuotes(on: vm)
 
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
         await landQuotes(on: vm)
 
         XCTAssertEqual(interactor.fetchCount, 2, "The refresh must be the entry that drops 1inch")
@@ -198,7 +199,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
         let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         // Built from the running locale's separator: `toDecimal` parses with
         // `Locale.current` first, so a hard-coded "1.0" is TEN in five of the eight
@@ -234,7 +235,8 @@ final class SwapProviderSelectionTests: XCTestCase {
             "On Auto the transaction pins no route, so verify stays free to follow the winner"
         )
 
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
+        await vm.waitForQuoteTask()
 
         XCTAssertEqual(
             vm.makeTransaction()?.selectedProvider,
@@ -252,7 +254,7 @@ final class SwapProviderSelectionTests: XCTestCase {
             makeResult(best: best, allQuotes: [best, fresh])
         ])
         await landQuotes(on: vm)
-        vm.selectProvider(stale)
+        vm.selectProvider(stale, vault: makeVault())
 
         // Re-fetches at the SAME pair/amount, so it is a refresh, not a new swap.
         vm.snapshotAdvancedSettings()
@@ -276,7 +278,7 @@ final class SwapProviderSelectionTests: XCTestCase {
             makeResult(best: best, allQuotes: [best])
         ])
         await landQuotes(on: vm)
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         vm.snapshotAdvancedSettings()
         vm.advancedSettings.externalRecipient = "thor1recipient"
@@ -318,7 +320,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
         let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         vm.fromAmount = "2"
         vm.updateFromAmount(vault: makeVault(), immediate: true)
@@ -336,7 +338,7 @@ final class SwapProviderSelectionTests: XCTestCase {
         let alt = SwapQuote.oneinch(makeEVMQuote(dstAmount: "100000000"), fee: nil)
         let vm = makeVM(best: best, allQuotes: [best, alt])
         await landQuotes(on: vm)
-        vm.selectProvider(alt)
+        vm.selectProvider(alt, vault: makeVault())
 
         vm.updateToCoin(coin: makeCoin(.ethereum, ticker: "ETH"), vault: makeVault())
 
@@ -570,7 +572,7 @@ final class SwapProviderSelectionTests: XCTestCase {
 
 private extension SwapDetailsViewModel {
     func waitForQuoteTask() async {
-        for _ in 0..<200 where isLoadingQuotes {
+        for _ in 0..<200 where isLoadingQuotes || isLoadingFees {
             try? await Task.sleep(for: .milliseconds(10))
         }
     }

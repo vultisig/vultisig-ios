@@ -24,6 +24,7 @@ struct AdvancedSwapSheet: View {
     let isGasLimitSupported: Bool
     @Binding var settings: SwapAdvancedSettings
     @Bindable var detailsViewModel: SwapDetailsViewModel
+    let vault: Vault
 
     @State var sheetType: AdvancedSwapSheetType = .main
     @State private var shouldUseMoveTransition = true
@@ -48,7 +49,7 @@ struct AdvancedSwapSheet: View {
                     }
                     .transition(transition(forward: true))
                 case .selectRoute:
-                    SelectRouteSettingsView(detailsViewModel: detailsViewModel) {
+                    SelectRouteSettingsView(detailsViewModel: detailsViewModel, vault: vault) {
                         updateSheet(.main)
                     }
                     .transition(transition(forward: true))
@@ -249,7 +250,8 @@ struct AdvancedSwapMainRow: View {
                         coin: .example,
                         isGasLimitSupported: true,
                         settings: $settings,
-                        detailsViewModel: SwapDetailsViewModel()
+                        detailsViewModel: SwapDetailsViewModel(),
+                        vault: Vault(name: "Preview Vault")
                     )
                 }
         }

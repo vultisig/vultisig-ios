@@ -631,7 +631,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
 
     func testIndicativeFollowsThePickedRoute() async {
         let vm = await makeQuotedVM(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
-        vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")))
+        vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")), vault: makeVault())
 
         vm.fromAmount = "2"
         vm.updateFromAmount(vault: makeVault())
@@ -801,7 +801,7 @@ private extension SwapDetailsViewModel {
     /// Polls a short, bounded number of times to avoid coupling to internal task
     /// handles while keeping the test deterministic.
     func waitForQuoteTask() async {
-        for _ in 0..<200 where isLoadingQuotes {
+        for _ in 0..<200 where isLoadingQuotes || isLoadingFees {
             try? await Task.sleep(for: .milliseconds(10))
         }
     }

@@ -118,7 +118,7 @@ final class AdvancedSwapPresentationTests: XCTestCase {
     func testRouteListUsesOneEnabledScrollViewWhenContentOverflows() async throws {
         let model = SwapDetailsViewModel()
         model.allQuotes = sampleQuotes()
-        let host = try hostContent(SelectRouteSettingsView(detailsViewModel: model) {})
+        let host = try hostContent(SelectRouteSettingsView(detailsViewModel: model, vault: Vault(name: "Test Vault")) {})
         try await settle()
         let scrolls = descendants(in: host.view).compactMap { $0 as? UIScrollView }
         XCTAssertEqual(scrolls.count, 1)
@@ -231,7 +231,7 @@ private struct PresentationHost: View {
         Color.clear
             .sheet(isPresented: $presented) {
                 AdvancedSwapSheet(isPresented: $presented, coin: .example, isGasLimitSupported: gasSupported,
-                                  settings: $settings, detailsViewModel: model, sheetType: state)
+                                  settings: $settings, detailsViewModel: model, vault: Vault(name: "Test Vault"), sheetType: state)
             }
             .onAppear { presented = true }
     }
