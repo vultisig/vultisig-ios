@@ -24,6 +24,7 @@ struct AdvancedSwapSheet: View {
     let isGasLimitSupported: Bool
     @Binding var settings: SwapAdvancedSettings
     @Bindable var detailsViewModel: SwapDetailsViewModel
+    let vault: Vault
 
     @State var sheetType: AdvancedSwapSheetType = .main
     @State private var shouldUseMoveTransition = true
@@ -48,7 +49,7 @@ struct AdvancedSwapSheet: View {
                     }
                     .transition(transition(forward: true))
                 case .selectRoute:
-                    SelectRouteSettingsView(detailsViewModel: detailsViewModel) {
+                    SelectRouteSettingsView(detailsViewModel: detailsViewModel, vault: vault) {
                         updateSheet(.main)
                     }
                     .transition(transition(forward: true))
@@ -153,9 +154,10 @@ struct AdvancedSwapSheet: View {
 
     /// "Auto" until the user manually overrides the route; then the picked
     /// provider's name. The pick survives a refresh, so this keeps naming the
-    /// provider until the route stops being offered or the swap itself changes.
+    /// provider while its payload is revalidated, until the route stops being
+    /// offered or the swap itself changes.
     private var selectRouteValue: String {
-        guard let selected = vm.selectedQuote?.displayName else { return "auto".localized }
+        guard let selected = vm.selectedProviderDisplayName else { return "auto".localized }
         return selected
     }
 
@@ -248,7 +250,8 @@ struct AdvancedSwapMainRow: View {
                         coin: .example,
                         isGasLimitSupported: true,
                         settings: $settings,
-                        detailsViewModel: SwapDetailsViewModel()
+                        detailsViewModel: SwapDetailsViewModel(),
+                        vault: Vault(name: "Preview Vault")
                     )
                 }
         }

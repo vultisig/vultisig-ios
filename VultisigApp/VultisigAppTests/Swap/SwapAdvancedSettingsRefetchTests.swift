@@ -67,7 +67,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
         XCTAssertEqual(interactor.fetchQuoteCallCount, before, "No relevant change must not re-fetch")
     }
 
-    func testRouteSelectionDoesNotTriggerRefetch() {
+    func testRouteSelectionDoesNotTriggerRefetch() async {
         let (vm, interactor) = makeVM()
         // Two quotes so a provider pick is possible.
         let best = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "300000000"))
@@ -77,8 +77,10 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
 
         vm.snapshotAdvancedSettings()
         // Pick a route while the sheet is "open" — selectedQuote is NOT part of
-        // advancedSettings, so the close must not re-fetch.
-        vm.selectProvider(alt)
+        // advancedSettings, so the close must not re-fetch a quote. It does
+        // refresh fees for the newly picked route; wait for that before checking.
+        vm.selectProvider(alt, vault: makeVault())
+        await vm.waitForQuoteTask()
 
         let before = interactor.fetchQuoteCallCount
         vm.advancedSettingsSheetDidClose(vault: makeVault())
@@ -135,7 +137,7 @@ final class SwapAdvancedSettingsRefetchTests: XCTestCase {
 
 private extension SwapDetailsViewModel {
     func waitForQuoteTask() async {
-        for _ in 0..<200 where isLoadingQuotes {
+        for _ in 0..<200 where isLoadingQuotes || isLoadingFees {
             try? await Task.sleep(for: .milliseconds(10))
         }
     }

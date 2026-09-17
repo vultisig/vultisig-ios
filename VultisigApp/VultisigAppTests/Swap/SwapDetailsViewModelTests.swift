@@ -22,6 +22,192 @@ import XCTest
 @MainActor
 final class SwapDetailsViewModelTests: XCTestCase {
 
+    private var storeToken: TestContextToken?
+
+    override func setUp() async throws {
+        storeToken = try TestStore.installInMemoryContainer()
+    }
+
+    override func tearDown() async throws {
+        TestStore.restore(storeToken)
+        storeToken = nil
+    }
+
+    func testFailedRefreshKeepsDisplayButBlocksTransactionUntilRecovery() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.quoteError = URLError(.timedOut)
+        vm.refreshData(vault: vault)
+        await vm.waitForQuoteTask()
+
+        XCTAssertNotNil(vm.quote, "A transient outage can retain the displayed estimate")
+        XCTAssertFalse(vm.validateForm(), "A failed refresh must disable Continue")
+        XCTAssertNil(vm.makeTransaction(), "The retained quote must not reach Verify")
+        vm.error = nil
+        XCTAssertFalse(vm.validateForm(), "Dismissing an error must not revalidate the quote")
+        XCTAssertNil(vm.makeTransaction())
+
+        interactor.quoteError = nil
+        vm.refreshData(vault: vault)
+        await vm.waitForQuoteTask()
+        XCTAssertTrue(vm.validateForm())
+        XCTAssertNotNil(vm.makeTransaction())
+    }
+
+    func testStructuralRefreshFailureClearsQuoteAndCandidates() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.quoteError = SwapError.tradingHalted
+        vm.refreshData(vault: vault)
+        await vm.waitForQuoteTask()
+
+        XCTAssertNil(vm.quote)
+        XCTAssertTrue(vm.allQuotes.isEmpty)
+        XCTAssertNil(vm.makeTransaction())
+        XCTAssertTrue(vm.showRefreshCounter, "A lifted halt must recover without editing the form")
+        vm.error = nil
+        interactor.quoteError = nil
+        vm.timer = 1
+        vm.updateTimer(vault: vault)
+        await vm.waitForQuoteTask()
+        XCTAssertNotNil(vm.makeTransaction())
+    }
+
+    func testEmptyRefreshResultClearsQuoteAndBlocksTransaction() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.stubbedQuote = nil
+        vm.refreshData(vault: vault)
+        await vm.waitForQuoteTask()
+
+        XCTAssertNil(vm.quote)
+        XCTAssertNil(vm.makeTransaction())
+    }
+
+    func testSettingsChangeCannotHandOffPreviousQuote() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        vm.snapshotAdvancedSettings()
+        vm.advancedSettings.slippage = .custom(bps: 300)
+        XCTAssertNil(vm.makeTransaction(), "Settings must match the validated request even before dismissal")
+        interactor.quoteError = URLError(.timedOut)
+        vm.advancedSettingsSheetDidClose(vault: vault)
+        XCTAssertNil(vm.quote, "A changed request cannot retain the old payload")
+        await vm.waitForQuoteTask()
+        XCTAssertNil(vm.makeTransaction())
+    }
+
+    func testInFlightRefreshBlocksTransaction() async {
+        let (vm, _, vault) = await makeReadyForm()
+        vm.refreshData(vault: vault)
+        XCTAssertNotNil(vm.quote)
+        XCTAssertFalse(vm.validateForm())
+        XCTAssertNil(vm.makeTransaction())
+        await vm.waitForQuoteTask()
+        XCTAssertNotNil(vm.makeTransaction())
+    }
+
+    func testFeeRefreshFailureRemainsBlockedAfterErrorDismissal() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.computeFeeError = URLError(.timedOut)
+        vm.refreshData(vault: vault)
+        await vm.waitForQuoteTask()
+        vm.error = nil
+        XCTAssertNotNil(vm.quote)
+        XCTAssertNil(vm.makeTransaction())
+    }
+
+    func testSupersededFailureCannotInvalidateNewQuote() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.suspendNextQuote = true
+        vm.updateFromAmount(vault: vault, immediate: true)
+        for _ in 0..<200 where interactor.suspendedQuote == nil {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        guard let pending = interactor.suspendedQuote else {
+            return XCTFail("The old refresh must be suspended before it is superseded")
+        }
+        vm.fromAmount = "2"
+        vm.updateFromAmount(vault: vault, immediate: true)
+        await vm.waitForQuoteTask()
+        XCTAssertNotNil(vm.makeTransaction())
+
+        pending.resume(throwing: SwapError.tradingHalted)
+        interactor.suspendedQuote = nil
+        for _ in 0..<200 where !interactor.resumedSuspendedQuote {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertTrue(interactor.resumedSuspendedQuote)
+        XCTAssertNil(vm.error)
+        XCTAssertNotNil(vm.quote)
+        XCTAssertEqual(vm.makeTransaction()?.fromAmount, 2)
+    }
+
+    func testSettingsEditDuringRefreshDiscardsResponseAndRevalidatesOnClose() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        let originalQuote = vm.quote
+        vm.snapshotAdvancedSettings()
+        interactor.suspendNextQuote = true
+        vm.updateFromAmount(vault: vault, immediate: true)
+        for _ in 0..<200 where interactor.suspendedQuote == nil {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        guard let pending = interactor.suspendedQuote else {
+            return XCTFail("The quote must be suspended before editing settings")
+        }
+        vm.advancedSettings.slippage = .custom(bps: 300)
+        let changedQuote = SwapQuote.thorchain(makeThorQuote(expectedAmountOut: "200000000"))
+        pending.resume(returning: SwapQuoteResult(quote: changedQuote, vultDiscountBps: 0, referralDiscountBps: 0))
+        interactor.suspendedQuote = nil
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(vm.quote, originalQuote, "A mismatched request must not publish its result")
+        XCTAssertNil(vm.makeTransaction())
+
+        vm.advancedSettings = .default
+        vm.advancedSettingsSheetDidClose(vault: vault)
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(interactor.fetchQuoteCallCount, 3, "Reverting settings still needs the discarded refresh retried")
+        XCTAssertNotNil(vm.makeTransaction())
+    }
+
+    func testRevertingSettingsWhileRefreshPendingStartsCurrentRequest() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        vm.snapshotAdvancedSettings()
+        vm.advancedSettings.slippage = .custom(bps: 300)
+        interactor.suspendNextQuote = true
+        vm.updateFromAmount(vault: vault, immediate: true)
+        for _ in 0..<200 where interactor.suspendedQuote == nil {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        guard let pending = interactor.suspendedQuote else {
+            return XCTFail("The changed-settings request must be in flight")
+        }
+        XCTAssertNil(vm.quote)
+        vm.advancedSettings = .default
+        vm.advancedSettingsSheetDidClose(vault: vault)
+        await vm.waitForQuoteTask()
+        XCTAssertEqual(interactor.fetchQuoteCallCount, 3)
+        XCTAssertNotNil(vm.makeTransaction())
+        pending.resume(throwing: SwapError.tradingHalted)
+        interactor.suspendedQuote = nil
+        for _ in 0..<200 where !interactor.resumedSuspendedQuote {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertNil(vm.error)
+        XCTAssertNotNil(vm.makeTransaction())
+    }
+
+    private func makeReadyForm() async -> (SwapDetailsViewModel, MockSwapInteractor, Vault) {
+        let interactor = MockSwapInteractor(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
+        interactor.fee = 1
+        let vm = makeVM(interactor: interactor)
+        let vault = makeVault()
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+        vm.updateFromAmount(vault: vault, immediate: true)
+        await vm.waitForQuoteTask()
+        XCTAssertTrue(vm.validateForm(), "Precondition: a successful quote and fee refresh enables Continue")
+        XCTAssertNotNil(vm.makeTransaction())
+        return (vm, interactor, vault)
+    }
+
     // MARK: - Item 1: indicative value is display-only (signing guardrail)
 
     func testValidateFormFailsWhenOnlyIndicativeAmountPresentAndQuoteNil() {
@@ -445,7 +631,7 @@ final class SwapDetailsViewModelTests: XCTestCase {
 
     func testIndicativeFollowsThePickedRoute() async {
         let vm = await makeQuotedVM(quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")))
-        vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")))
+        vm.selectProvider(.thorchain(makeThorQuote(expectedAmountOut: "50000000")), vault: makeVault())
 
         vm.fromAmount = "2"
         vm.updateFromAmount(vault: makeVault())
@@ -615,7 +801,7 @@ private extension SwapDetailsViewModel {
     /// Polls a short, bounded number of times to avoid coupling to internal task
     /// handles while keeping the test deterministic.
     func waitForQuoteTask() async {
-        for _ in 0..<200 where isLoadingQuotes {
+        for _ in 0..<200 where isLoadingQuotes || isLoadingFees {
             try? await Task.sleep(for: .milliseconds(10))
         }
     }
@@ -628,8 +814,13 @@ private extension SwapDetailsViewModel {
 /// asserted. Fees resolve to zero so the happy path keeps the quote set.
 @MainActor
 private final class MockSwapInteractor: SwapInteractor {
-    private let stubbedQuote: SwapQuote?
-    private let computeFeeError: Error?
+    var stubbedQuote: SwapQuote?
+    var computeFeeError: Error?
+    var quoteError: Error?
+    var fee: BigInt = .zero
+    var suspendNextQuote = false
+    var suspendedQuote: CheckedContinuation<SwapQuoteResult?, Error>?
+    var resumedSuspendedQuote = false
     private(set) var fetchQuoteCallCount = 0
     private(set) var lastReferredCode: String?
     /// While set, `fetchQuote` parks after being counted, so a test can act
@@ -652,6 +843,12 @@ private final class MockSwapInteractor: SwapInteractor {
     ) async throws -> SwapQuoteResult? {
         fetchQuoteCallCount += 1
         lastReferredCode = referredCode
+        if suspendNextQuote {
+            suspendNextQuote = false
+            defer { resumedSuspendedQuote = true }
+            return try await withCheckedThrowingContinuation { suspendedQuote = $0 }
+        }
+        if let quoteError { throw quoteError }
         while holdFetch {
             try await Task.sleep(for: .milliseconds(5))
         }
@@ -679,7 +876,7 @@ private final class MockSwapInteractor: SwapInteractor {
         if let computeFeeError {
             throw computeFeeError
         }
-        return .zero
+        return fee
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {

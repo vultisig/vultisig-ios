@@ -169,7 +169,7 @@ struct SwapService {
         return results.compactMap { result in
             guard result.provider.isAggregator,
                   let error = result.error,
-                  isTransientAggregatorError(error)
+                  isTransientQuoteError(error)
             else { return nil }
             return result.provider
         }
@@ -228,7 +228,7 @@ struct SwapService {
         return false
     }
 
-    private static func isTransientAggregatorError(_ error: Error) -> Bool {
+    static func isTransientQuoteError(_ error: Error) -> Bool {
         if error is URLError { return true }
 
         if let httpError = error as? HTTPError {
@@ -1003,7 +1003,7 @@ extension SwapService {
     }
 
     /// 4xx / invalid / missing-ATA → no route. 5xx stays `.serverError` so
-    /// `isTransientAggregatorError` can still retry Jupiter when a native provider is halted.
+    /// `isTransientQuoteError` can still retry Jupiter when a native provider is halted.
     static func mapJupiterError(_ error: JupiterError) -> SwapError {
         switch error {
         case .quoteFailed(let code) where code >= 500,
