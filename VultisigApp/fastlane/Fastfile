@@ -15,17 +15,31 @@
 
 default_platform(:ios)
 
+# App Store Connect API key auth (replaces Apple ID + app-specific-password,
+# which Apple's servers have been intermittently rejecting for CI uploads).
+# Requires APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, and
+# APP_STORE_CONNECT_KEY_FILEPATH (path to the downloaded .p8) in the env.
+def api_key
+  app_store_connect_api_key(
+    key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+    issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+    key_filepath: ENV["APP_STORE_CONNECT_KEY_FILEPATH"],
+    in_house: false
+  )
+end
+
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    increment_build_number(build_number:"73",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"74",xcodeproj: "VultisigApp.xcodeproj")
     build_app(scheme: "VultisigApp",
               destination: "generic/platform=iOS",
               xcargs: "-allowProvisioningUpdates")
   end
   lane :upload do
     upload_to_testflight(
-      ipa: "./VultisigApp.ipa"
+      ipa: "./VultisigApp.ipa",
+      api_key: api_key
     )
   end
 end
@@ -33,7 +47,7 @@ end
 platform :mac do
   desc "Build the macOS app and package it into a .dmg file"
   lane :build do
-    increment_build_number(build_number:"73",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"74",xcodeproj: "VultisigApp.xcodeproj")
     build_mac_app(scheme: "VultisigApp",
               destination: "generic/platform=macOS",
               export_team_id: ENV['APPLE_TEAM_ID'],
@@ -45,7 +59,8 @@ platform :mac do
   lane :upload do
     upload_to_testflight(
       pkg: "./VultisigApp.pkg",
-      app_platform: "osx"
+      app_platform: "osx",
+      api_key: api_key
     )
   end
   lane :release_mac do
@@ -65,16 +80,14 @@ platform :mac do
     # remove the dSYM file
     sh "rm -f ../pkgroot/Applications/VultisigApp.app.dSYM.zip"
 
-    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.46.73' --install-location / '../VultisigApp.pkg'"
+    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.47.74' --install-location / '../VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
      notarize(package: "VultisigApp.signed.pkg",
-     username: ENV['APPLE_DEVELOPER_USERNAME'],
+     api_key: api_key,
      bundle_id: "com.vultisig.wallet",
-     asc_provider: ENV['APPLE_TEAM_ID'],
      print_log: true,
-     verbose: false) # Optional: only needed if you belong to multiple teams
-
+     verbose: false)
   end
 end
