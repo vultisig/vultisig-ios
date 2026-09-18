@@ -216,7 +216,8 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: "", fiat: ""),
                 keysignPayload: nil,
                 pubKeyECDSA: vault.pubKeyECDSA,
-                verb: .sign
+                verb: .sign,
+                dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.signedMessage(),
             tokenContent: {

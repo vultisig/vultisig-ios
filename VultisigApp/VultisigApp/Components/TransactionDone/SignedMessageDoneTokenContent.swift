@@ -9,6 +9,7 @@
 //  function disclosure / signature stacked cells).
 //
 //  Renders, top-down:
+//    - dApp request banner (when the request carries dApp metadata).
 //    - Decoded function name (when available).
 //    - `method` cell — the EIP-712 / signing method name.
 //    - `transactionDetails` (when a decoded message exists) or `message`.
@@ -75,6 +76,9 @@ struct SignedMessageDoneTokenContent: View {
 
     @ViewBuilder
     private var doneHeroSection: some View {
+        if let dappMetadata {
+            DAppRequestBanner(metadata: dappMetadata)
+        }
         if let title = viewModel.decodedFunctionName {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
@@ -90,7 +94,14 @@ struct SignedMessageDoneTokenContent: View {
     }
 
     private var hasHeroSection: Bool {
-        viewModel.decodedFunctionName != nil
+        dappMetadata != nil || viewModel.decodedFunctionName != nil
+    }
+
+    /// `DoneScreen` draws the banner only inside its default token slot, so a
+    /// flow that replaces that slot has to draw it here.
+    private var dappMetadata: DAppMetadata? {
+        guard let metadata = viewModel.dappMetadata, !metadata.isEmpty else { return nil }
+        return metadata
     }
 
     private func cell(titleKey: String, description: String, isWarning: Bool = false) -> some View {

@@ -29,6 +29,11 @@ struct CustomMessagePayload: Codable, Hashable {
     /// Decoded human-readable version of the message (populated asynchronously)
     var decodedMessage: String? = nil
 
+    /// Identity of the requesting dApp. Display-only: it never feeds
+    /// `keysignMessages`, so co-signers that predate the field derive the
+    /// same digest.
+    var dappMetadata: DAppMetadata? = nil
+
     var keysignMessages: [String] {
         let data: Data
 
