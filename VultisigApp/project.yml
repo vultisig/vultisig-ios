@@ -86,7 +86,16 @@ packages:
     # .swap_fee = 12` with its coin context at 13-15, and
     # `OneInchSwapPayload.sub_provider = 7`. Every change between the pins only
     # appends fields, so payloads from a sender at the old pin still decode.
-    revision: 08e17eb63cc634fa81b65306a294ef1455ec4c38
+    #
+    # Advanced again for `CustomMessagePayload.dapp_metadata = 6`, so a
+    # message-signing request can name the dApp that asked, the way
+    # `KeysignPayload.dapp_metadata` already does for transactions.
+    # `DAppMetadata` moved into its own proto file to avoid a circular import;
+    # its full name and field numbers are unchanged, so the wire format is too,
+    # and a signer at the old pin skips the new field. The pins in between only
+    # append fields as well (`SolanaSpecific.last_valid_block_height`, the
+    # Polkadot allow-death flag, `Erc20ApprovePayload.reset_allowance_first`).
+    revision: 514cde3793701321483ed7af868cd1b6101cd934
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
