@@ -74,7 +74,7 @@ extension CustomMessagePayload: ProtoMappable {
             // The field has explicit presence: assigning even an empty message
             // adds bytes, and a payload with no dApp must encode exactly as it
             // did before the field existed.
-            if let dappMetadata {
+            if let dappMetadata = dappMetadata?.normalized {
                 $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
         }
@@ -83,16 +83,25 @@ extension CustomMessagePayload: ProtoMappable {
 
 extension DAppMetadata {
 
+    /// Trimmed copy, or `nil` when nothing is left. The decoder and both
+    /// encoders apply this one rule, so metadata that decodes to `nil` is never
+    /// written as a present-but-empty message and a round trip is stable.
+    var normalized: DAppMetadata? {
+        let trimmed = DAppMetadata(
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            url: url.trimmingCharacters(in: .whitespacesAndNewlines),
+            iconURL: iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
     /// Treats whitespace-only proto strings as missing — `isEmpty` and `host`
     /// derive from these, so trim once at the boundary rather than
-    /// re-normalizing at every consumer. Metadata with nothing left is `nil`.
+    /// re-normalizing at every consumer.
     init?(proto: VSDAppMetadata) {
-        self.init(
-            name: proto.name.trimmingCharacters(in: .whitespacesAndNewlines),
-            url: proto.url.trimmingCharacters(in: .whitespacesAndNewlines),
-            iconURL: proto.iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        )
-        if isEmpty { return nil }
+        let raw = DAppMetadata(name: proto.name, url: proto.url, iconURL: proto.iconURL)
+        guard let metadata = raw.normalized else { return nil }
+        self = metadata
     }
 
     func mapToProtobuff() -> VSDAppMetadata {
@@ -212,7 +221,7 @@ extension KeysignPayload: ProtoMappable {
 
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
-            if let dappMetadata {
+            if let dappMetadata = dappMetadata?.normalized {
                 $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
         }

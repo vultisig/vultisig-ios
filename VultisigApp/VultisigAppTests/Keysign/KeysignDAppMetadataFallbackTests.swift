@@ -103,6 +103,17 @@ final class KeysignDAppMetadataFallbackTests: XCTestCase {
         XCTAssertNil(viewModel.dappMetadata)
     }
 
+    // MARK: - Encoding
+
+    /// The transaction encoder shares the custom-message rule: metadata that
+    /// would decode to `nil` is never written as a present-but-empty message.
+    func testKeysignPayloadDoesNotWriteEmptyMetadata() {
+        let whitespace = DAppMetadata(name: " ", url: "", iconURL: "\n")
+
+        XCTAssertFalse(makeKeysignPayload(dappMetadata: whitespace).mapToProtobuff().hasDappMetadata)
+        XCTAssertTrue(makeKeysignPayload(dappMetadata: transactionDApp).mapToProtobuff().hasDappMetadata)
+    }
+
     // MARK: - Helpers
 
     private func makeCustomMessagePayload(dappMetadata: DAppMetadata?) -> CustomMessagePayload {

@@ -135,6 +135,40 @@ final class CustomMessageDAppMetadataTests: XCTestCase {
         XCTAssertEqual(encoded.hexString, fixtureWithoutMetadataHex)
     }
 
+    /// Metadata that would decode to `nil` must not be written at all, or a
+    /// round trip changes the value and "no dApp" stops being byte-identical.
+    func testEmptyMetadataIsNotWrittenToTheWire() throws {
+        let blank = DAppMetadata(name: "", url: "", iconURL: "")
+        let whitespace = DAppMetadata(name: " ", url: "\n", iconURL: "\t")
+
+        for metadata in [blank, whitespace] {
+            let proto = makePayload(dappMetadata: metadata).mapToProtobuff()
+
+            XCTAssertFalse(proto.hasDappMetadata)
+            XCTAssertNil(try CustomMessagePayload(proto: proto).dappMetadata)
+        }
+
+        let encoded = try CustomMessagePayload(
+            method: "personal_sign",
+            message: "0x48656c6c6f",
+            vaultPublicKeyECDSA: "02abc",
+            vaultLocalPartyID: "",
+            chain: "Ethereum",
+            dappMetadata: whitespace
+        ).mapToProtobuff().serializedData()
+        XCTAssertEqual(encoded.hexString, fixtureWithoutMetadataHex)
+    }
+
+    func testPaddedMetadataIsWrittenTrimmed() throws {
+        let padded = DAppMetadata(name: " Polymarket ", url: "https://polymarket.com\n", iconURL: "")
+
+        let proto = makePayload(dappMetadata: padded).mapToProtobuff()
+
+        XCTAssertEqual(proto.dappMetadata.name, "Polymarket")
+        XCTAssertEqual(proto.dappMetadata.url, "https://polymarket.com")
+        XCTAssertEqual(try CustomMessagePayload(proto: proto).dappMetadata, polymarket)
+    }
+
     func testDecodesCrossLanguageFixture() throws {
         let proto = try VSCustomMessagePayload(serializedBytes: Data(hex: crossLanguageFixtureHex))
         let payload = try CustomMessagePayload(proto: proto)
