@@ -19,16 +19,23 @@ struct KeysignSwapConfirmView: View {
         }
     }
 
+    /// Centered while it fits; scrolls once the banner and the optional rows
+    /// make it taller than the screen, so the join button is never pushed off.
     var fields: some View {
-        VStack {
-            Spacer()
-            summary
-            Spacer()
+        GeometryReader { proxy in
+            ScrollView {
+                summary
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
     var summary: some View {
         VStack(spacing: 16) {
+            if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
+                DAppRequestBanner(metadata: metadata)
+            }
             summaryTitle
             summaryFromTo
 
