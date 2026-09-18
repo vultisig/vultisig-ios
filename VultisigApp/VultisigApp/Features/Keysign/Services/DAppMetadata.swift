@@ -11,8 +11,9 @@ import Foundation
 /// originated the transaction. Trust decisions stay with Blockaid — this is
 /// informational only.
 ///
-/// Mirrors the `DAppMetadata` proto on `KeysignPayload` (commondata#82). Proto
-/// strings are non-nullable, so empty strings are treated as missing.
+/// Mirrors the `DAppMetadata` proto carried by both `KeysignPayload` and
+/// `CustomMessagePayload`. Proto strings are non-nullable, so empty strings
+/// are treated as missing.
 struct DAppMetadata: Codable, Hashable {
     let name: String
     let url: String
