@@ -95,6 +95,11 @@ packages:
     # and a signer at the old pin skips the new field. The pins in between only
     # append fields as well (`SolanaSpecific.last_valid_block_height`, the
     # Polkadot allow-death flag, `Erc20ApprovePayload.reset_allowance_first`).
+    #
+    # Unlike the pins described above, this revision is the head of a commondata
+    # change that is still open upstream, not yet an ancestor of its `main`.
+    # Move the pin to the merged commit once it lands: if upstream squashes, this
+    # SHA stops being reachable from any branch.
     revision: 514cde3793701321483ed7af868cd1b6101cd934
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
