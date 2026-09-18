@@ -96,11 +96,9 @@ packages:
     # append fields as well (`SolanaSpecific.last_valid_block_height`, the
     # Polkadot allow-death flag, `Erc20ApprovePayload.reset_allowance_first`).
     #
-    # Unlike the pins described above, this revision is the head of a commondata
-    # change that is still open upstream, not yet an ancestor of its `main`.
-    # Move the pin to the merged commit once it lands: if upstream squashes, this
-    # SHA stops being reachable from any branch.
-    revision: 514cde3793701321483ed7af868cd1b6101cd934
+    # This revision is the commit that merged commondata#115
+    # (`CustomMessagePayload.dapp_metadata`) into upstream `main`.
+    revision: ef5b9f0fa1c480666f651efbbf71298a922d3a9b
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
