@@ -173,7 +173,11 @@ extension TransactionHistoryData {
         case THORChainLimitTrackingService.providerKind:
             return THORChainLimitTrackingStatusMapper.map(trackingStatus: latest)
         default:
-            return SwapKitTrackingStatusMapper.map(trackingStatus: latest)
+            // The fine-grained status wins, as it does on a live response
+            // (`SwapKitTrackingStatusMapper.map(_:)`). SwapKit may answer with
+            // only the coarse one — a refund included — which the row keeps in
+            // `latestStatus`, and whose values the same table reads.
+            return SwapKitTrackingStatusMapper.map(trackingStatus: latest?.nilIfEmpty ?? swapTracking?.latestStatus)
         }
     }
 

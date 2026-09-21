@@ -328,7 +328,7 @@ struct TransactionHistoryDetailSheet: View {
     }
 
     private var presentedFailureReason: String? {
-        TransactionHistoryFailureReasonPresentation.displayText(for: transaction.errorMessage)
+        TransactionHistoryFailureReasonPresentation.displayText(for: transaction)
     }
 
     // MARK: - Limit Order Rows
