@@ -45,7 +45,98 @@ final class ERC20ApproveLegsTests: XCTestCase {
         ])
     }
 
-    // MARK: - Helpers
+    // MARK: - Payload
+
+    func testLegAmountsFollowTheResetFlag() {
+        XCTAssertEqual(approve(reset: false).legAmounts, [Self.amount])
+        XCTAssertEqual(approve(reset: true).legAmounts, [BigInt(0), Self.amount])
+    }
+
+    func testResetFlagSurvivesKeysignPayloadProtoRoundTrip() throws {
+        let payload = oneInchApproveSwapPayload(reset: true)
+
+        let wire = try payload.mapToProtobuff().serializedData()
+        let decoded = try KeysignPayload(proto: VSKeysignPayload(serializedBytes: wire))
+
+        XCTAssertEqual(decoded.approvePayload, approve(reset: true))
+    }
+
+    /// Older senders never write the field. It has to read as false, and a
+    /// payload without the reset has to serialize exactly as it did before the
+    /// field existed, or every co-signer on an older build sees different bytes.
+    func testUnsetResetFlagDecodesFalseAndAddsNoBytes() throws {
+        let legacy = VSErc20ApprovePayload.with {
+            $0.amount = "5000000"
+            $0.spender = Self.spender
+        }
+
+        let decoded = ERC20ApprovePayload(proto: legacy)
+
+        XCTAssertFalse(decoded.resetAllowanceFirst)
+        XCTAssertEqual(try decoded.mapToProtobuff().serializedData(), try legacy.serializedData())
+    }
+
+    func testCodableWithoutResetKeyDecodesFalse() throws {
+        let encoded = try JSONEncoder().encode(approve(reset: true))
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        XCTAssertEqual(object.removeValue(forKey: "resetAllowanceFirst") as? Bool, true)
+        let legacy = try JSONSerialization.data(withJSONObject: object)
+
+        let decoded = try JSONDecoder().decode(ERC20ApprovePayload.self, from: legacy)
+
+        XCTAssertEqual(decoded, approve(reset: false))
+    }
+
+    func testCodableRoundTripKeepsResetFlag() throws {
+        let encoded = try JSONEncoder().encode(approve(reset: true))
+
+        XCTAssertEqual(try JSONDecoder().decode(ERC20ApprovePayload.self, from: encoded), approve(reset: true))
+    }
+
+    // MARK: - Fixtures
+
+    /// The SDK / Android reference vector: USDT to the 1inch v6 router,
+    /// payload nonce 7.
+    private static let usdt = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    private static let spender = "0x111111125421ca6dc452d289314280a0f8842a65"
+    private static let amount = BigInt(5_000_000)
+
+    private func approve(reset: Bool) -> ERC20ApprovePayload {
+        ERC20ApprovePayload(amount: Self.amount, spender: Self.spender, resetAllowanceFirst: reset)
+    }
+
+    /// Coins derive from the golden signer's key, so the golden signatures verify.
+    private func oneInchApproveSwapPayload(reset: Bool, nonce: Int64 = 7) -> KeysignPayload {
+        let usdt = SigningGoldenFactory.coin(
+            chain: .ethereum, ticker: "USDT", decimals: 6,
+            contractAddress: Self.usdt, isNativeToken: false, curve: .secp256k1
+        )
+        let eth = SigningGoldenFactory.coin(chain: .ethereum, ticker: "ETH", decimals: 18, curve: .secp256k1)
+        let quote = EVMQuote(
+            dstAmount: "1",
+            tx: EVMQuote.Transaction(
+                from: usdt.address, to: Self.spender, data: "0xabcdef",
+                value: "0", gasPrice: "0", gas: 0
+            )
+        )
+        let swap = GenericSwapPayload(
+            fromCoin: usdt, toCoin: eth, fromAmount: Self.amount,
+            toAmountDecimal: 0, quote: quote, provider: .oneInch
+        )
+        return SigningGoldenFactory.payload(
+            coin: usdt,
+            toAddress: Self.spender,
+            toAmount: Self.amount,
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: BigInt(1_000_000_000),
+                priorityFeeWei: BigInt(100_000_000),
+                nonce: nonce,
+                gasLimit: BigInt(210_000)
+            ),
+            swapPayload: .generic(swap),
+            approvePayload: approve(reset: reset)
+        )
+    }
 
     private func fixturePayload(file: String, name: String) throws -> KeysignPayload {
         let bundle = Bundle(for: type(of: self))
