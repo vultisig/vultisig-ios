@@ -135,6 +135,9 @@ class THORChainSwaps {
         return try inputData.map {
             let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: $0)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+            if !preSigningOutput.errorMessage.isEmpty {
+                throw HelperError.runtimeError(preSigningOutput.errorMessage)
+            }
             return preSigningOutput.dataHash.hexString
         }
     }

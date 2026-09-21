@@ -202,6 +202,30 @@ final class ERC20ApproveLegsTests: XCTestCase {
         ))
     }
 
+    /// A leg WalletCore cannot build has to fail with WalletCore's reason, not
+    /// hand the ceremony an empty hash to sign.
+    func testApproveLegThatFailsToBuildThrowsInsteadOfReturningAnEmptyHash() throws {
+        let invalid = ERC20ApprovePayload(amount: Self.amount, spender: "not-an-address", resetAllowanceFirst: true)
+        let payload = oneInchApproveSwapPayload(reset: true)
+
+        // Precondition: WalletCore rejects this leg, and says so only in its output.
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(approvePayload: invalid, keysignPayload: payload)
+        let output = try TxCompilerPreSigningOutput(
+            serializedBytes: TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: XCTUnwrap(legs.first))
+        )
+        XCTAssertFalse(output.errorMessage.isEmpty)
+        XCTAssertTrue(output.dataHash.isEmpty)
+
+        XCTAssertThrowsError(
+            try THORChainSwaps().getPreSignedApproveImageHash(approvePayload: invalid, keysignPayload: payload)
+        ) { error in
+            guard case HelperError.runtimeError(let message) = error else {
+                return XCTFail("Expected HelperError.runtimeError, got \(error)")
+            }
+            XCTAssertEqual(message, output.errorMessage)
+        }
+    }
+
     // MARK: - The dependent transaction's nonce
 
     /// Generic route: the swap signs exactly as it would at payload nonce 9.
