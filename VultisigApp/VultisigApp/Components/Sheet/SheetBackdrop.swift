@@ -10,4 +10,14 @@ enum SheetBackdrop {
     /// Dims it and keeps it sharp, for a sheet that should read as part of the
     /// screen it sits over.
     case dimOnly
+
+    /// The design's scrim is half black. iOS already dims behind a sheet, so
+    /// less is added there to land near the same shade.
+    static var dimOnlyOpacity: Double {
+        #if os(iOS)
+        0.4
+        #else
+        0.5
+        #endif
+    }
 }

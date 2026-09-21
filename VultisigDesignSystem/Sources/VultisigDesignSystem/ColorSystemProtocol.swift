@@ -22,6 +22,7 @@ public protocol ColorSystemProtocol {
     var bgSurface1: Color { get }
     var bgSurface2: Color { get }
     var bgSurface12: Color { get }
+    var bgSheetControl: Color { get }
 
     var lockPasscodeField: Color { get }
 
@@ -44,6 +45,7 @@ public protocol ColorSystemProtocol {
     var border: Color { get }
     var borderLight: Color { get }
     var borderExtraLight: Color { get }
+    var borderNormal: Color { get }
 
     var alertSuccess: Color { get }
     var alertError: Color { get }

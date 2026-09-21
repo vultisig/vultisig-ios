@@ -24,6 +24,8 @@ struct ColorSystem: ColorSystemProtocol {
     var bgSurface1: Color { .vultisig(hex: "061B3A") }
     var bgSurface2: Color { .vultisig(hex: "11284A") }
     var bgSurface12: Color { .vultisig(hex: "0D2240") }
+    // Round header controls on sheets (close, the scan mark).
+    var bgSheetControl: Color { .vultisig(hex: "2C4163") }
 
     var lockPasscodeField: Color { .vultisig(hex: "1B3F73").opacity(0.1) }
 
@@ -46,6 +48,7 @@ struct ColorSystem: ColorSystemProtocol {
     var border: Color { .vultisig(hex: "11284A") }
     var borderLight: Color { .vultisig(hex: "11284A") }
     var borderExtraLight: Color { .vultisig(hex: "FFFFFF").opacity(0.03) }
+    var borderNormal: Color { .vultisig(hex: "1B3F73") }
 
     var alertSuccess: Color { .vultisig(hex: "13C89D") }
     var alertError: Color { .vultisig(hex: "FF5C5C") }

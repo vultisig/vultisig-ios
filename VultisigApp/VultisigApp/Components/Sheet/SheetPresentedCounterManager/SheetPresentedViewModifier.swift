@@ -23,7 +23,7 @@ private struct SheetPresentedViewModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(blurContent || dimContent ? overlayView : nil)
+            .overlay(blurContent || dimContent ? overlayView(opacity: blurContent ? 0.4 : SheetBackdrop.dimOnlyOpacity) : nil)
             .blur(radius: blurContent ? 6 : 0)
             .animation(.easeInOut(duration: 0.1), value: blurContent)
             .animation(.easeInOut(duration: 0.1), value: dimContent)
@@ -54,9 +54,9 @@ private struct SheetPresentedViewModifier: ViewModifier {
             #endif
     }
 
-    var overlayView: some View {
+    func overlayView(opacity: Double) -> some View {
         Color.black
-            .opacity(0.4)
+            .opacity(opacity)
             .ignoresSafeArea()
     }
 }

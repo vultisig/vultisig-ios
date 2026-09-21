@@ -26,14 +26,17 @@ import SwiftUI
 private struct AnimatedPresentationDetentsModifier: ViewModifier {
     let target: PresentationDetent
     let alwaysAvailable: [PresentationDetent]
+    let animatesFirstChange: Bool
 
     @State private var detents: Set<PresentationDetent>
     @State private var selection: PresentationDetent
     @State private var animationTask: Task<Void, Never>?
+    @State private var hasChanged = false
 
-    init(target: PresentationDetent, alwaysAvailable: [PresentationDetent]) {
+    init(target: PresentationDetent, alwaysAvailable: [PresentationDetent], animatesFirstChange: Bool) {
         self.target = target
         self.alwaysAvailable = alwaysAvailable
+        self.animatesFirstChange = animatesFirstChange
         _detents = State(initialValue: Set([target] + alwaysAvailable))
         _selection = State(initialValue: target)
     }
@@ -42,6 +45,12 @@ private struct AnimatedPresentationDetentsModifier: ViewModifier {
         content
             .presentationDetents(detents, selection: $selection)
             .onChange(of: target) { _, newTarget in
+                defer { hasChanged = true }
+                guard animatesFirstChange || hasChanged else {
+                    detents = Set([newTarget] + alwaysAvailable)
+                    selection = newTarget
+                    return
+                }
                 animate(to: newTarget)
             }
             .onDisappear {
@@ -85,13 +94,18 @@ extension View {
     ///     animates the sheet to the new height.
     ///   - alwaysAvailable: detents kept in the set at all times (e.g. a
     ///     drag-to-`.large` affordance) regardless of the current target.
+    ///   - animatesFirstChange: `false` applies the first change at once, for
+    ///     a sheet whose starting target is a placeholder it replaces before it
+    ///     is on screen, such as a height it has yet to measure.
     func animatedPresentationDetents(
         target: PresentationDetent,
-        alwaysAvailable: [PresentationDetent] = []
+        alwaysAvailable: [PresentationDetent] = [],
+        animatesFirstChange: Bool = true
     ) -> some View {
         modifier(AnimatedPresentationDetentsModifier(
             target: target,
-            alwaysAvailable: alwaysAvailable
+            alwaysAvailable: alwaysAvailable,
+            animatesFirstChange: animatesFirstChange
         ))
     }
 }

@@ -180,7 +180,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
 
             if let currentItem = internalItem {
                 // Semi-transparent backdrop
-                Color.black.opacity(0.1)
+                Color.black.opacity(backdrop == .blurred ? 0.1 : SheetBackdrop.dimOnlyOpacity)
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation(.interpolatingSpring(duration: 0.2)) {
