@@ -40,6 +40,11 @@ final class TransactionHistoryItem {
     var toAmountCrypto: String?
     var toAmountFiat: String?
     var swapProvider: String?
+    /// Which coins a swap traded, so a failed one can reopen the swap form on
+    /// the same pair. `nil` on rows recorded before these were stored.
+    var fromContractAddress: String?
+    var toChainRawValue: String?
+    var toContractAddress: String?
 
     // Fee
     var feeCrypto: String
@@ -88,6 +93,9 @@ final class TransactionHistoryItem {
         toAmountCrypto: String? = nil,
         toAmountFiat: String? = nil,
         swapProvider: String? = nil,
+        fromContractAddress: String? = nil,
+        toChainRawValue: String? = nil,
+        toContractAddress: String? = nil,
         feeCrypto: String,
         feeFiat: String,
         network: String,
@@ -118,6 +126,9 @@ final class TransactionHistoryItem {
         self.toAmountCrypto = toAmountCrypto
         self.toAmountFiat = toAmountFiat
         self.swapProvider = swapProvider
+        self.fromContractAddress = fromContractAddress
+        self.toChainRawValue = toChainRawValue
+        self.toContractAddress = toContractAddress
         self.feeCrypto = feeCrypto
         self.feeFiat = feeFiat
         self.network = network

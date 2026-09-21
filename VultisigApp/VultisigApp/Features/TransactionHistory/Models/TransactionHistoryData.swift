@@ -70,6 +70,10 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
     let toAmountCrypto: String?
     let toAmountFiat: String?
     let swapProvider: String?
+    /// Swap coin identity — see `TransactionHistoryItem`. `nil` on legacy rows.
+    let fromContractAddress: String?
+    let toChainRawValue: String?
+    let toContractAddress: String?
     let feeCrypto: String
     let feeFiat: String
     let network: String
@@ -106,6 +110,9 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         toAmountCrypto: String?,
         toAmountFiat: String?,
         swapProvider: String?,
+        fromContractAddress: String? = nil,
+        toChainRawValue: String? = nil,
+        toContractAddress: String? = nil,
         feeCrypto: String,
         feeFiat: String,
         network: String,
@@ -136,6 +143,9 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
         self.toAmountCrypto = toAmountCrypto
         self.toAmountFiat = toAmountFiat
         self.swapProvider = swapProvider
+        self.fromContractAddress = fromContractAddress
+        self.toChainRawValue = toChainRawValue
+        self.toContractAddress = toContractAddress
         self.feeCrypto = feeCrypto
         self.feeFiat = feeFiat
         self.network = network
@@ -173,7 +183,11 @@ extension TransactionHistoryData {
         case THORChainLimitTrackingService.providerKind:
             return THORChainLimitTrackingStatusMapper.map(trackingStatus: latest)
         default:
-            return SwapKitTrackingStatusMapper.map(trackingStatus: latest)
+            // The fine-grained status wins, as it does on a live response
+            // (`SwapKitTrackingStatusMapper.map(_:)`). SwapKit may answer with
+            // only the coarse one — a refund included — which the row keeps in
+            // `latestStatus`, and whose values the same table reads.
+            return SwapKitTrackingStatusMapper.map(trackingStatus: latest?.nilIfEmpty ?? swapTracking?.latestStatus)
         }
     }
 
@@ -238,6 +252,9 @@ extension TransactionHistoryData {
         self.toAmountCrypto = item.toAmountCrypto
         self.toAmountFiat = item.toAmountFiat
         self.swapProvider = item.swapProvider
+        self.fromContractAddress = item.fromContractAddress
+        self.toChainRawValue = item.toChainRawValue
+        self.toContractAddress = item.toContractAddress
         self.feeCrypto = item.feeCrypto
         self.feeFiat = item.feeFiat
         self.network = item.network
@@ -272,6 +289,9 @@ extension TransactionHistoryData {
             toAmountCrypto: toAmountCrypto,
             toAmountFiat: toAmountFiat,
             swapProvider: swapProvider,
+            fromContractAddress: fromContractAddress,
+            toChainRawValue: toChainRawValue,
+            toContractAddress: toContractAddress,
             feeCrypto: feeCrypto,
             feeFiat: feeFiat,
             network: network,

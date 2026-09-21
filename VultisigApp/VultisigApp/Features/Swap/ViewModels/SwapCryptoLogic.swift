@@ -525,6 +525,26 @@ enum SwapCryptoLogic {
         return feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
+    // MARK: - Display: fee row labels
+
+    /// Localization keys for the network-fee and total-fee rows shown before a
+    /// swap is broadcast.
+    struct FeeLabelKeys: Equatable {
+        let networkFee: String
+        let totalFee: String
+
+        static let exact = FeeLabelKeys(networkFee: "networkFee", totalFee: "totalFee")
+        static let maximum = FeeLabelKeys(networkFee: "maxNetworkFee", totalFee: "maxTotalFee")
+    }
+
+    /// On EVM every swap route shows the gas the vault signs for — the gas
+    /// price ceiling × the gas limit — which the node reserves up front and the
+    /// receipt usually lands well under. Those rows, and the total built on
+    /// them, are labelled as a maximum. Other chains show the fee they pay.
+    static func feeLabelKeys(feeChain: Chain) -> FeeLabelKeys {
+        feeChain.chainType == .EVM ? .maximum : .exact
+    }
+
     // MARK: - Display: misc
 
     static func durationString(quote: SwapQuote?) -> String {

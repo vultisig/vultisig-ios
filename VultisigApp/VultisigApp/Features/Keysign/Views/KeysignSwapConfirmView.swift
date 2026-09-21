@@ -69,7 +69,7 @@ struct KeysignSwapConfirmView: View {
 
             if let totalFee = viewModel.getSwapTotalFee() {
                 separator
-                getValueCell(for: "totalFee", with: totalFee)
+                getValueCell(for: viewModel.swapFeeLabelKeys.totalFee, with: totalFee)
             }
         }
         .padding(16)
@@ -202,7 +202,7 @@ struct KeysignSwapConfirmView: View {
     }
 
     private func getNetworkFeeCell() -> some View {
-        getFeeCell(title: "networkFee", fees: viewModel.getCalculatedNetworkFee())
+        getFeeCell(title: viewModel.swapFeeLabelKeys.networkFee, fees: viewModel.getCalculatedNetworkFee())
     }
 
     private func getFeeCell(title: String, fees: (feeCrypto: String, feeFiat: String)) -> some View {

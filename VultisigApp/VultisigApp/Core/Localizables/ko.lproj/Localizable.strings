@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
+"allowDeathReapWarning" = "이 전송은 보내는 사람의 계정을 비울 수 있습니다. 남은 잔액이 최소 잔액(존재 보증금) 아래로 떨어지면 계정이 비활성화(삭제)되고 남은 %@은(는) 모두 손실됩니다.";
 "allTimeHigh" = "역대 최고가";
 "allTimeLow" = "역대 최저가";
 "allVaults" = "모든 볼트";
@@ -922,6 +923,7 @@
 "marketCap" = "시가총액";
 "marketCapRank" = "순위";
 "marketStats" = "시장 지표";
+"maxNetworkFee" = "최대 네트워크 수수료";
 "maxSendPlanChangedError" = "확인하는 동안 사용 가능한 잔액이 변경되어 이 트랜잭션은 표시된 금액을 전송하지 않습니다. 돌아가서 업데이트된 금액을 확인하세요.";
 "maxSupply" = "최대 공급량";
 "maxTotalFee" = "최대 총 수수료";

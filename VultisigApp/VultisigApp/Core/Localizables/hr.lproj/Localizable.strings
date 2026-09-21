@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
+"allowDeathReapWarning" = "Ovaj prijenos može isprazniti račun pošiljatelja. Ako preostalo stanje padne ispod minimalnog stanja (egzistencijalni depozit), račun će biti deaktiviran (uklonjen) i sav preostali %@ bit će izgubljen.";
 "allTimeHigh" = "Povijesni maksimum";
 "allTimeLow" = "Povijesni minimum";
 "allVaults" = "Svi trezori";
@@ -922,6 +923,7 @@
 "marketCap" = "Tržišna kapitalizacija";
 "marketCapRank" = "Rang";
 "marketStats" = "Tržišni podaci";
+"maxNetworkFee" = "Maks. mrežna naknada";
 "maxSendPlanChangedError" = "Vaša raspoloživa sredstva promijenila su se dok ste pregledavali, pa ova transakcija više ne bi poslala prikazani iznos. Vratite se i pregledajte ažurirani iznos.";
 "maxSupply" = "Maksimalna ponuda";
 "maxTotalFee" = "Maks. ukupna naknada";

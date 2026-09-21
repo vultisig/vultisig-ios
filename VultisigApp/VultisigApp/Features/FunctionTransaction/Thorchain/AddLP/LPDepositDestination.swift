@@ -120,8 +120,9 @@ enum ThorchainLPDestinationResolver {
     /// without a shared abstraction other flows would have to agree on.
     typealias InboundAddressFetch = (_ bypassCache: Bool) async -> [InboundAddress]
 
-    @MainActor
-    static let live: InboundAddressFetch = { bypassCache in
+    /// `@Sendable`, unlike `InboundAddressFetch`, so it is safe to share as a
+    /// nonisolated constant and usable as a default argument.
+    static let live: @Sendable (_ bypassCache: Bool) async -> [InboundAddress] = { bypassCache in
         await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: bypassCache)
     }
 

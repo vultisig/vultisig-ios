@@ -41,7 +41,7 @@ actor TokenMetadataResolver {
 
     init(
         ttl: TimeInterval = 24 * 60 * 60,
-        now: @escaping @Sendable () -> Date = Date.init,
+        now: @escaping @Sendable () -> Date = { Date() },
         fetcher: @escaping TokenMetadataFetcher = TokenMetadataResolver.defaultFetcher
     ) {
         self.ttl = ttl

@@ -231,15 +231,10 @@ enum BittensorHelper {
 
     // MARK: - Pre-signed Image Hash (for MPC signing)
 
-    /// `keepAlive` selects the Balances call: `transfer_keep_alive` (default)
-    /// fails on-chain rather than reap the sender, while `transfer_allow_death`
-    /// permits draining the account to zero. No caller passes `false` today —
-    /// there is no UI affordance for a user to explicitly empty a TAO account —
-    /// so this parameter exists to keep both calls available to a future
-    /// reap-confirmation flow without a second signature path. Every existing
-    /// send defaults to keep-alive.
-    static func getPreSignedImageHash(keysignPayload: KeysignPayload, keepAlive: Bool = true) throws -> [String] {
-        let payload = try buildSigningPayload(keysignPayload: keysignPayload, keepAlive: keepAlive)
+    /// The Balances call comes from the payload (see `buildCallData`), so this
+    /// pre-image and `getSignedTransaction` always encode the same call.
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let payload = try buildSigningPayload(keysignPayload: keysignPayload)
 
         // If payload > 256 bytes, hash with blake2b-256; otherwise sign directly
         let dataToSign: Data
@@ -255,8 +250,7 @@ enum BittensorHelper {
     // MARK: - Signed Transaction Assembly
 
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse],
-                                     keepAlive: Bool = true) throws -> SignedTransactionResult {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
@@ -265,7 +259,7 @@ enum BittensorHelper {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
 
-        let signingPayload = try buildSigningPayload(keysignPayload: keysignPayload, keepAlive: keepAlive)
+        let signingPayload = try buildSigningPayload(keysignPayload: keysignPayload)
 
         // If payload > 256 bytes, hash with blake2b-256; otherwise sign directly
         let dataToSign: Data
@@ -283,7 +277,7 @@ enum BittensorHelper {
 
         // Build the signed extensions (same as what goes before callData in the extrinsic)
         let signedExtra = try buildSignedExtra(keysignPayload: keysignPayload)
-        let callData = try buildCallData(keysignPayload: keysignPayload, keepAlive: keepAlive)
+        let callData = try buildCallData(keysignPayload: keysignPayload)
 
         // Assemble the full extrinsic
         let extrinsic = assembleExtrinsic(
@@ -305,8 +299,14 @@ enum BittensorHelper {
 
     // MARK: - Internal Building Blocks
 
-    /// Build the call data: [moduleIndex, methodIndex] ++ MultiAddress::Id(0x00) ++ dest_pubkey(32B) ++ compact(amount)
-    private static func buildCallData(keysignPayload: KeysignPayload, keepAlive: Bool) throws -> Data {
+    /// Build the call data: [moduleIndex, callIndex] ++ MultiAddress::Id(0x00) ++ dest_pubkey(32B) ++ compact(amount)
+    ///
+    /// `transfer_keep_alive` fails on-chain rather than reap the sender, and is
+    /// what every send signs unless the initiator set `allow_death`, which
+    /// selects `transfer_allow_death`. The call index is part of the signed
+    /// bytes, so every co-signer has to read it from the same field; it is never
+    /// inferred from the amount or the balance.
+    private static func buildCallData(keysignPayload: KeysignPayload) throws -> Data {
         guard let destPubkey = ss58Decode(keysignPayload.toAddress) else {
             throw HelperError.runtimeError("Invalid Bittensor destination address")
         }
@@ -314,7 +314,7 @@ enum BittensorHelper {
 
         var data = Data()
         data.append(moduleIndex) // Balances pallet
-        data.append(keepAlive ? transferKeepAliveIndex : transferAllowDeathIndex)
+        data.append(keysignPayload.chainSpecific.polkadotAllowDeath ? transferAllowDeathIndex : transferKeepAliveIndex)
         data.append(0x00) // MultiAddress::Id variant
         data.append(destPubkey) // 32 bytes destination public key
         data.append(compactEncode(keysignPayload.toAmount)) // compact encoded amount
@@ -338,7 +338,7 @@ enum BittensorHelper {
             _,
             let nonce,
             let currentBlockNumber,
-            _, _, _, _
+            _, _, _, _, _
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("Missing Bittensor chain specific data")
         }
@@ -361,7 +361,7 @@ enum BittensorHelper {
             let specVersion,
             let transactionVersion,
             let genesisHash,
-            _
+            _, _
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("Missing Bittensor chain specific data")
         }
@@ -393,8 +393,8 @@ enum BittensorHelper {
     }
 
     /// Build the full signing payload: callData ++ signedExtra ++ additionalSigned
-    private static func buildSigningPayload(keysignPayload: KeysignPayload, keepAlive: Bool) throws -> Data {
-        let callData = try buildCallData(keysignPayload: keysignPayload, keepAlive: keepAlive)
+    private static func buildSigningPayload(keysignPayload: KeysignPayload) throws -> Data {
+        let callData = try buildCallData(keysignPayload: keysignPayload)
         let signedExtra = try buildSignedExtra(keysignPayload: keysignPayload)
         let additionalSigned = try buildAdditionalSigned(keysignPayload: keysignPayload)
 

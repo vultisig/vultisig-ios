@@ -777,6 +777,10 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
+    var feeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        SwapCryptoLogic.feeLabelKeys(feeChain: feeCoin.chain)
+    }
+
     var durationString: String {
         SwapCryptoLogic.durationString(quote: quote)
     }

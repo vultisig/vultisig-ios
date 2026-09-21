@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
+"allowDeathReapWarning" = "此转账可能会清空发送方账户。如果剩余余额低于最低留存额（生存性存款），该账户将被停用（清除），剩余的 %@ 将全部丢失。";
 "allTimeHigh" = "历史最高价";
 "allTimeLow" = "历史最低价";
 "allVaults" = "所有保险库";
@@ -922,6 +923,7 @@
 "marketCap" = "市值";
 "marketCapRank" = "排名";
 "marketStats" = "市场数据";
+"maxNetworkFee" = "最大网络费用";
 "maxSendPlanChangedError" = "在您确认期间可用余额发生了变化，此交易将不再发送所显示的金额。请返回并查看更新后的金额";
 "maxSupply" = "最大供应量";
 "maxTotalFee" = "最大总费用";
