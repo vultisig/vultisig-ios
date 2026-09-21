@@ -17,12 +17,15 @@ extension View {
     ///   the sheet is still on screen races the dismissal animation and the
     ///   destination can be dropped. Defaults to `nil`, so existing call sites
     ///   are unaffected.
+    /// - Parameter backdrop: what the sheet does to the app behind it.
+    ///   Defaults to `.blurred`, so existing call sites are unaffected.
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        backdrop: SheetBackdrop = .blurred,
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) -> some View {
-        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, sheetContent: sheetContent))
+        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, backdrop: backdrop, sheetContent: sheetContent))
     }
 }
 
@@ -135,6 +138,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     @Binding var item: Item?
 
     var onDismiss: (() -> Void)?
+    let backdrop: SheetBackdrop
     var sheetContent: (Item) -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -147,10 +151,12 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     init(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        backdrop: SheetBackdrop = .blurred,
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) {
         self._item = item
         self.onDismiss = onDismiss
+        self.backdrop = backdrop
         self.sheetContent = sheetContent
     }
 
@@ -170,7 +176,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     func customSheet(content: Content) -> some View {
         ZStack {
             content
-                .blur(radius: internalItem != nil ? 5 : 0)
+                .blur(radius: backdrop == .blurred && internalItem != nil ? 5 : 0)
 
             if let currentItem = internalItem {
                 // Semi-transparent backdrop
@@ -229,13 +235,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                 // Defer state updates to avoid interfering with sheet animation on macOS 15.5
                 Task { @MainActor in
                     if newValue != nil {
-                        counterManager.increment()
-                        counter = counterManager.counter
+                        counterManager.increment(for: backdrop)
+                        counter = counterManager.count(for: backdrop)
                     } else {
                         if counter == 1 {
-                            counterManager.resetCounter()
+                            counterManager.resetCounter(for: backdrop)
                         } else {
-                            counterManager.decrement()
+                            counterManager.decrement(for: backdrop)
                         }
                     }
                 }

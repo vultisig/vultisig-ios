@@ -8,7 +8,8 @@
 import SwiftUI
 
 extension View {
-    /// Blurs navigation stack when `.platformSheet` gets presented
+    /// Blurs navigation stack when `.platformSheet` gets presented, or only
+    /// dims it for a sheet presented with `SheetBackdrop.dimOnly`.
     func sheetPresentedStyle() -> some View {
         modifier(SheetPresentedViewModifier())
     }
@@ -18,12 +19,14 @@ private struct SheetPresentedViewModifier: ViewModifier {
     @Environment(\.sheetPresentedCounterManager) var sheetPresentedCounterManager
 
     @State var blurContent: Bool = false
+    @State var dimContent: Bool = false
 
     func body(content: Content) -> some View {
         content
-            .overlay(blurContent ? overlayView : nil)
+            .overlay(blurContent || dimContent ? overlayView : nil)
             .blur(radius: blurContent ? 6 : 0)
             .animation(.easeInOut(duration: 0.1), value: blurContent)
+            .animation(.easeInOut(duration: 0.1), value: dimContent)
             .onReceive(sheetPresentedCounterManager.$counter) { newValue in
                 // Guard the write so an unchanged value never emits a graph
                 // mutation. The publisher lands on the runloop and can fire
@@ -37,10 +40,16 @@ private struct SheetPresentedViewModifier: ViewModifier {
                 guard blurContent != shouldBlur else { return }
                 blurContent = shouldBlur
             }
+            .onReceive(sheetPresentedCounterManager.$dimOnlyCounter) { newValue in
+                // Guarded for the same reason as the blur above.
+                let shouldDim = newValue > 0
+                guard dimContent != shouldDim else { return }
+                dimContent = shouldDim
+            }
             #if os(iOS)
             // Remove blur when enter background as the iOS dismisses sheet
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
-                sheetPresentedCounterManager.resetCounter()
+                sheetPresentedCounterManager.resetAllCounters()
             }
             #endif
     }
