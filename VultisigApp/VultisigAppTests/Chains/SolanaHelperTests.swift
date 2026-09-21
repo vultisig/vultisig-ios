@@ -254,6 +254,319 @@ final class SolanaHelperTests: XCTestCase {
         XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: expectedSignature))
     }
 
+    // MARK: - Raw signing: signer slot resolution
+
+    private let emptySignatureSlot = Data(repeating: 0x00, count: 64)
+
+    private struct SponsoredTransactionFixture {
+        let transaction: Data
+        let message: Data
+        let cosignerSignature: Data
+    }
+
+    /// `[shortvec(slot count)][64-byte slots][message]`.
+    private func makeRawTransaction(signatureSlots: [Data], message: Data) -> Data {
+        var transaction = Data([UInt8(signatureSlots.count)])
+        signatureSlots.forEach { transaction.append($0) }
+        transaction.append(message)
+        return transaction
+    }
+
+    private func makeKey(fill: UInt8) throws -> PrivateKey {
+        try XCTUnwrap(PrivateKey(data: Data(repeating: fill, count: 32)))
+    }
+
+    /// Slot `index` of a fixture transaction (every fixture here has a
+    /// one-byte slot count).
+    private func signatureSlot(_ index: Int, of transaction: Data) -> Data {
+        let start = transaction.startIndex + 1 + index * 64
+        return transaction.subdata(in: start..<(start + 64))
+    }
+
+    /// The sponsored shape: a v0 transaction with three required signers where
+    /// the vault is signer 1, not the fee payer.
+    ///
+    ///     staticAccountKeys[0] = relayer    fee payer, signs later (slot left zero)
+    ///     staticAccountKeys[1] = vault      the account this device signs for
+    ///     staticAccountKeys[2] = co-signer  already signed
+    private func makeSponsoredV0Transaction(vault: Data, relayer: Data, cosigner: PrivateKey) throws -> SponsoredTransactionFixture {
+        let message = makeMessage(
+            version: 0,
+            header: [3, 0, 1],
+            accountKeys: [relayer, vault, cosigner.getPublicKeyEd25519().data, transferRecipientKey, systemProgramKey],
+            instructions: [
+                makeTransferInstruction(programIndex: 4, from: 1, to: 3, lamports: 1_000_000),
+                makeTransferInstruction(programIndex: 4, from: 2, to: 3, lamports: 1)
+            ]
+        )
+        let cosignerSignature = try XCTUnwrap(cosigner.sign(digest: message, curve: .ed25519))
+        return SponsoredTransactionFixture(
+            transaction: makeRawTransaction(
+                signatureSlots: [emptySignatureSlot, emptySignatureSlot, cosignerSignature],
+                message: message
+            ),
+            message: message,
+            cosignerSignature: cosignerSignature
+        )
+    }
+
+    /// Runs `transaction` through the raw path the way keysign does:
+    /// pre-image, TSS-shaped signature, splice.
+    private func signRaw(_ transaction: Data, privateKey: PrivateKey) throws -> SignedTransactionResult {
+        let base64Transaction = transaction.base64EncodedString()
+        let preImageHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: base64Transaction)
+        let signatures = try makeSignatures(preImageHashes: preImageHashes, privateKey: privateKey)
+        return try SolanaHelper.signRawTransaction(
+            coinHexPubKey: privateKey.getPublicKeyEd25519().data.hexString,
+            base64Transaction: base64Transaction,
+            signatures: signatures
+        )
+    }
+
+    private func assertSignRawTransactionThrows(
+        _ transaction: Data,
+        privateKey: PrivateKey,
+        messageContaining expected: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(try signRaw(transaction, privateKey: privateKey), file: file, line: line) { error in
+            XCTAssertTrue(
+                error.localizedDescription.contains(expected),
+                "\"\(error.localizedDescription)\" does not mention \"\(expected)\"",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+    /// A vault that is the fee payer (signer 0) gets exactly what the old
+    /// slot-0 splice produced, and a co-signer's slot is left alone.
+    func testSignRawTransactionKeepsFeePayerSignatureInSlotZeroByteIdentical() throws {
+        let privateKey = try makeSignerKey()
+        let cosigner = try makeKey(fill: 0x03)
+        let message = makeMessage(
+            header: [2, 0, 1],
+            accountKeys: [
+                privateKey.getPublicKeyEd25519().data,
+                cosigner.getPublicKeyEd25519().data,
+                transferRecipientKey,
+                systemProgramKey
+            ],
+            instructions: [
+                makeTransferInstruction(programIndex: 3, from: 0, to: 2, lamports: 1_000_000),
+                makeTransferInstruction(programIndex: 3, from: 1, to: 2, lamports: 1)
+            ]
+        )
+        let cosignerSignature = try XCTUnwrap(cosigner.sign(digest: message, curve: .ed25519))
+        let unsigned = makeRawTransaction(signatureSlots: [emptySignatureSlot, cosignerSignature], message: message)
+
+        let result = try signRaw(unsigned, privateKey: privateKey)
+
+        let vaultSignature = try XCTUnwrap(privateKey.sign(digest: message, curve: .ed25519))
+        var expected = unsigned
+        expected.replaceSubrange(1..<65, with: vaultSignature)
+        XCTAssertEqual(Data(base64Encoded: result.rawTransaction), expected)
+        XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: vaultSignature))
+    }
+
+    /// The in-app producers of raw transactions (native staking; WalletCore's
+    /// own v0 transfer as the same shape) always make the vault the sole
+    /// signer, so they keep landing in slot 0.
+    func testSignRawTransactionSignsInAppWalletCoreTransactionsInSlotZero() throws {
+        let privateKey = try makeSignerKey()
+        let publicKey = privateKey.getPublicKeyEd25519()
+        let payload = try makeNativeTransferPayload(privateKey: privateKey)
+        let account = try makeRecipientAddress()
+
+        let transfer = try XCTUnwrap(Base58.decodeNoCheck(string: SolanaHelper.getZeroSignedTransaction(keysignPayload: payload)))
+        var unsignedTransactions = [transfer]
+        for stakingPayload in [
+            SolanaStakingPayload.delegate(votePubkey: account, lamports: 2_000_000_000),
+            .unstake(stakeAccount: account),
+            .withdraw(stakeAccount: account, lamports: 1_000_000_000)
+        ] {
+            let base64 = try SolanaHelper.buildStakingUnsignedTransaction(
+                keysignPayload: payload.withSolanaStakingPayload(stakingPayload)
+            )
+            unsignedTransactions.append(try XCTUnwrap(Data(base64Encoded: base64)))
+        }
+
+        for unsigned in unsignedTransactions {
+            let result = try signRaw(unsigned, privateKey: privateKey)
+            let signed = try XCTUnwrap(Data(base64Encoded: result.rawTransaction))
+
+            XCTAssertEqual(signed.first, 0x01)
+            let message = unsigned.subdata(in: 65..<unsigned.count)
+            XCTAssertTrue(publicKey.verify(signature: signatureSlot(0, of: signed), message: message))
+            XCTAssertEqual(signed.subdata(in: 65..<signed.count), message)
+        }
+    }
+
+    func testSignRawTransactionSplicesIntoVaultSlotOfSponsoredV0Transaction() throws {
+        let privateKey = try makeSignerKey()
+        let vaultKey = privateKey.getPublicKeyEd25519()
+        let fixture = try makeSponsoredV0Transaction(
+            vault: vaultKey.data,
+            relayer: makeKey(fill: 0x02).getPublicKeyEd25519().data,
+            cosigner: makeKey(fill: 0x03)
+        )
+        // The fixture is a well-formed v0 transaction with the vault at signer 1.
+        let parsed = try SolanaV0Transaction(wireBytes: [UInt8](fixture.transaction))
+        XCTAssertEqual(parsed.numRequiredSignatures, 3)
+        XCTAssertEqual(parsed.staticAccountKeys[1], [UInt8](vaultKey.data))
+        XCTAssertEqual(
+            try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: fixture.transaction.base64EncodedString()),
+            [fixture.message.hexString]
+        )
+
+        let result = try signRaw(fixture.transaction, privateKey: privateKey)
+        let signed = try XCTUnwrap(Data(base64Encoded: result.rawTransaction))
+
+        XCTAssertEqual(signatureSlot(0, of: signed), emptySignatureSlot, "the relayer's slot stays open")
+        let vaultSignature = signatureSlot(1, of: signed)
+        XCTAssertTrue(vaultKey.verify(signature: vaultSignature, message: fixture.message))
+        XCTAssertEqual(signatureSlot(2, of: signed), fixture.cosignerSignature)
+        // Nothing but the vault's slot changed, message included.
+        var expected = fixture.transaction
+        expected.replaceSubrange(65..<129, with: vaultSignature)
+        XCTAssertEqual(signed, expected)
+        // The transaction id is the fee payer's slot, which the relayer fills later.
+        XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: emptySignatureSlot))
+    }
+
+    func testSignRawTransactionRejectsKeyThatIsNotARequiredSigner() throws {
+        let privateKey = try makeSignerKey()
+        let vaultKey = privateKey.getPublicKeyEd25519().data
+        let payer = try makeKey(fill: 0x02).getPublicKeyEd25519().data
+
+        // The vault is an account key the transaction pays into, not a signer.
+        let vaultAsRecipient = makeMessage(
+            header: [1, 0, 1],
+            accountKeys: [payer, vaultKey, systemProgramKey],
+            instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
+        )
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: vaultAsRecipient),
+            privateKey: privateKey,
+            messageContaining: "not a required signer"
+        )
+
+        // The vault is not in the transaction at all.
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: makeLegacyTransferMessage(feePayer: payer)),
+            privateKey: privateKey,
+            messageContaining: "not a required signer"
+        )
+    }
+
+    func testSignRawTransactionRejectsSignatureSlotCountMismatch() throws {
+        let privateKey = try makeSignerKey()
+        let vaultKey = privateKey.getPublicKeyEd25519().data
+        let relayer = try makeKey(fill: 0x02).getPublicKeyEd25519().data
+        let fixture = try makeSponsoredV0Transaction(vault: vaultKey, relayer: relayer, cosigner: makeKey(fill: 0x03))
+
+        // Too few: one slot for three required signers.
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: fixture.message),
+            privateKey: privateKey,
+            messageContaining: "declares 1 signature slot(s) but the message requires 3"
+        )
+        // Too many: four slots for three.
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: Array(repeating: emptySignatureSlot, count: 4), message: fixture.message),
+            privateKey: privateKey,
+            messageContaining: "declares 4 signature slot(s) but the message requires 3"
+        )
+        // Too few even where the vault's own slot would fit the envelope.
+        let twoSigners = makeMessage(
+            header: [2, 0, 1],
+            accountKeys: [vaultKey, relayer, transferRecipientKey, systemProgramKey],
+            instructions: [makeTransferInstruction(programIndex: 3, from: 0, to: 2, lamports: 1_000_000)]
+        )
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: twoSigners),
+            privateKey: privateKey,
+            messageContaining: "declares 1 signature slot(s) but the message requires 2"
+        )
+    }
+
+    func testSignRawTransactionRejectsUnsupportedMessageVersion() throws {
+        let privateKey = try makeSignerKey()
+        let versionOne = makeMessage(
+            version: 1,
+            header: [1, 0, 1],
+            accountKeys: [privateKey.getPublicKeyEd25519().data, transferRecipientKey, systemProgramKey],
+            instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
+        )
+
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: versionOne),
+            privateKey: privateKey,
+            messageContaining: "Unsupported Solana message version 1"
+        )
+    }
+
+    func testSignRawTransactionRejectsTruncatedMessage() throws {
+        let privateKey = try makeSignerKey()
+        let vaultKey = privateKey.getPublicKeyEd25519().data
+
+        // A v0 prefix followed by a partial header.
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: Data([0x80, 0x01])),
+            privateKey: privateKey,
+            messageContaining: "too short for header"
+        )
+
+        // One required signer, two declared keys, only one present.
+        var truncatedKeys = Data([1, 0, 1, 2])
+        truncatedKeys.append(vaultKey)
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: truncatedKeys),
+            privateKey: privateKey,
+            messageContaining: "too short for declared account key count (2)"
+        )
+
+        // Two required signers but only one listed key.
+        var underListed = Data([2, 0, 0, 1])
+        underListed.append(vaultKey)
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot, emptySignatureSlot], message: underListed),
+            privateKey: privateKey,
+            messageContaining: "requires 2 signatures but lists 1 account keys"
+        )
+    }
+
+    /// `0x81 0x00` is a zero-padded encoding of 1 that the runtime rejects, so
+    /// slot resolution must not read the keys behind it as if it were valid.
+    func testSignRawTransactionRejectsNonCanonicalAccountKeyCount() throws {
+        let privateKey = try makeSignerKey()
+        var padded = Data([1, 0, 0, 0x81, 0x00])
+        padded.append(privateKey.getPublicKeyEd25519().data)
+
+        assertSignRawTransactionThrows(
+            makeRawTransaction(signatureSlots: [emptySignatureSlot], message: padded),
+            privateKey: privateKey,
+            messageContaining: "malformed compact-u16"
+        )
+    }
+
+    /// Real v0 transactions with address lookup tables (the Kamino golden
+    /// vectors) resolve their owner as the sole required signer.
+    func testRequiredSignersOfKaminoVectorsIsTheOwnerAlone() throws {
+        for vector in KaminoTransactionFixtures.all {
+            let owner = try XCTUnwrap(Base58.decodeNoCheck(string: vector.feePayer), vector.name)
+            for transaction in [vector.source, vector.injected] {
+                let messageHex = try XCTUnwrap(
+                    SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: transaction).first,
+                    vector.name
+                )
+                let message = try XCTUnwrap(Data(hexString: messageHex), vector.name)
+                XCTAssertEqual(try SolanaHelper.requiredSigners(ofMessage: message), [owner], vector.name)
+            }
+        }
+    }
+
     // MARK: - signAllTransactions batch guard
 
     /// Builds a minimal but structurally valid Solana raw-tx envelope —
