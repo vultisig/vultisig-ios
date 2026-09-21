@@ -1099,11 +1099,19 @@ class KeysignViewModel: ObservableObject {
                     }
                 }
 
-            case .regularWithApprove(let approve, let transaction):
+            case .regularWithApprove(let approves, let transaction):
                 let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
-                let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                // Nonce order, back to back. A leg a peer already sent comes
+                // back as the duplicate sentinel rather than an error, so the
+                // rest still go out.
+                for approve in approves {
+                    _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                }
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
-                self.approveTxid = approveTxHash
+                // The local hash, not the node's reply: the two are the same
+                // keccak for a fresh broadcast, and a duplicate replies with
+                // only the sentinel.
+                self.approveTxid = transactionType.approveTransactionHash
                 self.txid = regularTxHash
             }
         } catch {

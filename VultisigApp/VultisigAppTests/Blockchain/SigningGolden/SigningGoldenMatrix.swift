@@ -695,7 +695,7 @@ extension SigningGoldenFactory {
                       let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
                 let approveTx = try THORChainSwaps().getSignedApproveTransaction(approvePayload: approve, keysignPayload: $0, signatures: $1)
                 let swapTx = try OneInchSwaps().getSignedTransaction(payload: swap, keysignPayload: $0, signatures: $1, incrementNonce: true)
-                return .regularWithApprove(approve: approveTx, transaction: swapTx)
+                return .regularWithApprove(approves: [approveTx], transaction: swapTx)
             }
         )
     }
@@ -751,7 +751,7 @@ extension SigningGoldenFactory {
                       let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
                 let approveTx = try THORChainSwaps().getSignedApproveTransaction(approvePayload: approve, keysignPayload: $0, signatures: $1)
                 let swapTx = try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, incrementNonce: true)
-                return .regularWithApprove(approve: approveTx, transaction: swapTx)
+                return .regularWithApprove(approves: [approveTx], transaction: swapTx)
             }
         )
     }

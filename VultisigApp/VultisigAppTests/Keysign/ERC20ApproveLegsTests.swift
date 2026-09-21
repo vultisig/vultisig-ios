@@ -93,7 +93,94 @@ final class ERC20ApproveLegsTests: XCTestCase {
         XCTAssertEqual(try JSONDecoder().decode(ERC20ApprovePayload.self, from: encoded), approve(reset: true))
     }
 
+    // MARK: - Signed transaction assembly
+
+    func testSignedTransactionTypeFromEmptyListIsNil() {
+        XCTAssertNil(SignedTransactionType(transactions: []))
+    }
+
+    func testSignedTransactionTypeFromOneResultIsRegular() throws {
+        let type = try XCTUnwrap(SignedTransactionType(transactions: [signed("swap")]))
+
+        guard case .regular(let transaction) = type else {
+            return XCTFail("Expected .regular, got \(type)")
+        }
+        XCTAssertEqual(transaction.transactionHash, "0xswap")
+        XCTAssertNil(type.approveTransactionHash)
+    }
+
+    func testSignedTransactionTypeFromTwoResultsIsOneApproveThenTransaction() throws {
+        let type = try XCTUnwrap(SignedTransactionType(transactions: [signed("approve"), signed("swap")]))
+
+        guard case .regularWithApprove(let approves, let transaction) = type else {
+            return XCTFail("Expected .regularWithApprove, got \(type)")
+        }
+        XCTAssertEqual(approves.map(\.transactionHash), ["0xapprove"])
+        XCTAssertEqual(transaction.transactionHash, "0xswap")
+        XCTAssertEqual(type.transactionHash, "0xswap")
+        XCTAssertEqual(type.approveTransactionHash, "0xapprove")
+    }
+
+    /// Three results used to return nil, which sent the dispatcher on to the
+    /// per-chain helpers and re-built the swap as a plain token transfer.
+    func testSignedTransactionTypeFromThreeResultsKeepsBothApproveLegsInOrder() throws {
+        let type = try XCTUnwrap(SignedTransactionType(
+            transactions: [signed("reset"), signed("approve"), signed("swap")]
+        ))
+
+        guard case .regularWithApprove(let approves, let transaction) = type else {
+            return XCTFail("Expected .regularWithApprove, got \(type)")
+        }
+        XCTAssertEqual(approves.map(\.transactionHash), ["0xreset", "0xapprove"])
+        XCTAssertEqual(transaction.transactionHash, "0xswap")
+        // The approve the user is shown is the one that grants the allowance.
+        XCTAssertEqual(type.approveTransactionHash, "0xapprove")
+    }
+
+    /// A co-signer that loses the broadcast race is told "already known" and
+    /// takes its hashes from the signed legs instead of the node.
+    @MainActor
+    func testAlreadyKnownBroadcastReportsTheApproveAmountLeg() async {
+        let viewModel = KeysignViewModel()
+        viewModel.keysignPayload = oneInchApproveSwapPayload(reset: true)
+
+        await viewModel.handleBroadcastError(
+            error: RpcEvmServiceError.rpcError(code: -32000, message: "already known"),
+            transactionType: threeLegType()
+        )
+
+        XCTAssertEqual(viewModel.txid, "0xswap")
+        XCTAssertEqual(viewModel.approveTxid, "0xapprove")
+    }
+
+    @MainActor
+    func testBroadcastConfirmedOnChainAfterCancellationReportsTheApproveAmountLeg() async {
+        let viewModel = KeysignViewModel()
+        viewModel.keysignPayload = oneInchApproveSwapPayload(reset: true)
+        viewModel.transactionStatusChecker = ConfirmedStatusChecker()
+
+        await viewModel.handleBroadcastError(error: CancellationError(), transactionType: threeLegType())
+
+        XCTAssertEqual(viewModel.txid, "0xswap")
+        XCTAssertEqual(viewModel.approveTxid, "0xapprove")
+    }
+
     // MARK: - Fixtures
+
+    private func signed(_ name: String) -> SignedTransactionResult {
+        SignedTransactionResult(rawTransaction: "raw-\(name)", transactionHash: "0x\(name)")
+    }
+
+    private func threeLegType() -> SignedTransactionType {
+        .regularWithApprove(approves: [signed("reset"), signed("approve")], transaction: signed("swap"))
+    }
+
+    private struct ConfirmedStatusChecker: TransactionStatusChecking {
+        func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
+            await Task.yield()
+            return TransactionStatusResult(status: .confirmed, blockNumber: 1, confirmations: 1)
+        }
+    }
 
     /// The SDK / Android reference vector: USDT to the 1inch v6 router,
     /// payload nonce 7.
