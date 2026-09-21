@@ -85,6 +85,46 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
         }
     }
 
+    /// A RUNE deposit bound for Maya is recorded by THORChain's Midgard. The
+    /// THORChain provider would read a rate limit as `.failed`, so that Midgard
+    /// is read directly; a rejection or refund there never reaches Maya.
+    func testCrossProtocolSourceIsReadFromItsOwnMidgard() async {
+        let cases: [(Data, [String], [Chain])] = [
+            (Self.response([Self.action(type: "failed", out: [], metadata: ["failed": ["reason": "bad memo"]])]), ["failed"], [.thorChain]),
+            (Self.response([Self.action(type: "refund")]), ["refunded"], [.thorChain]),
+            (Self.response([]), [], [.thorChain]),
+            (Self.response([Self.action(type: "send")], count: "2"), [], [.thorChain]),
+            (Self.response([Self.action(type: "send")]), ["completed"], [.thorChain, .mayaChain])
+        ]
+        for (thorchainMidgard, statuses, networks) in cases {
+            let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .mayaChain)
+            let storage = NativeSwapStorage(rows: [tx])
+            let client = NativeSwapHTTPClient(
+                payload: Self.response([Self.action()]),
+                payloadsByNetwork: [.thorChain: thorchainMidgard]
+            )
+            let checker = NativeSwapSourceChecker(status: .failed(reason: "Rate limited - too many requests"))
+            let service = NativeSwapTrackingService(httpClient: client, sourceStatus: checker, storage: storage)
+            await service.forceRefresh(tx: tx)
+            let sourceRequests = await checker.requests
+            let requestedNetworks = await client.requestedNetworks
+            XCTAssertTrue(sourceRequests.isEmpty)
+            XCTAssertEqual(requestedNetworks, networks)
+            XCTAssertEqual(storage.statuses, statuses)
+        }
+    }
+
+    func testCrossProtocolSourceOutageIsNotAVerdict() async {
+        let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .mayaChain)
+        let storage = NativeSwapStorage(rows: [tx])
+        let client = NativeSwapHTTPClient(payload: Data(), fails: true)
+        let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+        await service.forceRefresh(tx: tx)
+        let requestedNetworks = await client.requestedNetworks
+        XCTAssertEqual(requestedNetworks, [.thorChain])
+        XCTAssertTrue(storage.statuses.isEmpty)
+    }
+
     func testRefreshInvalidatedDuringTheSourceCheckNeverAsksMidgard() async {
         let tx = Self.transaction()
         let storage = NativeSwapStorage(rows: [tx])
@@ -547,15 +587,18 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
 
 private actor NativeSwapHTTPClient: HTTPClientProtocol {
     private var payload: Data
+    private let payloadsByNetwork: [Chain: Data]
     private let fails: Bool
     private let suspended: Bool
     private var continuation: CheckedContinuation<Void, Never>?
     private var observers: [CheckedContinuation<Void, Never>] = []
     private(set) var requestCount = 0
     private(set) var lastRequest: (hash: String, network: Chain)?
+    private(set) var requestedNetworks: [Chain] = []
 
-    init(payload: Data, fails: Bool = false, suspended: Bool = false) {
+    init(payload: Data, payloadsByNetwork: [Chain: Data] = [:], fails: Bool = false, suspended: Bool = false) {
         self.payload = payload
+        self.payloadsByNetwork = payloadsByNetwork
         self.fails = fails
         self.suspended = suspended
     }
@@ -563,15 +606,18 @@ private actor NativeSwapHTTPClient: HTTPClientProtocol {
     func setPayload(_ payload: Data) { self.payload = payload }
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        var body = payload
         if let api = target as? THORChainTransactionStatusAPI, case let .getActions(hash, chain) = api {
             lastRequest = (hash, chain)
+            requestedNetworks.append(chain)
+            body = payloadsByNetwork[chain] ?? payload
         }
         requestCount += 1
         for observer in observers { observer.resume() }
         observers.removeAll()
         if suspended { await withCheckedContinuation { continuation = $0 } }
         if fails { throw URLError(.notConnectedToInternet) }
-        return HTTPResponse(data: payload, response: HTTPURLResponse(
+        return HTTPResponse(data: body, response: HTTPURLResponse(
             url: URL(string: "https://native-swap.invalid")!, statusCode: 200, httpVersion: nil, headerFields: nil
         )!)
     }

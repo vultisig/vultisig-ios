@@ -261,23 +261,23 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         isStillWanted: @MainActor () -> Bool
     ) async -> Observation {
         var observation = Observation()
-        if !isSourceConfirmed(tx: tx, key: key, sourceChain: sourceChain) {
-            let result: TransactionStatusResult
+        if !isSourceConfirmed(tx: tx, key: key, sourceChain: sourceChain, network: network) {
+            let source: SourceObservation
             do {
-                result = try await sourceStatus.checkTransactionStatus(txHash: tx.txHash, chain: sourceChain)
+                source = try await observeSource(txHash: tx.txHash, chain: sourceChain)
             } catch {
                 logger.debug("[NATIVESWAP] Source status unavailable for \(tx.txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 observation.unavailable = true
                 return observation
             }
-            switch result.status {
+            switch source {
             case .confirmed:
                 break
-            case let .failed(reason):
-                observation.status = Self.failedStatus
-                observation.failureReason = reason.trimmedNonEmpty
+            case let .ended(status, reason):
+                observation.status = status
+                observation.failureReason = reason
                 return observation
-            case .pending, .notFound:
+            case .waiting:
                 return observation
             }
             guard isStillWanted() else { return observation }
@@ -298,15 +298,43 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         return observation
     }
 
-    /// A deposit on the protocol's own chains is read from Midgard alone. Their
-    /// per-chain provider IS Midgard, and it reports rate limits and 5xx as
-    /// `.failed`, which here would end a healthy swap on an outage.
-    private func isSourceConfirmed(tx: TransactionHistoryData, key: RecordKey, sourceChain: Chain) -> Bool {
-        sourceChain.chainType == .THORChain
+    /// A deposit on the protocol network itself is answered by that network's
+    /// Midgard in the second phase, `failed` included.
+    private func isSourceConfirmed(tx: TransactionHistoryData, key: RecordKey, sourceChain: Chain, network: Chain) -> Bool {
+        sourceChain == network
             || confirmedSources.contains(key)
             // The only non-terminal status ever persisted is a Midgard answer,
             // and Midgard indexes a deposit only once it has landed.
             || tx.swapTracking?.latestTrackingStatus != nil
+    }
+
+    /// The per-chain provider of a THORChain-family source reads Midgard and
+    /// reports rate limits and 5xx as `.failed`, which would end a healthy swap
+    /// on an outage, so that source's own Midgard is read here instead. A RUNE
+    /// deposit bound for Maya that THORChain rejects or refunds is recorded
+    /// there and never reaches Maya's Midgard.
+    private func observeSource(txHash: String, chain: Chain) async throws -> SourceObservation {
+        guard chain.chainType == .THORChain else {
+            switch try await sourceStatus.checkTransactionStatus(txHash: txHash, chain: chain).status {
+            case .confirmed: return .confirmed
+            case let .failed(reason): return .ended(status: Self.failedStatus, failureReason: reason.trimmedNonEmpty)
+            case .pending, .notFound: return .waiting
+            }
+        }
+        let response = try await httpClient.request(
+            THORChainTransactionStatusAPI.getActions(txHash: txHash, chain: chain),
+            responseType: THORChainActionsResponse.self
+        ).data
+        // A truncated page could omit the `failed` or `refund` that outranks what it shows.
+        guard let count = Int(response.count), count <= response.actions.count else { return .waiting }
+        let matching = response.actions.filter { action in action.in.contains { Self.isSameTransaction($0.txID, txHash) } }
+        if let failed = matching.first(where: { $0.type.lowercased() == Self.failedStatus }) {
+            return .ended(status: Self.failedStatus, failureReason: failed.metadata?.failed?.reason?.trimmedNonEmpty)
+        }
+        if matching.contains(where: { $0.type.lowercased() == "refund" }) {
+            return .ended(status: "refunded", failureReason: nil)
+        }
+        return matching.isEmpty ? .waiting : .confirmed
     }
 
     // MARK: - Midgard outcome
@@ -392,6 +420,13 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         var failureReason: String?
         /// No answer at all: an HTTP error or an unreadable response.
         var unavailable = false
+    }
+
+    private enum SourceObservation {
+        case waiting
+        case confirmed
+        /// The deposit never reached the protocol network.
+        case ended(status: String, failureReason: String?)
     }
 
     private enum RefreshResult {
