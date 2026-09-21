@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import SwiftData
 import SwiftUI
 
 extension View {
@@ -79,8 +80,25 @@ private struct KeysignReviewSheetContent: View {
                 prebuiltKeysignPayload: prebuiltKeysignPayload,
                 presentationID: presentationID
             )
-        case .swap, .functionTransaction:
+        case .swap(let transaction, let retrySignal, let vaultPubKeyECDSA):
+            // Swap carries the vault's key, not the live `@Model`, which is
+            // resolved here on the main actor as its router does.
+            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
+                SwapReviewContent(
+                    transaction: transaction,
+                    retrySignal: retrySignal,
+                    vault: vault,
+                    presentationID: presentationID
+                )
+            }
+        case .functionTransaction:
             EmptyView()
         }
+    }
+
+    private func lookupVault(pubKeyECDSA: String) -> Vault? {
+        guard let context = Storage.shared.modelContext else { return nil }
+        let descriptor = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == pubKeyECDSA })
+        return (try? context.fetch(descriptor))?.first
     }
 }

@@ -12,6 +12,8 @@ enum KeysignReviewSheetLayout {
     static let bottomInset: CGFloat = 32
     static let verdictBottomInset: CGFloat = 16
     static let sectionSpacing: CGFloat = 28
+    /// The header's round controls: the scan mark and the close button.
+    static let controlSize: CGFloat = 32
     static let macOSWidth: CGFloat = 480
     /// The design's sheet corner, which is off the radius scale.
     static let cornerRadius: CGFloat = 34 // swiftlint:disable:this no_raw_corner_radius
@@ -22,7 +24,7 @@ enum KeysignReviewSheetLayout {
 ///
 /// The sheet is as tall as its content, up to the screen. The content is
 /// measured, since a scroll view has no height of its own to offer.
-struct KeysignReviewSheet<Content: View, Footer: View>: View {
+struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: View {
     let title: String
     let scanRing: KeysignReviewScanRing
     let verdict: KeysignReviewVerdict?
@@ -32,6 +34,7 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
     let bodyScrolls: Bool
     let content: () -> Content
     let footer: () -> Footer
+    let headerAccessory: () -> HeaderAccessory
 
     @State private var bodyHeight: CGFloat = 0
     @State private var footerHeight: CGFloat = 0
@@ -47,7 +50,8 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
         onClose: @escaping () -> Void,
         bodyScrolls: Bool = true,
         @ViewBuilder content: @escaping () -> Content,
-        @ViewBuilder footer: @escaping () -> Footer
+        @ViewBuilder footer: @escaping () -> Footer,
+        @ViewBuilder headerAccessory: @escaping () -> HeaderAccessory
     ) {
         self.title = title
         self.scanRing = scanRing
@@ -56,11 +60,12 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
         self.bodyScrolls = bodyScrolls
         self.content = content
         self.footer = footer
+        self.headerAccessory = headerAccessory
     }
 
     var body: some View {
         VStack(spacing: KeysignReviewSheetLayout.sectionSpacing) {
-            KeysignReviewHeader(title: title, scanRing: scanRing, onClose: onClose)
+            KeysignReviewHeader(title: title, scanRing: scanRing, onClose: onClose, accessory: headerAccessory)
 
             if let verdict {
                 KeysignReviewVerdictView(verdict: verdict)
@@ -105,13 +110,36 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
 
     /// Everything the sheet needs to show without scrolling, once measured.
     var contentHeight: CGFloat? {
-        let chrome = KeysignReviewSheetLayout.topInset + KeysignReviewHeader.controlSize + KeysignReviewSheetLayout.sectionSpacing
+        let chrome = KeysignReviewSheetLayout.topInset + KeysignReviewSheetLayout.controlSize + KeysignReviewSheetLayout.sectionSpacing
         if verdict != nil {
             guard verdictHeight > 0 else { return nil }
             return (chrome + verdictHeight + KeysignReviewSheetLayout.verdictBottomInset).rounded(.up)
         }
         guard bodyHeight > 0, footerHeight > 0 else { return nil }
         return (chrome + bodyHeight + KeysignReviewSheetLayout.sectionSpacing + footerHeight + KeysignReviewSheetLayout.bottomInset).rounded(.up)
+    }
+}
+
+extension KeysignReviewSheet where HeaderAccessory == EmptyView {
+    init(
+        title: String,
+        scanRing: KeysignReviewScanRing,
+        verdict: KeysignReviewVerdict? = nil,
+        onClose: @escaping () -> Void,
+        bodyScrolls: Bool = true,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder footer: @escaping () -> Footer
+    ) {
+        self.init(
+            title: title,
+            scanRing: scanRing,
+            verdict: verdict,
+            onClose: onClose,
+            bodyScrolls: bodyScrolls,
+            content: content,
+            footer: footer,
+            headerAccessory: { EmptyView() }
+        )
     }
 }
 

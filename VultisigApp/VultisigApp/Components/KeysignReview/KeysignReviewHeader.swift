@@ -59,26 +59,33 @@ struct KeysignReviewScanRing: Equatable {
     }
 }
 
-struct KeysignReviewHeader: View {
+struct KeysignReviewHeader<Accessory: View>: View {
     let title: String
     let scanRing: KeysignReviewScanRing
     let onClose: () -> Void
+    /// Shown just before the close button.
+    let accessory: () -> Accessory
 
-    static let controlSize: CGFloat = 32
+    @State private var trailingWidth: CGFloat = KeysignReviewSheetLayout.controlSize
 
     var body: some View {
         HStack(spacing: 0) {
             scanMark
             Spacer(minLength: 8)
-            closeButton
+            HStack(spacing: 8) {
+                accessory()
+                closeButton
+            }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { trailingWidth = $0 }
         }
-        .frame(height: Self.controlSize)
+        .frame(height: KeysignReviewSheetLayout.controlSize)
         .overlay {
+            // Centred on the sheet, so it keeps clear of the wider side.
             Text(title)
                 .keysignReviewText(.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .lineLimit(1)
-                .padding(.horizontal, Self.controlSize + 8)
+                .padding(.horizontal, max(KeysignReviewSheetLayout.controlSize, trailingWidth) + 8)
                 .accessibilityAddTraits(.isHeader)
         }
     }
@@ -88,7 +95,7 @@ struct KeysignReviewHeader: View {
             .resizable()
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(width: 12, height: 14)
-            .frame(width: Self.controlSize, height: Self.controlSize)
+            .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
             .background(Circle().fill(Theme.colors.bgSheetControl))
             .overlay {
                 if let ringColor = scanRing.color {
@@ -105,7 +112,7 @@ struct KeysignReviewHeader: View {
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Theme.colors.textSecondary)
-                .frame(width: Self.controlSize, height: Self.controlSize)
+                .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
                 .background(Circle().fill(Theme.colors.bgSheetControl))
                 .contentShape(Circle())
         }

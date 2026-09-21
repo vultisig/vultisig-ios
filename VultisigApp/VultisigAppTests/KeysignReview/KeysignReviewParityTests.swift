@@ -92,6 +92,57 @@ final class KeysignReviewParityTests: XCTestCase {
         )
     }
 
+    // MARK: - Swap
+
+    func testSwapUncheckedMatchesDesign() throws {
+        try assertReviewParity(swapSheet(isChecked: false, isLimit: true), reference: "review-swap-unchecked", height: 651)
+    }
+
+    func testSwapCheckedMatchesDesign() throws {
+        try assertReviewParity(swapSheet(isChecked: true, isLimit: false), reference: "review-swap-checked", height: 611)
+    }
+
+    /// The design's swap, fees unfolded. The review also keeps what the design
+    /// leaves out and these frames do not show: the payout captions under the
+    /// destination amount and the quote countdown beside the close button.
+    private func swapSheet(isChecked: Bool, isLimit: Bool) -> some View {
+        let summary = SwapReviewSummary(
+            from: .init(logo: "rune", ticker: "RUNE", chainLogo: nil, amount: "1,000.12", fiat: "$1,203.34", caption: nil, footnote: nil),
+            to: .init(logo: "wbtc", ticker: "WBTC", chainLogo: Chain.avalanche.logo, amount: "0.01251", fiat: "$1,203.34", caption: nil, footnote: nil),
+            vaultName: "Main Vault",
+            vaultAddress: "0xF42jf9840fkfjn38fk0dk9Ac5",
+            limitTerms: isLimit ? (targetPrice: "Target Price: 1 BTC = $65,800.13", expiry: "12h") : nil,
+            provider: (name: "THORChain", logo: Chain.thorChain.logo),
+            slippage: "auto".localized,
+            totalFee: "$6.18",
+            feeLines: [
+                .init(label: "Network Fee", value: "0.04103261 RUNE ($0.08)"),
+                .init(label: "Swap Fee (0.5%)", value: "$0.12"),
+                .init(label: "Max. Total Fee", value: "$6.18")
+            ],
+            limitNetworkFee: nil,
+            externalRecipient: nil
+        )
+        let footer = SwapReviewFooter(
+            isAmountCorrect: .constant(isChecked),
+            isFeeCorrect: .constant(isChecked),
+            isApproveCorrect: .constant(false),
+            isApproveRequired: false,
+            isFastVault: true,
+            isSignDisabled: !isChecked,
+            onFastSign: {},
+            onPairedSign: {}
+        )
+        return KeysignReviewSheet(
+            title: "swapOverview".localized,
+            scanRing: KeysignReviewScanRing(.scanned(KeysignReviewScanFixture.result(.noRisk))),
+            onClose: {},
+            bodyScrolls: false,
+            content: { SwapReviewSummaryView(summary: summary, scannerState: .idle) },
+            footer: { footer }
+        )
+    }
+
     // MARK: - Verdict
 
     private func verdictSheet(title: String, result: SecurityScannerResult) -> some View {
