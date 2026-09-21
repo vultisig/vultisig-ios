@@ -115,6 +115,12 @@ class TransactionHistoryViewModel: ObservableObject {
         loadLimitOrders()
     }
 
+    /// Re-read the rows after a swap tracker wrote an outcome. Same rule as
+    /// `reloadAfterLimitOrderChange`: no polling side effects.
+    func reloadAfterSwapTrackingChange() {
+        fetchRows()
+    }
+
     private func fetchRows() {
         do {
             if let chain = chainFilter {

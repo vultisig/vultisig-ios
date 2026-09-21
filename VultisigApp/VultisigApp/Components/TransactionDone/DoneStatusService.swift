@@ -56,4 +56,6 @@ final class DoneStatusService: ObservableObject {
     func stop() {
         poller.stop()
     }
+
+    var pollerForTesting: any DoneStatusPoller { poller }
 }

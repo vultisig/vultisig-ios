@@ -78,9 +78,9 @@ final class TransactionHistoryRecorder {
     /// only learn their tracking identifiers later (SwapKit, whose `attach`
     /// closure fires on done-screen appear) pass `nil` here and call
     /// `attachSwapTracking` afterwards. Providers that already know them at
-    /// record time (THORChain limit orders) MUST pass them here instead: a
-    /// row that is saved untracked and only tracked by a second save has a
-    /// window where a failure leaves it permanently untracked — and an
+    /// record time (THORChain limit orders, native swaps) MUST pass them here
+    /// instead: a row that is saved untracked and only tracked by a second save
+    /// has a window where a failure leaves it permanently untracked — and an
     /// untracked limit row is exactly the row the native poller marks
     /// Successful while it is still resting.
     ///
@@ -159,6 +159,32 @@ final class TransactionHistoryRecorder {
     /// makes the mismatch unrepresentable.
     private static func rowType(for swapTracking: SwapTrackingMetadataData?) -> TransactionHistoryType {
         swapTracking?.providerKind == THORChainLimitTrackingService.providerKind ? .limit : .swap
+    }
+
+    /// The tracking metadata a co-signed swap row is recorded with.
+    ///
+    /// A co-signer never sees the initiator's `SwapTransaction`, so the memo is
+    /// the only thing telling it this swap row is a resting limit order rather
+    /// than a market swap. Without this, the co-signing device runs the native
+    /// poller against the row and reports the order Successful on inbound
+    /// confirmation — the same lie, just on the other device. The same goes
+    /// for a native market swap the protocol later refunds.
+    ///
+    /// Only ERC20-source limit orders reach here (they ride a `swapPayload` for
+    /// the router's `depositWithExpiry`). Native sources carry no swap payload
+    /// and take the limit-order branch of `recordFromKeysignPayload`.
+    static func swapTracking(for keysignPayload: KeysignPayload, txHash: String) -> SwapTrackingMetadataData? {
+        if isLimitSwapMemo(keysignPayload.memo) {
+            return THORChainLimitTrackingService.metadata(
+                broadcastHash: txHash,
+                sourceChain: keysignPayload.coin.chain
+            )
+        }
+        return NativeSwapTrackingService.metadata(
+            broadcastHash: txHash,
+            payload: keysignPayload.swapPayload,
+            memo: keysignPayload.memo
+        )
     }
 
     // MARK: - Record a native-source limit order (co-signer path)
@@ -444,23 +470,7 @@ final class TransactionHistoryRecorder {
                 chain: keysignPayload.coin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash),
                 provider: swapPayload.providerName,
-                // A co-signer never sees the initiator's `SwapTransaction`, so
-                // the memo is the only thing telling it this swap row is a
-                // resting limit order rather than a market swap. Without this,
-                // the co-signing device runs the native poller against the row
-                // and reports the order Successful on inbound confirmation —
-                // the same lie, just on the other device.
-                //
-                // Only ERC20-source limit orders reach this branch (they ride a
-                // `swapPayload` for the router's `depositWithExpiry`). Native
-                // sources carry no swap payload and take the limit-order
-                // branch below.
-                swapTracking: isLimitSwapMemo(keysignPayload.memo)
-                    ? THORChainLimitTrackingService.metadata(
-                        broadcastHash: txHash,
-                        sourceChain: keysignPayload.coin.chain
-                    )
-                    : nil
+                swapTracking: Self.swapTracking(for: keysignPayload, txHash: txHash)
             )
         } else if isLimitSwapMemo(keysignPayload.memo) {
             // Native-source limit order: no swap payload, so the `=<` memo is
