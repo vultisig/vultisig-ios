@@ -36,6 +36,12 @@ struct TransactionHistoryDetailSheet: View {
     /// would look like the tap did nothing until the sheet was dismissed. The
     /// presenting screen dismisses first, then navigates.
     var onCancelOrder: ((LimitOrderDetails) -> Void)?
+    /// The pair a failed swap can be tried again on, resolved by the presenting
+    /// screen against the vault's current coins. `nil` hides Try again.
+    var tryAgainPair: SwapTryAgainPair?
+    /// Invoked when the user taps Try again. A callback for the same reason as
+    /// `onCancelOrder`: the presenting screen dismisses, then navigates.
+    var onTryAgain: ((SwapTryAgainPair) -> Void)?
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -78,6 +84,7 @@ struct TransactionHistoryDetailSheet: View {
                     fromToCards
                 }
                 detailRows
+                tryAgainButton
                 actionButtons
                 cancelOrderButton
                 cancelTransactionButton
@@ -521,6 +528,19 @@ struct TransactionHistoryDetailSheet: View {
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.vertical, 16)
+    }
+
+    // MARK: - Try Again
+
+    /// Full width, directly above the explorer button, on a failed market swap
+    /// whose pair the vault still holds.
+    @ViewBuilder
+    private var tryAgainButton: some View {
+        if SwapTryAgain.isOffered(for: transaction), let pair = tryAgainPair, let onTryAgain {
+            PrimaryButton(title: "tryAgain") {
+                onTryAgain(pair)
+            }
+        }
     }
 
     // MARK: - Explorer Button
