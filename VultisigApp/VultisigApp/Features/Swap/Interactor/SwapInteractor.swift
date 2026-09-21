@@ -10,6 +10,11 @@
 import BigInt
 import Foundation
 
+/// Main-actor isolated: the swap view models call it with SwiftData `Coin` and
+/// `Vault` models. The quote, chain-specific and payload builders that
+/// `DefaultSwapInteractor` awaits are nonisolated, so that work still runs off
+/// the main actor.
+@MainActor
 protocol SwapInteractor {
     /// Aggregator quote fetch + discount-tier resolution. Returns nil when there's no
     /// amount to quote; throws `SwapCryptoLogic.Errors.sameAsset` when from/to coins match.

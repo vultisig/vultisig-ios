@@ -21,7 +21,9 @@ struct DefaultSwapInteractor: SwapInteractor {
     var thorchainService: ThorchainService = .shared
     var mayachainService: MayachainService = .shared
 
-    static var live: SwapInteractor {
+    /// Nonisolated so view models can use it as a default argument; building
+    /// the interactor only stores the shared services.
+    nonisolated static var live: SwapInteractor {
         DefaultSwapInteractor(
             quote: SwapService.shared,
             blockchain: BlockChainService.shared,
