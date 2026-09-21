@@ -8,12 +8,15 @@ import OSLog
 
 @MainActor
 final class TransactionHistoryRecorder {
-    static let shared = TransactionHistoryRecorder()
+    static let shared = TransactionHistoryRecorder(storage: .shared)
 
-    private let storage = TransactionHistoryStorage.shared
+    private let storage: TransactionHistoryStorage
     private let logger = Log.wallet.other
 
-    private init() {}
+    /// Tests inject a storage backed by an in-memory container.
+    init(storage: TransactionHistoryStorage) {
+        self.storage = storage
+    }
 
     // MARK: - Record Send
 
@@ -123,6 +126,9 @@ final class TransactionHistoryRecorder {
             toAmountCrypto: toAmountCrypto,
             toAmountFiat: toAmountFiat,
             swapProvider: provider,
+            fromContractAddress: fromCoin.contractAddress,
+            toChainRawValue: toCoin.chain.rawValue,
+            toContractAddress: toCoin.contractAddress,
             feeCrypto: feeCrypto,
             feeFiat: feeFiat,
             network: chain.name,
@@ -326,10 +332,9 @@ final class TransactionHistoryRecorder {
 
     /// The row a trust-line activation persists.
     ///
-    /// Pure and `static` so the row's CONTENT can be pinned by tests — the
-    /// recorder is a `private init()` singleton writing to SwiftData, so the
-    /// wired path isn't reachable from a unit test. The precedence that reaches
-    /// it is pinned separately by `TransactionHistoryRecording.route(for:)`.
+    /// Pure and `static` so the row's CONTENT can be pinned by tests without a
+    /// store. The precedence that reaches it is pinned separately by
+    /// `TransactionHistoryRecording.route(for:)`.
     static func trustLineActivationRow(
         txHash: String,
         pubKeyECDSA: String,
