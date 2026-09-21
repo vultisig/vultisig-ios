@@ -310,13 +310,13 @@ private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
-        lock.lock()
-        recorded.append(target.baseURL)
-        if case .requestParameters(let body, _) = target.task {
-            bodies.append(body)
+        let next: Outcome? = lock.withLock {
+            recorded.append(target.baseURL)
+            if case .requestParameters(let body, _) = target.task {
+                bodies.append(body)
+            }
+            return outcomes.isEmpty ? nil : outcomes.removeFirst()
         }
-        let next = outcomes.isEmpty ? nil : outcomes.removeFirst()
-        lock.unlock()
 
         switch next {
         case .payload(let data):

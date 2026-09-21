@@ -540,7 +540,7 @@ private final class MockBlockchairService: BlockchairServiceClaimable, @unchecke
     }
 
     func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> QBTCClaimableUtxosResult {
-        lock.lock(); _fetchCallCount += 1; lock.unlock()
+        lock.withLock { _fetchCallCount += 1 }
         let utxos = try await fetchHandler(bitcoinCoin, address)
         return QBTCClaimableUtxosResult(utxos: utxos, btcTipHeight: tipHeight)
     }
@@ -573,17 +573,17 @@ private final class MockQBTCChainService: QBTCChainServiceClaimable, @unchecked 
     }
 
     func filterClaimable(_ utxos: [ClaimableUtxo]) async -> [ClaimableUtxo] {
-        lock.lock(); _filterCallCount += 1; lock.unlock()
+        lock.withLock { _filterCallCount += 1 }
         return await filterHandler(utxos)
     }
 
     func isClaimWithProofDisabled() async throws -> Bool {
-        lock.lock(); _killSwitchCallCount += 1; lock.unlock()
+        lock.withLock { _killSwitchCallCount += 1 }
         return try await killSwitchHandler()
     }
 
     func minUtxoConfirmationBlocks() async throws -> UInt32 {
-        lock.lock(); _minConfirmationsCallCount += 1; lock.unlock()
+        lock.withLock { _minConfirmationsCallCount += 1 }
         return try await minConfirmationsHandler()
     }
 

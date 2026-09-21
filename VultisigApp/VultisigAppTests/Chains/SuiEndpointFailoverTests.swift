@@ -377,10 +377,10 @@ private final class SequencedHTTPClient: HTTPClientProtocol, @unchecked Sendable
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
-        lock.lock()
-        recorded.append(target.baseURL)
-        let next = queue.isEmpty ? nil : queue.removeFirst()
-        lock.unlock()
+        let next: Outcome? = lock.withLock {
+            recorded.append(target.baseURL)
+            return queue.isEmpty ? nil : queue.removeFirst()
+        }
 
         switch next {
         case .payload(let data):
