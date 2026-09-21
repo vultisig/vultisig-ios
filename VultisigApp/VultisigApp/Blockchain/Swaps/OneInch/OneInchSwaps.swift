@@ -12,11 +12,11 @@ import Tss
 
 struct OneInchSwaps {
 
-    func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
+    func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
-            incrementNonce: incrementNonce
+            nonceOffset: nonceOffset
         )
         let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -26,11 +26,11 @@ struct OneInchSwaps {
         return [preSigningOutput.dataHash.hexString]
     }
 
-    func getSignedTransaction(payload: GenericSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
+    func getSignedTransaction(payload: GenericSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], nonceOffset: Int64) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
-            incrementNonce: incrementNonce
+            nonceOffset: nonceOffset
         )
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let transaction = try helper.getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey,
@@ -43,7 +43,7 @@ struct OneInchSwaps {
 
 private extension OneInchSwaps {
 
-    func getPreSignedInputData(quote: EVMQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
+    func getPreSignedInputData(quote: EVMQuote, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> Data {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -81,7 +81,7 @@ private extension OneInchSwaps {
             keysignPayload: keysignPayload,
             gas: effective.gasLimit.magnitude,
             gasPrice: effective.gasPriceWei.magnitude,
-            incrementNonce: incrementNonce
+            nonceOffset: nonceOffset
         )
         return signed
     }

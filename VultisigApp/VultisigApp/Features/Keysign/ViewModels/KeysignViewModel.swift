@@ -747,16 +747,15 @@ class KeysignViewModel: ObservableObject {
 
         if let approvePayload = keysignPayload.approvePayload {
             let swaps = THORChainSwaps()
-            let transaction = try swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
-            signedTransactions.append(transaction)
+            signedTransactions += try swaps.getSignedApproveTransactions(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
         }
 
         if let swapPayload = keysignPayload.swapPayload {
-            let incrementNonce = keysignPayload.approvePayload != nil
+            let nonceOffset = keysignPayload.approveNonceOffset
             switch swapPayload {
             case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
 
             case .generic(let payload):
@@ -766,7 +765,7 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(transaction)
                 default:
                     let swaps = OneInchSwaps()
-                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                     signedTransactions.append(transaction)
                 }
             case .mayachain(let payload):
@@ -774,7 +773,7 @@ class KeysignViewModel: ObservableObject {
                     break
                 }
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
             case .swapkit(let payload):
                 // Dispatch on SwapKit's `meta.txType`. PSBT (BTC), SUI, and

@@ -11,6 +11,7 @@
 
 import BigInt
 import VultisigCommonData
+import WalletCore
 import XCTest
 @testable import VultisigApp
 
@@ -91,6 +92,208 @@ final class ERC20ApproveLegsTests: XCTestCase {
         let encoded = try JSONEncoder().encode(approve(reset: true))
 
         XCTAssertEqual(try JSONDecoder().decode(ERC20ApprovePayload.self, from: encoded), approve(reset: true))
+    }
+
+    // MARK: - Approve legs
+
+    func testWithoutResetBuildsOneApproveAtThePayloadNonce() throws {
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: false),
+            keysignPayload: oneInchApproveSwapPayload(reset: false)
+        )
+
+        XCTAssertEqual(try legs.map(describe), [Leg(nonce: 7, amount: Self.amount)])
+    }
+
+    /// The SDK / Android vector: payload nonce 7 → `approve(0)`@7,
+    /// `approve(amount)`@8, both to the same spender on the same token.
+    func testResetBuildsZeroThenAmountOnConsecutiveNonces() throws {
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: true),
+            keysignPayload: oneInchApproveSwapPayload(reset: true)
+        )
+
+        XCTAssertEqual(try legs.map(describe), [
+            Leg(nonce: 7, amount: 0),
+            Leg(nonce: 8, amount: Self.amount)
+        ])
+        let inputs = try legs.map { try EthereumSigningInput(serializedBytes: $0) }
+        XCTAssertEqual(Set(inputs.map(\.toAddress)), [Self.usdt])
+        XCTAssertEqual(Set(inputs.map(\.transaction.erc20Approve.spender)), [Self.spender])
+    }
+
+    /// Each leg pays with the payload's fee fields, exactly like the single
+    /// approve did.
+    func testEveryApproveLegUsesThePayloadFeeFields() throws {
+        let single = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: false),
+            keysignPayload: oneInchApproveSwapPayload(reset: false)
+        )
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: true),
+            keysignPayload: oneInchApproveSwapPayload(reset: true)
+        )
+        let reference = try EthereumSigningInput(serializedBytes: XCTUnwrap(single.first))
+
+        for leg in legs {
+            let input = try EthereumSigningInput(serializedBytes: leg)
+            XCTAssertEqual(input.chainID, reference.chainID)
+            XCTAssertEqual(input.txMode, reference.txMode)
+            XCTAssertEqual(input.gasLimit, reference.gasLimit)
+            XCTAssertEqual(input.maxFeePerGas, reference.maxFeePerGas)
+            XCTAssertEqual(input.maxInclusionFeePerGas, reference.maxInclusionFeePerGas)
+        }
+    }
+
+    /// iOS writes the zero amount as empty bytes where Android writes `[0x00]`.
+    /// Both have to hash to the same `approve(spender, 0)`: the calldata is the
+    /// selector, the spender word and a zero word, built here by hand.
+    func testZeroApproveHashesTheSameAsHandBuiltCalldata() throws {
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: true),
+            keysignPayload: oneInchApproveSwapPayload(reset: true)
+        )
+        let reset = try EthereumSigningInput(serializedBytes: XCTUnwrap(legs.first))
+        XCTAssertEqual(reset.transaction.erc20Approve.amount, Data())
+
+        var androidEncoding = reset
+        androidEncoding.transaction.erc20Approve.amount = Data([0x00])
+
+        let spenderWord = Data(repeating: 0, count: 12) + (try XCTUnwrap(Data(hexString: Self.spender.stripHexPrefix())))
+        let calldata = try XCTUnwrap(Data(hexString: "095ea7b3")) + spenderWord + Data(repeating: 0, count: 32)
+        var handBuilt = reset
+        handBuilt.transaction = .with {
+            $0.contractGeneric = .with {
+                $0.amount = Data()
+                $0.data = calldata
+            }
+        }
+
+        let resetHash = try preImageHash(reset)
+        XCTAssertEqual(try preImageHash(androidEncoding), resetHash)
+        XCTAssertEqual(try preImageHash(handBuilt), resetHash)
+    }
+
+    /// Control for the check above: the same hand-built calldata with the
+    /// amount word filled in matches the `approve(amount)` leg, so the
+    /// construction is sound rather than vacuously equal.
+    func testAmountApproveHashesTheSameAsHandBuiltCalldata() throws {
+        let legs = try THORChainSwaps().getPreSignedApproveInputData(
+            approvePayload: approve(reset: true),
+            keysignPayload: oneInchApproveSwapPayload(reset: true)
+        )
+        let amountLeg = try EthereumSigningInput(serializedBytes: XCTUnwrap(legs.last))
+
+        let spenderWord = Data(repeating: 0, count: 12) + (try XCTUnwrap(Data(hexString: Self.spender.stripHexPrefix())))
+        let amountBytes = Self.amount.magnitude.serialize()
+        let amountWord = Data(repeating: 0, count: 32 - amountBytes.count) + amountBytes
+        let calldata = try XCTUnwrap(Data(hexString: "095ea7b3")) + spenderWord + amountWord
+        var handBuilt = amountLeg
+        handBuilt.transaction = .with {
+            $0.contractGeneric = .with {
+                $0.amount = Data()
+                $0.data = calldata
+            }
+        }
+
+        XCTAssertEqual(try preImageHash(handBuilt), try preImageHash(amountLeg))
+        XCTAssertNotEqual(try preImageHash(handBuilt), try preImageHash(
+            EthereumSigningInput(serializedBytes: XCTUnwrap(legs.first))
+        ))
+    }
+
+    // MARK: - The dependent transaction's nonce
+
+    /// Generic route: the swap signs exactly as it would at payload nonce 9.
+    func testResetMovesTheGenericSwapTwoNoncesOn() throws {
+        let payload = oneInchApproveSwapPayload(reset: true)
+
+        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+
+        XCTAssertEqual(messages.count, 3)
+        XCTAssertEqual(
+            Array(messages.prefix(2)),
+            try THORChainSwaps().getPreSignedApproveImageHash(approvePayload: approve(reset: true), keysignPayload: payload)
+        )
+        let atNine = oneInchApproveSwapPayload(reset: true, nonce: 9)
+        XCTAssertEqual(
+            messages.last,
+            try OneInchSwaps().getPreSignedImageHash(payload: genericSwap(of: atNine), keysignPayload: atNine, nonceOffset: 0).first
+        )
+    }
+
+    func testWithoutResetTheGenericSwapStaysOneNonceOn() throws {
+        let payload = oneInchApproveSwapPayload(reset: false)
+
+        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+
+        XCTAssertEqual(messages.count, 2)
+        let atEight = oneInchApproveSwapPayload(reset: false, nonce: 8)
+        XCTAssertEqual(
+            messages.last,
+            try OneInchSwaps().getPreSignedImageHash(payload: genericSwap(of: atEight), keysignPayload: atEight, nonceOffset: 0).first
+        )
+    }
+
+    /// THORChain-family route (Maya, ERC20 source through the router): the
+    /// deposit signs exactly as it would at payload nonce 9.
+    func testResetMovesTheRouterDepositTwoNoncesOn() throws {
+        let payload = mayaRouterApproveSwapPayload(reset: true)
+
+        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+
+        XCTAssertEqual(messages.count, 3)
+        let atNine = mayaRouterApproveSwapPayload(reset: true, nonce: 9)
+        XCTAssertEqual(
+            messages.last,
+            try THORChainSwaps().getPreSignedImageHash(swapPayload: mayaSwap(of: atNine), keysignPayload: atNine, nonceOffset: 0).first
+        )
+        let depositInput = try EthereumSigningInput(serializedBytes: THORChainSwaps().getPreSignedInputData(
+            swapPayload: mayaSwap(of: payload),
+            keysignPayload: payload,
+            nonceOffset: payload.approveNonceOffset
+        ))
+        XCTAssertEqual(BigUInt(depositInput.nonce), 9)
+    }
+
+    func testApproveNonceOffsetIsTheApproveLegCount() {
+        XCTAssertEqual(oneInchApproveSwapPayload(reset: true).approveNonceOffset, 2)
+        XCTAssertEqual(oneInchApproveSwapPayload(reset: false).approveNonceOffset, 1)
+        XCTAssertEqual(mayaRouterApproveSwapPayload(reset: false, approve: false).approveNonceOffset, 0)
+    }
+
+    /// Regression: a three-leg swap once fell through the dispatcher to the
+    /// per-chain helpers and came back as a plain ERC20 transfer.
+    @MainActor
+    func testThreeLegSwapSignsBothApproveLegsThenTheSwap() throws {
+        let payload = oneInchApproveSwapPayload(reset: true)
+        let signatures = try SigningGoldenSigner.signatures(
+            forImageHashes: KeysignMessageFactory(payload: payload).getKeysignMessages(),
+            curve: .secp256k1
+        )
+        let viewModel = KeysignViewModel()
+        viewModel.signatures = signatures
+
+        let signed = try viewModel.getSignedTransaction(keysignPayload: payload)
+
+        guard case .regularWithApprove(let approves, let transaction) = signed else {
+            return XCTFail("Expected approve legs then the swap, got \(signed)")
+        }
+        let expectedLegs = try THORChainSwaps().getSignedApproveTransactions(
+            approvePayload: approve(reset: true),
+            keysignPayload: payload,
+            signatures: signatures
+        )
+        XCTAssertEqual(approves.map(\.rawTransaction), expectedLegs.map(\.rawTransaction))
+        XCTAssertEqual(approves.count, 2)
+        let expectedSwap = try OneInchSwaps().getSignedTransaction(
+            payload: genericSwap(of: payload),
+            keysignPayload: payload,
+            signatures: signatures,
+            nonceOffset: 2
+        )
+        XCTAssertEqual(transaction.rawTransaction, expectedSwap.rawTransaction)
+        XCTAssertEqual(signed.approveTransactionHash, expectedLegs.last?.transactionHash)
     }
 
     // MARK: - Signed transaction assembly
@@ -223,6 +426,85 @@ final class ERC20ApproveLegsTests: XCTestCase {
             swapPayload: .generic(swap),
             approvePayload: approve(reset: reset)
         )
+    }
+
+    private static let mayaRouter = "0x700E97ef07219440487840Dc472E7120A7FF11F4"
+
+    /// An ERC20 source swapped through the Maya router, which signs through
+    /// the same `THORChainSwaps` leaf as a THORChain EVM swap without the
+    /// factory's THORChain chain-id lookup.
+    private func mayaRouterApproveSwapPayload(reset: Bool, nonce: Int64 = 7, approve withApprove: Bool = true) -> KeysignPayload {
+        let usdt = SigningGoldenFactory.coin(
+            chain: .ethereum, ticker: "USDT", decimals: 6,
+            contractAddress: Self.usdt, isNativeToken: false, curve: .secp256k1
+        )
+        let cacao = SigningGoldenFactory.coin(chain: .mayaChain, ticker: "CACAO", decimals: 10, curve: .secp256k1)
+        let swap = THORChainSwapPayload(
+            fromAddress: usdt.address,
+            fromCoin: usdt,
+            toCoin: cacao,
+            vaultAddress: SigningGoldenFactory.recipient(.ethereum),
+            routerAddress: Self.mayaRouter,
+            fromAmount: Self.amount,
+            toAmountDecimal: 0,
+            toAmountLimit: "0",
+            streamingInterval: "0",
+            streamingQuantity: "0",
+            expirationTime: 1_900_000_000,
+            isAffiliate: false
+        )
+        return SigningGoldenFactory.payload(
+            coin: usdt,
+            toAddress: swap.vaultAddress,
+            toAmount: Self.amount,
+            chainSpecific: .Ethereum(
+                maxFeePerGasWei: BigInt(1_000_000_000),
+                priorityFeeWei: BigInt(100_000_000),
+                nonce: nonce,
+                gasLimit: BigInt(210_000)
+            ),
+            memo: "=:MAYA.CACAO:\(cacao.address)",
+            swapPayload: .mayachain(swap),
+            approvePayload: withApprove ? approve(reset: reset) : nil
+        )
+    }
+
+    private enum FixtureError: Error {
+        case unexpectedSwapPayload
+    }
+
+    private func genericSwap(of payload: KeysignPayload) throws -> GenericSwapPayload {
+        guard case .generic(let swap) = payload.swapPayload else {
+            throw FixtureError.unexpectedSwapPayload
+        }
+        return swap
+    }
+
+    private func mayaSwap(of payload: KeysignPayload) throws -> THORChainSwapPayload {
+        guard case .mayachain(let swap) = payload.swapPayload else {
+            throw FixtureError.unexpectedSwapPayload
+        }
+        return swap
+    }
+
+    private struct Leg: Equatable {
+        let nonce: BigUInt
+        let amount: BigInt
+    }
+
+    private func describe(_ inputData: Data) throws -> Leg {
+        let input = try EthereumSigningInput(serializedBytes: inputData)
+        return Leg(
+            nonce: BigUInt(input.nonce),
+            amount: BigInt(BigUInt(input.transaction.erc20Approve.amount))
+        )
+    }
+
+    private func preImageHash(_ input: EthereumSigningInput) throws -> String {
+        let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: try input.serializedData())
+        let output = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        XCTAssertTrue(output.errorMessage.isEmpty, output.errorMessage)
+        return output.dataHash.hexString
     }
 
     private func fixturePayload(file: String, name: String) throws -> KeysignPayload {

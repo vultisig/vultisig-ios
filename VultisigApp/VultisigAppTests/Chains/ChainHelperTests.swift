@@ -405,19 +405,19 @@ final class ChainHelperTests: XCTestCase {
             let approvalImageHash = try swaps.getPreSignedApproveImageHash(approvePayload: keysignPayload.approvePayload!, keysignPayload: keysignPayload)
             result += approvalImageHash
         }
-        let incrementNonce = keysignPayload.approvePayload != nil
+        let nonceOffset = keysignPayload.approveNonceOffset
         switch keysignPayload.swapPayload {
         case .thorchain(let swapPayload), .thorchainChainnet(let swapPayload), .thorchainStagenet(let swapPayload):
             let swaps = THORChainSwaps()
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
-                                                            incrementNonce: incrementNonce)
+                                                            nonceOffset: nonceOffset)
             result += imageHash
         case .mayachain(let swapPayload):
             let swaps = THORChainSwaps()
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
-                                                            incrementNonce: incrementNonce)
+                                                            nonceOffset: nonceOffset)
             result += imageHash
 
         case .generic(let oneInchSwapPayload):
@@ -427,7 +427,7 @@ final class ChainHelperTests: XCTestCase {
                 result += try swaps.getPreSignedImageHash(swapPayload: oneInchSwapPayload, keysignPayload: keysignPayload)
             default:
                 let swaps = OneInchSwaps()
-                result += try swaps.getPreSignedImageHash(payload: oneInchSwapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+                result += try swaps.getPreSignedImageHash(payload: oneInchSwapPayload, keysignPayload: keysignPayload, nonceOffset: nonceOffset)
             }
         case .swapkit:
             // Phase 2 fixtures don't exercise the SwapKit BTC PSBT signing

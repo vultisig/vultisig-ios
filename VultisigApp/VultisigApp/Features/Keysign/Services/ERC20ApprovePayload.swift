@@ -43,3 +43,11 @@ struct ERC20ApprovePayload: Codable, Hashable {
         self.resetAllowanceFirst = try container.decodeIfPresent(Bool.self, forKey: .resetAllowanceFirst) ?? false
     }
 }
+
+extension KeysignPayload {
+    /// Nonces the approve legs take ahead of the transaction that depends on
+    /// the allowance: 2 with a reset, 1 without, 0 when there is no approve.
+    var approveNonceOffset: Int64 {
+        Int64(approvePayload?.legAmounts.count ?? 0)
+    }
+}
