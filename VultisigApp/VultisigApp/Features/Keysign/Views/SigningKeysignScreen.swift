@@ -10,7 +10,8 @@
 //  `SwapTransaction`) + the view-model (`txid`/`approveTxid`/`keysignPayload`).
 //  Keysign progress -> broadcasted -> pending -> result reads as one
 //  continuous screen instead of a NavigationStack push. The container also
-//  dispatches the pop-to-verify retry (via `KeysignView`'s `onRetry`) and
+//  dispatches the retry (via `KeysignView`'s `onRetry`), which pops back to
+//  the screen that opened the review and reopens the review over it, and
 //  (swap only) `Mediator.shared.stop()` by `SigningTxContext`.
 //
 
@@ -22,6 +23,7 @@ private let logger = Log.keysign.view
 
 struct SigningKeysignScreen: View {
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     let source: KeysignStartInput
     let context: SigningTxContext
@@ -131,6 +133,8 @@ struct SigningKeysignScreen: View {
     // MARK: - Finished / retry handling
 
     private func handleKeysignFinished() {
+        // Done is the end of the flow; there is no review left to retry.
+        reviewPresenter.flowFinished()
         // Diagnostics: the crossfade shows a blank done surface if the ceremony
         // finished without the expected data — log the same nil paths the former
         // done route logged.
@@ -151,20 +155,16 @@ struct SigningKeysignScreen: View {
     }
 
     private func handleRetry(reason: BroadcastRetryReason) {
-        // Thread the reason back into the flow's retry signal so the verify
-        // screen re-surfaces it on reappear, then pop to that verify screen.
+        // Thread the reason back into the flow's retry signal, which the
+        // reopened review shows, then leave the signing screens for the one
+        // that opened the review and bring the review back over it.
         switch context {
         case .send(_, _, let retry), .functionCall(_, _, let retry):
             retry.pendingRetryReason = reason
-            router.navigateBackToKeysignVerify()
         case .swap(_, _, let retry):
             retry.pendingRetryReason = reason
-            // Robust to deep-links that add routes before .root.
-            router.navigateBack { destination in
-                guard let route = destination as? SwapRoute else { return false }
-                if case .verify = route { return true }
-                return false
-            }
         }
+        router.navigateBackOutOfSigning()
+        reviewPresenter.reopenForRetry()
     }
 }

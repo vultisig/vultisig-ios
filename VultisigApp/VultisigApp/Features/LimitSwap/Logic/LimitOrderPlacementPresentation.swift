@@ -5,7 +5,7 @@
 //  How a limit-order PLACEMENT is presented to a CO-SIGNER, derived from the
 //  `=<:` memo alone.
 //
-//  The initiator's placement Verify (`SwapVerifyScreen`, `isLimit` branch) reads
+//  The initiator's swap review (`SwapReviewSummary`, `isLimit` branch) reads
 //  the live `SwapTransaction.limitContext` to show a limit-specific title, the
 //  from → minimum-payout pair, the target price and the expiry. A co-signing
 //  device has none of that: it holds only a `KeysignPayload`, whose `=<:` memo is

@@ -12,9 +12,8 @@
 //
 
 enum FunctionTransactionRoute: Hashable {
-    case verify(tx: SendTransaction, vault: Vault)
-    // pair → keysign → done live on the shared `SigningRoute`; verify
-    // navigates into it (reusing the Send-family keysign/done screens).
+    // The review is a sheet over the form (`KeysignReview.functionTransaction`),
+    // and pair → keysign → done live on the shared `SigningRoute`.
     case functionTransaction(vault: Vault, transactionType: FunctionTransactionType)
 
     /// Where a descriptor goes. The one place a `FunctionActionDescriptor`

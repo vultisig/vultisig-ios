@@ -16,13 +16,6 @@ struct SendRouter {
         switch route {
         case .details(let seed):
             viewBuilder.buildDetailsScreen(seed: seed)
-        case .verify(let tx, let retrySignal, let vault, let prebuiltKeysignPayload):
-            viewBuilder.buildVerifyScreen(
-                tx: tx,
-                retrySignal: retrySignal,
-                vault: vault,
-                prebuiltKeysignPayload: prebuiltKeysignPayload
-            )
         }
     }
 }

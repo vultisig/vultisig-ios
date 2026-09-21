@@ -41,6 +41,32 @@ final class KeysignReviewParityTests: XCTestCase {
         )
     }
 
+    func testSwapVerdictMediumMatchesDesign() throws {
+        let result = KeysignReviewScanFixture.result(
+            .medium,
+            description: "This transaction involves a malicious address. Interacting with it may compromise your assets. Proceed only if you are certain."
+        )
+        try assertReviewParity(
+            verdictSheet(title: "swapOverview".localized, result: result),
+            reference: "review-swap-verdict-medium",
+            height: 411
+        )
+    }
+
+    func testSwapVerdictMaliciousMatchesDesign() throws {
+        let result = KeysignReviewScanFixture.result(
+            .critical,
+            description: "[TOKEN] has been flagged as malicious by Blockaid. Interacting with it may compromise your assets. Proceed only if you are certain."
+        )
+        // The same two-line risk title as the send verdict above.
+        try assertReviewParity(
+            verdictSheet(title: "swapOverview".localized, result: result),
+            reference: "review-swap-verdict-malicious",
+            height: 383,
+            perceptualThreshold: 0.93
+        )
+    }
+
     // MARK: - Send
 
     func testSendUncheckedMatchesDesign() throws {
