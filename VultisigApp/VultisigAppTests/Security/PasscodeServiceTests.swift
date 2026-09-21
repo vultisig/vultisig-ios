@@ -1458,10 +1458,13 @@ private final class HookedKeyshareSweeper: KeyshareSweeping {
 /// A key store whose wrapper reads are scripted call by call, so a Keychain that
 /// answers differently either side of a verification can be reproduced. `nil`
 /// means "delegate", and anything past the end of the script delegates too.
-private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring {
+///
+/// `@unchecked Sendable`: `readCount` is only touched while holding `lock`.
+private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring, @unchecked Sendable {
 
     private let wrapped: KeyshareKeyStoring
     private let reads: [KeychainReadResult<Data>?]
+    private let lock = NSLock()
     private var readCount = 0
 
     init(wrapping wrapped: KeyshareKeyStoring, reads: [KeychainReadResult<Data>?]) {
@@ -1470,8 +1473,12 @@ private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring {
     }
 
     func loadWrappedDataKey() -> KeychainReadResult<Data> {
-        defer { readCount += 1 }
-        guard readCount < reads.count, let scripted = reads[readCount] else {
+        lock.lock()
+        let index = readCount
+        readCount += 1
+        lock.unlock()
+
+        guard index < reads.count, let scripted = reads[index] else {
             return wrapped.loadWrappedDataKey()
         }
         return scripted
@@ -1499,12 +1506,16 @@ private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring {
 /// happens before it verifies anything, so a hook there lands in the window
 /// between the transition starting and the verification taking its own view of
 /// the session.
-private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
+///
+/// `@unchecked Sendable`: `didLoad` is only touched while holding `lock`, and
+/// each hook runs on whichever thread reaches it.
+private final class HookedKeyshareKeyStore: KeyshareKeyStoring, @unchecked Sendable {
 
     private let wrapped: KeyshareKeyStoring
     private let duringWrap: @MainActor () throws -> Void
     private let duringFirstLoad: () -> Void
     private let duringUnwrap: @MainActor () async throws -> Void
+    private let lock = NSLock()
     private var didLoad = false
 
     /// Every hook is passed by label. A trailing closure here is ambiguous to
@@ -1527,8 +1538,14 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
     func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
 
     func loadWrappedDataKey() -> KeychainReadResult<Data> {
-        if !didLoad {
-            didLoad = true
+        // The hook runs outside the lock, which is not recursive: a hook that
+        // reads the store again would otherwise deadlock.
+        lock.lock()
+        let isFirstLoad = !didLoad
+        didLoad = true
+        lock.unlock()
+
+        if isFirstLoad {
             duringFirstLoad()
         }
         return wrapped.loadWrappedDataKey()
