@@ -47,7 +47,7 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
 
     private let httpClient: HTTPClientProtocol
     private let sourceStatus: TransactionStatusChecking
-    private let storage: SwapTrackingStorage
+    private let storage: NativeSwapTrackingStorage
     private let clock: () -> Date
     private let logger = Log.swap.other
     private var isActive = true
@@ -60,7 +60,7 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
     init(
         httpClient: HTTPClientProtocol,
         sourceStatus: TransactionStatusChecking,
-        storage: SwapTrackingStorage,
+        storage: NativeSwapTrackingStorage,
         clock: @escaping () -> Date = Date.init
     ) {
         self.httpClient = httpClient
@@ -231,6 +231,18 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         // An in-flight answer repeats every poll during a streaming swap; only a
         // change is worth a write.
         if row.swapTracking?.latestTrackingStatus != status {
+            // Stored before the status that makes it visible, and the status
+            // waits for it: a terminal status ends polling, so a reason not
+            // stored by then never would be. A refund stores none: History
+            // words it from the status, in the reader's locale.
+            if uiStatus == .failed, let reason = observation.failureReason {
+                do {
+                    try storage.updateErrorMessage(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA, errorMessage: reason)
+                } catch {
+                    logger.error("[NATIVESWAP] Failed to persist the failure reason for \(tx.txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    return .answered
+                }
+            }
             do {
                 try storage.updateSwapTrackingStatus(
                     txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA,
@@ -516,6 +528,17 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         var task: Task<Void, Never>?
     }
 }
+
+// MARK: - Storage
+
+/// The shared tracking writes plus the chain's reason for a failure, which
+/// History shows after a reload.
+@MainActor
+protocol NativeSwapTrackingStorage: SwapTrackingStorage {
+    func updateErrorMessage(txHash: String, pubKeyECDSA: String, errorMessage: String) throws
+}
+
+extension TransactionHistoryStorage: NativeSwapTrackingStorage {}
 
 // MARK: - Which swaps are tracked
 

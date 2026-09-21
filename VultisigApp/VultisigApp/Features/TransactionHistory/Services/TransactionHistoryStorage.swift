@@ -253,6 +253,19 @@ final class TransactionHistoryStorage {
         try modelContext.save()
     }
 
+    /// Store the chain's own reason for a failure a tracking service observed,
+    /// so History can show it after a reload. Status is left to
+    /// `updateSwapTrackingStatus`.
+    func updateErrorMessage(txHash: String, pubKeyECDSA: String, errorMessage: String) throws {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
+        }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        guard let item = try modelContext.fetch(descriptor).first else { return }
+        item.errorMessage = errorMessage
+        try modelContext.save()
+    }
+
     /// Stamp `lastPolledAt` without changing status. Used after transient
     /// failures (5xx / network errors) so the backoff scheduler can compute
     /// the next wake-up from a stable timestamp.

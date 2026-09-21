@@ -146,6 +146,7 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
                 XCTAssertEqual(result, .answered)
                 XCTAssertEqual(nodeRequests.count, 1)
                 XCTAssertEqual(storage.statuses, ["failed"])
+                XCTAssertEqual(storage.errorMessages, ["fail to swap: insufficient funds"])
                 XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .failed)
                 XCTAssertEqual(service.failureReasonByTxHash[tx.txHash], "fail to swap: insufficient funds")
             }
@@ -397,14 +398,19 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
     /// Through the real storage: the History row ends `.error` on a refund or a
     /// failure and `.successful` only on the payout, and a terminal row leaves
     /// the in-flight set the tracker resumes from.
+    /// A failure also keeps the chain's reason on the row, so History still
+    /// shows it after a reload; a refund stores none (History words it from the
+    /// status).
     func testStoredRowEndsAsAnErrorOnRefundAndFailureAndSucceedsOnlyOnPayout() async throws {
-        let cases: [(Data, NativeSwapSourceChecker, TransactionHistoryStatus, SwapTrackingUiStatus)] = [
-            (Self.response([Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded),
-            (Self.response([Self.action(), Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded),
-            (Self.response([]), NativeSwapSourceChecker(status: .failed(reason: "reverted")), .error, .failed),
-            (Self.response([Self.action()]), NativeSwapSourceChecker(), .successful, .completed)
+        let failedAction = Self.action(type: "failed", out: [], metadata: ["failed": ["reason": "swap halted"]])
+        let cases: [(Data, NativeSwapSourceChecker, TransactionHistoryStatus, SwapTrackingUiStatus, String?)] = [
+            (Self.response([Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded, nil),
+            (Self.response([Self.action(), Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded, nil),
+            (Self.response([]), NativeSwapSourceChecker(status: .failed(reason: "reverted")), .error, .failed, "reverted"),
+            (Self.response([failedAction]), NativeSwapSourceChecker(), .error, .failed, "swap halted"),
+            (Self.response([Self.action()]), NativeSwapSourceChecker(), .successful, .completed, nil)
         ]
-        for (payload, source, rowStatus, uiStatus) in cases {
+        for (payload, source, rowStatus, uiStatus, errorMessage) in cases {
             let schema = Schema([TransactionHistoryItem.self, SwapTrackingMetadata.self])
             let container = try ModelContainer(
                 for: schema,
@@ -422,9 +428,56 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
             let stored = try XCTUnwrap(storage.fetchTransaction(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA))
             XCTAssertEqual(stored.status, rowStatus)
             XCTAssertEqual(stored.swapTrackingUiStatus, uiStatus)
+            XCTAssertEqual(stored.errorMessage, errorMessage)
             XCTAssertEqual(stored.type, .swap)
             XCTAssertTrue(try storage.fetchInFlightSwapTracking(providerKind: NativeSwapTrackingService.providerKind).isEmpty)
         }
+    }
+
+    /// A terminal status ends polling, so it must not land without its reason:
+    /// the failure is written only once the reason is, and retried until then.
+    func testFailureWaitsForItsReasonToBeStored() async {
+        let tx = Self.transaction()
+        let storage = NativeSwapStorage(rows: [tx])
+        storage.failsErrorMessageWrite = true
+        let service = NativeSwapTrackingService(
+            httpClient: NativeSwapHTTPClient(payload: Self.response([])),
+            sourceStatus: NativeSwapSourceChecker(status: .failed(reason: "execution reverted")),
+            storage: storage
+        )
+        await service.forceRefresh(tx: tx)
+        XCTAssertTrue(storage.statuses.isEmpty)
+        XCTAssertNil(service.uiStatusByTxHash[tx.txHash])
+
+        storage.failsErrorMessageWrite = false
+        await service.forceRefresh(tx: tx)
+        XCTAssertEqual(storage.errorMessages, ["execution reverted"])
+        XCTAssertEqual(storage.statuses, ["failed"])
+    }
+
+    /// The node's reason for a rejected deposit survives a reload of the row.
+    func testNodeRejectionReasonIsStoredOnTheRow() async throws {
+        let schema = Schema([TransactionHistoryItem.self, SwapTrackingMetadata.self])
+        let container = try ModelContainer(
+            for: schema,
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        )
+        let storage = TransactionHistoryStorage(modelContext: container.mainContext)
+        let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .thorChain)
+        try storage.save(tx)
+        let service = NativeSwapTrackingService(
+            httpClient: NativeSwapHTTPClient(
+                payload: Self.response([]),
+                node: .committed(code: 99, rawLog: " fail to swap: insufficient funds ")
+            ),
+            sourceStatus: NativeSwapSourceChecker(),
+            storage: storage
+        )
+        await service.forceRefresh(tx: tx)
+        let reloaded = try XCTUnwrap(storage.fetchAll(pubKeyECDSA: tx.pubKeyECDSA).first { $0.txHash == tx.txHash })
+        XCTAssertEqual(reloaded.status, .error)
+        XCTAssertEqual(reloaded.errorMessage, "fail to swap: insufficient funds")
+        XCTAssertEqual(TransactionHistoryFailureReasonPresentation.displayText(for: reloaded), "fail to swap: insufficient funds")
     }
 
     // MARK: - SDK golden cases (vultisig-sdk getSwapArrivalStatus/fixtures.json)
@@ -786,10 +839,12 @@ private actor NativeSwapSourceChecker: TransactionStatusChecking {
 }
 
 @MainActor
-private final class NativeSwapStorage: SwapTrackingStorage {
+private final class NativeSwapStorage: NativeSwapTrackingStorage {
     var rows: [TransactionHistoryData]
     var statuses: [String] = []
+    var errorMessages: [String] = []
     var uiStatuses: [SwapTrackingUiStatus] = []
+    var failsErrorMessageWrite = false
 
     init(rows: [TransactionHistoryData]) { self.rows = rows }
 
@@ -820,6 +875,11 @@ private final class NativeSwapStorage: SwapTrackingStorage {
     }
 
     func touchSwapTrackingLastPolled(txHash _: String, pubKeyECDSA _: String, polledAt _: Date) throws {}
+
+    func updateErrorMessage(txHash _: String, pubKeyECDSA _: String, errorMessage: String) throws {
+        if failsErrorMessageWrite { throw URLError(.cannotWriteToFile) }
+        errorMessages.append(errorMessage)
+    }
 }
 
 private extension TransactionHistoryData {
