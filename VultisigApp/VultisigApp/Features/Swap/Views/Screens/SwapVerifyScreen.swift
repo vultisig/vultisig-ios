@@ -342,6 +342,7 @@ struct SwapVerifyScreen: View {
         )
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
+                isPresented: $fastPasswordPresented,
                 password: $fastVaultPassword,
                 vault: vault,
                 onSubmit: { onSignPress() }

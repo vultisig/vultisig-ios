@@ -232,6 +232,7 @@ struct SendVerifyScreen: View {
         )
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
+                isPresented: $fastPasswordPresented,
                 password: $sendCryptoVerifyViewModel.fastVaultPassword,
                 vault: vault,
                 onSubmit: { onSignPress() }

@@ -15,9 +15,14 @@ struct FastVaultEnterPasswordView: View {
     @State var errorMessage: String? = nil
     @State var showHint: Bool = false
 
+    /// Closing is done by the presenter's flag rather than `@Environment(\.dismiss)`.
+    ///
+    /// Below macOS 26 `crossPlatformSheet` is not a presentation at all — it
+    /// renders this view as a sibling inside the presenter's own `ZStack` — so
+    /// there is nothing there for `dismiss()` to close, and it would reach past
+    /// this view to the enclosing navigation stack instead.
+    @Binding var isPresented: Bool
     @Binding var password: String
-
-    @Environment(\.dismiss) var dismiss
 
     let vault: Vault
     let onSubmit: (() -> Void)?
@@ -102,7 +107,7 @@ struct FastVaultEnterPasswordView: View {
         .presentationBackground(Theme.colors.bgPrimary)
 #else
         .overlay(
-            ToolbarButton(image: .xmark, action: { dismiss() })
+            ToolbarButton(image: .xmark, action: { close() })
                 .padding(.top, 16)
                 .padding(.trailing, 16),
             alignment: .topTrailing
@@ -127,10 +132,16 @@ struct FastVaultEnterPasswordView: View {
         if isValidPassword {
             savePassword()
             onSubmit?()
-            dismiss()
+            close()
         } else {
             errorMessage = NSLocalizedString("incorrectPasswordTryAgain", comment: "")
         }
+    }
+
+    /// Guarded because a caller's `onSubmit` may already have lowered the flag.
+    private func close() {
+        guard isPresented else { return }
+        isPresented = false
     }
 
     func savePassword() {
@@ -155,7 +166,7 @@ struct FastVaultEnterPasswordView: View {
             onSuccess: {
                 password = fastPassword
                 onSubmit?()
-                dismiss()
+                close()
             },
             onError: { error in
                 // Log authentication error - don't fail silently
