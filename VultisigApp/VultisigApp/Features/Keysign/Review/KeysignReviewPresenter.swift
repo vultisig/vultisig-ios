@@ -59,6 +59,12 @@ final class KeysignReviewPresenter {
         presented = nil
     }
 
+    /// Closes the review without signing, as its close button does.
+    func dismiss() {
+        guard presented != nil else { return }
+        presented = nil
+    }
+
     /// Called from the sheet's `onDismiss`. Pushes the queued route, if the
     /// review ended by proceeding rather than by being dismissed.
     func sheetDidDismiss(router: NavigationRouter) {

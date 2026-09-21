@@ -33,7 +33,8 @@ private struct KeysignReviewHost: ViewModifier {
                 onDismiss: sheetDidDismiss,
                 backdrop: .dimOnly
             ) { review in
-                KeysignReviewSheetContent(review: review)
+                KeysignReviewSheetContent(review: review, presentationID: presenter.presentationID)
+                    .id(presenter.presentationID)
             }
             .onChange(of: presenter.isReopenPending) { _, isPending in
                 guard isPending else { return }
@@ -66,10 +67,19 @@ private struct KeysignReviewHost: ViewModifier {
 /// The body of the review sheet, one per flow.
 private struct KeysignReviewSheetContent: View {
     let review: KeysignReview
+    let presentationID: UUID
 
     var body: some View {
         switch review {
-        case .send, .swap, .functionTransaction:
+        case .send(let tx, let retrySignal, let vault, let prebuiltKeysignPayload):
+            SendReviewContent(
+                transaction: tx,
+                retrySignal: retrySignal,
+                vault: vault,
+                prebuiltKeysignPayload: prebuiltKeysignPayload,
+                presentationID: presentationID
+            )
+        case .swap, .functionTransaction:
             EmptyView()
         }
     }

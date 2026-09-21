@@ -29,7 +29,7 @@ struct SendDetailsScreen: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     init(coin: Coin?, viewModel: SendDetailsViewModel, vault: Vault) {
         self._coin = State(initialValue: coin)
@@ -330,12 +330,11 @@ struct SendDetailsScreen: View {
                 await MainActor.run {
                     do {
                         let immutableTx = try viewModel.makeTransaction()
-                        // Release focus before the push: left set, SwiftUI
-                        // restores it when Verify pops and the field comes back
-                        // focused against a layout measured without the
-                        // keyboard.
+                        // Release focus before the review opens, so the
+                        // keyboard is not left up under the sheet and the field
+                        // does not come back focused when it closes.
                         focusedField = nil
-                        router.navigate(to: SendRoute.verify(
+                        reviewPresenter.present(.send(
                             tx: immutableTx,
                             retrySignal: SendRetrySignal(),
                             vault: vault

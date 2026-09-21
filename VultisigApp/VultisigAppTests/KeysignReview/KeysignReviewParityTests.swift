@@ -41,6 +41,59 @@ final class KeysignReviewParityTests: XCTestCase {
         )
     }
 
+    // MARK: - Send
+
+    func testSendUncheckedMatchesDesign() throws {
+        try assertReviewParity(sendSheet(isChecked: false), reference: "review-send-unchecked", height: 622)
+    }
+
+    func testSendCheckedMatchesDesign() throws {
+        try assertReviewParity(sendSheet(isChecked: true), reference: "review-send-checked", height: 622)
+    }
+
+    /// The design's send: no fiat line under the amount (the review shows one
+    /// when a price is known) and a fast vault's two sign buttons.
+    private func sendSheet(isChecked: Bool) -> some View {
+        let summary = SendCryptoVerifySummary(
+            fromName: "Main Vault",
+            fromAddress: "0xF43jf9840fkfjn38fk0dk9Ac5",
+            toAddress: "0xF43jf9840fkfjn38fk0dk9Ac5",
+            network: "THORChain",
+            networkImage: Chain.thorChain.logo,
+            memo: "send:x/tcy:100000000",
+            feeCrypto: "0.04103261 RUNE",
+            feeFiat: "$0.08",
+            coinImage: Chain.bitcoin.logo,
+            amount: "0.025",
+            coinTicker: "BTC"
+        )
+        let footer = sendFooter(isChecked: isChecked)
+        return KeysignReviewSheet(
+            title: "sendOverview".localized,
+            scanRing: .hidden,
+            onClose: {},
+            bodyScrolls: false,
+            content: { SendReviewSummaryView(input: summary, scannerState: .idle) },
+            footer: { footer }
+        )
+    }
+
+    private func sendFooter(isChecked: Bool) -> some View {
+        SendReviewFooter(
+            isAmountCorrect: .constant(isChecked),
+            isAddressCorrect: .constant(isChecked),
+            isApproveCorrect: .constant(false),
+            isRippleTrustSet: false,
+            isApproveRequired: false,
+            isFastVault: true,
+            isSignDisabled: !isChecked,
+            onFastSign: {},
+            onPairedSign: {}
+        )
+    }
+
+    // MARK: - Verdict
+
     private func verdictSheet(title: String, result: SecurityScannerResult) -> some View {
         KeysignReviewSheet(
             title: title,

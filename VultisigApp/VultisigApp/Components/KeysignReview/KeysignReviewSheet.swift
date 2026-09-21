@@ -27,6 +27,9 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
     let scanRing: KeysignReviewScanRing
     let verdict: KeysignReviewVerdict?
     let onClose: () -> Void
+    /// `false` lays the body out in place, for rendering the sheet to an
+    /// image: `ImageRenderer` does not draw scroll views.
+    let bodyScrolls: Bool
     let content: () -> Content
     let footer: () -> Footer
 
@@ -42,6 +45,7 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
         scanRing: KeysignReviewScanRing,
         verdict: KeysignReviewVerdict? = nil,
         onClose: @escaping () -> Void,
+        bodyScrolls: Bool = true,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder footer: @escaping () -> Footer
     ) {
@@ -49,6 +53,7 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
         self.scanRing = scanRing
         self.verdict = verdict
         self.onClose = onClose
+        self.bodyScrolls = bodyScrolls
         self.content = content
         self.footer = footer
     }
@@ -63,13 +68,15 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { verdictHeight = $0 }
                     .transition(.opacity)
             } else {
-                ScrollView {
-                    content()
-                        .frame(maxWidth: .infinity)
-                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { bodyHeight = $0 }
+                Group {
+                    if bodyScrolls {
+                        ScrollView { measuredContent }
+                            .scrollIndicators(.hidden)
+                            .scrollBounceBehavior(.basedOnSize)
+                    } else {
+                        measuredContent
+                    }
                 }
-                .scrollIndicators(.hidden)
-                .scrollBounceBehavior(.basedOnSize)
                 .transition(.opacity)
 
                 footer()
@@ -88,6 +95,12 @@ struct KeysignReviewSheet<Content: View, Footer: View>: View {
             settledHeight = height
         }
         .modifier(KeysignReviewSheetSizing(contentHeight: contentHeight ?? settledHeight))
+    }
+
+    private var measuredContent: some View {
+        content()
+            .frame(maxWidth: .infinity)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { bodyHeight = $0 }
     }
 
     /// Everything the sheet needs to show without scrolling, once measured.

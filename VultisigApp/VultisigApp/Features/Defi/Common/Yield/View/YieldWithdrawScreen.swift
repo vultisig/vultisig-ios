@@ -11,7 +11,7 @@ import SwiftUI
 /// the shared verify screen with a display-only USDC transaction.
 struct YieldWithdrawScreen: View {
     @StateObject private var viewModel: YieldWithdrawViewModel
-    @Environment(\.router) private var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     init(vault: Vault, providerID: DefiYieldProviderID, model: YieldViewModel) {
         _viewModel = StateObject(
@@ -75,8 +75,8 @@ struct YieldWithdrawScreen: View {
               let displayTx = viewModel.displayTransaction(recipient: result.recipient) else { return }
 
         await MainActor.run {
-            router.navigate(
-                to: SendRoute.verify(
+            reviewPresenter.present(
+                .send(
                     tx: displayTx,
                     retrySignal: SendRetrySignal(),
                     vault: viewModel.vault,

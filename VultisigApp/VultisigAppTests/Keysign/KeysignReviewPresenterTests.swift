@@ -87,6 +87,19 @@ final class KeysignReviewPresenterTests: XCTestCase {
         XCTAssertEqual(router.navPath.count, 1)
     }
 
+    func testDismissClosesTheReviewWithoutAPush() {
+        let presenter = KeysignReviewPresenter()
+        let router = NavigationRouter()
+        presenter.present(KeysignReviewFixture.swapReview())
+
+        presenter.dismiss()
+        presenter.sheetDidDismiss(router: router)
+
+        XCTAssertNil(presenter.presented)
+        XCTAssertTrue(router.navPath.isEmpty)
+        XCTAssertFalse(presenter.isPresenting)
+    }
+
     func testDismissWithoutProceedPushesNothing() {
         let presenter = KeysignReviewPresenter()
         let router = NavigationRouter()

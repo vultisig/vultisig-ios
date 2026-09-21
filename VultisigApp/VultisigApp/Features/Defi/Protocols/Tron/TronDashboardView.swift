@@ -14,6 +14,7 @@ struct TronDashboardView: View {
     let onRefresh: () async -> Void  // Callback for refresh
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     @EnvironmentObject var homeViewModel: HomeViewModel
 
     var walletTrxBalance: Decimal {
@@ -326,6 +327,6 @@ struct TronDashboardView: View {
 
     private func onClaim() {
         guard let tx = model.makeClaimTransaction(vault: vault) else { return }
-        router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
+        reviewPresenter.present(.send(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
     }
 }
