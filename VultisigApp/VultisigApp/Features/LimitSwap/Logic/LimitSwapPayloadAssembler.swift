@@ -89,7 +89,9 @@ func shouldBlockRuneDeposit(inbounds: [InboundAddress]) -> Bool {
 ///   vault with the memo in tx `data` / OP_RETURN — `swapPayload`/`approvePayload`
 ///   stay `nil`.
 /// - **ERC20 source:** the router's `depositWithExpiry(vault, asset, amount,
-///   memo, expiry)` call, which first needs `approve(router, amount)`. This
+///   memo, expiry)` call, which first needs `approve(router, amount)` unless
+///   the allowance read on the way into Verify (`approvalDecision`) already
+///   covered it. This
 ///   rides `swapPayload = .thorchain(...)` + `approvePayload`, mirroring the
 ///   market ERC20 THORChain swap exactly (approve + deposit signed in ONE
 ///   ceremony → `.regularWithApprove`); only the memo prefix differs. A token
@@ -128,6 +130,7 @@ func buildLimitSwapKeysignPayload(
     sourceAmount: BigInt,
     memo: String,
     vault: Vault,
+    approvalDecision: ERC20ApprovalDecision?,
     expectedToAmountDecimal: Decimal = 0,
     now: Date = Date()
 ) async throws -> KeysignPayload {
@@ -177,33 +180,7 @@ func buildLimitSwapKeysignPayload(
         }
         toAddress = sourceCoin.address
     } else {
-        // Resolve the inbound chain symbol through the SHARED routing table
-        // (`ThorchainService.getInboundChainName`, also used by the market halt
-        // gate) rather than a duplicate switch, so limit and market can't drift.
-        // A non-routable source — already excluded by the picker — fails loud
-        // rather than resolving to a bogus symbol.
-        guard isThorchainRoutable(chain: sourceCoin.chain) else {
-            throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
-        }
-        let chainSymbol = ThorchainService.getInboundChainName(for: sourceCoin.chain)
-
-        // Live, cache-bypassing inbound fetch. The sign-time halt gate re-checks
-        // halt status against a fresh fetch; the destination address selected
-        // here must come from that same live view, or we could sign to a
-        // vault/router the gate never validated (a stale cached inbound can lag
-        // a vault rotation by up to the 5-minute TTL). Fail closed: on a fetch
-        // error the list is empty and the `first(where:)` below throws.
-        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: true)
-        guard let inbound = inbounds.first(where: { entry in
-            // Missing pause flags read as "not paused" — same convention as
-            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
-            entry.chain.uppercased() == chainSymbol.uppercased()
-            && !entry.halted
-            && !(entry.global_trading_paused ?? false)
-            && !(entry.chain_trading_paused ?? false)
-        }) else {
-            throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
-        }
+        let (inbound, chainSymbol) = try await liveLimitInbound(sourceCoin: sourceCoin)
 
         if sourceCoin.isNativeToken {
             // Native gas asset (ETH / AVAX / BTC / …): deposit straight to the
@@ -213,14 +190,15 @@ func buildLimitSwapKeysignPayload(
         } else {
             // ERC20 source: a THORChain token deposit is the router's
             // `depositWithExpiry(vault, asset, amount, memo, expiry)` call, which
-            // first needs `approve(router, amount)`. Requires a router — without
-            // one the tokens can't be deposited; fail loud rather than fall back
-            // to a plain transfer that strands them.
-            guard let router = inbound.router, !router.isEmpty else {
-                throw LimitSwapAssemblyError.noRouterForTokenSource(chainSymbol)
-            }
+            // first needs `approve(router, amount)` unless the allowance already
+            // covers it. The approval was read on the way into Verify and is not
+            // read again; a router that has changed since refuses it.
+            let router = try limitTokenRouter(inbound: inbound, chainSymbol: chainSymbol)
             toAddress = router
-            approvePayload = ERC20ApprovePayload(amount: sourceAmount, spender: router)
+            approvePayload = try ERC20ApprovalDecision.approvePayload(
+                signing: ERC20ApprovalQuery(coin: sourceCoin, spender: router, amount: sourceAmount),
+                decision: approvalDecision
+            )
             swapPayload = .thorchain(limitThorchainSwapPayload(
                 sourceCoin: sourceCoin,
                 targetCoin: targetCoin,
@@ -252,6 +230,68 @@ func buildLimitSwapKeysignPayload(
         approvePayload: approvePayload,
         vault: vault
     )
+}
+
+/// The live, unpaused inbound row an external-source limit deposit is sent
+/// to, with the chain symbol it was found under.
+@MainActor
+func liveLimitInbound(sourceCoin: Coin) async throws -> (inbound: InboundAddress, chainSymbol: String) {
+    // Resolve the inbound chain symbol through the SHARED routing table
+    // (`ThorchainService.getInboundChainName`, also used by the market halt
+    // gate) rather than a duplicate switch, so limit and market can't drift.
+    // A non-routable source — already excluded by the picker — fails loud
+    // rather than resolving to a bogus symbol.
+    guard isThorchainRoutable(chain: sourceCoin.chain) else {
+        throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
+    }
+    let chainSymbol = ThorchainService.getInboundChainName(for: sourceCoin.chain)
+
+    // Live, cache-bypassing inbound fetch. The sign-time halt gate re-checks
+    // halt status against a fresh fetch; the destination address selected
+    // here must come from that same live view, or we could sign to a
+    // vault/router the gate never validated (a stale cached inbound can lag
+    // a vault rotation by up to the 5-minute TTL). Fail closed: on a fetch
+    // error the list is empty and the `first(where:)` below throws.
+    let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: true)
+    guard let inbound = inbounds.first(where: { entry in
+        // Missing pause flags read as "not paused" — same convention as
+        // `SwapHaltGate.isHalted(chain:in:)` on the market path.
+        entry.chain.uppercased() == chainSymbol.uppercased()
+        && !entry.halted
+        && !(entry.global_trading_paused ?? false)
+        && !(entry.chain_trading_paused ?? false)
+    }) else {
+        throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
+    }
+    return (inbound, chainSymbol)
+}
+
+/// The router an ERC20 limit deposit calls, which is also its approve spender.
+/// Requires a router — without one the tokens can't be deposited; fail loud
+/// rather than fall back to a plain transfer that strands them.
+func limitTokenRouter(inbound: InboundAddress, chainSymbol: String) throws -> String {
+    guard let router = inbound.router, !router.isEmpty else {
+        throw LimitSwapAssemblyError.noRouterForTokenSource(chainSymbol)
+    }
+    return router
+}
+
+/// The spend an ERC20 limit deposit's approve is decided for, read against the
+/// live router on the way into Verify, or nil when the order deposits without
+/// an approve (native RUNE, native gas assets). Mirrors the branches of
+/// `buildLimitSwapKeysignPayload`, which checks the decision against the router
+/// it resolves again at sign time.
+@MainActor
+func limitApprovalQuery(sourceCoin: Coin, sourceAmount: BigInt) async throws -> ERC20ApprovalQuery? {
+    if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin), thorchainChainPrefix(for: sourceCoin.chain) == "THOR" {
+        return nil
+    }
+    guard !sourceCoin.isNativeToken else {
+        return nil
+    }
+    let (inbound, chainSymbol) = try await liveLimitInbound(sourceCoin: sourceCoin)
+    let router = try limitTokenRouter(inbound: inbound, chainSymbol: chainSymbol)
+    return ERC20ApprovalQuery(coin: sourceCoin, spender: router, amount: sourceAmount)
 }
 
 /// Builds the `THORChainSwapPayload` that drives an ERC20 limit deposit's signed

@@ -208,6 +208,35 @@ final class SwapDetailsViewModelTests: XCTestCase {
         return (vm, interactor, vault)
     }
 
+    // MARK: - Hand-off into Verify reads the approval once
+
+    func testContinueCarriesTheApprovalReadAtTheHandOff() async throws {
+        let (vm, interactor, vault) = await makeReadyForm()
+        let query = ERC20ApprovalQuery(chain: .ethereum, token: "0xtoken", owner: "0xowner", spender: "0xrouter", amount: 1)
+        interactor.approvalDecision = ERC20ApprovalDecision(query: query, requirement: .resetThenApprove)
+
+        let prepared = await vm.prepareTransaction(vault: vault)
+        let transaction = try XCTUnwrap(prepared)
+
+        XCTAssertEqual(interactor.resolveApprovalCallCount, 1)
+        XCTAssertEqual(transaction.approvalDecision, interactor.approvalDecision)
+        XCTAssertFalse(vm.isLoadingTransaction)
+    }
+
+    /// A failed read stays on the form with the error shown, exactly like a
+    /// failed quote or fee read, and Continue stays blocked until it is dismissed.
+    func testFailedApprovalReadDoesNotEnterVerify() async {
+        let (vm, interactor, vault) = await makeReadyForm()
+        interactor.approvalError = RpcServiceError.rpcError(code: -32005, message: "rate limit exceeded")
+
+        let transaction = await vm.prepareTransaction(vault: vault)
+
+        XCTAssertNil(transaction, "Verify must not be entered on a guessed approval")
+        XCTAssertNotNil(vm.error)
+        XCTAssertFalse(vm.validateForm(), "The error blocks Continue until dismissed")
+        XCTAssertFalse(vm.isLoadingTransaction)
+    }
+
     // MARK: - Item 1: indicative value is display-only (signing guardrail)
 
     func testValidateFormFailsWhenOnlyIndicativeAmountPresentAndQuoteNil() {
@@ -826,6 +855,9 @@ private final class MockSwapInteractor: SwapInteractor {
     /// While set, `fetchQuote` parks after being counted, so a test can act
     /// mid-flight and then release it.
     var holdFetch = false
+    var approvalDecision: ERC20ApprovalDecision?
+    var approvalError: Error?
+    private(set) var resolveApprovalCallCount = 0
 
     init(quote: SwapQuote?, computeFeeError: Error? = nil) {
         self.stubbedQuote = quote
@@ -881,6 +913,12 @@ private final class MockSwapInteractor: SwapInteractor {
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
         throw CancellationError()
+    }
+
+    func resolveApproval(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalDecision? {
+        resolveApprovalCallCount += 1
+        if let approvalError { throw approvalError }
+        return approvalDecision
     }
 
     func updateBalance(for coin: Coin) async {}

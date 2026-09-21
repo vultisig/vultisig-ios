@@ -59,10 +59,9 @@ final class SwapVerifyViewModel {
     func isValidForm(shouldApprove: Bool) -> Bool {
         // Every order confirms amount + network fee — both checkboxes always
         // render (a limit order surfaces its estimated source-chain fee too). A
-        // bundled ERC20 approve (market OR an ERC20-source limit, whose assembler
-        // attaches `approve(router)`) additionally gates on the approve checkbox.
-        // `shouldApprove` is `transaction.isApproveRequired`, which already
-        // accounts for the limit case.
+        // bundled ERC20 approve additionally gates on the approve checkbox.
+        // `shouldApprove` is `transaction.signsApprove`: the approval decided on
+        // the way into Verify, for market, limit and secured-mint alike.
         if shouldApprove {
             return isAmountCorrect && isFeeCorrect && isApproveCorrect
         }
@@ -175,8 +174,24 @@ final class SwapVerifyViewModel {
             if let chainSpecificError {
                 throw chainSpecificError
             }
+            // A refreshed quote can name a different spender (another route, a
+            // rotated router). The approval shown and signed has to be the one
+            // read for it, so read it again; the same spend keeps its decision.
+            let refreshedSpend = SwapCryptoLogic.approvalQuery(
+                fromCoin: updated.fromCoin,
+                amount: updated.amountInCoinDecimal,
+                quote: updated.quote
+            )
+            let approvalChanged = transaction.mode == .standard && refreshedSpend != transaction.approvalDecision?.query
+            if approvalChanged {
+                updated = updated.with(approvalDecision: try await interactor.resolveApproval(for: updated, vault: vault))
+            }
             transaction = updated
             error = nil
+            if approvalChanged {
+                // Consent given for another spender's approve does not carry over.
+                isApproveCorrect = false
+            }
             if routeWasSubstituted {
                 // The confirmations were given for a route that is now gone.
                 isAmountCorrect = false
@@ -192,7 +207,7 @@ final class SwapVerifyViewModel {
     }
 
     var canStartSigning: Bool {
-        !isLoadingFees && !isPreparingSigning && isValidForm(shouldApprove: transaction.isApproveRequired)
+        !isLoadingFees && !isPreparingSigning && isValidForm(shouldApprove: transaction.signsApprove)
     }
 
     /// A successful preparation holds refresh exclusion until the caller has
@@ -289,6 +304,7 @@ final class SwapVerifyViewModel {
                     sourceAmount: sourceAmount,
                     memo: limitContext.memo,
                     vault: vault,
+                    approvalDecision: transaction.approvalDecision,
                     expectedToAmountDecimal: transaction.toAmountDecimal
                 )
                 let signTimeFee = try await SwapCryptoLogic.thorchainFee(

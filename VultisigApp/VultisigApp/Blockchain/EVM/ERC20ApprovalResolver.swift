@@ -7,7 +7,7 @@ import BigInt
 import Foundation
 
 /// What the ERC-20 approval ahead of a spend has to do.
-enum ERC20ApprovalRequirement: Equatable {
+enum ERC20ApprovalRequirement: Hashable {
     /// The current allowance already covers the amount.
     case notRequired
     /// A single `approve(spender, amount)`.
@@ -31,7 +31,7 @@ enum ERC20ApprovalRequirement: Equatable {
 }
 
 /// `spender` pulling `amount` of `token` from `owner` on `chain`.
-struct ERC20ApprovalQuery: Equatable {
+struct ERC20ApprovalQuery: Hashable {
     let chain: Chain
     let token: String
     let owner: String
@@ -39,8 +39,63 @@ struct ERC20ApprovalQuery: Equatable {
     let amount: BigInt
 }
 
+extension ERC20ApprovalQuery {
+    /// `spender` pulling `amount` of `coin` from the vault address that holds it.
+    init(coin: Coin, spender: String, amount: BigInt) {
+        self.init(chain: coin.chain, token: coin.contractAddress, owner: coin.address, spender: spender, amount: amount)
+    }
+}
+
 protocol ERC20ApprovalResolving {
     func requirement(for query: ERC20ApprovalQuery) async throws -> ERC20ApprovalRequirement
+}
+
+extension ERC20ApprovalResolving {
+    func decision(for query: ERC20ApprovalQuery) async throws -> ERC20ApprovalDecision {
+        ERC20ApprovalDecision(query: query, requirement: try await requirement(for: query))
+    }
+}
+
+/// The approval read once, on the way into Verify, together with the exact
+/// spend it was read for. Verify shows it and signing uses it as is: nothing
+/// reads the allowance again at sign time, so an allowance that changes in
+/// between can still make the approve revert on chain.
+struct ERC20ApprovalDecision: Hashable {
+    let query: ERC20ApprovalQuery
+    let requirement: ERC20ApprovalRequirement
+
+    /// Whether at least one approve transaction is signed ahead of the spend.
+    var signsApprove: Bool {
+        requirement != .notRequired
+    }
+
+    /// The approve payload for the spend about to be signed, taken from the
+    /// decision rather than the chain. `query` is nil when the spend needs no
+    /// approve at all. When it needs one, the decision must have been made for
+    /// exactly this spend (token, owner, spender and amount), or this throws:
+    /// signing an approve decided for another spender, or skipping one because
+    /// of it, is never safe.
+    static func approvePayload(
+        signing query: ERC20ApprovalQuery?,
+        decision: ERC20ApprovalDecision?
+    ) throws -> ERC20ApprovePayload? {
+        guard let query else {
+            return nil
+        }
+        guard let decision, decision.query == query else {
+            throw ERC20ApprovalDecisionError.stale
+        }
+        return decision.requirement.approvePayload(amount: query.amount, spender: query.spender)
+    }
+}
+
+enum ERC20ApprovalDecisionError: LocalizedError {
+    /// The spend being signed is not the one the approval was read for.
+    case stale
+
+    var errorDescription: String? {
+        "swapErrorUnexpectedDescription".localized
+    }
 }
 
 /// Reads the approval a spend needs from the chain. When a non-zero allowance

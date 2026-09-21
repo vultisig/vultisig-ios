@@ -397,7 +397,7 @@ struct SwapVerifyScreen: View {
     }
 
     var showApproveCheckmark: Bool {
-        currentTransaction.isApproveRequired
+        currentTransaction.signsApprove
     }
 
     var separator: some View {

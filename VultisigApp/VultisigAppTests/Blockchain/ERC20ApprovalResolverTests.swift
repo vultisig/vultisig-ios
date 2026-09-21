@@ -232,6 +232,56 @@ final class ERC20ApprovalResolverTests: XCTestCase {
         )
     }
 
+    // MARK: - Decision
+
+    func testDecisionKeepsTheSpendItWasReadFor() async throws {
+        let rpc = ScriptedEVMCalls([.success(.returned(data: Self.word(0)))])
+
+        let decision = try await resolver(rpc).decision(for: Self.query)
+
+        XCTAssertEqual(decision, ERC20ApprovalDecision(query: Self.query, requirement: .approve))
+    }
+
+    func testOnlyNotRequiredSignsNoApprove() {
+        XCTAssertFalse(ERC20ApprovalDecision(query: Self.query, requirement: .notRequired).signsApprove)
+        XCTAssertTrue(ERC20ApprovalDecision(query: Self.query, requirement: .approve).signsApprove)
+        XCTAssertTrue(ERC20ApprovalDecision(query: Self.query, requirement: .resetThenApprove).signsApprove)
+    }
+
+    func testDecisionForTheSpendBeingSignedMapsToItsPayload() throws {
+        let decision = ERC20ApprovalDecision(query: Self.query, requirement: .resetThenApprove)
+
+        XCTAssertEqual(
+            try ERC20ApprovalDecision.approvePayload(signing: Self.query, decision: decision),
+            ERC20ApprovePayload(amount: Self.amount, spender: Self.spender, resetAllowanceFirst: true)
+        )
+    }
+
+    func testSpendWithoutAnApproveNeedsNoDecision() throws {
+        XCTAssertNil(try ERC20ApprovalDecision.approvePayload(signing: nil, decision: nil))
+    }
+
+    func testSpendWithoutADecisionIsRefused() {
+        XCTAssertThrowsError(try ERC20ApprovalDecision.approvePayload(signing: Self.query, decision: nil)) {
+            XCTAssertEqual($0 as? ERC20ApprovalDecisionError, .stale)
+        }
+    }
+
+    func testDecisionForAnyOtherSpendIsRefused() {
+        let decision = ERC20ApprovalDecision(query: Self.query, requirement: .notRequired)
+        let others = [
+            ERC20ApprovalQuery(chain: .ethereum, token: Self.usdt, owner: Self.owner, spender: Self.owner, amount: Self.amount),
+            ERC20ApprovalQuery(chain: .ethereum, token: Self.usdt, owner: Self.owner, spender: Self.spender, amount: Self.amount + 1),
+            ERC20ApprovalQuery(chain: .ethereum, token: Self.spender, owner: Self.owner, spender: Self.spender, amount: Self.amount),
+            ERC20ApprovalQuery(chain: .ethereum, token: Self.usdt, owner: Self.spender, spender: Self.spender, amount: Self.amount),
+            ERC20ApprovalQuery(chain: .arbitrum, token: Self.usdt, owner: Self.owner, spender: Self.spender, amount: Self.amount)
+        ]
+
+        for other in others {
+            XCTAssertThrowsError(try ERC20ApprovalDecision.approvePayload(signing: other, decision: decision), "\(other)")
+        }
+    }
+
     // MARK: - Helpers
 
     private static let query = ERC20ApprovalQuery(chain: .ethereum, token: usdt, owner: owner, spender: spender, amount: amount)

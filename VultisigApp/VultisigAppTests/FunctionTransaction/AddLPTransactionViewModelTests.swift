@@ -47,6 +47,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             AddLPFixture.pool(AddLPFixture.usdcPool)
         ],
         fetch: @escaping ThorchainLPDestinationResolver.InboundAddressFetch = AddLPFixture.healthyFetch,
+        approvalResolver: ERC20ApprovalResolving = StubERC20ApprovalResolver(.approve),
         locale: Locale = Locale(identifier: "en_US")
     ) -> AddLPTransactionViewModel {
         let vault = FunctionActionFixture.makeVault(coins: holdings)
@@ -59,6 +60,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: false,
             resolveInboundAddresses: fetch,
             fetchPools: { pools },
+            approvalResolver: approvalResolver,
             locale: locale
         )
     }
@@ -114,6 +116,75 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         )
         XCTAssertTrue(viewModel.showsApprovalInfo)
         XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.thorAddress)")
+    }
+
+    // MARK: - Continue reads the approval once
+
+    /// An ERC-20 deposit carries the approval read on Continue, for the router
+    /// it deposits through and the exact amount it signs.
+    func testAnERC20DepositCarriesTheApprovalReadOnContinue() async throws {
+        let usdc = AddLPFixture.usdc()
+        let resolver = StubERC20ApprovalResolver(.notRequired)
+        let viewModel = makeChainViewModel(
+            coin: usdc,
+            holdings: [AddLPFixture.ether(), usdc, AddLPFixture.rune()],
+            approvalResolver: resolver
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+        viewModel.select(pool: try pool(AddLPFixture.usdcPool, in: viewModel))
+        viewModel.amountField.value = "10"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        let expected = ERC20ApprovalQuery(
+            chain: .ethereum,
+            token: usdc.contractAddress,
+            owner: "0xsender",
+            spender: AddLPFixture.ethRouter,
+            amount: BigInt(10_000_000)
+        )
+        XCTAssertEqual(resolver.queries, [expected])
+        XCTAssertEqual(builder.approvalDecision, ERC20ApprovalDecision(query: expected, requirement: .notRequired))
+    }
+
+    func testANativeDepositReadsNoApproval() async throws {
+        let ether = AddLPFixture.ether()
+        let viewModel = makeChainViewModel(
+            coin: ether,
+            holdings: [ether, AddLPFixture.usdc(), AddLPFixture.rune()],
+            approvalResolver: UnexpectedERC20ApprovalResolver()
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+        viewModel.select(pool: try pool(AddLPFixture.ethPool, in: viewModel))
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertNil(builder.approvalDecision)
+    }
+
+    /// A failed read keeps the form, says why, and builds nothing for Verify.
+    func testAFailedApprovalReadDoesNotEnterVerify() async throws {
+        let usdc = AddLPFixture.usdc()
+        let failure = RpcServiceError.rpcError(code: -32005, message: "rate limit exceeded")
+        let viewModel = makeChainViewModel(
+            coin: usdc,
+            holdings: [AddLPFixture.ether(), usdc, AddLPFixture.rune()],
+            approvalResolver: StubERC20ApprovalResolver(error: failure)
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+        viewModel.select(pool: try pool(AddLPFixture.usdcPool, in: viewModel))
+        viewModel.amountField.value = "10"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(viewModel.blockingMessage, failure.localizedDescription)
     }
 
     // MARK: - ERC-20 → native
