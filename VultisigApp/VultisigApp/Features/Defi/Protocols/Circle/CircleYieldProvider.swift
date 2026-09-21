@@ -90,17 +90,16 @@ struct CircleYieldProvider: DefiYieldProvider {
 
     // MARK: - Reads
 
+    @MainActor
     func refreshPosition(vault: Vault) async throws -> YieldVaultPosition {
         let (usdcBalance, ethBalance) = try await logic.refresh(vault: vault)
-        try await MainActor.run {
-            try storage.upsert(
-                providerID: id,
-                depositedBalance: usdcBalance,
-                nativeGasBalance: ethBalance,
-                redemptions: [],
-                for: vault
-            )
-        }
+        try storage.upsert(
+            providerID: id,
+            depositedBalance: usdcBalance,
+            nativeGasBalance: ethBalance,
+            redemptions: [],
+            for: vault
+        )
         return YieldVaultPosition(
             depositedBalance: usdcBalance,
             nativeGasBalance: ethBalance,
