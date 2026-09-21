@@ -114,7 +114,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             AddLPFixture.ethVault,
             "the inbound vault is the address the stale native resolution left behind"
         )
-        XCTAssertTrue(viewModel.showsApprovalInfo)
+        XCTAssertEqual(builder.approvalDecision?.query.spender, AddLPFixture.ethRouter, "the router is the spender read")
         XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.thorAddress)")
     }
 
@@ -187,6 +187,46 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.blockingMessage, failure.localizedDescription)
     }
 
+    // MARK: - Verify's two-transaction notice
+
+    /// The notice moved from the form to Verify: it shows only when the
+    /// approval read on Continue signs an approve ahead of the deposit.
+    func testVerifyShowsTheApprovalNoticeOnlyWhenAnApproveIsSigned() throws {
+        let verify = FunctionTransactionVerifyViewModel()
+        let undecided = lpAdd(decided: nil)
+        let query = try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: undecided))
+
+        XCTAssertFalse(verify.showsApprovalNotice(for: undecided))
+        XCTAssertFalse(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .notRequired))))
+        XCTAssertTrue(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .approve))))
+        XCTAssertTrue(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .resetThenApprove))))
+    }
+
+    /// Pricing on the way to Verify copies the transaction; the decision has
+    /// to survive it or signing refuses the deposit.
+    func testTheDecisionSurvivesPricingOnTheWayToVerify() throws {
+        let undecided = lpAdd(decided: nil)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: undecided)),
+            requirement: .approve
+        )
+
+        XCTAssertEqual(lpAdd(decided: decision).copy(gas: 21_000, fee: 42).approvalDecision, decision)
+    }
+
+    private func lpAdd(decided decision: ERC20ApprovalDecision?) -> SendTransaction {
+        var builder = AddLPTransactionBuilder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            poolName: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.thorAddress,
+            sendMaxAmount: false,
+            toAddress: AddLPFixture.ethRouter
+        )
+        builder.approvalDecision = decision
+        return builder.buildSendTransaction(vault: .example)
+    }
+
     // MARK: - ERC-20 → native
 
     /// ⚠️ Open on USDC, pick the `ETH.ETH` pool. The deposit is now a plain
@@ -220,7 +260,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             AddLPFixture.ethRouter,
             "signing a native transfer at the router contract is the bug"
         )
-        XCTAssertFalse(viewModel.showsApprovalInfo, "a native deposit needs no approval")
+        XCTAssertNil(builder.approvalDecision, "a native deposit needs no approval")
     }
 
     // MARK: - Invalidation

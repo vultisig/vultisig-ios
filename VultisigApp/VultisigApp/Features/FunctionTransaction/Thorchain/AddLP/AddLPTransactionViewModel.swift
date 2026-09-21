@@ -67,7 +67,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// The asset being deposited.
     ///
     /// Reassigned when the user picks a different pool. Everything derived from
-    /// it — the destination, the balance ceiling, the approval notice — is
+    /// it — the destination, the balance ceiling, the approval read — is
     /// recomputed rather than remembered, which is the fix this migration
     /// exists for.
     @Published private(set) var coin: Coin
@@ -487,11 +487,6 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     var title: String {
         String(format: "addCoinLP".localized, coin.chain.name)
-    }
-
-    /// The two-transaction notice an ERC-20 deposit needs.
-    var showsApprovalInfo: Bool {
-        destination.requiresApproval
     }
 
     var showAsymmetricDepositInfo: Bool {
