@@ -78,6 +78,15 @@ struct TransactionHistoryScreen: View {
                 viewModel.reloadAfterLimitOrderChange()
             }
         }
+        .onReceive(NativeSwapTrackingService.shared.$uiStatusByTxHash.dropFirst().removeDuplicates()) { _ in
+            // Native swap rows are the tracker's, not the native poller's, so
+            // nothing else tells an open screen a swap paid out or was refunded.
+            // Hopped for the same reason as above: `@Published` emits before
+            // the value it announces is stored.
+            Task { @MainActor in
+                viewModel.reloadAfterSwapTrackingChange()
+            }
+        }
         .crossPlatformSheet(
             item: $viewModel.selectedDetail,
             onDismiss: prepareAndPresentPendingCancel

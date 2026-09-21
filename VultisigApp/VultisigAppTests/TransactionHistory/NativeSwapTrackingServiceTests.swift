@@ -1,3 +1,4 @@
+import SwiftData
 import XCTest
 @testable import VultisigApp
 
@@ -246,6 +247,39 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
         XCTAssertEqual(requests, 3)
         XCTAssertTrue(storage.statuses.isEmpty)
         XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+    }
+
+    /// Through the real storage: the History row ends `.error` on a refund or a
+    /// failure and `.successful` only on the payout, and a terminal row leaves
+    /// the in-flight set the tracker resumes from.
+    func testStoredRowEndsAsAnErrorOnRefundAndFailureAndSucceedsOnlyOnPayout() async throws {
+        let cases: [(Data, NativeSwapSourceChecker, TransactionHistoryStatus, SwapTrackingUiStatus)] = [
+            (Self.response([Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded),
+            (Self.response([Self.action(), Self.action(type: "refund")]), NativeSwapSourceChecker(), .error, .refunded),
+            (Self.response([]), NativeSwapSourceChecker(status: .failed(reason: "reverted")), .error, .failed),
+            (Self.response([Self.action()]), NativeSwapSourceChecker(), .successful, .completed)
+        ]
+        for (payload, source, rowStatus, uiStatus) in cases {
+            let schema = Schema([TransactionHistoryItem.self, SwapTrackingMetadata.self])
+            let container = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+            )
+            let storage = TransactionHistoryStorage(modelContext: container.mainContext)
+            let tx = Self.transaction()
+            try storage.save(tx)
+            let service = NativeSwapTrackingService(
+                httpClient: NativeSwapHTTPClient(payload: payload),
+                sourceStatus: source,
+                storage: storage
+            )
+            await service.forceRefresh(tx: tx)
+            let stored = try XCTUnwrap(storage.fetchTransaction(txHash: tx.txHash, pubKeyECDSA: tx.pubKeyECDSA))
+            XCTAssertEqual(stored.status, rowStatus)
+            XCTAssertEqual(stored.swapTrackingUiStatus, uiStatus)
+            XCTAssertEqual(stored.type, .swap)
+            XCTAssertTrue(try storage.fetchInFlightSwapTracking(providerKind: NativeSwapTrackingService.providerKind).isEmpty)
+        }
     }
 
     // MARK: - SDK golden cases (vultisig-sdk getSwapArrivalStatus/fixtures.json)
