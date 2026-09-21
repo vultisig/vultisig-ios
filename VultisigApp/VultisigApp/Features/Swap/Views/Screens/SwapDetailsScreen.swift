@@ -396,12 +396,12 @@ struct SwapDetailsScreen: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     percentageButtons
 
-                    Spacer()
+                    if KeyboardDoneButton.spacerFitsBesideWideContent {
+                        Spacer()
+                    }
 
-                    Button {
+                    KeyboardDoneButton {
                         hideKeyboard()
-                    } label: {
-                        Text("done".localized)
                     }
                 }
             }
