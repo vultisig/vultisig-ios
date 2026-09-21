@@ -20,7 +20,7 @@ final class LimitChartDisclosureTests: XCTestCase {
 
         private(set) var chartRequests = 0
 
-        func chart(for coin: CoinMeta, range: MarketChartRange, currency: SettingsCurrency) -> MarketChart? {
+        func chart(for _: CoinMeta, range _: MarketChartRange, currency _: SettingsCurrency) -> MarketChart? {
             chartRequests += 1
             return MarketChart(points: (0..<40).map {
                 MarketChartPoint(date: Date(timeIntervalSince1970: Double($0) * 60), price: 100)

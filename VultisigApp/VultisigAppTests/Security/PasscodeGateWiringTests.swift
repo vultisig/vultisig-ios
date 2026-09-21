@@ -1012,13 +1012,13 @@ private final class StubLAContext: LAContext {
 
     override var biometryType: LABiometryType { biometry }
 
-    override func canEvaluatePolicy(_ policy: LAPolicy, error: NSErrorPointer) -> Bool {
+    override func canEvaluatePolicy(_: LAPolicy, error _: NSErrorPointer) -> Bool {
         canEvaluate
     }
 
     override func evaluatePolicy(
-        _ policy: LAPolicy,
-        localizedReason: String,
+        _: LAPolicy,
+        localizedReason _: String,
         reply: @escaping (Bool, Error?) -> Void
     ) {
         capture(reply)

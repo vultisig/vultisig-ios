@@ -32,24 +32,20 @@ extension ViewImageConfig {
 extension UITraitCollection {
 
     static func iPhone16Pro(_ orientation: ViewImageConfig.Orientation) -> UITraitCollection {
-        let base: [UITraitCollection] = [
-            .init(forceTouchCapability: .unavailable),
-            .init(layoutDirection: .leftToRight),
-            .init(preferredContentSizeCategory: .medium),
-            .init(userInterfaceIdiom: .phone),
-            .init(displayScale: 3)
-        ]
-        switch orientation {
-        case .landscape:
-            return .init(traitsFrom: base + [
-                .init(horizontalSizeClass: .regular),
-                .init(verticalSizeClass: .compact)
-            ])
-        case .portrait:
-            return .init(traitsFrom: base + [
-                .init(horizontalSizeClass: .compact),
-                .init(verticalSizeClass: .regular)
-            ])
+        UITraitCollection { traits in
+            traits.forceTouchCapability = .unavailable
+            traits.layoutDirection = .leftToRight
+            traits.preferredContentSizeCategory = .medium
+            traits.userInterfaceIdiom = .phone
+            traits.displayScale = 3
+            switch orientation {
+            case .landscape:
+                traits.horizontalSizeClass = .regular
+                traits.verticalSizeClass = .compact
+            case .portrait:
+                traits.horizontalSizeClass = .compact
+                traits.verticalSizeClass = .regular
+            }
         }
     }
 }
