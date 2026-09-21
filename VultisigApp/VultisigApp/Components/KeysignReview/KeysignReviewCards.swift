@@ -156,8 +156,9 @@ struct KeysignReviewAmountHero: View {
 struct KeysignReviewCoinAmount: View {
     let caption: String?
     let logo: String
+    /// Stands in for the logo when it cannot load.
     let ticker: String
-    let amount: String
+    let amountText: String
     let fiat: String?
 
     var body: some View {
@@ -169,7 +170,7 @@ struct KeysignReviewCoinAmount: View {
             }
             AsyncImageView(logo: logo, size: CGSize(width: 36, height: 36), ticker: ticker, tokenChainLogo: nil)
             VStack(spacing: 0) {
-                Text("\(amount) \(ticker)")
+                Text(amountText)
                     .keysignReviewText(.title2)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)

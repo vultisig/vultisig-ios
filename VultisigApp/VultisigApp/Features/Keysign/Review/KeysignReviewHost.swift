@@ -91,8 +91,8 @@ private struct KeysignReviewSheetContent: View {
                     presentationID: presentationID
                 )
             }
-        case .functionTransaction:
-            EmptyView()
+        case .functionTransaction(let tx, let vault):
+            FunctionTransactionReviewContent(transaction: tx, vault: vault, presentationID: presentationID)
         }
     }
 

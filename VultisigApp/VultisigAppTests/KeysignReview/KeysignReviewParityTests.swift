@@ -143,6 +143,41 @@ final class KeysignReviewParityTests: XCTestCase {
         )
     }
 
+    // MARK: - DeFi
+
+    func testDefiBondMatchesDesign() throws {
+        try assertReviewParity(defiSheet(ticker: "RUNE", logo: "rune"), reference: "review-defi-bond", height: 571)
+    }
+
+    func testDefiStakeMatchesDesign() throws {
+        try assertReviewParity(defiSheet(ticker: "TCY", logo: "tcy"), reference: "review-defi-stake", height: 571)
+    }
+
+    /// The design's bond and stake frames, which differ only in the coin.
+    private func defiSheet(ticker: String, logo: String) -> some View {
+        let summary = FunctionTransactionReviewSummary(
+            hero: .send(title: "Deposit", coin: HeroCoinAmount(amount: "500", ticker: ticker, logo: logo, fiat: "$1,203.34")),
+            vaultName: "Main Vault",
+            vaultAddress: "0xF42jf9840fkfjn38fk0dk9Ac5",
+            rows: [
+                .init(label: "to".localized, value: "thor43jf9840fkfjn38fk0dk9Ac5"),
+                .init(label: "network".localized, value: "THORChain", image: Chain.thorChain.logo),
+                .init(label: "memo".localized, value: "bond:x/tcy:100000000")
+            ],
+            fee: (amount: "0.04103261 RUNE", fiat: "$0.08"),
+            additionalRows: []
+        )
+        let footer = SigningCTAButtons(isFastVault: true, onFastSign: {}, onPairedSign: {})
+        return KeysignReviewSheet(
+            title: "overview".localized,
+            scanRing: .hidden,
+            onClose: {},
+            bodyScrolls: false,
+            content: { FunctionTransactionReviewSummaryView(summary: summary, scannerState: .idle) { EmptyView() } },
+            footer: { footer }
+        )
+    }
+
     // MARK: - Verdict
 
     private func verdictSheet(title: String, result: SecurityScannerResult) -> some View {
