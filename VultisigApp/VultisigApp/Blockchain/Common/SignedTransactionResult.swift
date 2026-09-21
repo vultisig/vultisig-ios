@@ -15,21 +15,25 @@ struct SignedTransactionResult {
 
 enum SignedTransactionType {
     case regular(SignedTransactionResult)
-    case regularWithApprove(approve: SignedTransactionResult, transaction: SignedTransactionResult)
+    /// The ERC20 approve legs in nonce order, then the transaction that spends
+    /// the allowance. With an allowance reset the legs are `approve(0)`, then
+    /// `approve(amount)`.
+    case regularWithApprove(approves: [SignedTransactionResult], transaction: SignedTransactionResult)
 
-    /// NOTE: Approve transaction should be first
+    /// The last result is the transaction and every one before it is an
+    /// approve leg, in nonce order. Only an empty list yields nil, which sends
+    /// the caller on to the per-chain helpers: a signed swap must never be
+    /// re-built there as a plain transfer.
     init?(transactions: [SignedTransactionResult]) {
-        if transactions.count == 2 {
-            self = .regularWithApprove(approve: transactions[0], transaction: transactions[1])
-            return
+        guard let transaction = transactions.last else {
+            return nil
         }
-
-        if transactions.count == 1 {
-            self = .regular(transactions[0])
-            return
+        let approves = Array(transactions.dropLast())
+        if approves.isEmpty {
+            self = .regular(transaction)
+        } else {
+            self = .regularWithApprove(approves: approves, transaction: transaction)
         }
-
-        return nil
     }
 
     var transactionHash: String {
@@ -41,12 +45,14 @@ enum SignedTransactionType {
         }
     }
 
+    /// The approve that grants the allowance: the last leg, `approve(amount)`.
+    /// A preceding `approve(0)` reset is broadcast but never surfaced.
     var approveTransactionHash: String? {
         switch self {
         case .regular:
             return nil
-        case .regularWithApprove(let approve, _):
-            return approve.transactionHash
+        case .regularWithApprove(let approves, _):
+            return approves.last?.transactionHash
         }
     }
 }

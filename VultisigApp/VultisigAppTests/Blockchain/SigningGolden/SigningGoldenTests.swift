@@ -193,14 +193,22 @@ final class SigningGoldenTests: XCTestCase {
                 approveRawTransaction: nil,
                 approveTransactionHash: nil
             )
-        case .regularWithApprove(let approve, let transaction):
+        case .regularWithApprove(let approves, let transaction):
+            // A payload carries at most two approve legs: an optional reset,
+            // then the approve itself. Anything else would not be pinned.
+            guard let approve = approves.last, approves.count <= 2 else {
+                throw SigningGoldenHarnessError.unexpectedApproveLegCount(approves.count)
+            }
+            let reset = approves.count == 2 ? approves.first : nil
             return SigningGolden(
                 imageHashes: hashes,
                 rawTransaction: transaction.rawTransaction,
                 transactionHash: transaction.transactionHash,
                 signature: transaction.signature,
                 approveRawTransaction: approve.rawTransaction,
-                approveTransactionHash: approve.transactionHash
+                approveTransactionHash: approve.transactionHash,
+                resetApproveRawTransaction: reset?.rawTransaction,
+                resetApproveTransactionHash: reset?.transactionHash
             )
         }
     }
@@ -210,9 +218,14 @@ final class SigningGoldenTests: XCTestCase {
         switch type {
         case .regular(let result):
             return "regular|\(result.rawTransaction)|\(result.transactionHash)|\(result.signature ?? "")"
-        case .regularWithApprove(let approve, let transaction):
-            return "approve|\(approve.rawTransaction)|\(approve.transactionHash)|tx|\(transaction.rawTransaction)|\(transaction.transactionHash)"
+        case .regularWithApprove(let approves, let transaction):
+            let legs = approves.map { "approve|\($0.rawTransaction)|\($0.transactionHash)" }
+            return (legs + ["tx|\(transaction.rawTransaction)|\(transaction.transactionHash)"]).joined(separator: "|")
         }
+    }
+
+    private enum SigningGoldenHarnessError: Error {
+        case unexpectedApproveLegCount(Int)
     }
 
     private func makeVault() -> Vault {

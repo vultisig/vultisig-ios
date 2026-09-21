@@ -97,7 +97,7 @@ class EVMHelper {
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
-        incrementNonce: Bool = false) throws -> Data {
+        nonceOffset: Int64 = 0) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
@@ -111,11 +111,9 @@ class EVMHelper {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
 
-        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
-
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
-        input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+        input.nonce = Data(hexString: (nonce + nonceOffset).hexString())!
 
         setGasParameters(
             input: &input,
@@ -135,7 +133,7 @@ class EVMHelper {
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
-        incrementNonce: Bool = false) throws -> Data {
+        nonceOffset: Int64 = 0) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
@@ -166,11 +164,9 @@ class EVMHelper {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
 
-        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
-
         var input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
-            $0.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+            $0.nonce = Data(hexString: (nonce + nonceOffset).hexString())!
             $0.toAddress = thorChainSwapPayload.toAddress
 
         }
