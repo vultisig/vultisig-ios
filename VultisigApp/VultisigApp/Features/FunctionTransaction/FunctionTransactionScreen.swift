@@ -417,4 +417,5 @@ struct FunctionTransactionScreen: View {
         vault: .example,
         transactionType: .bond(coin: .example, node: "test")
     )
+    .environment(KeysignReviewPresenter())
 }

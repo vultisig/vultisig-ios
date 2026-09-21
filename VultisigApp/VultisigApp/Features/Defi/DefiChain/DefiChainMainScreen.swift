@@ -574,4 +574,5 @@ private extension DefiChainMainScreen {
 #Preview {
     DefiChainMainScreen(vault: .example, chain: .thorChain)
         .environmentObject(HomeViewModel())
+        .environment(KeysignReviewPresenter())
 }

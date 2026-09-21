@@ -547,4 +547,5 @@ private extension ChainDetailScreen {
         vault: .example
     )
     .environmentObject(HomeViewModel())
+    .environment(KeysignReviewPresenter())
 }
