@@ -188,21 +188,22 @@ final class TonTransactionStatusProviderTests: XCTestCase {
 /// Minimal stub conforming to `HTTPClientProtocol`. Tests queue either a
 /// pre-built decoded value (returned via the typed `request<T>` overload) or
 /// an error.
-private final class StubHTTPClient: HTTPClientProtocol {
+private final class StubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     private enum Queued {
         case value(Any)
         case error(Error)
     }
 
+    private let lock = NSLock()
     private var pending: Queued?
 
     func queueDecoded<T>(_ value: T) {
-        pending = .value(value)
+        lock.withLock { pending = .value(value) }
     }
 
     func queueError(_ error: Error) {
-        pending = .error(error)
+        lock.withLock { pending = .error(error) }
     }
 
     // Protocol requires `async`; the body is sync. SwiftLint can't see across
@@ -217,13 +218,16 @@ private final class StubHTTPClient: HTTPClientProtocol {
         _: TargetType,
         responseType _: T.Type
     ) async throws -> HTTPResponse<T> {
-        guard let pending else {
+        let queued: Queued? = lock.withLock {
+            defer { pending = nil }
+            return pending
+        }
+        guard let queued else {
             XCTFail("StubHTTPClient called with no queued response")
             throw HTTPError.invalidResponse
         }
-        self.pending = nil
 
-        switch pending {
+        switch queued {
         case .error(let error):
             throw error
         case .value(let raw):

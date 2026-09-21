@@ -218,7 +218,7 @@ final class SolanaBlockhashRefreshTests: XCTestCase {
 
 private extension SolanaBlockhashRefreshTests {
 
-    static let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
+    nonisolated static let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
     static let depositAmount = KaminoTokenAmount(baseUnits: BigInt(10_000_000), decimals: 6)
 
     static var steakhouseVault: KaminoVaultInfo {

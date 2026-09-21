@@ -119,7 +119,7 @@ private actor StubHTTPClient: HTTPClientProtocol {
         self.error = error
     }
 
-    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+    func request(_ target: TargetType) throws -> HTTPResponse<Data> {
         requestCount += 1
         if let error { throw error }
         let data = payload ?? Data()

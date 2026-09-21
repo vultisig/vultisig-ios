@@ -1323,8 +1323,8 @@ extension VSSignDirect: @retroactive Codable {
 
 extension VSSignAmino: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
-        case fee = "fee"
-        case msgs = "msgs"
+        case fee
+        case msgs
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
