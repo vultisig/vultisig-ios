@@ -13,7 +13,8 @@
 //                        section by default; Swap supplies `EmptyView()`
 //                        since the summary card above covers it.
 //    - `bottomBar`     — default = single "Done" CTA; Swap supplies
-//                        "Track" + "Done".
+//                        "Track" + "Done", plus "Try again" once the
+//                        swap has failed. Receives the live status.
 //
 //  Owns the `hashCopied` toast state internally and routes it via the
 //  `notifyHashCopied` environment callback — slot consumers (the hash
@@ -50,7 +51,7 @@ struct DoneScreen<
 
     let tokenContent: () -> TokenContent
     let detailContent: () -> DetailContent
-    let bottomBarContent: () -> BottomBar
+    let bottomBarContent: (TransactionStatus) -> BottomBar
 
     @State private var showAlert = false
 
@@ -87,7 +88,7 @@ struct DoneScreen<
         navigationTitle: String = "done".localized,
         @ViewBuilder tokenContent: @escaping () -> TokenContent,
         @ViewBuilder detailContent: @escaping () -> DetailContent,
-        @ViewBuilder bottomBarContent: @escaping () -> BottomBar
+        @ViewBuilder bottomBarContent: @escaping (TransactionStatus) -> BottomBar
     ) {
         self.input = input
         _statusService = StateObject(wrappedValue: statusService())
@@ -95,6 +96,25 @@ struct DoneScreen<
         self.tokenContent = tokenContent
         self.detailContent = detailContent
         self.bottomBarContent = bottomBarContent
+    }
+
+    /// For a bottom bar that reads the same whatever the status.
+    init(
+        input: TransactionDonePayload,
+        statusService: @autoclosure @escaping () -> DoneStatusService,
+        navigationTitle: String = "done".localized,
+        @ViewBuilder tokenContent: @escaping () -> TokenContent,
+        @ViewBuilder detailContent: @escaping () -> DetailContent,
+        @ViewBuilder bottomBarContent: @escaping () -> BottomBar
+    ) {
+        self.init(
+            input: input,
+            statusService: statusService(),
+            navigationTitle: navigationTitle,
+            tokenContent: tokenContent,
+            detailContent: detailContent,
+            bottomBarContent: { _ in bottomBarContent() }
+        )
     }
 
     var body: some View {
@@ -130,7 +150,7 @@ struct DoneScreen<
                 .scrollIndicators(.hidden)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
 
-                bottomBarContent()
+                bottomBarContent(statusService.status)
                     // Desktop windows have no home-indicator inset. Keep the
                     // footer clear even when its host overrides Screen's padding.
                     .padding(.bottom, isMacOS ? 16 : 0)
