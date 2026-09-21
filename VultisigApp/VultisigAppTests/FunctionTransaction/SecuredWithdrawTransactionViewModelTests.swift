@@ -29,12 +29,12 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
     private static let ethAddress = "0x742d35cc6634c0532925a3b844bc454e4438f44e"
     private static let thorAddress = "thor1prxy0sufdqfve6ygkwu9gswe60cle8gy02ex2w"
 
-    private static let btcDenom = "btc-btc"
+    nonisolated private static let btcDenom = "btc-btc"
     private static let ethDenom = "eth-eth"
 
     /// `(0.0001 BTC × 100_000) × 1.2 ÷ 100_000` — the legacy formula, worked
     /// through in the fiat unit the two sides of the comparison share.
-    private static let btcMinimum = Decimal(string: "0.00012")!
+    nonisolated private static let btcMinimum = Decimal(string: "0.00012")!
     /// `(0.002 ETH × 2_000) × 1.2 ÷ 2_000`.
     private static let ethMinimum = Decimal(string: "0.0024")!
 

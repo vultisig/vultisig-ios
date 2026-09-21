@@ -10,6 +10,7 @@
 //
 
 @testable import VultisigApp
+import os
 import XCTest
 
 @MainActor
@@ -19,17 +20,17 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
 
     /// Real BTC P2WPKH address — 42 chars, `bc1q` prefix. `BtcAddressType.detect`
     /// accepts it so the pipeline doesn't short-circuit on the address-type guard.
-    private static let validP2wpkhAddress = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"
+    nonisolated private static let validP2wpkhAddress = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"
     private static let secondValidAddress = "bc1q34aq5drpuwy3wgl9lhup9892qp6svr8ldzyy7c"
     private static let unsupportedAddress = "tb1qar0srrr7xfkvy5l643lydnw9re59gtzzdejxsv" // testnet
 
-    private static let utxoA = ClaimableUtxo(
+    nonisolated private static let utxoA = ClaimableUtxo(
         txid: String(repeating: "a", count: 64), vout: 0, amount: 75_000_000, blockHeight: 1_000_142
     )
-    private static let utxoB = ClaimableUtxo(
+    nonisolated private static let utxoB = ClaimableUtxo(
         txid: String(repeating: "b", count: 64), vout: 1, amount: 25_000_000, blockHeight: 1_000_038
     )
-    private static let utxoC = ClaimableUtxo(
+    nonisolated private static let utxoC = ClaimableUtxo(
         txid: String(repeating: "c", count: 64), vout: 2, amount: 10_000_000, blockHeight: 1_000_007
     )
 
@@ -335,15 +336,15 @@ final class QBTCClaimEligibilityCheckerTests: XCTestCase {
     func testRecheckAfterCompletion() async {
         let blockchair = MockBlockchairService()
         let chain = MockQBTCChainService()
-        var nextUtxos: [ClaimableUtxo] = [Self.utxoA]
-        blockchair.fetchHandler = { _, _ in nextUtxos }
+        let nextUtxos = OSAllocatedUnfairLock(initialState: [Self.utxoA])
+        blockchair.fetchHandler = { _, _ in nextUtxos.withLock { $0 } }
         let checker = makeChecker(blockchair: blockchair, chain: chain)
 
         await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .eligible(count: 1, totalSats: 75_000_000))
 
         // Simulate the UTXO being spent / claimed between checks.
-        nextUtxos = []
+        nextUtxos.withLock { $0 = [] }
         await checker.check(btcCoin: makeBtcCoin(), vaultPubKeyECDSA: Self.testVaultPubKey)
         XCTAssertEqual(checker.state, .ineligible)
         XCTAssertEqual(blockchair.fetchCallCount, 2)
@@ -540,7 +541,7 @@ private final class MockBlockchairService: BlockchairServiceClaimable, @unchecke
     }
 
     func fetchQBTCClaimableUtxos(bitcoinCoin: CoinMeta, address: String) async throws -> QBTCClaimableUtxosResult {
-        lock.lock(); _fetchCallCount += 1; lock.unlock()
+        lock.withLock { _fetchCallCount += 1 }
         let utxos = try await fetchHandler(bitcoinCoin, address)
         return QBTCClaimableUtxosResult(utxos: utxos, btcTipHeight: tipHeight)
     }
@@ -573,17 +574,17 @@ private final class MockQBTCChainService: QBTCChainServiceClaimable, @unchecked 
     }
 
     func filterClaimable(_ utxos: [ClaimableUtxo]) async -> [ClaimableUtxo] {
-        lock.lock(); _filterCallCount += 1; lock.unlock()
+        lock.withLock { _filterCallCount += 1 }
         return await filterHandler(utxos)
     }
 
     func isClaimWithProofDisabled() async throws -> Bool {
-        lock.lock(); _killSwitchCallCount += 1; lock.unlock()
+        lock.withLock { _killSwitchCallCount += 1 }
         return try await killSwitchHandler()
     }
 
     func minUtxoConfirmationBlocks() async throws -> UInt32 {
-        lock.lock(); _minConfirmationsCallCount += 1; lock.unlock()
+        lock.withLock { _minConfirmationsCallCount += 1 }
         return try await minConfirmationsHandler()
     }
 

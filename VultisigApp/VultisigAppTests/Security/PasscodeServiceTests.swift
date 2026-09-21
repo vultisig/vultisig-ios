@@ -701,7 +701,7 @@ final class PasscodeServiceTests: XCTestCase {
 
         var nested: [PasscodeError?] = []
         var service: PasscodeService!
-        let hooked = HookedKeyshareKeyStore(wrapping: keyStore) {
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore, duringUnwrap: {
             do {
                 try await service.unlockApp(with: self.passcode)
                 nested.append(nil)
@@ -714,7 +714,7 @@ final class PasscodeServiceTests: XCTestCase {
             } catch {
                 nested.append(error as? PasscodeError)
             }
-        }
+        })
         service = makeService(keyStore: hooked)
 
         try await service.unlockApp(with: passcode)
