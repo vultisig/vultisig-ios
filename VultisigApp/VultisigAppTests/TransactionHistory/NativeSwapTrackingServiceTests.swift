@@ -125,6 +125,111 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
         XCTAssertTrue(storage.statuses.isEmpty)
     }
 
+    // MARK: - A deposit Midgard never records
+
+    /// The node rejected the `MsgDeposit` while executing it: committed with a
+    /// non-zero code, never an action. Maya answers a hash it never indexed with
+    /// its unfiltered feed, so that shape must reach the node too.
+    func testRejectedSameNetworkDepositFailsWithTheNodesReason() async {
+        let midgardPages = [Self.response([]), Self.response([Self.action(hash: "OTHER")], count: "1446")]
+        for network in [Chain.thorChain, .mayaChain] {
+            for midgard in midgardPages {
+                let tx = Self.transaction(hash: "ABCDEF", source: network, network: network)
+                let storage = NativeSwapStorage(rows: [tx])
+                let client = NativeSwapHTTPClient(
+                    payload: midgard,
+                    node: .committed(code: 99, rawLog: "  fail to swap: insufficient funds  ")
+                )
+                let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+                let result = await service.refreshForTesting(tx: tx)
+                let nodeRequests = await client.nodeRequests
+                XCTAssertEqual(result, .answered)
+                XCTAssertEqual(nodeRequests.count, 1)
+                XCTAssertEqual(storage.statuses, ["failed"])
+                XCTAssertEqual(service.uiStatusByTxHash[tx.txHash], .failed)
+                XCTAssertEqual(service.failureReasonByTxHash[tx.txHash], "fail to swap: insufficient funds")
+            }
+        }
+    }
+
+    /// Accepted means Midgard will index it; not committed yet is not an answer.
+    func testAcceptedOrUncommittedDepositKeepsWaiting() async {
+        for node in [NodeStub.committed(code: 0, rawLog: ""), .noTxResponse, .notFound] {
+            let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .thorChain)
+            let storage = NativeSwapStorage(rows: [tx])
+            let client = NativeSwapHTTPClient(payload: Self.response([]), node: node)
+            let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+            let result = await service.refreshForTesting(tx: tx)
+            let nodeRequests = await client.nodeRequests
+            XCTAssertEqual(result, .answered, "\(node)")
+            XCTAssertEqual(nodeRequests.count, 1)
+            XCTAssertTrue(storage.statuses.isEmpty)
+        }
+    }
+
+    func testNodeOutageIsNotAVerdict() async {
+        let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .thorChain)
+        let storage = NativeSwapStorage(rows: [tx])
+        let client = NativeSwapHTTPClient(payload: Self.response([]), node: .serverError)
+        let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+        let result = await service.refreshForTesting(tx: tx)
+        XCTAssertEqual(result, .unavailable)
+        XCTAssertTrue(storage.statuses.isEmpty)
+    }
+
+    /// The normal path costs no extra request: the node is asked only when
+    /// Midgard lists nothing for a deposit made on the protocol's own chain.
+    func testNodeIsAskedOnlyWhenMidgardListsNothingForAProtocolChainDeposit() async {
+        let cases: [(Chain, Data, [String])] = [
+            (.thorChain, Self.response([Self.action(status: "pending")]), ["swapping"]),
+            (.thorChain, Self.response([Self.action(status: "unknown")]), []),
+            (.ethereum, Self.response([]), [])
+        ]
+        for (source, midgard, statuses) in cases {
+            let tx = Self.transaction(hash: "ABCDEF", source: source, network: .thorChain)
+            let storage = NativeSwapStorage(rows: [tx])
+            let client = NativeSwapHTTPClient(payload: midgard, node: .committed(code: 99, rawLog: "rejected"))
+            let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+            await service.forceRefresh(tx: tx)
+            let nodeRequests = await client.nodeRequests
+            XCTAssertTrue(nodeRequests.isEmpty, "\(source)")
+            XCTAssertEqual(storage.statuses, statuses)
+        }
+    }
+
+    func testRejectedCrossProtocolDepositFailsWithTheNodesReason() async throws {
+        let thorchainNode = try XCTUnwrap(NativeSwapTrackingService.nodeTransaction(hash: "ABCDEF", chain: .thorChain))
+        let tx = Self.transaction(hash: "ABCDEF", source: .thorChain, network: .mayaChain)
+        let storage = NativeSwapStorage(rows: [tx])
+        let client = NativeSwapHTTPClient(payload: Self.response([]), node: .committed(code: 5, rawLog: "invalid memo"))
+        let service = NativeSwapTrackingService(httpClient: client, sourceStatus: NativeSwapSourceChecker(), storage: storage)
+        await service.forceRefresh(tx: tx)
+        let requestedNetworks = await client.requestedNetworks
+        let nodeRequests = await client.nodeRequests
+        XCTAssertEqual(requestedNetworks, [.thorChain])
+        XCTAssertEqual(nodeRequests, [thorchainNode.baseURL.appendingPathComponent(thorchainNode.path).absoluteString])
+        XCTAssertEqual(storage.statuses, ["failed"])
+        XCTAssertEqual(service.failureReasonByTxHash[tx.txHash], "invalid memo")
+    }
+
+    /// Existing hosts only: the same THORChain and Maya nodes the app already
+    /// talks to, per network.
+    func testNodeTransactionTargetsTheProtocolNetworksNode() throws {
+        let cases: [(Chain, String)] = [
+            (.thorChain, ThorchainMainnetAPI.defaultLCDHost.absoluteString),
+            (.thorChainChainnet, ThorchainStagenetAPI.Environment.chainnet.thornodeHost.absoluteString),
+            (.thorChainStagenet, ThorchainStagenetAPI.Environment.stagenet.thornodeHost.absoluteString),
+            (.mayaChain, MayaChainAPI.defaultHost.absoluteString)
+        ]
+        for (chain, host) in cases {
+            let target = try XCTUnwrap(NativeSwapTrackingService.nodeTransaction(hash: "0xabcdef", chain: chain))
+            XCTAssertEqual(target.baseURL.absoluteString, host)
+            XCTAssertEqual(target.path, "/cosmos/tx/v1beta1/txs/abcdef")
+            XCTAssertEqual(target.method, .get)
+        }
+        XCTAssertNil(NativeSwapTrackingService.nodeTransaction(hash: "abcdef", chain: .bitcoin))
+    }
+
     func testRefreshInvalidatedDuringTheSourceCheckNeverAsksMidgard() async {
         let tx = Self.transaction()
         let storage = NativeSwapStorage(rows: [tx])
@@ -585,9 +690,18 @@ final class NativeSwapTrackingServiceTests: XCTestCase {
     }
 }
 
+/// What the THORChain/Maya node answers for `/cosmos/tx/v1beta1/txs/<hash>`.
+private enum NodeStub {
+    case committed(code: Int, rawLog: String?)
+    case noTxResponse
+    case notFound
+    case serverError
+}
+
 private actor NativeSwapHTTPClient: HTTPClientProtocol {
     private var payload: Data
     private let payloadsByNetwork: [Chain: Data]
+    private let node: NodeStub
     private let fails: Bool
     private let suspended: Bool
     private var continuation: CheckedContinuation<Void, Never>?
@@ -595,10 +709,18 @@ private actor NativeSwapHTTPClient: HTTPClientProtocol {
     private(set) var requestCount = 0
     private(set) var lastRequest: (hash: String, network: Chain)?
     private(set) var requestedNetworks: [Chain] = []
+    private(set) var nodeRequests: [String] = []
 
-    init(payload: Data, payloadsByNetwork: [Chain: Data] = [:], fails: Bool = false, suspended: Bool = false) {
+    init(
+        payload: Data,
+        payloadsByNetwork: [Chain: Data] = [:],
+        node: NodeStub = .notFound,
+        fails: Bool = false,
+        suspended: Bool = false
+    ) {
         self.payload = payload
         self.payloadsByNetwork = payloadsByNetwork
+        self.node = node
         self.fails = fails
         self.suspended = suspended
     }
@@ -611,6 +733,20 @@ private actor NativeSwapHTTPClient: HTTPClientProtocol {
             lastRequest = (hash, chain)
             requestedNetworks.append(chain)
             body = payloadsByNetwork[chain] ?? payload
+        } else {
+            nodeRequests.append(target.baseURL.appendingPathComponent(target.path).absoluteString)
+            switch node {
+            case let .committed(code, rawLog):
+                var result: [String: Any] = ["code": code, "height": "1"]
+                result["raw_log"] = rawLog
+                body = try JSONSerialization.data(withJSONObject: ["tx_response": result])
+            case .noTxResponse:
+                body = Data("{}".utf8)
+            case .notFound:
+                throw HTTPError.statusCode(404, nil)
+            case .serverError:
+                throw HTTPError.statusCode(503, nil)
+            }
         }
         requestCount += 1
         for observer in observers { observer.resume() }

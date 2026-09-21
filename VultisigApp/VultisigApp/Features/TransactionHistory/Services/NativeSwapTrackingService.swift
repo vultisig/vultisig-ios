@@ -138,6 +138,10 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
 
     var trackedSwapCountForTesting: Int { pollers.count }
 
+    func refreshForTesting(tx: TransactionHistoryData) async -> RefreshResult {
+        await refresh(tx: tx, shouldApply: { true })
+    }
+
     func pollingTaskForTesting(tx: TransactionHistoryData) -> Task<Void, Never>? { pollers[RecordKey(tx)]?.task }
 
     // MARK: - Polling loop
@@ -291,8 +295,15 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
             let outcome = Self.outcome(response: response, hash: hash)
             observation.status = outcome?.status
             observation.failureReason = outcome?.failureReason
+            guard sourceChain == network, !Self.listsInbound(response, hash: hash), isStillWanted() else {
+                return observation
+            }
+            if case let .rejected(reason) = try await nodeResult(txHash: hash, chain: network) {
+                observation.status = Self.failedStatus
+                observation.failureReason = reason
+            }
         } catch {
-            logger.debug("[NATIVESWAP] Midgard unavailable for \(tx.txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            logger.debug("[NATIVESWAP] Status unavailable for \(tx.txHash, privacy: .public): \(error.localizedDescription, privacy: .public)")
             observation.unavailable = true
         }
         return observation
@@ -325,6 +336,12 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
             THORChainTransactionStatusAPI.getActions(txHash: txHash, chain: chain),
             responseType: THORChainActionsResponse.self
         ).data
+        guard Self.listsInbound(response, hash: txHash) else {
+            if case let .rejected(reason) = try await nodeResult(txHash: txHash, chain: chain) {
+                return .ended(status: Self.failedStatus, failureReason: reason)
+            }
+            return .waiting
+        }
         // A truncated page could omit the `failed` or `refund` that outranks what it shows.
         guard let count = Int(response.count), count <= response.actions.count else { return .waiting }
         let matching = response.actions.filter { action in action.in.contains { Self.isSameTransaction($0.txID, txHash) } }
@@ -334,7 +351,47 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         if matching.contains(where: { $0.type.lowercased() == "refund" }) {
             return .ended(status: "refunded", failureReason: nil)
         }
-        return matching.isEmpty ? .waiting : .confirmed
+        return .confirmed
+    }
+
+    /// A deposit the node rejects while executing it is committed with a
+    /// non-zero code and never becomes a Midgard action, so the node is the
+    /// only place that failure is visible. Asked only when Midgard lists nothing
+    /// for the deposit. An accepted deposit is left to Midgard, which indexes
+    /// it; a transaction not committed yet (404) is not an answer either way.
+    private func nodeResult(txHash: String, chain: Chain) async throws -> NodeResult {
+        guard let target = Self.nodeTransaction(hash: txHash, chain: chain) else { return .notRejected }
+        let response: CosmosTransactionStatusResponse
+        do {
+            response = try await httpClient.request(target, responseType: CosmosTransactionStatusResponse.self).data
+        } catch HTTPError.statusCode(404, _) {
+            return .notRejected
+        }
+        guard let result = response.txResponse, result.code != 0 else { return .notRejected }
+        return .rejected(reason: result.rawLog?.trimmedNonEmpty)
+    }
+
+    nonisolated static func nodeTransaction(hash: String, chain: Chain) -> TargetType? {
+        let txHash = normalizedHash(hash)
+        switch chain {
+        case .thorChain:
+            return ThorchainMainnetAPI(.transaction(hash: txHash))
+        case .thorChainChainnet:
+            return ThorchainStagenetAPI.transaction(env: .chainnet, hash: txHash)
+        case .thorChainStagenet:
+            return ThorchainStagenetAPI.transaction(env: .stagenet, hash: txHash)
+        case .mayaChain:
+            return MayaChainAPI(.transaction(hash: txHash))
+        default:
+            return nil
+        }
+    }
+
+    /// Whether any action lists the deposit as its inbound. Maya's Midgard
+    /// answers a hash it has never indexed with its unfiltered feed, so an empty
+    /// page is not the only shape "nothing for this deposit" takes.
+    private nonisolated static func listsInbound(_ response: THORChainActionsResponse, hash: String) -> Bool {
+        response.actions.contains { action in action.in.contains { isSameTransaction($0.txID, hash) } }
     }
 
     // MARK: - Midgard outcome
@@ -422,6 +479,11 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         var unavailable = false
     }
 
+    private enum NodeResult {
+        case notRejected
+        case rejected(reason: String?)
+    }
+
     private enum SourceObservation {
         case waiting
         case confirmed
@@ -429,7 +491,8 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
         case ended(status: String, failureReason: String?)
     }
 
-    private enum RefreshResult {
+    /// `unavailable` backs the poll off; `answered` keeps the normal cadence.
+    enum RefreshResult {
         case answered
         case unavailable
         case discarded
