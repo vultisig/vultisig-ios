@@ -8,11 +8,12 @@
 //    expandable fees + tx hash + approve hash)
 //  - custom bottom-bar: "Track" + "Done" when a progress link exists
 //
-//  Status comes from `SwapKitPoller` for SwapKit-routed swaps (so the
-//  cross-chain `/track` drives the header instead of the source-chain
-//  RPC poller, which would surface a premature "successful" once the
-//  source tx confirms) and `ChainPoller` for THORChain/Maya/1inch/
-//  Kyber/LiFi — wired via `DoneStatusServiceFactory.swap`.
+//  Status comes from `SwapKitPoller` for SwapKit-routed swaps and
+//  `NativeSwapPoller` for native THORChain/Maya market swaps (so the
+//  payout drives the header instead of the source-chain RPC poller,
+//  which would surface a premature "successful" once the source tx
+//  confirms — refund or not) and `ChainPoller` for 1inch/Kyber/LiFi —
+//  wired via `DoneStatusServiceFactory.swap`.
 //
 //  Limit orders ride the same screen (`transaction.isLimit`): the
 //  detail slot shows the "find your order in Transaction History"
