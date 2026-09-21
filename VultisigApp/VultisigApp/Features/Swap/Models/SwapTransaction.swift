@@ -343,6 +343,10 @@ extension SwapTransaction {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
+    var feeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        SwapCryptoLogic.feeLabelKeys(feeChain: feeCoin.chain)
+    }
+
     /// Network-fee crypto string for a placed LIMIT order. The limit "fee" is
     /// JUST the source-chain broadcast gas, pre-estimated into `networkFeeEstimate`
     /// (fee coin's smallest units) at place time — a resting `=<` order carries

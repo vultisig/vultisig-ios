@@ -804,6 +804,13 @@ class JoinKeysignViewModel: ObservableObject {
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
     }
 
+    /// Labels for the swap confirm's network-fee and total rows, keyed on the
+    /// chain `getCalculatedNetworkFee` prices the fee on (`payload.coin`).
+    var swapFeeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        guard let chain = keysignPayload?.coin.chain else { return .exact }
+        return SwapCryptoLogic.feeLabelKeys(feeChain: chain)
+    }
+
     /// Swap-fee row for the swap confirm screen, nil when the payload
     /// carries no fee or no trustworthy coin context (legacy sender).
     func getSwapFee() -> (feeCrypto: String, feeFiat: String)? {

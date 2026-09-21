@@ -415,6 +415,58 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: eth, fee: .zero), "")
     }
 
+    // MARK: - fee row labels
+
+    func testFeeLabelKeysAreMaximumOnEvmChains() {
+        for chain in [Chain.ethereum, .arbitrum, .base, .bscChain, .avalanche, .polygon, .optimism] {
+            let keys = SwapCryptoLogic.feeLabelKeys(feeChain: chain)
+            XCTAssertEqual(keys.networkFee, "maxNetworkFee", "\(chain)")
+            XCTAssertEqual(keys.totalFee, "maxTotalFee", "\(chain)")
+        }
+    }
+
+    func testFeeLabelKeysAreExactOffEvm() {
+        for chain in [Chain.thorChain, .mayaChain, .bitcoin, .litecoin, .solana, .gaiaChain, .cardano] {
+            let keys = SwapCryptoLogic.feeLabelKeys(feeChain: chain)
+            XCTAssertEqual(keys.networkFee, "networkFee", "\(chain)")
+            XCTAssertEqual(keys.totalFee, "totalFee", "\(chain)")
+        }
+    }
+
+    func testFeeLabelKeysMatchChainTypeForEveryChain() {
+        for chain in Chain.allCases {
+            let expected: SwapCryptoLogic.FeeLabelKeys = chain.chainType == .EVM ? .maximum : .exact
+            XCTAssertEqual(SwapCryptoLogic.feeLabelKeys(feeChain: chain), expected, "\(chain)")
+        }
+    }
+
+    func testFeeLabelKeysResolveInEveryShippedLocale() {
+        // Checked per `.lproj`: `Bundle.main` answers for the active
+        // localization only, so a key missing from one locale would still pass.
+        let keys = [
+            SwapCryptoLogic.FeeLabelKeys.exact.networkFee,
+            SwapCryptoLogic.FeeLabelKeys.exact.totalFee,
+            SwapCryptoLogic.FeeLabelKeys.maximum.networkFee,
+            SwapCryptoLogic.FeeLabelKeys.maximum.totalFee
+        ]
+        let locales = Bundle.main.localizations.filter { $0 != "Base" }
+        XCTAssertFalse(locales.isEmpty)
+        let sentinel = "__missing_localization__"
+        for locale in locales {
+            guard let bundle = Bundle.main.path(forResource: locale, ofType: "lproj").flatMap(Bundle.init(path:)) else {
+                XCTFail("\(locale).lproj does not ship in the app bundle")
+                continue
+            }
+            for key in keys {
+                XCTAssertNotEqual(
+                    bundle.localizedString(forKey: key, value: sentinel, table: nil),
+                    sentinel,
+                    "\(key) is missing from \(locale).lproj/Localizable.strings"
+                )
+            }
+        }
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
