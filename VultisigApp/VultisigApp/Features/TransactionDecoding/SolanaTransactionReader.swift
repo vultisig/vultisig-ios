@@ -57,9 +57,10 @@ enum SolanaTransactionReader {
               let bytes = Data(base64Encoded: encoded),
               !bytes.isEmpty,
               bytes.count <= maximumTransactionBytes,
-              let stakeProgramID,
+              // Refuse everything if a program ID constant failed to decode.
+              Self.stakeProgramID != nil,
               let computeBudgetProgramID,
-              let systemProgramID
+              Self.systemProgramID != nil
         else { return nil }
 
         var reader = ByteReader(bytes)
