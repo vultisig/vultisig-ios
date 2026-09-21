@@ -100,7 +100,7 @@ final class SecuredAssetCatalog {
     /// Canonical secured denoms (lowercase dash notation) used only when the
     /// live `/securedassets` fetch fails. Intentionally small — the live list
     /// is ~2.5x larger, which is why the dynamic fetch is primary.
-    static let fallbackDenoms: [String] = [
+    nonisolated static let fallbackDenoms: [String] = [
         "btc-btc",
         "eth-eth",
         "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
