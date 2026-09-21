@@ -289,26 +289,9 @@ struct TransactionHistoryScreen: View {
             // tap does nothing.
             cancelSigningAvailability: cancelSigningAvailability(for: order),
             onCancelOrder: startCancel,
-            tryAgainPair: tryAgainPair(for: detail),
+            tryAgainPair: viewModel.tryAgainPair(for: detail),
             onTryAgain: startTryAgain
         )
-    }
-
-    /// The pair `row` can be tried again on, or `nil` when it is not a failed
-    /// market swap or the vault no longer holds exactly one coin per side.
-    private func tryAgainPair(for row: TransactionHistoryData) -> SwapTryAgainPair? {
-        guard SwapTryAgain.isOffered(for: row) else { return nil }
-        do {
-            guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA) else {
-                return nil
-            }
-            return SwapTryAgain.pair(for: row, in: vault.coins)
-        } catch {
-            logger.error(
-                "Could not read the vault to resolve the swap to try again: \(error.localizedDescription, privacy: .public)"
-            )
-            return nil
-        }
     }
 
     /// Replays whichever action was parked while the sheet dismissed.

@@ -48,7 +48,13 @@ final class SwapTryAgainTests: XCTestCase {
         let btc = makeBTC()
         let coins = [makeETH(), usdc, btc]
 
-        let fromOverview = SwapTryAgain.pair(fromCoin: usdc, toCoin: btc, isLimitOrder: false, in: coins)
+        let fromOverview = SwapTryAgain.pair(
+            status: .failed(reason: "reverted"),
+            fromCoin: usdc,
+            toCoin: btc,
+            isLimitOrder: false,
+            in: coins
+        )
         let fromHistory = SwapTryAgain.pair(for: makeRow(from: usdc, to: btc), in: coins)
 
         XCTAssertNotNil(fromOverview)
@@ -186,13 +192,23 @@ final class SwapTryAgainTests: XCTestCase {
 
     // MARK: - When it is offered
 
+    /// The done screen's single entry point: a pair only once the swap has
+    /// failed, never while it may still land, and never for a limit order.
     func testTheOverviewOffersTryAgainOnlyOnAFailure() {
-        XCTAssertTrue(SwapTryAgain.isOffered(for: .failed(reason: "reverted")))
+        let usdc = makeUSDC()
+        let btc = makeBTC()
+        let coins = [usdc, btc]
+        func overviewPair(_ status: TransactionStatus, isLimitOrder: Bool = false) -> SwapTryAgainPair? {
+            SwapTryAgain.pair(status: status, fromCoin: usdc, toCoin: btc, isLimitOrder: isLimitOrder, in: coins)
+        }
 
-        XCTAssertFalse(SwapTryAgain.isOffered(for: .broadcasted(estimatedTime: "1m")))
-        XCTAssertFalse(SwapTryAgain.isOffered(for: .pending))
-        XCTAssertFalse(SwapTryAgain.isOffered(for: .confirmed))
-        XCTAssertFalse(SwapTryAgain.isOffered(for: .timeout))
+        XCTAssertEqual(overviewPair(.failed(reason: "reverted")), SwapTryAgainPair(fromCoinID: usdc.id, toCoinID: btc.id))
+
+        XCTAssertNil(overviewPair(.broadcasted(estimatedTime: "1m")))
+        XCTAssertNil(overviewPair(.pending))
+        XCTAssertNil(overviewPair(.confirmed))
+        XCTAssertNil(overviewPair(.timeout))
+        XCTAssertNil(overviewPair(.failed(reason: "reverted"), isLimitOrder: true))
     }
 
     func testHistoryOffersTryAgainOnlyOnAFailedSwapRow() {

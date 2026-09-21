@@ -205,9 +205,9 @@ struct JoinKeysignDoneView: View {
         for status: TransactionStatus,
         keysignPayload: KeysignPayload
     ) -> (() -> Void)? {
-        guard SwapTryAgain.isOffered(for: status),
-              let swapPayload = keysignPayload.swapPayload,
+        guard let swapPayload = keysignPayload.swapPayload,
               let pair = SwapTryAgain.pair(
+                status: status,
                 fromCoin: swapPayload.fromCoin,
                 toCoin: swapPayload.toCoin,
                 isLimitOrder: isLimitSwapMemo(keysignPayload.memo),

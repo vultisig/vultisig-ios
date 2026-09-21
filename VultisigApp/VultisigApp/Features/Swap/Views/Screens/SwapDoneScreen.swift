@@ -142,13 +142,13 @@ struct SwapDoneScreen: View {
     /// and pushes the form in one step; `appViewModel.restart()` would reset
     /// the stack a render pass later and wipe the push.
     private func tryAgainAction(for status: TransactionStatus) -> (() -> Void)? {
-        guard SwapTryAgain.isOffered(for: status),
-              let pair = SwapTryAgain.pair(
-                fromCoin: transaction.fromCoin,
-                toCoin: transaction.toCoin,
-                isLimitOrder: transaction.isLimit,
-                in: vault.coins
-              ) else {
+        guard let pair = SwapTryAgain.pair(
+            status: status,
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            isLimitOrder: transaction.isLimit,
+            in: vault.coins
+        ) else {
             return nil
         }
         let route = pair.route(vaultPubKeyECDSA: vault.pubKeyECDSA)

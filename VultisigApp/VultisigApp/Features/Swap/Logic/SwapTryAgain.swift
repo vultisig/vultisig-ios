@@ -55,7 +55,7 @@ enum SwapTryAgain {
     /// Only a terminal failure — a refunded SwapKit swap already arrives as
     /// `.failed`. A swap still in flight may yet land, and trying it again
     /// would sell the same funds twice; a timeout says nothing about the swap.
-    static func isOffered(for status: TransactionStatus) -> Bool {
+    private static func isOffered(for status: TransactionStatus) -> Bool {
         if case .failed = status { return true }
         return false
     }
@@ -86,6 +86,19 @@ enum SwapTryAgain {
             isLimitOrder: false,
             in: coins
         )
+    }
+
+    /// What a done screen offers: the pair a just-signed swap can be tried
+    /// again on, once `status` says it failed.
+    static func pair(
+        status: TransactionStatus,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isLimitOrder: Bool,
+        in coins: [Coin]
+    ) -> SwapTryAgainPair? {
+        guard isOffered(for: status) else { return nil }
+        return pair(fromCoin: fromCoin, toCoin: toCoin, isLimitOrder: isLimitOrder, in: coins)
     }
 
     /// Resolves a just-signed swap — the initiator's transaction or the

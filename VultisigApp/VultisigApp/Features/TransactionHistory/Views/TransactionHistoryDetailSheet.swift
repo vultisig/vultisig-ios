@@ -36,8 +36,9 @@ struct TransactionHistoryDetailSheet: View {
     /// would look like the tap did nothing until the sheet was dismissed. The
     /// presenting screen dismisses first, then navigates.
     var onCancelOrder: ((LimitOrderDetails) -> Void)?
-    /// The pair a failed swap can be tried again on, resolved by the presenting
-    /// screen against the vault's current coins. `nil` hides Try again.
+    /// The pair a failed market swap can be tried again on, resolved against
+    /// the vault's current coins. `nil` — any other row, or a pair the vault no
+    /// longer holds — hides Try again.
     var tryAgainPair: SwapTryAgainPair?
     /// Invoked when the user taps Try again. A callback for the same reason as
     /// `onCancelOrder`: the presenting screen dismisses, then navigates.
@@ -536,7 +537,7 @@ struct TransactionHistoryDetailSheet: View {
     /// whose pair the vault still holds.
     @ViewBuilder
     private var tryAgainButton: some View {
-        if SwapTryAgain.isOffered(for: transaction), let pair = tryAgainPair, let onTryAgain {
+        if let pair = tryAgainPair, let onTryAgain {
             PrimaryButton(title: "tryAgain") {
                 onTryAgain(pair)
             }
