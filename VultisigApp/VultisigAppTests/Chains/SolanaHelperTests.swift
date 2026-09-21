@@ -175,12 +175,62 @@ final class SolanaHelperTests: XCTestCase {
         XCTAssertThrowsError(try SolanaHelper.getHashFromRawTransaction(txData: Data()))
     }
 
+    // MARK: - Raw message fixtures
+
+    /// The System Program id is 32 zero bytes.
+    private let systemProgramKey = Data(repeating: 0x00, count: 32)
+    private let transferRecipientKey = Data(repeating: 0x09, count: 32)
+
+    /// A System Program `Transfer`: instruction tag 2 (u32 LE) then lamports (u64 LE).
+    private func makeTransferInstruction(programIndex: UInt8, from: UInt8, to: UInt8, lamports: UInt64) -> Data {
+        var data = Data([0x02, 0x00, 0x00, 0x00])
+        withUnsafeBytes(of: lamports.littleEndian) { data.append(contentsOf: $0) }
+        var instruction = Data([programIndex, 0x02, from, to, UInt8(data.count)])
+        instruction.append(data)
+        return instruction
+    }
+
+    /// Serializes a Solana message. `version == nil` is a legacy message; a
+    /// version is written as the `0x80 | version` prefix and gets an empty
+    /// address-table-lookup list. Counts stay below 128, so each compact-u16 is
+    /// one byte.
+    private func makeMessage(
+        version: UInt8? = nil,
+        header: [UInt8],
+        accountKeys: [Data],
+        instructions: [Data]
+    ) -> Data {
+        var message = Data()
+        if let version {
+            message.append(0x80 | version)
+        }
+        message.append(contentsOf: header)
+        message.append(UInt8(accountKeys.count))
+        accountKeys.forEach { message.append($0) }
+        message.append(Data(repeating: 0x00, count: 32))
+        message.append(UInt8(instructions.count))
+        instructions.forEach { message.append($0) }
+        if version != nil {
+            message.append(0x00)
+        }
+        return message
+    }
+
+    /// A legacy System Program transfer paid for and signed by `feePayer` alone.
+    private func makeLegacyTransferMessage(feePayer: Data) -> Data {
+        makeMessage(
+            header: [1, 0, 1],
+            accountKeys: [feePayer, transferRecipientKey, systemProgramKey],
+            instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
+        )
+    }
+
     // MARK: - Raw (dApp) signing path
 
     func testSignRawTransactionSplicesSignatureAndKeepsBase64Encoding() throws {
         let privateKey = try makeSignerKey()
         let publicKey = privateKey.getPublicKeyEd25519()
-        let message = Data(repeating: 0x07, count: 80)
+        let message = makeLegacyTransferMessage(feePayer: publicKey.data)
         var unsigned = Data([0x01])
         unsigned.append(Data(repeating: 0x00, count: 64))
         unsigned.append(message)
