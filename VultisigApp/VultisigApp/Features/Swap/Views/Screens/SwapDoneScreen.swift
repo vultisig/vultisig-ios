@@ -6,7 +6,8 @@
 //  - default token slot (the swap from-coin hero — same hero as Send)
 //  - custom detail slot: `SwapDoneSummaryCard` (from/to cards +
 //    expandable fees + tx hash + approve hash)
-//  - custom bottom-bar: "Track" + "Done" when a progress link exists
+//  - custom bottom-bar: "Track" + "Done" when a progress link exists,
+//    plus "Try again" once a market swap has failed
 //
 //  Status comes from `SwapKitPoller` for SwapKit-routed swaps (so the
 //  cross-chain `/track` drives the header instead of the source-chain
@@ -50,6 +51,7 @@ struct SwapDoneScreen: View {
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
 
     @Environment(\.openURL) var openURL
+    @Environment(\.router) var router
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(
@@ -114,24 +116,43 @@ struct SwapDoneScreen: View {
                     EmptyView()
                 }
             },
-            bottomBarContent: {
-                HStack(spacing: 8) {
-                    if let link = progressLink, !link.isEmpty {
-                        PrimaryButton(title: "track", type: .secondary) {
-                            if let url = URL(string: link) {
-                                openURL(url)
-                            }
-                        }
-                    }
-                    PrimaryButton(title: "done") {
-                        appViewModel.restart()
-                    }
-                }
+            bottomBarContent: { status in
+                SwapDoneBottomBar(
+                    onTryAgain: tryAgainAction(for: status),
+                    onTrack: trackAction,
+                    onDone: { appViewModel.restart() }
+                )
             }
         )
         .onAppear {
             persistLimitOrderIfNeeded()
         }
+    }
+
+    private var trackAction: (() -> Void)? {
+        guard let link = progressLink, !link.isEmpty else { return nil }
+        return {
+            if let url = URL(string: link) {
+                openURL(url)
+            }
+        }
+    }
+
+    /// Reopens the swap form on this swap's pair. `replace` clears the stack
+    /// and pushes the form in one step; `appViewModel.restart()` would reset
+    /// the stack a render pass later and wipe the push.
+    private func tryAgainAction(for status: TransactionStatus) -> (() -> Void)? {
+        guard let pair = SwapTryAgain.pair(
+            status: status,
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            isLimitOrder: transaction.isLimit,
+            in: vault.coins
+        ) else {
+            return nil
+        }
+        let route = pair.route(vaultPubKeyECDSA: vault.pubKeyECDSA)
+        return { router.replace(to: route) }
     }
 
     private var payload: TransactionDonePayload {
