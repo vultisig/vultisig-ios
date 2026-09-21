@@ -72,6 +72,7 @@ struct VultisigApp: App {
         // `providerKind`. New providers register here.
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
         SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
+        SwapTrackingRegistry.shared.register(NativeSwapTrackingService.shared)
 
         // Register every destination-token provider with the swap destination
         // registry so the swap coin picker can aggregate destination tokens from
