@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
+"allowDeathReapWarning" = "Ovaj prijenos može isprazniti račun pošiljatelja. Ako preostalo stanje padne ispod minimalnog stanja (egzistencijalni depozit), račun će biti deaktiviran (uklonjen) i sav preostali %@ bit će izgubljen.";
 "allTimeHigh" = "Povijesni maksimum";
 "allTimeLow" = "Povijesni minimum";
 "allVaults" = "Svi trezori";

@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Certifique-se de que";
 "allDevicesUpgradeTitle2" = " todos os dispositivos iniciais estejam presentes ";
 "allDevicesUpgradeTitle3" = "ao fazer a atualização";
+"allowDeathReapWarning" = "Esta transferência pode esvaziar a conta do remetente. Se o saldo restante ficar abaixo do saldo mínimo (depósito existencial), a conta será desativada (removida) e qualquer %@ restante será perdido.";
 "allTimeHigh" = "Máxima histórica";
 "allTimeLow" = "Mínima histórica";
 "allVaults" = "Todos os cofres";

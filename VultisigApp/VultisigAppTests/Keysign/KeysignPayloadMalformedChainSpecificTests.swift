@@ -124,7 +124,7 @@ final class KeysignPayloadMalformedChainSpecificTests: XCTestCase {
 
     func testPolkadotMalformedCurrentBlockNumberFallsBackToZero() throws {
         let specific = try decodePolkadot(currentBlockNumber: "not-a-number")
-        guard case .Polkadot(_, _, let currentBlockNumber, _, _, _, _) = specific else {
+        guard case .Polkadot(_, _, let currentBlockNumber, _, _, _, _, _) = specific else {
             return XCTFail("expected Polkadot case")
         }
         XCTAssertEqual(currentBlockNumber, 0, "malformed current_block_number must decode to 0, not crash")
@@ -132,7 +132,7 @@ final class KeysignPayloadMalformedChainSpecificTests: XCTestCase {
 
     func testPolkadotWellFormedCurrentBlockNumberMapsVerbatim() throws {
         let specific = try decodePolkadot(currentBlockNumber: "24680123")
-        guard case .Polkadot(_, _, let currentBlockNumber, _, _, _, _) = specific else {
+        guard case .Polkadot(_, _, let currentBlockNumber, _, _, _, _, _) = specific else {
             return XCTFail("expected Polkadot case")
         }
         XCTAssertEqual(currentBlockNumber, BigInt(24_680_123), "well-formed current_block_number must map through unchanged")

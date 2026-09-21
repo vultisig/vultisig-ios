@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
+"allowDeathReapWarning" = "This transfer may empty the sender's account. If the remaining balance falls below the minimum balance (existential deposit), the account will be deactivated (reaped) and any remaining %@ will be lost.";
 "allTimeHigh" = "All-Time High";
 "allTimeLow" = "All-Time Low";
 "allVaults" = "All Vaults";
