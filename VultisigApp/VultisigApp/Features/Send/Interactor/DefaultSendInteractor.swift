@@ -278,9 +278,10 @@ nonisolated struct DefaultSendInteractor: SendInteractor {
     }
 
     // Plans a UTXO transaction and rejects a failed plan. WalletCore planning
-    // is synchronous and grows with the input set; a nonisolated `async`
-    // function keeps it off the main actor the witnesses above run on.
-    // swiftlint:disable:next async_without_await
+    // is synchronous and grows with the input set; `@concurrent` keeps it off
+    // the main actor the witnesses above run on, whatever the default
+    // isolation of nonisolated async functions.
+    @concurrent
     private static func validatedPlan(_ helper: UTXOChainsHelper, for payload: KeysignPayload) async throws -> BitcoinTransactionPlan {
         let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
         try UTXOTransactionPlanError.validate(plan)
