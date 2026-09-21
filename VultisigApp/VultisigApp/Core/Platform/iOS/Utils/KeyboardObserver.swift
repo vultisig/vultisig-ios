@@ -19,13 +19,21 @@ final class KeyboardObserver: ObservableObject {
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
             .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
             .map { $0.height }
-            .assign(to: \.keyboardHeight, on: self)
+            .sink { [weak self] in self?.setKeyboardHeight($0) }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
             .map { _ in CGFloat(0) }
-            .assign(to: \.keyboardHeight, on: self)
+            .sink { [weak self] in self?.setKeyboardHeight($0) }
             .store(in: &cancellables)
 #endif
     }
+
+#if os(iOS)
+    /// UIKit posts keyboard notifications on the main thread, so the height is
+    /// set synchronously there rather than a run-loop turn later.
+    private func setKeyboardHeight(_ height: CGFloat) {
+        MainActor.assumeIsolated { keyboardHeight = height }
+    }
+#endif
 }
