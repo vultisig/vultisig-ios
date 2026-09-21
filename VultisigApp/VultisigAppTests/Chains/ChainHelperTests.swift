@@ -146,14 +146,14 @@ enum ChainHelperFixture: String, CaseIterable {
     var expectedCaseCount: Int {
         switch self {
         case .arb: return 1
-        case .bittensor: return 1
+        case .bittensor: return 2
         case .bsc: return 2
         case .cardano: return 3
         case .cosmos: return 4
         case .cosmosChainMatrix: return 5
         case .cosmosSdkSignAmino: return 2
         case .cosmosSdkSignDirect: return 2
-        case .dot: return 1
+        case .dot: return 2
         case .evm: return 2
         case .evmChainMatrix: return 8
         case .lifiswap: return 2

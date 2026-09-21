@@ -136,6 +136,15 @@ enum BlockChainSpecific: Codable, Hashable {
         return feeLimit ?? gasFeeEstimation
     }
 
+    /// The initiator's `PolkadotSpecific.allow_death` for a DOT or TAO send;
+    /// `false` for every other chain.
+    var polkadotAllowDeath: Bool {
+        guard case .Polkadot(_, _, _, _, _, _, _, let allowDeath) = self else {
+            return false
+        }
+        return allowDeath
+    }
+
     var fee: BigInt {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
