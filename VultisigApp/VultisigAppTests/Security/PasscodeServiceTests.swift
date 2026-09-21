@@ -1507,13 +1507,14 @@ private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring, @unchecked
 /// between the transition starting and the verification taking its own view of
 /// the session.
 ///
-/// `@unchecked Sendable`: `didLoad` is only touched while holding `lock`, and
-/// each hook runs on whichever thread reaches it.
+/// `@unchecked Sendable`: `didLoad` is only touched while holding `lock`,
+/// `duringFirstLoad` is `@Sendable` because it runs on whichever thread reads
+/// the store, and the other two hooks only ever run on the main actor.
 private final class HookedKeyshareKeyStore: KeyshareKeyStoring, @unchecked Sendable {
 
     private let wrapped: KeyshareKeyStoring
     private let duringWrap: @MainActor () throws -> Void
-    private let duringFirstLoad: () -> Void
+    private let duringFirstLoad: @Sendable () -> Void
     private let duringUnwrap: @MainActor () async throws -> Void
     private let lock = NSLock()
     private var didLoad = false
@@ -1526,7 +1527,7 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring, @unchecked Senda
     init(
         wrapping wrapped: KeyshareKeyStoring,
         duringWrap: @escaping @MainActor () throws -> Void = {},
-        duringFirstLoad: @escaping () -> Void = {},
+        duringFirstLoad: @escaping @Sendable () -> Void = {},
         duringUnwrap: @escaping @MainActor () async throws -> Void = {}
     ) {
         self.wrapped = wrapped
