@@ -75,9 +75,12 @@ final class DefiChainBondViewModel: ObservableObject {
             )
         }
 
+        // Read the published vault here, on the main actor; the `async let`
+        // child task would otherwise read the property off it.
+        let refreshingVault = vault
         async let canUnbondTask = interactor.canUnbond()
         async let canAddBondTask = interactor.canAddBond()
-        async let fetchTask = interactor.fetchBondPositions(vault: vault)
+        async let fetchTask = interactor.fetchBondPositions(vault: refreshingVault)
 
         self.canUnbond = await canUnbondTask
         self.canAddBond = await canAddBondTask
