@@ -10,11 +10,24 @@ import SwiftUI
 typealias NavPath = Hashable
 
 final class NavigationRouter: ObservableObject {
-    @Published var navPath: NavigationPath
+    @Published var navPath = NavigationPath() {
+        // The stack's own back button, swipe and back menu write the path
+        // through its binding and never touch `history`. Every such write is a
+        // pop from the tail, so trimming the tail keeps the two aligned; left
+        // stale, the predicate pops below count against routes that are no
+        // longer on screen.
+        didSet {
+            let staleCount = history.count - navPath.count
+            if staleCount > 0 {
+                history.removeLast(staleCount)
+            }
+        }
+    }
     private var history: [any NavPath] = []
 
-    init(navPath: NavigationPath = NavigationPath()) {
-        self.navPath = navPath
+    /// The route on top of the stack, or `nil` at the root.
+    var topDestination: (any NavPath)? {
+        history.last
     }
 
     func replace(to destination: any NavPath) {
@@ -29,10 +42,13 @@ final class NavigationRouter: ObservableObject {
         history.append(destination)
     }
 
+    // The pops below update `history` before `navPath`, so the path's
+    // observer finds the two already aligned and trims nothing twice.
+
     func navigateBack() {
         guard !navPath.isEmpty else { return }
-        navPath.removeLast()
         if !history.isEmpty { history.removeLast() }
+        navPath.removeLast()
     }
 
     func navigateBack(matching predicate: (any NavPath) -> Bool) {
@@ -42,8 +58,18 @@ final class NavigationRouter: ObservableObject {
         }
         let removeCount = history.count - 1 - matchIndex
         guard removeCount > 0 else { return }
-        navPath.removeLast(removeCount)
         history.removeLast(removeCount)
+        navPath.removeLast(removeCount)
+    }
+
+    /// Pops every trailing route that matches `predicate`, and nothing when
+    /// the top does not match. Unlike `navigateBack(matching:)` there is no
+    /// single-pop fallback.
+    func popTrailingRoutes(where predicate: (any NavPath) -> Bool) {
+        let removeCount = history.reversed().prefix(while: predicate).count
+        guard removeCount > 0 else { return }
+        history.removeLast(removeCount)
+        navPath.removeLast(removeCount)
     }
 
     func navigateToRoot() {
