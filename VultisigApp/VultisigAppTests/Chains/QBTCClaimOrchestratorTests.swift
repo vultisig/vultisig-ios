@@ -41,7 +41,7 @@ final class QBTCClaimOrchestratorTests: XCTestCase {
     /// service-side broadcast returns a `tx_hash`; default to a populated
     /// hash so the orchestrator transitions to `.done`. Pass `txHash: nil`
     /// to simulate `BROADCAST_NOT_CONFIGURED`-style misconfiguration.
-    static let mockServiceTxHash = String(repeating: "AB", count: 32)
+    nonisolated static let mockServiceTxHash = String(repeating: "AB", count: 32)
 
     static func makeProofResponse(txHash: String? = mockServiceTxHash) -> ClaimProofResponse {
         // swiftlint:disable:next force_try
