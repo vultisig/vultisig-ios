@@ -37,6 +37,7 @@ enum PolkadotHelper {
             let specVersion,
             let transactionVersion,
             let genesisHash,
+            _,
             _
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")

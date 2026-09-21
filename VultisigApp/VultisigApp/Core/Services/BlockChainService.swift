@@ -832,7 +832,8 @@ private extension BlockChainService {
                 specVersion: gasInfo.specVersion,
                 transactionVersion: gasInfo.transactionVersion,
                 genesisHash: gasInfo.genesisHash,
-                gas: dynamicFee
+                gas: dynamicFee,
+                allowDeath: false
             )
 
         case .bittensor:
@@ -847,7 +848,8 @@ private extension BlockChainService {
                 specVersion: gasInfo.specVersion,
                 transactionVersion: gasInfo.transactionVersion,
                 genesisHash: gasInfo.genesisHash,
-                gas: fee
+                gas: fee,
+                allowDeath: false
             )
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:

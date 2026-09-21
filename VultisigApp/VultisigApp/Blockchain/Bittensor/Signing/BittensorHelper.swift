@@ -338,7 +338,7 @@ enum BittensorHelper {
             _,
             let nonce,
             let currentBlockNumber,
-            _, _, _, _
+            _, _, _, _, _
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("Missing Bittensor chain specific data")
         }
@@ -361,7 +361,7 @@ enum BittensorHelper {
             let specVersion,
             let transactionVersion,
             let genesisHash,
-            _
+            _, _
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("Missing Bittensor chain specific data")
         }
