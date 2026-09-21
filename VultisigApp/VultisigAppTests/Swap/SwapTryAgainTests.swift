@@ -118,7 +118,7 @@ final class SwapTryAgainTests: XCTestCase {
     func testAContractIsMatchedExactlyWhereCaseIsPartOfTheAddress() {
         let jetton = makeCoin(chain: .ton, ticker: "USDT", contract: Self.tonJetton, address: "UQvault", native: false)
         let btc = makeBTC()
-        let lowercased = makeRow(
+        let caseChangedRow = makeRow(
             from: SwapTryAgainCoin(
                 chainRawValue: Chain.ton.rawValue,
                 ticker: "USDT",
@@ -128,7 +128,7 @@ final class SwapTryAgainTests: XCTestCase {
             to: SwapTryAgainCoin(coin: btc)
         )
 
-        XCTAssertNil(SwapTryAgain.pair(for: lowercased, in: [jetton, btc]))
+        XCTAssertNil(SwapTryAgain.pair(for: caseChangedRow, in: [jetton, btc]))
         XCTAssertEqual(SwapTryAgain.pair(for: makeRow(from: jetton, to: btc), in: [jetton, btc])?.fromCoinID, jetton.id)
     }
 

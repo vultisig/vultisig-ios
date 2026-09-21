@@ -117,8 +117,8 @@ enum SwapTryAgain {
     }
 
     private static func uniqueMatch(for side: SwapTryAgainCoin, in coins: [Coin]) -> Coin? {
-        let matches = coins.filter { matches($0, side) }
-        return matches.count == 1 ? matches.first : nil
+        let candidates = coins.filter { matches($0, side) }
+        return candidates.count == 1 ? candidates.first : nil
     }
 
     private static func matches(_ coin: Coin, _ side: SwapTryAgainCoin) -> Bool {
