@@ -76,22 +76,6 @@ extension LPDepositDestination {
         }
     }
 
-    /// Whether the deposit needs an ERC-20 approval before it can settle.
-    ///
-    /// Informational only — it drives the two-transaction notice on the form.
-    /// The approval itself is built at the signing boundary from the
-    /// transaction's own recipient, which is what keeps the spender and the
-    /// deposit target the same address by construction.
-    var requiresApproval: Bool {
-        switch self {
-        case .inbound(_, _, let requiresApproval):
-            return requiresApproval
-        case .unresolved, .protocolNative, .lpActionsPaused, .inboundNotFound, .routerNotAvailable,
-             .unsupportedProtocol:
-            return false
-        }
-    }
-
     /// Why the deposit cannot proceed, localized, or nil when nothing is wrong.
     ///
     /// `.unresolved` deliberately says nothing: it is the transient state before
@@ -136,8 +120,9 @@ enum ThorchainLPDestinationResolver {
     /// without a shared abstraction other flows would have to agree on.
     typealias InboundAddressFetch = (_ bypassCache: Bool) async -> [InboundAddress]
 
-    @MainActor
-    static let live: InboundAddressFetch = { bypassCache in
+    /// `@Sendable`, unlike `InboundAddressFetch`, so it is safe to share as a
+    /// nonisolated constant and usable as a default argument.
+    static let live: @Sendable (_ bypassCache: Bool) async -> [InboundAddress] = { bypassCache in
         await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: bypassCache)
     }
 

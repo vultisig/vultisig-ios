@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-07-27.
 //
 
+import SwiftData
 import SwiftUI
 import WalletCore
 

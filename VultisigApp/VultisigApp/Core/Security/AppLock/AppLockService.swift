@@ -12,7 +12,11 @@ import Foundation
 /// The `LAContext` mechanics stay in `AppViewModel`; what lives here is the part
 /// that used to be a hardcoded `interval > 60*5` buried in a scene-phase hook,
 /// with no way for anyone to configure it and no way to test it.
-final class AppLockService {
+///
+/// `@unchecked Sendable` because the persisted settings live in `UserDefaults`,
+/// which is thread-safe, and everything else it holds — the prompt count, its
+/// generation and the date formatter — is touched only while holding `lock`.
+final class AppLockService: @unchecked Sendable {
 
     static let shared = AppLockService()
 
@@ -29,6 +33,7 @@ final class AppLockService {
 
     private let defaults: UserDefaults
     private let formatter = ISO8601DateFormatter()
+    private let lock = NSLock()
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -98,7 +103,7 @@ final class AppLockService {
     /// How many system authentication prompts the app itself currently has on
     /// screen.
     ///
-    /// Main-thread only, and not persisted: it describes what is on the display
+    /// Guarded by `lock`, and not persisted: it describes what is on the display
     /// right now, and a launch has none of them up by definition.
     private var systemAuthPromptCount = 0
     /// Bumped whenever the count is dropped wholesale, so that a completion
@@ -141,7 +146,9 @@ final class AppLockService {
     /// This is deliberately **not** consulted for a real backgrounding. That
     /// arrives as `.background`, where the cover goes up unconditionally.
     var isPresentingSystemAuthPrompt: Bool {
-        systemAuthPromptCount > 0
+        lock.lock()
+        defer { lock.unlock() }
+        return systemAuthPromptCount > 0
     }
 
     /// Called immediately before a prompt is raised rather than after, because
@@ -151,6 +158,8 @@ final class AppLockService {
     /// A count rather than a flag because prompts can overlap, and because a
     /// balanced pair is the most a caller can honestly promise.
     func beginSystemAuthPrompt() -> SystemAuthPromptTicket {
+        lock.lock()
+        defer { lock.unlock() }
         systemAuthPromptCount += 1
         return SystemAuthPromptTicket(generation: systemAuthPromptGeneration)
     }
@@ -163,6 +172,8 @@ final class AppLockService {
     /// silently: the prompt it belonged to was already accounted for when the
     /// app left, and the count it would decrement now belongs to somebody else.
     func endSystemAuthPrompt(_ ticket: SystemAuthPromptTicket) {
+        lock.lock()
+        defer { lock.unlock() }
         guard ticket.generation == systemAuthPromptGeneration else { return }
         systemAuthPromptCount = max(0, systemAuthPromptCount - 1)
     }
@@ -177,6 +188,8 @@ final class AppLockService {
     /// moment is invalidated with the count, so the completions that *do* arrive
     /// late cannot spend themselves against whatever comes next.
     func forgetSystemAuthPrompts() {
+        lock.lock()
+        defer { lock.unlock() }
         systemAuthPromptCount = 0
         systemAuthPromptGeneration &+= 1
     }
@@ -185,7 +198,7 @@ final class AppLockService {
 
     /// Records that the app left the foreground.
     func noteBackgrounded(now: Date = Date()) {
-        defaults.set(formatter.string(from: now), forKey: Keys.lastRecordedTime)
+        defaults.set(timestamp(from: now), forKey: Keys.lastRecordedTime)
     }
 
     /// Whether returning to the foreground should re-lock, recording the moment
@@ -194,7 +207,7 @@ final class AppLockService {
     /// Reads before it writes — the answer depends on the previous timestamp.
     func evaluateForeground(now: Date = Date()) -> Bool {
         let shouldRelock = shouldRelock(now: now)
-        defaults.set(formatter.string(from: now), forKey: Keys.lastRecordedTime)
+        defaults.set(timestamp(from: now), forKey: Keys.lastRecordedTime)
         return shouldRelock
     }
 
@@ -202,7 +215,7 @@ final class AppLockService {
         guard isLockEnabled else { return false }
 
         guard let recorded = defaults.string(forKey: Keys.lastRecordedTime),
-              let backgroundedAt = formatter.date(from: recorded) else {
+              let backgroundedAt = date(fromTimestamp: recorded) else {
             // Nothing recorded yet — a first launch, not a return from the
             // background. Locking here would gate the app on a timestamp that
             // never existed.
@@ -230,6 +243,18 @@ final class AppLockService {
 
         // Strictly greater, matching the behaviour this replaced.
         return elapsed > autoLockInterval.duration
+    }
+
+    private func timestamp(from date: Date) -> String {
+        lock.lock()
+        defer { lock.unlock() }
+        return formatter.string(from: date)
+    }
+
+    private func date(fromTimestamp timestamp: String) -> Date? {
+        lock.lock()
+        defer { lock.unlock() }
+        return formatter.date(from: timestamp)
     }
 }
 

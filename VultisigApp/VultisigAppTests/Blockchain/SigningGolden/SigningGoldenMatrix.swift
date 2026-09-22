@@ -512,7 +512,10 @@ extension SigningGoldenFactory {
                 router: "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
                 data: "0x4630a0d8000000000000000000000000000000000000000000000000016345785d8a0000"
             ),
-            erc20ApproveSwap
+            erc20ApproveSwap(name: "swap_erc20_approve_1inch", resetAllowanceFirst: false),
+            // approve(0) at nonce 0, approve(amount) at 1, the swap at 2.
+            erc20ApproveSwap(name: "swap_erc20_approve_reset_1inch", resetAllowanceFirst: true),
+            erc20ApproveThorchainSwap
         ]
     }
 
@@ -553,11 +556,11 @@ extension SigningGoldenFactory {
             },
             imageHashes: {
                 guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, incrementNonce: false)
+                return try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, nonceOffset: 0)
             },
             signedTransaction: {
                 guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return .regular(try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, incrementNonce: false))
+                return .regular(try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, nonceOffset: 0))
             }
         )
     }
@@ -597,11 +600,11 @@ extension SigningGoldenFactory {
             },
             imageHashes: {
                 guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, incrementNonce: false)
+                return try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, nonceOffset: 0)
             },
             signedTransaction: {
                 guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return .regular(try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, incrementNonce: false))
+                return .regular(try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, nonceOffset: 0))
             }
         )
     }
@@ -639,18 +642,19 @@ extension SigningGoldenFactory {
             },
             imageHashes: {
                 guard case .generic(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return try OneInchSwaps().getPreSignedImageHash(payload: swap, keysignPayload: $0, incrementNonce: false)
+                return try OneInchSwaps().getPreSignedImageHash(payload: swap, keysignPayload: $0, nonceOffset: 0)
             },
             signedTransaction: {
                 guard case .generic(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
-                return .regular(try OneInchSwaps().getSignedTransaction(payload: swap, keysignPayload: $0, signatures: $1, incrementNonce: false))
+                return .regular(try OneInchSwaps().getSignedTransaction(payload: swap, keysignPayload: $0, signatures: $1, nonceOffset: 0))
             }
         )
     }
 
-    private static var erc20ApproveSwap: SigningGoldenVector {
-        SigningGoldenVector(
-            name: "swap_erc20_approve_1inch",
+    private static func erc20ApproveSwap(name: String, resetAllowanceFirst: Bool) -> SigningGoldenVector {
+        let swapNonceOffset: Int64 = resetAllowanceFirst ? 2 : 1
+        return SigningGoldenVector(
+            name: name,
             curve: .secp256k1,
             expectedLeaf: "THORChainSwaps.approve + OneInchSwaps",
             makePayload: {
@@ -679,22 +683,82 @@ extension SigningGoldenFactory {
                     toAmount: BigInt(1_000_000),
                     chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(2_000_000_000), priorityFeeWei: BigInt(1_000_000_000), nonce: 0, gasLimit: BigInt(600_000)),
                     swapPayload: .generic(generic),
-                    approvePayload: ERC20ApprovePayload(amount: BigInt(1_000_000), spender: router)
+                    approvePayload: ERC20ApprovePayload(
+                        amount: BigInt(1_000_000),
+                        spender: router,
+                        resetAllowanceFirst: resetAllowanceFirst
+                    )
                 )
             },
             imageHashes: {
                 guard case .generic(let swap) = $0.swapPayload,
                       let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
                 let approveHashes = try THORChainSwaps().getPreSignedApproveImageHash(approvePayload: approve, keysignPayload: $0)
-                let swapHashes = try OneInchSwaps().getPreSignedImageHash(payload: swap, keysignPayload: $0, incrementNonce: true)
+                let swapHashes = try OneInchSwaps().getPreSignedImageHash(payload: swap, keysignPayload: $0, nonceOffset: swapNonceOffset)
                 return approveHashes + swapHashes
             },
             signedTransaction: {
                 guard case .generic(let swap) = $0.swapPayload,
                       let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
-                let approveTx = try THORChainSwaps().getSignedApproveTransaction(approvePayload: approve, keysignPayload: $0, signatures: $1)
-                let swapTx = try OneInchSwaps().getSignedTransaction(payload: swap, keysignPayload: $0, signatures: $1, incrementNonce: true)
-                return .regularWithApprove(approve: approveTx, transaction: swapTx)
+                let approveTxs = try THORChainSwaps().getSignedApproveTransactions(approvePayload: approve, keysignPayload: $0, signatures: $1)
+                let swapTx = try OneInchSwaps().getSignedTransaction(payload: swap, keysignPayload: $0, signatures: $1, nonceOffset: swapNonceOffset)
+                return .regularWithApprove(approves: approveTxs, transaction: swapTx)
+            }
+        )
+    }
+
+    /// ERC20 source through the THORChain router: approve at the payload nonce,
+    /// `depositWithExpiry` one nonce later.
+    private static var erc20ApproveThorchainSwap: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "swap_erc20_approve_thorchain",
+            curve: .secp256k1,
+            expectedLeaf: "THORChainSwaps.approve + THORChainSwaps",
+            makePayload: {
+                let usdc = coin(
+                    chain: .ethereum, ticker: "USDC", decimals: 6,
+                    contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                    isNativeToken: false, curve: .secp256k1
+                )
+                let btc = coin(chain: .bitcoin, ticker: "BTC", decimals: 8, curve: .secp256k1)
+                let router = "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146"
+                let swap = THORChainSwapPayload(
+                    fromAddress: usdc.address,
+                    fromCoin: usdc,
+                    toCoin: btc,
+                    vaultAddress: recipient(.ethereum),
+                    routerAddress: router,
+                    fromAmount: BigInt(1_000_000),
+                    toAmountDecimal: 0,
+                    toAmountLimit: "0",
+                    streamingInterval: "0",
+                    streamingQuantity: "0",
+                    expirationTime: Const.expiration,
+                    isAffiliate: false
+                )
+                return payload(
+                    coin: usdc,
+                    toAddress: swap.vaultAddress,
+                    toAmount: BigInt(1_000_000),
+                    chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(2_000_000_000), priorityFeeWei: BigInt(1_000_000_000), nonce: 7, gasLimit: BigInt(600_000)),
+                    memo: "=:BTC.BTC:\(recipient(.bitcoin)):0/1/0",
+                    swapPayload: .thorchain(swap),
+                    approvePayload: ERC20ApprovePayload(amount: BigInt(1_000_000), spender: router)
+                )
+            },
+            imageHashes: {
+                guard case .thorchain(let swap) = $0.swapPayload,
+                      let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
+                let approveHashes = try THORChainSwaps().getPreSignedApproveImageHash(approvePayload: approve, keysignPayload: $0)
+                let swapHashes = try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, nonceOffset: 1)
+                return approveHashes + swapHashes
+            },
+            signedTransaction: {
+                guard case .thorchain(let swap) = $0.swapPayload,
+                      let approve = $0.approvePayload else { throw SigningGoldenError.missingSwapPayload }
+                let approveTxs = try THORChainSwaps().getSignedApproveTransactions(approvePayload: approve, keysignPayload: $0, signatures: $1)
+                let swapTx = try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, nonceOffset: 1)
+                return .regularWithApprove(approves: approveTxs, transaction: swapTx)
             }
         )
     }

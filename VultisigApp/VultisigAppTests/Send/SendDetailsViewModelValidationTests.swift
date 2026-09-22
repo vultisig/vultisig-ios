@@ -112,7 +112,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         vm.amount = "100"
         vm.isStakingOperation = true
 
-        let isValid = await vm.validateForm()
+        _ = await vm.validateForm()
 
         // Address format may or may not pass for the stub TRX address; if it
         // does, balance check should be skipped and the call returns true.

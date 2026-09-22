@@ -38,7 +38,7 @@ struct QBTCParamResponse: Codable {
     }
 }
 
-final class QBTCChainService {
+final class QBTCChainService: Sendable {
     private let httpClient: HTTPClientProtocol
     private let logger = Log.qbtc.other
 

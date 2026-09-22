@@ -140,7 +140,7 @@ private struct NoOverrideResolver: RPCEndpointResolving {
 /// deterministically: the primary `getTokenAccountsByOwner` returns a scripted
 /// outcome (throw / empty / a matching account), and `getAccountInfo` reports an
 /// address as existing only when it is in `existingAccounts`.
-private final class SolanaAtaStubHTTPClient: HTTPClientProtocol {
+private final class SolanaAtaStubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     enum PrimaryOutcome {
         /// Transient RPC/node failure — the request itself throws.
@@ -155,8 +155,12 @@ private final class SolanaAtaStubHTTPClient: HTTPClientProtocol {
     /// getAccountInfo existence probe: address -> owning token-program id.
     private let existingAccounts: [String: String]
 
-    private(set) var tokenAccountsByOwnerCallCount = 0
-    private(set) var accountInfoCallCount = 0
+    private let lock = NSLock()
+    private var _tokenAccountsByOwnerCallCount = 0
+    private var _accountInfoCallCount = 0
+
+    var tokenAccountsByOwnerCallCount: Int { lock.withLock { _tokenAccountsByOwnerCallCount } }
+    var accountInfoCallCount: Int { lock.withLock { _accountInfoCallCount } }
 
     init(primaryOutcome: PrimaryOutcome, existingAccounts: [String: String] = [:]) {
         self.primaryOutcome = primaryOutcome
@@ -173,7 +177,7 @@ private final class SolanaAtaStubHTTPClient: HTTPClientProtocol {
         let json: String
         switch api.rpcMethod {
         case .getTokenAccountsByOwner:
-            tokenAccountsByOwnerCallCount += 1
+            lock.withLock { _tokenAccountsByOwnerCallCount += 1 }
             switch primaryOutcome {
             case .failure:
                 throw URLError(.timedOut)
@@ -185,7 +189,7 @@ private final class SolanaAtaStubHTTPClient: HTTPClientProtocol {
                 )
             }
         case let .getAccountInfo(address):
-            accountInfoCallCount += 1
+            lock.withLock { _accountInfoCallCount += 1 }
             if let owner = existingAccounts[address] {
                 json = #"{"jsonrpc":"2.0","id":1,"result":{"context":{"slot":1},"value":{"owner":"\#(owner)"}}}"#
             } else {

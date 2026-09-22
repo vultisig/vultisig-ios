@@ -48,7 +48,7 @@ enum THORChainTransactionStatusAPI: TargetType {
         ["Content-Type": "application/json"]
     }
 
-    /// Midgard keys every chain's txid as uppercase hex with NO `0x` prefix.
+    /// Midgard keys a hex txid as uppercase hex with NO `0x` prefix.
     ///
     /// THORChain- and Cosmos-native hashes already satisfy that, which is why
     /// they matched as-is; EVM hashes arrive `0x`-prefixed and lowercase, so
@@ -56,11 +56,14 @@ enum THORChainTransactionStatusAPI: TargetType {
     /// the order never resolves. Idempotent for an already-normalized hash:
     /// there is no `0x` to strip, and uppercasing hex digits is a no-op — so it
     /// is correct to apply for every caller, native or EVM.
+    ///
+    /// ⚠️ Only HEX is uppercased. A Solana signature is base58, which is case
+    /// sensitive, and Midgard indexes it verbatim: uppercased, it matches nothing.
     private static func midgardTxid(from txHash: String) -> String {
         var hash = txHash
         if hash.hasPrefix("0x") || hash.hasPrefix("0X") {
             hash.removeFirst(2)
         }
-        return hash.uppercased()
+        return hash.allSatisfy(\.isHexDigit) ? hash.uppercased() : hash
     }
 }

@@ -69,6 +69,8 @@ enum ThorchainStagenetAPI: TargetType {
         liquidityToleranceBps: String?
     )
     case broadcast(env: Environment, body: Data)
+    /// A committed transaction's result: its `code` and `raw_log`.
+    case transaction(env: Environment, hash: String)
 
     // MARK: RPC node
     case networkStatus(env: Environment)
@@ -84,7 +86,7 @@ enum ThorchainStagenetAPI: TargetType {
              .poolInfo(let env, _), .pools(let env),
              .poolLiquidityProvider(let env, _, _),
              .swapQuote(let env, _, _, _, _, _, _, _, _, _),
-             .broadcast(let env, _):
+             .broadcast(let env, _), .transaction(let env, _):
             return env.thornodeHost
 
         case .networkStatus(let env):
@@ -123,6 +125,8 @@ enum ThorchainStagenetAPI: TargetType {
             return "/thorchain/quote/swap"
         case .broadcast:
             return "/cosmos/tx/v1beta1/txs"
+        case .transaction(_, let hash):
+            return "/cosmos/tx/v1beta1/txs/\(hash)"
         case .networkStatus:
             return "/status"
         case .resolveTNS(let name):
@@ -143,7 +147,7 @@ enum ThorchainStagenetAPI: TargetType {
         switch self {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
              .inboundAddresses, .poolInfo, .pools, .poolLiquidityProvider,
-             .networkStatus, .resolveTNS:
+             .networkStatus, .resolveTNS, .transaction:
             return .requestPlain
 
         case .allDenomMetadata:

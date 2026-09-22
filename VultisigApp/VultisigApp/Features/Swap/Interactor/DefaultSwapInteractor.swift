@@ -20,6 +20,9 @@ struct DefaultSwapInteractor: SwapInteractor {
     /// the gate is unit-testable; production uses the shared singletons.
     var thorchainService: ThorchainService = .shared
     var mayachainService: MayachainService = .shared
+    /// Reads the allowance and simulates the approve for `resolveApproval`.
+    /// Injected so tests never reach a node.
+    var approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver()
 
     static var live: SwapInteractor {
         DefaultSwapInteractor(
@@ -165,6 +168,39 @@ struct DefaultSwapInteractor: SwapInteractor {
         }
     }
 
+    func resolveApproval(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalDecision? {
+        guard let query = try await approvalQuery(for: transaction, vault: vault) else {
+            return nil
+        }
+        return try await approvalResolver.decision(for: query)
+    }
+
+    /// The spend the swap's approve is decided for, derived exactly as the
+    /// payload builder for its kind derives it at sign time. Main-actor bound
+    /// because it reads the SwiftData coins.
+    @MainActor
+    private func approvalQuery(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalQuery? {
+        if let limitContext = transaction.limitContext {
+            guard let sourceAmount = BigInt(limitContext.sourceAmount) else {
+                throw LimitSwapAssemblyError.invalidSourceAmount(limitContext.sourceAmount)
+            }
+            return try await limitApprovalQuery(sourceCoin: transaction.fromCoin, sourceAmount: sourceAmount)
+        }
+        if transaction.mode == .securedMint {
+            return try await ThorchainRouterDepositBuilder.securedMintApprovalQuery(
+                fromCoin: transaction.fromCoin,
+                amount: transaction.fromAmount,
+                vault: vault,
+                thorchainService: thorchainService
+            )
+        }
+        return SwapCryptoLogic.approvalQuery(
+            fromCoin: transaction.fromCoin,
+            amount: transaction.amountInCoinDecimal,
+            quote: transaction.quote
+        )
+    }
+
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
         // Same-underlying secured selection: mint via a SECURE+ deposit instead
         // of a pool swap. The synthetic quote never feeds signing — build the
@@ -175,7 +211,8 @@ struct DefaultSwapInteractor: SwapInteractor {
             return try await ThorchainRouterDepositBuilder.buildSecuredMintPayload(
                 fromCoin: transaction.fromCoin,
                 amount: transaction.fromAmount,
-                vault: vault
+                vault: vault,
+                approvalDecision: transaction.approvalDecision
             )
         }
 

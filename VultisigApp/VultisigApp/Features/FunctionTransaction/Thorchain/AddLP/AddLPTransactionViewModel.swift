@@ -67,7 +67,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// The asset being deposited.
     ///
     /// Reassigned when the user picks a different pool. Everything derived from
-    /// it — the destination, the balance ceiling, the approval notice — is
+    /// it — the destination, the balance ceiling, the approval read — is
     /// recomputed rather than remembered, which is the fix this migration
     /// exists for.
     @Published private(set) var coin: Coin
@@ -92,6 +92,11 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     private let resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch
     private let fetchPools: PoolsFetch
+    /// Reads the ERC-20 approval an ERC20 deposit needs, once, on Continue.
+    private let approvalResolver: ERC20ApprovalResolving
+    /// Why the last Continue could not read that approval, or nil. Surfaces
+    /// through `blockingMessage`; the next Continue or asset change clears it.
+    @Published private(set) var approvalError: String?
     /// Locale the amount is read in. Injected so a test pins the separators
     /// rather than inheriting the machine's — the parse deliberately refuses an
     /// amount written in another locale's convention, so which locale is in
@@ -117,6 +122,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         resolveInboundAddresses: @escaping ThorchainLPDestinationResolver.InboundAddressFetch
             = ThorchainLPDestinationResolver.live,
         fetchPools: @escaping PoolsFetch = { try await ThorchainService.shared.fetchLPPools() },
+        approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver(),
         locale: Locale = .current
     ) {
         self.coin = coin
@@ -125,6 +131,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         self.vault = vault
         self.resolveInboundAddresses = resolveInboundAddresses
         self.fetchPools = fetchPools
+        self.approvalResolver = approvalResolver
         self.locale = locale
         // MayaChain credits the depositing address itself, so a paired address
         // would name an account the memo has no slot for.
@@ -341,6 +348,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         destinationTask = nil
         destinationGeneration &+= 1
         destination = .unresolved
+        approvalError = nil
     }
 
     /// Display-only read. The transaction never uses this answer; it takes the
@@ -408,15 +416,39 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
         isLoading = true
         defer { isLoading = false }
+        approvalError = nil
 
         destinationTask?.cancel()
         destinationTask = nil
         await resolveDestination(bypassCache: true, generation: nextDestinationGeneration())
 
-        return transactionBuilder
+        guard let builder = addLPBuilder else { return nil }
+        return await withApprovalDecision(builder)
+    }
+
+    /// The builder with its ERC-20 approval read once here, for the exact
+    /// recipient and amount it deposits: Verify shows that decision and signing
+    /// uses it as is. Nil, with `approvalError` set, when the read failed —
+    /// Verify is not entered on a guess.
+    private func withApprovalDecision(_ builder: AddLPTransactionBuilder) async -> TransactionBuilder? {
+        guard let query = ThorchainRouterDepositBuilder.approvalQuery(for: builder.buildSendTransaction(vault: vault)) else {
+            return builder
+        }
+        do {
+            var decided = builder
+            decided.approvalDecision = try await approvalResolver.decision(for: query)
+            return decided
+        } catch {
+            approvalError = error.localizedDescription
+            return nil
+        }
     }
 
     var transactionBuilder: TransactionBuilder? {
+        addLPBuilder
+    }
+
+    private var addLPBuilder: AddLPTransactionBuilder? {
         // `validateErrors()` re-runs every field's validators synchronously and
         // writes the answer to `field.valid`, so the fields — not the published
         // `validForm` — are what this turn's submission is judged on. The
@@ -457,11 +489,6 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         String(format: "addCoinLP".localized, coin.chain.name)
     }
 
-    /// The two-transaction notice an ERC-20 deposit needs.
-    var showsApprovalInfo: Bool {
-        destination.requiresApproval
-    }
-
     var showAsymmetricDepositInfo: Bool {
         protocolChain == .mayaChain
     }
@@ -484,6 +511,9 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     var blockingMessage: String? {
         if !isThorchainEnabled {
             return "thorChainNotEnabledForLP".localized
+        }
+        if let approvalError {
+            return approvalError
         }
         if case .chosen = poolSource, poolsState == .loaded, pools.isEmpty {
             return "addLpNoDepositablePools".localized

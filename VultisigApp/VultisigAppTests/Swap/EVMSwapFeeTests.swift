@@ -192,7 +192,7 @@ final class EVMSwapFeeTests: XCTestCase {
                 provider: .oneInch
             ),
             keysignPayload: payload,
-            incrementNonce: false
+            nonceOffset: 0
         )
         let expectedHash = try preImageHash(quote: quote, payload: payload, effective: effective)
         XCTAssertEqual(
@@ -225,7 +225,7 @@ final class EVMSwapFeeTests: XCTestCase {
             keysignPayload: payload,
             gas: effective.gasLimit.magnitude,
             gasPrice: effective.gasPriceWei.magnitude,
-            incrementNonce: false
+            nonceOffset: 0
         )
         let hashes = TransactionCompiler.preImageHashes(coinType: payload.coin.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)

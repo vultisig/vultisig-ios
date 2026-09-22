@@ -45,7 +45,10 @@ enum KeyshareKeyStoreError: Error, Equatable {
 /// share the old one sealed — so an unreadable Keychain reported as absence is
 /// a direct path to permanently orphaned key material. Deletions verify against
 /// a *confirmed* absence for the same reason.
-protocol KeyshareKeyStoring {
+///
+/// `Sendable` because `PasscodeService` reads it from `nonisolated` members, and
+/// `KeyshareKeySession` from whatever thread asks for the protection state.
+protocol KeyshareKeyStoring: Sendable {
     func generateDataKey() throws -> SymmetricKey
 
     func loadWrappedDataKey() -> KeychainReadResult<Data>
@@ -56,7 +59,10 @@ protocol KeyshareKeyStoring {
     func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey
 }
 
-final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
+/// `@unchecked Sendable` because it has no mutable state, and its one
+/// dependency, `KeychainService`, is not annotated `Sendable` although the
+/// default one only forwards to the thread-safe `SecItem` calls.
+final class DefaultKeyshareKeyStore: KeyshareKeyStoring, @unchecked Sendable {
 
     static let shared: KeyshareKeyStoring = DefaultKeyshareKeyStore()
 

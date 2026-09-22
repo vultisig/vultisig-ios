@@ -1477,6 +1477,43 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         makeViewModel(interactor: interactor, sourceAmount: sourceAmount, initialDisplayUnit: initialDisplayUnit)
     }
 
+    // MARK: - Place Order reads the approval once, before Verify
+
+    func testPlacingAnOrderCarriesTheApprovalReadBeforeVerify() async throws {
+        let query = ERC20ApprovalQuery(chain: .ethereum, token: "0xtoken", owner: "0xowner", spender: "0xrouter", amount: 1)
+        let decision = ERC20ApprovalDecision(query: query, requirement: .resetThenApprove)
+        let reader = ApprovalReadingSwapInteractor(decision: decision)
+        let vm = makeViewModel(approvalReader: reader)
+
+        let prepared = await vm.withApprovalDecision(.example)
+        let decided = try XCTUnwrap(prepared)
+
+        XCTAssertEqual(decided.approvalDecision, decision)
+        XCTAssertEqual(reader.resolveApprovalCallCount, 1)
+        XCTAssertNil(vm.placeOrderError)
+        XCTAssertFalse(vm.isPreparingOrder)
+    }
+
+    func testFailedApprovalReadRaisesTheAlertAndDoesNotEnterVerify() async {
+        let failure = RpcServiceError.rpcError(code: -32005, message: "rate limit exceeded")
+        let vm = makeViewModel(approvalReader: ApprovalReadingSwapInteractor(error: failure))
+
+        let decided = await vm.withApprovalDecision(.example)
+
+        XCTAssertNil(decided, "Verify must not be entered on a guessed approval")
+        XCTAssertEqual(vm.placeOrderError, .approvalUnavailable(failure.localizedDescription))
+        XCTAssertFalse(vm.isPreparingOrder)
+    }
+
+    private func makeViewModel(approvalReader: SwapInteractor) -> LimitSwapFormViewModel {
+        LimitSwapFormViewModel(
+            initialDraft: LimitSwapDraft(fromAsset: btcAsset(), toAsset: ethAsset()),
+            vault: vault,
+            interactor: interactor,
+            swapInteractor: approvalReader
+        )
+    }
+
     private func makeViewModel(
         interactor: LimitSwapInteractor,
         sourceAmount: BigInt = 0,

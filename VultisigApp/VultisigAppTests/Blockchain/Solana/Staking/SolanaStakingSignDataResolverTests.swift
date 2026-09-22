@@ -84,6 +84,7 @@ final class SolanaStakingSignDataResolverTests: XCTestCase {
 
         XCTAssertEqual(signSolana.rawTransactions.count, 1)
         let relayedHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: payload.coin.hexPublicKey,
             base64Transaction: try XCTUnwrap(signSolana.rawTransactions.first)
         )
         let rebuildHashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)

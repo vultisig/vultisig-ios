@@ -54,7 +54,10 @@ final class SolanaBlockhashRefreshTests: XCTestCase {
 
         let messages = try SolanaHelper.getPreSignedImageHash(keysignPayload: refreshed)
         let raw = try XCTUnwrap(refreshed.signSolana?.rawTransactions.first)
-        let expected = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: raw)
+        let expected = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: refreshed.coin.hexPublicKey,
+            base64Transaction: raw
+        )
         XCTAssertEqual(messages, expected)
     }
 
@@ -218,7 +221,7 @@ final class SolanaBlockhashRefreshTests: XCTestCase {
 
 private extension SolanaBlockhashRefreshTests {
 
-    static let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
+    nonisolated static let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
     static let depositAmount = KaminoTokenAmount(baseUnits: BigInt(10_000_000), decimals: 6)
 
     static var steakhouseVault: KaminoVaultInfo {
@@ -382,7 +385,10 @@ private extension SolanaBlockhashRefreshTests {
             contractAddress: "",
             isNativeToken: true
         )
-        let coin = Coin(asset: asset, address: address, hexPublicKey: "0f9a6ce9f661")
+        // The raw path refuses a key that is not a required signer, so the key is
+        // the fee payer's own, derived from its address.
+        let hexPublicKey = Base58.decodeNoCheck(string: address)?.hexString ?? ""
+        let coin = Coin(asset: asset, address: address, hexPublicKey: hexPublicKey)
         coin.rawBalance = "3000000000"
         return coin
     }

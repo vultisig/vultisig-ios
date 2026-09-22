@@ -561,6 +561,25 @@ final class SwapDetailsViewModel {
         )
     }
 
+    /// The transaction Verify is handed, with its ERC-20 approval read once
+    /// here: Verify shows that decision and signing uses it as is. Nil when the
+    /// form isn't valid, or when the allowance could not be read, in which case
+    /// `error` is set and Verify is not entered.
+    func prepareTransaction(vault: Vault) async -> SwapTransaction? {
+        guard !isLoadingTransaction, let transaction = makeTransaction() else { return nil }
+        isLoadingTransaction = true
+        defer { isLoadingTransaction = false }
+        do {
+            let decision = try await interactor.resolveApproval(for: transaction, vault: vault)
+            return transaction.with(approvalDecision: decision)
+        } catch {
+            guard !(error is CancellationError), (error as? URLError)?.code != .cancelled else { return nil }
+            logger.warning("Approval read failed, not entering Verify: \(error.localizedDescription, privacy: .public)")
+            self.error = error
+            return nil
+        }
+    }
+
     /// Advanced settings as they apply to the current pair: an external recipient
     /// or gas-limit override only travels if it's valid for the destination/source
     /// chain. Slippage always carries.
@@ -758,6 +777,10 @@ extension SwapDetailsViewModel {
 
     var totalFeeString: String {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
+    }
+
+    var feeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        SwapCryptoLogic.feeLabelKeys(feeChain: feeCoin.chain)
     }
 
     var durationString: String {

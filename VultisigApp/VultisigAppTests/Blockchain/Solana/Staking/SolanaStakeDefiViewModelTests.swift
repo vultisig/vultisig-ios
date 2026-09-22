@@ -16,6 +16,7 @@
 
 @testable import VultisigApp
 import Foundation
+import os
 import SwiftData
 import XCTest
 
@@ -240,20 +241,20 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         let service = FakeStakingService(accounts: [
             account(pubkey: "A", vote: "V1", stake: 1_000_000_000, activationEpoch: 700)
         ])
-        var invalidated = 0
+        let invalidated = OSAllocatedUnfairLock(initialState: 0)
         let vm = SolanaStakeDefiViewModel(
             vault: vault,
             stakingService: service,
             metadataProvider: FakeMetadataProvider(byVote: [:]),
             storage: storage,
-            onInvalidateCaches: { invalidated += 1 }
+            onInvalidateCaches: { invalidated.withLock { $0 += 1 } }
         )
         await vm.refresh(owner: "Owner", decimals: 9)
         await vm.invalidateAndRefresh(owner: "Owner", decimals: 9)
         // Two reads (one per refresh) — stake accounts are never cached — and the
         // cache-invalidation hook fired exactly once on the post-keysign refresh.
         XCTAssertEqual(service.stakeAccountCalls, 2)
-        XCTAssertEqual(invalidated, 1)
+        XCTAssertEqual(invalidated.withLock { $0 }, 1)
     }
 
     // MARK: - Cache-first paint

@@ -176,7 +176,7 @@ struct SwapVerifyScreen: View {
                 if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
-                        for: "totalFee",
+                        for: currentTransaction.feeLabelKeys.totalFee,
                         with: currentTransaction.totalFeeString
                     )
                 }
@@ -397,7 +397,7 @@ struct SwapVerifyScreen: View {
     }
 
     var showApproveCheckmark: Bool {
-        currentTransaction.isApproveRequired
+        currentTransaction.signsApprove
     }
 
     var separator: some View {
@@ -539,7 +539,7 @@ struct SwapVerifyScreen: View {
         fiatAmount: String
     ) -> some View {
         HStack(spacing: 4) {
-            Text(NSLocalizedString("networkFee", comment: ""))
+            Text(NSLocalizedString(currentTransaction.feeLabelKeys.networkFee, comment: ""))
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
 

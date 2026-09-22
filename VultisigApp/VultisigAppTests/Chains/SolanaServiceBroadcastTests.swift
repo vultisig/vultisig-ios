@@ -118,7 +118,7 @@ private struct NoOverrideResolver: RPCEndpointResolving {
 
 /// Replays a scripted sequence of JSON-RPC `sendTransaction` outcomes, one per
 /// call, so the rebroadcast loop can be exercised deterministically.
-private final class SolanaStubHTTPClient: HTTPClientProtocol {
+private final class SolanaStubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     enum Outcome {
         case success(String)
@@ -126,7 +126,10 @@ private final class SolanaStubHTTPClient: HTTPClientProtocol {
     }
 
     private let results: [Outcome]
-    private(set) var callCount = 0
+    private let lock = NSLock()
+    private var _callCount = 0
+
+    var callCount: Int { lock.withLock { _callCount } }
 
     init(results: [Outcome]) {
         self.results = results
@@ -135,14 +138,17 @@ private final class SolanaStubHTTPClient: HTTPClientProtocol {
     // Protocol requires `async`; the body is sync. Silence the lint here.
     // swiftlint:disable:next async_without_await unused_parameter
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
-        defer { callCount += 1 }
-        guard callCount < results.count else {
-            XCTFail("SolanaStubHTTPClient ran out of scripted results (call #\(callCount + 1))")
+        let call = lock.withLock {
+            defer { _callCount += 1 }
+            return _callCount
+        }
+        guard call < results.count else {
+            XCTFail("SolanaStubHTTPClient ran out of scripted results (call #\(call + 1))")
             throw HTTPError.invalidResponse
         }
 
         let json: String
-        switch results[callCount] {
+        switch results[call] {
         case .success(let signature):
             json = #"{"jsonrpc":"2.0","id":1,"result":"\#(signature)"}"#
         case .error(let code, let message):

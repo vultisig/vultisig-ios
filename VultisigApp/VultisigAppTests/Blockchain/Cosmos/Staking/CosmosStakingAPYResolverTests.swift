@@ -173,7 +173,7 @@ private actor StubHTTPClient: HTTPClientProtocol {
         self.responses = responses
     }
 
-    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+    func request(_ target: TargetType) throws -> HTTPResponse<Data> {
         requestCount += 1
         let path = target.path
         guard let data = responses[path] else {
@@ -193,7 +193,7 @@ private actor StubHTTPClient: HTTPClientProtocol {
 /// Placeholder client for tests that never make a request — feeds the
 /// resolver init when only the synchronous helpers are exercised.
 private struct NeverClient: HTTPClientProtocol {
-    func request(_: TargetType) async throws -> HTTPResponse<Data> {
+    func request(_: TargetType) throws -> HTTPResponse<Data> {
         throw HTTPError.networkError(NSError(domain: "test", code: -1))
     }
 }

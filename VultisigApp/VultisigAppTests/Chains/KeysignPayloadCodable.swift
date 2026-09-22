@@ -339,6 +339,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         case transactionVersion = "transaction_version"
         case genesisHash = "genesis_hash"
         case gas
+        case allowDeath = "allow_death"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -349,6 +350,10 @@ extension VSPolkadotSpecific: @retroactive Codable {
         try container.encode(transactionVersion, forKey: .transactionVersion)
         try container.encode(genesisHash, forKey: .genesisHash)
         try container.encode(gas, forKey: .gas)
+        // Absent means keep-alive, matching the proto3 default the corpus relies on.
+        if allowDeath {
+            try container.encode(allowDeath, forKey: .allowDeath)
+        }
     }
 
     public init(from decoder: any Decoder) throws {
@@ -361,6 +366,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         transactionVersion = try container.decode(UInt32.self, forKey: .transactionVersion)
         genesisHash = try container.decode(String.self, forKey: .genesisHash)
         gas = try container.decodeFlexibleUInt64(forKey: .gas) ?? 0
+        allowDeath = try container.decodeIfPresent(Bool.self, forKey: .allowDeath) ?? false
     }
 }
 extension VSSuiCoin: @retroactive Codable {
@@ -1317,8 +1323,8 @@ extension VSSignDirect: @retroactive Codable {
 
 extension VSSignAmino: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
-        case fee = "fee"
-        case msgs = "msgs"
+        case fee
+        case msgs
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)

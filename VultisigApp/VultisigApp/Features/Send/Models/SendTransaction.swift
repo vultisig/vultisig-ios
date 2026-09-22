@@ -202,6 +202,12 @@ struct SendTransaction: Hashable {
     /// screens around signing, not part of what gets signed.
     let withdrawDisplayAmount: Decimal?
 
+    /// The ERC-20 approval a router deposit (an LP add) signs, read once on
+    /// the way into Verify — see `ERC20ApprovalDecision`. Local-only, like
+    /// `limitCancelContext`: the signed approve legs are what travel to the
+    /// other signers.
+    let approvalDecision: ERC20ApprovalDecision?
+
     /// Native coin that pays for gas — `coin` itself for native sends, the
     /// chain's native sibling (e.g. ETH for a USDC source) otherwise.
     /// Precomputed at construction so Verify/Done don't need the vault's
@@ -252,7 +258,8 @@ extension SendTransaction {
             lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
             lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
             lhs.limitCancelContext == rhs.limitCancelContext &&
-            lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount
+            lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount &&
+            lhs.approvalDecision == rhs.approvalDecision
     }
 
     func hash(into hasher: inout Hasher) {
@@ -282,6 +289,7 @@ extension SendTransaction {
         hasher.combine(solanaStakingPayload)
         hasher.combine(limitCancelContext)
         hasher.combine(withdrawDisplayAmount)
+        hasher.combine(approvalDecision)
     }
 }
 
@@ -312,6 +320,7 @@ extension SendTransaction {
         solanaStakingPayload: SolanaStakingPayload? = nil,
         limitCancelContext: LimitOrderCancelRequest? = nil,
         withdrawDisplayAmount: Decimal? = nil,
+        approvalDecision: ERC20ApprovalDecision? = nil,
         amountWasAutoAdjusted: Bool = false
     ) {
         self.coin = coin
@@ -343,6 +352,7 @@ extension SendTransaction {
         self.solanaStakingPayload = solanaStakingPayload
         self.limitCancelContext = limitCancelContext
         self.withdrawDisplayAmount = withdrawDisplayAmount
+        self.approvalDecision = approvalDecision
     }
 }
 
@@ -488,6 +498,10 @@ extension SendTransaction {
             // `copy(gas:)` on the function-call path that would drop it — the one
             // this field exists to survive.
             withdrawDisplayAmount: withdrawDisplayAmount,
+            // Carried through unconditionally for the same reason: the pricing
+            // `copy(gas:fee:)` between the LP form and Verify would drop it, and
+            // signing refuses a router deposit whose approval was not decided.
+            approvalDecision: approvalDecision,
             amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted
         )
     }

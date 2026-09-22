@@ -681,9 +681,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertNil(payload.approvePayload)
     }
 
-    func testBuildApprovePayloadNilWhenQuoteAbsent() {
+    func testApproveSpenderNilWhenQuoteAbsent() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
-        XCTAssertNil(SwapCryptoLogic.buildApprovePayload(fromCoin: usdc, amount: 100, quote: nil))
+        XCTAssertNil(SwapCryptoLogic.approveSpender(fromCoin: usdc, quote: nil))
     }
 
     // MARK: - Missing-quote guard (internal error, not a money error)
@@ -755,7 +755,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: rune,            advancedSettings: .default
+            feeCoin: rune,
+            advancedSettings: .default
         )
     }
 
@@ -772,7 +773,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: cacao,            advancedSettings: .default
+            feeCoin: cacao,
+            advancedSettings: .default
         )
     }
 
@@ -789,8 +791,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
-        )
+            feeCoin: eth,
+            advancedSettings: .default
+        ).withApprovalDecided(.approve)
     }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -831,7 +834,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
+            feeCoin: eth,
+            advancedSettings: .default
         )
     }
 
@@ -848,8 +852,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
-        )
+            feeCoin: eth,
+            advancedSettings: .default
+        ).withApprovalDecided(.approve)
     }
 
     private func makeThorQuote(
@@ -914,7 +919,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: sol,            advancedSettings: .default
+            feeCoin: sol,
+            advancedSettings: .default
         )
     }
 

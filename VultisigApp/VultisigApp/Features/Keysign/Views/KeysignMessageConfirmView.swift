@@ -69,6 +69,7 @@ struct KeysignMessageConfirmView: View {
                     ),
                     securityScannerState: $viewModel.securityScannerState
                 ) {
+                    allowDeathDisclosure
                     limitOrderDisclosures
                 }
 
@@ -96,6 +97,16 @@ struct KeysignMessageConfirmView: View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
             .font(Theme.fonts.bodyLMedium)
+    }
+
+    /// A DOT or TAO transfer whose initiator set `allow_death` can empty the
+    /// sender's account. Nothing else on this screen says so, and a co-signer
+    /// never saw the initiator's form.
+    @ViewBuilder
+    private var allowDeathDisclosure: some View {
+        if let message = SubstrateAllowDeathDisclosure.message(for: viewModel.keysignPayload) {
+            InfoBannerView(description: message, type: .warning, leadingIcon: .triangleWarning)
+        }
     }
 
     /// What a limit-order CANCEL says before it is signed — the initiator's
