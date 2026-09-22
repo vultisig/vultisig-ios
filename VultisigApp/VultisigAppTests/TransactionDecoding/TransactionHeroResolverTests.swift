@@ -233,7 +233,9 @@ final class TransactionHeroResolverTests: XCTestCase {
             "Features/FunctionTransaction/Common/View/FunctionTransactionReviewSummaryView.swift"
         )
         XCTAssertTrue(review.contains("TransactionHeroResolver.hero("))
-        XCTAssertTrue(summary.contains("HeroContentView(content: hero)"))
+        XCTAssertTrue(summary.contains("let hero = heroContent"))
+        XCTAssertTrue(summary.contains("case .title"))
+        XCTAssertTrue(summary.contains("case .projected"))
         XCTAssertFalse(review.contains("private var headlineKey"))
     }
 
