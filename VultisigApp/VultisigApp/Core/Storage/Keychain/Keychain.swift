@@ -11,7 +11,7 @@ import Security
 
 private let logger = Log.app.store
 
-struct Keychain {
+struct Keychain: Sendable {
 
     private let serviceName: String
     private let itemStore: KeychainItemStore
