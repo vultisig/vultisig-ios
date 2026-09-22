@@ -5,8 +5,8 @@
 //  Pins the Solana signed-transaction encoding contract: WalletCore compiles
 //  with the proto-default base58 output (txEncoding is never set on the
 //  signing input), SignedTransactionResult.rawTransaction is normalized to
-//  base64 for broadcast, and the transaction hash is the base58 of the first
-//  64-byte signature.
+//  base64 for broadcast, and the transaction hash is the base58 of the fee
+//  payer's signature (slot 0), empty while that slot is unsigned.
 //
 
 @testable import VultisigApp
@@ -165,6 +165,22 @@ final class SolanaHelperTests: XCTestCase {
         let hash = try SolanaHelper.getHashFromRawTransaction(txData: transaction)
 
         XCTAssertEqual(hash, Base58.encodeNoCheck(data: signature))
+    }
+
+    /// An all-zero slot 0 is the fee payer's placeholder, not a transaction id,
+    /// even when a later signer has already signed.
+    func testGetHashFromRawTransactionIsEmptyWhileTheFeePayerSlotIsUnsigned() throws {
+        let laterSignerSignature = Data((0..<64).map { UInt8($0) })
+        var soleSlot = Data([0x01])
+        soleSlot.append(Data(repeating: 0x00, count: 64))
+        soleSlot.append(Data(repeating: 0xAB, count: 32))
+        var laterSlotSigned = Data([0x02])
+        laterSlotSigned.append(Data(repeating: 0x00, count: 64))
+        laterSlotSigned.append(laterSignerSignature)
+        laterSlotSigned.append(Data(repeating: 0xAB, count: 32))
+
+        XCTAssertEqual(try SolanaHelper.getHashFromRawTransaction(txData: soleSlot), "")
+        XCTAssertEqual(try SolanaHelper.getHashFromRawTransaction(txData: laterSlotSigned), "")
     }
 
     func testGetHashFromRawTransactionThrowsOnGarbageBytes() {
@@ -477,8 +493,31 @@ final class SolanaHelperTests: XCTestCase {
         var expected = fixture.transaction
         expected.replaceSubrange(65..<129, with: vaultSignature)
         XCTAssertEqual(signed, expected)
-        // The transaction id is the fee payer's slot, which the relayer fills later.
-        XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: emptySignatureSlot))
+        // The transaction id is the fee payer's signature, and the relayer has not signed yet.
+        XCTAssertEqual(result.transactionHash, "")
+    }
+
+    /// Once the relayer has signed slot 0, that signature is the transaction id
+    /// the chain indexes, not the vault's own signature in slot 1.
+    func testSignRawTransactionReportsTheRelayersSignatureAsTheIdOnceItHasSigned() throws {
+        let privateKey = try makeSignerKey()
+        let vaultKey = privateKey.getPublicKeyEd25519()
+        let relayer = try makeKey(fill: 0x02)
+        let fixture = try makeSponsoredV0Transaction(
+            vault: vaultKey.data,
+            relayer: relayer.getPublicKeyEd25519().data,
+            cosigner: makeKey(fill: 0x03)
+        )
+        let relayerSignature = try XCTUnwrap(relayer.sign(digest: fixture.message, curve: .ed25519))
+        var relayerSigned = fixture.transaction
+        relayerSigned.replaceSubrange(1..<65, with: relayerSignature)
+
+        let result = try signRaw(relayerSigned, privateKey: privateKey)
+        let signed = try XCTUnwrap(Data(base64Encoded: result.rawTransaction))
+
+        XCTAssertEqual(signatureSlot(0, of: signed), relayerSignature)
+        XCTAssertTrue(vaultKey.verify(signature: signatureSlot(1, of: signed), message: fixture.message))
+        XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: relayerSignature))
     }
 
     func testSignRawTransactionRejectsKeyThatIsNotARequiredSigner() throws {

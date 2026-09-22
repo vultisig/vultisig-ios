@@ -618,13 +618,17 @@ enum SolanaHelper {
     }
 
     static func getHashFromRawTransaction(txData: Data) throws -> String {
-        // A Solana transaction id is the fee payer's signature (slot 0), whichever slot the vault signed.
+        // A Solana transaction id is the fee payer's signature (slot 0), whichever slot the vault
+        // signed; while that slot is still the all-zero placeholder there is no id to report.
         let parsed = try extractSolanaMessageBytes(from: txData)
         let sigEnd = parsed.firstSignatureOffset + 64
         guard sigEnd <= txData.count else {
             throw HelperError.runtimeError("Transaction too short to extract signature")
         }
         let sigBytes = txData.subdata(in: (txData.startIndex + parsed.firstSignatureOffset)..<(txData.startIndex + sigEnd))
+        guard sigBytes.contains(where: { $0 != 0 }) else {
+            return ""
+        }
         return Base58.encodeNoCheck(data: sigBytes)
     }
 
