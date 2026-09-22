@@ -27,7 +27,7 @@ reviews:
         - Business logic in ViewModels/Services, never in views
         - Logger (OSLog) for logging, never print()
         - No force unwraps (!) in production code
-        - @Model classes always on MainActor
+        - @Model instances accessed only on the MainActor, confined by their callers; never @MainActor on the @Model class itself
         - Use "key".localized for all user-facing strings
     - path: "**/Localizable.strings"
       instructions: |
