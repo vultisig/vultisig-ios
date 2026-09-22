@@ -191,7 +191,7 @@ final class SchnorrKeysign {
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
-                                         to: receiverString,
+                                         to: [receiverString],
                                          body: encodedOutboundMessage,
                                          hardDeadline: ceremonyWatchdog.hardDeadline)
                 try ceremonyWatchdog.checkHardDeadline()

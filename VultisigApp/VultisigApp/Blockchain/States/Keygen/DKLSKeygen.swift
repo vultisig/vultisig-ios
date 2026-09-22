@@ -215,7 +215,7 @@ final class DKLSKeygen {
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
                 try await self.messenger.send(
                     self.localPartyID,
-                    to: receiverString,
+                    to: [receiverString],
                     body: encodedOutboundMessage,
                     hardDeadline: ceremonyWatchdog.hardDeadline
                 )

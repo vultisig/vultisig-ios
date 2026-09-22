@@ -31,7 +31,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         let sleeper = RecordingSleeper()
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
-        try await messenger.send("a", to: "b", body: "round-1")
+        try await messenger.send("a", to: ["b"], body: "round-1")
 
         XCTAssertEqual(http.sentMessages.count, 4)
         XCTAssertEqual(sleeper.durations, [.seconds(1), .seconds(2), .seconds(4)])
@@ -49,7 +49,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
         do {
-            try await messenger.send("a", to: "b", body: "round-1")
+            try await messenger.send("a", to: ["b"], body: "round-1")
             XCTFail("expected RelaySendError.exhausted")
         } catch RelaySendError.exhausted(let attempts, let lastError) {
             XCTAssertEqual(attempts, RelaySendRetryPolicy.maxAttempts)
@@ -68,7 +68,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
         do {
-            try await messenger.send("a", to: "b", body: "round-1")
+            try await messenger.send("a", to: ["b"], body: "round-1")
             XCTFail("expected RelaySendError.rejected")
         } catch RelaySendError.rejected(let status) {
             XCTAssertEqual(status, 400)
@@ -86,7 +86,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
         do {
-            try await messenger.send("a", to: "b", body: "round-1")
+            try await messenger.send("a", to: ["b"], body: "round-1")
             XCTFail("expected CancellationError")
         } catch {
             XCTAssertTrue(error is CancellationError, "got \(error)")
@@ -95,13 +95,13 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         XCTAssertTrue(sleeper.durations.isEmpty)
     }
 
-    func testMissingRecipientFailsBeforeAnyRequest() async {
+    func testEmptyReceiverListFailsBeforeAnyRequest() async {
         let http = ScriptedHTTPClient()
         let sleeper = RecordingSleeper()
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
         do {
-            try await messenger.send("a", to: nil, body: "round-1")
+            try await messenger.send("a", to: [], body: "round-1")
             XCTFail("expected RelaySendError.invalidMessage")
         } catch RelaySendError.invalidMessage {
         } catch {
@@ -112,6 +112,58 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         XCTAssertEqual(messenger.counter, 1)
     }
 
+    // MARK: - One body, one POST
+
+    func testEveryReceiverOfOneBodyTravelsInASingleRequest() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.send("a", to: ["b", "c"], body: "round-1")
+
+        XCTAssertEqual(http.requestCount, 1)
+        XCTAssertEqual(http.sentMessages.map(\.to), [["b", "c"]])
+    }
+
+    func testASingleReceiverStillTravelsInOneRequest() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.send("a", to: ["b"], body: "round-1")
+
+        XCTAssertEqual(http.requestCount, 1)
+        XCTAssertEqual(http.sentMessages.map(\.to), [["b"]])
+    }
+
+    func testTwoBodiesStayTwoRequestsWithConsecutiveSequenceNumbers() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.success(()))
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.send("a", to: ["b", "c"], body: "round-1")
+        try await messenger.send("a", to: ["b", "c"], body: "round-2")
+
+        XCTAssertEqual(http.requestCount, 2)
+        XCTAssertEqual(http.sentMessages.map(\.sequence_no), [1, 2])
+        XCTAssertEqual(Set(http.sentMessages.map(\.hash)).count, 2)
+    }
+
+    func testEveryRetryAttemptCarriesTheWholeReceiverList() async throws {
+        let http = ScriptedHTTPClient()
+        http.enqueue(.failure(HTTPError.timeout))
+        http.enqueue(.failure(HTTPError.statusCode(503, nil)))
+        http.enqueue(.success(()))
+        let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
+
+        try await messenger.send("a", to: ["b", "c", "d"], body: "round-1")
+
+        XCTAssertEqual(http.sentMessages.count, 3)
+        XCTAssertEqual(http.sentMessages.map(\.to), Array(repeating: ["b", "c", "d"], count: 3))
+        XCTAssertEqual(Set(http.sentMessages.map(\.sequence_no)), [1])
+    }
+
     func testFirstAttemptSuccessDoesNotSleepAndAdvancesTheSequence() async throws {
         let http = ScriptedHTTPClient()
         http.enqueue(.success(()))
@@ -119,8 +171,8 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         let sleeper = RecordingSleeper()
         let messenger = makeMessenger(http: http, sleeper: sleeper)
 
-        try await messenger.send("a", to: "b", body: "round-1")
-        try await messenger.send("a", to: "b", body: "round-2")
+        try await messenger.send("a", to: ["b"], body: "round-1")
+        try await messenger.send("a", to: ["b"], body: "round-2")
 
         XCTAssertEqual(http.sentMessages.map(\.sequence_no), [1, 2])
         XCTAssertTrue(sleeper.durations.isEmpty)
@@ -131,7 +183,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         http.enqueue(.success(()))
         let messenger = makeMessenger(http: http, sleeper: RecordingSleeper())
 
-        try await messenger.send("a", to: "b", body: "round-1")
+        try await messenger.send("a", to: ["b"], body: "round-1")
 
         XCTAssertEqual(http.timeouts, [RelaySendRetryPolicy.requestTimeout])
     }
@@ -143,7 +195,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         do {
             try await messenger.send(
                 "a",
-                to: "b",
+                to: ["b"],
                 body: "round-1",
                 hardDeadline: ContinuousClock.now
             )
@@ -163,7 +215,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
 
         try await messenger.send(
             "a",
-            to: "b",
+            to: ["b"],
             body: "round-1",
             hardDeadline: ContinuousClock.now.advanced(by: .seconds(4))
         )
@@ -182,7 +234,7 @@ final class DKLSMessengerSendRetryTests: XCTestCase {
         do {
             try await messenger.send(
                 "a",
-                to: "b",
+                to: ["b"],
                 body: "round-1",
                 hardDeadline: ContinuousClock.now.advanced(by: .milliseconds(500))
             )

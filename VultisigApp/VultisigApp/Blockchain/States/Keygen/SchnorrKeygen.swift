@@ -174,7 +174,7 @@ final class SchnorrKeygen {
                 logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public)")
                 try await self.messenger.send(
                     self.localPartyID,
-                    to: receiverString,
+                    to: [receiverString],
                     body: encodedOutboundMessage,
                     hardDeadline: ceremonyWatchdog.hardDeadline
                 )
