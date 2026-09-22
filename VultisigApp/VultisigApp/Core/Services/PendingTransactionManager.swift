@@ -32,15 +32,34 @@ struct PendingTransaction: Codable {
 
 class PendingTransactionManager {
     static let shared = PendingTransactionManager()
-    private var pendingTransactions: ThreadSafeDictionary<String, PendingTransaction> = ThreadSafeDictionary()
-    private var pollingTasks: ThreadSafeDictionary<Chain, Task<Void, Never>> = ThreadSafeDictionary()
+    private let pendingTransactions: ThreadSafeDictionary<String, PendingTransaction>
+    /// Guards `pollingTasks`. Deciding whether a chain needs a poller and
+    /// registering it, or unregistering and cancelling it, must each be one
+    /// step, or a poller can be left running untracked.
+    private let pollingLock = NSLock()
+    private var pollingTasks: [Chain: Task<Void, Never>] = [:]
+    private let pollingTaskFactory: ((Chain) -> Task<Void, Never>)?
 
     private init() {
         // Don't start polling automatically - only when needed
+        self.pendingTransactions = ThreadSafeDictionary()
+        self.pollingTaskFactory = nil
+    }
+
+    /// Test seam: `pollingTaskFactory` stands in for the network polling loop.
+    /// It is called with the polling lock held, so it must not call back into
+    /// the manager.
+    init(
+        pendingTransactions: ThreadSafeDictionary<String, PendingTransaction>,
+        pollingTaskFactory: @escaping (Chain) -> Task<Void, Never>
+    ) {
+        self.pendingTransactions = pendingTransactions
+        self.pollingTaskFactory = pollingTaskFactory
     }
 
     deinit {
-        for (_, task) in pollingTasks.allItems() {
+        let tasks = pollingLock.withLock { pollingTasks.values }
+        for task in tasks {
             task.cancel()
         }
     }
@@ -96,20 +115,25 @@ class PendingTransactionManager {
             return
         }
 
-        // Don't start if already polling for this chain
-        guard self.pollingTasks.get(chain) == nil else {
-            return
+        pollingLock.withLock {
+            // Don't start if already polling for this chain
+            guard pollingTasks[chain] == nil else {
+                return
+            }
+
+            // Only start if there are pending transactions for this chain
+            guard hasUnconfirmedTransactions(for: chain) else {
+                return
+            }
+
+            logger.info("Starting polling for chain: \(String(describing: chain), privacy: .public)")
+
+            pollingTasks[chain] = pollingTaskFactory?(chain) ?? makePollingTask(for: chain)
         }
+    }
 
-        // Only start if there are pending transactions for this chain
-        let hasPendingForChain = self.pendingTransactions.allItems().values.contains { $0.chain == chain && !$0.isConfirmed }
-        guard hasPendingForChain else {
-            return
-        }
-
-        logger.info("Starting polling for chain: \(String(describing: chain), privacy: .public)")
-
-        let t = Task {
+    private func makePollingTask(for chain: Chain) -> Task<Void, Never> {
+        Task {
             while !Task.isCancelled {
                 do {
                     await self.checkPendingTransactionsForChain(chain)
@@ -123,25 +147,55 @@ class PendingTransactionManager {
             }
             logger.debug("Polling task cancelled for chain: \(String(describing: chain), privacy: .public)")
         }
-        self.pollingTasks.setSync(chain, t)
-
     }
 
     /// Stop polling for a specific chain
     func stopPollingForChain(_ chain: Chain) {
-        self.pollingTasks.get(chain)?.cancel()
-        self.pollingTasks.remove(chain)
+        pollingLock.withLock {
+            let task = pollingTasks.removeValue(forKey: chain)
+            task?.cancel()
+        }
         logger.info("Stopped polling for chain: \(String(describing: chain), privacy: .public)")
 
     }
 
+    /// Stop polling for `chain` unless it has unconfirmed transactions.
+    ///
+    /// Callers decide to stop from an earlier look at the pending set. The
+    /// re-check happens under the polling lock, so a transaction added since
+    /// then either finds this poller still registered and keeps it, or finds
+    /// it gone and starts a new one.
+    func stopPollingIfIdle(_ chain: Chain) {
+        let stopped = pollingLock.withLock { () -> Bool in
+            guard !hasUnconfirmedTransactions(for: chain),
+                  let task = pollingTasks.removeValue(forKey: chain) else {
+                return false
+            }
+            task.cancel()
+            return true
+        }
+        guard stopped else {
+            return
+        }
+        logger.info("Stopped polling for chain: \(String(describing: chain), privacy: .public)")
+    }
+
     /// Stop all polling
     func stopAllPolling() {
-        for (chain, task) in self.pollingTasks.allItems() {
-            task.cancel()
+        let stoppedChains = pollingLock.withLock { () -> [Chain] in
+            defer { pollingTasks.removeAll() }
+            for task in pollingTasks.values {
+                task.cancel()
+            }
+            return Array(pollingTasks.keys)
+        }
+        for chain in stoppedChains {
             logger.info("Stopped polling for chain: \(String(describing: chain), privacy: .public)")
         }
-        self.pollingTasks.clear()
+    }
+
+    private func hasUnconfirmedTransactions(for chain: Chain) -> Bool {
+        pendingTransactions.allItems().values.contains { $0.chain == chain && !$0.isConfirmed }
     }
 
     /// Check pending transactions for a specific chain
@@ -165,7 +219,7 @@ class PendingTransactionManager {
         }
 
         if !stillHasPending {
-            stopPollingForChain(chain)
+            stopPollingIfIdle(chain)
         }
 
         // Remove old transactions (older than 10 minutes)
@@ -191,7 +245,7 @@ class PendingTransactionManager {
                 }
 
                 if !stillHasPendingForChain {
-                    self.stopPollingForChain(transaction.chain)
+                    self.stopPollingIfIdle(transaction.chain)
                 }
             }
 
