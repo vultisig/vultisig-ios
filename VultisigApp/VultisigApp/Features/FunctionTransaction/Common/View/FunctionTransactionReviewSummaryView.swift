@@ -66,19 +66,64 @@ struct FunctionTransactionReviewSummaryView<Disclosures: View>: View {
         let hero = heroContent
         switch hero {
         case .send(let title, let coin), .receive(let title, let coin):
-            KeysignReviewCard {
-                KeysignReviewCoinAmount(caption: title, logo: coin.logo, ticker: coin.ticker, amountText: coin.amountText, fiat: coin.fiat)
-            }
+            amountCard(title: title, coin: coin)
         case .swap(_, let from, let to):
             KeysignReviewPairCards(glyph: .chevronRight) {
                 KeysignReviewCoinAmount(caption: nil, logo: from.logo, ticker: from.ticker, amountText: from.amountText, fiat: from.fiat)
             } trailing: {
                 KeysignReviewCoinAmount(caption: nil, logo: to.logo, ticker: to.ticker, amountText: to.amountText, fiat: to.fiat)
             }
-        case .title, .projected:
+        case .title(let text, let caption):
             KeysignReviewCard {
-                HeroContentView(content: hero)
+                VStack(spacing: 8) {
+                    Text(text)
+                        .keysignReviewText(.title3)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    if let caption {
+                        Text(caption)
+                            .keysignReviewText(.caption)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                    }
+                }
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
             }
+        case .projected(let title, let estimate, let scope):
+            KeysignReviewCard {
+                VStack(spacing: 8) {
+                    if let estimate {
+                        KeysignReviewCoinAmount(
+                            caption: title,
+                            logo: estimate.logo,
+                            ticker: estimate.ticker,
+                            amountText: "≈ \(estimate.amountText)",
+                            fiat: estimate.fiat
+                        )
+                    } else {
+                        Text(title)
+                            .keysignReviewText(.title3)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+
+                    Text(scope)
+                        .keysignReviewText(.caption)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    private func amountCard(title: String?, coin: HeroCoinAmount) -> some View {
+        KeysignReviewCard {
+            KeysignReviewCoinAmount(
+                caption: title,
+                logo: coin.logo,
+                ticker: coin.ticker,
+                amountText: coin.amountText,
+                fiat: coin.fiat
+            )
         }
     }
 
