@@ -100,6 +100,8 @@ struct KeysignReviewAddressCards: View {
 
 /// Two cards side by side, equally tall, joined by a notch.
 struct KeysignReviewPairCards<Leading: View, Trailing: View>: View {
+    private static var spacing: CGFloat { 8 }
+
     let glyph: KeysignReviewNotchGlyph
     let leading: () -> Leading
     let trailing: () -> Trailing
@@ -115,12 +117,66 @@ struct KeysignReviewPairCards<Leading: View, Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
-            KeysignReviewCard { leading().frame(maxHeight: .infinity) }
-            KeysignReviewCard { trailing().frame(maxHeight: .infinity) }
+        HStack(spacing: Self.spacing) {
+            notchedCard(edge: .trailing, content: leading)
+            notchedCard(edge: .leading, content: trailing)
         }
         .fixedSize(horizontal: false, vertical: true)
         .overlay { KeysignReviewNotch(glyph: glyph) }
+    }
+
+    private func notchedCard<Content: View>(
+        edge: HorizontalEdge,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        content()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(16)
+            .background(
+                KeysignReviewHorizontalNotchedRectangle(
+                    edge: edge,
+                    notchCenterInset: Self.spacing / 2
+                )
+                .fill(Theme.colors.bgSurface2)
+            )
+            .overlay(
+                KeysignReviewHorizontalNotchedRectangle(
+                    edge: edge,
+                    notchCenterInset: Self.spacing / 2
+                )
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+            )
+    }
+}
+
+/// The swap form's `NotchedRectangle`, turned onto a side edge for the review's
+/// horizontal pair. The fill and border follow the cavity instead of relying
+/// on a sheet-coloured circle to hide two ordinary rounded rectangles.
+private struct KeysignReviewHorizontalNotchedRectangle: InsettableShape {
+    let edge: HorizontalEdge
+    var notchCenterInset: CGFloat
+    var insetAmount: CGFloat = 0
+
+    func path(in rect: CGRect) -> Path {
+        let baseRect = CGRect(origin: .zero, size: CGSize(width: rect.height, height: rect.width))
+        let base = NotchedRectangle(
+            notchRadius: 20,
+            notchCenterInset: notchCenterInset,
+            insetAmount: insetAmount
+        )
+        let transform = switch edge {
+        case .leading:
+            CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: rect.maxX, ty: rect.minY)
+        case .trailing:
+            CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: rect.minX, ty: rect.maxY)
+        }
+        return base.path(in: baseRect).applying(transform)
+    }
+
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var shape = self
+        shape.insetAmount += amount
+        return shape
     }
 }
 
