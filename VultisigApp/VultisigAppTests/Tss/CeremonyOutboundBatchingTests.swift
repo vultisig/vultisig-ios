@@ -11,68 +11,133 @@ import goschnorr
 import vscore
 
 /// Drives the real ceremony libraries against a recording relay. Building a setup
-/// message, opening a session and draining its first outbound round are all local
+/// message, opening a session and draining its outbound messages are all local
 /// operations, so the loop under test runs without a peer or a relay.
 ///
-/// The expected receivers of each body are read back from the library rather than
-/// assumed, so the assertions stay honest if a round's addressing ever changes.
+/// Both sides of every assertion come from the library, never from an assumption
+/// about what a given round looks like: a twin session counts the outbound bodies,
+/// and the receivers of each body are read back per body.
 @MainActor
 final class CeremonyOutboundBatchingTests: XCTestCase {
 
     private static let encryptionKey = String(repeating: "ab", count: 32)
     private static let localParty = "partyA"
 
+    // Each framework exports its own `LIB_OK`, which Swift cannot disambiguate
+    // from the bare case name, so name the success value per library.
+    private static let dklsOK = godkls.lib_error(rawValue: 0)
+    private static let schnorrOK = goschnorr.schnorr_lib_error(rawValue: 0)
+    private static let mldsaOK = vscore.mldsa_error(0)
+
+    /// What a loop does when the library reports no receiver at an index.
+    /// SchnorrKeygen skips the slot; every other loop stops walking the committee.
+    private enum EmptySlot {
+        case stop
+        case skip
+    }
+
     // MARK: - DKLS (ECDSA) keygen
 
     func testDKLSKeygenSendsOneRequestPerOutboundBodyWithThreeParties() async throws {
-        try await assertDKLSKeygenBatchesEachBody(committee: ["partyA", "partyB", "partyC"])
+        try await assertDKLSKeygenBatchesEachBody(
+            committee: ["partyA", "partyB", "partyC"],
+            requiresMulticast: true
+        )
     }
 
     func testDKLSKeygenSendsOneRequestPerOutboundBodyWithTwoParties() async throws {
-        try await assertDKLSKeygenBatchesEachBody(committee: ["partyA", "partyB"])
+        try await assertDKLSKeygenBatchesEachBody(
+            committee: ["partyA", "partyB"],
+            requiresMulticast: false
+        )
     }
 
-    // MARK: - Schnorr (EdDSA) keygen — the loop that skips an empty slot instead of breaking
+    // MARK: - Schnorr (EdDSA) keygen — the loop that skips an empty slot instead of stopping
 
     func testSchnorrKeygenSendsOneRequestPerOutboundBodyWithThreeParties() async throws {
-        try await assertSchnorrKeygenBatchesEachBody(committee: ["partyA", "partyB", "partyC"])
+        try await assertSchnorrKeygenBatchesEachBody(
+            committee: ["partyA", "partyB", "partyC"],
+            requiresMulticast: true
+        )
     }
 
     func testSchnorrKeygenSendsOneRequestPerOutboundBodyWithTwoParties() async throws {
-        try await assertSchnorrKeygenBatchesEachBody(committee: ["partyA", "partyB"])
+        try await assertSchnorrKeygenBatchesEachBody(
+            committee: ["partyA", "partyB"],
+            requiresMulticast: false
+        )
     }
 
     // MARK: - ML-DSA keygen
 
     func testDilithiumKeygenSendsOneRequestPerOutboundBodyWithThreeParties() async throws {
-        try await assertDilithiumKeygenBatchesEachBody(committee: ["partyA", "partyB", "partyC"])
+        try await assertDilithiumKeygenBatchesEachBody(
+            committee: ["partyA", "partyB", "partyC"],
+            requiresMulticast: true
+        )
     }
 
     func testDilithiumKeygenSendsOneRequestPerOutboundBodyWithTwoParties() async throws {
-        try await assertDilithiumKeygenBatchesEachBody(committee: ["partyA", "partyB"])
+        try await assertDilithiumKeygenBatchesEachBody(
+            committee: ["partyA", "partyB"],
+            requiresMulticast: false
+        )
     }
 
     // MARK: - DKLS
 
     private func assertDKLSKeygenBatchesEachBody(
         committee: [String],
+        requiresMulticast: Bool,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
         let relay = RecordingRelayClient()
-        let keygen = DKLSKeygen(
-            vault: Self.makeVault(),
+        let keygen = Self.makeDKLSKeygen(committee: committee, relay: relay)
+
+        // A twin session on its own setup message says how many bodies this party
+        // emits, which is what the number of requests has to match.
+        var oracleHandle = try Self.dklsSession(committee: committee)
+        defer { _ = dkls_keygen_session_free(&oracleHandle) }
+        var expectedBodies = 0
+        while !keygen.GetDKLSOutboundMessage(handle: oracleHandle).1.isEmpty {
+            expectedBodies += 1
+        }
+
+        var handle = try Self.dklsSession(committee: committee)
+        defer { _ = dkls_keygen_session_free(&handle) }
+        try await keygen.processDKLSOutboundMessage(handle: handle)
+
+        try Self.assertOneRequestPerBody(
+            relay.sentMessages,
+            expectedBodies: expectedBodies,
+            requiresMulticast: requiresMulticast,
+            file: file,
+            line: line
+        ) { bodyBytes in
+            let slice = bodyBytes.to_dkls_goslice()
+            return Self.collect(count: committee.count, emptySlot: .stop) { idx in
+                keygen.getOutboundMessageReceiver(handle: handle, message: slice, idx: idx)
+            }
+        }
+    }
+
+    private static func makeDKLSKeygen(committee: [String], relay: RecordingRelayClient) -> DKLSKeygen {
+        DKLSKeygen(
+            vault: makeVault(),
             tssType: .Keygen,
             keygenCommittee: committee,
             vaultOldCommittee: [],
             mediatorURL: "https://relay.invalid",
             sessionID: "session",
-            encryptionKeyHex: Self.encryptionKey,
+            encryptionKeyHex: encryptionKey,
             isInitiateDevice: true,
             localUI: nil,
             httpClient: relay
         )
+    }
 
+    private static func dklsSession(committee: [String]) throws -> godkls.Handle {
         var buf = godkls.tss_buffer()
         defer { godkls.tss_buffer_free(&buf) }
         let idBytes = DKLSHelper.arrayToBytes(parties: committee)
@@ -83,48 +148,34 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
             &ids,
             &buf
         )
-        XCTAssertEqual(setupResult, godkls.lib_error(0), "setup message", file: file, line: line)
+        guard setupResult == dklsOK else {
+            throw HelperError.runtimeError("dkls setup message failed: \(setupResult)")
+        }
         let setup = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
 
         var decodedSetup = setup.to_dkls_goslice()
-        let localPartyBytes = Self.localParty.toArray()
+        let localPartyBytes = localParty.toArray()
         var localPartySlice = localPartyBytes.to_dkls_goslice()
         var handle = godkls.Handle()
         let sessionResult = dkls_keygen_session_from_setup(&decodedSetup, &localPartySlice, &handle)
-        XCTAssertEqual(sessionResult, godkls.lib_error(0), "session", file: file, line: line)
-        defer { _ = dkls_keygen_session_free(&handle) }
-
-        try await keygen.processDKLSOutboundMessage(handle: handle)
-
-        try Self.assertOneRequestPerBody(relay.sentMessages, file: file, line: line) { bodyBytes in
-            let slice = bodyBytes.to_dkls_goslice()
-            return Self.collect(count: committee.count) { idx in
-                keygen.getOutboundMessageReceiver(handle: handle, message: slice, idx: idx)
-            }
+        guard sessionResult == dklsOK else {
+            throw HelperError.runtimeError("dkls session failed: \(sessionResult)")
         }
+        return handle
     }
 
     // MARK: - Schnorr
 
     private func assertSchnorrKeygenBatchesEachBody(
         committee: [String],
+        requiresMulticast: Bool,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
-        var buf = goschnorr.tss_buffer()
-        defer { goschnorr.tss_buffer_free(&buf) }
-        let idBytes = DKLSHelper.arrayToBytes(parties: committee)
-        var ids = idBytes.to_dkls_goslice()
-        let setupResult = schnorr_keygen_setupmsg_new(
-            DKLSHelper.getThreshod(input: committee.count),
-            nil,
-            &ids,
-            &buf
-        )
-        XCTAssertEqual(setupResult, .schnorrLibOK, "setup message", file: file, line: line)
-        let setup = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-
         let relay = RecordingRelayClient()
+        let (setup, handle) = try Self.schnorrSession(committee: committee)
+        var handleToFree = handle
+        defer { schnorr_keygen_session_free(&handleToFree) }
         let keygen = SchnorrKeygen(
             vault: Self.makeVault(),
             tssType: .Keygen,
@@ -139,46 +190,68 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
             httpClient: relay
         )
 
-        var decodedSetup = setup.to_dkls_goslice()
-        let localPartyBytes = Self.localParty.toArray()
-        var localPartySlice = localPartyBytes.to_dkls_goslice()
-        var handle = goschnorr.Handle()
-        let sessionResult = schnorr_keygen_session_from_setup(&decodedSetup, &localPartySlice, &handle)
-        XCTAssertEqual(sessionResult, .schnorrLibOK, "session", file: file, line: line)
-        defer { schnorr_keygen_session_free(&handle) }
+        var oracleHandle = try Self.schnorrSession(committee: committee).1
+        defer { schnorr_keygen_session_free(&oracleHandle) }
+        var expectedBodies = 0
+        while !keygen.GetSchnorrOutboundMessage(handle: oracleHandle).1.isEmpty {
+            expectedBodies += 1
+        }
 
         try await keygen.processSchnorrOutboundMessage(handle: handle)
 
-        try Self.assertOneRequestPerBody(relay.sentMessages, file: file, line: line) { bodyBytes in
+        try Self.assertOneRequestPerBody(
+            relay.sentMessages,
+            expectedBodies: expectedBodies,
+            requiresMulticast: requiresMulticast,
+            file: file,
+            line: line
+        ) { bodyBytes in
             let slice = bodyBytes.to_dkls_goslice()
-            return Self.collect(count: committee.count) { idx in
+            // This loop skips an empty slot rather than stopping, so the oracle must too.
+            return Self.collect(count: committee.count, emptySlot: .skip) { idx in
                 keygen.getOutboundMessageReceiver(handle: handle, message: slice, idx: idx)
             }
         }
+    }
+
+    private static func schnorrSession(committee: [String]) throws -> ([UInt8], goschnorr.Handle) {
+        var buf = goschnorr.tss_buffer()
+        defer { goschnorr.tss_buffer_free(&buf) }
+        let idBytes = DKLSHelper.arrayToBytes(parties: committee)
+        var ids = idBytes.to_dkls_goslice()
+        let setupResult = schnorr_keygen_setupmsg_new(
+            DKLSHelper.getThreshod(input: committee.count),
+            nil,
+            &ids,
+            &buf
+        )
+        guard setupResult == schnorrOK else {
+            throw HelperError.runtimeError("schnorr setup message failed: \(setupResult)")
+        }
+        let setup = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+
+        var decodedSetup = setup.to_dkls_goslice()
+        let localPartyBytes = localParty.toArray()
+        var localPartySlice = localPartyBytes.to_dkls_goslice()
+        var handle = goschnorr.Handle()
+        let sessionResult = schnorr_keygen_session_from_setup(&decodedSetup, &localPartySlice, &handle)
+        guard sessionResult == schnorrOK else {
+            throw HelperError.runtimeError("schnorr session failed: \(sessionResult)")
+        }
+        return (setup, handle)
     }
 
     // MARK: - ML-DSA
 
     private func assertDilithiumKeygenBatchesEachBody(
         committee: [String],
+        requiresMulticast: Bool,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
-        var buf = vscore.tss_buffer()
-        defer { vscore.tss_buffer_free(&buf) }
-        let idBytes = DKLSHelper.arrayToBytes(parties: committee)
-        var ids = idBytes.to_mldsa_goslice()
-        let setupResult = mldsa_keygen_setupmsg_new(
-            vscore.MlDsa44,
-            DKLSHelper.getThreshod(input: committee.count),
-            nil,
-            &ids,
-            &buf
-        )
-        XCTAssertEqual(setupResult, vscore.mldsa_error(0), "setup message", file: file, line: line)
-        let setup = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-
         let relay = RecordingRelayClient()
+        let (setup, handle) = try Self.dilithiumSession(committee: committee)
+        defer { _ = mldsa_keygen_session_free(handle) }
         let keygen = DilithiumKeygen(
             vault: Self.makeVault(),
             tssType: .Keygen,
@@ -191,8 +264,48 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
             httpClient: relay
         )
 
+        let oracleHandle = try Self.dilithiumSession(committee: committee).1
+        defer { _ = mldsa_keygen_session_free(oracleHandle) }
+        var expectedBodies = 0
+        while !keygen.GetDilithiumOutboundMessage(handle: oracleHandle).1.isEmpty {
+            expectedBodies += 1
+        }
+
+        try await keygen.processDilithiumOutboundMessage(handle: handle)
+
+        try Self.assertOneRequestPerBody(
+            relay.sentMessages,
+            expectedBodies: expectedBodies,
+            requiresMulticast: requiresMulticast,
+            file: file,
+            line: line
+        ) { bodyBytes in
+            let slice = bodyBytes.to_mldsa_goslice()
+            return Self.collect(count: committee.count, emptySlot: .stop) { idx in
+                keygen.getOutboundMessageReceiver(handle: handle, message: slice, idx: idx)
+            }
+        }
+    }
+
+    private static func dilithiumSession(committee: [String]) throws -> ([UInt8], vscore.Handle) {
+        var buf = vscore.tss_buffer()
+        defer { vscore.tss_buffer_free(&buf) }
+        let idBytes = DKLSHelper.arrayToBytes(parties: committee)
+        var ids = idBytes.to_mldsa_goslice()
+        let setupResult = mldsa_keygen_setupmsg_new(
+            vscore.MlDsa44,
+            DKLSHelper.getThreshod(input: committee.count),
+            nil,
+            &ids,
+            &buf
+        )
+        guard setupResult == mldsaOK else {
+            throw HelperError.runtimeError("mldsa setup message failed: \(setupResult)")
+        }
+        let setup = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+
         var decodedSetup = setup.to_mldsa_goslice()
-        let localPartyBytes = Self.localParty.toArray()
+        let localPartyBytes = localParty.toArray()
         var localPartySlice = localPartyBytes.to_mldsa_goslice()
         var handle = vscore.Handle()
         let sessionResult = mldsa_keygen_session_from_setup(
@@ -201,30 +314,36 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
             &localPartySlice,
             &handle
         )
-        XCTAssertEqual(sessionResult, vscore.mldsa_error(0), "session", file: file, line: line)
-        defer { _ = mldsa_keygen_session_free(handle) }
-
-        try await keygen.processDilithiumOutboundMessage(handle: handle)
-
-        try Self.assertOneRequestPerBody(relay.sentMessages, file: file, line: line) { bodyBytes in
-            let slice = bodyBytes.to_mldsa_goslice()
-            return Self.collect(count: committee.count) { idx in
-                keygen.getOutboundMessageReceiver(handle: handle, message: slice, idx: idx)
-            }
+        guard sessionResult == mldsaOK else {
+            throw HelperError.runtimeError("mldsa session failed: \(sessionResult)")
         }
+        return (setup, handle)
     }
 
     // MARK: - Shared assertions
 
-    /// Fails unless the ceremony produced one relay request per outbound body, each
-    /// addressed to exactly the receivers `expectedReceivers` reads back from the library.
+    /// Fails unless the ceremony produced exactly one relay request per outbound body,
+    /// each addressed to exactly the receivers `expectedReceivers` reads back per body.
+    ///
+    /// `requiresMulticast` guards against a vacuous pass: with a single peer the serial
+    /// loop and the batched one are indistinguishable, so a committee that should produce
+    /// a multi-receiver body has to actually produce one for the run to prove anything.
     private static func assertOneRequestPerBody(
         _ requests: [Message],
+        expectedBodies: Int,
+        requiresMulticast: Bool,
         file: StaticString,
         line: UInt,
         expectedReceivers: ([UInt8]) -> [String]
     ) throws {
-        XCTAssertFalse(requests.isEmpty, "the ceremony sent nothing", file: file, line: line)
+        XCTAssertGreaterThan(expectedBodies, 0, "the library emitted nothing to send", file: file, line: line)
+        XCTAssertEqual(
+            requests.count,
+            expectedBodies,
+            "expected one request per outbound body",
+            file: file,
+            line: line
+        )
         XCTAssertEqual(
             Set(requests.map(\.hash)).count,
             requests.count,
@@ -232,6 +351,14 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
             file: file,
             line: line
         )
+        if requiresMulticast {
+            XCTAssertTrue(
+                requests.contains { $0.to.count > 1 },
+                "no body reached more than one peer, so this run cannot distinguish batching",
+                file: file,
+                line: line
+            )
+        }
 
         for request in requests {
             let plaintext = try XCTUnwrap(
@@ -245,12 +372,21 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
         }
     }
 
-    private static func collect(count: Int, receiver: (UInt32) -> [UInt8]) -> [String] {
+    private static func collect(
+        count: Int,
+        emptySlot: EmptySlot,
+        receiver: (UInt32) -> [UInt8]
+    ) -> [String] {
         var receivers: [String] = []
         for idx in 0..<count {
             let bytes = receiver(UInt32(idx))
             if bytes.isEmpty {
-                break
+                switch emptySlot {
+                case .stop:
+                    return receivers
+                case .skip:
+                    continue
+                }
             }
             receivers.append(String(bytes: bytes, encoding: .utf8)!)
         }
