@@ -200,9 +200,11 @@ struct KeysignReviewDisclosure<Rows: View>: View {
     var body: some View {
         VStack(spacing: 12) {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
-                }
+                // Let the sheet measure the final layout in one pass. Animating
+                // this stack's height produces a stream of intermediate detents,
+                // which makes the native sheet chase the content in a second,
+                // delayed animation.
+                isExpanded.toggle()
             } label: {
                 KeysignReviewRow(label: title) {
                     HStack(spacing: 4) {
@@ -214,6 +216,7 @@ struct KeysignReviewDisclosure<Rows: View>: View {
                             .stroke(Theme.colors.textPrimary, style: StrokeStyle(lineWidth: 1.5, lineCap: .square))
                             .frame(width: 12, height: 12)
                             .rotationEffect(.degrees(isExpanded ? -90 : 90))
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
                     }
                 }
                 .contentShape(Rectangle())
@@ -230,7 +233,6 @@ struct KeysignReviewDisclosure<Rows: View>: View {
                     }
                     .padding(.vertical, 2)
                 }
-                .transition(.opacity)
             }
         }
     }
