@@ -105,20 +105,37 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
 
     // MARK: - TRON staking short-circuit
 
-    func testTRONStakingShortCircuitsBalanceCheck() async {
+    /// A zero-balance TRX send of 100 TRX: only the staking flag decides
+    /// whether `validateBalance()` rejects it. The passthrough resolver keeps
+    /// address resolution from failing first, so the pipeline reaches the
+    /// balance check.
+    private func makeZeroBalanceTronSend(isStakingOperation: Bool) -> SendDetailsViewModel {
         let trx = SendFormFixture.makeTRX(rawBalance: "0")
-        let vm = SendFormFixture.make(coin: trx)
-        vm.toAddress = "TXrecipient000000000000000000000000"
+        let vm = SendFormFixture.make(coin: trx, addressResolver: { input, _ in input })
+        vm.toAddress = "TLBaRhANQoJFTqre9Nf1mjuwNWjCJeYqUL"
         vm.amount = "100"
-        vm.isStakingOperation = true
+        vm.isStakingOperation = isStakingOperation
+        return vm
+    }
 
-        _ = await vm.validateForm()
+    func testTRONStakingShortCircuitsBalanceCheck() async {
+        let vm = makeZeroBalanceTronSend(isStakingOperation: true)
 
-        // Address format may or may not pass for the stub TRX address; if it
-        // does, balance check should be skipped and the call returns true.
-        // Either way: balance-exceeded should NOT be the error.
-        XCTAssertNotEqual(vm.errorMessage, "walletBalanceExceededError",
-                          "TRON staking must short-circuit balance validation.")
+        let isValid = await vm.validateForm()
+
+        XCTAssertTrue(isValid, "TRON staking must short-circuit balance validation.")
+        XCTAssertNil(vm.errorMessage)
+        XCTAssertFalse(vm.showAmountAlert)
+    }
+
+    func testTRONTransferWithoutStakingFailsBalanceCheck() async {
+        let vm = makeZeroBalanceTronSend(isStakingOperation: false)
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertTrue(vm.showAmountAlert)
     }
 
     // MARK: - Cosmos pending-tx blocker
