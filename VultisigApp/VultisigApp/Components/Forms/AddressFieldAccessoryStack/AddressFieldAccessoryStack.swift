@@ -45,7 +45,7 @@ struct AddressFieldAccessoryStack: View {
                 showScanner.toggle()
             }
             AddressFieldAccessoryButton(
-                icon: .bookmarks,
+                icon: .bookBookmarkFilled,
                 cornerRadii: RectangleCornerRadii(
                     topLeading: Theme.radius.sm.points,
                     bottomLeading: Theme.radius.sm.points,

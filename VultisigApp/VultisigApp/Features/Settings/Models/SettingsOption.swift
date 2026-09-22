@@ -105,7 +105,7 @@ enum SettingsOption: String, Identifiable {
         case .notifications:
             return .bell
         case .addressBook:
-            return .fileBookmark
+            return .bookBookmarkFilled
         case .managePasscode:
             return .lockPassword
         case .referralCode:
