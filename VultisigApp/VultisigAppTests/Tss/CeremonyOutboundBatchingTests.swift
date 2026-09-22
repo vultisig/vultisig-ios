@@ -100,7 +100,14 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
         var oracleHandle = try Self.dklsSession(committee: committee)
         defer { _ = dkls_keygen_session_free(&oracleHandle) }
         var expectedBodies = 0
-        while !keygen.GetDKLSOutboundMessage(handle: oracleHandle).1.isEmpty {
+        while true {
+            // A drained session answers OK with an empty buffer; any other code is a
+            // real failure that would otherwise look like the end of the round.
+            let (result, body) = keygen.GetDKLSOutboundMessage(handle: oracleHandle)
+            guard result == Self.dklsOK else {
+                throw HelperError.runtimeError("dkls outbound message failed: \(result)")
+            }
+            if body.isEmpty { break }
             expectedBodies += 1
         }
 
@@ -193,7 +200,12 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
         var oracleHandle = try Self.schnorrSession(committee: committee).1
         defer { schnorr_keygen_session_free(&oracleHandle) }
         var expectedBodies = 0
-        while !keygen.GetSchnorrOutboundMessage(handle: oracleHandle).1.isEmpty {
+        while true {
+            let (result, body) = keygen.GetSchnorrOutboundMessage(handle: oracleHandle)
+            guard result == Self.schnorrOK else {
+                throw HelperError.runtimeError("schnorr outbound message failed: \(result)")
+            }
+            if body.isEmpty { break }
             expectedBodies += 1
         }
 
@@ -267,7 +279,12 @@ final class CeremonyOutboundBatchingTests: XCTestCase {
         let oracleHandle = try Self.dilithiumSession(committee: committee).1
         defer { _ = mldsa_keygen_session_free(oracleHandle) }
         var expectedBodies = 0
-        while !keygen.GetDilithiumOutboundMessage(handle: oracleHandle).1.isEmpty {
+        while true {
+            let (result, body) = keygen.GetDilithiumOutboundMessage(handle: oracleHandle)
+            guard result == Self.mldsaOK else {
+                throw HelperError.runtimeError("mldsa outbound message failed: \(result)")
+            }
+            if body.isEmpty { break }
             expectedBodies += 1
         }
 
