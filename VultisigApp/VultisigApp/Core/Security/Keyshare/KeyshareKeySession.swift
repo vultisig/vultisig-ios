@@ -30,7 +30,10 @@ import Foundation
 /// clear behind a passcode that is still set. So an unreadable Keychain reads as
 /// `.locked` — the app refuses to touch key material until it can see its own
 /// state again.
-final class KeyshareKeySession {
+///
+/// `@unchecked Sendable` because `cachedKey` and `generation`, its only mutable
+/// state, are read and written only while holding `lock`.
+final class KeyshareKeySession: @unchecked Sendable {
 
     static let shared = KeyshareKeySession()
 
