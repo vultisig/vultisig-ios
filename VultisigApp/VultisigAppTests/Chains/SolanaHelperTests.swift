@@ -217,11 +217,11 @@ final class SolanaHelperTests: XCTestCase {
     }
 
     /// A legacy System Program transfer paid for and signed by `feePayer` alone.
-    private func makeLegacyTransferMessage(feePayer: Data) -> Data {
+    private func makeLegacyTransferMessage(feePayer: Data, lamports: UInt64 = 1_000_000) -> Data {
         makeMessage(
             header: [1, 0, 1],
             accountKeys: [feePayer, transferRecipientKey, systemProgramKey],
-            instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
+            instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: lamports)]
         )
     }
 
@@ -236,7 +236,10 @@ final class SolanaHelperTests: XCTestCase {
         unsigned.append(message)
         let base64Transaction = unsigned.base64EncodedString()
 
-        let preImageHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: base64Transaction)
+        let preImageHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: publicKey.data.hexString,
+            base64Transaction: base64Transaction
+        )
         XCTAssertEqual(preImageHashes, [message.hexString])
         let signatures = try makeSignatures(preImageHashes: preImageHashes, privateKey: privateKey)
 
@@ -314,30 +317,70 @@ final class SolanaHelperTests: XCTestCase {
     /// pre-image, TSS-shaped signature, splice.
     private func signRaw(_ transaction: Data, privateKey: PrivateKey) throws -> SignedTransactionResult {
         let base64Transaction = transaction.base64EncodedString()
-        let preImageHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: base64Transaction)
+        let vaultHexPubKey = privateKey.getPublicKeyEd25519().data.hexString
+        let preImageHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: vaultHexPubKey,
+            base64Transaction: base64Transaction
+        )
         let signatures = try makeSignatures(preImageHashes: preImageHashes, privateKey: privateKey)
         return try SolanaHelper.signRawTransaction(
-            coinHexPubKey: privateKey.getPublicKeyEd25519().data.hexString,
+            coinHexPubKey: vaultHexPubKey,
             base64Transaction: base64Transaction,
             signatures: signatures
         )
     }
 
-    private func assertSignRawTransactionThrows(
+    private func assertThrows<T>(
+        _ expression: @autoclosure () throws -> T,
+        messageContaining expected: String,
+        _ stage: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(try expression(), "\(stage) accepted it", file: file, line: line) { error in
+            XCTAssertTrue(
+                error.localizedDescription.contains(expected),
+                "\(stage): \"\(error.localizedDescription)\" does not mention \"\(expected)\"",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+    /// Both raw-path stages refuse `transaction` for the same reason: the
+    /// pre-image step before the ceremony, and the splice after it, reached
+    /// here with a valid signature over the message as if the ceremony had run.
+    private func assertRawSigningRefuses(
         _ transaction: Data,
         privateKey: PrivateKey,
         messageContaining expected: String,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) {
-        XCTAssertThrowsError(try signRaw(transaction, privateKey: privateKey), file: file, line: line) { error in
-            XCTAssertTrue(
-                error.localizedDescription.contains(expected),
-                "\"\(error.localizedDescription)\" does not mention \"\(expected)\"",
-                file: file,
-                line: line
-            )
-        }
+    ) throws {
+        let base64Transaction = transaction.base64EncodedString()
+        let vaultHexPubKey = privateKey.getPublicKeyEd25519().data.hexString
+        let slotCount = Int(try XCTUnwrap(transaction.first, file: file, line: line))
+        let message = transaction.subdata(in: (1 + slotCount * 64)..<transaction.count)
+        let signatures = try makeSignatures(preImageHashes: [message.hexString], privateKey: privateKey)
+
+        assertThrows(
+            try SolanaHelper.getPreSignedImageHashForRaw(coinHexPubKey: vaultHexPubKey, base64Transaction: base64Transaction),
+            messageContaining: expected,
+            "pre-image",
+            file: file,
+            line: line
+        )
+        assertThrows(
+            try SolanaHelper.signRawTransaction(
+                coinHexPubKey: vaultHexPubKey,
+                base64Transaction: base64Transaction,
+                signatures: signatures
+            ),
+            messageContaining: expected,
+            "splice",
+            file: file,
+            line: line
+        )
     }
 
     /// A vault that is the fee payer (signer 0) gets exactly what the old
@@ -416,7 +459,10 @@ final class SolanaHelperTests: XCTestCase {
         XCTAssertEqual(parsed.numRequiredSignatures, 3)
         XCTAssertEqual(parsed.staticAccountKeys[1], [UInt8](vaultKey.data))
         XCTAssertEqual(
-            try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: fixture.transaction.base64EncodedString()),
+            try SolanaHelper.getPreSignedImageHashForRaw(
+                coinHexPubKey: vaultKey.data.hexString,
+                base64Transaction: fixture.transaction.base64EncodedString()
+            ),
             [fixture.message.hexString]
         )
 
@@ -446,14 +492,14 @@ final class SolanaHelperTests: XCTestCase {
             accountKeys: [payer, vaultKey, systemProgramKey],
             instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
         )
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: vaultAsRecipient),
             privateKey: privateKey,
             messageContaining: "not a required signer"
         )
 
         // The vault is not in the transaction at all.
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: makeLegacyTransferMessage(feePayer: payer)),
             privateKey: privateKey,
             messageContaining: "not a required signer"
@@ -467,13 +513,13 @@ final class SolanaHelperTests: XCTestCase {
         let fixture = try makeSponsoredV0Transaction(vault: vaultKey, relayer: relayer, cosigner: makeKey(fill: 0x03))
 
         // Too few: one slot for three required signers.
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: fixture.message),
             privateKey: privateKey,
             messageContaining: "declares 1 signature slot(s) but the message requires 3"
         )
         // Too many: four slots for three.
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: Array(repeating: emptySignatureSlot, count: 4), message: fixture.message),
             privateKey: privateKey,
             messageContaining: "declares 4 signature slot(s) but the message requires 3"
@@ -484,7 +530,7 @@ final class SolanaHelperTests: XCTestCase {
             accountKeys: [vaultKey, relayer, transferRecipientKey, systemProgramKey],
             instructions: [makeTransferInstruction(programIndex: 3, from: 0, to: 2, lamports: 1_000_000)]
         )
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: twoSigners),
             privateKey: privateKey,
             messageContaining: "declares 1 signature slot(s) but the message requires 2"
@@ -500,7 +546,7 @@ final class SolanaHelperTests: XCTestCase {
             instructions: [makeTransferInstruction(programIndex: 2, from: 0, to: 1, lamports: 1_000_000)]
         )
 
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: versionOne),
             privateKey: privateKey,
             messageContaining: "Unsupported Solana message version 1"
@@ -512,7 +558,7 @@ final class SolanaHelperTests: XCTestCase {
         let vaultKey = privateKey.getPublicKeyEd25519().data
 
         // A v0 prefix followed by a partial header.
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: Data([0x80, 0x01])),
             privateKey: privateKey,
             messageContaining: "too short for header"
@@ -521,7 +567,7 @@ final class SolanaHelperTests: XCTestCase {
         // One required signer, two declared keys, only one present.
         var truncatedKeys = Data([1, 0, 1, 2])
         truncatedKeys.append(vaultKey)
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: truncatedKeys),
             privateKey: privateKey,
             messageContaining: "too short for declared account key count (2)"
@@ -530,7 +576,7 @@ final class SolanaHelperTests: XCTestCase {
         // Two required signers but only one listed key.
         var underListed = Data([2, 0, 0, 1])
         underListed.append(vaultKey)
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot, emptySignatureSlot], message: underListed),
             privateKey: privateKey,
             messageContaining: "requires 2 signatures but lists 1 account keys"
@@ -544,7 +590,7 @@ final class SolanaHelperTests: XCTestCase {
         var padded = Data([1, 0, 0, 0x81, 0x00])
         padded.append(privateKey.getPublicKeyEd25519().data)
 
-        assertSignRawTransactionThrows(
+        try assertRawSigningRefuses(
             makeRawTransaction(signatureSlots: [emptySignatureSlot], message: padded),
             privateKey: privateKey,
             messageContaining: "malformed compact-u16"
@@ -558,7 +604,10 @@ final class SolanaHelperTests: XCTestCase {
             let owner = try XCTUnwrap(Base58.decodeNoCheck(string: vector.feePayer), vector.name)
             for transaction in [vector.source, vector.injected] {
                 let messageHex = try XCTUnwrap(
-                    SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: transaction).first,
+                    SolanaHelper.getPreSignedImageHashForRaw(
+                        coinHexPubKey: owner.hexString,
+                        base64Transaction: transaction
+                    ).first,
                     vector.name
                 )
                 let message = try XCTUnwrap(Data(hexString: messageHex), vector.name)
@@ -567,17 +616,88 @@ final class SolanaHelperTests: XCTestCase {
         }
     }
 
+    // MARK: - Raw signing: pre-ceremony signer check
+
+    /// The keysign entry point refuses a transaction that does not list the
+    /// vault's key among its required signers before any ceremony starts.
+    func testPreImageRefusesATransactionTheVaultIsNotRequiredToSign() throws {
+        let payer = try makeKey(fill: 0x02).getPublicKeyEd25519().data
+        let transaction = makeRawTransaction(
+            signatureSlots: [emptySignatureSlot],
+            message: makeLegacyTransferMessage(feePayer: payer)
+        )
+        let payload = try makeSignSolanaPayload(rawTransactions: [transaction.base64EncodedString()])
+
+        assertThrows(
+            try SolanaHelper.getPreSignedImageHash(keysignPayload: payload),
+            messageContaining: "not a required signer",
+            "pre-image"
+        )
+    }
+
+    func testPreImageRefusesASignatureSlotCountTheMessageDisagreesWith() throws {
+        let fixture = try makeSponsoredV0Transaction(
+            vault: makeSignerKey().getPublicKeyEd25519().data,
+            relayer: makeKey(fill: 0x02).getPublicKeyEd25519().data,
+            cosigner: makeKey(fill: 0x03)
+        )
+        let transaction = makeRawTransaction(signatureSlots: [emptySignatureSlot], message: fixture.message)
+        let payload = try makeSignSolanaPayload(rawTransactions: [transaction.base64EncodedString()])
+
+        assertThrows(
+            try SolanaHelper.getPreSignedImageHash(keysignPayload: payload),
+            messageContaining: "declares 1 signature slot(s) but the message requires 3",
+            "pre-image"
+        )
+    }
+
+    /// The check only adds a refusal: wherever the vault signs, the pre-image
+    /// is still the message bytes verbatim, which is what every co-signing
+    /// device hashes.
+    func testPreImageIsStillTheMessageVerbatimWhereverTheVaultSigns() throws {
+        let vaultKey = try makeSignerKey().getPublicKeyEd25519().data
+        let cosignerKey = try makeKey(fill: 0x03).getPublicKeyEd25519().data
+        let soleSigner = makeLegacyTransferMessage(feePayer: vaultKey)
+        let feePayerWithCosigner = makeMessage(
+            header: [2, 0, 1],
+            accountKeys: [vaultKey, cosignerKey, transferRecipientKey, systemProgramKey],
+            instructions: [makeTransferInstruction(programIndex: 3, from: 0, to: 2, lamports: 1_000_000)]
+        )
+        let sponsored = try makeSponsoredV0Transaction(
+            vault: vaultKey,
+            relayer: makeKey(fill: 0x02).getPublicKeyEd25519().data,
+            cosigner: makeKey(fill: 0x03)
+        )
+        let cases: [(name: String, transaction: Data, message: Data)] = [
+            ("sole signer", makeRawTransaction(signatureSlots: [emptySignatureSlot], message: soleSigner), soleSigner),
+            (
+                "fee payer beside a co-signer",
+                makeRawTransaction(signatureSlots: [emptySignatureSlot, emptySignatureSlot], message: feePayerWithCosigner),
+                feePayerWithCosigner
+            ),
+            ("sponsored, vault at signer 1", sponsored.transaction, sponsored.message)
+        ]
+
+        for testCase in cases {
+            let payload = try makeSignSolanaPayload(rawTransactions: [testCase.transaction.base64EncodedString()])
+            XCTAssertEqual(
+                try SolanaHelper.getPreSignedImageHash(keysignPayload: payload),
+                [testCase.message.hexString],
+                testCase.name
+            )
+        }
+    }
+
     // MARK: - signAllTransactions batch guard
 
-    /// Builds a minimal but structurally valid Solana raw-tx envelope —
-    /// `[shortvec(1)][64-byte sig slot][32-byte message]`, base64-encoded —
-    /// the same shape the dApp raw-signing path (SignSolana.rawTransactions)
-    /// consumes.
-    private func makeRawSolanaTransactionBase64(messageFill: UInt8) -> String {
-        var tx = Data([0x01])
-        tx.append(Data(repeating: 0x00, count: 64))
-        tx.append(Data(repeating: messageFill, count: 32))
-        return tx.base64EncodedString()
+    /// A single-signer raw transaction the test vault pays for, base64-encoded:
+    /// the shape the dApp raw-signing path (SignSolana.rawTransactions) consumes.
+    private func makeRawSolanaTransactionBase64(lamports: UInt64) throws -> String {
+        let feePayer = try makeSignerKey().getPublicKeyEd25519().data
+        return makeRawTransaction(
+            signatureSlots: [emptySignatureSlot],
+            message: makeLegacyTransferMessage(feePayer: feePayer, lamports: lamports)
+        ).base64EncodedString()
     }
 
     private func makeSignSolanaPayload(rawTransactions: [String]) throws -> KeysignPayload {
@@ -618,8 +738,8 @@ final class SolanaHelperTests: XCTestCase {
     /// user would physically approve the entire multi-device keysign ceremony
     /// and only then hit an opaque post-ceremony failure.
     func testGetPreSignedImageHashRejectsMultipleRawTransactions() throws {
-        let tx1 = makeRawSolanaTransactionBase64(messageFill: 0x07)
-        let tx2 = makeRawSolanaTransactionBase64(messageFill: 0x09)
+        let tx1 = try makeRawSolanaTransactionBase64(lamports: 7)
+        let tx2 = try makeRawSolanaTransactionBase64(lamports: 9)
         let payload = try makeSignSolanaPayload(rawTransactions: [tx1, tx2])
 
         XCTAssertThrowsError(try SolanaHelper.getPreSignedImageHash(keysignPayload: payload))
@@ -628,7 +748,7 @@ final class SolanaHelperTests: XCTestCase {
     /// Regression: the single raw-transaction path is untouched and still
     /// yields exactly one non-empty pre-image hash.
     func testGetPreSignedImageHashAllowsSingleRawTransaction() throws {
-        let tx = makeRawSolanaTransactionBase64(messageFill: 0x07)
+        let tx = try makeRawSolanaTransactionBase64(lamports: 7)
         let payload = try makeSignSolanaPayload(rawTransactions: [tx])
 
         let hashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)

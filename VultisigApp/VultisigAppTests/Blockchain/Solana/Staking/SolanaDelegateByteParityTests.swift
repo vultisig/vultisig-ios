@@ -118,7 +118,10 @@ final class SolanaDelegateByteParityTests: XCTestCase {
 
         // Peer path: only the relayed raw bytes, no staking payload.
         let rawTx = try SolanaHelper.buildDelegateUnsignedTransaction(keysignPayload: payload)
-        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: rawTx)
+        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: payload.coin.hexPublicKey,
+            base64Transaction: rawTx
+        )
 
         XCTAssertEqual(initiatorHashes, peerHashes)
     }

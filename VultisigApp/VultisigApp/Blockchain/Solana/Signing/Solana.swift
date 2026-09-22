@@ -319,7 +319,10 @@ enum SolanaHelper {
             }
             var allHashes: [String] = []
             for base64Tx in signSolana.rawTransactions {
-                let hashes = try getPreSignedImageHashForRaw(base64Transaction: base64Tx)
+                let hashes = try getPreSignedImageHashForRaw(
+                    coinHexPubKey: keysignPayload.coin.hexPublicKey,
+                    base64Transaction: base64Tx
+                )
                 allHashes.append(contentsOf: hashes)
             }
             return allHashes
@@ -461,12 +464,18 @@ enum SolanaHelper {
     // are ever emitted). For Solana, ed25519 signs the wire-format message
     // verbatim, so extracting it directly is canonical and cross-platform safe.
 
-    static func getPreSignedImageHashForRaw(base64Transaction: String) throws -> [String] {
+    static func getPreSignedImageHashForRaw(coinHexPubKey: String, base64Transaction: String) throws -> [String] {
+        guard let pubkeyData = Data(hexString: coinHexPubKey) else {
+            throw HelperError.runtimeError("Invalid public key: \(coinHexPubKey)")
+        }
         guard let txData = Data(base64Encoded: base64Transaction) else {
             throw HelperError.runtimeError("Invalid base64 transaction")
         }
-        let messageBytes = try extractSolanaMessageBytes(from: txData).message
-        return [messageBytes.hexString]
+        let parsed = try extractSolanaMessageBytes(from: txData)
+        // Every device derives the pre-image before the ceremony, so a transaction
+        // the vault can never sign is refused here rather than after a full TSS round.
+        _ = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
+        return [parsed.message.hexString]
     }
 
     static func signRawTransaction(
@@ -493,22 +502,9 @@ enum SolanaHelper {
             throw HelperError.runtimeError("Signature verification failed")
         }
 
-        // The runtime verifies signature slot `i` against account key `i`, and a
-        // sponsored or multi-signer transaction can put the vault at any signer
-        // index, so the slot is resolved from the message rather than assumed.
         // Every other slot stays exactly as the dApp provided it, including
         // co-signers' existing signatures.
-        let signers = try requiredSigners(ofMessage: parsed.message)
-        let messageOffset = txData.count - parsed.message.count
-        let signatureSlotCount = (messageOffset - parsed.firstSignatureOffset) / 64
-        guard signatureSlotCount == signers.count else {
-            throw HelperError.runtimeError(
-                "Transaction declares \(signatureSlotCount) signature slot(s) but the message requires \(signers.count)"
-            )
-        }
-        guard let signerIndex = signers.firstIndex(of: pubkeyData) else {
-            throw HelperError.runtimeError("Public key is not a required signer of the Solana transaction")
-        }
+        let signerIndex = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
 
         var signedTx = txData
         let sigStart = parsed.firstSignatureOffset + signerIndex * 64
@@ -523,6 +519,29 @@ enum SolanaHelper {
             rawTransaction: encoded,
             transactionHash: try getHashFromRawTransaction(txData: signedTx)
         )
+    }
+
+    /// The index of `publicKey`'s signature slot in `txData`. The runtime
+    /// verifies slot `i` against account key `i`, and a sponsored or
+    /// multi-signer transaction can put the vault at any signer index, so the
+    /// slot is resolved from the message rather than assumed.
+    private static func signerSlotIndex(
+        of publicKey: Data,
+        in txData: Data,
+        parsed: (firstSignatureOffset: Int, message: Data)
+    ) throws -> Int {
+        let signers = try requiredSigners(ofMessage: parsed.message)
+        let messageOffset = txData.count - parsed.message.count
+        let signatureSlotCount = (messageOffset - parsed.firstSignatureOffset) / 64
+        guard signatureSlotCount == signers.count else {
+            throw HelperError.runtimeError(
+                "Transaction declares \(signatureSlotCount) signature slot(s) but the message requires \(signers.count)"
+            )
+        }
+        guard let signerIndex = signers.firstIndex(of: publicKey) else {
+            throw HelperError.runtimeError("Public key is not a required signer of the Solana transaction")
+        }
+        return signerIndex
     }
 
     /// Strip the `[shortvec(numSigs)][numSigs × 64-byte sig]` envelope and
