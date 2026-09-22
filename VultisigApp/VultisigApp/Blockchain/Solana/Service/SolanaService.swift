@@ -68,7 +68,7 @@ protocol SolanaFinalizedBlockhashProviding {
     func fetchFinalizedBlockhash() async throws -> String?
 }
 
-class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashProviding {
+final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashProviding, Sendable {
     static let shared = SolanaService()
 
     private let logger = Log.chain.service
@@ -132,7 +132,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         let timestamp: Date
     }
 
-    private var tokenAccountCache = ThreadSafeDictionary<String, (data: TokenAccountCacheValue, timestamp: Date)>()
+    private let tokenAccountCache = ThreadSafeDictionary<String, (data: TokenAccountCacheValue, timestamp: Date)>()
     private let cacheExpirationTime: TimeInterval = 86400 * 30 // 30 days - token accounts don't change once created
 
     func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
@@ -272,7 +272,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// Address Lookup Table contents, keyed by table address. See
     /// `fetchAddressLookupTable(address:)` for why this is safe to cache and why
     /// the TTL is deliberately short.
-    private var addressLookupTableCache = ThreadSafeDictionary<String, (data: [String], timestamp: Date)>()
+    private let addressLookupTableCache = ThreadSafeDictionary<String, (data: [String], timestamp: Date)>()
 
     /// One minute. Long enough to serve a whole deposit — which prepares twice —
     /// off one read, short enough that a repointed table costs one bad attempt
@@ -408,7 +408,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
     /// The recent-prioritization-fee sample, cached briefly. See
     /// `fetchPrioritizationFeeSample`.
-    private var prioritizationFeeCache = ThreadSafeDictionary<String, (data: PrioritizationFeeSample, timestamp: Date)>()
+    private let prioritizationFeeCache = ThreadSafeDictionary<String, (data: PrioritizationFeeSample, timestamp: Date)>()
 
     /// One minute of fee market. Long enough that the Kamino deposit and
     /// withdraw forms — which each pin one price for a whole session — stop
@@ -822,13 +822,13 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
     /// Rent-exempt reserve for a 200-byte stake account. Rent params change
     /// rarely, so it is cached 24h via `Utils.getCachedData`.
-    private var rentReserveCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
+    private let rentReserveCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
     /// Live epoch info. Cached 45s so a screen refresh doesn't re-hit RPC on
     /// every appear while still tracking the ~2-day epoch closely.
-    private var epochInfoCache = ThreadSafeDictionary<String, (data: SolanaEpochInfo, timestamp: Date)>()
+    private let epochInfoCache = ThreadSafeDictionary<String, (data: SolanaEpochInfo, timestamp: Date)>()
     /// Network minimum active delegation (lamports). Changes only on a rare
     /// feature-gate activation, so it is cached 24h like the rent reserve.
-    private var minDelegationCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
+    private let minDelegationCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
 
     private static let rentReserveTTL: TimeInterval = 60 * 60 * 24
     private static let epochInfoTTL: TimeInterval = 45
