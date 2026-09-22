@@ -11,7 +11,7 @@ import Foundation
 /// "there is no such item" and "the Keychain could not be read" stay apart all
 /// the way to the call site. Callers that want to treat them alike say so with
 /// ``KeychainReadResult/valueTreatingUnavailableAsAbsent``.
-protocol KeychainService: AnyObject {
+protocol KeychainService: AnyObject, Sendable {
     func getFastPassword(pubKeyECDSA: String) -> KeychainReadResult<String>
     func setFastPassword(_ fastPassword: String?, pubKeyECDSA: String)
     func getFastHint(pubKeyECDSA: String) -> KeychainReadResult<String>

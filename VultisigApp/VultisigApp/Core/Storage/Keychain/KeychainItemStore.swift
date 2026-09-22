@@ -16,7 +16,7 @@ import Security
 /// invisible, and the branch that decides between updating an item in place and
 /// adding a new one is what keeps a failed write from destroying the previous
 /// value.
-protocol KeychainItemStore {
+protocol KeychainItemStore: Sendable {
     func copyMatching(_ query: [String: Any]) -> (status: OSStatus, data: Data?)
     func add(_ attributes: [String: Any]) -> OSStatus
     func update(_ query: [String: Any], attributes: [String: Any]) -> OSStatus
