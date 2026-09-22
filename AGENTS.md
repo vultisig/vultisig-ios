@@ -31,7 +31,7 @@ open VultisigApp/VultisigApp.xcodeproj
 ## Patterns
 
 - MVVM with Service injection
-- SwiftUI + SwiftData for UI and persistence (`@Model` always on MainActor)
+- SwiftUI + SwiftData for UI and persistence (`@Model` accessed only on the MainActor, confined by its callers; never `@MainActor` on the class itself)
 - async/await for all concurrency (no completion handlers)
 - `"key".localized` for all user-facing strings
 - `Theme.colors.*` and `Theme.fonts.*` for all styling (never hardcode)

@@ -50,7 +50,7 @@ VultisigApp/
 ## Mandatory Rules
 
 1. **Design System** — Always use `Theme.colors.*` and `Theme.fonts.*`. Never hardcode colors/fonts. Use price fonts (`priceTitle1`, `priceBodyL`, `priceBodyS`) for numbers and balances.
-2. **SwiftData** — Never access `@Model` classes off MainActor. Use value types across actor boundaries.
+2. **SwiftData** — Never access `@Model` classes off MainActor. Use value types across actor boundaries. Confine models through their callers (`@MainActor` functions/types); don't put `@MainActor` on the `@Model` class itself (see `swiftdata-guide`).
 3. **Networking** — Use `TargetType` protocol for all API endpoints. Use `HTTPClient` with async/await.
 4. **Localization** — Never hardcode user-facing strings. Use `"key".localized`. Add every key to every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`, which is the source of truth. Locale files live under `VultisigApp/VultisigApp/Core/Localizables/`. Use camelCase keys, keep them alphabetized, and run `sort_localizable.py` afterward.
 5. **Buttons** — Always use `PrimaryButton`. Never create custom button styles.
