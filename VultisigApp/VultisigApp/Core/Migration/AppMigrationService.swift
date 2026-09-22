@@ -15,6 +15,10 @@ import OSLog
 /// Migration version is stored in Keychain (not UserDefaults) to:
 /// 1. Persist across app reinstalls - prevents re-running migrations for existing users
 /// 2. Detect fresh installations - new devices have no Keychain entry, so migrations are skipped
+///
+/// Main-actor isolated because the migrations write SwiftData models through the
+/// main context, so their `AppMigration` conformances are main-actor isolated too.
+@MainActor
 struct AppMigrationService {
     private let logger = Log.app.service
     private let keychainService: KeychainService

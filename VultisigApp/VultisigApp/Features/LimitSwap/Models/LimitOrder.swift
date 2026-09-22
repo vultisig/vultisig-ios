@@ -6,7 +6,9 @@
 import Foundation
 import SwiftData
 
-@MainActor
+/// Not `@MainActor` at the class level: the conformances `@Model` generates are
+/// nonisolated. Callers such as `LimitOrderStorageService` keep it on the main
+/// actor, as they do for `Vault` and `Coin`.
 @Model
 final class LimitOrder {
 
