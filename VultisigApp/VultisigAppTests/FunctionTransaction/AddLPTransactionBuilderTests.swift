@@ -222,7 +222,7 @@ final class AddLPTransactionBuilderTests: XCTestCase {
             toAddress: AddLPFixture.btcVault
         ).buildSendTransaction(vault: .example)
 
-        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx)
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx, approvalDecision: nil)
 
         XCTAssertNil(swapPayload)
         XCTAssertNil(approvePayload)
@@ -239,7 +239,7 @@ final class AddLPTransactionBuilderTests: XCTestCase {
             toAddress: .empty
         ).buildSendTransaction(vault: .example)
 
-        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx)
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx, approvalDecision: nil)
 
         XCTAssertNil(swapPayload)
         XCTAssertNil(approvePayload)

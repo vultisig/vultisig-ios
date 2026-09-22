@@ -118,6 +118,12 @@ struct SwapTransaction: Hashable {
     /// would make picking a route re-quote.
     var selectedProvider: SwapProvider?
 
+    /// The ERC-20 approval read on the way into Verify, `nil` when the swap
+    /// can sign no approve. Verify's consent and the signed payload both come
+    /// from it, and the payload builders refuse a decision made for a different
+    /// spend.
+    var approvalDecision: ERC20ApprovalDecision?
+
     /// Final destination for the swapped funds: the user-set external recipient
     /// when present, otherwise the user's own address on the destination chain
     /// (today's behavior). Surfaced on the verify screen.
@@ -182,8 +188,18 @@ extension SwapTransaction {
             advancedSettings: advancedSettings,
             // Must be carried: `with` rebuilds field by field, so dropping it here
             // silently un-pins the route on the next refresh.
-            selectedProvider: selectedProvider
+            selectedProvider: selectedProvider,
+            // Carried for the same reason. A refresh that changes the spender
+            // re-reads it (`SwapVerifyViewModel.refreshData`), and signing
+            // refuses one decided for another spend.
+            approvalDecision: approvalDecision
         )
+    }
+
+    func with(approvalDecision: ERC20ApprovalDecision?) -> SwapTransaction {
+        var transaction = self
+        transaction.approvalDecision = approvalDecision
+        return transaction
     }
 }
 
@@ -258,11 +274,20 @@ extension SwapTransaction {
         SwapCryptoLogic.inboundFeeDecimal(quote: quote, toCoin: toCoin)
     }
 
+    /// Whether the signed payload carries an approve ahead of the swap, as
+    /// decided on the way into Verify. Drives the allowance consent.
+    var signsApprove: Bool {
+        approvalDecision?.signsApprove ?? false
+    }
+
+    /// The static precondition for an approve (an ERC-20 source with a
+    /// spender), before any allowance is read. Only the security scan still
+    /// reads it; consent follows `signsApprove`.
     var isApproveRequired: Bool {
         // Two distinct paths sign an ERC20 router approval that the quote-derived
         // check below cannot see, because neither has a router-bearing market
-        // quote. Both must gate on the source coin directly, or Verify silently
-        // omits the approval-consent checkbox while an allowance IS being signed:
+        // quote. Both must gate on the source coin directly, or the precondition
+        // misses an allowance that can be signed:
         //
         //  - Limit orders carry no market quote at all (`quote == nil`), yet an
         //    ERC20 source still deposits through the router (approve +
@@ -273,7 +298,7 @@ extension SwapTransaction {
         //
         // Both mirror the assembler/builder condition (`fromCoin.shouldApprove` =
         // EVM token source). The two are orthogonal, so this must stay an OR:
-        // dropping either side reintroduces that side's missing-consent bug.
+        // dropping either side reintroduces that side's missed approve.
         if isLimit || mode == .securedMint {
             return fromCoin.shouldApprove
         }

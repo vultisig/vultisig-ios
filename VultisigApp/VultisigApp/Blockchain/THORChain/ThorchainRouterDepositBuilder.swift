@@ -22,6 +22,9 @@ enum ThorchainRouterDepositBuilder {
     /// call (which carries the memo to THORChain), so we synthesize one. The
     /// router routes by memo, so the same shim works for both LP adds and mints.
     /// Native sources and non-approve deposits need no shim → returns `(nil, nil)`.
+    /// The approve comes from `approvalDecision`, read on the way into Verify:
+    /// none when the allowance already covered the amount, in which case the
+    /// swap shim is still returned because the deposit is still the router call.
     ///
     /// Extracted verbatim from `FunctionTransactionVerifyViewModel.createKeysignPayload`
     /// so both the Function-Call verify path and the inline swap SECURE+ path
@@ -29,12 +32,10 @@ enum ThorchainRouterDepositBuilder {
     @MainActor
     static func synthesizeRouterDeposit(
         tx: SendTransaction,
+        approvalDecision: ERC20ApprovalDecision?,
         thorchainService: ThorchainService = .shared
     ) async throws -> (swapPayload: SwapPayload?, approvePayload: ERC20ApprovePayload?) {
-        let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
-        let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
-        let isRouterDeposit = isLPAdd || isSecuredAssetMint
-        guard isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty else {
+        guard let approveSpend = approvalQuery(for: tx) else {
             return (nil, nil)
         }
 
@@ -77,8 +78,22 @@ enum ThorchainRouterDepositBuilder {
         let swapPayload: SwapPayload = tx.coin.chain == .mayaChain
             ? .mayachain(thorchainSwapPayload)
             : .thorchain(thorchainSwapPayload)
-        let approvePayload = ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+        let approvePayload = try ERC20ApprovalDecision.approvePayload(signing: approveSpend, decision: approvalDecision)
         return (swapPayload, approvePayload)
+    }
+
+    /// The spend a router deposit's approve is decided for: an ERC20 LP add or
+    /// SECURE+ mint approves the router it deposits through. Nil for every
+    /// other transaction, which carries no approve.
+    @MainActor
+    static func approvalQuery(for tx: SendTransaction) -> ERC20ApprovalQuery? {
+        let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
+        let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
+        let isRouterDeposit = isLPAdd || isSecuredAssetMint
+        guard isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty else {
+            return nil
+        }
+        return ERC20ApprovalQuery(coin: tx.coin, spender: tx.toAddress, amount: tx.amountInRaw)
     }
 
     /// Builds the SECURE+ mint DEPOSIT keysign payload for the inline swap
@@ -91,17 +106,72 @@ enum ThorchainRouterDepositBuilder {
         fromCoin: Coin,
         amount: Decimal,
         vault: Vault,
+        approvalDecision: ERC20ApprovalDecision?,
         blockChainService: BlockChainService = .shared,
         thorchainService: ThorchainService = .shared
     ) async throws -> KeysignPayload {
+        let thorAddress = try vaultThorAddress(vault)
+        let toAddress = try await resolveInboundDestination(coin: fromCoin, thorchainService: thorchainService)
+        let tx = securedMintTransaction(fromCoin: fromCoin, amount: amount, vault: vault, thorAddress: thorAddress, toAddress: toAddress)
+
+        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+        let (swapPayload, approvePayload) = try await synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: approvalDecision,
+            thorchainService: thorchainService
+        )
+        return try await KeysignPayloadFactory().buildTransfer(
+            coin: fromCoin,
+            toAddress: toAddress,
+            amount: tx.amountInRaw,
+            memo: tx.memo,
+            chainSpecific: chainSpecific,
+            swapPayload: swapPayload,
+            approvePayload: approvePayload,
+            vault: vault
+        )
+    }
+
+    /// The spend a SECURE+ mint's approve is decided for, read against the
+    /// live router, or nil when the source needs no approve. Called on the way
+    /// into Verify; signing resolves the router again and refuses the decision
+    /// if the router has changed.
+    @MainActor
+    static func securedMintApprovalQuery(
+        fromCoin: Coin,
+        amount: Decimal,
+        vault: Vault,
+        thorchainService: ThorchainService = .shared
+    ) async throws -> ERC20ApprovalQuery? {
+        guard fromCoin.shouldApprove else {
+            return nil
+        }
+        let thorAddress = try vaultThorAddress(vault)
+        let toAddress = try await resolveInboundDestination(coin: fromCoin, thorchainService: thorchainService)
+        let tx = securedMintTransaction(fromCoin: fromCoin, amount: amount, vault: vault, thorAddress: thorAddress, toAddress: toAddress)
+        return approvalQuery(for: tx)
+    }
+
+    @MainActor
+    private static func vaultThorAddress(_ vault: Vault) throws -> String {
         guard let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
             throw HelperError.runtimeError("thorAddressNotFound".localized)
         }
-        let thorAddress = thorCoin.address
-        let toAddress = try await resolveInboundDestination(coin: fromCoin, thorchainService: thorchainService)
+        return thorCoin.address
+    }
 
+    /// The SECURE+ deposit to `toAddress` that mints the secured form of
+    /// `fromCoin` to `thorAddress`.
+    @MainActor
+    private static func securedMintTransaction(
+        fromCoin: Coin,
+        amount: Decimal,
+        vault: Vault,
+        thorAddress: String,
+        toAddress: String
+    ) -> SendTransaction {
         let memo = "SECURE+:\(thorAddress)"
-        let tx = SendTransaction.empty(coin: fromCoin, vault: vault).copy(
+        return SendTransaction.empty(coin: fromCoin, vault: vault).copy(
             toAddress: toAddress,
             amount: amount.formatToDecimal(digits: fromCoin.decimals),
             memo: memo,
@@ -113,19 +183,6 @@ enum ThorchainRouterDepositBuilder {
                 "thorAddress": thorAddress
             ],
             wasmContractPayload: .set(nil)
-        )
-
-        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-        let (swapPayload, approvePayload) = try await synthesizeRouterDeposit(tx: tx, thorchainService: thorchainService)
-        return try await KeysignPayloadFactory().buildTransfer(
-            coin: fromCoin,
-            toAddress: toAddress,
-            amount: tx.amountInRaw,
-            memo: memo,
-            chainSpecific: chainSpecific,
-            swapPayload: swapPayload,
-            approvePayload: approvePayload,
-            vault: vault
         )
     }
 

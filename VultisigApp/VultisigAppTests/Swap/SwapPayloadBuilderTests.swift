@@ -681,9 +681,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertNil(payload.approvePayload)
     }
 
-    func testBuildApprovePayloadNilWhenQuoteAbsent() {
+    func testApproveSpenderNilWhenQuoteAbsent() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
-        XCTAssertNil(SwapCryptoLogic.buildApprovePayload(fromCoin: usdc, amount: 100, quote: nil))
+        XCTAssertNil(SwapCryptoLogic.approveSpender(fromCoin: usdc, quote: nil))
     }
 
     // MARK: - Missing-quote guard (internal error, not a money error)
@@ -793,7 +793,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             referralDiscountBps: 0,
             feeCoin: eth,
             advancedSettings: .default
-        )
+        ).withApprovalDecided(.approve)
     }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -854,7 +854,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             referralDiscountBps: 0,
             feeCoin: eth,
             advancedSettings: .default
-        )
+        ).withApprovalDecided(.approve)
     }
 
     private func makeThorQuote(

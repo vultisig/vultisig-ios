@@ -156,6 +156,10 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     /// network's. Fail CLOSED — the seed is a plausible value, not a true one,
     /// and a chain that caps lower would silently shorten the order.
     case expiryCeilingUnresolved
+    /// The ERC-20 allowance, or the approve simulation behind it, could not be
+    /// read, so the approval the deposit needs is unknown. Carries the
+    /// underlying error's description. Fail CLOSED rather than guess.
+    case approvalUnavailable(String)
 
     var id: String {
         switch self {
@@ -173,6 +177,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "pairNotPlaceable"
         case .expiryCeilingUnresolved:
             return "expiryCeilingUnresolved"
+        case .approvalUnavailable:
+            return "approvalUnavailable"
         }
     }
 
@@ -199,6 +205,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "limitSwap.error.pairNotRoutable".localized
         case .expiryCeilingUnresolved:
             return "limitSwap.error.expiryCeilingUnresolved".localized
+        case let .approvalUnavailable(message):
+            return message
         }
     }
 }
