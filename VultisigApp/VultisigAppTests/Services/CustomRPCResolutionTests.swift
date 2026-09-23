@@ -237,6 +237,18 @@ final class CustomRPCResolutionTests: XCTestCase {
         XCTAssertEqual(v2.path, "/ton/v2/sendBocReturnHash")
     }
 
+    func testTonJettonWalletsFiltersByOwnerAndMaster() {
+        let api = TonAPI(.jettonWallets(ownerAddress: "owner", jettonMasterAddress: "master"))
+        guard case let .requestParameters(parameters, .urlEncoding) = api.task else {
+            XCTFail("Expected URL-encoded jetton wallet parameters")
+            return
+        }
+
+        XCTAssertEqual(parameters["owner_address"] as? String, "owner")
+        XCTAssertEqual(parameters["jetton_address"] as? String, "master")
+        XCTAssertNil(parameters["jetton_master_address"])
+    }
+
     func test_tonAPI_override_swapsHostKeepsVersionedPaths() throws {
         let host = try XCTUnwrap(URL(string: "https://my-toncenter.example"))
         let v3 = TonAPI(.jettonMasters(jettonAddress: "EQmaster"), host: host)

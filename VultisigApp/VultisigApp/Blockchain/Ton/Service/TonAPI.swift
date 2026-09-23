@@ -76,7 +76,7 @@ struct TonAPI: TargetType {
         case .extendedAddressInformation(let address):
             return .requestParameters(["address": address], .urlEncoding)
         case .jettonWallets(let owner, let master):
-            return .requestParameters(["owner_address": owner, "jetton_master_address": master], .urlEncoding)
+            return .requestParameters(["owner_address": owner, "jetton_address": master], .urlEncoding)
         case .jettonWalletsByAddress(let walletAddress):
             return .requestParameters(["address": walletAddress, "limit": 1], .urlEncoding)
         case .ownerJettonWallets(let owner, let limit, let offset):
