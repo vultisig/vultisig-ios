@@ -24,15 +24,15 @@ struct MayaChainBondInteractor: BondInteractor {
     let vultiNodeAddresses: [String] = []
 
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
-        guard let cacaoCoin = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken }) else {
+        guard let bondCoin = await bondCoinSnapshot(in: vault) else {
             return ([], [])
         }
 
         let networkInfo = try await mayaChainAPIService.getNetworkBondInfo()
-        let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: cacaoCoin.address)
+        let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: bondCoin.address)
 
-        let cacaoAddress = cacaoCoin.address
-        let cacaoCoinMeta = cacaoCoin.toCoinMeta()
+        let cacaoAddress = bondCoin.address
+        let cacaoCoinMeta = bondCoin.meta
         let nextChurn = networkInfo.nextChurnDate
 
         var drafts: [BondPositionDraft] = []
@@ -89,6 +89,19 @@ struct MayaChainBondInteractor: BondInteractor {
     // swiftlint:disable:next async_without_await
     func canAddBond() async -> Bool {
         return true
+    }
+}
+
+extension MayaChainBondInteractor {
+    /// Reads the CACAO coin on the main actor and reduces it to value types.
+    ///
+    /// Internal rather than private so the coin selection is unit-testable —
+    /// every other member of this file is private because nothing else needs
+    /// to be reachable from outside it.
+    @MainActor
+    func bondCoinSnapshot(in vault: Vault) -> BondCoinSnapshot? {
+        guard let cacaoCoin = vault.nativeCoin(for: .mayaChain) else { return nil }
+        return BondCoinSnapshot(meta: cacaoCoin.toCoinMeta(), address: cacaoCoin.address)
     }
 }
 
