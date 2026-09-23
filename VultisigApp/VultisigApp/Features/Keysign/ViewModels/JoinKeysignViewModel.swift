@@ -54,7 +54,19 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var isJoiningCommittee = false
-    @Published var keysignPayload: KeysignPayload? = nil
+    @Published var keysignPayload: KeysignPayload? = nil {
+        didSet {
+            solanaAtaRent = .zero
+            guard let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) else { return }
+            Task { [weak self] in
+                let rent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: data)) ?? .zero
+                guard let self,
+                      SolanaSwapNetworkFee.transactionData(payload: self.keysignPayload) == data else { return }
+                self.solanaAtaRent = rent
+            }
+        }
+    }
+    @Published var solanaAtaRent: BigInt = .zero
     /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
     /// peer-side flow. See [[v2-secure-vault-design]].
@@ -801,7 +813,7 @@ class JoinKeysignViewModel: ObservableObject {
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload, solanaAtaRent: solanaAtaRent)
     }
 
     /// Labels for the swap confirm's network-fee and total rows, keyed on the
@@ -826,7 +838,9 @@ class JoinKeysignViewModel: ObservableObject {
     /// row: nothing was claimed, so nothing can be totalled.
     func getSwapTotalFee() -> String? {
         guard let keysignPayload,
-              let networkFeeFiat = gasViewModel.networkFeeFiat(payload: keysignPayload, vault: vault),
+              let networkFeeFiat = gasViewModel.networkFeeFiat(
+                payload: keysignPayload, vault: vault, solanaAtaRent: solanaAtaRent
+              ),
               let swapFee = swapFeeViewModel.resolveSwapFee(
                 swapPayload: keysignPayload.swapPayload,
                 vault: vault

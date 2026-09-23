@@ -409,11 +409,41 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    func testSolanaSwapFeeUsesDefaultLimitAndExcludesAtaRent() {
+    func testSolanaSwapFeeUsesDefaultLimitAndAddsResolvedAtaRent() async throws {
         let wire = solanaFeeFixture(signatures: 1, price: 1_000_000, includeSwapAndAta: true)
-        // Both the swap program and ATA program are SBF instructions, so the
-        // default limit is 400K. ATA rent is not a network transaction fee.
+        // Both programs are SBF instructions, so the default limit is 400K.
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, BigInt(2_039_280))
         XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire), BigInt(405_000))
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire, ataRent: rent), BigInt(2_444_280))
+    }
+
+    func testSolanaSwapFeeSkipsExistingIdempotentAta() async throws {
+        let wire = solanaFeeFixture(signatures: 1, includeSwapAndAta: true)
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: true)
+        )
+        XCTAssertEqual(rent, .zero)
+    }
+
+    func testSolanaSwapFeeSkipsAtaPaidByAnotherSigner() async throws {
+        let wire = solanaFeeFixture(signatures: 2, includeSwapAndAta: true, ataPayer: 1)
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, .zero)
+    }
+
+    func testSolanaSwapFeeUsesToken2022AtaRent() async throws {
+        let wire = solanaFeeFixture(
+            signatures: 1, includeSwapAndAta: true, ataTokenProgram: .token2022
+        )
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, BigInt(2_074_080))
     }
 
     func testJupiterPayloadIsGenericSolanaWithBase64InTxData() async throws {
@@ -1034,7 +1064,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
         signatures: Int,
         price: UInt64? = nil,
         limit: UInt32? = nil,
-        includeSwapAndAta: Bool = false
+        includeSwapAndAta: Bool = false,
+        ataPayer: UInt8 = 0,
+        ataTokenProgram: SolanaTokenProgram = .token
     ) -> String {
         let signatureSlots = Array(repeating: UInt8(0), count: signatures * 64)
         let accountKeys = (1...signatures).flatMap { signer in
@@ -1059,7 +1091,15 @@ final class SwapPayloadBuilderTests: XCTestCase {
             instructions.append([UInt8(signatures + programKeys.count - 1), 0, 1, 9])
             let ataKey = Base58.decodeNoCheck(string: SolanaAssociatedTokenAccount.programId)!
             programKeys.append([UInt8](ataKey))
-            instructions.append([UInt8(signatures + programKeys.count - 1), 0, 1, 1])
+            let ataProgramIndex = UInt8(signatures + programKeys.count - 1)
+            programKeys.append(Array(repeating: UInt8(10), count: 32))
+            let ataAddressIndex = UInt8(signatures + programKeys.count - 1)
+            let tokenKey = Base58.decodeNoCheck(string: ataTokenProgram.rawValue)!
+            programKeys.append([UInt8](tokenKey))
+            let tokenProgramIndex = UInt8(signatures + programKeys.count - 1)
+            instructions.append(
+                [ataProgramIndex, 6, ataPayer, ataAddressIndex, 0, 0, 0, tokenProgramIndex, 1, 1]
+            )
         }
         let bytes = [UInt8(signatures)] + signatureSlots
             + [0x80, UInt8(signatures), 0, UInt8(programKeys.count), UInt8(signatures + programKeys.count)]
@@ -1077,5 +1117,19 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     private func ethereumChainSpecific() -> BlockChainSpecific {
         .Ethereum(maxFeePerGasWei: BigInt(2_000_000_000), priorityFeeWei: BigInt(1_000_000_000), nonce: 1, gasLimit: BigInt(300_000))
+    }
+}
+
+private struct MockSolanaSwapAccounts: SolanaSwapAccountFetching {
+    let exists: Bool
+
+    func fetchAddressLookupTables(addresses _: [String]) throws -> [String: [String]] { [:] }
+
+    func checkAccountExists(address _: String) throws -> (exists: Bool, isToken2022: Bool) {
+        (exists, false)
+    }
+
+    func fetchRentExemptMinimum(size: Int) throws -> UInt64 {
+        size == 170 ? 2_074_080 : 2_039_280
     }
 }

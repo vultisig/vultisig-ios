@@ -119,7 +119,10 @@ enum SwapCryptoLogic {
 
     // MARK: - Quote-derived
 
-    static func fee(quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt) -> BigInt {
+    static func fee(
+        quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt,
+        solanaAtaRent: BigInt = .zero
+    ) -> BigInt {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
@@ -138,7 +141,9 @@ enum SwapCryptoLogic {
                 return thorchainFee
             case .Solana:
                 if case let .solana(transactionData) = response.tx {
-                    return SolanaSwapNetworkFee.fee(transactionData: transactionData) ?? thorchainFee
+                    return SolanaSwapNetworkFee.fee(
+                        transactionData: transactionData, ataRent: solanaAtaRent
+                    ) ?? thorchainFee
                 }
                 return fee ?? thorchainFee
             default:
@@ -147,7 +152,9 @@ enum SwapCryptoLogic {
         case let .jupiter(quote, fee, _, _):
             // The signed transaction's Compute Budget instructions determine
             // its priority fee; quote metadata can differ.
-            return SolanaSwapNetworkFee.fee(transactionData: quote.tx.data) ?? fee ?? thorchainFee
+            return SolanaSwapNetworkFee.fee(
+                transactionData: quote.tx.data, ataRent: solanaAtaRent
+            ) ?? fee ?? thorchainFee
         case nil:
             return .zero
         }

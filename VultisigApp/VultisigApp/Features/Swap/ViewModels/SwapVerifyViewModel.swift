@@ -134,6 +134,11 @@ final class SwapVerifyViewModel {
                     )
                 }
             }
+            if updated.fromCoin.chain == .solana,
+               let transactionData = SolanaSwapNetworkFee.transactionData(quote: updated.quote) {
+                let rent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)) ?? .zero
+                updated = updated.with(solanaAtaRent: rent)
+            }
             // Fetch the oracle fee data BEFORE validating: for EVM aggregator/
             // SwapKit routes the node admits a transaction only when the
             // account covers the signed bond (gasLimit × maxFeePerGas + value),

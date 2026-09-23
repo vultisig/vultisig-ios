@@ -88,6 +88,8 @@ struct SwapTransaction: Hashable {
     /// (a defaulted `let` is excluded from it); set once at construction, never
     /// mutated afterwards — the "immutable hand-off" contract still holds.
     var networkFeeEstimate: BigInt = .zero
+    /// Vault-funded ATA deposit resolved while the quote was current.
+    var solanaAtaRent: BigInt = .zero
 
     /// Native coin that pays for gas — `fromCoin` for native sources, the EVM-native
     /// sibling (e.g. ETH for an USDC source) otherwise. Precomputed at construction
@@ -164,6 +166,7 @@ extension SwapTransaction {
         gas: BigInt? = nil,
         gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
+        solanaAtaRent: BigInt? = nil,
         vultDiscountBps: Int? = nil,
         referralDiscountBps: Int? = nil
     ) -> SwapTransaction {
@@ -184,6 +187,7 @@ extension SwapTransaction {
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
             networkFeeEstimate: networkFeeEstimate,
+            solanaAtaRent: solanaAtaRent ?? self.solanaAtaRent,
             feeCoin: feeCoin,
             advancedSettings: advancedSettings,
             // Must be carried: `with` rebuilds field by field, so dropping it here
@@ -212,7 +216,10 @@ extension SwapTransaction {
     private var fromAmountString: String { fromAmount.description }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(
+            quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee,
+            solanaAtaRent: solanaAtaRent
+        )
     }
 
     /// Network fee value shown on the verify/done screens. For EVM aggregator/

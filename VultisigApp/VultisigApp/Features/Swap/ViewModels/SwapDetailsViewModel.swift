@@ -124,6 +124,7 @@ final class SwapDetailsViewModel {
     }
 
     var thorchainFee: BigInt = .zero
+    var solanaAtaRent: BigInt = .zero
     var gas: BigInt = .zero
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
     /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
@@ -555,6 +556,7 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
+            solanaAtaRent: solanaAtaRent,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings,
             selectedProvider: selectedQuote?.provider(fromChain: fromCoin.chain)
@@ -617,7 +619,10 @@ extension SwapDetailsViewModel {
     }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(
+            quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee,
+            solanaAtaRent: solanaAtaRent
+        )
     }
 
     /// Network fee value shown on the details screen. For EVM aggregator/
@@ -874,6 +879,7 @@ private extension SwapDetailsViewModel {
     /// the quote it belonged to.
     func clearQuoteState(reason: RouteSelectionDropReason = .swapChanged, preservingProvider: Bool = false) {
         hasValidatedQuote = false
+        solanaAtaRent = .zero
         if preservingProvider {
             if let selectedQuote {
                 pendingSelectedProvider = (selectedQuote.provider(fromChain: fromCoin.chain), selectedQuote.displayName)
@@ -1087,11 +1093,19 @@ private extension SwapDetailsViewModel {
                 fromAmount: amountDecimal,
                 vault: vault
             )
+            let resolvedAtaRent: BigInt
+            if fromCoin.chain == .solana,
+               let transactionData = SolanaSwapNetworkFee.transactionData(quote: quote) {
+                resolvedAtaRent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)) ?? .zero
+            } else {
+                resolvedAtaRent = .zero
+            }
             // A superseding edit cancelled this fetch — don't write stale fees.
             guard !Task.isCancelled else { return false }
             gas = chainSpecific.gas
             gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
+            solanaAtaRent = resolvedAtaRent
             return true
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

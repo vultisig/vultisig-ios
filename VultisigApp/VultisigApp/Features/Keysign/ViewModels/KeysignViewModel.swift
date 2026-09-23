@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 import OSLog
 import Tss
 import WalletCore
@@ -64,6 +65,7 @@ class KeysignViewModel: ObservableObject {
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
     @Published var retryReason: BroadcastRetryReason?
+    @Published var solanaAtaRent: BigInt = .zero
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
@@ -182,6 +184,15 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        solanaAtaRent = .zero
+        if let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) {
+            Task { [weak self] in
+                let rent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: data)) ?? .zero
+                guard let self,
+                      SolanaSwapNetworkFee.transactionData(payload: self.keysignPayload) == data else { return }
+                self.solanaAtaRent = rent
+            }
+        }
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
@@ -1380,6 +1391,6 @@ class KeysignViewModel: ObservableObject {
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload, solanaAtaRent: solanaAtaRent)
     }
 }
