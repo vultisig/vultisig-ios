@@ -57,8 +57,33 @@ final class DefiChainBondViewModel: ObservableObject {
         self.interactor = interactor ?? DefiInteractorResolver.bondInteractor(for: chain)
     }
 
+    /// Rebinds to the vault the screen now shows, and re-seeds the node lists
+    /// from it.
+    ///
+    /// The re-seed is what the stake and LP view models get for free: their
+    /// position arrays are computed off the live vault relationship, so a rebind
+    /// re-derives them. These two are published caches, so leaving them would
+    /// show the previous vault's bonds — and the `totalBondedBalance` derived
+    /// from them — under the new vault until a refresh for it completes.
+    /// `availableNodes` and the error are dropped rather than re-seeded because
+    /// both describe a fetch made for the vault being left.
+    ///
+    /// The vault is adopted unconditionally, and only the cleanup is conditional:
+    /// the same vault can arrive as a freshly fetched instance, and keeping the
+    /// previous one would leave this reading relationships through a superseded
+    /// object. Re-seeding on that path, though, would throw away a node list that
+    /// is still current.
     func update(vault: Vault) {
+        let isDifferentVault = vault.pubKeyECDSA != self.vault.pubKeyECDSA
         self.vault = vault
+        guard isDifferentVault else { return }
+        // Mirrors the cache-first rule in `refresh()`: a vault that has not
+        // opted this chain in shows nothing, however much it has persisted.
+        activeBondedNodes = hasBondPositions
+            ? sortedActiveBonds(vault.bondPositions.filter { $0.node.coin.chain == chain })
+            : []
+        availableNodes = []
+        refreshError = nil
     }
 
     func refresh() async {

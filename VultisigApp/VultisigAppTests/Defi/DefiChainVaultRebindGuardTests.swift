@@ -193,6 +193,38 @@ final class DefiChainVaultRebindGuardTests: XCTestCase {
         )
     }
 
+    /// The apply guard is not sufficient on its own for bond, because its node
+    /// lists are published caches rather than arrays computed off the vault (which
+    /// is what makes the stake and LP view models self-correct on a rebind). With
+    /// a warm cache and no refresh in flight at all, the switch alone must clear
+    /// them — otherwise the new vault renders the previous vault's bonds, and the
+    /// `totalBondedBalance` derived from them.
+    func testBondRebindReseedsTheNodeListsFromTheNewVault() async {
+        let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+        first.defiPositions = [DefiPositions(chain: .thorChain, bonds: [rune], staking: [], lps: [])]
+        let node = BondNode(coin: rune, address: "thor1node", state: .active)
+        let position = BondPosition(node: node, amount: 100, apy: 0.1, nextReward: 1, vault: first)
+
+        let interactor = MockBondInteractor()
+        interactor.stub = (active: [position], available: [node])
+
+        let viewModel = DefiChainBondViewModel(vault: first, chain: .thorChain, interactor: interactor)
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.activeBondedNodes.count, 1, "precondition: the first vault's cache is warm")
+        XCTAssertEqual(viewModel.availableNodes.count, 1, "precondition: the first vault's cache is warm")
+
+        viewModel.update(vault: second)
+
+        XCTAssertTrue(
+            viewModel.activeBondedNodes.isEmpty,
+            "The second vault has no bonds; carrying the first vault's over misstates what it holds."
+        )
+        XCTAssertTrue(
+            viewModel.availableNodes.isEmpty,
+            "The node list was fetched for the vault the user just left."
+        )
+    }
+
     // MARK: - The guard must not block a normal refresh
 
     /// The other half of the guard: a refresh with no vault switch has to apply
