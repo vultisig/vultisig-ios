@@ -42,6 +42,9 @@ struct KeysignSwapConfirmView: View {
                     description: "errorNetworkUnstableDescription".localized,
                     type: .warning, leadingIcon: .triangleWarning
                 )
+                PrimaryButton(title: "retry") {
+                    viewModel.retrySolanaAtaRentLookup()
+                }
             }
             summaryFromTo
 

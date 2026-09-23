@@ -57,26 +57,43 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var keysignPayload: KeysignPayload? = nil {
         didSet {
             guard let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) else {
+                solanaAtaRentLookupTask?.cancel()
+                solanaAtaRentLookupGeneration += 1
                 solanaAtaRentState = .notRequired
                 return
             }
-            solanaAtaRentState = .loading
-            Task { [weak self] in
-                let result: SolanaSwapAtaRentState
-                do {
-                    result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
-                } catch {
-                    result = .failed
-                }
-                guard let self,
-                      SolanaSwapNetworkFee.transactionData(payload: self.keysignPayload) == data else { return }
-                self.solanaAtaRentState = result
-            }
+            startSolanaAtaRentLookup(data: data)
         }
     }
     @Published var solanaAtaRentState: SolanaSwapAtaRentState = .notRequired
+    private var solanaAtaRentLookupGeneration = 0
+    private var solanaAtaRentLookupTask: Task<Void, Never>?
 
     var isSolanaFeeReady: Bool { solanaAtaRentState.amount != nil }
+
+    func retrySolanaAtaRentLookup() {
+        guard solanaAtaRentState == .failed,
+              let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) else { return }
+        startSolanaAtaRentLookup(data: data)
+    }
+
+    private func startSolanaAtaRentLookup(data: String) {
+        solanaAtaRentLookupTask?.cancel()
+        solanaAtaRentLookupGeneration += 1
+        let generation = solanaAtaRentLookupGeneration
+        solanaAtaRentState = .loading
+        solanaAtaRentLookupTask = Task { [weak self] in
+            let result: SolanaSwapAtaRentState
+            do {
+                result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
+            } catch {
+                result = .failed
+            }
+            guard let self, !Task.isCancelled,
+                  self.solanaAtaRentLookupGeneration == generation else { return }
+            self.solanaAtaRentState = result
+        }
+    }
     /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
     /// peer-side flow. See [[v2-secure-vault-design]].

@@ -65,6 +65,8 @@ class KeysignViewModel: ObservableObject {
     @Published var didLoadSimulation: Bool = false
     @Published var retryReason: BroadcastRetryReason?
     @Published var solanaAtaRentState: SolanaSwapAtaRentState = .notRequired
+    private var solanaAtaRentLookupGeneration = 0
+    private var solanaAtaRentLookupTask: Task<Void, Never>?
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
@@ -183,17 +185,20 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        solanaAtaRentLookupTask?.cancel()
+        solanaAtaRentLookupGeneration += 1
+        let rentLookupGeneration = solanaAtaRentLookupGeneration
         if let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) {
             solanaAtaRentState = .loading
-            Task { [weak self] in
+            solanaAtaRentLookupTask = Task { [weak self] in
                 let result: SolanaSwapAtaRentState
                 do {
                     result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
                 } catch {
                     result = .failed
                 }
-                guard let self,
-                      SolanaSwapNetworkFee.transactionData(payload: self.keysignPayload) == data else { return }
+                guard let self, !Task.isCancelled,
+                      self.solanaAtaRentLookupGeneration == rentLookupGeneration else { return }
                 self.solanaAtaRentState = result
             }
         } else {

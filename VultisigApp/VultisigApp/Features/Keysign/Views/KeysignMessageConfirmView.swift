@@ -80,6 +80,9 @@ struct KeysignMessageConfirmView: View {
                         description: "errorNetworkUnstableDescription".localized,
                         type: .warning, leadingIcon: .triangleWarning
                     )
+                    PrimaryButton(title: "retry") {
+                        viewModel.retrySolanaAtaRentLookup()
+                    }
                 }
 
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {

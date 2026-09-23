@@ -965,7 +965,26 @@ private extension SwapDetailsViewModel {
             // reflected only on the disabled Continue button, never as a fee error.
             let quoteSucceeded = await self.updateQuotes(vault: vault)
             var feesSucceeded = false
-            if quoteSucceeded, !Task.isCancelled, self.balanceError == nil {
+            let canPayPreliminaryFee: Bool
+            if self.fromCoin.chain == .solana {
+                // A silent refresh has a new quote but still holds the prior
+                // quote's ATA rent. Check the base funding reserve first; the
+                // fresh ATA state is resolved by updateFees below.
+                let feeWithoutRent = SwapCryptoLogic.fee(
+                    quote: self.quote, fromCoin: self.fromCoin,
+                    thorchainFee: self.thorchainFee, solanaAtaRent: .zero
+                )
+                let fundingFee = SwapCryptoLogic.fundingNetworkFee(
+                    displayedFee: feeWithoutRent, gasEstimate: self.gas, chain: .solana
+                )
+                canPayPreliminaryFee = SwapCryptoLogic.balanceError(
+                    fromCoin: self.fromCoin, feeCoin: self.feeCoin,
+                    amount: self.fromAmountDecimal, fee: fundingFee
+                ) == nil
+            } else {
+                canPayPreliminaryFee = self.balanceError == nil
+            }
+            if quoteSucceeded, !Task.isCancelled, canPayPreliminaryFee {
                 feesSucceeded = await self.updateFees(vault: vault)
             }
 
