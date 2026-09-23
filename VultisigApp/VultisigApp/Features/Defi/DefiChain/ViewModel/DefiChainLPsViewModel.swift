@@ -54,9 +54,16 @@ final class DefiChainLPsViewModel: ObservableObject {
             return
         }
 
-        let dtos = await interactor.fetchLPPositions(vault: vault)
+        // Read the published vault here, on the main actor, before suspending.
+        let refreshingVault = vault
+        let dtos = await interactor.fetchLPPositions(vault: refreshingVault)
+
+        // See `DefiChainStakeViewModel.refresh()` for why a superseded pass has to
+        // drop its results rather than apply them to whatever vault is bound now.
+        guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+
         do {
-            try storage.upsert(lp: dtos, for: vault)
+            try storage.upsert(lp: dtos, for: refreshingVault)
         } catch {
             logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }

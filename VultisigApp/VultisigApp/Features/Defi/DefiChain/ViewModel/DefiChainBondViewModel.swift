@@ -82,18 +82,34 @@ final class DefiChainBondViewModel: ObservableObject {
         async let canAddBondTask = interactor.canAddBond()
         async let fetchTask = interactor.fetchBondPositions(vault: refreshingVault)
 
+        // Both capability answers are about `chain`, which is fixed for this view
+        // model's lifetime — neither takes a vault — so they survive a vault
+        // switch and are published as soon as they arrive, without waiting on the
+        // position fetch below.
         self.canUnbond = await canUnbondTask
         self.canAddBond = await canAddBondTask
 
+        let fetched: (active: [BondPosition], available: [BondNode])?
         do {
-            let (active, available) = try await fetchTask
-            self.activeBondedNodes = sortedActiveBonds(active)
-            self.availableNodes = available
+            fetched = try await fetchTask
         } catch {
             // Preserve last-known UI state on transient failures so cached positions stay visible
             logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
-            self.refreshError = "defiRefreshFailed".localized
+            fetched = nil
         }
+
+        // The screen is built once and outlives a vault switch, so `vault` may
+        // have been rebound while the fetch was suspended. What follows describes
+        // `refreshingVault` — the error included, since it stands for a fetch made
+        // for that vault — so a superseded pass publishes none of it.
+        guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+
+        guard let fetched else {
+            self.refreshError = "defiRefreshFailed".localized
+            return
+        }
+        self.activeBondedNodes = sortedActiveBonds(fetched.active)
+        self.availableNodes = fetched.available
     }
 
     private func sortedActiveBonds(_ positions: [BondPosition]) -> [BondPosition] {

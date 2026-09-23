@@ -97,9 +97,16 @@ final class DefiChainStakeViewModel: ObservableObject {
         async let positions = interactor.fetchStakePositions(vault: refreshingVault)
         async let availabilities = interactor.fetchActionAvailabilities(for: enabledCoins)
         let (dtos, resolvedAvailabilities) = await (positions, availabilities)
+
+        // The screen is built once and outlives a vault switch, so `vault` may have
+        // been rebound while the fetch was suspended. Everything below describes
+        // `refreshingVault`; applying it now would paint, and persist, one vault's
+        // positions under another's identity.
+        guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+
         actionAvailabilities = resolvedAvailabilities
         do {
-            try storage.upsert(stake: dtos, for: vault)
+            try storage.upsert(stake: dtos, for: refreshingVault)
         } catch {
             logger.error("Failed to persist stake positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
