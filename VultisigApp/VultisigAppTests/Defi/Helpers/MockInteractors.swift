@@ -8,19 +8,62 @@
 import Foundation
 @testable import VultisigApp
 
-// Mocks intentionally don't `await` and don't read `vault` — the signatures must match the
+// Mocks mostly don't `await` and don't read `vault` — the signatures must match the
 // production protocols exactly, so we can't rename the parameter or drop `async`.
 
 // swiftlint:disable async_without_await unused_parameter
 
+/// Holds one interactor call open so a test can drive the view model — rebind its
+/// vault, say — while a fetch is still in flight.
+///
+/// The handoff is an explicit arrival signal, not a sleep: `waitForArrival()`
+/// returns only once a call has actually reached `wait()`, and `wait()` returns
+/// only once the test calls `open()`. The window the test needs is therefore held
+/// open by construction rather than raced for, which is what keeps an
+/// interleaving test off the flaky list.
+///
+/// One waiter at a time. Gate the single call the test is reasoning about and
+/// leave the view model's other fetches to run straight through.
+actor InteractorCallGate {
+    private var isOpen = false
+    private var waiter: CheckedContinuation<Void, Never>?
+    private var hasArrived = false
+    private var arrivalWaiter: CheckedContinuation<Void, Never>?
+
+    /// Called from the interactor. Suspends until the test calls `open()`.
+    func wait() async {
+        hasArrived = true
+        arrivalWaiter?.resume()
+        arrivalWaiter = nil
+        guard !isOpen else { return }
+        await withCheckedContinuation { waiter = $0 }
+    }
+
+    /// Called from the test. Returns once a call has reached `wait()`.
+    func waitForArrival() async {
+        guard !hasArrived else { return }
+        await withCheckedContinuation { arrivalWaiter = $0 }
+    }
+
+    /// Called from the test. Lets the held call return.
+    func open() {
+        isOpen = true
+        waiter?.resume()
+        waiter = nil
+    }
+}
+
 final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
     var stub: [StakePositionData] = []
     var actionAvailabilitiesStub: StakeActionAvailabilities = [:]
+    /// Set to hold `fetchStakePositions` open mid-call.
+    var gate: InteractorCallGate?
     private(set) var callCount = 0
     private(set) var actionAvailabilityCallCount = 0
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
         callCount += 1
+        await gate?.wait()
         return stub
     }
 
@@ -35,12 +78,24 @@ final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
 }
 
 final class MockBondInteractor: BondInteractor, @unchecked Sendable {
+    enum StubError: Error {
+        case unreachable
+    }
+
     var stub: (active: [BondPosition], available: [BondNode]) = ([], [])
     var canUnbondStub = true
     var canAddBondStub = true
+    /// Set to fail `fetchBondPositions` instead of returning `stub`.
+    var error: Error?
+    /// Set to hold `fetchBondPositions` open mid-call.
+    var gate: InteractorCallGate?
 
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
-        stub
+        await gate?.wait()
+        if let error {
+            throw error
+        }
+        return stub
     }
 
     func canUnbond() async -> Bool { canUnbondStub }
@@ -50,10 +105,13 @@ final class MockBondInteractor: BondInteractor, @unchecked Sendable {
 
 final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {
     var stub: [LPPositionData] = []
+    /// Set to hold `fetchLPPositions` open mid-call.
+    var gate: InteractorCallGate?
     private(set) var callCount = 0
 
     func fetchLPPositions(vault: Vault) async -> [LPPositionData] {
         callCount += 1
+        await gate?.wait()
         return stub
     }
 }
