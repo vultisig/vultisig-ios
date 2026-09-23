@@ -17,7 +17,7 @@ struct JoinKeysignGasViewModel {
     }
 
     func getCalculatedNetworkFee(
-        payload: KeysignPayload, solanaAtaRent: BigInt = .zero
+        payload: KeysignPayload, solanaAtaRent: BigInt? = .zero
     ) -> (feeCrypto: String, feeFiat: String) {
         guard let resolved = resolveNetworkFee(payload: payload, solanaAtaRent: solanaAtaRent) else {
             return (.empty, .empty)
@@ -31,7 +31,7 @@ struct JoinKeysignGasViewModel {
     /// `nil` when nothing prices the fee coin, so a caller summing this never
     /// absorbs an unpriced leg as free.
     func networkFeeFiat(
-        payload: KeysignPayload, vault: Vault? = nil, solanaAtaRent: BigInt = .zero
+        payload: KeysignPayload, vault: Vault? = nil, solanaAtaRent: BigInt? = .zero
     ) -> Decimal? {
         guard let resolved = resolveNetworkFee(payload: payload, solanaAtaRent: solanaAtaRent) else { return nil }
         // Gas is always paid in the native coin. A priced source token cannot
@@ -43,7 +43,7 @@ struct JoinKeysignGasViewModel {
         return RateProvider.shared.fiatBalance(value: amount, rate: rate)
     }
 
-    private func resolveNetworkFee(payload: KeysignPayload, solanaAtaRent: BigInt) -> ResolvedNetworkFee? {
+    private func resolveNetworkFee(payload: KeysignPayload, solanaAtaRent: BigInt?) -> ResolvedNetworkFee? {
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
         }) else {
@@ -84,12 +84,13 @@ struct JoinKeysignGasViewModel {
         // The generic Solana swap signs the quote's wire transaction. Use the
         // same signature, priority and ATA calculation as the initiator.
         if case .Solana = payload.chainSpecific,
-           case let .generic(swap)? = payload.swapPayload,
-           let total = SolanaSwapNetworkFee.fee(
-               chainSpecific: payload.chainSpecific,
-               transactionData: swap.quote.tx.data,
-               ataRent: solanaAtaRent
-           ) {
+           case let .generic(swap)? = payload.swapPayload {
+            guard let solanaAtaRent,
+                  let total = SolanaSwapNetworkFee.fee(
+                    chainSpecific: payload.chainSpecific,
+                    transactionData: swap.quote.tx.data,
+                    ataRent: solanaAtaRent
+                  ) else { return nil }
             return ResolvedNetworkFee(amount: total, nativeToken: nativeToken)
         }
 

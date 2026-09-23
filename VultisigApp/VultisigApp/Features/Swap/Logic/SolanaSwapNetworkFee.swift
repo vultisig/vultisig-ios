@@ -13,6 +13,21 @@ protocol SolanaSwapAccountFetching: SolanaAddressLookupTableFetching {
 
 extension SolanaService: SolanaSwapAccountFetching {}
 
+enum SolanaSwapAtaRentState: Equatable {
+    case notRequired
+    case loading
+    case resolved(BigInt)
+    case failed
+
+    var amount: BigInt? {
+        switch self {
+        case .notRequired: .zero
+        case let .resolved(rent): rent
+        case .loading, .failed: nil
+        }
+    }
+}
+
 /// The displayed cost of a swap's signed Solana transaction. ATA rent is an
 /// account deposit, included only when the vault pays to create an account.
 enum SolanaSwapNetworkFee {

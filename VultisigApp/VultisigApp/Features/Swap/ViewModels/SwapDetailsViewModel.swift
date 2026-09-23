@@ -1096,7 +1096,7 @@ private extension SwapDetailsViewModel {
             let resolvedAtaRent: BigInt
             if fromCoin.chain == .solana,
                let transactionData = SolanaSwapNetworkFee.transactionData(quote: quote) {
-                resolvedAtaRent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)) ?? .zero
+                resolvedAtaRent = try await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)
             } else {
                 resolvedAtaRent = .zero
             }

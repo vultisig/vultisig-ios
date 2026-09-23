@@ -56,17 +56,27 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var isJoiningCommittee = false
     @Published var keysignPayload: KeysignPayload? = nil {
         didSet {
-            solanaAtaRent = .zero
-            guard let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) else { return }
+            guard let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) else {
+                solanaAtaRentState = .notRequired
+                return
+            }
+            solanaAtaRentState = .loading
             Task { [weak self] in
-                let rent = (try? await SolanaSwapNetworkFee.ataRent(transactionData: data)) ?? .zero
+                let result: SolanaSwapAtaRentState
+                do {
+                    result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
+                } catch {
+                    result = .failed
+                }
                 guard let self,
                       SolanaSwapNetworkFee.transactionData(payload: self.keysignPayload) == data else { return }
-                self.solanaAtaRent = rent
+                self.solanaAtaRentState = result
             }
         }
     }
-    @Published var solanaAtaRent: BigInt = .zero
+    @Published var solanaAtaRentState: SolanaSwapAtaRentState = .notRequired
+
+    var isSolanaFeeReady: Bool { solanaAtaRentState.amount != nil }
     /// Set when the scanned QR has `isQbtcClaim == true`. The standard
     /// single-keysign flow steps aside while this driver runs the
     /// peer-side flow. See [[v2-secure-vault-design]].
@@ -813,7 +823,9 @@ class JoinKeysignViewModel: ObservableObject {
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload, solanaAtaRent: solanaAtaRent)
+        return gasViewModel.getCalculatedNetworkFee(
+            payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
+        )
     }
 
     /// Labels for the swap confirm's network-fee and total rows, keyed on the
@@ -839,7 +851,7 @@ class JoinKeysignViewModel: ObservableObject {
     func getSwapTotalFee() -> String? {
         guard let keysignPayload,
               let networkFeeFiat = gasViewModel.networkFeeFiat(
-                payload: keysignPayload, vault: vault, solanaAtaRent: solanaAtaRent
+                payload: keysignPayload, vault: vault, solanaAtaRent: solanaAtaRentState.amount
               ),
               let swapFee = swapFeeViewModel.resolveSwapFee(
                 swapPayload: keysignPayload.swapPayload,

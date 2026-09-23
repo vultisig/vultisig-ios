@@ -367,9 +367,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             transaction: transaction, chainSpecific: specific, vault: vault, now: fixedNow
         )
         let cosignerFee = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+        let unresolvedFee = JoinKeysignGasViewModel().getCalculatedNetworkFee(
+            payload: payload, solanaAtaRent: nil
+        )
 
         XCTAssertEqual(baseFee, BigInt(105_000))
         XCTAssertEqual(initiatorFee, BigInt(105_000))
+        XCTAssertEqual(unresolvedFee.feeCrypto, .empty)
         let expectedSol = (Decimal(105_000) / pow(10, 9)).formatToDecimal(digits: 9)
         XCTAssertEqual(cosignerFee.feeCrypto, "\(expectedSol) SOL")
         XCTAssertEqual(
