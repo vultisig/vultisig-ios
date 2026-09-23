@@ -1105,13 +1105,15 @@ final class SwapPayloadBuilderTests: XCTestCase {
                 [ataProgramIndex, 6, ataPayer, ataAddressIndex, 0, 0, 0, tokenProgramIndex, 1, 1]
             )
         }
-        let bytes = [UInt8(signatures)] + signatureSlots
-            + [0x80, UInt8(signatures), 0, UInt8(programKeys.count), UInt8(signatures + programKeys.count)]
-            + accountKeys
-            + programKeys.flatMap { $0 }
-            + Array(repeating: UInt8(2), count: 32)
-            + [UInt8(instructions.count)] + instructions.flatMap { $0 }
-            + [0] // No address-table lookups.
+        var bytes: [UInt8] = [UInt8(signatures)]
+        bytes.append(contentsOf: signatureSlots)
+        bytes.append(contentsOf: [0x80, UInt8(signatures), 0, UInt8(programKeys.count), UInt8(signatures + programKeys.count)])
+        bytes.append(contentsOf: accountKeys)
+        bytes.append(contentsOf: programKeys.flatMap { $0 })
+        bytes.append(contentsOf: Array(repeating: UInt8(2), count: 32))
+        bytes.append(UInt8(instructions.count))
+        bytes.append(contentsOf: instructions.flatMap { $0 })
+        bytes.append(0) // No address-table lookups.
         return Data(bytes).base64EncodedString()
     }
 
