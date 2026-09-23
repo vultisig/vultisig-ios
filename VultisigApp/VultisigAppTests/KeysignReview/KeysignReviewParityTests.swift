@@ -12,6 +12,44 @@ import XCTest
 @testable import VultisigApp
 
 @MainActor
+final class KeysignReviewPairCardsTests: XCTestCase {
+    func testNotchMoatIsTransparentWithoutACircularCover() throws {
+        let renderer = ImageRenderer(content:
+            KeysignReviewPairCards(glyph: .chevronRight) {
+                Color.clear.frame(height: 80)
+            } trailing: {
+                Color.clear.frame(height: 80)
+            }
+            .frame(width: 320)
+        )
+        renderer.scale = 1
+        let image = try XCTUnwrap(renderer.cgImage)
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        try pixels.withUnsafeMutableBytes { buffer in
+            let context = try XCTUnwrap(CGContext(
+                data: buffer.baseAddress,
+                width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ))
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        let midX = width / 2
+        let midY = height / 2
+        // These points are inside the old 40pt cover but outside the 24pt badge.
+        // Checking both the gap and the card cavities catches either workaround.
+        for (x, y) in [(midX, midY - 16), (midX, midY + 16), (midX - 15, midY), (midX + 15, midY)] {
+            XCTAssertEqual(pixels[(y * width + x) * 4 + 3], 0, "The notch must expose its real background at \(x), \(y)")
+        }
+        XCTAssertEqual(pixels[(midY * width + midX) * 4 + 3], 255, "Keep the small chevron badge")
+        XCTAssertEqual(pixels[(midY * width + width / 4) * 4 + 3], 255, "Keep the card fill")
+    }
+}
+
+@MainActor
 final class KeysignReviewParityTests: XCTestCase {
     func testSendVerdictMediumMatchesDesign() throws {
         let result = KeysignReviewScanFixture.result(

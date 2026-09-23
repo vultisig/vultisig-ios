@@ -40,6 +40,19 @@ struct KeysignReviewNotch: View {
                 .fill(Theme.colors.bgSurface1)
                 .overlay(Circle().strokeBorder(Theme.colors.borderLight, lineWidth: 1))
                 .frame(width: 40, height: 40)
+            KeysignReviewRelationBadge(glyph: glyph)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Only the small glyph badge: notched cards provide their own transparent
+/// cavity, so no sheet-coloured disc should cover their shaped borders.
+private struct KeysignReviewRelationBadge: View {
+    let glyph: KeysignReviewNotchGlyph
+
+    var body: some View {
+        ZStack {
             Circle()
                 .fill(Theme.colors.bgSurface2)
                 .frame(width: 24, height: 24)
@@ -122,7 +135,7 @@ struct KeysignReviewPairCards<Leading: View, Trailing: View>: View {
             notchedCard(edge: .leading, content: trailing)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .overlay { KeysignReviewNotch(glyph: glyph) }
+        .overlay { KeysignReviewRelationBadge(glyph: glyph) }
     }
 
     private func notchedCard<Content: View>(
