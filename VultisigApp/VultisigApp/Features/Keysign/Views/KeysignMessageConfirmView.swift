@@ -13,7 +13,9 @@ struct KeysignMessageConfirmView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 24) {
-                let fees = viewModel.getCalculatedNetworkFee()
+                let fees = viewModel.solanaAtaRentState == .loading
+                    ? (feeCrypto: "loading".localized, feeFiat: String.empty)
+                    : viewModel.getCalculatedNetworkFee()
                 let lpDictionary = lpMemoDictionary(for: viewModel.keysignPayload)
                 // XRP destination tag the joiner will actually sign (field-
                 // preferred, else the canonical memo carrier). It owns a labeled
@@ -73,6 +75,16 @@ struct KeysignMessageConfirmView: View {
                     limitOrderDisclosures
                 }
 
+                if viewModel.solanaAtaRentState == .failed {
+                    InfoBannerView(
+                        description: "errorNetworkUnstableDescription".localized,
+                        type: .warning, leadingIcon: .triangleWarning
+                    )
+                    PrimaryButton(title: "retry") {
+                        viewModel.retrySolanaAtaRentLookup()
+                    }
+                }
+
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
                 }
@@ -80,7 +92,7 @@ struct KeysignMessageConfirmView: View {
                 // above — or which cannot be decoded at all — is a refusal, not a
                 // note. The card renders what disagreed; this is what makes the
                 // refusal mean something.
-                .disabled(viewModel.isJoiningCommittee || viewModel.isKaminoDecodeRefused)
+                .disabled(viewModel.isJoiningCommittee || viewModel.isKaminoDecodeRefused || !viewModel.isSolanaFeeReady)
             }
             .task {
                 async let thor: Void = viewModel.loadThorchainID()

@@ -35,6 +35,7 @@ final class SwapVerifyViewModel {
     var routeSelectionNotice: String?
     var isLoading = false
     var isLoadingFees = false
+    var isSolanaFeeResolved = true
     private(set) var isPreparingSigning = false
     var timer: Int = 59
 
@@ -134,6 +135,15 @@ final class SwapVerifyViewModel {
                     )
                 }
             }
+            if updated.fromCoin.chain == .solana,
+               let transactionData = SolanaSwapNetworkFee.transactionData(quote: updated.quote) {
+                isSolanaFeeResolved = false
+                let rent = try await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)
+                updated = updated.with(solanaAtaRent: rent)
+                isSolanaFeeResolved = true
+            } else {
+                isSolanaFeeResolved = true
+            }
             // Fetch the oracle fee data BEFORE validating: for EVM aggregator/
             // SwapKit routes the node admits a transaction only when the
             // account covers the signed bond (gasLimit × maxFeePerGas + value),
@@ -161,7 +171,11 @@ final class SwapVerifyViewModel {
                         vault: vault
                     )
                 )
-                validationFee = updated.displayedNetworkFeeWei
+                validationFee = SwapCryptoLogic.fundingNetworkFee(
+                    displayedFee: updated.displayedNetworkFeeWei,
+                    gasEstimate: chainSpecific.gas,
+                    chain: updated.fromCoin.chain
+                )
             } catch {
                 chainSpecificError = error
             }
@@ -209,7 +223,8 @@ final class SwapVerifyViewModel {
     }
 
     var canStartSigning: Bool {
-        !isLoadingFees && !isPreparingSigning && isValidForm(shouldApprove: transaction.signsApprove)
+        isSolanaFeeResolved && !isLoadingFees && !isPreparingSigning
+            && isValidForm(shouldApprove: transaction.signsApprove)
     }
 
     /// A successful preparation holds refresh exclusion until the caller has
