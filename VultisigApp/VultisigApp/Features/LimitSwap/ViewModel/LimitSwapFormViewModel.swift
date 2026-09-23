@@ -321,13 +321,13 @@ final class LimitSwapFormViewModel {
         vault: Vault,
         interactor: LimitSwapInteractor,
         marketDataService: MarketDataServiceProtocol = MarketDataService.shared,
-        swapInteractor: SwapInteractor = DefaultSwapInteractor.live
+        swapInteractor: SwapInteractor? = nil
     ) {
         self.draft = initialDraft
         self.vault = vault
         self.interactor = interactor
         self.marketDataService = marketDataService
-        self.swapInteractor = swapInteractor
+        self.swapInteractor = swapInteractor ?? DefaultSwapInteractor.live
         self.isChartExpanded = UserDefaults.standard.bool(forKey: Self.chartExpandedKey)
     }
 
