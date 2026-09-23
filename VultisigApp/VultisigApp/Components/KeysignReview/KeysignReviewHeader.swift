@@ -91,18 +91,11 @@ private struct KeysignReviewScanMark: View {
         ZStack {
             Circle().fill(Theme.colors.bgSheetControl)
 
-            if scanRing.animationState == .staticMark || animationVM == nil {
-                Image(.blockaidLogomark)
-                    .resizable()
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .frame(width: 12, height: 14)
-            } else {
-                animationVM?.view()
-                    // Rive's representable updates layout only; a new model
-                    // needs a new native view to render the reset state machine.
-                    .id(generation)
-                    .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
-            }
+            animationVM?.view()
+                // Rive's representable updates layout only; a new model
+                // needs a new native view to render the reset state machine.
+                .id(generation)
+                .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
         }
         .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
         .accessibilityElement(children: .ignore)
@@ -117,9 +110,7 @@ private struct KeysignReviewScanMark: View {
         let previousState = activeState
         activeState = state
 
-        if state == .staticMark {
-            clearAnimation()
-        } else if state == .loading || animationVM == nil || (previousState.isTerminal && previousState != state) {
+        if state == .staticMark || state == .loading || animationVM == nil || (previousState.isTerminal && previousState != state) {
             resetAnimation()
         } else {
             fireOutcomeIfNeeded()
@@ -130,7 +121,8 @@ private struct KeysignReviewScanMark: View {
         clearAnimation()
         let currentGeneration = generation
 
-        let vm = RiveViewModel(fileName: "blockaid_scan", stateMachineName: "State Machine 1", autoPlay: true)
+        // The paused initial frame supplies the logo when no scan is active.
+        let vm = RiveViewModel(fileName: "blockaid_scan", stateMachineName: "State Machine 1", autoPlay: activeState != .staticMark)
         vm.riveModel?.enableAutoBind { instance in
             Task { @MainActor in
                 guard generation == currentGeneration else { return }

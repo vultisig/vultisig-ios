@@ -31,8 +31,7 @@ private struct KeysignReviewHost: ViewModifier {
         content
             .crossPlatformSheet(
                 item: $presenter.presented,
-                onDismiss: sheetDidDismiss,
-                backdrop: .dimOnly
+                onDismiss: sheetDidDismiss
             ) { review in
                 KeysignReviewSheetContent(review: review, presentationID: presenter.presentationID)
                     .id(presenter.presentationID)
