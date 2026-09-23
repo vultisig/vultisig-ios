@@ -138,18 +138,16 @@ enum SwapCryptoLogic {
                 return thorchainFee
             case .Solana:
                 if case let .solana(transactionData) = response.tx {
-                    return thorchainFee + SolanaSwapNetworkFee.additionalWireFee(transactionData: transactionData)
+                    return SolanaSwapNetworkFee.fee(transactionData: transactionData) ?? thorchainFee
                 }
                 return fee ?? thorchainFee
             default:
                 return fee ?? 0
             }
         case let .jupiter(quote, fee, _, _):
-            // Jupiter exposes no network fee at quote time; fall back to the
-            // Solana-source signature and priority fee in `thorchainFee`, then
-            // account for any additional signatures or ATA creation in the
-            // transaction that will be signed.
-            return fee ?? thorchainFee + SolanaSwapNetworkFee.additionalWireFee(transactionData: quote.tx.data)
+            // The signed transaction's Compute Budget instructions determine
+            // its priority fee; quote metadata can differ.
+            return SolanaSwapNetworkFee.fee(transactionData: quote.tx.data) ?? fee ?? thorchainFee
         case nil:
             return .zero
         }

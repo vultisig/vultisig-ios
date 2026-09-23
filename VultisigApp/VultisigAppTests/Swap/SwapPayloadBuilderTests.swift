@@ -9,6 +9,7 @@
 //
 
 import BigInt
+import WalletCore
 import XCTest
 @testable import VultisigApp
 
@@ -342,7 +343,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
     // MARK: - Jupiter (Solana)
 
     func testSolanaSwapFeeMatchesInitiatorAndCosignerWithPriority() async throws {
-        let wire = solanaFeeFixture(signatures: 1)
+        let wire = solanaFeeFixture(signatures: 1, price: 1_000_000, limit: 100_000)
         let quote: SwapQuote = .jupiter(
             makeSolanaEVMQuote(base64: wire), fee: nil, platformFee: .zero, feeOnInput: false
         )
@@ -393,7 +394,26 @@ final class SwapPayloadBuilderTests: XCTestCase {
         let wire = solanaFeeFixture(signatures: 2)
         let specific = solanaChainSpecific()
         XCTAssertEqual(SolanaSwapNetworkFee.fee(chainSpecific: specific, transactionData: wire), BigInt(10_000))
-        XCTAssertEqual(SolanaSwapNetworkFee.additionalWireFee(transactionData: wire), BigInt(5_000))
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire), BigInt(10_000))
+    }
+
+    func testSolanaSwapFeeUsesWirePriorityInsteadOfQuoteMetadata() {
+        let specific = BlockChainSpecific.Solana(
+            recentBlockHash: "blockhash", priorityFee: BigInt(1_000_000),
+            priorityLimit: BigInt(100_000), fromAddressPubKey: nil,
+            toAddressPubKey: nil, hasProgramId: false
+        )
+        XCTAssertEqual(
+            SolanaSwapNetworkFee.fee(chainSpecific: specific, transactionData: solanaFeeFixture(signatures: 1)),
+            BigInt(5_000)
+        )
+    }
+
+    func testSolanaSwapFeeUsesDefaultLimitAndExcludesAtaRent() {
+        let wire = solanaFeeFixture(signatures: 1, price: 1_000_000, includeSwapAndAta: true)
+        // Both the swap program and ATA program are SBF instructions, so the
+        // default limit is 400K. ATA rent is not a network transaction fee.
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire), BigInt(405_000))
     }
 
     func testJupiterPayloadIsGenericSolanaWithBase64InTxData() async throws {
@@ -1010,16 +1030,44 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    private func solanaFeeFixture(signatures: Int) -> String {
+    private func solanaFeeFixture(
+        signatures: Int,
+        price: UInt64? = nil,
+        limit: UInt32? = nil,
+        includeSwapAndAta: Bool = false
+    ) -> String {
         let signatureSlots = Array(repeating: UInt8(0), count: signatures * 64)
         let accountKeys = (1...signatures).flatMap { signer in
             Array(repeating: UInt8(signer), count: 32)
         }
+        var programKeys = [[UInt8]]()
+        var instructions = [[UInt8]]()
+        if price != nil || limit != nil {
+            programKeys.append(SolanaV0Transaction.computeBudgetProgramKey)
+            let programIndex = UInt8(signatures)
+            if let limit {
+                let data = [UInt8(2)] + (0..<4).map { UInt8(truncatingIfNeeded: limit >> ($0 * 8)) }
+                instructions.append([programIndex, 0, UInt8(data.count)] + data)
+            }
+            if let price {
+                let data = [UInt8(3)] + (0..<8).map { UInt8(truncatingIfNeeded: price >> ($0 * 8)) }
+                instructions.append([programIndex, 0, UInt8(data.count)] + data)
+            }
+        }
+        if includeSwapAndAta {
+            programKeys.append(Array(repeating: UInt8(9), count: 32))
+            instructions.append([UInt8(signatures + programKeys.count - 1), 0, 1, 9])
+            let ataKey = Base58.decodeNoCheck(string: SolanaAssociatedTokenAccount.programId)!
+            programKeys.append([UInt8](ataKey))
+            instructions.append([UInt8(signatures + programKeys.count - 1), 0, 1, 1])
+        }
         let bytes = [UInt8(signatures)] + signatureSlots
-            + [0x80, UInt8(signatures), 0, 0, UInt8(signatures)]
+            + [0x80, UInt8(signatures), 0, UInt8(programKeys.count), UInt8(signatures + programKeys.count)]
             + accountKeys
+            + programKeys.flatMap { $0 }
             + Array(repeating: UInt8(2), count: 32)
-            + [0, 0] // No instructions or address-table lookups.
+            + [UInt8(instructions.count)] + instructions.flatMap { $0 }
+            + [0] // No address-table lookups.
         return Data(bytes).base64EncodedString()
     }
 
