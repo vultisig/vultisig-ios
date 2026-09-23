@@ -125,7 +125,7 @@ enum SwapCryptoLogic {
             return thorchainFee
         case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
-        case let .swapkit(_, fee, _):
+        case let .swapkit(response, fee, _):
             // SwapKit's wire `inbound` fee for UTXO/Cardano sources doesn't
             // reflect the realized on-chain miner fee — it renders as a
             // misleadingly small amount on the Network Fee row (e.g. a BTC swap
@@ -136,17 +136,29 @@ enum SwapCryptoLogic {
             switch fromCoin.chain.chainType {
             case .UTXO, .Cardano:
                 return thorchainFee
+            case .Solana:
+                if case let .solana(transactionData) = response.tx {
+                    return thorchainFee + SolanaSwapNetworkFee.additionalWireFee(transactionData: transactionData)
+                }
+                return fee ?? thorchainFee
             default:
                 return fee ?? 0
             }
-        case let .jupiter(_, fee, _, _):
+        case let .jupiter(quote, fee, _, _):
             // Jupiter exposes no network fee at quote time; fall back to the
-            // Solana-source plan fee carried in `thorchainFee`
-            // (`chainSpecific.gas`), the same way Send computes it.
-            return fee ?? thorchainFee
+            // Solana-source signature and priority fee in `thorchainFee`, then
+            // account for any additional signatures or ATA creation in the
+            // transaction that will be signed.
+            return fee ?? thorchainFee + SolanaSwapNetworkFee.additionalWireFee(transactionData: quote.tx.data)
         case nil:
             return .zero
         }
+    }
+
+    /// Solana keeps its existing flat estimate as funding headroom even while
+    /// the swap screens display the smaller fee described by the transaction.
+    static func fundingNetworkFee(displayedFee: BigInt, gasEstimate: BigInt, chain: Chain) -> BigInt {
+        chain == .solana ? max(displayedFee, gasEstimate) : displayedFee
     }
 
     // MARK: - EVM signed network fee (shared with the co-signer)

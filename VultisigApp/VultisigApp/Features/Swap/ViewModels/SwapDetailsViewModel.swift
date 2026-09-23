@@ -708,7 +708,10 @@ extension SwapDetailsViewModel {
     /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
     /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: displayedNetworkFeeWei)
+        let fundingFee = SwapCryptoLogic.fundingNetworkFee(
+            displayedFee: displayedNetworkFeeWei, gasEstimate: gas, chain: fromCoin.chain
+        )
+        return SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: fundingFee)
     }
 
     var fromFiatAmount: String {

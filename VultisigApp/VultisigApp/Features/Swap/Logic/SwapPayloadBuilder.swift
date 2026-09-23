@@ -79,7 +79,10 @@ extension SwapCryptoLogic {
                 throw error
             }
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
+        case .Solana:
+            return SolanaSwapNetworkFee.fee(chainSpecific: chainSpecific) ?? chainSpecific.gas
+
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
     }

@@ -341,6 +341,61 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     // MARK: - Jupiter (Solana)
 
+    func testSolanaSwapFeeMatchesInitiatorAndCosignerWithPriority() async throws {
+        let wire = solanaFeeFixture(signatures: 1)
+        let quote: SwapQuote = .jupiter(
+            makeSolanaEVMQuote(base64: wire), fee: nil, platformFee: .zero, feeOnInput: false
+        )
+        let transaction = makeSolanaJupiterTransaction(quote: quote)
+        let specific = BlockChainSpecific.Solana(
+            recentBlockHash: "blockhash",
+            priorityFee: BigInt(1_000_000),
+            priorityLimit: BigInt(100_000),
+            fromAddressPubKey: nil,
+            toAddressPubKey: nil,
+            hasProgramId: false
+        )
+        let vault = makeVault()
+        let baseFee = try await SwapCryptoLogic.thorchainFee(
+            for: specific, fromCoin: transaction.fromCoin, fromAmount: 1, vault: vault
+        )
+        let initiatorFee = SwapCryptoLogic.fee(
+            quote: quote, fromCoin: transaction.fromCoin, thorchainFee: baseFee
+        )
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction, chainSpecific: specific, vault: vault, now: fixedNow
+        )
+        let cosignerFee = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+
+        XCTAssertEqual(baseFee, BigInt(105_000))
+        XCTAssertEqual(initiatorFee, BigInt(105_000))
+        let expectedSol = (Decimal(105_000) / pow(10, 9)).formatToDecimal(digits: 9)
+        XCTAssertEqual(cosignerFee.feeCrypto, "\(expectedSol) SOL")
+        XCTAssertEqual(
+            SwapCryptoLogic.fundingNetworkFee(
+                displayedFee: initiatorFee, gasEstimate: specific.gas, chain: .solana
+            ),
+            SolanaHelper.defaultFeeInLamports
+        )
+    }
+
+    func testSolanaSwapFeeWithoutPriorityUsesSignatureFee() {
+        let specific = solanaChainSpecific()
+        XCTAssertEqual(
+            SolanaSwapNetworkFee.fee(
+                chainSpecific: specific, transactionData: solanaFeeFixture(signatures: 1)
+            ),
+            BigInt(5_000)
+        )
+    }
+
+    func testSolanaSwapFeeCountsEverySignature() {
+        let wire = solanaFeeFixture(signatures: 2)
+        let specific = solanaChainSpecific()
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(chainSpecific: specific, transactionData: wire), BigInt(10_000))
+        XCTAssertEqual(SolanaSwapNetworkFee.additionalWireFee(transactionData: wire), BigInt(5_000))
+    }
+
     func testJupiterPayloadIsGenericSolanaWithBase64InTxData() async throws {
         let vault = makeVault()
         let transaction = makeSolanaJupiterTransaction(
@@ -953,6 +1008,19 @@ final class SwapPayloadBuilderTests: XCTestCase {
             toAddressPubKey: nil,
             hasProgramId: false
         )
+    }
+
+    private func solanaFeeFixture(signatures: Int) -> String {
+        let signatureSlots = Array(repeating: UInt8(0), count: signatures * 64)
+        let accountKeys = (1...signatures).flatMap { signer in
+            Array(repeating: UInt8(signer), count: 32)
+        }
+        let bytes = [UInt8(signatures)] + signatureSlots
+            + [0x80, UInt8(signatures), 0, 0, UInt8(signatures)]
+            + accountKeys
+            + Array(repeating: UInt8(2), count: 32)
+            + [0, 0] // No instructions or address-table lookups.
+        return Data(bytes).base64EncodedString()
     }
 
     private func cosmosChainSpecific() -> BlockChainSpecific {
