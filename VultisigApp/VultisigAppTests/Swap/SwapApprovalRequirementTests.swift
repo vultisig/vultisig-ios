@@ -500,7 +500,7 @@ private final class RefreshingApprovalStub: SwapInteractor {
 
     func resolveApproval(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalDecision? {
         resolveApprovalCallCount += 1
-        let query = await SwapCryptoLogic.approvalQuery(
+        let query = SwapCryptoLogic.approvalQuery(
             fromCoin: transaction.fromCoin,
             amount: transaction.amountInCoinDecimal,
             quote: transaction.quote
