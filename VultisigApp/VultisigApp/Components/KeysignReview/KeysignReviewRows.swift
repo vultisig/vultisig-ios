@@ -166,17 +166,17 @@ struct KeysignReviewVaultLine: View {
     }
 }
 
-/// The scan's progress while there is no verdict to ring the header with: a
-/// scan in flight, or one that could not run.
+/// The animation conveys scan progress. Keep the failure message because the
+/// Rive file has no not-scanned state.
 struct KeysignReviewScanStatusLine: View {
     let state: SecurityScannerState
 
     var body: some View {
         switch state {
-        case .scanning, .notScanned:
+        case .notScanned:
             SecurityScannerHeaderView(state: state)
                 .frame(maxWidth: .infinity)
-        case .idle, .scanned:
+        case .idle, .scanning, .scanned:
             EmptyView()
         }
     }

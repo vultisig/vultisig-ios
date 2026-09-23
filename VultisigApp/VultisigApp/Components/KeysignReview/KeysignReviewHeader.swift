@@ -4,10 +4,9 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
-/// The ring around the Blockaid mark: the scan's verdict, or no ring while
-/// there is none to show. The ring is colour only, so it carries the words
-/// VoiceOver reads for it.
+/// Maps the scan result to the Blockaid animation and its VoiceOver label.
 struct KeysignReviewScanRing: Equatable {
     enum Tone: Equatable {
         case safe
@@ -15,47 +14,151 @@ struct KeysignReviewScanRing: Equatable {
         case danger
     }
 
+    enum AnimationState: Equatable {
+        case staticMark
+        case loading
+        case success
+        case mediumRisk
+        case highRisk
+
+        var triggerName: String? {
+            switch self {
+            case .success: "success"
+            case .mediumRisk: "mediumRisk"
+            case .highRisk: "highRisk"
+            case .staticMark, .loading: nil
+            }
+        }
+
+        var isTerminal: Bool { triggerName != nil }
+    }
+
     let tone: Tone?
+    let animationState: AnimationState
     let accessibilityLabel: String?
 
-    static let hidden = KeysignReviewScanRing(tone: nil, accessibilityLabel: nil)
+    static let hidden = KeysignReviewScanRing(tone: nil, animationState: .staticMark, accessibilityLabel: nil)
 
-    private init(tone: Tone?, accessibilityLabel: String?) {
+    private init(tone: Tone?, animationState: AnimationState, accessibilityLabel: String?) {
         self.tone = tone
+        self.animationState = animationState
         self.accessibilityLabel = accessibilityLabel
     }
 
     init(_ state: SecurityScannerState) {
-        guard let result = state.result else {
+        switch state {
+        case .idle, .notScanned:
             self = .hidden
             return
-        }
-        if result.isSecure {
-            self.init(
-                tone: .safe,
-                accessibilityLabel: "\("securityScannerTransactionScannedBy".localized) \(result.provider.capitalized)"
-            )
+        case .scanning:
+            self.init(tone: nil, animationState: .loading, accessibilityLabel: "securityScannerTransactionScanning".localized)
             return
+        case .scanned(let result):
+            if result.isSecure {
+                self.init(
+                    tone: .safe,
+                    animationState: .success,
+                    accessibilityLabel: "\("securityScannerTransactionScannedBy".localized) \(result.provider.capitalized)"
+                )
+                return
+            }
+            switch result.riskLevel {
+            case .high:
+                self.init(tone: .danger, animationState: .highRisk, accessibilityLabel: "securityScannerHighRiskTitle".localized)
+            case .critical:
+                self.init(tone: .danger, animationState: .highRisk, accessibilityLabel: "securityScannerCriticalRiskTitle".localized)
+            case .medium:
+                self.init(tone: .warning, animationState: .mediumRisk, accessibilityLabel: "securityScannerMediumRiskTitle".localized)
+            case .noRisk, .low:
+                self.init(tone: .warning, animationState: .mediumRisk, accessibilityLabel: "securityScannerLowRiskTitle".localized)
+            }
         }
-        switch result.riskLevel {
-        case .high:
-            self.init(tone: .danger, accessibilityLabel: "securityScannerHighRiskTitle".localized)
-        case .critical:
-            self.init(tone: .danger, accessibilityLabel: "securityScannerCriticalRiskTitle".localized)
-        case .medium:
-            self.init(tone: .warning, accessibilityLabel: "securityScannerMediumRiskTitle".localized)
-        case .noRisk, .low:
-            self.init(tone: .warning, accessibilityLabel: "securityScannerLowRiskTitle".localized)
+    }
+}
+
+/// Owns one Rive instance per scan. Recreating it resets the state machine to
+/// Loading when a scan is retried or another outcome is tested.
+private struct KeysignReviewScanMark: View {
+    let scanRing: KeysignReviewScanRing
+
+    @State private var animationVM: RiveViewModel?
+    @State private var animationInstance: RiveDataBindingViewModel.Instance?
+    @State private var activeState: KeysignReviewScanRing.AnimationState = .staticMark
+    @State private var firedState: KeysignReviewScanRing.AnimationState?
+    @State private var generation = 0
+
+    var body: some View {
+        ZStack {
+            Circle().fill(Theme.colors.bgSheetControl)
+
+            if scanRing.animationState == .staticMark || animationVM == nil {
+                Image(.blockaidLogomark)
+                    .resizable()
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(width: 12, height: 14)
+            } else {
+                animationVM?.view()
+                    // Rive's representable updates layout only; a new model
+                    // needs a new native view to render the reset state machine.
+                    .id(generation)
+                    .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
+            }
+        }
+        .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(scanRing.accessibilityLabel ?? "")
+        .accessibilityHidden(scanRing.accessibilityLabel == nil)
+        .onAppear { transition(to: scanRing.animationState) }
+        .onChange(of: scanRing.animationState) { _, state in transition(to: state) }
+        .onDisappear { clearAnimation() }
+    }
+
+    private func transition(to state: KeysignReviewScanRing.AnimationState) {
+        let previousState = activeState
+        activeState = state
+
+        if state == .staticMark {
+            clearAnimation()
+        } else if state == .loading || animationVM == nil || (previousState.isTerminal && previousState != state) {
+            resetAnimation()
+        } else {
+            fireOutcomeIfNeeded()
         }
     }
 
-    var color: Color? {
-        switch tone {
-        case nil: nil
-        case .safe: Theme.colors.alertSuccess
-        case .warning: Theme.colors.alertWarning
-        case .danger: Theme.colors.alertError
+    private func resetAnimation() {
+        clearAnimation()
+        let currentGeneration = generation
+
+        let vm = RiveViewModel(fileName: "blockaid_scan", stateMachineName: "State Machine 1", autoPlay: true)
+        vm.riveModel?.enableAutoBind { instance in
+            Task { @MainActor in
+                guard generation == currentGeneration else { return }
+                animationInstance = instance
+                firedState = nil
+                fireOutcomeIfNeeded()
+            }
         }
+        animationVM = vm
+    }
+
+    private func fireOutcomeIfNeeded() {
+        guard firedState != activeState,
+              let triggerName = activeState.triggerName,
+              let trigger = animationInstance?.triggerProperty(fromPath: triggerName) else { return }
+        trigger.trigger()
+        // Data-binding triggers do not resume a settled state machine.
+        animationVM?.play()
+        firedState = activeState
+    }
+
+    private func clearAnimation() {
+        generation += 1
+        animationVM?.riveModel?.disableAutoBind()
+        animationVM?.stop()
+        animationVM = nil
+        animationInstance = nil
+        firedState = nil
     }
 }
 
@@ -91,20 +194,7 @@ struct KeysignReviewHeader<Accessory: View>: View {
     }
 
     private var scanMark: some View {
-        Image(.blockaidLogomark)
-            .resizable()
-            .foregroundStyle(Theme.colors.textPrimary)
-            .frame(width: 12, height: 14)
-            .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
-            .background(Circle().fill(Theme.colors.bgSheetControl))
-            .overlay {
-                if let ringColor = scanRing.color {
-                    Circle().strokeBorder(ringColor, lineWidth: 1)
-                }
-            }
-            .accessibilityElement()
-            .accessibilityLabel(scanRing.accessibilityLabel ?? "")
-            .accessibilityHidden(scanRing.accessibilityLabel == nil)
+        KeysignReviewScanMark(scanRing: scanRing)
     }
 
     private var closeButton: some View {
