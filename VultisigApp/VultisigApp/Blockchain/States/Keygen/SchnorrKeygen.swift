@@ -162,6 +162,7 @@ final class SchnorrKeygen {
 
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
+            var receivers: [String] = []
             for i in 0..<self.keygenCommittee.count {
                 let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
@@ -170,16 +171,21 @@ final class SchnorrKeygen {
                 if receiverArray.isEmpty {
                     continue
                 }
-                let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public)")
-                try await self.messenger.send(
-                    self.localPartyID,
-                    to: receiverString,
-                    body: encodedOutboundMessage,
-                    hardDeadline: ceremonyWatchdog.hardDeadline
-                )
-                try ceremonyWatchdog.checkHardDeadline()
+                receivers.append(String(bytes: receiverArray, encoding: .utf8)!)
             }
+            // A body with no receivers was never sent; keep it that way rather
+            // than handing the messenger an empty list.
+            if receivers.isEmpty {
+                continue
+            }
+            logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receivers.joined(separator: ","), privacy: .public)")
+            try await self.messenger.send(
+                self.localPartyID,
+                to: receivers,
+                body: encodedOutboundMessage,
+                hardDeadline: ceremonyWatchdog.hardDeadline
+            )
+            try ceremonyWatchdog.checkHardDeadline()
         } while 1 > 0
 
     }
