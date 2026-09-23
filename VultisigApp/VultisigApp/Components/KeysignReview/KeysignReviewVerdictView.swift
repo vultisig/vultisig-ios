@@ -90,11 +90,13 @@ struct KeysignReviewVerdictView: View {
                 .frame(width: 13.3, height: 6.7)
                 .blur(radius: 7.7)
 
-            Image(systemName: isDanger ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(tint)
+            verdictIcon
         }
         .frame(width: 48, height: 49)
         .accessibilityHidden(true)
+    }
+
+    var verdictIcon: Icon {
+        Icon(isDanger ? .keysignReviewDanger : .keysignReviewWarning, color: tint, size: 20)
     }
 }
