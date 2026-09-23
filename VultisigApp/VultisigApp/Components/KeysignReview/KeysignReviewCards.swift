@@ -30,32 +30,17 @@ enum KeysignReviewNotchGlyph {
     case plus
 }
 
-/// The disc over the seam between two cards, saying how they relate.
-struct KeysignReviewNotch: View {
-    let glyph: KeysignReviewNotchGlyph
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Theme.colors.bgSurface1)
-                .overlay(Circle().strokeBorder(Theme.colors.borderLight, lineWidth: 1))
-                .frame(width: 40, height: 40)
-            KeysignReviewRelationBadge(glyph: glyph)
-        }
-        .accessibilityHidden(true)
-    }
-}
-
 /// Only the small glyph badge: notched cards provide their own transparent
 /// cavity, so no sheet-coloured disc should cover their shaped borders.
 private struct KeysignReviewRelationBadge: View {
+    static let size: CGFloat = 24
     let glyph: KeysignReviewNotchGlyph
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(Theme.colors.bgSurface2)
-                .frame(width: 24, height: 24)
+                .frame(width: Self.size, height: Self.size)
             glyphView
         }
         .accessibilityHidden(true)
@@ -83,31 +68,48 @@ struct KeysignReviewParty: Equatable {
 
 /// Sender over recipient, joined by a downward notch.
 struct KeysignReviewAddressCards: View {
+    private static let spacing: CGFloat = 8
+
     let from: KeysignReviewParty
     let to: KeysignReviewParty
 
     var body: some View {
-        VStack(spacing: 8) {
-            card(for: from)
-            card(for: to)
+        VStack(spacing: Self.spacing) {
+            card(for: from, isRecipient: false)
+                .overlay(alignment: .bottom) {
+                    // Anchor to the seam even when Dynamic Type makes the
+                    // named sender taller than an unnamed recipient.
+                    KeysignReviewRelationBadge(glyph: .chevronDown)
+                        .offset(y: (KeysignReviewRelationBadge.size + Self.spacing) / 2)
+                }
+            card(for: to, isRecipient: true)
         }
-        .overlay { KeysignReviewNotch(glyph: .chevronDown) }
     }
 
-    private func card(for party: KeysignReviewParty) -> some View {
-        KeysignReviewCard(minHeight: 82) {
-            VStack(spacing: 4) {
-                if let name = party.name {
-                    Text(name)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-                Text(party.address)
-                    .foregroundStyle(party.name == nil ? Theme.colors.textSecondary : Theme.colors.textTertiary)
-                    .truncationMode(.middle)
+    private func card(for party: KeysignReviewParty, isRecipient: Bool) -> some View {
+        let shape = NotchedRectangle(
+            topLeadingRadius: Theme.radius.lg.points,
+            topTrailingRadius: Theme.radius.lg.points,
+            bottomLeadingRadius: Theme.radius.lg.points,
+            bottomTrailingRadius: Theme.radius.lg.points,
+            notchRadius: 20,
+            notchCenterInset: Self.spacing / 2
+        )
+        return VStack(spacing: 4) {
+            if let name = party.name {
+                Text(name)
+                    .foregroundStyle(Theme.colors.textPrimary)
             }
-            .keysignReviewText(.bodyS)
-            .lineLimit(1)
+            Text(party.address)
+                .foregroundStyle(party.name == nil ? Theme.colors.textSecondary : Theme.colors.textTertiary)
+                .truncationMode(.middle)
         }
+        .keysignReviewText(.bodyS)
+        .lineLimit(1)
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 82)
+        .background(shape.fill(Theme.colors.bgSurface2).rotationEffect(.degrees(isRecipient ? 180 : 0)))
+        .overlay(shape.strokeBorder(Theme.colors.borderLight, lineWidth: 1).rotationEffect(.degrees(isRecipient ? 180 : 0)))
     }
 }
 

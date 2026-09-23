@@ -22,8 +22,44 @@ final class KeysignReviewPairCardsTests: XCTestCase {
             }
             .frame(width: 320)
         )
+        try assertTransparentNotch(renderer: renderer, cardFillIsHorizontal: true)
+    }
+
+    func testSendAddressCardsHaveTransparentTopAndBottomNotches() throws {
+        let renderer = ImageRenderer(content:
+            KeysignReviewAddressCards(
+                from: KeysignReviewParty(name: "Main Vault", address: "0x1234567890"),
+                to: KeysignReviewParty(name: nil, address: "0x0987654321")
+            )
+            .frame(width: 320)
+            .environment(\.dynamicTypeSize, .large)
+        )
+        try assertTransparentNotch(renderer: renderer, cardFillIsHorizontal: false)
+    }
+
+    func testSendBadgeFollowsSeamWithUnequalCardHeights() throws {
+        let renderer = ImageRenderer(content:
+            KeysignReviewAddressCards(
+                from: KeysignReviewParty(name: "Main Vault", address: "0x1234567890"),
+                to: KeysignReviewParty(name: nil, address: "0x0987654321")
+            )
+            .frame(width: 320)
+            .environment(\.dynamicTypeSize, .accessibility3)
+        )
+        try assertTransparentNotch(renderer: renderer, cardFillIsHorizontal: false, expectUnequalHeights: true)
+    }
+
+    private func assertTransparentNotch<Content: View>(
+        renderer: ImageRenderer<Content>,
+        cardFillIsHorizontal: Bool,
+        expectUnequalHeights: Bool = false
+    ) throws {
         renderer.scale = 1
         let image = try XCTUnwrap(renderer.cgImage)
+        let attachment = XCTAttachment(image: UIImage(cgImage: image))
+        attachment.name = cardFillIsHorizontal ? "swap-notched-cards" : "send-notched-cards"
+        attachment.lifetime = .keepAlways
+        add(attachment)
         let width = image.width
         let height = image.height
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
@@ -38,14 +74,30 @@ final class KeysignReviewPairCardsTests: XCTestCase {
             context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         }
         let midX = width / 2
-        let midY = height / 2
+        let midY: Int
+        if cardFillIsHorizontal {
+            midY = height / 2
+        } else {
+            // Away from corners, text and the notch, only the seam is transparent.
+            let gapRows = (height / 4..<height * 3 / 4).filter { y in
+                pixels[(y * width + 32) * 4 + 3] == 0
+            }
+            let first = try XCTUnwrap(gapRows.first)
+            let last = try XCTUnwrap(gapRows.last)
+            midY = (first + last + 1) / 2
+            if expectUnequalHeights {
+                XCTAssertGreaterThan(abs(midY - height / 2), 8, "Exercise a seam away from the stack center")
+            }
+        }
         // These points are inside the old 40pt cover but outside the 24pt badge.
         // Checking both the gap and the card cavities catches either workaround.
         for (x, y) in [(midX, midY - 16), (midX, midY + 16), (midX - 15, midY), (midX + 15, midY)] {
             XCTAssertEqual(pixels[(y * width + x) * 4 + 3], 0, "The notch must expose its real background at \(x), \(y)")
         }
         XCTAssertEqual(pixels[(midY * width + midX) * 4 + 3], 255, "Keep the small chevron badge")
-        XCTAssertEqual(pixels[(midY * width + width / 4) * 4 + 3], 255, "Keep the card fill")
+        let fillX = width / 4
+        let fillY = cardFillIsHorizontal ? midY : height / 4
+        XCTAssertEqual(pixels[(fillY * width + fillX) * 4 + 3], 255, "Keep the card fill")
     }
 }
 
