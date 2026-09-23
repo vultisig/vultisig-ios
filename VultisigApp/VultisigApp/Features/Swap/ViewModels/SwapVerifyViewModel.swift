@@ -40,10 +40,12 @@ final class SwapVerifyViewModel {
 
     init(
         transaction: SwapTransaction,
-        interactor: SwapInteractor = DefaultSwapInteractor.live
+        interactor: SwapInteractor? = nil
     ) {
         self.transaction = transaction
-        self.interactor = interactor
+        // Resolved here rather than as a default argument, which is evaluated
+        // outside the main actor that `DefaultSwapInteractor` is isolated to.
+        self.interactor = interactor ?? DefaultSwapInteractor.live
     }
 
     func onLoad() {

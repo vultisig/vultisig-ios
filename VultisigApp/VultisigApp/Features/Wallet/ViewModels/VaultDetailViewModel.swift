@@ -266,9 +266,12 @@ struct VaultDetailLogic {
         }
     }
 
+    /// Main actor so the post-refresh sort reads the vault's coins there; the
+    /// balance fetch inside `updateBalances` still runs off it.
+    @MainActor
     func updateBalance(vault: Vault) async -> [Chain] {
         await balanceService.updateBalances(vault: vault)
-        return await MainActor.run { sortedChains(vault: vault) }
+        return sortedChains(vault: vault)
     }
 
     func sortedChains(vault: Vault) -> [Chain] {

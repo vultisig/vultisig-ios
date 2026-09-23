@@ -358,9 +358,11 @@ struct SendDetailsScreen: View {
     }
 
     private func onRefresh() async {
-        async let bal: Bool = BalanceService.shared.updateBalance(for: viewModel.coin)
         async let pendingCheck: Void = viewModel.forceCheckPendingTransactions()
-        _ = await (bal, pendingCheck)
+        // Awaited here rather than in an `async let`: a child task would read
+        // the coin off the main actor before `updateBalance` hops back to it.
+        await BalanceService.shared.updateBalance(for: viewModel.coin)
+        await pendingCheck
     }
 }
 

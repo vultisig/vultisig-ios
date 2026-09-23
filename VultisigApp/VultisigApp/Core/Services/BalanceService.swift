@@ -539,23 +539,21 @@ class BalanceService {
     /// swallows the error and keeps the stale cached balance. Used by the swap
     /// sign-time funds check so a down balance RPC can't pass an insufficient
     /// order against a stale balance.
+    @MainActor
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
-        // Snapshot the SwiftData @Model's identity on MainActor before the async
-        // fetch — reading a main-context model off a generic executor is a
-        // concurrency hazard.
-        let (meta, address, vaultPubKeyECDSA) = await MainActor.run {
-            (coin.toCoinMeta(), coin.address, coin.vault?.pubKeyECDSA)
-        }
+        // Snapshot the SwiftData @Model's identity here, on the main actor;
+        // `fetchBalance` is nonisolated, so the network fetch still runs off it.
+        let meta = coin.toCoinMeta()
+        let address = coin.address
+        let vaultPubKeyECDSA = coin.vault?.pubKeyECDSA
         let rawBalance = try await fetchBalance(
             for: meta,
             address: address,
             vaultPubKeyECDSA: vaultPubKeyECDSA
         )
-        try await MainActor.run {
-            if coin.rawBalance != rawBalance {
-                coin.rawBalance = rawBalance
-                try Storage.shared.save()
-            }
+        if coin.rawBalance != rawBalance {
+            coin.rawBalance = rawBalance
+            try Storage.shared.save()
         }
     }
 

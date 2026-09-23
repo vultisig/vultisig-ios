@@ -161,12 +161,14 @@ final class SwapDetailsViewModel {
     }
 
     init(
-        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        interactor: SwapInteractor? = nil,
         inputRate: @escaping (Coin, SettingsCurrency) -> Double? = { coin, currency in
             RateProvider.shared.rate(for: coin, currency: currency)?.value
         }
     ) {
-        self.interactor = interactor
+        // Resolved here rather than as a default argument, which is evaluated
+        // outside the main actor that `DefaultSwapInteractor` is isolated to.
+        self.interactor = interactor ?? DefaultSwapInteractor.live
         self.inputRate = inputRate
         rateSubscription = RateProvider.shared.ratesDidChange.sink { [weak self] _ in
             Task { @MainActor [weak self] in

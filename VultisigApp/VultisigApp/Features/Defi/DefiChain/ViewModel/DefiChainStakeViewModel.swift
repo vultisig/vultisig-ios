@@ -91,7 +91,10 @@ final class DefiChainStakeViewModel: ObservableObject {
         }
 
         let enabledCoins = vaultStakePositions
-        async let positions = interactor.fetchStakePositions(vault: vault)
+        // Read the published vault here, on the main actor; the `async let`
+        // child task would otherwise read the property off it.
+        let refreshingVault = vault
+        async let positions = interactor.fetchStakePositions(vault: refreshingVault)
         async let availabilities = interactor.fetchActionAvailabilities(for: enabledCoins)
         let (dtos, resolvedAvailabilities) = await (positions, availabilities)
         actionAvailabilities = resolvedAvailabilities
