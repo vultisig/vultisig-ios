@@ -59,10 +59,11 @@ protocol KeyshareKeyStoring: Sendable {
     func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey
 }
 
-/// `@unchecked Sendable` because it has no mutable state, and its one
-/// dependency, `KeychainService`, is not annotated `Sendable` although the
-/// default one only forwards to the thread-safe `SecItem` calls.
-final class DefaultKeyshareKeyStore: KeyshareKeyStoring, @unchecked Sendable {
+/// `Sendable` is compiler-checked: the only stored property is an immutable
+/// `KeychainService`, which is itself `Sendable`. Keeping it checked is the
+/// point — a mutable property added later has to justify itself rather than
+/// slip in under an `@unchecked`.
+final class DefaultKeyshareKeyStore: KeyshareKeyStoring, Sendable {
 
     static let shared: KeyshareKeyStoring = DefaultKeyshareKeyStore()
 
