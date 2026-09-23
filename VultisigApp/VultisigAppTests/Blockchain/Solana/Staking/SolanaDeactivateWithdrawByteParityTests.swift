@@ -109,7 +109,10 @@ final class SolanaDeactivateWithdrawByteParityTests: XCTestCase {
 
         let initiatorHashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
         let rawTx = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: payload)
-        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: rawTx)
+        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: payload.coin.hexPublicKey,
+            base64Transaction: rawTx
+        )
 
         XCTAssertEqual(initiatorHashes, peerHashes)
     }
@@ -161,7 +164,10 @@ final class SolanaDeactivateWithdrawByteParityTests: XCTestCase {
 
         let initiatorHashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
         let rawTx = try SolanaHelper.buildStakingUnsignedTransaction(keysignPayload: payload)
-        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(base64Transaction: rawTx)
+        let peerHashes = try SolanaHelper.getPreSignedImageHashForRaw(
+            coinHexPubKey: payload.coin.hexPublicKey,
+            base64Transaction: rawTx
+        )
 
         XCTAssertEqual(initiatorHashes, peerHashes)
     }

@@ -11,10 +11,14 @@ import BigInt
 import Foundation
 import OSLog
 import VultisigCommonData
+import WalletCore
 
 private let logger = Log.send.interactor
 
-struct DefaultSendInteractor: SendInteractor {
+/// Nonisolated so `live` and the memberwise init stay usable from default
+/// arguments; the `SendInteractor` witnesses are `@MainActor` to match the
+/// protocol, and each awaits its network and payload work off the main actor.
+nonisolated struct DefaultSendInteractor: SendInteractor {
     let blockchain: BlockChainService
     let balance: BalanceService
     let fastVault: FastVaultService
@@ -31,6 +35,7 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
+    @MainActor
     func fetchChainSpecific(_ request: SendChainSpecificRequest) async throws -> BlockChainSpecific {
         try await blockchain.fetchSendBlockChainSpecific(
             coin: request.coin,
@@ -48,6 +53,7 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
+    @MainActor
     func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult {
         let service = try EthereumFeeService(chain: request.coin.chain)
         let cs = request.chainSpecific
@@ -92,6 +98,7 @@ struct DefaultSendInteractor: SendInteractor {
         return SendInteractorFeeResult(fee: fee, gas: gas, gasLimit: resolvedGasLimit)
     }
 
+    @MainActor
     func fetchOpStackFeeReserve(coin: Coin, memo: String?, gasLimit: BigInt?) async -> BigInt {
         guard coin.chain.isOpStack, let service = try? EvmService.getService(forChain: coin.chain) else {
             return .zero
@@ -152,6 +159,7 @@ struct DefaultSendInteractor: SendInteractor {
         160 + (memo?.utf8.count ?? 0)
     }
 
+    @MainActor
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         let normalizedAmount = tx.amount.replacingOccurrences(of: ",", with: ".")
         let amountDecimal = normalizedAmount.toDecimal()
@@ -198,16 +206,16 @@ struct DefaultSendInteractor: SendInteractor {
             guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
                 throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
             }
-            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             // A failed plan has `fee == 0`. Returning it would quote a free
             // transaction on the Verify screen and let the balance check pass on
             // arithmetic that never held, so the failure only surfaced at Sign
             // time as a generic message. Fail here, with the planner's reason.
-            try UTXOTransactionPlanError.validate(plan)
+            let plan = try await Self.validatedPlan(utxoHelper, for: keysignPayload)
             return BigInt(plan.fee)
         }
     }
 
+    @MainActor
     func calculateMaxSendPlan(
         _ request: SendChainSpecificRequest,
         vault: Vault,
@@ -240,8 +248,7 @@ struct DefaultSendInteractor: SendInteractor {
             vault: vault
         )
 
-        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: payload)
-        try UTXOTransactionPlanError.validate(plan)
+        let plan = try await Self.validatedPlan(utxoHelper, for: payload)
         // A plan with no error but nothing to send is still not a max send —
         // treat it as the funding verdict it is rather than filling the field
         // with zero.
@@ -256,16 +263,13 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
-    // `async` is required by the protocol so MainActor-isolated conformers (the
-    // test mock) can implement it; WalletCore planning itself is synchronous.
-    // swiftlint:disable:next async_without_await
+    @MainActor
     func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? {
         guard payload.coin.chainType == .UTXO,
               let utxoHelper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
             return nil
         }
-        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: payload)
-        try UTXOTransactionPlanError.validate(plan)
+        let plan = try await Self.validatedPlan(utxoHelper, for: payload)
         return SendMaxPlanResult(
             amount: BigInt(plan.amount),
             fee: BigInt(plan.fee),
@@ -273,6 +277,18 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
+    // Plans a UTXO transaction and rejects a failed plan. WalletCore planning
+    // is synchronous and grows with the input set; `@concurrent` keeps it off
+    // the main actor the witnesses above run on, whatever the default
+    // isolation of nonisolated async functions.
+    @concurrent
+    private static func validatedPlan(_ helper: UTXOChainsHelper, for payload: KeysignPayload) async throws -> BitcoinTransactionPlan {
+        let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
+        try UTXOTransactionPlanError.validate(plan)
+        return plan
+    }
+
+    @MainActor
     func validateUtxosIfNeeded(coin: Coin) async throws {
         guard coin.chain.chainType == .UTXO else { return }
         do {
@@ -282,6 +298,7 @@ struct DefaultSendInteractor: SendInteractor {
         }
     }
 
+    @MainActor
     func buildKeysignPayload(
         coin: Coin,
         toAddress: String,
@@ -304,6 +321,7 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
+    @MainActor
     func updateBalance(for coin: Coin) async {
         await balance.updateBalance(for: coin)
     }

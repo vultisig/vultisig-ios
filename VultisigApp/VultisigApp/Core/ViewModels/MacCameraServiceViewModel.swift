@@ -112,15 +112,17 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
 }
 
 extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
+    // AVFoundation calls this on `outputQueue`, not the main thread, so the
+    // frame is decoded there and only the result is handed to the main actor.
     // swiftlint:disable:next unused_parameter
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    nonisolated func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         detectQRCode(in: ciImage)
     }
 
-    private func detectQRCode(in image: CIImage) {
+    private nonisolated func detectQRCode(in image: CIImage) {
         let context = CIContext()
         let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
 

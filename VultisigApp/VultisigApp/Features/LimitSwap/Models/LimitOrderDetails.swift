@@ -4,7 +4,7 @@
 //
 //  Value types the tx-history surfaces read a limit order through.
 //
-//  `LimitOrder` is a `@MainActor @Model` and is the authoritative record, but a
+//  `LimitOrder` is a main-actor-only `@Model` and the authoritative record, but a
 //  view must not hold one across an actor boundary — and, more practically, the
 //  Limit Orders tab renders `TransactionHistoryData` rows, which carry no target
 //  price, expiry or fill split at all. `LimitOrderDetails` is the snapshot that

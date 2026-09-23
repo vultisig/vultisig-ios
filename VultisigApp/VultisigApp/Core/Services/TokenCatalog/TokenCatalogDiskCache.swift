@@ -28,11 +28,13 @@ private let logger = Log.wallet.store
 /// Sendable — immutable config, no mutable state; safe to call off the MainActor.
 final class TokenCatalogDiskCache: Sendable {
     private let namespace: String
-    private let fileManager: FileManager
 
-    init(namespace: String, fileManager: FileManager = .default) {
+    /// Resolved per use rather than stored: `FileManager` isn't `Sendable`, and
+    /// the shared instance is safe to call from any thread.
+    private var fileManager: FileManager { .default }
+
+    init(namespace: String) {
         self.namespace = namespace
-        self.fileManager = fileManager
     }
 
     /// Load the last-good snapshot for `chain`, capping every token's

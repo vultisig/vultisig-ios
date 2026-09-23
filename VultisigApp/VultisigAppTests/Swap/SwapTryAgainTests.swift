@@ -15,7 +15,7 @@ import XCTest
 final class SwapTryAgainTests: XCTestCase {
 
     private static let evmAddress = "0x7f6E1d3A4b5C6D7e8F9a0B1c2D3e4F5a6B7c8D9e"
-    private static let curatedUSDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    private nonisolated static let curatedUSDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
     private static let customUSDC = "0x1111111111111111111111111111111111111111"
     private static let tonJetton = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
 

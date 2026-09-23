@@ -9,6 +9,9 @@
 
 import Foundation
 
+/// Main-actor isolated because every requirement reads and writes a SwiftData
+/// `Coin`. Conformers still run their network fetches off the main actor.
+@MainActor
 protocol BalanceServiceProtocol {
     /// Best-effort refresh. Returns whether a live balance actually landed, so a
     /// caller stamping its own freshness cache can tell a failed fetch from a

@@ -15,6 +15,7 @@ user-invocable: false
 3. **Use value types (structs) to pass data across actor boundaries**
 4. **Batch updates with a single `Storage.shared.save()` call**
 5. **Mark functions that work with SwiftData models as `@MainActor`**
+6. **Never put `@MainActor` (or any global actor) on the `@Model` class itself.** The `PersistentModel` and `Identifiable` conformances the macro generates are nonisolated, so an isolated class makes them cross into main-actor code: a warning today, an error in Swift 6. Confine the model through its callers (rule 5), as `Vault` and `Coin` do.
 
 ---
 
