@@ -7,11 +7,37 @@ import XCTest
 @testable import VultisigApp
 
 final class KeysignReviewScanRingTests: XCTestCase {
+    func testBottomInsetsMatchPlatformForLayoutAndDetentSizing() {
+        #if os(macOS)
+        XCTAssertEqual(KeysignReviewSheetLayout.bottomInset, 32)
+        XCTAssertEqual(KeysignReviewSheetLayout.verdictBottomInset, 16)
+        #else
+        XCTAssertEqual(KeysignReviewSheetLayout.bottomInset, 0)
+        XCTAssertEqual(KeysignReviewSheetLayout.verdictBottomInset, 0)
+        #endif
+    }
+
     func testScanPhasesSelectAnimationStates() {
-        XCTAssertEqual(KeysignReviewScanRing(.idle), .hidden)
-        XCTAssertEqual(KeysignReviewScanRing(.notScanned(provider: "blockaid")), .hidden)
+        XCTAssertEqual(KeysignReviewScanRing(.idle), KeysignReviewScanRing(.scanning))
         XCTAssertEqual(KeysignReviewScanRing(.scanning).animationState, .loading)
         XCTAssertNotNil(KeysignReviewScanRing(.scanning).accessibilityLabel)
+    }
+
+    func testUnavailableScanHidesAfterCompletion() {
+        XCTAssertEqual(KeysignReviewScanRing(.idle, isScanComplete: true), .hidden)
+        XCTAssertEqual(KeysignReviewScanRing.hidden.animationState, .hidden)
+        XCTAssertNil(KeysignReviewScanRing.hidden.accessibilityLabel)
+    }
+
+    func testFailedScanHidesRegardlessOfCompletionDelivery() {
+        XCTAssertEqual(KeysignReviewScanRing(.notScanned(provider: "blockaid")), .hidden)
+        XCTAssertEqual(KeysignReviewScanRing(.notScanned(provider: "blockaid"), isScanComplete: true), .hidden)
+    }
+
+    func testCompletionDoesNotHideAnActiveScanOrVerdict() {
+        XCTAssertEqual(KeysignReviewScanRing(.scanning, isScanComplete: true).animationState, .loading)
+        let result = KeysignReviewScanFixture.result(.noRisk)
+        XCTAssertEqual(KeysignReviewScanRing(.scanned(result), isScanComplete: true).animationState, .success)
     }
 
     func testSecureResultIsSafeIncludingLowRisk() {

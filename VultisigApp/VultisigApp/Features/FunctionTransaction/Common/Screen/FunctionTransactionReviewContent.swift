@@ -24,6 +24,7 @@ struct FunctionTransactionReviewContent: View {
     @State private var fastPasswordPresented = false
     @State private var fastVaultPassword: String = ""
     @State private var error: HelperError?
+    @State private var isScanComplete = false
     /// Set when the pre-sign re-check finds the order is no longer cancellable.
     @State private var staleOrderMessage: String?
     @State private var validatorsByAddress: [String: CosmosValidator] = [:]
@@ -33,13 +34,11 @@ struct FunctionTransactionReviewContent: View {
     var body: some View {
         KeysignReviewSheet(
             title: "overview".localized,
-            // Deposits carry no scan verdict in the design; an unsafe result
-            // still takes the sheet over on Sign.
-            scanRing: .hidden,
+            scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
             verdict: verdict,
             onClose: reviewPresenter.dismiss
         ) {
-            FunctionTransactionReviewSummaryView(summary: summary, scannerState: viewModel.securityScannerState) {
+            FunctionTransactionReviewSummaryView(summary: summary) {
                 cancelLimitOrderDisclosures
             }
             .blur(radius: viewModel.isLoading ? 1 : 0)
@@ -71,9 +70,10 @@ struct FunctionTransactionReviewContent: View {
         .onLoad {
             viewModel.onLoad()
             Task {
-                async let scan: Void = viewModel.scan(transaction: transaction)
                 async let hero: Void = viewModel.loadResolvedHero(transaction: transaction)
-                _ = await (scan, hero)
+                await viewModel.scan(transaction: transaction)
+                isScanComplete = true
+                await hero
             }
         }
         .task { await loadValidators() }

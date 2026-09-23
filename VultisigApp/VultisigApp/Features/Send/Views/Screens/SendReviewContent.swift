@@ -26,6 +26,7 @@ struct SendReviewContent: View {
     @State private var fastPasswordPresented = false
     @State private var error: HelperError?
     @State private var retryBannerText: String?
+    @State private var isScanComplete = false
 
     init(
         transaction: SendTransaction,
@@ -50,11 +51,11 @@ struct SendReviewContent: View {
     var body: some View {
         KeysignReviewSheet(
             title: "sendOverview".localized,
-            scanRing: KeysignReviewScanRing(viewModel.securityScannerState),
+            scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
             verdict: verdict,
             onClose: reviewPresenter.dismiss
         ) {
-            SendReviewSummaryView(input: summary, scannerState: viewModel.securityScannerState)
+            SendReviewSummaryView(input: summary)
         } footer: {
             SendReviewFooter(
                 isAmountCorrect: $viewModel.isAmountCorrect,
@@ -104,6 +105,7 @@ struct SendReviewContent: View {
             Task {
                 await viewModel.loadGasInfoForSending()
                 await viewModel.scan()
+                isScanComplete = true
             }
         }
         .onDisappear {

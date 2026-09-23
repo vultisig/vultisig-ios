@@ -9,25 +9,20 @@ import SwiftUI
 /// card, the vault, then rows with a hairline between each.
 struct FunctionTransactionReviewSummaryView<Disclosures: View>: View {
     let summary: FunctionTransactionReviewSummary
-    let scannerState: SecurityScannerState
     let disclosures: () -> Disclosures
 
     @State private var rateRevision = 0
 
     init(
         summary: FunctionTransactionReviewSummary,
-        scannerState: SecurityScannerState,
         @ViewBuilder disclosures: @escaping () -> Disclosures
     ) {
         self.summary = summary
-        self.scannerState = scannerState
         self.disclosures = disclosures
     }
 
     var body: some View {
         VStack(spacing: 20) {
-            KeysignReviewScanStatusLine(state: scannerState)
-
             heroCard
 
             VStack(spacing: 12) {

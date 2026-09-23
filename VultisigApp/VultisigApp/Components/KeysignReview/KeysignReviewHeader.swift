@@ -15,7 +15,7 @@ struct KeysignReviewScanRing: Equatable {
     }
 
     enum AnimationState: Equatable {
-        case staticMark
+        case hidden
         case loading
         case success
         case mediumRisk
@@ -26,7 +26,7 @@ struct KeysignReviewScanRing: Equatable {
             case .success: "success"
             case .mediumRisk: "mediumRisk"
             case .highRisk: "highRisk"
-            case .staticMark, .loading: nil
+            case .hidden, .loading: nil
             }
         }
 
@@ -37,7 +37,7 @@ struct KeysignReviewScanRing: Equatable {
     let animationState: AnimationState
     let accessibilityLabel: String?
 
-    static let hidden = KeysignReviewScanRing(tone: nil, animationState: .staticMark, accessibilityLabel: nil)
+    static let hidden = KeysignReviewScanRing(tone: nil, animationState: .hidden, accessibilityLabel: nil)
 
     private init(tone: Tone?, animationState: AnimationState, accessibilityLabel: String?) {
         self.tone = tone
@@ -45,10 +45,15 @@ struct KeysignReviewScanRing: Equatable {
         self.accessibilityLabel = accessibilityLabel
     }
 
-    init(_ state: SecurityScannerState) {
+    init(_ state: SecurityScannerState, isScanComplete: Bool = false) {
         switch state {
-        case .idle, .notScanned:
+        case .notScanned:
             self = .hidden
+            return
+        case .idle:
+            // Start with the sheet, including fee preparation. An unavailable
+            // scan returns idle, so completion must stop the loading artwork.
+            self = isScanComplete ? .hidden : Self(.scanning)
             return
         case .scanning:
             self.init(tone: nil, animationState: .loading, accessibilityLabel: "securityScannerTransactionScanning".localized)
@@ -83,19 +88,21 @@ private struct KeysignReviewScanMark: View {
 
     @State private var animationVM: RiveViewModel?
     @State private var animationInstance: RiveDataBindingViewModel.Instance?
-    @State private var activeState: KeysignReviewScanRing.AnimationState = .staticMark
+    @State private var activeState: KeysignReviewScanRing.AnimationState = .hidden
     @State private var firedState: KeysignReviewScanRing.AnimationState?
     @State private var generation = 0
 
     var body: some View {
         ZStack {
-            Circle().fill(Theme.colors.bgSheetControl)
+            if scanRing.animationState != .hidden {
+                Circle().fill(Theme.colors.bgSheetControl)
 
-            animationVM?.view()
-                // Rive's representable updates layout only; a new model
-                // needs a new native view to render the reset state machine.
-                .id(generation)
-                .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
+                animationVM?.view()
+                    // Rive's representable updates layout only; a new model
+                    // needs a new native view to render the reset state machine.
+                    .id(generation)
+                    .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
+            }
         }
         .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
         .accessibilityElement(children: .ignore)
@@ -110,7 +117,9 @@ private struct KeysignReviewScanMark: View {
         let previousState = activeState
         activeState = state
 
-        if state == .staticMark || state == .loading || animationVM == nil || (previousState.isTerminal && previousState != state) {
+        if state == .hidden {
+            clearAnimation()
+        } else if state == .loading || animationVM == nil || (previousState.isTerminal && previousState != state) {
             resetAnimation()
         } else {
             fireOutcomeIfNeeded()
@@ -121,8 +130,7 @@ private struct KeysignReviewScanMark: View {
         clearAnimation()
         let currentGeneration = generation
 
-        // The paused initial frame supplies the logo when no scan is active.
-        let vm = RiveViewModel(fileName: "blockaid_scan", stateMachineName: "State Machine 1", autoPlay: activeState != .staticMark)
+        let vm = RiveViewModel(fileName: "blockaid_scan", stateMachineName: "State Machine 1", autoPlay: true)
         vm.riveModel?.enableAutoBind { instance in
             Task { @MainActor in
                 guard generation == currentGeneration else { return }

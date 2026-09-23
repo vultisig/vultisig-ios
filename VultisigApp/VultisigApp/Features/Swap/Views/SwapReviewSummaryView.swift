@@ -10,12 +10,9 @@ import VultisigUIResources
 /// the limit terms, provider, slippage and fees.
 struct SwapReviewSummaryView: View {
     let summary: SwapReviewSummary
-    let scannerState: SecurityScannerState
 
     var body: some View {
         VStack(spacing: 20) {
-            KeysignReviewScanStatusLine(state: scannerState)
-
             KeysignReviewPairCards(glyph: .chevronRight) {
                 side(summary.from)
             } trailing: {

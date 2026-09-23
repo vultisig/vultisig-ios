@@ -99,7 +99,7 @@ final class KeysignReviewParityTests: XCTestCase {
             scanRing: .hidden,
             onClose: {},
             bodyScrolls: false,
-            content: { SendReviewSummaryView(input: summary, scannerState: .idle) },
+            content: { SendReviewSummaryView(input: summary) },
             footer: { footer }
         )
     }
@@ -164,7 +164,7 @@ final class KeysignReviewParityTests: XCTestCase {
             scanRing: KeysignReviewScanRing(.scanned(KeysignReviewScanFixture.result(.noRisk))),
             onClose: {},
             bodyScrolls: false,
-            content: { SwapReviewSummaryView(summary: summary, scannerState: .idle) },
+            content: { SwapReviewSummaryView(summary: summary) },
             footer: { footer }
         )
     }
@@ -199,7 +199,7 @@ final class KeysignReviewParityTests: XCTestCase {
             scanRing: .hidden,
             onClose: {},
             bodyScrolls: false,
-            content: { FunctionTransactionReviewSummaryView(summary: summary, scannerState: .idle) { EmptyView() } },
+            content: { FunctionTransactionReviewSummaryView(summary: summary) { EmptyView() } },
             footer: { footer }
         )
     }

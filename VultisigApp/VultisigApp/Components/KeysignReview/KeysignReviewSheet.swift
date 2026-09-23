@@ -9,8 +9,13 @@ enum KeysignReviewSheetLayout {
     /// Leaves room for the grabber above the header.
     static let topInset: CGFloat = 22
     static let horizontalInset: CGFloat = 16
+    #if os(macOS)
     static let bottomInset: CGFloat = 32
     static let verdictBottomInset: CGFloat = 16
+    #else
+    static let bottomInset: CGFloat = 0
+    static let verdictBottomInset: CGFloat = 0
+    #endif
     static let sectionSpacing: CGFloat = 28
     /// The header's round controls: the scan mark and the close button.
     static let controlSize: CGFloat = 32
@@ -91,7 +96,9 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
         }
         .padding(.top, KeysignReviewSheetLayout.topInset)
         .padding(.horizontal, KeysignReviewSheetLayout.horizontalInset)
+        #if os(macOS)
         .padding(.bottom, verdict == nil ? KeysignReviewSheetLayout.bottomInset : KeysignReviewSheetLayout.verdictBottomInset)
+        #endif
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.colors.bgSurface1)
         .animation(.easeInOut(duration: 0.2), value: verdict == nil)

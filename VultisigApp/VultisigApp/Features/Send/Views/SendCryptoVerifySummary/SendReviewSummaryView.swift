@@ -12,12 +12,9 @@ import SwiftUI
 
 struct SendReviewSummaryView: View {
     let input: SendCryptoVerifySummary
-    let scannerState: SecurityScannerState
 
     var body: some View {
         VStack(spacing: 20) {
-            KeysignReviewScanStatusLine(state: scannerState)
-
             if let metadata = input.dappMetadata, !metadata.isEmpty {
                 DAppRequestBanner(metadata: metadata)
             }

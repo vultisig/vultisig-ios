@@ -24,6 +24,7 @@ struct SwapReviewContent: View {
     @State private var signButtonDisabled = false
     @State private var signingTask: Task<Void, Never>?
     @State private var retryBannerText: String?
+    @State private var isScanComplete = false
 
     init(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault, presentationID: UUID) {
         self.retrySignal = retrySignal
@@ -38,13 +39,12 @@ struct SwapReviewContent: View {
         @Bindable var vm = viewModel
         KeysignReviewSheet(
             title: "swapOverview".localized,
-            scanRing: KeysignReviewScanRing(viewModel.securityScannerState),
+            scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
             verdict: verdict,
             onClose: reviewPresenter.dismiss
         ) {
             SwapReviewSummaryView(
-                summary: SwapReviewSummary(transaction: transaction, vault: vault),
-                scannerState: viewModel.securityScannerState
+                summary: SwapReviewSummary(transaction: transaction, vault: vault)
             )
         } footer: {
             SwapReviewFooter(
@@ -91,6 +91,7 @@ struct SwapReviewContent: View {
             viewModel.onLoad()
             Task {
                 await viewModel.scan()
+                isScanComplete = true
             }
             consumePendingRetry()
         }
