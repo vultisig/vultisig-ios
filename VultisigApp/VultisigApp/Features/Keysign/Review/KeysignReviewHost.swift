@@ -31,7 +31,10 @@ private struct KeysignReviewHost: ViewModifier {
         content
             .crossPlatformSheet(
                 item: $presenter.presented,
-                onDismiss: sheetDidDismiss
+                onDismiss: sheetDidDismiss,
+                // Native macOS sheets can fail to composite Metal-backed
+                // artwork. Keep Rive in the window's existing overlay host.
+                useOverlayOnMacOS: true
             ) { review in
                 KeysignReviewSheetContent(review: review, presentationID: presenter.presentationID)
                     .id(presenter.presentationID)

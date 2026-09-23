@@ -145,6 +145,27 @@ final class KeysignReviewPresenterTests: XCTestCase {
         XCTAssertTrue(router.navPath.isEmpty)
     }
 
+    func testPreparationFinishingDuringOverlayDismissalCannotSign() async {
+        let presenter = KeysignReviewPresenter()
+        let router = NavigationRouter()
+        presenter.present(KeysignReviewFixture.swapReview())
+        let presentationID = presenter.presentationID
+        let preparation = Task { @MainActor in
+            await Task.yield()
+            presenter.proceed(to: KeysignReviewFixture.fastKeysignRoute(), presentationID: presentationID)
+        }
+
+        // Escape/backdrop dismissal clears the binding immediately; the
+        // host's dismissal callback arrives only after its fade completes.
+        presenter.presented = nil
+        await preparation.value
+        XCTAssertFalse(presenter.isPresenting)
+        XCTAssertTrue(router.navPath.isEmpty)
+
+        presenter.sheetDidDismiss(router: router)
+        XCTAssertTrue(router.navPath.isEmpty)
+    }
+
     func testReopenStartsANewPresentation() {
         let presenter = KeysignReviewPresenter()
         let router = NavigationRouter()

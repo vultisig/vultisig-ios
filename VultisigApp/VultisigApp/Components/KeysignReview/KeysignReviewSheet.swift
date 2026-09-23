@@ -152,6 +152,8 @@ extension KeysignReviewSheet where HeaderAccessory == EmptyView {
 
 private struct KeysignReviewSheetSizing: ViewModifier {
     let contentHeight: CGFloat?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var fittedHeight: CGFloat?
 
     func body(content: Content) -> some View {
         #if os(iOS)
@@ -168,7 +170,13 @@ private struct KeysignReviewSheetSizing: ViewModifier {
         #else
         content
             .frame(width: KeysignReviewSheetLayout.macOSWidth)
-            .frame(minHeight: 0, idealHeight: contentHeight, maxHeight: contentHeight ?? .infinity)
+            .frame(minHeight: 0, idealHeight: fittedHeight, maxHeight: fittedHeight ?? .infinity)
+            .onChange(of: contentHeight, initial: true) { _, height in
+                // The first measurement should fit before presentation,
+                // not animate down from the full available window height.
+                let animation: Animation? = fittedHeight == nil || reduceMotion ? nil : .easeInOut(duration: 0.2)
+                withAnimation(animation) { fittedHeight = height }
+            }
             .presentationSizingFitted()
         #endif
     }
