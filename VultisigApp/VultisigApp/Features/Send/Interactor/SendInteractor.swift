@@ -105,6 +105,10 @@ struct SendFeeEstimateRequest: Equatable {
     }
 }
 
+/// Main-actor isolated: every requirement takes SwiftData `Coin`/`Vault`
+/// models, directly or inside a request. `DefaultSendInteractor` keeps its
+/// network calls, payload building and WalletCore planning off the main actor.
+@MainActor
 protocol SendInteractor {
     /// Chain-specific fee / nonce / blockhash data needed to assemble the
     /// keysign payload. `feeMode` controls EVM priority and UTXO byte-fee

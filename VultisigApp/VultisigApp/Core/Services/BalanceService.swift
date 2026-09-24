@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import os
 import SwiftData
 import BigInt
 
@@ -43,8 +44,7 @@ class BalanceService {
 
     /// Cache of whether a chain's Multicall3 contract was verified to have code.
     /// Probed at most once per process for chains that need a runtime gate.
-    private var multicallCodeVerified: [Chain: Bool] = [:]
-    private var multicallCodeLock = os_unfair_lock()
+    private let multicallCodeVerified = OSAllocatedUnfairLock<[Chain: Bool]>(initialState: [:])
 
     /// Key for grouping EVM coins so each (chain, wallet) issues one Multicall3 call.
     private struct EvmBatchKey: Hashable {
@@ -272,7 +272,7 @@ class BalanceService {
         do {
             let service = try EvmService.getService(forChain: chain)
 
-            guard await isMulticallAvailable(chain: chain, multicall3Address: multicall3Address, service: service) else {
+            guard await isMulticallAvailable(chain: chain, probe: { try await service.getCode(address: multicall3Address) }) else {
                 return await fallbackPerCoin(coins)
             }
 
@@ -375,22 +375,20 @@ class BalanceService {
     /// batch path is trusted; an absent contract maps to the per-coin fallback.
     /// Every other listed chain is verified against the canonical deployment list
     /// and trusted directly. The probe result is cached per process.
-    private func isMulticallAvailable(chain: Chain, multicall3Address: String, service: EvmService) async -> Bool {
+    ///
+    /// `probe` returns the contract's code (`eth_getCode`); it is a parameter so
+    /// the caching rules can be tested without a node.
+    func isMulticallAvailable(chain: Chain, probe: () async throws -> String) async -> Bool {
         guard chain == .hyperliquid else { return true }
 
-        os_unfair_lock_lock(&multicallCodeLock)
-        let cached = multicallCodeVerified[chain]
-        os_unfair_lock_unlock(&multicallCodeLock)
-        if let cached { return cached }
+        if let cached = multicallCodeVerified.withLock({ $0[chain] }) { return cached }
 
         do {
-            let code = try await service.getCode(address: multicall3Address)
+            let code = try await probe()
             let hasCode = !code.stripHexPrefix().isEmpty
 
             // Cache only definitive code / no-code results.
-            os_unfair_lock_lock(&multicallCodeLock)
-            multicallCodeVerified[chain] = hasCode
-            os_unfair_lock_unlock(&multicallCodeLock)
+            multicallCodeVerified.withLock { $0[chain] = hasCode }
             return hasCode
         } catch {
             // A transient probe failure stays uncached so the next refresh can
@@ -541,23 +539,21 @@ class BalanceService {
     /// swallows the error and keeps the stale cached balance. Used by the swap
     /// sign-time funds check so a down balance RPC can't pass an insufficient
     /// order against a stale balance.
+    @MainActor
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
-        // Snapshot the SwiftData @Model's identity on MainActor before the async
-        // fetch — reading a main-context model off a generic executor is a
-        // concurrency hazard.
-        let (meta, address, vaultPubKeyECDSA) = await MainActor.run {
-            (coin.toCoinMeta(), coin.address, coin.vault?.pubKeyECDSA)
-        }
+        // Snapshot the SwiftData @Model's identity here, on the main actor;
+        // `fetchBalance` is nonisolated, so the network fetch still runs off it.
+        let meta = coin.toCoinMeta()
+        let address = coin.address
+        let vaultPubKeyECDSA = coin.vault?.pubKeyECDSA
         let rawBalance = try await fetchBalance(
             for: meta,
             address: address,
             vaultPubKeyECDSA: vaultPubKeyECDSA
         )
-        try await MainActor.run {
-            if coin.rawBalance != rawBalance {
-                coin.rawBalance = rawBalance
-                try Storage.shared.save()
-            }
+        if coin.rawBalance != rawBalance {
+            coin.rawBalance = rawBalance
+            try Storage.shared.save()
         }
     }
 

@@ -64,6 +64,9 @@ class KeysignViewModel: ObservableObject {
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
     @Published var retryReason: BroadcastRetryReason?
+    @Published var solanaAtaRentState: SolanaSwapAtaRentState = .notRequired
+    private var solanaAtaRentLookupGeneration = 0
+    private var solanaAtaRentLookupTask: Task<Void, Never>?
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
@@ -182,6 +185,25 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        solanaAtaRentLookupTask?.cancel()
+        solanaAtaRentLookupGeneration += 1
+        let rentLookupGeneration = solanaAtaRentLookupGeneration
+        if let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) {
+            solanaAtaRentState = .loading
+            solanaAtaRentLookupTask = Task { [weak self] in
+                let result: SolanaSwapAtaRentState
+                do {
+                    result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
+                } catch {
+                    result = .failed
+                }
+                guard let self, !Task.isCancelled,
+                      self.solanaAtaRentLookupGeneration == rentLookupGeneration else { return }
+                self.solanaAtaRentState = result
+            }
+        } else {
+            solanaAtaRentState = .notRequired
+        }
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
@@ -747,16 +769,15 @@ class KeysignViewModel: ObservableObject {
 
         if let approvePayload = keysignPayload.approvePayload {
             let swaps = THORChainSwaps()
-            let transaction = try swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
-            signedTransactions.append(transaction)
+            signedTransactions += try swaps.getSignedApproveTransactions(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
         }
 
         if let swapPayload = keysignPayload.swapPayload {
-            let incrementNonce = keysignPayload.approvePayload != nil
+            let nonceOffset = keysignPayload.approveNonceOffset
             switch swapPayload {
             case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
 
             case .generic(let payload):
@@ -766,7 +787,7 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(transaction)
                 default:
                     let swaps = OneInchSwaps()
-                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                     signedTransactions.append(transaction)
                 }
             case .mayachain(let payload):
@@ -774,7 +795,7 @@ class KeysignViewModel: ObservableObject {
                     break
                 }
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
             case .swapkit(let payload):
                 // Dispatch on SwapKit's `meta.txType`. PSBT (BTC), SUI, and
@@ -1099,11 +1120,19 @@ class KeysignViewModel: ObservableObject {
                     }
                 }
 
-            case .regularWithApprove(let approve, let transaction):
+            case .regularWithApprove(let approves, let transaction):
                 let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
-                let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                // Nonce order, back to back. A leg a peer already sent comes
+                // back as the duplicate sentinel rather than an error, so the
+                // rest still go out.
+                for approve in approves {
+                    _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                }
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
-                self.approveTxid = approveTxHash
+                // The local hash, not the node's reply: the two are the same
+                // keccak for a fresh broadcast, and a duplicate replies with
+                // only the sentinel.
+                self.approveTxid = transactionType.approveTransactionHash
                 self.txid = regularTxHash
             }
         } catch {
@@ -1373,6 +1402,12 @@ class KeysignViewModel: ObservableObject {
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+        if solanaAtaRentState == .loading { return ("loading".localized, .empty) }
+        if solanaAtaRentState == .failed {
+            return ("errorNetworkUnstableDescription".localized, .empty)
+        }
+        return gasViewModel.getCalculatedNetworkFee(
+            payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
+        )
     }
 }

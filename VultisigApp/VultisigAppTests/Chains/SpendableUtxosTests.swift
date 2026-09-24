@@ -411,7 +411,7 @@ final class SpendableUtxosTests: XCTestCase {
     /// Summed as `BigInt` precisely so a holding that overflows the per-output
     /// `Int64` totals instead of trapping.
     func testBalanceSumsBeyondTheRangeOfASingleOutput() {
-        let rows = (0..<4).map { index in
+        let rows = (0..<4).map { (index: Int) in
             makeRow(blockId: 900_000, hash: "big-\(index)", index: index, value: Int(Int64.max))
         }
 

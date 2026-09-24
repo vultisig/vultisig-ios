@@ -6,7 +6,8 @@
 //  each done-screen entry point. One factory method per flow:
 //
 //    - `send(...)`         — Send initiator + cosigner Send (RPC poll)
-//    - `swap(...)`         — Swap initiator (SwapKit `/track` or RPC)
+//    - `swap(...)`         — Swap initiator (SwapKit `/track`, native
+//                            THORChain/Maya tracker, or RPC)
 //    - `qbtcClaim(...)`    — QBTC claim (RPC poll on .qbtc)
 //    - `cosigner(...)`     — Cosigner Send / Swap (dispatches on
 //                            `KeysignPayload.swapPayload`)
@@ -75,6 +76,15 @@ enum DoneStatusServiceFactory {
                 pubKeyECDSA: vault.pubKeyECDSA
             ))
         }
+        // The same predicate `SwapDoneScreen.recordTxHistory` records the
+        // tracking metadata under, so the poller always finds a tracked row.
+        if NativeSwapTrackingService.network(for: transaction.quote) != nil {
+            return DoneStatusService(poller: NativeSwapPoller(
+                txHash: txHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                sourceChain: transaction.fromCoin.chain
+            ))
+        }
         return DoneStatusService(poller: ChainPoller(
             txHash: txHash,
             chain: transaction.fromCoin.chain,
@@ -105,9 +115,10 @@ enum DoneStatusServiceFactory {
     /// — the SwapKit fields ride on
     /// `KeysignPayload.swapPayload(.swapkit(SwapKitSwapPayload))`, so the
     /// peer device can attach the `/track` poll the same way the
-    /// initiator does. Everything else (Send, THORChain/Maya swap,
-    /// 1inch/Kyber/LiFi swap) falls through to the source-chain RPC
-    /// poller — same path the initiator uses outside SwapKit routes.
+    /// initiator does — and native THORChain/Maya market swaps to
+    /// `NativeSwapPoller`. Everything else (Send, 1inch/Kyber/LiFi swap,
+    /// router deposits that are not swaps) falls through to the
+    /// source-chain RPC poller.
     ///
     /// Limit orders are matched FIRST, and on the memo rather than the
     /// payload: a co-signer never sees the initiator's `SwapTransaction`, so
@@ -138,6 +149,14 @@ enum DoneStatusServiceFactory {
                 sourceChain: keysignPayload.coin.chain,
                 txHash: txHash,
                 pubKeyECDSA: vault.pubKeyECDSA
+            ))
+        }
+        // Mirrors `TransactionHistoryRecorder.swapTracking(for:txHash:)`.
+        if NativeSwapTrackingService.network(for: keysignPayload.swapPayload, memo: keysignPayload.memo) != nil {
+            return DoneStatusService(poller: NativeSwapPoller(
+                txHash: txHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                sourceChain: keysignPayload.coin.chain
             ))
         }
         return DoneStatusService(poller: ChainPoller(

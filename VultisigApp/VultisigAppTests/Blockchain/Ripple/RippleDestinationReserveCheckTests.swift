@@ -218,9 +218,7 @@ private final class ReserveCheckScriptedHTTPClient: HTTPClientProtocol, @uncheck
         }
         switch api.endpoint {
         case .accountInfo:
-            lock.lock()
-            accountInfoCallCount += 1
-            lock.unlock()
+            lock.withLock { accountInfoCallCount += 1 }
             return try respond(accountInfoResult)
         case .serverState:
             return try respond(serverStateResult)

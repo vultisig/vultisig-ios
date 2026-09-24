@@ -79,22 +79,43 @@ extension SwapCryptoLogic {
                 throw error
             }
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
+        case .Solana:
+            return SolanaSwapNetworkFee.fee(chainSpecific: chainSpecific) ?? chainSpecific.gas
+
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
     }
 
-    static func buildApprovePayload(
-        fromCoin: Coin,
-        amount: BigInt,
-        quote: SwapQuote?
-    ) -> ERC20ApprovePayload? {
-        guard isApproveRequired(fromCoin: fromCoin, quote: quote),
-              let spender = router(quote: quote)
-        else {
+    /// The contract the swap's ERC-20 approve names, or nil when the source
+    /// needs no approve. SwapKit's `approvalTx` carries the exact spender when
+    /// it is populated; every other route, and SwapKit without it, approves
+    /// the quote's router.
+    static func approveSpender(fromCoin: Coin, quote: SwapQuote?) -> String? {
+        guard isApproveRequired(fromCoin: fromCoin, quote: quote) else {
             return nil
         }
-        return ERC20ApprovePayload(amount: amount, spender: spender)
+        if case let .swapkit(swapResponse, _, _) = quote, let approvalTx = swapResponse.approvalTx {
+            // The spender lives in `approvalAddress` (or is encoded in
+            // `approvalTx.data` after the `0x095ea7b3` selector). We prefer
+            // the meta field — confirmed by the spike to match the calldata
+            // spender — and fall back to the `to` field of the approve tx
+            // itself.
+            return swapResponse.meta.approvalAddress ?? approvalTx.to
+        }
+        return router(quote: quote)
+    }
+
+    /// The spend a market swap's approve is decided for, or nil when the
+    /// source needs no approve. The hand-off into Verify reads the allowance
+    /// for it and signing checks it again against the decision it carries.
+    /// Main-actor bound because it reads the SwiftData `Coin`.
+    @MainActor
+    static func approvalQuery(fromCoin: Coin, amount: BigInt, quote: SwapQuote?) -> ERC20ApprovalQuery? {
+        guard let spender = approveSpender(fromCoin: fromCoin, quote: quote) else {
+            return nil
+        }
+        return ERC20ApprovalQuery(coin: fromCoin, spender: spender, amount: amount)
     }
 
     /// The `LIM/INTERVAL/QUANTITY` triple a THORChain/MayaChain swap memo
@@ -249,11 +270,6 @@ extension SwapCryptoLogic {
         let toCoin = transaction.toCoin
         let amountInCoin = transaction.amountInCoinDecimal
         let toDecimal = transaction.toAmountDecimal
-        let approvePayload = buildApprovePayload(
-            fromCoin: fromCoin,
-            amount: amountInCoin,
-            quote: transaction.quote
-        )
 
         // Limit orders never reach this builder — they construct their
         // payload via `LimitSwapPayloadAssembler`. A missing quote here is an
@@ -262,6 +278,13 @@ extension SwapCryptoLogic {
         guard let quote = transaction.quote else {
             throw Errors.unexpectedError
         }
+
+        // The approval was read on the way into Verify; it is not read again.
+        let approveSpend = await approvalQuery(fromCoin: fromCoin, amount: amountInCoin, quote: quote)
+        let approvePayload = try ERC20ApprovalDecision.approvePayload(
+            signing: approveSpend,
+            decision: transaction.approvalDecision
+        )
 
         switch quote {
         case let .mayachain(quote):
@@ -402,15 +425,6 @@ extension SwapCryptoLogic {
             switch swapResponse.tx {
             case .evm, .solana:
                 let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
-                // Re-derive the approve payload from SwapKit's `approvalTx`
-                // (or fall back to the standard ERC20 path against
-                // `targetAddress`).
-                let resolvedApprovePayload = buildSwapKitApprovePayload(
-                    fromCoin: fromCoin,
-                    amount: amountInCoin,
-                    swapResponse: swapResponse,
-                    fallback: approvePayload
-                )
                 let payload = buildSwapKitGenericPayload(
                     fromCoin: fromCoin,
                     toCoin: toCoin,
@@ -426,7 +440,7 @@ extension SwapCryptoLogic {
                     memo: nil,
                     chainSpecific: chainSpecific,
                     swapPayload: .generic(payload),
-                    approvePayload: resolvedApprovePayload,
+                    approvePayload: approvePayload,
                     vault: vault
                 )
 
@@ -1134,29 +1148,6 @@ extension SwapCryptoLogic {
         case .unsupported(let txType, _):
             throw SwapKitError.unsupportedTxType(txType)
         }
-    }
-
-    /// SwapKit's `approvalTx` carries the exact spender + amount the EVM
-    /// approve call needs. When it's populated we honour it verbatim; when
-    /// absent we fall back to the caller's pre-built approve payload (which
-    /// defaults to ERC20 approve against `targetAddress`).
-    static func buildSwapKitApprovePayload(
-        fromCoin: Coin,
-        amount: BigInt,
-        swapResponse: SwapKitSwapResponse,
-        fallback: ERC20ApprovePayload?
-    ) -> ERC20ApprovePayload? {
-        guard fromCoin.shouldApprove else { return nil }
-        if let approvalTx = swapResponse.approvalTx {
-            // The spender lives in `approvalAddress` (or is encoded in
-            // `approvalTx.data` after the `0x095ea7b3` selector). We prefer
-            // the meta field — confirmed by the spike to match the calldata
-            // spender — and fall back to the `to` field of the approve tx
-            // itself.
-            let spender = swapResponse.meta.approvalAddress ?? approvalTx.to
-            return ERC20ApprovePayload(amount: amount, spender: spender)
-        }
-        return fallback
     }
 
     /// Parses an EVM-style amount string that may arrive as decimal wei or as

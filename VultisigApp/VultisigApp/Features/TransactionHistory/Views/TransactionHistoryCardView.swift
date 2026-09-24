@@ -23,7 +23,7 @@ struct TransactionHistoryCardView: View {
     }
 
     private var failureReasonText: String? {
-        TransactionHistoryFailureReasonPresentation.displayText(for: transaction.errorMessage)
+        TransactionHistoryFailureReasonPresentation.displayText(for: transaction)
     }
 
     /// Whether the collapsed row shows the completed-swap layout (two amount

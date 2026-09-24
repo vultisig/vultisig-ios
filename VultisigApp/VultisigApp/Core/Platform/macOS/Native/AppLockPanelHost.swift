@@ -283,9 +283,14 @@ final class AppLockPanelHost: ObservableObject {
             context.duration = lowerDuration
             lowering.values.forEach { $0.animator().alphaValue = 0 }
         }, completionHandler: { [weak self] in
-            guard let self, token == self.lowerToken else { return }
-            self.panels = [:]
-            lowering.values.forEach(self.dismantle)
+            // AppKit calls this on the main thread. Stepping into the actor in
+            // place rather than hopping keeps the token check and the teardown
+            // in the turn the fade ended in, as the window observers below do.
+            MainActor.assumeIsolated {
+                guard let self, token == self.lowerToken else { return }
+                self.panels = [:]
+                lowering.values.forEach(self.dismantle)
+            }
         })
     }
 

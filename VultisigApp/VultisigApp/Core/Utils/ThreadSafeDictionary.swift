@@ -10,7 +10,8 @@ final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable>: @un
         }
     }
     func setSync(_ key: Key, _ value: Value) {
-        queue.sync {
+        // The queue is concurrent, so a write needs the barrier to exclude reads and other writes.
+        queue.sync(flags: .barrier) {
             self.dictionary[key] = value
         }
     }

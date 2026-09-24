@@ -143,7 +143,9 @@ protocol DefiYieldProvider {
     @MainActor func persistAccountAddress(_ address: String, vault: Vault)
 
     // Reads
-    func refreshPosition(vault: Vault) async throws -> YieldVaultPosition
+    /// Main actor because the refreshed position is persisted onto the vault;
+    /// the provider's network reads still run off it.
+    @MainActor func refreshPosition(vault: Vault) async throws -> YieldVaultPosition
     func apy(vault: Vault) async throws -> Decimal?
 
     // Write builders — all return a signable `KeysignPayload`.

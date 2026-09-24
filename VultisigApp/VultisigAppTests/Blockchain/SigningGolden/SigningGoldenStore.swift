@@ -39,9 +39,15 @@ struct SigningGolden: Codable, Equatable {
     /// Present for chains that carry a detached signature (e.g. Sui wallet-
     /// standard signature); nil otherwise.
     var signature: String?
-    /// Populated only for the ERC20 approve+swap vector (`.regularWithApprove`).
+    /// Populated only for the ERC20 approve+swap vectors (`.regularWithApprove`):
+    /// the leg that grants the allowance, `approve(amount)`.
     var approveRawTransaction: String?
     var approveTransactionHash: String?
+    /// The `approve(0)` leg ahead of it, only when the payload asks for an
+    /// allowance reset. Nil is omitted from the JSON, so vectors without a
+    /// reset keep their committed shape.
+    var resetApproveRawTransaction: String?
+    var resetApproveTransactionHash: String?
 }
 
 /// Loads / persists the committed golden JSON and exposes the record-mode flag.

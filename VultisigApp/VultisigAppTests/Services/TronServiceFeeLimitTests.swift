@@ -816,17 +816,28 @@ private extension CoinMeta {
 /// URL path; the stub dispatches on `target.path` so test ordering doesn't
 /// matter and chain-parameter caching inside `TronService` works
 /// transparently.
-private final class TronStubHTTPClient: HTTPClientProtocol {
+private final class TronStubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
-    var responses: [String: Data] = [:]
-    var errors: [String: Error] = [:]
+    private let lock = NSLock()
+    private var _responses: [String: Data] = [:]
+    private var _errors: [String: Error] = [:]
+
+    var responses: [String: Data] {
+        get { lock.withLock { _responses } }
+        set { lock.withLock { _responses = newValue } }
+    }
+    var errors: [String: Error] {
+        get { lock.withLock { _errors } }
+        set { lock.withLock { _errors = newValue } }
+    }
 
     // Protocol requires `async`; the body is sync. Silence the lint here.
     // swiftlint:disable:next async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         let path = target.path
-        if let error = errors[path] { throw error }
-        guard let data = responses[path] else {
+        let (error, data) = lock.withLock { (_errors[path], _responses[path]) }
+        if let error { throw error }
+        guard let data else {
             XCTFail("TronStubHTTPClient has no stub for path '\(path)'")
             throw HTTPError.invalidResponse
         }

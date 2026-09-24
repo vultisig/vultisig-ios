@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Certifique-se de que";
 "allDevicesUpgradeTitle2" = " todos os dispositivos iniciais estejam presentes ";
 "allDevicesUpgradeTitle3" = "ao fazer a atualização";
+"allowDeathReapWarning" = "Esta transferência pode esvaziar a conta do remetente. Se o saldo restante ficar abaixo do saldo mínimo (depósito existencial), a conta será desativada (removida) e qualquer %@ restante será perdido.";
 "allTimeHigh" = "Máxima histórica";
 "allTimeLow" = "Mínima histórica";
 "allVaults" = "Todos os cofres";
@@ -922,6 +923,7 @@
 "marketCap" = "Capitalização de mercado";
 "marketCapRank" = "Classificação";
 "marketStats" = "Dados de mercado";
+"maxNetworkFee" = "Taxa de rede máx.";
 "maxSendPlanChangedError" = "Seus fundos disponíveis mudaram enquanto você revisava, então esta transação não enviaria mais o valor exibido. Volte e revise o valor atualizado.";
 "maxSupply" = "Fornecimento máximo";
 "maxTotalFee" = "Taxa total máx.";

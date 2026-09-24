@@ -94,7 +94,7 @@ final class CardanoTokenBundleTests: XCTestCase {
     func testEncodesLargeAmount() throws {
         // 18,446,744,073,709,551,616 = 2^64 — exceeds UInt64, must round-trip.
         let coin = try makeCoin(contractAddress: "\(policy).\(assetHex)")
-        let big = BigInt("18446744073709551616") ?? .zero
+        let big: BigInt = "18446744073709551616"
         let payload = makePayload(coin: coin, toAmount: big)
         let bundle = try XCTUnwrap(CardanoHelper.makeTokenBundle(for: payload))
         XCTAssertEqual(bundle.token[0].amount, Data([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))

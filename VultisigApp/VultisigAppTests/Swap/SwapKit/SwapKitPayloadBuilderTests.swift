@@ -9,7 +9,6 @@
 //  support.
 //
 
-import BigInt
 import XCTest
 @testable import VultisigApp
 
@@ -54,35 +53,39 @@ final class SwapKitPayloadBuilderTests: XCTestCase {
         }
     }
 
-    func testApprovePayloadUsesMetaApprovalAddressWhenPresent() throws {
+    func testApproveSpenderUsesMetaApprovalAddressWhenPresent() throws {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
             from: "v3-erc20-erc20-swap"
         )
         let usdt = makeCoin(.ethereum, ticker: "USDT", decimals: 6, isNative: false)
-        let payload = SwapCryptoLogic.buildSwapKitApprovePayload(
+        let spender = SwapCryptoLogic.approveSpender(
             fromCoin: usdt,
-            amount: BigInt(100_000_000),
-            swapResponse: response,
-            fallback: nil
+            quote: .swapkit(response, fee: nil, subProvider: "")
         )
         XCTAssertEqual(
-            payload?.spender,
+            spender,
             "0x6C0AD82f9721A6dc986381d19338601a2E6370e5",
             "spender must come from meta.approvalAddress when populated"
         )
     }
 
-    func testApprovePayloadFallsBackForNativeSource() throws {
-        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        let response = try makeMinimalEvmResponse()
-        let payload = SwapCryptoLogic.buildSwapKitApprovePayload(
-            fromCoin: eth,
-            amount: BigInt(1),
-            swapResponse: response,
-            fallback: nil
+    func testApproveSpenderFallsBackToTargetAddressWithoutApprovalTx() throws {
+        let usdt = makeCoin(.ethereum, ticker: "USDT", decimals: 6, isNative: false)
+        let spender = SwapCryptoLogic.approveSpender(
+            fromCoin: usdt,
+            quote: .swapkit(try makeMinimalEvmResponse(), fee: nil, subProvider: "")
         )
-        XCTAssertNil(payload, "Native source never needs approval")
+        XCTAssertEqual(spender, "0xRouter")
+    }
+
+    func testApproveSpenderNilForNativeSource() throws {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let spender = SwapCryptoLogic.approveSpender(
+            fromCoin: eth,
+            quote: .swapkit(try makeMinimalEvmResponse(), fee: nil, subProvider: "")
+        )
+        XCTAssertNil(spender, "Native source never needs approval")
     }
 
     // MARK: - Fixtures

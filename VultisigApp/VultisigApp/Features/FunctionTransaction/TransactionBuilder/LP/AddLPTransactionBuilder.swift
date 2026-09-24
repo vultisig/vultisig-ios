@@ -37,6 +37,10 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     /// two came apart before.
     let toAddress: String
 
+    /// Whether that approval is needed, read on Continue for this recipient
+    /// and amount. Signing refuses it if either has changed since.
+    var approvalDecision: ERC20ApprovalDecision?
+
     var memo: String {
         let address = pairedAddress?.nilIfEmpty
         let lpData = AddLPMemoData(pool: poolName, pairedAddress: address)

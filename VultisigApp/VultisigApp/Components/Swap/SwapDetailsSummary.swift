@@ -93,7 +93,7 @@ struct SwapDetailsSummary: View {
     private func totalFeesLabel(showChevron: Bool = true) -> some View {
         HStack {
             getSummaryCell(
-                leadingText: "totalFee",
+                leadingText: vm.feeLabelKeys.totalFee,
                 trailingText: "\(vm.totalFeeString)"
             )
 
@@ -144,7 +144,7 @@ struct SwapDetailsSummary: View {
         let approveFeeString = vm.approveFeeString
         let trailingText = showApproveFee ? "\(gasString) (\(approveFeeString))" : gasString
         return getSummaryCell(
-            leadingText: "networkFee",
+            leadingText: vm.feeLabelKeys.networkFee,
             trailingText: trailingText
         )
     }

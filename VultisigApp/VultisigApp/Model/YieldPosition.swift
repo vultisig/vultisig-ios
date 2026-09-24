@@ -9,7 +9,9 @@ import SwiftData
 /// Persisted cache of a DeFi yield-vault position, keyed `(providerID, pubKeyECDSA)`.
 /// Generalizes the former `CirclePosition` so every yield provider shares one cache;
 /// extended with redemption rows for windowed redemptions.
-@MainActor
+///
+/// Not `@MainActor` at the class level: the conformances `@Model` generates are
+/// nonisolated. `YieldPositionStorageService` keeps it on the main actor.
 @Model
 final class YieldPosition {
     @Attribute(.unique) var id: String
@@ -49,7 +51,7 @@ final class YieldPosition {
 
 /// One windowed-redemption row attached to a `YieldPosition`. Circle positions
 /// carry none (instant withdraw); windowed providers carry pending/claimable rows.
-@MainActor
+/// Main-actor confined by its callers, like `YieldPosition`.
 @Model
 final class YieldRedemptionRecord {
     @Attribute(.unique) var id: String

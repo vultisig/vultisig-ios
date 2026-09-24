@@ -319,7 +319,10 @@ enum SolanaHelper {
             }
             var allHashes: [String] = []
             for base64Tx in signSolana.rawTransactions {
-                let hashes = try getPreSignedImageHashForRaw(base64Transaction: base64Tx)
+                let hashes = try getPreSignedImageHashForRaw(
+                    coinHexPubKey: keysignPayload.coin.hexPublicKey,
+                    base64Transaction: base64Tx
+                )
                 allHashes.append(contentsOf: hashes)
             }
             return allHashes
@@ -461,12 +464,18 @@ enum SolanaHelper {
     // are ever emitted). For Solana, ed25519 signs the wire-format message
     // verbatim, so extracting it directly is canonical and cross-platform safe.
 
-    static func getPreSignedImageHashForRaw(base64Transaction: String) throws -> [String] {
+    static func getPreSignedImageHashForRaw(coinHexPubKey: String, base64Transaction: String) throws -> [String] {
+        guard let pubkeyData = Data(hexString: coinHexPubKey) else {
+            throw HelperError.runtimeError("Invalid public key: \(coinHexPubKey)")
+        }
         guard let txData = Data(base64Encoded: base64Transaction) else {
             throw HelperError.runtimeError("Invalid base64 transaction")
         }
-        let messageBytes = try extractSolanaMessageBytes(from: txData).message
-        return [messageBytes.hexString]
+        let parsed = try extractSolanaMessageBytes(from: txData)
+        // Every device derives the pre-image before the ceremony, so a transaction
+        // the vault can never sign is refused here rather than after a full TSS round.
+        _ = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
+        return [parsed.message.hexString]
     }
 
     static func signRawTransaction(
@@ -493,11 +502,13 @@ enum SolanaHelper {
             throw HelperError.runtimeError("Signature verification failed")
         }
 
-        // Splice the signature into the original transaction at signer index 0
-        // (the dApp builds tx with the user as fee payer == first signer; any
-        // other signature slots stay as the dApp-provided placeholders).
+        // Every other slot stays exactly as the dApp provided it, including
+        // co-signers' existing signatures.
+        let signerIndex = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
+
         var signedTx = txData
-        let sigRange = parsed.firstSignatureOffset..<(parsed.firstSignatureOffset + 64)
+        let sigStart = parsed.firstSignatureOffset + signerIndex * 64
+        let sigRange = sigStart..<(sigStart + 64)
         guard sigRange.upperBound <= signedTx.count else {
             throw HelperError.runtimeError("Transaction too short to place signature")
         }
@@ -508,6 +519,29 @@ enum SolanaHelper {
             rawTransaction: encoded,
             transactionHash: try getHashFromRawTransaction(txData: signedTx)
         )
+    }
+
+    /// The index of `publicKey`'s signature slot in `txData`. The runtime
+    /// verifies slot `i` against account key `i`, and a sponsored or
+    /// multi-signer transaction can put the vault at any signer index, so the
+    /// slot is resolved from the message rather than assumed.
+    private static func signerSlotIndex(
+        of publicKey: Data,
+        in txData: Data,
+        parsed: (firstSignatureOffset: Int, message: Data)
+    ) throws -> Int {
+        let signers = try requiredSigners(ofMessage: parsed.message)
+        let messageOffset = txData.count - parsed.message.count
+        let signatureSlotCount = (messageOffset - parsed.firstSignatureOffset) / 64
+        guard signatureSlotCount == signers.count else {
+            throw HelperError.runtimeError(
+                "Transaction declares \(signatureSlotCount) signature slot(s) but the message requires \(signers.count)"
+            )
+        }
+        guard let signerIndex = signers.firstIndex(of: publicKey) else {
+            throw HelperError.runtimeError("Public key is not a required signer of the Solana transaction")
+        }
+        return signerIndex
     }
 
     /// Strip the `[shortvec(numSigs)][numSigs × 64-byte sig]` envelope and
@@ -540,13 +574,61 @@ enum SolanaHelper {
         return (firstSignatureOffset, message)
     }
 
+    /// The required signers of a legacy or v0 Solana message: the first
+    /// `numRequiredSignatures` static account keys, in signature-slot order.
+    ///
+    /// Wire layout: an optional `0x80 | version` prefix (versioned messages),
+    /// a 3-byte header whose first byte is `numRequiredSignatures`, then a
+    /// compact-u16 key count and the 32-byte static keys. The key count is read
+    /// with the runtime's canonical decoder so the offsets here can never
+    /// disagree with the ones the network will read.
+    static func requiredSigners(ofMessage message: Data) throws -> [Data] {
+        let bytes = [UInt8](message)
+        guard let firstByte = bytes.first else {
+            throw HelperError.runtimeError("Solana message is empty")
+        }
+        var offset = 0
+        if firstByte & 0x80 != 0 {
+            let version = Int(firstByte & 0x7F)
+            guard version == 0 else {
+                throw HelperError.runtimeError("Unsupported Solana message version \(version)")
+            }
+            offset = 1
+        }
+        guard bytes.count >= offset + 3 else {
+            throw HelperError.runtimeError("Solana message too short for header")
+        }
+        let numRequiredSignatures = Int(bytes[offset])
+        offset += 3
+
+        let (keyCount, lengthByteCount) = try SolanaV0Transaction.decodeCompactLength(bytes[offset...])
+        offset += lengthByteCount
+        guard keyCount >= numRequiredSignatures else {
+            throw HelperError.runtimeError(
+                "Solana message requires \(numRequiredSignatures) signatures but lists \(keyCount) account keys"
+            )
+        }
+        guard bytes.count - offset >= keyCount * 32 else {
+            throw HelperError.runtimeError("Solana message too short for declared account key count (\(keyCount))")
+        }
+        return (0..<numRequiredSignatures).map { index in
+            let start = offset + index * 32
+            return Data(bytes[start..<(start + 32)])
+        }
+    }
+
     static func getHashFromRawTransaction(txData: Data) throws -> String {
+        // A Solana transaction id is the fee payer's signature (slot 0), whichever slot the vault
+        // signed; while that slot is still the all-zero placeholder there is no id to report.
         let parsed = try extractSolanaMessageBytes(from: txData)
         let sigEnd = parsed.firstSignatureOffset + 64
         guard sigEnd <= txData.count else {
             throw HelperError.runtimeError("Transaction too short to extract signature")
         }
         let sigBytes = txData.subdata(in: (txData.startIndex + parsed.firstSignatureOffset)..<(txData.startIndex + sigEnd))
+        guard sigBytes.contains(where: { $0 != 0 }) else {
+            return ""
+        }
         return Base58.encodeNoCheck(data: sigBytes)
     }
 

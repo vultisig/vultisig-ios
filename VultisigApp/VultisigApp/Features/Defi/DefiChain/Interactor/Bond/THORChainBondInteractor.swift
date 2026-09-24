@@ -24,14 +24,14 @@ struct THORChainBondInteractor: BondInteractor {
     let vultiNodeAddresses: [String] = []
 
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
-        guard let runeCoin = vault.runeCoin else {
+        guard let bondCoin = await bondCoinSnapshot(in: vault) else {
             return ([], [])
         }
         let networkInfo = try await thorchainAPIService.getNetworkBondInfo()
-        let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
+        let bondedNodes = try await thorchainAPIService.getBondedNodes(address: bondCoin.address)
 
-        let runeAddress = runeCoin.address
-        let runeCoinMeta = runeCoin.toCoinMeta()
+        let runeAddress = bondCoin.address
+        let runeCoinMeta = bondCoin.meta
         let nextChurn = networkInfo.nextChurnDate
 
         // Parallelize per-node metric calculations into Sendable drafts —
@@ -99,6 +99,19 @@ struct THORChainBondInteractor: BondInteractor {
     // swiftlint:disable:next async_without_await
     func canAddBond() async -> Bool {
         return true
+    }
+}
+
+extension THORChainBondInteractor {
+    /// Reads the RUNE coin on the main actor and reduces it to value types.
+    ///
+    /// Internal rather than private so the coin selection is unit-testable —
+    /// every other member of this file is private because nothing else needs
+    /// to be reachable from outside it.
+    @MainActor
+    func bondCoinSnapshot(in vault: Vault) -> BondCoinSnapshot? {
+        guard let runeCoin = vault.runeCoin else { return nil }
+        return BondCoinSnapshot(meta: runeCoin.toCoinMeta(), address: runeCoin.address)
     }
 }
 

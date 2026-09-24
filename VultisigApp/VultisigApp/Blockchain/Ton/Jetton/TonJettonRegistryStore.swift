@@ -34,7 +34,7 @@ actor TonJettonRegistryStore {
         api: TonAssetsAPI = TonAssetsAPI(),
         ttl: TimeInterval = 3600,
         defaults: UserDefaults = .standard,
-        now: @escaping @Sendable () -> Date = Date.init
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.httpClient = httpClient
         self.api = api

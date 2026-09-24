@@ -124,6 +124,7 @@ final class SwapDetailsViewModel {
     }
 
     var thorchainFee: BigInt = .zero
+    var solanaAtaRent: BigInt = .zero
     var gas: BigInt = .zero
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
     /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
@@ -161,12 +162,14 @@ final class SwapDetailsViewModel {
     }
 
     init(
-        interactor: SwapInteractor = DefaultSwapInteractor.live,
+        interactor: SwapInteractor? = nil,
         inputRate: @escaping (Coin, SettingsCurrency) -> Double? = { coin, currency in
             RateProvider.shared.rate(for: coin, currency: currency)?.value
         }
     ) {
-        self.interactor = interactor
+        // Resolved here rather than as a default argument, which is evaluated
+        // outside the main actor that `DefaultSwapInteractor` is isolated to.
+        self.interactor = interactor ?? DefaultSwapInteractor.live
         self.inputRate = inputRate
         rateSubscription = RateProvider.shared.ratesDidChange.sink { [weak self] _ in
             Task { @MainActor [weak self] in
@@ -553,10 +556,30 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
+            solanaAtaRent: solanaAtaRent,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings,
             selectedProvider: selectedQuote?.provider(fromChain: fromCoin.chain)
         )
+    }
+
+    /// The transaction Verify is handed, with its ERC-20 approval read once
+    /// here: Verify shows that decision and signing uses it as is. Nil when the
+    /// form isn't valid, or when the allowance could not be read, in which case
+    /// `error` is set and Verify is not entered.
+    func prepareTransaction(vault: Vault) async -> SwapTransaction? {
+        guard !isLoadingTransaction, let transaction = makeTransaction() else { return nil }
+        isLoadingTransaction = true
+        defer { isLoadingTransaction = false }
+        do {
+            let decision = try await interactor.resolveApproval(for: transaction, vault: vault)
+            return transaction.with(approvalDecision: decision)
+        } catch {
+            guard !(error is CancellationError), (error as? URLError)?.code != .cancelled else { return nil }
+            logger.warning("Approval read failed, not entering Verify: \(error.localizedDescription, privacy: .public)")
+            self.error = error
+            return nil
+        }
     }
 
     /// Advanced settings as they apply to the current pair: an external recipient
@@ -596,7 +619,10 @@ extension SwapDetailsViewModel {
     }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(
+            quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee,
+            solanaAtaRent: solanaAtaRent
+        )
     }
 
     /// Network fee value shown on the details screen. For EVM aggregator/
@@ -687,7 +713,10 @@ extension SwapDetailsViewModel {
     /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
     /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: displayedNetworkFeeWei)
+        let fundingFee = SwapCryptoLogic.fundingNetworkFee(
+            displayedFee: displayedNetworkFeeWei, gasEstimate: gas, chain: fromCoin.chain
+        )
+        return SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: fundingFee)
     }
 
     var fromFiatAmount: String {
@@ -756,6 +785,10 @@ extension SwapDetailsViewModel {
 
     var totalFeeString: String {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
+    }
+
+    var feeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        SwapCryptoLogic.feeLabelKeys(feeChain: feeCoin.chain)
     }
 
     var durationString: String {
@@ -846,6 +879,7 @@ private extension SwapDetailsViewModel {
     /// the quote it belonged to.
     func clearQuoteState(reason: RouteSelectionDropReason = .swapChanged, preservingProvider: Bool = false) {
         hasValidatedQuote = false
+        solanaAtaRent = .zero
         if preservingProvider {
             if let selectedQuote {
                 pendingSelectedProvider = (selectedQuote.provider(fromChain: fromCoin.chain), selectedQuote.displayName)
@@ -931,7 +965,26 @@ private extension SwapDetailsViewModel {
             // reflected only on the disabled Continue button, never as a fee error.
             let quoteSucceeded = await self.updateQuotes(vault: vault)
             var feesSucceeded = false
-            if quoteSucceeded, !Task.isCancelled, self.balanceError == nil {
+            let canPayPreliminaryFee: Bool
+            if self.fromCoin.chain == .solana {
+                // A silent refresh has a new quote but still holds the prior
+                // quote's ATA rent. Check the base funding reserve first; the
+                // fresh ATA state is resolved by updateFees below.
+                let feeWithoutRent = SwapCryptoLogic.fee(
+                    quote: self.quote, fromCoin: self.fromCoin,
+                    thorchainFee: self.thorchainFee, solanaAtaRent: .zero
+                )
+                let fundingFee = SwapCryptoLogic.fundingNetworkFee(
+                    displayedFee: feeWithoutRent, gasEstimate: self.gas, chain: .solana
+                )
+                canPayPreliminaryFee = SwapCryptoLogic.balanceError(
+                    fromCoin: self.fromCoin, feeCoin: self.feeCoin,
+                    amount: self.fromAmountDecimal, fee: fundingFee
+                ) == nil
+            } else {
+                canPayPreliminaryFee = self.balanceError == nil
+            }
+            if quoteSucceeded, !Task.isCancelled, canPayPreliminaryFee {
                 feesSucceeded = await self.updateFees(vault: vault)
             }
 
@@ -1059,11 +1112,19 @@ private extension SwapDetailsViewModel {
                 fromAmount: amountDecimal,
                 vault: vault
             )
+            let resolvedAtaRent: BigInt
+            if fromCoin.chain == .solana,
+               let transactionData = SolanaSwapNetworkFee.transactionData(quote: quote) {
+                resolvedAtaRent = try await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)
+            } else {
+                resolvedAtaRent = .zero
+            }
             // A superseding edit cancelled this fetch — don't write stale fees.
             guard !Task.isCancelled else { return false }
             gas = chainSpecific.gas
             gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
+            solanaAtaRent = resolvedAtaRent
             return true
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

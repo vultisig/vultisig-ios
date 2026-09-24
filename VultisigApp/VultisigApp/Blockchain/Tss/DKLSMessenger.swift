@@ -143,15 +143,17 @@ final class DKLSMessenger {
         throw HelperError.runtimeError("fail to decrypt setup message")
     }
 
+    /// Delivers one outbound body to every receiver in a single relay POST, so the
+    /// last receiver of a round does not wait on the earlier receivers' round trips.
     func send(_ fromParty: String?,
-              to: String?,
+              to: [String],
               body: String?,
               hardDeadline: ContinuousClock.Instant? = nil) async throws {
         guard let fromParty else {
             throw RelaySendError.invalidMessage("from is nil")
         }
-        guard let to else {
-            throw RelaySendError.invalidMessage("to is nil")
+        guard !to.isEmpty else {
+            throw RelaySendError.invalidMessage("to is empty")
         }
         guard let body else {
             throw RelaySendError.invalidMessage("body is nil")
@@ -166,7 +168,7 @@ final class DKLSMessenger {
         // so the relay and the receiver dedupe it instead of applying it twice.
         let msg = Message(session_id: sessionID,
                           from: fromParty,
-                          to: [to],
+                          to: to,
                           body: encryptedBody,
                           hash: Utils.getMessageBodyHash(msg: body),
                           sequenceNo: self.counter)

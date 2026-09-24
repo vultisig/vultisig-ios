@@ -28,7 +28,12 @@ enum BlockChainSpecific: Codable, Hashable {
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?, gasLimit: UInt64?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, priorityLimit: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String: String]], gasBudget: BigInt)
-    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
+    /// `allowDeath` is the initiator's request (`PolkadotSpecific.allow_death`)
+    /// to sign `Balances.transfer_allow_death` instead of the default
+    /// `transfer_keep_alive`, for both DOT and TAO. The call index is part of the
+    /// signed bytes, so every co-signer must honour it or the ceremony stalls.
+    /// `false` is the proto3 default and stays off the wire.
+    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil, allowDeath: Bool = false)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool, jettonAddress: String = "", isActiveDestination: Bool = false)
     /// `destinationTag` carries the first-class XRPL DestinationTag
     /// (`RippleSpecific.destination_tag`). It is populated at the payload-build
@@ -106,7 +111,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return SolanaHelper.defaultFeeInLamports
         case .Sui(_, _, let gasBudget):
             return gasBudget
-        case .Polkadot(_, _, _, _, _, _, let gas):
+        case .Polkadot(_, _, _, _, _, _, let gas, _):
             guard let dynamicGas = gas else {
                 return 0 // We should throw
             }
@@ -129,6 +134,15 @@ enum BlockChainSpecific: Codable, Hashable {
             return nil
         }
         return feeLimit ?? gasFeeEstimation
+    }
+
+    /// The initiator's `PolkadotSpecific.allow_death` for a DOT or TAO send;
+    /// `false` for every other chain.
+    var polkadotAllowDeath: Bool {
+        guard case .Polkadot(_, _, _, _, _, _, _, let allowDeath) = self else {
+            return false
+        }
+        return allowDeath
     }
 
     var fee: BigInt {

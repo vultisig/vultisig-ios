@@ -119,13 +119,16 @@ enum SwapCryptoLogic {
 
     // MARK: - Quote-derived
 
-    static func fee(quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt) -> BigInt {
+    static func fee(
+        quote: SwapQuote?, fromCoin: Coin, thorchainFee: BigInt,
+        solanaAtaRent: BigInt = .zero
+    ) -> BigInt {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
         case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
-        case let .swapkit(_, fee, _):
+        case let .swapkit(response, fee, _):
             // SwapKit's wire `inbound` fee for UTXO/Cardano sources doesn't
             // reflect the realized on-chain miner fee — it renders as a
             // misleadingly small amount on the Network Fee row (e.g. a BTC swap
@@ -136,17 +139,31 @@ enum SwapCryptoLogic {
             switch fromCoin.chain.chainType {
             case .UTXO, .Cardano:
                 return thorchainFee
+            case .Solana:
+                if case let .solana(transactionData) = response.tx {
+                    return SolanaSwapNetworkFee.fee(
+                        transactionData: transactionData, ataRent: solanaAtaRent
+                    ) ?? thorchainFee
+                }
+                return fee ?? thorchainFee
             default:
                 return fee ?? 0
             }
-        case let .jupiter(_, fee, _, _):
-            // Jupiter exposes no network fee at quote time; fall back to the
-            // Solana-source plan fee carried in `thorchainFee`
-            // (`chainSpecific.gas`), the same way Send computes it.
-            return fee ?? thorchainFee
+        case let .jupiter(quote, fee, _, _):
+            // The signed transaction's Compute Budget instructions determine
+            // its priority fee; quote metadata can differ.
+            return SolanaSwapNetworkFee.fee(
+                transactionData: quote.tx.data, ataRent: solanaAtaRent
+            ) ?? fee ?? thorchainFee
         case nil:
             return .zero
         }
+    }
+
+    /// Solana keeps its existing flat estimate as funding headroom even while
+    /// the swap screens display the smaller fee described by the transaction.
+    static func fundingNetworkFee(displayedFee: BigInt, gasEstimate: BigInt, chain: Chain) -> BigInt {
+        chain == .solana ? max(displayedFee, gasEstimate) : displayedFee
     }
 
     // MARK: - EVM signed network fee (shared with the co-signer)
@@ -523,6 +540,26 @@ enum SwapCryptoLogic {
     static func limitNetworkFeeFiat(feeCoin: Coin, fee: BigInt) -> String {
         guard fee > 0 else { return .empty }
         return feeCoin.fiat(gas: fee).formatToFiatForFee(includeCurrencySymbol: true)
+    }
+
+    // MARK: - Display: fee row labels
+
+    /// Localization keys for the network-fee and total-fee rows shown before a
+    /// swap is broadcast.
+    struct FeeLabelKeys: Equatable {
+        let networkFee: String
+        let totalFee: String
+
+        static let exact = FeeLabelKeys(networkFee: "networkFee", totalFee: "totalFee")
+        static let maximum = FeeLabelKeys(networkFee: "maxNetworkFee", totalFee: "maxTotalFee")
+    }
+
+    /// On EVM every swap route shows the gas the vault signs for — the gas
+    /// price ceiling × the gas limit — which the node reserves up front and the
+    /// receipt usually lands well under. Those rows, and the total built on
+    /// them, are labelled as a maximum. Other chains show the fee they pay.
+    static func feeLabelKeys(feeChain: Chain) -> FeeLabelKeys {
+        feeChain.chainType == .EVM ? .maximum : .exact
     }
 
     // MARK: - Display: misc

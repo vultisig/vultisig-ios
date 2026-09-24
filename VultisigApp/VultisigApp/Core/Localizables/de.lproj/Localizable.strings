@@ -42,6 +42,7 @@
 "allDevicesUpgradeTitle1" = "Stelle sicher, dass";
 "allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte vorhanden sind ";
 "allDevicesUpgradeTitle3" = "beim Upgrade";
+"allowDeathReapWarning" = "Diese Überweisung kann das Konto des Absenders leeren. Fällt das verbleibende Guthaben unter das Mindestguthaben (Existenzminimum), wird das Konto deaktiviert (gelöscht) und alle verbleibenden %@ gehen verloren.";
 "allTimeHigh" = "Allzeithoch";
 "allTimeLow" = "Allzeittief";
 "allVaults" = "Alle Gewölbe";
@@ -922,6 +923,7 @@
 "marketCap" = "Marktkapitalisierung";
 "marketCapRank" = "Rang";
 "marketStats" = "Marktdaten";
+"maxNetworkFee" = "Max. Netzwerkgebühr";
 "maxSendPlanChangedError" = "Dein verfügbares Guthaben hat sich während der Überprüfung geändert, daher würde diese Transaktion nicht mehr den angezeigten Betrag senden. Geh zurück und prüfe den aktualisierten Betrag.";
 "maxSupply" = "Maximale Menge";
 "maxTotalFee" = "Max. Gesamtgebühr";

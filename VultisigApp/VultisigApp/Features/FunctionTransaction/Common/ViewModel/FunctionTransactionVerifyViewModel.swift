@@ -75,7 +75,10 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
             // `ThorchainRouterDepositBuilder` so the inline swap SECURE+ path
             // reuses the identical construction. TODO: replace with a dedicated
             // deposit payload across iOS/Android/Windows.
-            let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx)
+            let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: tx.approvalDecision
+            )
 
             let basePayload = try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
@@ -154,6 +157,13 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
             }
             throw HelperError.runtimeError(errorMessage)
         }
+    }
+
+    /// Whether Verify shows the LP approval notice: only when the approval read
+    /// on the way in signs an approve ahead of the deposit. Only an LP add
+    /// carries a decision on this screen.
+    func showsApprovalNotice(for transaction: SendTransaction) -> Bool {
+        transaction.approvalDecision?.signsApprove ?? false
     }
 
     func scan(transaction: SendTransaction) async {

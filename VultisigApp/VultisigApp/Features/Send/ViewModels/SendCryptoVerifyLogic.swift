@@ -14,6 +14,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - Dependencies
 
+    /// Main-actor isolated, so the members that call it are `@MainActor`.
     let interactor: SendInteractor
     private let rippleService: RippleService
     private let bittensorService: BittensorBalanceFetching
@@ -49,6 +50,7 @@ struct SendCryptoVerifyLogic {
         var maxSendAmountRaw: BigInt? = nil
     }
 
+    @MainActor
     func calculateFee(tx: SendTransaction) async throws -> FeeResult {
         if tx.coin.chain.chainType == .EVM {
             return try await calculateEVMFee(tx: tx)
@@ -57,6 +59,7 @@ struct SendCryptoVerifyLogic {
         }
     }
 
+    @MainActor
     private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
         // Send-pilot decision 3: thread tx.feeMode through instead of
         // hardcoding .default. The user's custom fee mode chosen in the
@@ -65,6 +68,7 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: result.fee, gas: result.gas, gasLimit: result.gasLimit)
     }
 
+    @MainActor
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
 
@@ -234,6 +238,7 @@ struct SendCryptoVerifyLogic {
 
     // MARK: - UTXO Validation
 
+    @MainActor
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
     }
@@ -513,6 +518,7 @@ struct SendCryptoVerifyLogic {
     /// balance — a MAX, or an amount Verify adjusted down to fit the fee.
     /// `.zero` for token sends, whose gas comes out of the native sibling rather
     /// than the amount being sent, and for every chain that charges neither term.
+    @MainActor
     func opStackFeeReserve(tx: SendTransaction, gasLimit: BigInt?) async -> BigInt {
         guard tx.coin.isNativeToken else { return .zero }
         return await interactor.fetchOpStackFeeReserve(coin: tx.coin, memo: tx.memo, gasLimit: gasLimit)
@@ -586,6 +592,7 @@ struct SendCryptoVerifyLogic {
         )
     }
 
+    @MainActor
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
             var chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
@@ -681,6 +688,7 @@ struct SendCryptoVerifyLogic {
     /// balance cannot fund is a rejected broadcast, and refusing it here costs
     /// the user nothing where discovering it after the ceremony costs a signing
     /// round.
+    @MainActor
     private func balanceRefittedAmount(
         tx: SendTransaction,
         chainSpecific: BlockChainSpecific
@@ -712,6 +720,7 @@ struct SendCryptoVerifyLogic {
     ///
     /// Only max sends are gated: every other send pins its recipient amount in
     /// the payload, so a changed input set can move the fee but never the amount.
+    @MainActor
     private func assertPlanMatchesDisplayed(tx: SendTransaction, payload: KeysignPayload) async throws {
         guard tx.sendMaxAmount, tx.coin.chainType == .UTXO, tx.coin.isNativeToken else { return }
         guard let outcome = try await interactor.plannedOutcome(for: payload) else { return }

@@ -36,7 +36,7 @@ struct PrimaryButtonStyle: ButtonStyle {
                     Rectangle()
                         .fill(.white.opacity(0.15))
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
-                                lineWidth: borderWidth(for: type))
+                                lineWidth: borderWidth(for: type, isEnabled: isEnabled))
                         .scaleEffect(CGSize(width: progress, height: 1), anchor: .leading)
                 }
             )
@@ -44,7 +44,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .overlay(
                     radius(for: size).shape
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
-                                lineWidth: borderWidth(for: type))
+                                lineWidth: borderWidth(for: type, isEnabled: isEnabled))
             )
             .overlay {
                 if hasBevel(for: type), isEnabled {
@@ -186,7 +186,9 @@ private extension PrimaryButtonStyle {
 
     func borderColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
-        case .primary, .alert, .primarySuccess:
+        case .primary:
+            return isEnabled ? .clear : Theme.colors.bgButtonTertiary.opacity(0.6)
+        case .alert, .primarySuccess:
             return .clear
         case .secondary:
             return Theme.colors.borderExtraLight
@@ -199,9 +201,10 @@ private extension PrimaryButtonStyle {
         }
     }
 
-    func borderWidth(for type: ButtonType) -> CGFloat {
+    func borderWidth(for type: ButtonType, isEnabled: Bool) -> CGFloat {
         switch type {
-        case .primary, .alert, .primarySuccess: return 0
+        case .primary: return isEnabled ? 0 : 1
+        case .alert, .primarySuccess: return 0
         case .secondary: return 1
         case .outline: return 1
         }

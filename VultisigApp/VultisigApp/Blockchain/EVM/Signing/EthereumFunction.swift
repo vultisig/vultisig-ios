@@ -34,4 +34,16 @@ enum EthereumFunction {
         encodedFunction.addParamUInt256(val: amountOut, isOutput: false)
         return EthereumAbi.encode(fn: encodedFunction).toHexString().add0x
     }
+
+    static func allowanceErc20Encoder(owner: String, spender: String) throws -> String {
+        guard owner.isNotEmpty, let ownerAddress = AnyAddress(string: owner, coin: CoinType.ethereum),
+              spender.isNotEmpty, let spenderAddress = AnyAddress(string: spender, coin: CoinType.ethereum) else {
+            throw HelperError.runtimeError("Address is not valid")
+        }
+
+        let encodedFunction = EthereumAbiFunction(name: "allowance")
+        encodedFunction.addParamAddress(val: ownerAddress.data, isOutput: false)
+        encodedFunction.addParamAddress(val: spenderAddress.data, isOutput: false)
+        return EthereumAbi.encode(fn: encodedFunction).toHexString().add0x
+    }
 }

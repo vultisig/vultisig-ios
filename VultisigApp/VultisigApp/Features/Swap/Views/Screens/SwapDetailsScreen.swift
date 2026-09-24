@@ -278,17 +278,20 @@ struct SwapDetailsScreen: View {
                 .opacity(isFormValid ? 1 : 0.5)
         } else {
             PrimaryButton(title: continueButtonTitle) {
-                guard let transaction = detailsViewModel.makeTransaction() else { return }
                 // The amount here is a plain `TextField` with no `@FocusState`
                 // to release, so the responder is resigned directly — otherwise
                 // the review opens over a live keyboard and the form comes back
                 // laid out for one that is gone.
                 hideKeyboard()
-                reviewPresenter.present(.swap(
-                    transaction: transaction,
-                    retrySignal: SwapRetrySignal(),
-                    vaultPubKeyECDSA: vault.pubKeyECDSA
-                ))
+                Task {
+                    // Reads the ERC-20 approval once; a failure stays on the form.
+                    guard let transaction = await detailsViewModel.prepareTransaction(vault: vault) else { return }
+                    reviewPresenter.present(.swap(
+                        transaction: transaction,
+                        retrySignal: SwapRetrySignal(),
+                        vaultPubKeyECDSA: vault.pubKeyECDSA
+                    ))
+                }
             }
             .disabled(isDisabled)
             .opacity(isFormValid ? 1 : 0.5)
@@ -399,12 +402,12 @@ struct SwapDetailsScreen: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     percentageButtons
 
-                    Spacer()
+                    if KeyboardDoneButton.spacerFitsBesideWideContent {
+                        Spacer()
+                    }
 
-                    Button {
+                    KeyboardDoneButton {
                         hideKeyboard()
-                    } label: {
-                        Text("done".localized)
                     }
                 }
             }

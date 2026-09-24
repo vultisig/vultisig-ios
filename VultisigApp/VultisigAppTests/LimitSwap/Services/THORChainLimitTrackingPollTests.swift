@@ -883,23 +883,37 @@ private enum QueueBody {
 
 // MARK: - Fakes
 
-private final class StubQueueHTTPClient: HTTPClientProtocol {
-    var body: String
-    var shouldThrow = false
-    private(set) var requestCount = 0
+private final class StubQueueHTTPClient: HTTPClientProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _body: String
+    private var _shouldThrow = false
+    private var _requestCount = 0
+
+    var body: String {
+        get { lock.withLock { _body } }
+        set { lock.withLock { _body = newValue } }
+    }
+    var shouldThrow: Bool {
+        get { lock.withLock { _shouldThrow } }
+        set { lock.withLock { _shouldThrow = newValue } }
+    }
+    var requestCount: Int { lock.withLock { _requestCount } }
 
     struct StubError: Error {}
 
     init(body: String) {
-        self.body = body
+        _body = body
     }
 
     func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
-        requestCount += 1
-        if shouldThrow { throw StubError() }
+        let (fails, payload) = lock.withLock {
+            _requestCount += 1
+            return (_shouldThrow, _body)
+        }
+        if fails { throw StubError() }
         let url = URL(string: "https://example.invalid")!
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        return HTTPResponse(data: Data(body.utf8), response: response)
+        return HTTPResponse(data: Data(payload.utf8), response: response)
     }
 
     func requestEmpty(_ target: TargetType) async throws -> HTTPResponse<EmptyResponse> {

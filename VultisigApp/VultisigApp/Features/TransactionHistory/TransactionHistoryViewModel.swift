@@ -115,6 +115,12 @@ class TransactionHistoryViewModel: ObservableObject {
         loadLimitOrders()
     }
 
+    /// Re-read the rows after a swap tracker wrote an outcome. Same rule as
+    /// `reloadAfterLimitOrderChange`: no polling side effects.
+    func reloadAfterSwapTrackingChange() {
+        fetchRows()
+    }
+
     private func fetchRows() {
         do {
             if let chain = chainFilter {
@@ -196,6 +202,23 @@ class TransactionHistoryViewModel: ObservableObject {
             sourceChainRawValue: sourceChainRawValue,
             duplicateRestingOrderCount: duplicates.count
         )
+    }
+
+    /// The pair `row` can be tried again on, or `nil` when it is not a failed
+    /// market swap or the vault no longer holds exactly one coin per side.
+    func tryAgainPair(for row: TransactionHistoryData) -> SwapTryAgainPair? {
+        guard SwapTryAgain.isOffered(for: row) else { return nil }
+        do {
+            guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+                return nil
+            }
+            return SwapTryAgain.pair(for: row, in: vault.coins)
+        } catch {
+            logger.error(
+                "Could not read the vault to resolve the swap to try again: \(error.localizedDescription, privacy: .public)"
+            )
+            return nil
+        }
     }
 
     func refresh() async {
@@ -281,6 +304,9 @@ class TransactionHistoryViewModel: ObservableObject {
             toAmountCrypto: old.toAmountCrypto,
             toAmountFiat: old.toAmountFiat,
             swapProvider: old.swapProvider,
+            fromContractAddress: old.fromContractAddress,
+            toChainRawValue: old.toChainRawValue,
+            toContractAddress: old.toContractAddress,
             feeCrypto: old.feeCrypto,
             feeFiat: old.feeFiat,
             network: old.network,

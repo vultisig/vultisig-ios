@@ -142,6 +142,7 @@ struct LimitSwapBodyView: View {
 
             PrimaryButton(
                 title: "limitSwap.placeOrder".localized,
+                isLoading: vm.isPreparingOrder,
                 action: {
                     // Settle both amount fields before handing off. Tapping the
                     // CTA does not resign focus on its own, so a Buy amount typed
@@ -152,7 +153,7 @@ struct LimitSwapBodyView: View {
                     onPlaceOrder()
                 }
             )
-            .disabled(!vm.canPlaceOrder(sourceCoin: fromCoin))
+            .disabled(!vm.canPlaceOrder(sourceCoin: fromCoin) || vm.isPreparingOrder)
             .padding(.bottom, 16)
         }
         #if os(iOS)
@@ -172,16 +173,17 @@ struct LimitSwapBodyView: View {
                         onTap: handleSellPercentage
                     )
                 }
-                Spacer()
-                Button {
+                // Without the percentage buttons the spacer only keeps Done trailing.
+                if focusedField != .sellAmount || KeyboardDoneButton.spacerFitsBesideWideContent {
+                    Spacer()
+                }
+                KeyboardDoneButton {
                     // Clearing focus rather than resigning first responder via
                     // UIApplication: this toolbar's own contents switch on
                     // `focusedField`, so dismissing by a route that leaves that
                     // value stale would leave the accessory believing a field is
                     // still being edited.
                     focusedField = nil
-                } label: {
-                    Text("done".localized)
                 }
             }
         }

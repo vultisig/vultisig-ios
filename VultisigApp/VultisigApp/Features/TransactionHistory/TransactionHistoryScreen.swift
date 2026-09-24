@@ -23,6 +23,8 @@ struct TransactionHistoryScreen: View {
     /// dust floor, no priced fee. There is nothing safe to sign in that state, so
     /// the flow stops here rather than showing a half-built review.
     @State private var cancelError: HelperError?
+    /// A Try again parked while the detail sheet dismisses. See `startTryAgain`.
+    @State private var pendingTryAgain: SwapTryAgainPair?
 
     /// What `startCancel` resolved before dismissing the sheet, replayed once the
     /// dismissal settles.
@@ -79,11 +81,29 @@ struct TransactionHistoryScreen: View {
                 viewModel.reloadAfterLimitOrderChange()
             }
         }
+        .onReceive(NativeSwapTrackingService.shared.$uiStatusByTxHash.dropFirst().removeDuplicates()) { _ in
+            // Native swap rows are the tracker's, not the native poller's, so
+            // nothing else tells an open screen a swap paid out or was refunded.
+            // Hopped for the same reason as above: `@Published` emits before
+            // the value it announces is stored.
+            Task { @MainActor in
+                viewModel.reloadAfterSwapTrackingChange()
+            }
+        }
         .crossPlatformSheet(
             item: $viewModel.selectedDetail,
-            onDismiss: prepareAndPresentPendingCancel
+            onDismiss: detailSheetDidDismiss
         ) { detail in
             detailSheet(for: detail)
+        }
+        .onChange(of: viewModel.selectedDetail?.id) { _, presentedID in
+            // A detail presented before the previous sheet finished dismissing
+            // cancels that dismissal's callback (the macOS custom sheet), so an
+            // action parked for the old row would otherwise fire on a later,
+            // unrelated dismissal.
+            guard presentedID != nil else { return }
+            pendingCancel = nil
+            pendingTryAgain = nil
         }
         .withLoading(isLoading: $isPreparingCancel)
         .alert(item: $cancelError) { error in
@@ -278,8 +298,30 @@ struct TransactionHistoryScreen: View {
             // disabled button with a reason rather than an enabled one whose
             // tap does nothing.
             cancelSigningAvailability: cancelSigningAvailability(for: order),
-            onCancelOrder: startCancel
+            onCancelOrder: startCancel,
+            tryAgainPair: viewModel.tryAgainPair(for: detail),
+            onTryAgain: startTryAgain
         )
+    }
+
+    /// Replays whichever action was parked while the sheet dismissed.
+    private func detailSheetDidDismiss() {
+        prepareAndPresentPendingCancel()
+        presentPendingTryAgain()
+    }
+
+    /// Dismiss the sheet, then open the swap form — the same order as
+    /// `startCancel`, for the same reason: a push in the same turn races the
+    /// dismissal and can be dropped.
+    private func startTryAgain(_ pair: SwapTryAgainPair) {
+        pendingTryAgain = pair
+        viewModel.selectedDetail = nil
+    }
+
+    private func presentPendingTryAgain() {
+        guard let pair = pendingTryAgain else { return }
+        pendingTryAgain = nil
+        router.navigate(to: pair.route(vaultPubKeyECDSA: viewModel.pubKeyECDSA))
     }
 
     /// Whether this vault can sign `order`'s cancel, or `nil` for a row that is
