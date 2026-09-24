@@ -15,32 +15,49 @@ import OSLog
 struct ScannerKeysignHandoff {
     private var scannerIsActive = false
     private var joinIsPending = false
+    private var reviewIsReady = false
 
     mutating func scannerOpened() {
         scannerIsActive = true
         joinIsPending = false
+        reviewIsReady = false
     }
 
     /// Returns true only when no scanner dismissal is needed.
     mutating func requestJoin() -> Bool {
-        guard scannerIsActive else { return true }
         joinIsPending = true
-        return false
+        reviewIsReady = false
+        return !scannerIsActive
+    }
+
+    /// Payload preparation and sheet dismissal may finish in either order.
+    mutating func reviewReady() -> Bool {
+        reviewIsReady = true
+        return consumeReadyJoin()
     }
 
     /// Returns true once, after the final scanner sheet has dismissed.
     mutating func scannerDismissed(isPresentingAgain: Bool) -> Bool {
         guard !isPresentingAgain else { return false }
         scannerIsActive = false
-        defer { joinIsPending = false }
-        return joinIsPending
+        return consumeReadyJoin()
+    }
+
+    private mutating func consumeReadyJoin() -> Bool {
+        guard !scannerIsActive, joinIsPending, reviewIsReady else { return false }
+        joinIsPending = false
+        reviewIsReady = false
+        return true
     }
 }
 
 struct HomeScreen: View {
-    private struct JoinSession: Identifiable {
+    @MainActor private struct JoinSession: Identifiable {
         let id = UUID()
         let vault: Vault
+        let receivedURL: URL?
+        let viewModel = JoinKeysignViewModel()
+        let serviceDelegate = ServiceDelegate()
     }
 
     @Environment(\.router) var router
@@ -57,6 +74,10 @@ struct HomeScreen: View {
     @State var showScanner: Bool = false
     @State private var scannerKeysignHandoff = ScannerKeysignHandoff()
     @State private var joinKeysignSession: JoinSession?
+    @State private var pendingReviewKind: JoinKeysignReviewPresentation.Kind?
+    @State private var presentedReview: JoinKeysignReviewPresentation.Kind?
+    @State private var isPreparingJoinSession = false
+    @State private var isShowingJoinReviewBackdrop = false
     @State var showBackupNow = false
     @State var selectedChain: Chain? = nil
 
@@ -132,13 +153,21 @@ struct HomeScreen: View {
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
         ) { _ in
 
-            if showScanner {
+            if showScanner && deeplinkViewModel.type != .SignTransaction {
                 showScanner = false
                 scheduleDelayedTask(.processDeeplink, after: .milliseconds(300)) {
                     presetValuesForDeeplink()
                 }
             } else {
                 presetValuesForDeeplink()
+                #if os(iOS)
+                // Camera scans dismiss themselves. The iOS-on-Mac file importer
+                // and an external link arriving during a scan do not.
+                if showScanner && (ProcessInfo.processInfo.isiOSAppOnMac
+                                   || !deeplinkViewModel.isInternalDeeplink) {
+                    showScanner = false
+                }
+                #endif
             }
         }
         .onChange(of: appViewModel.restartNavigation) { _, newValue in
@@ -321,11 +350,14 @@ struct HomeScreen: View {
             .onChange(of: showScanner) { _, isShowing in
                 if isShowing {
                     scannerKeysignHandoff.scannerOpened()
+                    if isShowingJoinReviewBackdrop {
+                        clearJoinSession()
+                    }
                 }
             }
             .crossPlatformSheet(isPresented: $showScanner, onDismiss: {
                 guard scannerKeysignHandoff.scannerDismissed(isPresentingAgain: showScanner) else { return }
-                navigateToJoinKeysign()
+                presentPendingReview()
             }, sheetContent: {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
@@ -333,6 +365,7 @@ struct HomeScreen: View {
                         do {
                             try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
                             presetValuesForDeeplink()
+                            showScanner = false
                         } catch {
                             deeplinkError = error
                         }
@@ -400,15 +433,48 @@ struct HomeScreen: View {
             }
             .overlay {
                 if let session = joinKeysignSession {
-                    JoinKeysignView(vault: session.vault) {
-                        if joinKeysignSession?.id == session.id {
-                            joinKeysignSession = nil
+                    ZStack {
+                        if isShowingJoinReviewBackdrop {
+                            Background()
+                            if isPreparingJoinSession && !showScanner {
+                                CircularProgressIndicator(size: 24)
+                            }
                         }
+                        JoinKeysignView(
+                            vault: session.vault,
+                            receivedURL: session.receivedURL,
+                            viewModel: session.viewModel,
+                            serviceDelegate: session.serviceDelegate,
+                            onStatusChange: { status, reviewKind in
+                                handleJoinStatus(status, reviewKind: reviewKind, sessionID: session.id)
+                            },
+                            onCancel: {
+                                if joinKeysignSession?.id == session.id {
+                                    clearJoinSession()
+                                }
+                            }
+                        )
+                        .opacity(isPreparingJoinSession ? 0 : 1)
+                        .allowsHitTesting(!isPreparingJoinSession)
                     }
                     .id(session.id)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            .crossPlatformSheet(item: $presentedReview, onDismiss: {
+                if case .JoinKeysign = joinKeysignSession?.viewModel.status,
+                   joinKeysignSession?.viewModel.isJoiningCommittee == false {
+                    clearJoinSession()
+                }
+            }, useOverlayOnMacOS: true, sheetContent: { kind in
+                if let session = joinKeysignSession {
+                    JoinKeysignReviewSheet(
+                        viewModel: session.viewModel,
+                        presentedKind: $presentedReview,
+                        kind: kind
+                    )
+                }
+            })
     }
 
     @ViewBuilder
@@ -437,12 +503,6 @@ extension HomeScreen {
     }
 
     fileprivate func navigateToJoinKeysignAfterScanner() {
-        #if os(iOS)
-        guard scannerKeysignHandoff.requestJoin() else {
-            showScanner = false
-            return
-        }
-        #endif
         navigateToJoinKeysign()
     }
 
@@ -700,7 +760,57 @@ extension HomeScreen {
 
     fileprivate func navigateToJoinKeysign() {
         guard let vault = appViewModel.selectedVault else { return }
-        joinKeysignSession = JoinSession(vault: vault)
+        _ = scannerKeysignHandoff.requestJoin()
+        pendingReviewKind = nil
+        presentedReview = nil
+        isPreparingJoinSession = showScanner
+        isShowingJoinReviewBackdrop = showScanner
+        joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)
+    }
+
+    fileprivate func handleJoinStatus(
+        _ status: JoinKeysignStatus,
+        reviewKind: JoinKeysignReviewPresentation.Kind?,
+        sessionID: UUID
+    ) {
+        guard joinKeysignSession?.id == sessionID else { return }
+        if status != .DiscoverSigningMsg {
+            isPreparingJoinSession = false
+        }
+        if let reviewKind {
+            pendingReviewKind = reviewKind
+            if scannerKeysignHandoff.reviewReady() {
+                presentPendingReview()
+            }
+        } else if status != .JoinKeysign {
+            pendingReviewKind = nil
+            presentedReview = nil
+            if status != .DiscoverSigningMsg {
+                isShowingJoinReviewBackdrop = false
+            }
+        } else {
+            // Custom-message reviews stay on their specialized full-screen surface.
+            isShowingJoinReviewBackdrop = false
+        }
+        #if os(iOS)
+        if status != .DiscoverSigningMsg, showScanner {
+            showScanner = false
+        }
+        #endif
+    }
+
+    fileprivate func presentPendingReview() {
+        guard let pendingReviewKind, joinKeysignSession != nil else { return }
+        presentedReview = pendingReviewKind
+        self.pendingReviewKind = nil
+    }
+
+    fileprivate func clearJoinSession() {
+        presentedReview = nil
+        pendingReviewKind = nil
+        isPreparingJoinSession = false
+        isShowingJoinReviewBackdrop = false
+        joinKeysignSession = nil
     }
 
     fileprivate func consumeJoinKeysignRequest() {

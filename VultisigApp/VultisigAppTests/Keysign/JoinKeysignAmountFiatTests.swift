@@ -163,10 +163,22 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         var handoff = ScannerKeysignHandoff()
 
         XCTAssertTrue(handoff.requestJoin(), "A direct link needs no scanner dismissal")
+        XCTAssertTrue(handoff.reviewReady(), "A prepared direct link can present immediately")
         handoff.scannerOpened()
         XCTAssertFalse(handoff.requestJoin(), "A scanned QR must defer the overview")
-        XCTAssertTrue(handoff.scannerDismissed(isPresentingAgain: false))
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Dismissal alone must not present an unprepared review")
+        XCTAssertTrue(handoff.reviewReady(), "A review ready after dismissal can present immediately")
         XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "The dismissal must hand off only once")
+    }
+
+    func testScannerKeysignHandoffWaitsForDismissalAfterReviewIsReady() {
+        var handoff = ScannerKeysignHandoff()
+
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.requestJoin())
+        XCTAssertFalse(handoff.reviewReady(), "Readiness while scanning cannot present over the scanner")
+        XCTAssertTrue(handoff.scannerDismissed(isPresentingAgain: false))
+        XCTAssertFalse(handoff.reviewReady(), "A repeated ready event cannot reopen a dismissed review")
     }
 
     func testScannerKeysignHandoffIgnoresCancellationAndReopen() {
@@ -177,6 +189,7 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
 
         handoff.scannerOpened()
         XCTAssertFalse(handoff.requestJoin())
+        XCTAssertFalse(handoff.reviewReady())
         handoff.scannerOpened()
         XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: true), "An old dismissal cannot close a new scan")
         XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Reopening cancels the old QR handoff")

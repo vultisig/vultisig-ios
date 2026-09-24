@@ -7,18 +7,18 @@ import OSLog
 
 struct JoinKeysignView: View {
     let vault: Vault
+    let receivedURL: URL?
+    @ObservedObject var viewModel: JoinKeysignViewModel
+    @ObservedObject var serviceDelegate: ServiceDelegate
+    let onStatusChange: (JoinKeysignStatus, JoinKeysignReviewPresentation.Kind?) -> Void
     let onCancel: () -> Void
 
-    @StateObject private var serviceDelegate = ServiceDelegate()
-    @StateObject var viewModel = JoinKeysignViewModel()
     /// The keysign ceremony view-model, owned here so this host can crossfade
     /// the shared `KeysignView` animation to the cosigner `JoinKeysignDoneView`
     /// once the ceremony finishes — the same pattern the initiator uses.
     @StateObject private var keysignVM = KeysignViewModel()
-    @State private var presentedReview: JoinKeysignReviewPresentation.Kind?
     @State private var wasReviewStatus = false
 
-    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var appViewModelLegacy: AppViewModel
 
@@ -59,19 +59,12 @@ struct JoinKeysignView: View {
                     wasReviewStatus: wasReviewStatus
                 ) {
                     viewModel.resetReviewScan()
-                    presentedReview = newKind
+                    onStatusChange(status, newKind)
                 } else if kind == nil {
-                    presentedReview = nil
+                    onStatusChange(status, nil)
                 }
                 wasReviewStatus = kind != nil
             }
-            .crossPlatformSheet(item: $presentedReview, onDismiss: {
-                if case .JoinKeysign = viewModel.status, !viewModel.isJoiningCommittee {
-                    onCancel()
-                }
-            }, useOverlayOnMacOS: true, sheetContent: { kind in
-                JoinKeysignReviewSheet(viewModel: viewModel, presentedKind: $presentedReview, kind: kind)
-            })
     }
 
     // Deliberately keyed on the outer `viewModel.status` only, not the nested
@@ -268,15 +261,20 @@ struct JoinKeysignView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            viewModel.isShowingScanner = false
-            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-        }
+        viewModel.isShowingScanner = false
+        viewModel.handleDeeplinkScan(receivedURL)
     }
 }
 
 #Preview {
-    JoinKeysignView(vault: Vault.example, onCancel: {})
+    JoinKeysignView(
+        vault: Vault.example,
+        receivedURL: nil,
+        viewModel: JoinKeysignViewModel(),
+        serviceDelegate: ServiceDelegate(),
+        onStatusChange: { _, _ in },
+        onCancel: {}
+    )
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(AppViewModel())
