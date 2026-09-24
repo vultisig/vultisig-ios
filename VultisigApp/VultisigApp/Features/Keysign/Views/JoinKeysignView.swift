@@ -33,11 +33,15 @@ struct JoinKeysignView: View {
                 }
             }
             .onReceive(viewModel.$status) { status in
-                presentedReview = JoinKeysignReviewPresentation.presentedKind(
+                let kind = JoinKeysignReviewPresentation.presentedKind(
                     status: status,
                     payload: viewModel.keysignPayload,
                     hasCustomMessage: viewModel.customMessagePayload != nil
                 )
+                if kind != nil {
+                    viewModel.resetReviewScan()
+                }
+                presentedReview = kind
             }
             .crossPlatformSheet(item: $presentedReview, useOverlayOnMacOS: true) { kind in
                 JoinKeysignReviewSheet(viewModel: viewModel, presentedKind: $presentedReview, kind: kind)
@@ -210,6 +214,7 @@ struct JoinKeysignView: View {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
             } else if let kind = JoinKeysignReviewPresentation.kind(for: viewModel.keysignPayload) {
                 PrimaryButton(title: "verify") {
+                    viewModel.resetReviewScan()
                     presentedReview = kind
                 }
             } else {

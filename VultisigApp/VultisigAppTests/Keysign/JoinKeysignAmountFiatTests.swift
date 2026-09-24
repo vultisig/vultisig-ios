@@ -123,6 +123,41 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         ))
     }
 
+    func testCosignerScanResetsToLoadingWhenReviewReopens() {
+        let vm = JoinKeysignViewModel()
+        vm.securityScannerState = .scanned(KeysignReviewScanFixture.result(.high))
+        vm.didLoadSimulation = true
+
+        vm.resetReviewScan()
+
+        XCTAssertEqual(KeysignReviewScanRing(vm.securityScannerState, isScanComplete: vm.didLoadSimulation).animationState, .loading)
+        XCTAssertFalse(vm.didLoadSimulation)
+    }
+
+    func testCosignerRiskVerdictOnlyRequiresAcknowledgementForUnsafeResult() {
+        XCTAssertTrue(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.medium))
+        ))
+        XCTAssertTrue(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.high))
+        ))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.low))
+        ))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(.idle))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(.notScanned(provider: "blockaid")))
+    }
+
+    func testUnavailableCosignerScanCompletesAndHidesAnimation() {
+        let vm = JoinKeysignViewModel()
+        vm.securityScannerState = .scanning
+
+        vm.finishReviewScan(scannerResult: nil)
+
+        XCTAssertTrue(vm.didLoadSimulation)
+        XCTAssertEqual(KeysignReviewScanRing(vm.securityScannerState, isScanComplete: vm.didLoadSimulation), .hidden)
+    }
+
     // MARK: - Co-signer keysign hero (JoinKeysignViewModel.heroContent)
 
     /// The co-signer builds its hero through the same

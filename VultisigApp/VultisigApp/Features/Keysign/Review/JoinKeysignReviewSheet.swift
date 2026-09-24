@@ -100,7 +100,7 @@ struct JoinKeysignReviewSheet: View {
               !viewModel.isKaminoDecodeRefused,
               viewModel.isSolanaFeeReady,
               viewModel.didLoadSimulation else { return }
-        if let result = viewModel.securityScannerState.result, !result.isSecure {
+        if JoinKeysignReviewPresentation.requiresRiskAcknowledgement(viewModel.securityScannerState) {
             showsRiskVerdict = true
         } else {
             viewModel.joinKeysignCommittee()

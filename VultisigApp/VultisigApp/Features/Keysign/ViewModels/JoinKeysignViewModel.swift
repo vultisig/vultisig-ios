@@ -117,6 +117,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
+    private var reviewScanGeneration = 0
     /// The hero for a transaction that only resolves after an on-chain read — a
     /// fractional unstake read against the signer's own position, today, but
     /// general over any operation whose figure is settled against a balance the
@@ -715,19 +716,35 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadSimulation() async {
+        let generation = reviewScanGeneration
         guard let payload = keysignPayload else {
-            didLoadSimulation = true
+            finishReviewScan(scannerResult: nil)
             return
         }
         securityScannerState = .scanning
         let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        guard !Task.isCancelled, generation == reviewScanGeneration else { return }
         blockaidSimulation = result.simulation
-        if let scannerResult = result.scannerResult {
+        finishReviewScan(scannerResult: result.scannerResult)
+    }
+
+    func finishReviewScan(scannerResult: SecurityScannerResult?) {
+        if let scannerResult {
             securityScannerState = .scanned(scannerResult)
         } else {
             securityScannerState = .idle
         }
         didLoadSimulation = true
+    }
+
+    /// A reopened overview starts with the Rive Loading state again. An older
+    /// scan may still be returning after dismissal; its generation cannot
+    /// replace the result for the new presentation.
+    func resetReviewScan() {
+        reviewScanGeneration += 1
+        blockaidSimulation = nil
+        securityScannerState = .idle
+        didLoadSimulation = false
     }
 
     /// Resolves the hero for a transaction whose figure needs an on-chain read, so

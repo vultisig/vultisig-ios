@@ -36,6 +36,11 @@ enum JoinKeysignReviewPresentation {
         return kind(for: payload)
     }
 
+    static func requiresRiskAcknowledgement(_ state: SecurityScannerState) -> Bool {
+        guard let result = state.result else { return false }
+        return !result.isSecure
+    }
+
     @MainActor
     static func sendSummary(viewModel: JoinKeysignViewModel) -> SendCryptoVerifySummary {
         let payload = viewModel.keysignPayload
