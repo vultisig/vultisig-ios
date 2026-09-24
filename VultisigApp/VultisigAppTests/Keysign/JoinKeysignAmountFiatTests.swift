@@ -159,6 +159,29 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         ))
     }
 
+    func testScannerKeysignHandoffWaitsForDismissal() {
+        var handoff = ScannerKeysignHandoff()
+
+        XCTAssertTrue(handoff.requestJoin(), "A direct link needs no scanner dismissal")
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.requestJoin(), "A scanned QR must defer the overview")
+        XCTAssertTrue(handoff.scannerDismissed(isPresentingAgain: false))
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "The dismissal must hand off only once")
+    }
+
+    func testScannerKeysignHandoffIgnoresCancellationAndReopen() {
+        var handoff = ScannerKeysignHandoff()
+
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Cancelling cannot open the overview")
+
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.requestJoin())
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: true), "An old dismissal cannot close a new scan")
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Reopening cancels the old QR handoff")
+    }
+
     func testCosignerScanResetsToLoadingWhenReviewReopens() {
         let vm = JoinKeysignViewModel()
         vm.securityScannerState = .scanned(KeysignReviewScanFixture.result(.high))

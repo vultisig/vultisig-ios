@@ -10,6 +10,33 @@ import SwiftUI
 import WalletCore
 import OSLog
 
+/// Keeps a decoded keysign QR pending until the scanner has actually dismissed.
+/// Opening a new scan invalidates any handoff from the previous sheet.
+struct ScannerKeysignHandoff {
+    private var scannerIsActive = false
+    private var joinIsPending = false
+
+    mutating func scannerOpened() {
+        scannerIsActive = true
+        joinIsPending = false
+    }
+
+    /// Returns true only when no scanner dismissal is needed.
+    mutating func requestJoin() -> Bool {
+        guard scannerIsActive else { return true }
+        joinIsPending = true
+        return false
+    }
+
+    /// Returns true once, after the final scanner sheet has dismissed.
+    mutating func scannerDismissed(isPresentingAgain: Bool) -> Bool {
+        guard !isPresentingAgain else { return false }
+        scannerIsActive = false
+        defer { joinIsPending = false }
+        return joinIsPending
+    }
+}
+
 struct HomeScreen: View {
     private struct JoinSession: Identifiable {
         let id = UUID()
@@ -28,6 +55,7 @@ struct HomeScreen: View {
     @State var vaultRoute: VaultMainRoute?
 
     @State var showScanner: Bool = false
+    @State private var scannerKeysignHandoff = ScannerKeysignHandoff()
     @State private var joinKeysignSession: JoinSession?
     @State var showBackupNow = false
     @State var selectedChain: Chain? = nil
@@ -54,7 +82,6 @@ struct HomeScreen: View {
     private enum DelayedTaskID: Hashable {
         case processDeeplink
         case selectVault
-        case joinKeysign
         case joinKeygen
         case initialDeeplink
         case retrySendDeeplink
@@ -291,7 +318,15 @@ struct HomeScreen: View {
                 showScanner = false
             }
 #else
-            .crossPlatformSheet(isPresented: $showScanner) {
+            .onChange(of: showScanner) { _, isShowing in
+                if isShowing {
+                    scannerKeysignHandoff.scannerOpened()
+                }
+            }
+            .crossPlatformSheet(isPresented: $showScanner, onDismiss: {
+                guard scannerKeysignHandoff.scannerDismissed(isPresentingAgain: showScanner) else { return }
+                navigateToJoinKeysign()
+            }, sheetContent: {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
                         guard let url = URL(string: $0) else { return }
@@ -317,7 +352,7 @@ struct HomeScreen: View {
                         }
                     )
                 }
-            }
+            })
 #endif
             .onChange(of: showBackupNow) { _, shouldNavigate in
                 guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
@@ -402,14 +437,13 @@ extension HomeScreen {
     }
 
     fileprivate func navigateToJoinKeysignAfterScanner() {
-        closeScannerIfNeeded {
-            // The scanner can already have lowered its binding while the
-            // native sheet is still animating out. Present from Home only
-            // after that dismissal has settled.
-            scheduleDelayedTask(.joinKeysign, after: .milliseconds(350)) {
-                navigateToJoinKeysign()
-            }
+        #if os(iOS)
+        guard scannerKeysignHandoff.requestJoin() else {
+            showScanner = false
+            return
         }
+        #endif
+        navigateToJoinKeysign()
     }
 
     fileprivate func checkUpdate() {
