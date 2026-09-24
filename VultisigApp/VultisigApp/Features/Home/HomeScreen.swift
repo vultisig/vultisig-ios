@@ -801,6 +801,7 @@ extension HomeScreen {
 
     fileprivate func presentPendingReview() {
         guard let pendingReviewKind, joinKeysignSession != nil else { return }
+        isShowingJoinReviewBackdrop = false
         presentedReview = pendingReviewKind
         self.pendingReviewKind = nil
     }
