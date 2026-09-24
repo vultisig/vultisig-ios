@@ -21,6 +21,12 @@ protocol BlockaidRpcClientProtocol {
         data: String
     ) async throws -> BlockaidTransactionScanResponseJson
 
+    /// Scans `transactions` in order on one simulated state; returns one entry per transaction.
+    func scanEVMTransactionBulk(
+        chain: Chain,
+        transactions: [EthereumScanTransactionRequestJson.DataJson]
+    ) async throws -> [BlockaidTransactionScanResponseJson]
+
     func simulateEVMTransaction(
         chain: Chain,
         from: String,

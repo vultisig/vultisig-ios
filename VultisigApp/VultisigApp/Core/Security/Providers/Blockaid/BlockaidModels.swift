@@ -133,6 +133,13 @@ struct EthereumScanTransactionRequestJson: Codable {
     }
 }
 
+struct EthereumBulkScanTransactionRequestJson: Codable {
+    let chain: String
+    let metadata: EthereumScanTransactionRequestJson.MetadataJson
+    let options: [String]
+    let data: [EthereumScanTransactionRequestJson.DataJson]
+}
+
 // MARK: - Blockaid Transaction Scan Response
 
 struct BlockaidTransactionScanResponseJson: Codable {
