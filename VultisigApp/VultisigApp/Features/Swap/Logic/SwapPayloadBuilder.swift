@@ -10,6 +10,7 @@
 import BigInt
 import Foundation
 import OSLog
+import WalletCore
 
 private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-payload-builder")
 
@@ -91,19 +92,38 @@ extension SwapCryptoLogic {
     /// needs no approve. SwapKit's `approvalTx` carries the exact spender when
     /// it is populated; every other route, and SwapKit without it, approves
     /// the quote's router.
-    static func approveSpender(fromCoin: Coin, quote: SwapQuote?) -> String? {
+    static func approveSpender(fromCoin: Coin, quote: SwapQuote?) throws -> String? {
         guard isApproveRequired(fromCoin: fromCoin, quote: quote) else {
             return nil
         }
         if case let .swapkit(swapResponse, _, _) = quote, let approvalTx = swapResponse.approvalTx {
-            // The spender lives in `approvalAddress` (or is encoded in
-            // `approvalTx.data` after the `0x095ea7b3` selector). We prefer
-            // the meta field — confirmed by the spike to match the calldata
-            // spender — and fall back to the `to` field of the approve tx
-            // itself.
-            return swapResponse.meta.approvalAddress ?? approvalTx.to
+            if let approvalAddress = swapResponse.meta.approvalAddress {
+                return approvalAddress
+            }
+            // `approvalTx.to` is the token contract, never the spender, so
+            // without `approvalAddress` the spender must come from the calldata.
+            guard let spender = approveCalldataSpender(approvalTx.data) else {
+                throw SwapKitError.contradictoryResponse(detail: "approvalTx data is not a decodable approve(address,uint256)")
+            }
+            return spender
         }
         return router(quote: quote)
+    }
+
+    /// The spender of `approve(address,uint256)` calldata, EIP-55 checksummed,
+    /// or nil when the data is not that call.
+    private static func approveCalldataSpender(_ calldata: String) -> String? {
+        let hex = calldata.stripHexPrefix().lowercased()
+        let selector = "095ea7b3"
+        // Selector, then the address word and the amount word, 64 hex chars each.
+        guard hex.count == selector.count + 128, hex.hasPrefix(selector) else {
+            return nil
+        }
+        let addressWord = hex.dropFirst(selector.count).prefix(64)
+        guard addressWord.prefix(24).allSatisfy({ $0 == "0" }) else {
+            return nil
+        }
+        return AnyAddress(string: "0x" + String(addressWord.suffix(40)), coin: .ethereum)?.description
     }
 
     /// The spend a market swap's approve is decided for, or nil when the
@@ -111,8 +131,8 @@ extension SwapCryptoLogic {
     /// for it and signing checks it again against the decision it carries.
     /// Main-actor bound because it reads the SwiftData `Coin`.
     @MainActor
-    static func approvalQuery(fromCoin: Coin, amount: BigInt, quote: SwapQuote?) -> ERC20ApprovalQuery? {
-        guard let spender = approveSpender(fromCoin: fromCoin, quote: quote) else {
+    static func approvalQuery(fromCoin: Coin, amount: BigInt, quote: SwapQuote?) throws -> ERC20ApprovalQuery? {
+        guard let spender = try approveSpender(fromCoin: fromCoin, quote: quote) else {
             return nil
         }
         return ERC20ApprovalQuery(coin: fromCoin, spender: spender, amount: amount)
@@ -280,7 +300,7 @@ extension SwapCryptoLogic {
         }
 
         // The approval was read on the way into Verify; it is not read again.
-        let approveSpend = await approvalQuery(fromCoin: fromCoin, amount: amountInCoin, quote: quote)
+        let approveSpend = try await approvalQuery(fromCoin: fromCoin, amount: amountInCoin, quote: quote)
         let approvePayload = try ERC20ApprovalDecision.approvePayload(
             signing: approveSpend,
             decision: transaction.approvalDecision
