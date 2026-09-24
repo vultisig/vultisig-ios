@@ -75,6 +75,39 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(vm.getAmountFiat(), "", "Swaps show fiat on the hero from/to rows, not the amount field")
     }
 
+    func testCosignerReviewClassifiesSwapAndLiquidityBySignedMemo() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: from))
+        let swapPayload = makePayload(coin: from, toAmount: 1, swapPayload: swap)
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: swapPayload), .swap)
+
+        let liquidityPayload = makePayload(coin: from, toAmount: 1, swapPayload: swap, memo: "+:ETH.ETH:0xpaired")
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: liquidityPayload), .send)
+    }
+
+    func testCosignerSwapSummaryUsesReceivedAmountsAndRecipient() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: from))
+        let vm = makeViewModel(payload: makePayload(coin: from, toAmount: 1, swapPayload: swap))
+        let summary = JoinKeysignReviewPresentation.swapSummary(viewModel: vm)
+
+        XCTAssertEqual(summary?.from.amount, "3")
+        XCTAssertEqual(summary?.to.amount, Decimal(3000).formatForDisplay())
+        XCTAssertEqual(summary?.from.ticker, "ETH")
+        XCTAssertEqual(summary?.to.ticker, "USDC")
+    }
+
+    func testCosignerSendSummaryUsesReceivedDestination() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let vm = makeViewModel(payload: makePayload(coin: eth, toAmount: BigInt("1000000000000000000")))
+        let summary = JoinKeysignReviewPresentation.sendSummary(viewModel: vm)
+
+        XCTAssertEqual(summary.fromAddress, eth.address)
+        XCTAssertEqual(summary.toAddress, "0xrecipient")
+        XCTAssertEqual(summary.amount, "1")
+        XCTAssertEqual(summary.coinTicker, "ETH")
+    }
+
     // MARK: - Co-signer keysign hero (JoinKeysignViewModel.heroContent)
 
     /// The co-signer builds its hero through the same
@@ -120,14 +153,14 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         return vm
     }
 
-    private func makePayload(coin: Coin, toAmount: BigInt, swapPayload: SwapPayload? = nil) -> KeysignPayload {
+    private func makePayload(coin: Coin, toAmount: BigInt, swapPayload: SwapPayload? = nil, memo: String? = nil) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
             toAddress: "0xrecipient",
             toAmount: toAmount,
             chainSpecific: .Ethereum(maxFeePerGasWei: 0, priorityFeeWei: 0, nonce: 0, gasLimit: 21000),
             utxos: [],
-            memo: nil,
+            memo: memo,
             swapPayload: swapPayload,
             approvePayload: nil,
             vaultPubKeyECDSA: "",

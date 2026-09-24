@@ -1,0 +1,35 @@
+# Co-signer overview sheet
+
+## Objective
+
+Replace transaction co-signer confirmation screens with the existing keysign overview sheet while preserving the payload-derived review and join/signing safety gates. Build on `feat/keysign-review-sheet-5421` at `9e1a581b9`. Do not push or open a PR until the user gives the green light.
+
+## Scope and constraints
+
+- Send, swap, and transaction-based DeFi/LP co-signer reviews on iOS and macOS.
+- Review fields must derive from the received keysign payload, not initiator-only form models.
+- Keep the existing committee-join and signing state machine, double-tap guard, fee readiness, Kamino refusal, and QR/relay behavior.
+- Keep custom-message and QBTC claim flows on their existing specialized reviews until an overview design exists for them.
+- Reuse the current blurred `crossPlatformSheet` style and existing overview visual components; no new sheet style.
+- Strict TDD is enabled by project instructions: observe RED, GREEN, then REFACTOR using focused `xcodebuildmcp` tests. Run baseline SwiftLint before source edits.
+- Delivery strategy: ask-on-risk; aim for reviewable work-unit commits, with tests alongside behavior. Approx. 400 authored changed lines is advisory, not a code-golf limit.
+- Engram mirror pending if the memory tools remain unavailable.
+
+## Tasks
+
+- [x] **COS-1 — Payload-backed review data.** Adapt Send and Swap overview content for received co-signer payloads; preserve fees, recipient, memo, min payout, and LP classification. Route: delegated direct (multi-file logic and tests). Acceptance: focused mapping tests failed before implementation (undefined adapter) and passed afterward (10/10 iOS simulator). Commit: pending.
+- [ ] **COS-2 — Join sheet and signing handoff.** Present the shared sheet locally in `JoinKeysignView`, wire Join confirmation and dismissal to existing state transitions, and retain safety gates. Route: delegated direct (multi-file navigation and tests). Acceptance: focused state tests fail before implementation and pass afterward. Commit: pending.
+- [ ] **COS-3 — Scanner parity and verification.** Ensure loading/available/unavailable and risk verdict behavior is coherent for supported co-signer transaction types; run focused tests, lint, iOS/macOS builds and UI checks where feasible. Route: delegated direct (multi-file behavior and tests). Acceptance: all applicable checks recorded. Commit: pending.
+
+## Progress
+
+- Isolated worktree and branch created from `9e1a581b9`.
+- Baseline SwiftLint: 0 violations in 2,368 files.
+- COS-1 RED: `xcodebuildmcp macos test --project-path VultisigApp/VultisigApp.xcodeproj --scheme VultisigApp --extra-args -only-testing:VultisigAppTests/JoinKeysignAmountFiatTests` failed at compile with missing adapter (expected); macOS test execution after implementation is unavailable because the runner cannot find the test product despite `TEST BUILD SUCCEEDED`.
+- COS-1 GREEN: `xcodebuildmcp simulator test --project-path VultisigApp/VultisigApp.xcodeproj --scheme VultisigApp --simulator-id 157E1A0E-0272-43F8-A90E-8833C043F5BF --extra-args -only-testing:VultisigAppTests/JoinKeysignAmountFiatTests`: 10 passed, 0 failed.
+- COS-1 runtime harness: N/A for pure summary mapping; sheet integration is COS-2. Rollback boundary: adapter and its focused assertions only.
+- PR and push withheld pending explicit user approval.
+
+## Next step
+
+Implement COS-2 with strict TDD, preserving the existing Join state machine.
