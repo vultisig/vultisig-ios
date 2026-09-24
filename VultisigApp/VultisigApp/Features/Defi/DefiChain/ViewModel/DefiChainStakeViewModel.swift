@@ -20,6 +20,9 @@ final class DefiChainStakeViewModel: ObservableObject {
     private let interactor: StakeInteractor?
     private let storage: DefiPositionsStorageService
 
+    private var isRefreshing = false
+    private var refreshQueued = false
+
     /// Computed against the live `vault.stakePositions` relationship rather than a cached
     /// snapshot. Caching here would let the view dereference a `StakePosition` after storage
     /// deletes it (e.g. when the user disables a position) and crash on attribute fault. The
@@ -77,10 +80,29 @@ final class DefiChainStakeViewModel: ObservableObject {
     }
 
     func update(vault: Vault) {
+        let previousVaultKey = self.vault.pubKeyECDSA
         self.vault = vault
+        if isRefreshing, previousVaultKey != vault.pubKeyECDSA {
+            refreshQueued = true
+        }
     }
 
     func refresh() async {
+        guard !isRefreshing else {
+            refreshQueued = true
+            return
+        }
+
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        repeat {
+            refreshQueued = false
+            await performRefresh()
+        } while refreshQueued
+    }
+
+    private func performRefresh() async {
         guard let interactor else {
             actionAvailabilities = Self.resolvedActionAvailabilities(
                 for: vaultStakePositions,

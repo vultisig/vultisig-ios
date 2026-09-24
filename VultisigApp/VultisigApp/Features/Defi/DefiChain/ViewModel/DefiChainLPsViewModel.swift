@@ -19,6 +19,9 @@ final class DefiChainLPsViewModel: ObservableObject {
     private let interactor: LPsInteractor?
     private let storage: DefiPositionsStorageService
 
+    private var isRefreshing = false
+    private var refreshQueued = false
+
     /// See `DefiChainStakeViewModel.stakePositions` for why this is computed and not cached.
     var lpPositions: [LPPosition] {
         vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
@@ -45,10 +48,29 @@ final class DefiChainLPsViewModel: ObservableObject {
     }
 
     func update(vault: Vault) {
+        let previousVaultKey = self.vault.pubKeyECDSA
         self.vault = vault
+        if isRefreshing, previousVaultKey != vault.pubKeyECDSA {
+            refreshQueued = true
+        }
     }
 
     func refresh() async {
+        guard !isRefreshing else {
+            refreshQueued = true
+            return
+        }
+
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        repeat {
+            refreshQueued = false
+            await performRefresh()
+        } while refreshQueued
+    }
+
+    private func performRefresh() async {
         guard let interactor else {
             initialLoadingDone = true
             return

@@ -48,10 +48,9 @@ final class DefiChainVaultRebindGuardTests: XCTestCase {
 
     /// The stake refresh persists its DTOs, so a superseded pass writes one
     /// vault's positions onto another vault's row — the failure that survives a
-    /// repaint. It also publishes `actionAvailabilities`, which is what gates the
-    /// stake/unstake buttons, so a stale one can offer an action the new vault's
-    /// chain has halted.
-    func testStakeRefreshAfterVaultSwitchLeavesTheNewVaultUntouched() async {
+    /// repaint. When the vault switches mid-refresh, the superseded pass must be
+    /// discarded, then one queued refresh must load the newly bound vault.
+    func testStakeRefreshAfterVaultSwitchQueuesRefreshForTheNewVault() async {
         let cacao = CoinMeta.make(chain: .mayaChain, ticker: "CACAO")
         first.defiPositions = [DefiPositions(chain: .mayaChain, bonds: [], staking: [cacao], lps: [])]
         second.defiPositions = [DefiPositions(chain: .mayaChain, bonds: [], staking: [cacao], lps: [])]
@@ -72,27 +71,28 @@ final class DefiChainVaultRebindGuardTests: XCTestCase {
         await gate.open()
         await refresh.value
 
-        XCTAssertTrue(
-            second.stakePositions.isEmpty,
-            "The DTOs were fetched for the first vault; persisting them here puts one vault's stake on another's row."
+        XCTAssertEqual(interactor.callCount, 2, "The rebind should queue exactly one follow-up stake refresh.")
+        XCTAssertEqual(interactor.actionAvailabilityCallCount, 2)
+        XCTAssertEqual(
+            second.stakePositions.count,
+            1,
+            "The queued pass should fetch and persist positions for the newly bound vault."
         )
-        XCTAssertTrue(viewModel.stakePositions.isEmpty)
+        XCTAssertEqual(viewModel.stakePositions.count, 1)
         XCTAssertEqual(
             viewModel.actionAvailabilities[cacao],
-            .checking,
-            "Maya availability starts at .checking; the superseded pass must not resolve it to the first vault's answer."
+            .halted,
+            "The queued pass should replace Maya's initial .checking state with the new vault's resolved availability."
         )
-        XCTAssertFalse(
-            viewModel.initialLoadingDone,
-            "The second vault has not loaded, so the skeleton must stay up rather than reveal an empty list."
-        )
+        XCTAssertTrue(viewModel.initialLoadingDone)
     }
 
     // MARK: - LPs
 
     /// Same shape as stake: the LP refresh persists, so the wrong-vault write
-    /// outlives the screen.
-    func testLPRefreshAfterVaultSwitchLeavesTheNewVaultUntouched() async {
+    /// outlives the screen. A mid-refresh rebind queues one follow-up pass so the
+    /// newly bound vault is not left on the loading skeleton.
+    func testLPRefreshAfterVaultSwitchQueuesRefreshForTheNewVault() async {
         let btc = CoinMeta.make(chain: .bitcoin, ticker: "BTC")
         let rune = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         first.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [], lps: [btc])]
@@ -121,12 +121,14 @@ final class DefiChainVaultRebindGuardTests: XCTestCase {
         await gate.open()
         await refresh.value
 
-        XCTAssertTrue(
-            second.lpPositions.isEmpty,
-            "The DTOs were fetched for the first vault; persisting them here puts one vault's pool share on another's row."
+        XCTAssertEqual(interactor.callCount, 2, "The rebind should queue exactly one follow-up LP refresh.")
+        XCTAssertEqual(
+            second.lpPositions.count,
+            1,
+            "The queued pass should fetch and persist pool shares for the newly bound vault."
         )
-        XCTAssertTrue(viewModel.lpPositions.isEmpty)
-        XCTAssertFalse(viewModel.initialLoadingDone)
+        XCTAssertEqual(viewModel.lpPositions.count, 1)
+        XCTAssertTrue(viewModel.initialLoadingDone)
     }
 
     // MARK: - Bond
