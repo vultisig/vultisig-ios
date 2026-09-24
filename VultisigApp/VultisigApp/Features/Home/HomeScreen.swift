@@ -76,8 +76,6 @@ struct HomeScreen: View {
     @State private var joinKeysignSession: JoinSession?
     @State private var pendingReviewKind: JoinKeysignReviewPresentation.Kind?
     @State private var presentedReview: JoinKeysignReviewPresentation.Kind?
-    @State private var isPreparingJoinSession = false
-    @State private var isShowingJoinReviewBackdrop = false
     @State var showBackupNow = false
     @State var selectedChain: Chain? = nil
 
@@ -350,7 +348,7 @@ struct HomeScreen: View {
             .onChange(of: showScanner) { _, isShowing in
                 if isShowing {
                     scannerKeysignHandoff.scannerOpened()
-                    if isShowingJoinReviewBackdrop {
+                    if joinKeysignSession != nil {
                         clearJoinSession()
                     }
                 }
@@ -433,30 +431,20 @@ struct HomeScreen: View {
             }
             .overlay {
                 if let session = joinKeysignSession {
-                    ZStack {
-                        if isShowingJoinReviewBackdrop {
-                            Background()
-                            if isPreparingJoinSession && !showScanner {
-                                CircularProgressIndicator(size: 24)
+                    JoinKeysignView(
+                        vault: session.vault,
+                        receivedURL: session.receivedURL,
+                        viewModel: session.viewModel,
+                        serviceDelegate: session.serviceDelegate,
+                        onStatusChange: { status, reviewKind in
+                            handleJoinStatus(status, reviewKind: reviewKind, sessionID: session.id)
+                        },
+                        onCancel: {
+                            if joinKeysignSession?.id == session.id {
+                                clearJoinSession()
                             }
                         }
-                        JoinKeysignView(
-                            vault: session.vault,
-                            receivedURL: session.receivedURL,
-                            viewModel: session.viewModel,
-                            serviceDelegate: session.serviceDelegate,
-                            onStatusChange: { status, reviewKind in
-                                handleJoinStatus(status, reviewKind: reviewKind, sessionID: session.id)
-                            },
-                            onCancel: {
-                                if joinKeysignSession?.id == session.id {
-                                    clearJoinSession()
-                                }
-                            }
-                        )
-                        .opacity(isPreparingJoinSession ? 0 : 1)
-                        .allowsHitTesting(!isPreparingJoinSession)
-                    }
+                    )
                     .id(session.id)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -763,8 +751,6 @@ extension HomeScreen {
         _ = scannerKeysignHandoff.requestJoin()
         pendingReviewKind = nil
         presentedReview = nil
-        isPreparingJoinSession = showScanner
-        isShowingJoinReviewBackdrop = showScanner
         joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)
     }
 
@@ -774,9 +760,6 @@ extension HomeScreen {
         sessionID: UUID
     ) {
         guard joinKeysignSession?.id == sessionID else { return }
-        if status != .DiscoverSigningMsg {
-            isPreparingJoinSession = false
-        }
         if let reviewKind {
             pendingReviewKind = reviewKind
             if scannerKeysignHandoff.reviewReady() {
@@ -785,12 +768,6 @@ extension HomeScreen {
         } else if status != .JoinKeysign {
             pendingReviewKind = nil
             presentedReview = nil
-            if status != .DiscoverSigningMsg {
-                isShowingJoinReviewBackdrop = false
-            }
-        } else {
-            // Custom-message reviews stay on their specialized full-screen surface.
-            isShowingJoinReviewBackdrop = false
         }
         #if os(iOS)
         if status != .DiscoverSigningMsg, showScanner {
@@ -801,7 +778,6 @@ extension HomeScreen {
 
     fileprivate func presentPendingReview() {
         guard let pendingReviewKind, joinKeysignSession != nil else { return }
-        isShowingJoinReviewBackdrop = false
         presentedReview = pendingReviewKind
         self.pendingReviewKind = nil
     }
@@ -809,8 +785,6 @@ extension HomeScreen {
     fileprivate func clearJoinSession() {
         presentedReview = nil
         pendingReviewKind = nil
-        isPreparingJoinSession = false
-        isShowingJoinReviewBackdrop = false
         joinKeysignSession = nil
     }
 
