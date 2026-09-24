@@ -6,6 +6,7 @@
 import Foundation
 import OSLog
 import WalletCore
+import BigInt
 
 /// Combined output of a Blockaid scan call for a keysign payload: the parsed
 /// balance-change simulation plus the risk validation result that drives the
@@ -46,8 +47,8 @@ actor BlockaidSimulationService {
     /// Fetches the scan result for the given payload, coalescing concurrent
     /// callers and caching successful results by the per-chain cache key.
     ///
-    /// Returns `.empty` when the chain is unsupported, the payload isn't a
-    /// contract call (for EVM) or has no raw transactions (for Solana), or
+    /// Returns `.empty` when the chain is unsupported, an EVM payload cannot
+    /// be represented by its signed fields, or Solana has no raw transaction, or
     /// the scan fails.
     func scan(keysignPayload: KeysignPayload) async -> BlockaidKeysignScanResult {
         guard let key = CacheKey(payload: keysignPayload) else {
@@ -61,8 +62,8 @@ actor BlockaidSimulationService {
 
         let task: Task<BlockaidKeysignScanResult, Error>
         switch key {
-        case .evm:
-            task = makeEvmScanTask(keysignPayload: keysignPayload)
+        case .evm(let request):
+            task = makeEvmScanTask(request: request)
         case .solana:
             task = makeSolanaScanTask(keysignPayload: keysignPayload)
         }
@@ -81,21 +82,19 @@ actor BlockaidSimulationService {
 
     // MARK: - EVM
 
-    private func makeEvmScanTask(
-        keysignPayload: KeysignPayload
-    ) -> Task<BlockaidKeysignScanResult, Error> {
+    private func makeEvmScanTask(request: EvmRequest) -> Task<BlockaidKeysignScanResult, Error> {
         Task { [rpcClient, logger] () throws -> BlockaidKeysignScanResult in
             let response = try await rpcClient.simulateEVMTransaction(
-                chain: keysignPayload.coin.chain,
-                from: keysignPayload.coin.address,
-                to: keysignPayload.toAddress,
-                amount: keysignPayload.toAmount.toEvenLengthHexString(),
-                data: keysignPayload.memo ?? "0x"
+                chain: request.chain,
+                from: request.from,
+                to: request.to,
+                amount: request.amount,
+                data: request.data
             )
             Self.debugLog(response: response, logger: logger)
             let simulation = BlockaidSimulationParser.parse(
                 response: response,
-                chain: keysignPayload.coin.chain
+                chain: request.chain
             )
             let scannerResult = response.toKeysignScannerResult()
             return BlockaidKeysignScanResult(
@@ -161,18 +160,79 @@ actor BlockaidSimulationService {
 
     // MARK: - Cache Key
 
+    private struct EvmRequest: Hashable {
+        let chain: Chain
+        let from: String
+        let to: String
+        let amount: String
+        let data: String
+
+        init?(payload: KeysignPayload) {
+            guard BlockaidChainIdentifier.name(for: payload.coin.chain) != nil,
+                  case .Ethereum = payload.chainSpecific,
+                  payload.approvePayload == nil else { return nil }
+
+            chain = payload.coin.chain
+            from = payload.coin.address.lowercased()
+
+            let target: String
+            let rawAmount: BigInt
+            let calldata: String
+            switch payload.swapPayload {
+            case .generic(let swap):
+                // OneInchSwaps signs quote.tx, not the payload's transfer
+                // fields. Never show a verdict for a different transaction.
+                guard swap.fromCoin.chain == payload.coin.chain,
+                      let value = BigInt(swap.quote.tx.value), value >= 0 else { return nil }
+                target = swap.quote.tx.to
+                rawAmount = value
+                calldata = swap.quote.tx.data
+            case .some:
+                // Other swap signers may emit multiple or provider-specific
+                // transactions that one EVM simulation cannot represent.
+                return nil
+            case .none:
+                if payload.coin.isNativeToken {
+                    target = payload.toAddress
+                    rawAmount = payload.toAmount
+                    calldata = payload.memo ?? "0x"
+                } else {
+                    // ERC20Helper signs `contractAddress.transfer(to, amount)`;
+                    // the payload's toAddress/toAmount are token units, not an
+                    // ETH value sent to the recipient.
+                    guard let encoded = try? EthereumFunction.transferErc20Encoder(
+                        address: payload.toAddress,
+                        amount: payload.toAmount
+                    ) else { return nil }
+                    target = payload.coin.contractAddress
+                    rawAmount = .zero
+                    calldata = encoded
+                }
+            }
+
+            guard rawAmount >= 0,
+                  !target.isEmpty,
+                  calldata.lowercased().hasPrefix("0x") else { return nil }
+            let hex = calldata.dropFirst(2).lowercased()
+            guard hex.count.isMultiple(of: 2),
+                  hex.unicodeScalars.allSatisfy({ CharacterSet(charactersIn: "0123456789abcdef").contains($0) }) else {
+                return nil
+            }
+            to = target.lowercased()
+            amount = rawAmount.toEvenLengthHexString()
+            data = "0x" + hex
+        }
+    }
+
     private enum CacheKey: Hashable {
-        case evm(chain: Chain, memo: String)
+        case evm(EvmRequest)
         case solana(transactionsDigest: String)
 
         init?(payload: KeysignPayload) {
             switch payload.coin.chainType {
             case .EVM:
-                guard BlockaidChainIdentifier.name(for: payload.coin.chain) != nil,
-                      let memo = payload.memo?.lowercased(),
-                      memo.hasPrefix("0x"),
-                      memo.count > 2 else { return nil }
-                self = .evm(chain: payload.coin.chain, memo: memo)
+                guard let request = EvmRequest(payload: payload) else { return nil }
+                self = .evm(request)
             case .Solana:
                 guard let txs = payload.signSolana?.rawTransactions,
                       !txs.isEmpty else { return nil }
