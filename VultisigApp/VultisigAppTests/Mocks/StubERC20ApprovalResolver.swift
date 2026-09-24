@@ -54,8 +54,8 @@ extension SwapTransaction {
     /// `requirement` for the spend its quote approves, or no decision when the
     /// source approves nothing.
     @MainActor
-    func withApprovalDecided(_ requirement: ERC20ApprovalRequirement) -> SwapTransaction {
-        let query = SwapCryptoLogic.approvalQuery(fromCoin: fromCoin, amount: amountInCoinDecimal, quote: quote)
+    func withApprovalDecided(_ requirement: ERC20ApprovalRequirement) throws -> SwapTransaction {
+        let query = try SwapCryptoLogic.approvalQuery(fromCoin: fromCoin, amount: amountInCoinDecimal, quote: quote)
         return with(approvalDecision: query.map { ERC20ApprovalDecision(query: $0, requirement: requirement) })
     }
 }

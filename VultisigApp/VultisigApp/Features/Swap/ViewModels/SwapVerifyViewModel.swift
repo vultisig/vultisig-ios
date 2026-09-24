@@ -193,7 +193,7 @@ final class SwapVerifyViewModel {
             // A refreshed quote can name a different spender (another route, a
             // rotated router). The approval shown and signed has to be the one
             // read for it, so read it again; the same spend keeps its decision.
-            let refreshedSpend = SwapCryptoLogic.approvalQuery(
+            let refreshedSpend = try SwapCryptoLogic.approvalQuery(
                 fromCoin: updated.fromCoin,
                 amount: updated.amountInCoinDecimal,
                 quote: updated.quote

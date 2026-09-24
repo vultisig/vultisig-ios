@@ -194,7 +194,7 @@ struct DefaultSwapInteractor: SwapInteractor {
                 thorchainService: thorchainService
             )
         }
-        return SwapCryptoLogic.approvalQuery(
+        return try SwapCryptoLogic.approvalQuery(
             fromCoin: transaction.fromCoin,
             amount: transaction.amountInCoinDecimal,
             quote: transaction.quote
