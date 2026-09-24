@@ -31,7 +31,6 @@ enum KeygenRoute: Hashable {
         isExistingVault: Bool,
         singleKeygenType: SingleKeygenType?
     )
-    case joinKeysign(vault: Vault)
     case macScanner(type: DeeplinkFlowType, selectedVault: Vault?)
     case macAddressScanner(selectedVault: Vault?, resultId: UUID)
     case generalQRImport(type: DeeplinkFlowType, selectedVault: Vault?)

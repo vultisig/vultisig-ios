@@ -7,6 +7,7 @@ import OSLog
 
 struct JoinKeysignView: View {
     let vault: Vault
+    let onCancel: () -> Void
 
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
@@ -15,13 +16,26 @@ struct JoinKeysignView: View {
     /// once the ceremony finishes — the same pattern the initiator uses.
     @StateObject private var keysignVM = KeysignViewModel()
     @State private var presentedReview: JoinKeysignReviewPresentation.Kind?
+    @State private var wasReviewStatus = false
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var appViewModelLegacy: AppViewModel
 
     var body: some View {
-        content
+        Group {
+            switch JoinKeysignReviewPresentation.surface(
+                status: viewModel.status,
+                payload: viewModel.keysignPayload,
+                hasCustomMessage: viewModel.customMessagePayload != nil
+            ) {
+            case .transactionReview:
+                Color.clear
+                    .allowsHitTesting(false)
+            case .session:
+                content
+            }
+        }
             .onLoad {
                 setData()
             }
@@ -38,14 +52,26 @@ struct JoinKeysignView: View {
                     payload: viewModel.keysignPayload,
                     hasCustomMessage: viewModel.customMessagePayload != nil
                 )
-                if kind != nil {
+                if let newKind = JoinKeysignReviewPresentation.newReviewKind(
+                    status: status,
+                    payload: viewModel.keysignPayload,
+                    hasCustomMessage: viewModel.customMessagePayload != nil,
+                    wasReviewStatus: wasReviewStatus
+                ) {
                     viewModel.resetReviewScan()
+                    presentedReview = newKind
+                } else if kind == nil {
+                    presentedReview = nil
                 }
-                presentedReview = kind
+                wasReviewStatus = kind != nil
             }
-            .crossPlatformSheet(item: $presentedReview, useOverlayOnMacOS: true) { kind in
+            .crossPlatformSheet(item: $presentedReview, onDismiss: {
+                if case .JoinKeysign = viewModel.status, !viewModel.isJoiningCommittee {
+                    onCancel()
+                }
+            }, useOverlayOnMacOS: true, sheetContent: { kind in
                 JoinKeysignReviewSheet(viewModel: viewModel, presentedKind: $presentedReview, kind: kind)
-            }
+            })
     }
 
     // Deliberately keyed on the outer `viewModel.status` only, not the nested
@@ -212,11 +238,6 @@ struct JoinKeysignView: View {
         ZStack {
             if viewModel.customMessagePayload != nil {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
-            } else if let kind = JoinKeysignReviewPresentation.kind(for: viewModel.keysignPayload) {
-                PrimaryButton(title: "verify") {
-                    viewModel.resetReviewScan()
-                    presentedReview = kind
-                }
             } else {
                 CircularProgressIndicator(size: 24)
             }
@@ -255,7 +276,7 @@ struct JoinKeysignView: View {
 }
 
 #Preview {
-    JoinKeysignView(vault: Vault.example)
+    JoinKeysignView(vault: Vault.example, onCancel: {})
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(AppViewModel())
@@ -269,6 +290,12 @@ extension JoinKeysignView {
         ZStack {
             Background()
             main
+        }
+        .overlay(alignment: .topLeading) {
+            if !isInAnimationState {
+                ToolbarButton(image: .xmark, action: onCancel)
+                    .padding(16)
+            }
         }
         .if(!isInAnimationState) {
             $0
@@ -309,6 +336,12 @@ extension JoinKeysignView {
             Background()
             main
         }
+        .overlay(alignment: .topLeading) {
+            if !isInAnimationState {
+                ToolbarButton(image: .xmark, action: onCancel)
+                    .padding(16)
+            }
+        }
     }
 
     @ViewBuilder
@@ -326,7 +359,7 @@ extension JoinKeysignView {
     }
 
     var headerMac: some View {
-        JoinKeygenHeader(title: keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", hideBackButton: keysignVM.status == .KeysignFinished)
+        JoinKeygenHeader(title: keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", hideBackButton: true)
     }
 }
 #endif

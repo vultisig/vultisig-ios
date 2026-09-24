@@ -9,6 +9,11 @@
 import Foundation
 
 enum JoinKeysignReviewPresentation {
+    enum Surface: Equatable {
+        case transactionReview(Kind)
+        case session
+    }
+
     enum Kind: Equatable, Identifiable {
         case send
         case swap
@@ -34,6 +39,27 @@ enum JoinKeysignReviewPresentation {
     ) -> Kind? {
         guard case .JoinKeysign = status, !hasCustomMessage else { return nil }
         return kind(for: payload)
+    }
+
+    static func surface(
+        status: JoinKeysignStatus,
+        payload: KeysignPayload?,
+        hasCustomMessage: Bool
+    ) -> Surface {
+        if let kind = presentedKind(status: status, payload: payload, hasCustomMessage: hasCustomMessage) {
+            return .transactionReview(kind)
+        }
+        return .session
+    }
+
+    static func newReviewKind(
+        status: JoinKeysignStatus,
+        payload: KeysignPayload?,
+        hasCustomMessage: Bool,
+        wasReviewStatus: Bool
+    ) -> Kind? {
+        guard !wasReviewStatus else { return nil }
+        return presentedKind(status: status, payload: payload, hasCustomMessage: hasCustomMessage)
     }
 
     static func requiresRiskAcknowledgement(_ state: SecurityScannerState) -> Bool {

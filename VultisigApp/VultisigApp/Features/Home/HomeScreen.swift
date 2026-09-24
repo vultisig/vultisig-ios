@@ -11,6 +11,11 @@ import WalletCore
 import OSLog
 
 struct HomeScreen: View {
+    private struct JoinSession: Identifiable {
+        let id = UUID()
+        let vault: Vault
+    }
+
     @Environment(\.router) var router
     let showingVaultSelector: Bool
 
@@ -23,6 +28,7 @@ struct HomeScreen: View {
     @State var vaultRoute: VaultMainRoute?
 
     @State var showScanner: Bool = false
+    @State private var joinKeysignSession: JoinSession?
     @State var showBackupNow = false
     @State var selectedChain: Chain? = nil
 
@@ -149,6 +155,9 @@ struct HomeScreen: View {
         .onDisappear {
             cancelDelayedTasks()
         }
+        .onAppear {
+            consumeJoinKeysignRequest()
+        }
     }
 
     var initialView: some View {
@@ -239,6 +248,10 @@ struct HomeScreen: View {
                 onCamera()
                 appViewModel.showCamera = false
             }
+            .onChange(of: appViewModel.pendingJoinKeysignRequest) { _, request in
+                guard request != nil else { return }
+                consumeJoinKeysignRequest()
+            }
             .onChange(of: vaultRoute) { _, route in
                 guard let route else { return }
 
@@ -297,7 +310,7 @@ struct HomeScreen: View {
                             navigateToJoinKeygen(selectedVault: selectedVault)
                         },
                         onKeysignTransaction: {
-                            navigateToJoinKeysign()
+                            navigateToJoinKeysignAfterScanner()
                         },
                         onSendCrypto: {
                             navigateToSendCrypto(selectedVault: selectedVault)
@@ -350,6 +363,17 @@ struct HomeScreen: View {
                 // Retry action - reopen scanner
                 showScanner = true
             }
+            .overlay {
+                if let session = joinKeysignSession {
+                    JoinKeysignView(vault: session.vault) {
+                        if joinKeysignSession?.id == session.id {
+                            joinKeysignSession = nil
+                        }
+                    }
+                    .id(session.id)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
     }
 
     @ViewBuilder
@@ -374,8 +398,17 @@ extension HomeScreen {
 
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
-        scheduleDelayedTask(.joinKeysign, after: .milliseconds(100)) {
-            navigateToJoinKeysign()
+        navigateToJoinKeysignAfterScanner()
+    }
+
+    fileprivate func navigateToJoinKeysignAfterScanner() {
+        closeScannerIfNeeded {
+            // The scanner can already have lowered its binding while the
+            // native sheet is still animating out. Present from Home only
+            // after that dismissal has settled.
+            scheduleDelayedTask(.joinKeysign, after: .milliseconds(350)) {
+                navigateToJoinKeysign()
+            }
         }
     }
 
@@ -633,7 +666,13 @@ extension HomeScreen {
 
     fileprivate func navigateToJoinKeysign() {
         guard let vault = appViewModel.selectedVault else { return }
-        router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+        joinKeysignSession = JoinSession(vault: vault)
+    }
+
+    fileprivate func consumeJoinKeysignRequest() {
+        guard appViewModel.pendingJoinKeysignRequest != nil else { return }
+        appViewModel.pendingJoinKeysignRequest = nil
+        navigateToJoinKeysign()
     }
 
     fileprivate func navigateToSendCrypto(selectedVault: Vault) {

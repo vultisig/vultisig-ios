@@ -45,8 +45,6 @@ struct KeygenRouter {
                 isExistingVault: isExistingVault,
                 singleKeygenType: singleKeygenType
             )
-        case .joinKeysign(let vault):
-            viewBuilder.buildJoinKeysignScreen(vault: vault)
         case .macScanner(let type, let selectedVault):
             viewBuilder.buildMacScannerScreen(
                 type: type,

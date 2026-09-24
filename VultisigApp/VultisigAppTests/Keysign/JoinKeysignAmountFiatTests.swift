@@ -123,6 +123,42 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         ))
     }
 
+    func testTransactionReviewReplacesSessionContentUntilSigningStarts() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false
+        ), .transactionReview(.send))
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .KeysignStarted, payload: payload, hasCustomMessage: false
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .JoinKeysign, payload: nil, hasCustomMessage: true
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .QBTCClaim, payload: payload, hasCustomMessage: false
+        ), .session)
+    }
+
+    func testRepeatedJoinStatusDoesNotResetOrReopenReview() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.newReviewKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false, wasReviewStatus: false
+        ), .send)
+        XCTAssertNil(JoinKeysignReviewPresentation.newReviewKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false, wasReviewStatus: true
+        ))
+        XCTAssertNil(JoinKeysignReviewPresentation.newReviewKind(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false, wasReviewStatus: true
+        ))
+    }
+
     func testCosignerScanResetsToLoadingWhenReviewReopens() {
         let vm = JoinKeysignViewModel()
         vm.securityScannerState = .scanned(KeysignReviewScanFixture.result(.high))
