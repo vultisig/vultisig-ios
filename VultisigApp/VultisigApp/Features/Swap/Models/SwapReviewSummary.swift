@@ -70,7 +70,7 @@ extension SwapReviewSummary {
             ticker: transaction.toCoin.ticker,
             chainLogo: Self.chainBadge(for: transaction.toCoin),
             amount: transaction.toAmountDecimal.formatForDisplay(),
-            fiat: Self.destinationFiat(transaction).formatToFiat(includeCurrencySymbol: true),
+            fiat: Self.destinationFiat(transaction),
             caption: (transaction.isLimit ? "minPayout" : "expectedPayout").localized,
             footnote: transaction.minPayoutCaption
         )
@@ -145,8 +145,8 @@ extension SwapReviewSummary {
     /// The quote prices a market swap's output; a limit order has no quote,
     /// so its signed floor is priced directly.
     private static func destinationFiat(_ transaction: SwapTransaction) -> String {
-        guard transaction.isLimit else { return transaction.toFiatAmount }
-        return transaction.toCoin.fiat(decimal: transaction.toAmountDecimal).formatForDisplay()
+        guard transaction.isLimit else { return transaction.toFiatAmount.formatToFiat(includeCurrencySymbol: true) }
+        return transaction.toCoin.fiat(decimal: transaction.toAmountDecimal).formatToFiat(includeCurrencySymbol: true)
     }
 
     private static func chainBadge(for coin: Coin) -> String? {

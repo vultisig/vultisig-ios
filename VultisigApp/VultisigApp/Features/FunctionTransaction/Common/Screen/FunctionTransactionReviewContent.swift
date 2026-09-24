@@ -27,9 +27,6 @@ struct FunctionTransactionReviewContent: View {
     @State private var isScanComplete = false
     /// Set when the pre-sign re-check finds the order is no longer cancellable.
     @State private var staleOrderMessage: String?
-    @State private var validatorsByAddress: [String: CosmosValidator] = [:]
-
-    private let stakingService: CosmosStakingServiceProtocol = CosmosStakingService()
 
     var body: some View {
         KeysignReviewSheet(
@@ -62,9 +59,9 @@ struct FunctionTransactionReviewContent: View {
         }
         .alert(item: $error) { error in
             Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(NSLocalizedString(error.localizedDescription, comment: "")),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+                title: Text("error".localized),
+                message: Text(error.localizedDescription.localized),
+                dismissButton: .default(Text("ok".localized))
             )
         }
         .onLoad {
@@ -76,7 +73,7 @@ struct FunctionTransactionReviewContent: View {
                 await hero
             }
         }
-        .task { await loadValidators() }
+        .task { await viewModel.loadValidators(transaction: transaction) }
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 isPresented: $fastPasswordPresented,
@@ -121,7 +118,7 @@ struct FunctionTransactionReviewContent: View {
     private var rows: [FunctionTransactionReviewSummary.Row] {
         var rows: [FunctionTransactionReviewSummary.Row] = []
         if let staking = transaction.cosmosStakingPayload {
-            rows += CosmosStakingValidatorRows.rows(for: staking, validators: validatorsByAddress)
+            rows += CosmosStakingValidatorRows.rows(for: staking, validators: viewModel.validatorsByAddress)
                 .map { .init(label: $0.labelKey.localized, value: $0.value) }
         } else {
             if transaction.toAddress.isNotEmpty {
@@ -260,17 +257,6 @@ struct FunctionTransactionReviewContent: View {
                     self.error = error as? HelperError
                 }
             }
-        }
-    }
-
-    private func loadValidators() async {
-        guard transaction.cosmosStakingPayload != nil else { return }
-        do {
-            let list = try await stakingService.fetchValidators(chain: transaction.coin.chain)
-            validatorsByAddress = Dictionary(uniqueKeysWithValues: list.map { ($0.operatorAddress, $0) })
-        } catch {
-            // The rows fall back to truncated valopers, so the user still sees
-            // a distinguishable address rather than a blank.
         }
     }
 }

@@ -15,6 +15,7 @@ struct ColorSystem: ColorSystemProtocol {
     // Inset bevel for the 2026 button treatment.
     var buttonBevelLight: Color { .vultisig(hex: "FFFFFF").opacity(0.1) }
     var buttonBevelDark: Color { .vultisig(hex: "0F1C3E") }
+    var medallionInsetShadow: Color { .vultisig(hex: "000000").opacity(0.25) }
 
     var textButtonDark: Color { .vultisig(hex: "02122B") }
     var textButtonLight: Color { .vultisig(hex: "F0F4FC") }

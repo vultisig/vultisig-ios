@@ -200,7 +200,7 @@ struct KeysignReviewHeader<Accessory: View>: View {
     private var closeButton: some View {
         Button(action: onClose) {
             Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .medium))
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
                 .background(Circle().fill(Theme.colors.bgSheetControl))

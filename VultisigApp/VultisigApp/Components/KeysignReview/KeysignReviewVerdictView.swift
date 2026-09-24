@@ -77,12 +77,12 @@ struct KeysignReviewVerdictView: View {
                 .fill(Theme.colors.bgPrimary)
                 .overlay(
                     Circle()
-                        .stroke(Color.black.opacity(0.25), lineWidth: 2)
+                        .stroke(Theme.colors.medallionInsetShadow, lineWidth: 2)
                         .blur(radius: 0.9)
                         .offset(y: 1.7)
                         .mask(Circle())
                 )
-                .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 2))
+                .overlay(Circle().stroke(Theme.colors.buttonBevelLight, lineWidth: 2))
                 .frame(width: 43, height: 43)
 
             Rectangle()

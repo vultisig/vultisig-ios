@@ -75,28 +75,28 @@ struct SendReviewContent: View {
         .withBanner(text: $retryBannerText, style: .error)
         .alert(item: $error) { error in
             Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(NSLocalizedString(error.localizedDescription, comment: "")),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+                title: Text("error".localized),
+                message: Text(error.localizedDescription.localized),
+                dismissButton: .default(Text("ok".localized))
             )
         }
         .alert(isPresented: $viewModel.showAlert) {
-            let title = Text(NSLocalizedString("error", comment: ""))
-            let message = Text(NSLocalizedString(viewModel.errorMessage, comment: ""))
+            let title = Text("error".localized)
+            let message = Text(viewModel.errorMessage.localized)
             // A failed load holds Sign until the figures on screen have been
             // resolved. `.onLoad` runs once, so without a way to re-run it here
             // a transient failure would strand the user with a disabled Sign.
             guard viewModel.hasLoadError else {
                 return Alert(title: title, message: message,
-                             dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
+                             dismissButton: .default(Text("ok".localized)))
             }
             return Alert(
                 title: title,
                 message: message,
-                primaryButton: .default(Text(NSLocalizedString("retry", comment: ""))) {
+                primaryButton: .default(Text("retry".localized)) {
                     Task { await viewModel.loadGasInfoForSending() }
                 },
-                secondaryButton: .cancel(Text(NSLocalizedString("ok", comment: "")))
+                secondaryButton: .cancel(Text("ok".localized))
             )
         }
         .onLoad {

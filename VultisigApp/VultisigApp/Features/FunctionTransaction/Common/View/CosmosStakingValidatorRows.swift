@@ -44,7 +44,7 @@ enum CosmosStakingValidatorRows {
             return truncated(valoper)
         }
         let display = validator.moniker.isEmpty ? truncated(valoper) : validator.moniker
-        let percent = NSDecimalNumber(decimal: validator.commission * 100).intValue
+        let percent = (validator.commission * 100).formatted(.number.precision(.fractionLength(0...2)))
         return "\(display) (\(percent)% \("commission".localized))"
     }
 

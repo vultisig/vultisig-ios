@@ -13,6 +13,7 @@ public protocol ColorSystemProtocol {
 
     var buttonBevelLight: Color { get }
     var buttonBevelDark: Color { get }
+    var medallionInsetShadow: Color { get }
 
     var textButtonDark: Color { get }
     var textButtonLight: Color { get }

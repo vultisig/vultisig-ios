@@ -28,6 +28,22 @@ final class SwapMinPayoutTests: XCTestCase {
     /// and the value the screen used to render under the "min. payout" label.
     private let reportedExpectedAmountOut = "32658"
 
+    func testLimitReviewFormatsLargeFiatWithoutAbbreviation() throws {
+        let context = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(context) }
+        let transaction = makeLimitTransaction()
+        transaction.toCoin.priceProviderId = "keysign-review-fiat-fixture"
+        let cryptoId = RateProvider.cryptoId(for: transaction.toCoin.toCoinMeta()).id
+        // The signed floor is 0.00032 ETH. A fixture-only price exercises the
+        // abbreviation boundary without changing the signed amount or memo.
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: 3_906_250_000)
+        ])
+        let fiat = transaction.toCoin.fiat(decimal: transaction.toAmountDecimal)
+        XCTAssertEqual(fiat, Decimal(1_250_000))
+        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault()).to.fiat, fiat.formatToFiat())
+    }
+
     // MARK: - Displayed minimum == LIM in the signed memo
 
     func testDisplayedMinimumEqualsLimitInTheSignedMemo() async throws {
