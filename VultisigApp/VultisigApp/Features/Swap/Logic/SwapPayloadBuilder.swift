@@ -116,7 +116,7 @@ extension SwapCryptoLogic {
         let hex = calldata.stripHexPrefix().lowercased()
         let selector = "095ea7b3"
         // Selector, then the address word and the amount word, 64 hex chars each.
-        guard hex.count == selector.count + 128, hex.hasPrefix(selector) else {
+        guard hex.count == selector.count + 128, hex.hasPrefix(selector), hex.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
             return nil
         }
         let addressWord = hex.dropFirst(selector.count).prefix(64)

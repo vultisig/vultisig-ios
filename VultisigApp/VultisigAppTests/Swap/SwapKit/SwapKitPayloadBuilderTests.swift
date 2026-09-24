@@ -99,6 +99,12 @@ final class SwapKitPayloadBuilderTests: XCTestCase {
         try assertApproveSpenderThrows(approvalData: data)
     }
 
+    func testApproveSpenderThrowsWhenAmountWordIsNotHex() throws {
+        let data = "0x095ea7b30000000000000000000000006c0ad82f9721a6dc986381d19338601a2e6370e5"
+            + "000000000000000000000000000000000000000000000000000000000zzzzzzz"
+        try assertApproveSpenderThrows(approvalData: data)
+    }
+
     func testApproveSpenderFallsBackToTargetAddressWithoutApprovalTx() throws {
         let usdt = makeCoin(.ethereum, ticker: "USDT", decimals: 6, isNative: false)
         let spender = try SwapCryptoLogic.approveSpender(
