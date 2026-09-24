@@ -288,8 +288,7 @@ extension SwapTransaction {
     }
 
     /// The static precondition for an approve (an ERC-20 source with a
-    /// spender), before any allowance is read. Only the security scan still
-    /// reads it; consent follows `signsApprove`.
+    /// spender), before any allowance is read. Consent follows `signsApprove`.
     var isApproveRequired: Bool {
         // Two distinct paths sign an ERC20 router approval that the quote-derived
         // check below cannot see, because neither has a router-bearing market

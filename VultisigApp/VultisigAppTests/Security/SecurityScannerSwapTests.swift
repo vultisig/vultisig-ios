@@ -119,6 +119,79 @@ final class SecurityScannerSwapTests: XCTestCase {
         }
     }
 
+    func testOneInchTokenSourceSwapScansTheSwapTransaction() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(quote: .oneinch(quote, fee: nil), sourceIsNative: false)
+        XCTAssertTrue(transaction.isApproveRequired)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+    }
+
+    func testKyberSwapTokenSourceSwapScansTheSwapTransaction() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(quote: .kyberswap(quote, fee: nil), sourceIsNative: false)
+        XCTAssertTrue(transaction.isApproveRequired)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+    }
+
+    func testLiFiTokenSourceSwapScansTheSwapTransaction() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .lifi(quote, fee: nil, integratorFee: nil),
+            sourceIsNative: false
+        )
+        XCTAssertTrue(transaction.isApproveRequired)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+    }
+
+    func testSwapKitTokenSourceSwapScansTheSwapTransaction() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-erc20-erc20-swap"
+        )
+        guard case let .evm(tx) = response.tx else {
+            return XCTFail("Expected a typed EVM transaction fixture")
+        }
+        let transaction = makeEVMTransaction(
+            quote: .swapkit(response, fee: nil, subProvider: "ONEINCH"),
+            sourceIsNative: false
+        )
+        XCTAssertTrue(transaction.isApproveRequired)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        XCTAssertEqual(scannerTransaction.chain, .ethereum)
+        XCTAssertEqual(scannerTransaction.type.rawValue, SecurityTransactionType.swap.rawValue)
+        XCTAssertEqual(scannerTransaction.from, tx.from)
+        XCTAssertEqual(scannerTransaction.to, tx.to)
+        XCTAssertEqual(scannerTransaction.amount, BigInt(tx.value))
+        XCTAssertEqual(scannerTransaction.data, tx.data)
+    }
+
+    func testNativeSourceSwapScansTheSwapTransaction() throws {
+        let quote = makeEVMQuote(value: "1000000000000000000")
+        let transaction = makeEVMTransaction(quote: .oneinch(quote, fee: nil), sourceIsNative: true)
+        XCTAssertFalse(transaction.isApproveRequired)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        XCTAssertEqual(scannerTransaction.amount, BigInt("1000000000000000000"))
+    }
+
     func testFactoryFailureEndsInVisibleNotScannedState() async {
         let service = FailingSecurityScannerService()
         let viewModel = SecurityScannerViewModel(service: service)
@@ -172,6 +245,69 @@ private extension SecurityScannerSwapTests {
         )
     }
 
+    func makeEVMTransaction(quote: SwapQuote, sourceIsNative: Bool) -> SwapTransaction {
+        let eth = makeCoin(
+            chain: .ethereum,
+            ticker: "ETH",
+            decimals: 18,
+            isNative: true,
+            address: Self.evmAddress
+        )
+        let usdc = makeCoin(
+            chain: .ethereum,
+            ticker: "USDC",
+            decimals: 6,
+            isNative: false,
+            address: Self.evmAddress
+        )
+        return SwapTransaction(
+            fromCoin: sourceIsNative ? eth : usdc,
+            toCoin: sourceIsNative ? usdc : eth,
+            fromAmount: 1,
+            kind: .market(quote),
+            gas: .zero,
+            gasLimit: .zero,
+            thorchainFee: .zero,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: eth,
+            advancedSettings: .default
+        )
+    }
+
+    func makeEVMQuote(value: String) -> EVMQuote {
+        EVMQuote(
+            dstAmount: "1000000",
+            tx: EVMQuote.Transaction(
+                from: Self.evmAddress,
+                to: Self.evmRouter,
+                data: "0x12aa3caf0000000000000000000000000000000000000000000000000000000000000001",
+                value: value,
+                gasPrice: "0",
+                gas: 0
+            )
+        )
+    }
+
+    func assertScansSwap(
+        _ scannerTransaction: SecurityScannerTransaction,
+        quote: EVMQuote,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(scannerTransaction.chain, .ethereum, file: file, line: line)
+        XCTAssertEqual(
+            scannerTransaction.type.rawValue,
+            SecurityTransactionType.swap.rawValue,
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(scannerTransaction.from, quote.tx.from, file: file, line: line)
+        XCTAssertEqual(scannerTransaction.to, quote.tx.to, file: file, line: line)
+        XCTAssertEqual(scannerTransaction.amount, BigInt(quote.tx.value), file: file, line: line)
+        XCTAssertEqual(scannerTransaction.data, quote.tx.data, file: file, line: line)
+    }
+
     func makeSolanaQuote(base64: String) -> EVMQuote {
         EVMQuote(
             dstAmount: "1000000",
@@ -203,6 +339,8 @@ private extension SecurityScannerSwapTests {
     }
 
     static let solanaAddress = "So11111111111111111111111111111111111111112"
+    static let evmAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    static let evmRouter = "0x111111125421cA6dc452d289314280a0f8842A65"
 }
 
 private final class FailingSecurityScannerService: SecurityScannerServiceProtocol {

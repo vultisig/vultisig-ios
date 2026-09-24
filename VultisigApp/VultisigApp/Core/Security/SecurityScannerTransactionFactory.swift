@@ -274,8 +274,7 @@ private extension SecurityScannerTransactionFactory {
                 from: quote.tx.from,
                 to: quote.tx.to,
                 amount: quote.tx.value,
-                data: quote.tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                data: quote.tx.data
             )
         case .kyberswap(let quote, _):
             return try buildSwapSecurityScannerTransaction(
@@ -283,8 +282,7 @@ private extension SecurityScannerTransactionFactory {
                 from: quote.tx.from,
                 to: quote.tx.to,
                 amount: quote.tx.value,
-                data: quote.tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                data: quote.tx.data
             )
         case .swapkit(let response, _, _):
             guard case let .evm(tx) = response.tx else {
@@ -295,8 +293,7 @@ private extension SecurityScannerTransactionFactory {
                 from: tx.from,
                 to: tx.to,
                 amount: tx.value,
-                data: tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                data: tx.data
             )
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet, .jupiter:
             // Jupiter is Solana-only; this EVM scanner is never reached for it
@@ -311,29 +308,15 @@ private extension SecurityScannerTransactionFactory {
         from: String,
         to: String,
         amount: String,
-        data: String,
-        isApprovalRequired: Bool
+        data: String
     ) throws -> SecurityScannerTransaction {
-        let chain = srcToken.chain
-
-        if isApprovalRequired {
-            return SecurityScannerTransaction(
-                chain: chain,
-                type: SecurityTransactionType.swap,
-                from: from,
-                to: srcToken.contractAddress,
-                amount: BigInt.zero,
-                data: try EthereumFunction.approvalErc20Encoder(address: to, amount: BigInt(amount) ?? .zero)
-            )
-        } else {
-            return SecurityScannerTransaction(
-                chain: chain,
-                type: SecurityTransactionType.swap,
-                from: from,
-                to: to,
-                amount: BigInt(amount) ?? .zero,
-                data: data
-            )
-        }
+        SecurityScannerTransaction(
+            chain: srcToken.chain,
+            type: SecurityTransactionType.swap,
+            from: from,
+            to: to,
+            amount: BigInt(amount) ?? .zero,
+            data: data
+        )
     }
 }
