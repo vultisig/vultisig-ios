@@ -27,6 +27,15 @@ enum JoinKeysignReviewPresentation {
         return .swap
     }
 
+    static func presentedKind(
+        status: JoinKeysignStatus,
+        payload: KeysignPayload?,
+        hasCustomMessage: Bool
+    ) -> Kind? {
+        guard case .JoinKeysign = status, !hasCustomMessage else { return nil }
+        return kind(for: payload)
+    }
+
     @MainActor
     static func sendSummary(viewModel: JoinKeysignViewModel) -> SendCryptoVerifySummary {
         let payload = viewModel.keysignPayload

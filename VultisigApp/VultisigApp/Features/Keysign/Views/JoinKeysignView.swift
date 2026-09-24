@@ -14,6 +14,7 @@ struct JoinKeysignView: View {
     /// the shared `KeysignView` animation to the cosigner `JoinKeysignDoneView`
     /// once the ceremony finishes — the same pattern the initiator uses.
     @StateObject private var keysignVM = KeysignViewModel()
+    @State private var presentedReview: JoinKeysignReviewPresentation.Kind?
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -30,6 +31,16 @@ struct JoinKeysignView: View {
                 } catch {
                     Log.keysign.view.error("fail to get thorchain network id, \(error.localizedDescription, privacy: .public)")
                 }
+            }
+            .onReceive(viewModel.$status) { status in
+                presentedReview = JoinKeysignReviewPresentation.presentedKind(
+                    status: status,
+                    payload: viewModel.keysignPayload,
+                    hasCustomMessage: viewModel.customMessagePayload != nil
+                )
+            }
+            .crossPlatformSheet(item: $presentedReview, useOverlayOnMacOS: true) { kind in
+                JoinKeysignReviewSheet(viewModel: viewModel, presentedKind: $presentedReview, kind: kind)
             }
     }
 
@@ -195,19 +206,14 @@ struct JoinKeysignView: View {
 
     var keysignMessageConfirm: some View {
         ZStack {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                // Check if it's an LP operation by looking at the memo
-                if let memo = viewModel.keysignPayload?.memo, memo.starts(with: "+:") || memo.starts(with: "-:") {
-                    // LP operation - show regular message confirm instead of swap
-                    KeysignMessageConfirmView(viewModel: viewModel)
-                } else {
-                    // Regular swap
-                    KeysignSwapConfirmView(viewModel: viewModel)
-                }
-            } else if viewModel.customMessagePayload != nil {
+            if viewModel.customMessagePayload != nil {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
+            } else if let kind = JoinKeysignReviewPresentation.kind(for: viewModel.keysignPayload) {
+                PrimaryButton(title: "verify") {
+                    presentedReview = kind
+                }
             } else {
-                KeysignMessageConfirmView(viewModel: viewModel)
+                CircularProgressIndicator(size: 24)
             }
         }
     }

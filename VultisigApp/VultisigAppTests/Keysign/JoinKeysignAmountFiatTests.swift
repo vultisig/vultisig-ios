@@ -108,6 +108,21 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(summary.coinTicker, "ETH")
     }
 
+    func testCosignerSheetOnlyPresentsForTransactionJoinStatus() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.presentedKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false
+        ), .send)
+        XCTAssertNil(JoinKeysignReviewPresentation.presentedKind(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false
+        ))
+        XCTAssertNil(JoinKeysignReviewPresentation.presentedKind(
+            status: .JoinKeysign, payload: nil, hasCustomMessage: true
+        ))
+    }
+
     // MARK: - Co-signer keysign hero (JoinKeysignViewModel.heroContent)
 
     /// The co-signer builds its hero through the same
