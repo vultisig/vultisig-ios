@@ -16,11 +16,12 @@ struct KeysignMessageFactory {
     }
 
     func getKeysignMessages() throws -> [String] {
+        var approveMessages: [String] = []
         var messages: [String] = []
 
         if let approvePayload =  payload.approvePayload {
             let swaps = THORChainSwaps()
-            messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
+            approveMessages = try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
         if let swapPayload = payload.swapPayload {
             let nonceOffset = payload.approveNonceOffset
@@ -108,7 +109,15 @@ struct KeysignMessageFactory {
         }
 
         if !messages.isEmpty {
-            return messages
+            return approveMessages + messages
+        }
+
+        // The approve legs also precede a token transaction that isn't a swap
+        // (e.g. a staking deposit). Any other fall-through keeps signing the
+        // approve legs alone.
+        let isTokenTransaction = payload.coin.chain.chainType == .EVM && !payload.coin.isNativeToken
+        if !approveMessages.isEmpty && !isTokenTransaction {
+            return approveMessages
         }
 
         switch payload.coin.chain {
@@ -121,7 +130,8 @@ struct KeysignMessageFactory {
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
-                return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
+                let helper = ERC20Helper.getHelper(coin: payload.coin)
+                return try approveMessages + helper.getPreSignedImageHash(keysignPayload: payload, nonceOffset: payload.approveNonceOffset)
             }
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: payload.coin.chain)
