@@ -82,7 +82,19 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: swapPayload), .swap)
 
         let liquidityPayload = makePayload(coin: from, toAmount: 1, swapPayload: swap, memo: "+:ETH.ETH:0xpaired")
-        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: liquidityPayload), .send)
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: liquidityPayload), .function)
+    }
+
+    func testCosignerReviewClassifiesSignedStakeAndWithdrawAsFunction() {
+        let tcy = makeCoin(.thorChain, ticker: "TCY", decimals: 8, isNative: false)
+        let specific = BlockChainSpecific.THORChain(accountNumber: 0, sequence: 0, fee: 0, isDeposit: true)
+        let stake = makePayload(coin: tcy, toAmount: 100_000_000, memo: "tcy+", chainSpecific: specific)
+        let withdraw = makePayload(coin: tcy, toAmount: 0, memo: "tcy-:5006", chainSpecific: specific)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: stake), .function)
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: withdraw), .function)
+        let stakeSummary = JoinKeysignReviewPresentation.functionSummary(viewModel: makeViewModel(payload: stake))
+        XCTAssertFalse(stakeSummary?.rows.contains(where: { $0.label == "to".localized }) ?? true)
     }
 
     func testCosignerSwapSummaryUsesReceivedAmountsAndRecipient() {
@@ -95,6 +107,48 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(summary?.to.amount, Decimal(3000).formatForDisplay())
         XCTAssertEqual(summary?.from.ticker, "ETH")
         XCTAssertEqual(summary?.to.ticker, "USDC")
+    }
+
+    func testCosignerSwapFeeRowsUseInitiatorLabelsAndParenthesizedFiat() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let feeCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(2.0, for: from)
+        setPrice(1.0, for: feeCoin)
+        let vm = makeViewModel(payload: makePayload(
+            coin: from,
+            toAmount: 1,
+            swapPayload: .generic(makeGenericSwapPayload(from: from, swapFee: "1000000"))
+        ))
+        let networkFee = vm.getCalculatedNetworkFee()
+        let summary = JoinKeysignReviewPresentation.swapSummary(viewModel: vm)
+
+        XCTAssertEqual(summary?.feeLines.first?.label, "networkFee".localized)
+        XCTAssertEqual(
+            summary?.feeLines.first?.value,
+            "\(networkFee.feeCrypto) (\(networkFee.feeFiat))"
+        )
+        XCTAssertEqual(summary?.feeLines.dropFirst().first?.label, "vultisigFee".localized)
+        XCTAssertEqual(summary?.feeLines.dropFirst().first?.value, "1 USDC (\(Decimal(1).formatToFiatForFee(includeCurrencySymbol: true)))")
+        XCTAssertEqual(summary?.totalFee, Decimal(1).formatToFiat(includeCurrencySymbol: true))
+        XCTAssertNil(summary?.slippage, "Quote-only slippage must not be invented from a received payload")
+    }
+
+    func testCosignerLiquidityUsesFunctionOverviewSummary() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: eth))
+        let vm = makeViewModel(payload: makePayload(
+            coin: eth, toAmount: 1, swapPayload: swap, memo: "+:ETH.ETH:0xpaired"
+        ))
+
+        let summary = JoinKeysignReviewPresentation.functionSummary(viewModel: vm)
+        let sharedContent = JoinKeysignReviewPresentation.summary(for: .function, viewModel: vm)
+
+        XCTAssertEqual(summary?.vaultAddress, eth.address)
+        XCTAssertEqual(summary?.rows.first?.label, "to".localized)
+        XCTAssertEqual(summary?.rows.first?.value, "0xrecipient")
+        guard case .function = sharedContent else {
+            return XCTFail("Liquidity must use the shared function overview renderer")
+        }
     }
 
     func testCosignerSendSummaryUsesReceivedDestination() {
@@ -275,12 +329,18 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         return vm
     }
 
-    private func makePayload(coin: Coin, toAmount: BigInt, swapPayload: SwapPayload? = nil, memo: String? = nil) -> KeysignPayload {
+    private func makePayload(
+        coin: Coin,
+        toAmount: BigInt,
+        swapPayload: SwapPayload? = nil,
+        memo: String? = nil,
+        chainSpecific: BlockChainSpecific? = nil
+    ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
             toAddress: "0xrecipient",
             toAmount: toAmount,
-            chainSpecific: .Ethereum(maxFeePerGasWei: 0, priorityFeeWei: 0, nonce: 0, gasLimit: 21000),
+            chainSpecific: chainSpecific ?? .Ethereum(maxFeePerGasWei: 0, priorityFeeWei: 0, nonce: 0, gasLimit: 21000),
             utxos: [],
             memo: memo,
             swapPayload: swapPayload,
@@ -299,7 +359,7 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         )
     }
 
-    private func makeGenericSwapPayload(from: Coin) -> GenericSwapPayload {
+    private func makeGenericSwapPayload(from: Coin, swapFee: String? = nil) -> GenericSwapPayload {
         GenericSwapPayload(
             fromCoin: from,
             toCoin: makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc"),
@@ -313,13 +373,14 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
                     data: "0x",
                     value: "0",
                     gasPrice: "1",
-                    gas: 100_000
+                    gas: 100_000,
+                    swapFee: swapFee
                 )
             ),
             provider: .oneInch,
-            swapFeeChain: nil,
-            swapFeeTokenId: nil,
-            swapFeeDecimals: nil
+            swapFeeChain: swapFee == nil ? nil : Chain.ethereum.name,
+            swapFeeTokenId: swapFee == nil ? nil : "0xusdc",
+            swapFeeDecimals: swapFee == nil ? nil : 6
         )
     }
 

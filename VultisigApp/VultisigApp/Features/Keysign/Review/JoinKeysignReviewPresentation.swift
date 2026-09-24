@@ -17,19 +17,31 @@ enum JoinKeysignReviewPresentation {
     enum Kind: Equatable, Identifiable {
         case send
         case swap
+        case function
 
         var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .send: "sendOverview".localized
+            case .swap: "swapOverview".localized
+            case .function: "overview".localized
+            }
+        }
     }
 
     static func kind(for payload: KeysignPayload?) -> Kind? {
         guard let payload else { return nil }
-        guard payload.swapPayload != nil else { return .send }
         // A THORChain liquidity operation can carry swap metadata, but its
         // signed memo is an add/remove operation, not a swap.
-        if let memo = payload.memo, memo.starts(with: "+:") || memo.starts(with: "-:") {
+        if liquidityDetails(for: payload) != nil { return .function }
+        if payload.swapPayload != nil { return .swap }
+        switch SignedTransactionDecoder.decode(payload).operation {
+        case .transfer, .swap, .approve, .contractCall, .unknown:
             return .send
+        default:
+            return .function
         }
-        return .swap
     }
 
     static func presentedKind(
@@ -65,6 +77,18 @@ enum JoinKeysignReviewPresentation {
     static func requiresRiskAcknowledgement(_ state: SecurityScannerState) -> Bool {
         guard let result = state.result else { return false }
         return !result.isSecure
+    }
+
+    @MainActor
+    static func summary(
+        for kind: Kind,
+        viewModel: JoinKeysignViewModel
+    ) -> KeysignReviewSummaryContent? {
+        switch kind {
+        case .send: .send(sendSummary(viewModel: viewModel))
+        case .swap: swapSummary(viewModel: viewModel).map(KeysignReviewSummaryContent.swap)
+        case .function: functionSummary(viewModel: viewModel).map(KeysignReviewSummaryContent.function)
+        }
     }
 
     @MainActor
@@ -133,16 +157,17 @@ enum JoinKeysignReviewPresentation {
         let networkFee = viewModel.solanaAtaRentState == .loading
             ? (feeCrypto: "loading".localized, feeFiat: String.empty)
             : viewModel.getCalculatedNetworkFee()
-        var feeLines = [
-            SwapReviewSummary.FeeLine(
-                label: viewModel.swapFeeLabelKeys.networkFee.localized,
-                value: "\(networkFee.feeCrypto) \(networkFee.feeFiat)"
-            )
-        ]
+        var feeLines = [SwapReviewSummary.FeeLine(
+            label: "networkFee".localized,
+            value: Self.feeValue(networkFee)
+        )]
         if let swapFee = viewModel.getSwapFee() {
             feeLines.append(.init(
-                label: "swapFee".localized,
-                value: "\(swapFee.feeCrypto) \(swapFee.feeFiat)"
+                // The payload carries the charged affiliate amount, but not
+                // the initiator's list-rate/discount provenance. Use its
+                // unqualified Vultisig label rather than invent a percentage.
+                label: "vultisigFee".localized,
+                value: Self.feeValue(swapFee)
             ))
         }
         if !viewModel.priceImpactString.isEmpty {
@@ -182,6 +207,71 @@ enum JoinKeysignReviewPresentation {
             limitNetworkFee: nil,
             externalRecipient: payload.swapExternalRecipient
         )
+    }
+
+    @MainActor
+    static func functionSummary(viewModel: JoinKeysignViewModel) -> FunctionTransactionReviewSummary? {
+        guard let payload = viewModel.keysignPayload,
+              kind(for: payload) == .function else { return nil }
+        let details = liquidityDetails(for: payload)
+        let decoded = SignedTransactionDecoder.decode(payload)
+        let isStakingReview: Bool
+        switch decoded.operation {
+        case .stake, .unstake, .bond, .unbond, .rebond, .leave,
+             .delegate, .undelegate, .redelegate, .claimRewards, .withdrawStake:
+            isStakingReview = true
+        default:
+            isStakingReview = false
+        }
+        var rows: [FunctionTransactionReviewSummary.Row] = []
+        if case .validator(let address) = decoded.counterparty {
+            rows.append(.init(label: "validator".localized, value: address))
+        } else if !isStakingReview, payload.toAddress.isNotEmpty {
+            rows.append(.init(label: "to".localized, value: payload.toAddress))
+        }
+        if let details {
+            for key in details.keys.sorted() {
+                if let value = details[key] {
+                    rows.append(.init(label: key.localized, value: value))
+                }
+            }
+        } else if let memo = payload.memo, memo.isNotEmpty {
+            rows.append(.init(label: "memo".localized, value: memo, isMultiline: true))
+        }
+        rows.append(.init(label: "network".localized, value: payload.coin.chain.name, image: payload.coin.chain.logo))
+        let fees = viewModel.solanaAtaRentState == .loading
+            ? (feeCrypto: "loading".localized, feeFiat: String.empty)
+            : viewModel.getCalculatedNetworkFee()
+        let hero = TransactionHeroResolver.hero(
+            on: .keysignConfirm,
+            for: .cosigning(payload: payload, simulated: { viewModel.verifyHeroContent })
+        ) ?? .send(
+            title: nil,
+            coin: HeroCoinAmount(
+                amount: liquidityAmount(for: payload, details: details),
+                ticker: details == nil ? payload.coin.ticker : .empty,
+                logo: payload.coin.logo
+            )
+        )
+        let additionalRows = LimitOrderCancelPresentation.attachedDust(in: payload).map { dust in
+            [FunctionTransactionReviewSummary.Row(
+                label: "limitSwap.cancel.donatedDustRow".localized,
+                value: "\(dust.amount) \(dust.ticker)"
+            )]
+        } ?? []
+        return FunctionTransactionReviewSummary(
+            hero: hero,
+            vaultName: viewModel.vault.name,
+            vaultAddress: payload.coin.address,
+            rows: rows,
+            fee: (fees.feeCrypto, fees.feeFiat),
+            additionalRows: additionalRows
+        )
+    }
+
+    private static func feeValue(_ fee: (feeCrypto: String, feeFiat: String)) -> String {
+        guard fee.feeFiat.isNotEmpty else { return fee.feeCrypto }
+        return "\(fee.feeCrypto) (\(fee.feeFiat))"
     }
 
     private static func chainBadge(for coin: Coin) -> String? {

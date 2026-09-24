@@ -190,3 +190,40 @@ private struct KeysignReviewSheetSizing: ViewModifier {
         #endif
     }
 }
+
+/// One transaction-body renderer for both the initiating and joining signer.
+/// Each side supplies facts from its own source; the card/row layout is shared.
+enum KeysignReviewSummaryContent {
+    case send(SendCryptoVerifySummary)
+    case swap(SwapReviewSummary)
+    case function(FunctionTransactionReviewSummary)
+}
+
+struct KeysignReviewSummaryContentView<Disclosures: View>: View {
+    let summary: KeysignReviewSummaryContent
+    let disclosures: () -> Disclosures
+
+    init(summary: KeysignReviewSummaryContent, @ViewBuilder disclosures: @escaping () -> Disclosures) {
+        self.summary = summary
+        self.disclosures = disclosures
+    }
+
+    var body: some View {
+        Group {
+            switch summary {
+            case .send(let input):
+                SendReviewSummaryView(input: input)
+            case .swap(let summary):
+                SwapReviewSummaryView(summary: summary)
+            case .function(let summary):
+                FunctionTransactionReviewSummaryView(summary: summary, disclosures: disclosures)
+            }
+        }
+    }
+}
+
+extension KeysignReviewSummaryContentView where Disclosures == EmptyView {
+    init(summary: KeysignReviewSummaryContent) {
+        self.init(summary: summary, disclosures: { EmptyView() })
+    }
+}

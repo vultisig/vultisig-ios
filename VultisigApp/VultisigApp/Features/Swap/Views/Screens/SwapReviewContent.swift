@@ -44,8 +44,8 @@ struct SwapReviewContent: View {
             onClose: reviewPresenter.dismiss,
             onTapScanMark: revealScanStatus
         ) {
-            SwapReviewSummaryView(
-                summary: SwapReviewSummary(transaction: transaction, vault: vault)
+            KeysignReviewSummaryContentView(
+                summary: .swap(SwapReviewSummary(transaction: transaction, vault: vault))
             )
         } footer: {
             SwapReviewFooter(

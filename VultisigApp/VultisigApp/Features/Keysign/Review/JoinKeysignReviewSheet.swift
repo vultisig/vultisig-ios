@@ -17,7 +17,7 @@ struct JoinKeysignReviewSheet: View {
 
     var body: some View {
         KeysignReviewSheet(
-            title: kind == .swap ? "swapOverview".localized : "sendOverview".localized,
+            title: kind.title,
             scanRing: KeysignReviewScanRing(
                 viewModel.securityScannerState,
                 isScanComplete: viewModel.didLoadSimulation
@@ -25,12 +25,15 @@ struct JoinKeysignReviewSheet: View {
             verdict: verdict,
             onClose: { presentedKind = nil },
             content: {
-                switch kind {
-                case .send:
-                    SendReviewSummaryView(input: JoinKeysignReviewPresentation.sendSummary(viewModel: viewModel))
-                case .swap:
-                    if let summary = JoinKeysignReviewPresentation.swapSummary(viewModel: viewModel) {
-                        SwapReviewSummaryView(summary: summary)
+                if let summary = JoinKeysignReviewPresentation.summary(for: kind, viewModel: viewModel) {
+                    KeysignReviewSummaryContentView(summary: summary) {
+                        if kind == .function,
+                           LimitOrderCancelPresentation.isCancel(memo: viewModel.keysignPayload?.memo) {
+                            Text("limitSwap.cancel.explanation".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundStyle(Theme.colors.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
             },
