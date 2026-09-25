@@ -790,29 +790,12 @@ class JoinKeysignViewModel: ObservableObject {
         resolvedHero ?? heroContent
     }
 
-    var providerDisplayName: String {
-        keysignPayload?.swapPayload?.providerDisplayName ?? .empty
-    }
-
     /// dApp identity (name / url / icon) attached to the keysign request, if
     /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
     /// metadata is treated as absent. A message-signing request carries no
     /// `KeysignPayload`, so its identity rides on the custom message instead.
     var dappMetadata: DAppMetadata? {
         keysignPayload?.dappMetadata ?? customMessagePayload?.dappMetadata
-    }
-
-    func getFromAmount() -> String {
-        guard let payload = keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return "\(amount.formatForDisplay()) \(payload.fromCoin.ticker)"
-    }
-
-    func getToAmount() -> String {
-        guard let payload = keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        return "\(amount.formatForDisplay()) \(payload.toCoin.ticker)"
-
     }
 
     /// Caption over the destination amount on the swap confirm screen. A market
@@ -860,13 +843,6 @@ class JoinKeysignViewModel: ObservableObject {
         return gasViewModel.getCalculatedNetworkFee(
             payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
         )
-    }
-
-    /// Labels for the swap confirm's network-fee and total rows, keyed on the
-    /// chain `getCalculatedNetworkFee` prices the fee on (`payload.coin`).
-    var swapFeeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
-        guard let chain = keysignPayload?.coin.chain else { return .exact }
-        return SwapCryptoLogic.feeLabelKeys(feeChain: chain)
     }
 
     /// Swap-fee row for the swap confirm screen, nil when the payload
