@@ -22,9 +22,14 @@ final class TransactionActivityBackgroundRunner {
         init(completion: ((Bool) -> Void)?) { self.completion = completion }
     }
 
+    /// Requested `earliestBeginDate` never goes below this, regardless of `nextPollDelay()`.
+    /// The OS treats it as a minimum anyway; a smaller request just burns background budget.
+    static let minimumScheduleDelay: TimeInterval = 60
+
     private let runtime: Runtime
     private let hasWork: () -> Bool
     private let isForeground: () -> Bool
+    private let nextPollDelay: () -> TimeInterval
     private let refresh: () async -> Void
     private let drain: () async -> Void
     private let sleep: (Duration) async throws -> Void
@@ -32,11 +37,12 @@ final class TransactionActivityBackgroundRunner {
     private var scheduleAttempted = false
 
     init(runtime: Runtime, hasWork: @escaping () -> Bool, isForeground: @escaping () -> Bool,
-         refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
+         nextPollDelay: @escaping () -> TimeInterval, refresh: @escaping () async -> Void, drain: @escaping () async -> Void = {},
          sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }) {
         self.runtime = runtime
         self.hasWork = hasWork
         self.isForeground = isForeground
+        self.nextPollDelay = nextPollDelay
         self.refresh = refresh
         self.drain = drain
         self.sleep = sleep
@@ -159,8 +165,8 @@ final class TransactionActivityBackgroundRunner {
             return
         }
         scheduleAttempted = true
-        // Request a wake one minute from now; iOS decides the actual delivery time.
-        let delay: TimeInterval = 60
+        // earliestBeginDate is a floor, not a promise; iOS decides the actual delivery time.
+        let delay = max(Self.minimumScheduleDelay, nextPollDelay())
         let date = Date().addingTimeInterval(delay)
         TransactionActivityDiagnostics.record("schedule.requested", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")
         do {

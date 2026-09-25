@@ -16,9 +16,11 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         foreground = false
     }
 
-    private func runner(drain: @escaping () async -> Void = {}, refresh: @escaping () async -> Void = {}) -> TransactionActivityBackgroundRunner {
+    private func runner(nextPollDelay: @escaping () -> TimeInterval = { 60 }, drain: @escaping () async -> Void = {},
+                        refresh: @escaping () async -> Void = {}) -> TransactionActivityBackgroundRunner {
         TransactionActivityBackgroundRunner(runtime: system.runtime, hasWork: { [unowned self] in self.work },
                                             isForeground: { [unowned self] in self.foreground },
+                                            nextPollDelay: nextPollDelay,
                                             refresh: refresh, drain: drain,
                                             sleep: { [clock] in try await clock!.sleep($0) })
     }
@@ -36,7 +38,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
 
     func testContinuationRefreshesThenEndsWhenWorkCompletes() async {
         let observed = expectation(description: "observed")
-        let runner = runner { self.work = false; observed.fulfill() }
+        let runner = runner(refresh: { self.work = false; observed.fulfill() })
         let requestedAfter = Date()
         runner.enteredBackground()
         let requestedBefore = Date()
@@ -53,9 +55,9 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testScheduledCompletionWaitsForObservationAndOnlyRunsOnce() async {
         let entered = expectation(description: "entered")
         var release: CheckedContinuation<Void, Never>?
-        let runner = runner {
+        let runner = runner(refresh: {
             await withCheckedContinuation { release = $0; entered.fulfill() }
-        }
+        })
         var results: [Bool] = []
         let expire = runner.performScheduledRefresh { results.append($0) }
         await fulfillment(of: [entered], timeout: 2)
@@ -71,7 +73,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
 
     func testScheduledDeliveryRequestsNextWakeAfterOneMinute() async {
         let observed = expectation(description: "observed")
-        let runner = runner { observed.fulfill() }
+        let runner = runner(refresh: { observed.fulfill() })
         let before = Date()
         _ = runner.performScheduledRefresh { _ in }
         await fulfillment(of: [observed], timeout: 2)
@@ -84,9 +86,9 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testExpirationCompletesWithoutWaitingForUncooperativeNetwork() async {
         let entered = expectation(description: "entered")
         var release: CheckedContinuation<Void, Never>?
-        let runner = runner {
+        let runner = runner(refresh: {
             await withCheckedContinuation { release = $0; entered.fulfill() }
-        }
+        })
         var results: [Bool] = []
         let expire = runner.performScheduledRefresh { results.append($0) }
         await fulfillment(of: [entered], timeout: 2)
@@ -116,7 +118,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
 
     func testBackgroundEntryChecksOnceAndDoesNotRepeatWhileWorkRemains() async {
         var observations = 0
-        let runner = runner { observations += 1 }
+        let runner = runner(refresh: { observations += 1 })
         runner.enteredBackground()
         await drain()
         XCTAssertEqual(observations, 1)
@@ -137,9 +139,9 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testBackgroundEntryWaitsForObservationBeforeReleasingRuntime() async {
         let entered = expectation(description: "entered")
         var release: CheckedContinuation<Void, Never>?
-        let runner = runner {
+        let runner = runner(refresh: {
             await withCheckedContinuation { release = $0; entered.fulfill() }
-        }
+        })
         runner.enteredBackground()
         await fulfillment(of: [entered], timeout: 2)
         XCTAssertTrue(system.ended.isEmpty)
@@ -152,12 +154,12 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
     func testSchedulingDenialDoesNotPreventContinuationAndInvalidAssertionDoesNotRun() async {
         system.denyScheduling = true
         let observed = expectation(description: "observed")
-        let first = runner { observed.fulfill() }
+        let first = runner(refresh: { observed.fulfill() })
         first.enteredBackground()
         await fulfillment(of: [observed], timeout: 2)
         first.enteredForeground()
         system.denyAssertion = true
-        let second = runner { XCTFail("No runtime granted") }
+        let second = runner(refresh: { XCTFail("No runtime granted") })
         second.enteredBackground()
         await drain()
         XCTAssertEqual(system.ended.count, 1)
@@ -165,7 +167,7 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
 
     func testSynchronousExpirationReleasesReturnedAssertionAndDeletionCancelsSchedule() async {
         system.expireImmediately = true
-        let runner = runner { XCTFail("Already expired") }
+        let runner = runner(refresh: { XCTFail("Already expired") })
         runner.enteredBackground()
         XCTAssertEqual(system.ended.count, 1)
         work = false
@@ -215,6 +217,24 @@ final class TransactionActivityBackgroundRunnerTests: XCTestCase {
         XCTAssertEqual(system.scheduled.count, 2)
         runner.enteredForeground()
         await drain()
+    }
+
+    func testScheduleUsesProvidedNextPollDelayInsteadOfAFlatMinute() {
+        let runner = runner(nextPollDelay: { 900 })
+        let before = Date()
+        runner.enteredBackground()
+        XCTAssertEqual(system.scheduled.count, 1)
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], before.addingTimeInterval(900))
+        XCTAssertLessThanOrEqual(system.scheduled[0], Date().addingTimeInterval(900))
+    }
+
+    func testScheduleFloorsAVerySmallNextPollDelay() {
+        let runner = runner(nextPollDelay: { 5 })
+        let before = Date()
+        runner.enteredBackground()
+        XCTAssertEqual(system.scheduled.count, 1)
+        XCTAssertGreaterThanOrEqual(system.scheduled[0], before.addingTimeInterval(60))
+        XCTAssertLessThanOrEqual(system.scheduled[0], Date().addingTimeInterval(60))
     }
 
     func testLockedDeviceCanInitializeWithReadableLedgerButDoesNotCacheUnavailableDefaults() throws {

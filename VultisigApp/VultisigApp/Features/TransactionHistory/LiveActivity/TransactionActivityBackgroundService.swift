@@ -31,6 +31,10 @@ final class TransactionActivityBackgroundService {
         runtime: system.runtime,
         hasWork: { TransactionLiveActivityCoordinator.shared.hasBackgroundWork },
         isForeground: { UIApplication.shared.applicationState != .background },
+        nextPollDelay: { [weak self] in
+            guard let self else { return TransactionActivityBackgroundRunner.minimumScheduleDelay }
+            return self.pollingSchedule.nextDelay(for: self.coordinator.backgroundRecords)
+        },
         refresh: { [weak self] in
             guard let self else { return }
             await self.coordinator.refreshInBackground { row in
