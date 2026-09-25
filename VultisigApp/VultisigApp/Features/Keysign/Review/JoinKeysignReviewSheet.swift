@@ -13,7 +13,7 @@ struct JoinKeysignReviewSheet: View {
     @Binding var presentedKind: JoinKeysignReviewPresentation.Kind?
     let kind: JoinKeysignReviewPresentation.Kind
 
-    @State private var showsRiskVerdict = false
+    @State private var showsScanStatus = false
 
     var body: some View {
         KeysignReviewSheet(
@@ -22,8 +22,9 @@ struct JoinKeysignReviewSheet: View {
                 viewModel.securityScannerState,
                 isScanComplete: viewModel.didLoadSimulation
             ),
-            verdict: verdict,
+            scanStatus: scanStatus,
             onClose: { presentedKind = nil },
+            onTapScanMark: revealScanStatus,
             content: {
                 if let summary = JoinKeysignReviewPresentation.summary(for: kind, viewModel: viewModel) {
                     KeysignReviewSummaryContentView(summary: summary) {
@@ -48,16 +49,30 @@ struct JoinKeysignReviewSheet: View {
         }
     }
 
-    private var verdict: KeysignReviewVerdict? {
+    private var scanStatus: KeysignReviewScanStatus? {
         .forSecurityScanner(
-            showSecurityScannerSheet: showsRiskVerdict,
+            showSecurityScannerSheet: showsScanStatus,
             result: viewModel.securityScannerState.result,
-            onGoBack: { showsRiskVerdict = false },
+            isContinueAnywayDisabled: isJoinDisabled,
+            onDismiss: { showsScanStatus = false },
             onContinueAnyway: {
-                showsRiskVerdict = false
+                showsScanStatus = false
                 viewModel.joinKeysignCommittee()
             }
         )
+    }
+
+    private func revealScanStatus() {
+        showsScanStatus = true
+    }
+
+    /// The exact predicate the Join button disables on, reused so "Continue
+    /// anyway" can never join something Join itself would refuse.
+    private var isJoinDisabled: Bool {
+        viewModel.isJoiningCommittee
+            || viewModel.isKaminoDecodeRefused
+            || !viewModel.isSolanaFeeReady
+            || !viewModel.didLoadSimulation
     }
 
     private var footer: some View {
@@ -89,22 +104,14 @@ struct JoinKeysignReviewSheet: View {
             PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                 join()
             }
-            .disabled(
-                viewModel.isJoiningCommittee
-                    || viewModel.isKaminoDecodeRefused
-                    || !viewModel.isSolanaFeeReady
-                    || !viewModel.didLoadSimulation
-            )
+            .disabled(isJoinDisabled)
         }
     }
 
     private func join() {
-        guard !viewModel.isJoiningCommittee,
-              !viewModel.isKaminoDecodeRefused,
-              viewModel.isSolanaFeeReady,
-              viewModel.didLoadSimulation else { return }
+        guard !isJoinDisabled else { return }
         if JoinKeysignReviewPresentation.requiresRiskAcknowledgement(viewModel.securityScannerState) {
-            showsRiskVerdict = true
+            showsScanStatus = true
         } else {
             viewModel.joinKeysignCommittee()
         }
