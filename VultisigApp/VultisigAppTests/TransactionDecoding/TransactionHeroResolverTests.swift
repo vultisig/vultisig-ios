@@ -195,7 +195,7 @@ final class TransactionHeroResolverTests: XCTestCase {
         let hookups: [(path: String, surface: String)] = [
             ("Features/FunctionTransaction/Common/Screen/FunctionTransactionReviewContent.swift", ".functionCallVerify"),
             ("Features/Send/Views/Screens/SendReviewContent.swift", ".sendVerify"),
-            ("Features/Keysign/Views/KeysignMessageConfirmView.swift", ".keysignConfirm")
+            ("Features/Keysign/Review/JoinKeysignReviewPresentation.swift", ".keysignConfirm")
         ]
 
         for hookup in hookups {
@@ -244,7 +244,7 @@ final class TransactionHeroResolverTests: XCTestCase {
         let screens = [
             "Features/FunctionTransaction/Common/Screen/FunctionTransactionReviewContent.swift",
             "Features/Send/Views/Screens/SendReviewContent.swift",
-            "Features/Keysign/Views/KeysignMessageConfirmView.swift",
+            "Features/Keysign/Review/JoinKeysignReviewPresentation.swift",
             "Features/Send/Views/Screens/SendDoneScreen.swift",
             "Features/Keysign/Views/JoinKeysignDoneView.swift"
         ]
