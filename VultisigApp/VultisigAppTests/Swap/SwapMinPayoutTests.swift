@@ -44,6 +44,28 @@ final class SwapMinPayoutTests: XCTestCase {
         XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault()).to.fiat, fiat.formatToFiat())
     }
 
+    /// The market-swap sibling of the limit case above: `destinationFiat` must
+    /// price the quote's expected output directly, never round-trip it through
+    /// `formatForDisplay()` first — that abbreviates values at or above 1M
+    /// (`"1.25M"`), which `String.formatToFiat` then cannot parse back.
+    func testMarketReviewFormatsLargeFiatWithoutAbbreviation() throws {
+        let context = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(context) }
+        let transaction = makeRuneToEthTransaction(
+            quote: makeThorQuote(memo: reportedMemo, expectedAmountOut: "32000")
+        )
+        transaction.toCoin.priceProviderId = "keysign-review-fiat-fixture-market"
+        let cryptoId = RateProvider.cryptoId(for: transaction.toCoin.toCoinMeta()).id
+        // Same 0.00032 ETH expected output and fixture price as the limit case,
+        // so both land on the identical 1.25M abbreviation boundary.
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: 3_906_250_000)
+        ])
+        let fiat = transaction.toCoin.fiat(decimal: transaction.toAmountDecimal)
+        XCTAssertEqual(fiat, Decimal(1_250_000))
+        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault()).to.fiat, fiat.formatToFiat())
+    }
+
     // MARK: - Displayed minimum == LIM in the signed memo
 
     func testDisplayedMinimumEqualsLimitInTheSignedMemo() async throws {

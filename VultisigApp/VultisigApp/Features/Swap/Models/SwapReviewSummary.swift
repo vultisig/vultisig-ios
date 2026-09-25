@@ -142,10 +142,11 @@ extension SwapReviewSummary {
         externalRecipient = transaction.hasExternalRecipient ? transaction.recipientAddress : nil
     }
 
-    /// The quote prices a market swap's output; a limit order has no quote,
-    /// so its signed floor is priced directly.
+    /// Prices `toAmountDecimal` directly rather than through
+    /// `transaction.toFiatAmount`, which is `formatForDisplay()`'d for its own
+    /// callers and abbreviates at 1M (`"1.25M"`) — a string `formatToFiat`
+    /// cannot parse back into a fiat value.
     private static func destinationFiat(_ transaction: SwapTransaction) -> String {
-        guard transaction.isLimit else { return transaction.toFiatAmount.formatToFiat(includeCurrencySymbol: true) }
-        return transaction.toCoin.fiat(decimal: transaction.toAmountDecimal).formatToFiat(includeCurrencySymbol: true)
+        transaction.toCoin.fiat(decimal: transaction.toAmountDecimal).formatToFiat(includeCurrencySymbol: true)
     }
 }
