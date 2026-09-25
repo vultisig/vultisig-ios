@@ -56,7 +56,7 @@ extension SwapReviewSummary {
         from = Side(
             logo: transaction.fromCoin.logo,
             ticker: transaction.fromCoin.ticker,
-            chainLogo: Self.chainBadge(for: transaction.fromCoin),
+            chainLogo: transaction.fromCoin.chainBadgeLogo,
             amount: transaction.fromAmount.formatForDisplay(),
             fiat: transaction.fromFiatAmount.formatToFiat(includeCurrencySymbol: true),
             caption: nil,
@@ -68,7 +68,7 @@ extension SwapReviewSummary {
         to = Side(
             logo: transaction.toCoin.logo,
             ticker: transaction.toCoin.ticker,
-            chainLogo: Self.chainBadge(for: transaction.toCoin),
+            chainLogo: transaction.toCoin.chainBadgeLogo,
             amount: transaction.toAmountDecimal.formatForDisplay(),
             fiat: Self.destinationFiat(transaction),
             caption: (transaction.isLimit ? "minPayout" : "expectedPayout").localized,
@@ -147,9 +147,5 @@ extension SwapReviewSummary {
     private static func destinationFiat(_ transaction: SwapTransaction) -> String {
         guard transaction.isLimit else { return transaction.toFiatAmount.formatToFiat(includeCurrencySymbol: true) }
         return transaction.toCoin.fiat(decimal: transaction.toAmountDecimal).formatToFiat(includeCurrencySymbol: true)
-    }
-
-    private static func chainBadge(for coin: Coin) -> String? {
-        coin.logo == coin.chain.logo ? nil : coin.chain.logo
     }
 }
