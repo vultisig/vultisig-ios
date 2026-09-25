@@ -112,12 +112,13 @@ final class PolkadotTransactionStatusProviderTests: XCTestCase {
 /// Minimal stub conforming to `HTTPClientProtocol`. Tests queue decoded values
 /// (FIFO) returned via the typed `request<T>` overload, since the provider's
 /// chain walk issues several `chain_getBlock` calls per check.
-private final class StubHTTPClient: HTTPClientProtocol {
+private final class StubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
+    private let lock = NSLock()
     private var pending: [Any] = []
 
     func queue<T>(_ value: T) {
-        pending.append(value)
+        lock.withLock { pending.append(value) }
     }
 
     // swiftlint:disable async_without_await
@@ -129,11 +130,11 @@ private final class StubHTTPClient: HTTPClientProtocol {
         _: TargetType,
         responseType _: T.Type
     ) async throws -> HTTPResponse<T> {
-        guard !pending.isEmpty else {
+        let next: Any? = lock.withLock { pending.isEmpty ? nil : pending.removeFirst() }
+        guard let raw = next else {
             XCTFail("StubHTTPClient called with no queued response")
             throw HTTPError.invalidResponse
         }
-        let raw = pending.removeFirst()
 
         guard let typed = raw as? T else {
             XCTFail("Queued value type \(type(of: raw)) does not match \(T.self)")

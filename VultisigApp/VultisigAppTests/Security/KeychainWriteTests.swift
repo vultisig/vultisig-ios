@@ -134,80 +134,120 @@ final class KeychainWriteTests: XCTestCase {
 
 /// In-memory stand-in keyed by account, mirroring the `SecItem` status codes
 /// `Keychain` branches on.
-private final class FakeKeychainItemStore: KeychainItemStore {
+///
+/// `@unchecked Sendable`: everything mutable lives in `state`, which is only
+/// touched while holding `lock`.
+private final class FakeKeychainItemStore: KeychainItemStore, @unchecked Sendable {
 
-    private var storage: [String: Data] = [:]
+    private struct State {
+        var storage: [String: Data] = [:]
+        var addCount = 0
+        var updateCount = 0
+        var deleteCount = 0
+        var lastAccessibility: String?
+        var addStatus: OSStatus?
+        var updateStatus: OSStatus?
+        var deleteStatus: OSStatus?
 
-    private(set) var addCount = 0
-    private(set) var updateCount = 0
-    private(set) var deleteCount = 0
-    private(set) var lastAccessibility: String?
+        mutating func recordAccessibility(from attributes: [String: Any]) {
+            lastAccessibility = attributes[String(kSecAttrAccessible)] as? String
+        }
+    }
+
+    private let lock = NSLock()
+    private var state = State()
+
+    var addCount: Int { withState { $0.addCount } }
+    var updateCount: Int { withState { $0.updateCount } }
+    var deleteCount: Int { withState { $0.deleteCount } }
+    var lastAccessibility: String? { withState { $0.lastAccessibility } }
 
     /// Overrides forcing the corresponding call to fail.
-    var addStatus: OSStatus?
-    var updateStatus: OSStatus?
-    var deleteStatus: OSStatus?
+    var addStatus: OSStatus? {
+        get { withState { $0.addStatus } }
+        set { withState { $0.addStatus = newValue } }
+    }
+    var updateStatus: OSStatus? {
+        get { withState { $0.updateStatus } }
+        set { withState { $0.updateStatus = newValue } }
+    }
+    var deleteStatus: OSStatus? {
+        get { withState { $0.deleteStatus } }
+        set { withState { $0.deleteStatus = newValue } }
+    }
 
     func resetCounts() {
-        addCount = 0
-        updateCount = 0
-        deleteCount = 0
+        withState { state in
+            state.addCount = 0
+            state.updateCount = 0
+            state.deleteCount = 0
+        }
     }
 
     func copyMatching(_ query: [String: Any]) -> (status: OSStatus, data: Data?) {
-        guard let account = account(in: query), let data = storage[account] else {
-            return (errSecItemNotFound, nil)
+        withState { state in
+            guard let account = Self.account(in: query), let data = state.storage[account] else {
+                return (errSecItemNotFound, nil)
+            }
+            return (errSecSuccess, data)
         }
-        return (errSecSuccess, data)
     }
 
     func add(_ attributes: [String: Any]) -> OSStatus {
-        addCount += 1
-        if let addStatus { return addStatus }
+        withState { state in
+            state.addCount += 1
+            if let addStatus = state.addStatus { return addStatus }
 
-        guard let account = account(in: attributes),
-              let data = attributes[String(kSecValueData)] as? Data else {
-            return errSecParam
+            guard let account = Self.account(in: attributes),
+                  let data = attributes[String(kSecValueData)] as? Data else {
+                return errSecParam
+            }
+            guard state.storage[account] == nil else { return errSecDuplicateItem }
+
+            state.recordAccessibility(from: attributes)
+            state.storage[account] = data
+            return errSecSuccess
         }
-        guard storage[account] == nil else { return errSecDuplicateItem }
-
-        recordAccessibility(from: attributes)
-        storage[account] = data
-        return errSecSuccess
     }
 
     func update(_ query: [String: Any], attributes: [String: Any]) -> OSStatus {
-        updateCount += 1
+        withState { state in
+            state.updateCount += 1
 
-        guard let account = account(in: query), storage[account] != nil else {
-            return errSecItemNotFound
+            guard let account = Self.account(in: query), state.storage[account] != nil else {
+                return errSecItemNotFound
+            }
+            if let updateStatus = state.updateStatus { return updateStatus }
+
+            guard let data = attributes[String(kSecValueData)] as? Data else {
+                return errSecParam
+            }
+
+            state.recordAccessibility(from: attributes)
+            state.storage[account] = data
+            return errSecSuccess
         }
-        if let updateStatus { return updateStatus }
-
-        guard let data = attributes[String(kSecValueData)] as? Data else {
-            return errSecParam
-        }
-
-        recordAccessibility(from: attributes)
-        storage[account] = data
-        return errSecSuccess
     }
 
     func delete(_ query: [String: Any]) -> OSStatus {
-        deleteCount += 1
-        if let deleteStatus { return deleteStatus }
+        withState { state in
+            state.deleteCount += 1
+            if let deleteStatus = state.deleteStatus { return deleteStatus }
 
-        guard let account = account(in: query), storage.removeValue(forKey: account) != nil else {
-            return errSecItemNotFound
+            guard let account = Self.account(in: query), state.storage.removeValue(forKey: account) != nil else {
+                return errSecItemNotFound
+            }
+            return errSecSuccess
         }
-        return errSecSuccess
     }
 
-    private func account(in query: [String: Any]) -> String? {
+    /// The lock is not recursive, so `body` must touch only the state it is
+    /// handed, never another member of this fake.
+    private func withState<T>(_ body: (inout State) -> T) -> T {
+        lock.withLock { body(&state) }
+    }
+
+    private static func account(in query: [String: Any]) -> String? {
         query[String(kSecAttrAccount)] as? String
-    }
-
-    private func recordAccessibility(from attributes: [String: Any]) {
-        lastAccessibility = attributes[String(kSecAttrAccessible)] as? String
     }
 }

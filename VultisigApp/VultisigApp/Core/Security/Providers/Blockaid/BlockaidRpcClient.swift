@@ -50,6 +50,18 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         return response.data
     }
 
+    func scanEVMTransactionBulk(
+        chain: Chain,
+        transactions: [EthereumScanTransactionRequestJson.DataJson]
+    ) async throws -> [BlockaidTransactionScanResponseJson] {
+        let request = try buildEthereumBulkScanRequest(chain: chain, transactions: transactions)
+        let response = try await httpClient.request(
+            BlockaidAPI.scanEVMTransactionBulk(request),
+            responseType: [BlockaidTransactionScanResponseJson].self
+        )
+        return response.data
+    }
+
     func simulateEVMTransaction(
         chain: Chain,
         from: String,
@@ -152,6 +164,26 @@ private extension BlockaidRpcClient {
                 value: amount
             ),
             simulatedWithEstimatedGas: false
+        )
+    }
+
+    func buildEthereumBulkScanRequest(
+        chain: Chain,
+        transactions: [EthereumScanTransactionRequestJson.DataJson]
+    ) throws -> EthereumBulkScanTransactionRequestJson {
+        guard let blockaidChain = BlockaidChainIdentifier.name(for: chain) else {
+            throw BlockaidScannerError.scannerError(
+                "Chain \(chain) is not supported",
+                payload: nil
+            )
+        }
+        return EthereumBulkScanTransactionRequestJson(
+            chain: blockaidChain,
+            metadata: EthereumScanTransactionRequestJson.MetadataJson(
+                domain: BlockaidConstants.vultisigDomain
+            ),
+            options: ["validation"],
+            data: transactions
         )
     }
 

@@ -25,7 +25,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     MARKETING_VERSION: "1.47"
-    CURRENT_PROJECT_VERSION: "74"
+    CURRENT_PROJECT_VERSION: "75"
     ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
@@ -86,7 +86,19 @@ packages:
     # .swap_fee = 12` with its coin context at 13-15, and
     # `OneInchSwapPayload.sub_provider = 7`. Every change between the pins only
     # appends fields, so payloads from a sender at the old pin still decode.
-    revision: 08e17eb63cc634fa81b65306a294ef1455ec4c38
+    #
+    # Advanced again for `CustomMessagePayload.dapp_metadata = 6`, so a
+    # message-signing request can name the dApp that asked, the way
+    # `KeysignPayload.dapp_metadata` already does for transactions.
+    # `DAppMetadata` moved into its own proto file to avoid a circular import;
+    # its full name and field numbers are unchanged, so the wire format is too,
+    # and a signer at the old pin skips the new field. The pins in between only
+    # append fields as well (`SolanaSpecific.last_valid_block_height`, the
+    # Polkadot allow-death flag, `Erc20ApprovePayload.reset_allowance_first`).
+    #
+    # This revision is the commit that merged commondata#115
+    # (`CustomMessagePayload.dapp_metadata`) into upstream `main`.
+    revision: ef5b9f0fa1c480666f651efbbf71298a922d3a9b
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →

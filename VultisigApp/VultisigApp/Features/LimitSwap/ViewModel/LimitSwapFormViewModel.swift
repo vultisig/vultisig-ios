@@ -232,6 +232,9 @@ final class LimitSwapFormViewModel {
     /// nothing happened, with no feedback.
     var placeOrderError: LimitSwapPlaceOrderError?
 
+    /// True while "Place Order" reads the ERC-20 approval ahead of Verify.
+    private(set) var isPreparingOrder = false
+
     /// Estimated source-chain broadcast fee for the pending limit deposit, in the
     /// fee coin's smallest units. Refreshed by `refreshNetworkFeeEstimate` (on
     /// load / asset / amount change) and read at place time into the
@@ -245,6 +248,8 @@ final class LimitSwapFormViewModel {
     private let vault: Vault
     private let interactor: LimitSwapInteractor
     private let marketDataService: MarketDataServiceProtocol
+    /// Reads the ERC-20 approval the order's deposit needs, once, before Verify.
+    private let swapInteractor: SwapInteractor
 
     /// Tags each in-flight `refreshMarketPrice` so a slower older request
     /// can't overwrite a faster newer one's `marketPriceRef`/`error` after
@@ -315,12 +320,14 @@ final class LimitSwapFormViewModel {
         initialDraft: LimitSwapDraft,
         vault: Vault,
         interactor: LimitSwapInteractor,
-        marketDataService: MarketDataServiceProtocol = MarketDataService.shared
+        marketDataService: MarketDataServiceProtocol = MarketDataService.shared,
+        swapInteractor: SwapInteractor? = nil
     ) {
         self.draft = initialDraft
         self.vault = vault
         self.interactor = interactor
         self.marketDataService = marketDataService
+        self.swapInteractor = swapInteractor ?? DefaultSwapInteractor.live
         self.isChartExpanded = UserDefaults.standard.bool(forKey: Self.chartExpandedKey)
     }
 
@@ -845,6 +852,24 @@ final class LimitSwapFormViewModel {
     }
 
     // MARK: - Place flow
+
+    /// The order's Verify transaction with its ERC-20 approval read once here,
+    /// against the live router: Verify shows that decision and signing uses it
+    /// as is. Nil when the read failed; `placeOrderError` is then set and Verify
+    /// is not entered.
+    func withApprovalDecision(_ transaction: SwapTransaction) async -> SwapTransaction? {
+        guard !isPreparingOrder else { return nil }
+        isPreparingOrder = true
+        defer { isPreparingOrder = false }
+        do {
+            let decision = try await swapInteractor.resolveApproval(for: transaction, vault: vault)
+            return transaction.with(approvalDecision: decision)
+        } catch {
+            logger.error("Place order rejected: approval read failed \(error.localizedDescription, privacy: .public)")
+            placeOrderError = .approvalUnavailable(error.localizedDescription)
+            return nil
+        }
+    }
 
     /// Assemble a placeable limit order from the current draft: run the shared
     /// input validation, build + byte-cap the memo, and construct the persisted

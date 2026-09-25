@@ -19,17 +19,33 @@ struct KeysignSwapConfirmView: View {
         }
     }
 
+    /// Centered while it fits; scrolls once the banner and the optional rows
+    /// make it taller than the screen, so the join button is never pushed off.
     var fields: some View {
-        VStack {
-            Spacer()
-            summary
-            Spacer()
+        GeometryReader { proxy in
+            ScrollView {
+                summary
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
     var summary: some View {
         VStack(spacing: 16) {
+            if let metadata = viewModel.dappMetadata, !metadata.isEmpty {
+                DAppRequestBanner(metadata: metadata)
+            }
             summaryTitle
+            if viewModel.solanaAtaRentState == .failed {
+                InfoBannerView(
+                    description: "errorNetworkUnstableDescription".localized,
+                    type: .warning, leadingIcon: .triangleWarning
+                )
+                PrimaryButton(title: "retry") {
+                    viewModel.retrySolanaAtaRentLookup()
+                }
+            }
             summaryFromTo
 
             if let externalRecipient = viewModel.keysignPayload?.swapExternalRecipient {
@@ -62,7 +78,7 @@ struct KeysignSwapConfirmView: View {
 
             if let totalFee = viewModel.getSwapTotalFee() {
                 separator
-                getValueCell(for: "totalFee", with: totalFee)
+                getValueCell(for: viewModel.swapFeeLabelKeys.totalFee, with: totalFee)
             }
         }
         .padding(16)
@@ -74,7 +90,7 @@ struct KeysignSwapConfirmView: View {
         PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
             viewModel.joinKeysignCommittee()
         }
-        .disabled(viewModel.isJoiningCommittee)
+        .disabled(viewModel.isJoiningCommittee || !viewModel.isSolanaFeeReady)
         .padding(20)
     }
 
@@ -195,7 +211,10 @@ struct KeysignSwapConfirmView: View {
     }
 
     private func getNetworkFeeCell() -> some View {
-        getFeeCell(title: "networkFee", fees: viewModel.getCalculatedNetworkFee())
+        let fees = viewModel.solanaAtaRentState == .loading
+            ? (feeCrypto: "loading".localized, feeFiat: String.empty)
+            : viewModel.getCalculatedNetworkFee()
+        return getFeeCell(title: viewModel.swapFeeLabelKeys.networkFee, fees: fees)
     }
 
     private func getFeeCell(title: String, fees: (feeCrypto: String, feeFiat: String)) -> some View {

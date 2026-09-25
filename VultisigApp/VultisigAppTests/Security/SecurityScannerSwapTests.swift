@@ -119,6 +119,121 @@ final class SecurityScannerSwapTests: XCTestCase {
         }
     }
 
+    func testOneInchTokenSourceSwapScansApproveThenSwap() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .oneinch(quote, fee: nil),
+            sourceIsNative: false,
+            approval: .approve
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        try assertApproveLegs(scannerTransaction, spender: Self.evmRouter, amounts: [Self.approveAmount])
+    }
+
+    func testKyberSwapTokenSourceSwapScansApproveThenSwap() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .kyberswap(quote, fee: nil),
+            sourceIsNative: false,
+            approval: .approve
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        try assertApproveLegs(scannerTransaction, spender: Self.evmRouter, amounts: [Self.approveAmount])
+    }
+
+    func testLiFiTokenSourceSwapScansApproveThenSwap() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .lifi(quote, fee: nil, integratorFee: nil),
+            sourceIsNative: false,
+            approval: .approve
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        try assertApproveLegs(scannerTransaction, spender: Self.evmRouter, amounts: [Self.approveAmount])
+    }
+
+    func testSwapKitTokenSourceSwapApprovesTheDecidedSpender() throws {
+        let response = try SwapKitFixtureLoader.decode(
+            SwapKitSwapResponse.self,
+            from: "v3-erc20-erc20-swap"
+        )
+        guard case let .evm(tx) = response.tx, let spender = response.meta.approvalAddress else {
+            return XCTFail("Expected a typed EVM transaction fixture with an approval address")
+        }
+        XCTAssertNotEqual(spender.lowercased(), tx.to.lowercased())
+        let transaction = makeEVMTransaction(
+            quote: .swapkit(response, fee: nil, subProvider: "ONEINCH"),
+            sourceIsNative: false,
+            approval: .approve,
+            spender: spender
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        XCTAssertEqual(scannerTransaction.chain, .ethereum)
+        XCTAssertEqual(scannerTransaction.type.rawValue, SecurityTransactionType.swap.rawValue)
+        XCTAssertEqual(scannerTransaction.from, tx.from)
+        XCTAssertEqual(scannerTransaction.to, tx.to)
+        XCTAssertEqual(scannerTransaction.amount, BigInt(tx.value))
+        XCTAssertEqual(scannerTransaction.data, tx.data)
+        try assertApproveLegs(scannerTransaction, spender: spender, amounts: [Self.approveAmount])
+    }
+
+    func testResetThenApproveScansBothApproveLegsInOrder() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .oneinch(quote, fee: nil),
+            sourceIsNative: false,
+            approval: .resetThenApprove
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        try assertApproveLegs(scannerTransaction, spender: Self.evmRouter, amounts: [.zero, Self.approveAmount])
+    }
+
+    func testSufficientAllowanceScansTheSwapAlone() throws {
+        let quote = makeEVMQuote(value: "0")
+        let transaction = makeEVMTransaction(
+            quote: .oneinch(quote, fee: nil),
+            sourceIsNative: false,
+            approval: .notRequired
+        )
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        XCTAssertTrue(scannerTransaction.precedingTransactions.isEmpty)
+    }
+
+    func testNativeSourceSwapScansTheSwapAlone() throws {
+        let quote = makeEVMQuote(value: "1000000000000000000")
+        let transaction = makeEVMTransaction(quote: .oneinch(quote, fee: nil), sourceIsNative: true, approval: nil)
+
+        let scannerTransaction = try SecurityScannerTransactionFactory()
+            .createSecurityScanner(transaction: transaction)
+
+        assertScansSwap(scannerTransaction, quote: quote)
+        XCTAssertEqual(scannerTransaction.amount, BigInt("1000000000000000000"))
+        XCTAssertTrue(scannerTransaction.precedingTransactions.isEmpty)
+    }
+
     func testFactoryFailureEndsInVisibleNotScannedState() async {
         let service = FailingSecurityScannerService()
         let viewModel = SecurityScannerViewModel(service: service)
@@ -172,6 +287,104 @@ private extension SecurityScannerSwapTests {
         )
     }
 
+    func makeEVMTransaction(
+        quote: SwapQuote,
+        sourceIsNative: Bool,
+        approval: ERC20ApprovalRequirement?,
+        spender: String = SecurityScannerSwapTests.evmRouter
+    ) -> SwapTransaction {
+        let eth = makeCoin(
+            chain: .ethereum,
+            ticker: "ETH",
+            decimals: 18,
+            isNative: true,
+            address: Self.evmAddress
+        )
+        let usdc = makeCoin(
+            chain: .ethereum,
+            ticker: "USDC",
+            decimals: 6,
+            isNative: false,
+            address: Self.evmAddress
+        )
+        let fromCoin = sourceIsNative ? eth : usdc
+        let transaction = SwapTransaction(
+            fromCoin: fromCoin,
+            toCoin: sourceIsNative ? usdc : eth,
+            fromAmount: 1,
+            kind: .market(quote),
+            gas: .zero,
+            gasLimit: .zero,
+            thorchainFee: .zero,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: eth,
+            advancedSettings: .default
+        )
+        guard let approval else {
+            return transaction
+        }
+        let query = ERC20ApprovalQuery(coin: fromCoin, spender: spender, amount: Self.approveAmount)
+        return transaction.with(approvalDecision: ERC20ApprovalDecision(query: query, requirement: approval))
+    }
+
+    func makeEVMQuote(value: String) -> EVMQuote {
+        EVMQuote(
+            dstAmount: "1000000",
+            tx: EVMQuote.Transaction(
+                from: Self.evmAddress,
+                to: Self.evmRouter,
+                data: "0x12aa3caf0000000000000000000000000000000000000000000000000000000000000001",
+                value: value,
+                gasPrice: "0",
+                gas: 0
+            )
+        )
+    }
+
+    func assertScansSwap(
+        _ scannerTransaction: SecurityScannerTransaction,
+        quote: EVMQuote,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(scannerTransaction.chain, .ethereum, file: file, line: line)
+        XCTAssertEqual(
+            scannerTransaction.type.rawValue,
+            SecurityTransactionType.swap.rawValue,
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(scannerTransaction.from, quote.tx.from, file: file, line: line)
+        XCTAssertEqual(scannerTransaction.to, quote.tx.to, file: file, line: line)
+        XCTAssertEqual(scannerTransaction.amount, BigInt(quote.tx.value), file: file, line: line)
+        XCTAssertEqual(scannerTransaction.data, quote.tx.data, file: file, line: line)
+    }
+
+    func assertApproveLegs(
+        _ scannerTransaction: SecurityScannerTransaction,
+        spender: String,
+        amounts: [BigInt],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let legs = scannerTransaction.precedingTransactions
+        XCTAssertEqual(legs.count, amounts.count, file: file, line: line)
+        for (leg, amount) in zip(legs, amounts) {
+            XCTAssertEqual(leg.chain, .ethereum, file: file, line: line)
+            XCTAssertEqual(leg.type.rawValue, SecurityTransactionType.approval.rawValue, file: file, line: line)
+            XCTAssertEqual(leg.from, Self.evmAddress, file: file, line: line)
+            XCTAssertEqual(leg.to, "USDC-contract", file: file, line: line)
+            XCTAssertEqual(leg.amount, .zero, file: file, line: line)
+            XCTAssertEqual(
+                leg.data,
+                try EthereumFunction.approvalErc20Encoder(address: spender, amount: amount),
+                file: file,
+                line: line
+            )
+        }
+    }
+
     func makeSolanaQuote(base64: String) -> EVMQuote {
         EVMQuote(
             dstAmount: "1000000",
@@ -203,6 +416,9 @@ private extension SecurityScannerSwapTests {
     }
 
     static let solanaAddress = "So11111111111111111111111111111111111111112"
+    static let evmAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    static let evmRouter = "0x111111125421cA6dc452d289314280a0f8842A65"
+    static let approveAmount = BigInt(1_000_000)
 }
 
 private final class FailingSecurityScannerService: SecurityScannerServiceProtocol {

@@ -10,7 +10,8 @@
 //    verb so the header reads "Message signed" (no chain status to
 //    poll).
 //  - Swap → `DoneScreen` + `SwapDoneSummaryCard.cosigner` token slot
-//    + custom Track / Done bottom bar.
+//    + custom Track / Done bottom bar, plus Try again once a market
+//    swap has failed.
 //  - Send (default) → `DoneScreen` with the default slots, built from
 //    the `KeysignPayload` exactly like the initiator builds it from
 //    `SendTransaction`.
@@ -30,6 +31,7 @@ struct JoinKeysignDoneView: View {
     @State private var resolvedOperationHero: HeroContent?
 
     @Environment(\.openURL) var openURL
+    @Environment(\.router) var router
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
@@ -180,20 +182,41 @@ struct JoinKeysignDoneView: View {
             detailContent: {
                 EmptyView()
             },
-            bottomBarContent: {
-                HStack(spacing: 8) {
-                    PrimaryButton(title: "track", type: .secondary) {
+            bottomBarContent: { status in
+                SwapDoneBottomBar(
+                    onTryAgain: tryAgainAction(for: status, keysignPayload: keysignPayload),
+                    onTrack: {
                         openTrackLink(
                             progressLink: viewModel.getSwapProgressURL(txid: viewModel.txid),
                             fallbackTxid: viewModel.txid
                         )
-                    }
-                    PrimaryButton(title: "done") {
-                        appViewModel.restart()
-                    }
-                }
+                    },
+                    onDone: { appViewModel.restart() }
+                )
             }
         )
+    }
+
+    /// Reopens this vault's swap form on the signed swap's pair, resolved
+    /// against the co-signer's own coins. `replace` clears the stack and
+    /// pushes the form in one step; `appViewModel.restart()` would reset the
+    /// stack a render pass later and wipe the push.
+    private func tryAgainAction(
+        for status: TransactionStatus,
+        keysignPayload: KeysignPayload
+    ) -> (() -> Void)? {
+        guard let swapPayload = keysignPayload.swapPayload,
+              let pair = SwapTryAgain.pair(
+                status: status,
+                fromCoin: swapPayload.fromCoin,
+                toCoin: swapPayload.toCoin,
+                isLimitOrder: isLimitSwapMemo(keysignPayload.memo),
+                in: vault.coins
+              ) else {
+            return nil
+        }
+        let route = pair.route(vaultPubKeyECDSA: vault.pubKeyECDSA)
+        return { router.replace(to: route) }
     }
 
     /// Synthesizes a `TransactionDonePayload` that drives `DoneScreen`'s
@@ -216,7 +239,8 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: "", fiat: ""),
                 keysignPayload: nil,
                 pubKeyECDSA: vault.pubKeyECDSA,
-                verb: .sign
+                verb: .sign,
+                dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.signedMessage(),
             tokenContent: {

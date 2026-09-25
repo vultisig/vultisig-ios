@@ -35,15 +35,18 @@ final class SwapVerifyViewModel {
     var routeSelectionNotice: String?
     var isLoading = false
     var isLoadingFees = false
+    var isSolanaFeeResolved = true
     private(set) var isPreparingSigning = false
     var timer: Int = 59
 
     init(
         transaction: SwapTransaction,
-        interactor: SwapInteractor = DefaultSwapInteractor.live
+        interactor: SwapInteractor? = nil
     ) {
         self.transaction = transaction
-        self.interactor = interactor
+        // Resolved here rather than as a default argument, which is evaluated
+        // outside the main actor that `DefaultSwapInteractor` is isolated to.
+        self.interactor = interactor ?? DefaultSwapInteractor.live
     }
 
     func onLoad() {
@@ -59,10 +62,9 @@ final class SwapVerifyViewModel {
     func isValidForm(shouldApprove: Bool) -> Bool {
         // Every order confirms amount + network fee — both checkboxes always
         // render (a limit order surfaces its estimated source-chain fee too). A
-        // bundled ERC20 approve (market OR an ERC20-source limit, whose assembler
-        // attaches `approve(router)`) additionally gates on the approve checkbox.
-        // `shouldApprove` is `transaction.isApproveRequired`, which already
-        // accounts for the limit case.
+        // bundled ERC20 approve additionally gates on the approve checkbox.
+        // `shouldApprove` is `transaction.signsApprove`: the approval decided on
+        // the way into Verify, for market, limit and secured-mint alike.
         if shouldApprove {
             return isAmountCorrect && isFeeCorrect && isApproveCorrect
         }
@@ -133,6 +135,15 @@ final class SwapVerifyViewModel {
                     )
                 }
             }
+            if updated.fromCoin.chain == .solana,
+               let transactionData = SolanaSwapNetworkFee.transactionData(quote: updated.quote) {
+                isSolanaFeeResolved = false
+                let rent = try await SolanaSwapNetworkFee.ataRent(transactionData: transactionData)
+                updated = updated.with(solanaAtaRent: rent)
+                isSolanaFeeResolved = true
+            } else {
+                isSolanaFeeResolved = true
+            }
             // Fetch the oracle fee data BEFORE validating: for EVM aggregator/
             // SwapKit routes the node admits a transaction only when the
             // account covers the signed bond (gasLimit × maxFeePerGas + value),
@@ -160,7 +171,11 @@ final class SwapVerifyViewModel {
                         vault: vault
                     )
                 )
-                validationFee = updated.displayedNetworkFeeWei
+                validationFee = SwapCryptoLogic.fundingNetworkFee(
+                    displayedFee: updated.displayedNetworkFeeWei,
+                    gasEstimate: chainSpecific.gas,
+                    chain: updated.fromCoin.chain
+                )
             } catch {
                 chainSpecificError = error
             }
@@ -175,8 +190,24 @@ final class SwapVerifyViewModel {
             if let chainSpecificError {
                 throw chainSpecificError
             }
+            // A refreshed quote can name a different spender (another route, a
+            // rotated router). The approval shown and signed has to be the one
+            // read for it, so read it again; the same spend keeps its decision.
+            let refreshedSpend = try SwapCryptoLogic.approvalQuery(
+                fromCoin: updated.fromCoin,
+                amount: updated.amountInCoinDecimal,
+                quote: updated.quote
+            )
+            let approvalChanged = transaction.mode == .standard && refreshedSpend != transaction.approvalDecision?.query
+            if approvalChanged {
+                updated = updated.with(approvalDecision: try await interactor.resolveApproval(for: updated, vault: vault))
+            }
             transaction = updated
             error = nil
+            if approvalChanged {
+                // Consent given for another spender's approve does not carry over.
+                isApproveCorrect = false
+            }
             if routeWasSubstituted {
                 // The confirmations were given for a route that is now gone.
                 isAmountCorrect = false
@@ -192,7 +223,8 @@ final class SwapVerifyViewModel {
     }
 
     var canStartSigning: Bool {
-        !isLoadingFees && !isPreparingSigning && isValidForm(shouldApprove: transaction.isApproveRequired)
+        isSolanaFeeResolved && !isLoadingFees && !isPreparingSigning
+            && isValidForm(shouldApprove: transaction.signsApprove)
     }
 
     /// A successful preparation holds refresh exclusion until the caller has
@@ -289,6 +321,7 @@ final class SwapVerifyViewModel {
                     sourceAmount: sourceAmount,
                     memo: limitContext.memo,
                     vault: vault,
+                    approvalDecision: transaction.approvalDecision,
                     expectedToAmountDecimal: transaction.toAmountDecimal
                 )
                 let signTimeFee = try await SwapCryptoLogic.thorchainFee(

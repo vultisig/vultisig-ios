@@ -38,6 +38,9 @@ struct SwapDoneSummaryCard: View {
         /// The original `SwapTransaction` — only set for the initiator
         /// branch (it's the source of the expandable swap+gas fees).
         let transaction: SwapTransaction?
+        /// The dApp that requested the swap. Only a co-signer can receive
+        /// one — this app never initiates a dApp request.
+        let dappMetadata: DAppMetadata?
     }
 
     let fields: Fields
@@ -47,6 +50,9 @@ struct SwapDoneSummaryCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            if let metadata = fields.dappMetadata, !metadata.isEmpty {
+                DAppRequestBanner(metadata: metadata)
+            }
             fromToCards
             summaryCard
         }
@@ -76,7 +82,8 @@ struct SwapDoneSummaryCard: View {
                 fromAddress: transaction.fromCoin.address,
                 toAddress: transaction.toCoin.address,
                 cosignerNetworkFee: nil,
-                transaction: transaction
+                transaction: transaction,
+                dappMetadata: nil
             )
         )
     }
@@ -105,7 +112,8 @@ struct SwapDoneSummaryCard: View {
                 fromAddress: fromCoin?.address ?? keysignPayload.coin.address,
                 toAddress: toCoin?.address ?? keysignPayload.toAddress,
                 cosignerNetworkFee: networkFee,
-                transaction: nil
+                transaction: nil,
+                dappMetadata: keysignPayload.dappMetadata
             )
         )
     }

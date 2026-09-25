@@ -59,7 +59,9 @@ class ParticipantDiscovery: ObservableObject {
                             // bail before mutating peersFound so a stale poll
                             // can't leak peers into a fresh session.
                             guard !Task.isCancelled else { return }
-                            await MainActor.run {
+                            // Capture its own weak reference: the closure must not
+                            // read the enclosing task's `weak var self`.
+                            await MainActor.run { [weak self] in
                                 guard let self, !Task.isCancelled else { return }
                                 for peer in peers where peer != localParty && !self.peersFound.contains(peer) {
                                     self.peersFound.append(peer)

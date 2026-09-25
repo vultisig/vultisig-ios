@@ -14,6 +14,9 @@ struct SecurityScannerTransaction {
     let to: String
     let amount: BigInt
     let data: String
+    /// Transactions signed ahead of this one (e.g. ERC-20 approves), scanned
+    /// together with it in order so the simulation sees their state changes.
+    let precedingTransactions: [SecurityScannerTransaction]
 
     init(
         chain: Chain,
@@ -21,7 +24,8 @@ struct SecurityScannerTransaction {
         from: String,
         to: String,
         amount: BigInt = BigInt.zero,
-        data: String = "0x"
+        data: String = "0x",
+        precedingTransactions: [SecurityScannerTransaction] = []
     ) {
         self.chain = chain
         self.type = type
@@ -29,6 +33,7 @@ struct SecurityScannerTransaction {
         self.to = to
         self.amount = amount
         self.data = data
+        self.precedingTransactions = precedingTransactions
     }
 }
 

@@ -13,7 +13,9 @@ struct KeysignMessageConfirmView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 24) {
-                let fees = viewModel.getCalculatedNetworkFee()
+                let fees = viewModel.solanaAtaRentState == .loading
+                    ? (feeCrypto: "loading".localized, feeFiat: String.empty)
+                    : viewModel.getCalculatedNetworkFee()
                 let lpDictionary = lpMemoDictionary(for: viewModel.keysignPayload)
                 // XRP destination tag the joiner will actually sign (field-
                 // preferred, else the canonical memo carrier). It owns a labeled
@@ -69,7 +71,18 @@ struct KeysignMessageConfirmView: View {
                     ),
                     securityScannerState: $viewModel.securityScannerState
                 ) {
+                    allowDeathDisclosure
                     limitOrderDisclosures
+                }
+
+                if viewModel.solanaAtaRentState == .failed {
+                    InfoBannerView(
+                        description: "errorNetworkUnstableDescription".localized,
+                        type: .warning, leadingIcon: .triangleWarning
+                    )
+                    PrimaryButton(title: "retry") {
+                        viewModel.retrySolanaAtaRentLookup()
+                    }
                 }
 
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
@@ -79,7 +92,7 @@ struct KeysignMessageConfirmView: View {
                 // above — or which cannot be decoded at all — is a refusal, not a
                 // note. The card renders what disagreed; this is what makes the
                 // refusal mean something.
-                .disabled(viewModel.isJoiningCommittee || viewModel.isKaminoDecodeRefused)
+                .disabled(viewModel.isJoiningCommittee || viewModel.isKaminoDecodeRefused || !viewModel.isSolanaFeeReady)
             }
             .task {
                 async let thor: Void = viewModel.loadThorchainID()
@@ -96,6 +109,16 @@ struct KeysignMessageConfirmView: View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
             .font(Theme.fonts.bodyLMedium)
+    }
+
+    /// A DOT or TAO transfer whose initiator set `allow_death` can empty the
+    /// sender's account. Nothing else on this screen says so, and a co-signer
+    /// never saw the initiator's form.
+    @ViewBuilder
+    private var allowDeathDisclosure: some View {
+        if let message = SubstrateAllowDeathDisclosure.message(for: viewModel.keysignPayload) {
+            InfoBannerView(description: message, type: .warning, leadingIcon: .triangleWarning)
+        }
     }
 
     /// What a limit-order CANCEL says before it is signed — the initiator's

@@ -10,6 +10,11 @@
 import BigInt
 import Foundation
 
+/// Main-actor isolated: the swap view models call it with SwiftData `Coin` and
+/// `Vault` models. The quote, chain-specific and payload builders that
+/// `DefaultSwapInteractor` awaits are nonisolated, so that work still runs off
+/// the main actor.
+@MainActor
 protocol SwapInteractor {
     /// Aggregator quote fetch + discount-tier resolution. Returns nil when there's no
     /// amount to quote; throws `SwapCryptoLogic.Errors.sameAsset` when from/to coins match.
@@ -47,8 +52,15 @@ protocol SwapInteractor {
     /// No-op for aggregator routes — they never deposit into a native inbound vault.
     func assertSourceChainNotHalted(transaction: SwapTransaction) async throws
 
+    /// Reads the ERC-20 approval the swap needs, once, on the way into Verify:
+    /// the current allowance and, for a stale partial one, a simulated approve.
+    /// `nil` when the swap can sign no approve (native source, no spender).
+    /// Throws when the chain could not answer; the caller must not enter Verify.
+    func resolveApproval(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalDecision?
+
     /// Fetches chain-specific data and builds the keysign payload for a finalised
-    /// `SwapTransaction`. Used by Verify when the user signs.
+    /// `SwapTransaction`. Used by Verify when the user signs. The approve comes
+    /// from `transaction.approvalDecision`; the allowance is not read again.
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload
 
     /// Refresh balance for a single coin (typically called when the user picks a coin in

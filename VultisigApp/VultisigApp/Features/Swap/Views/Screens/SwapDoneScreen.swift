@@ -6,13 +6,15 @@
 //  - default token slot (the swap from-coin hero — same hero as Send)
 //  - custom detail slot: `SwapDoneSummaryCard` (from/to cards +
 //    expandable fees + tx hash + approve hash)
-//  - custom bottom-bar: "Track" + "Done" when a progress link exists
+//  - custom bottom-bar: "Track" + "Done" when a progress link exists,
+//    plus "Try again" once a market swap has failed
 //
-//  Status comes from `SwapKitPoller` for SwapKit-routed swaps (so the
-//  cross-chain `/track` drives the header instead of the source-chain
-//  RPC poller, which would surface a premature "successful" once the
-//  source tx confirms) and `ChainPoller` for THORChain/Maya/1inch/
-//  Kyber/LiFi — wired via `DoneStatusServiceFactory.swap`.
+//  Status comes from `SwapKitPoller` for SwapKit-routed swaps and
+//  `NativeSwapPoller` for native THORChain/Maya market swaps (so the
+//  payout drives the header instead of the source-chain RPC poller,
+//  which would surface a premature "successful" once the source tx
+//  confirms — refund or not) and `ChainPoller` for 1inch/Kyber/LiFi —
+//  wired via `DoneStatusServiceFactory.swap`.
 //
 //  Limit orders ride the same screen (`transaction.isLimit`): the
 //  detail slot shows the "find your order in Transaction History"
@@ -50,6 +52,7 @@ struct SwapDoneScreen: View {
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
 
     @Environment(\.openURL) var openURL
+    @Environment(\.router) var router
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(
@@ -115,24 +118,43 @@ struct SwapDoneScreen: View {
                     EmptyView()
                 }
             },
-            bottomBarContent: {
-                HStack(spacing: 8) {
-                    if let link = progressLink, !link.isEmpty {
-                        PrimaryButton(title: "track", type: .secondary) {
-                            if let url = URL(string: link) {
-                                openURL(url)
-                            }
-                        }
-                    }
-                    PrimaryButton(title: "done") {
-                        appViewModel.restart()
-                    }
-                }
+            bottomBarContent: { status in
+                SwapDoneBottomBar(
+                    onTryAgain: tryAgainAction(for: status),
+                    onTrack: trackAction,
+                    onDone: { appViewModel.restart() }
+                )
             }
         )
         .onAppear {
             persistLimitOrderIfNeeded()
         }
+    }
+
+    private var trackAction: (() -> Void)? {
+        guard let link = progressLink, !link.isEmpty else { return nil }
+        return {
+            if let url = URL(string: link) {
+                openURL(url)
+            }
+        }
+    }
+
+    /// Reopens the swap form on this swap's pair. `replace` clears the stack
+    /// and pushes the form in one step; `appViewModel.restart()` would reset
+    /// the stack a render pass later and wipe the push.
+    private func tryAgainAction(for status: TransactionStatus) -> (() -> Void)? {
+        guard let pair = SwapTryAgain.pair(
+            status: status,
+            fromCoin: transaction.fromCoin,
+            toCoin: transaction.toCoin,
+            isLimitOrder: transaction.isLimit,
+            in: vault.coins
+        ) else {
+            return nil
+        }
+        let route = pair.route(vaultPubKeyECDSA: vault.pubKeyECDSA)
+        return { router.replace(to: route) }
     }
 
     private var payload: TransactionDonePayload {
@@ -208,24 +230,32 @@ struct SwapDoneScreen: View {
             // Limit orders carry no market quote (`quote == nil`), so fall back to
             // the fixed provider — a placed `=<` order always routes through THORChain.
             provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? ""),
-            // A resting limit order must not be arbitrated by the native
-            // source-chain poller: that poller confirms the *inbound deposit*
-            // and would flip the row to `.successful` within minutes, while the
-            // order can rest unfilled for 12-72h. Tracking metadata is what
-            // makes the registry resolve a service for this row, which is the
-            // condition both `TransactionHistoryViewModel` and
-            // `TransactionStatusPoller` gate native polling on.
-            //
-            // Passed inline (rather than a follow-up `attachSwapTracking`, the
-            // SwapKit path) so the row can never exist untracked: everything
-            // needed is known at record time.
-            swapTracking: transaction.isLimit
-                ? THORChainLimitTrackingService.metadata(
-                    broadcastHash: hash,
-                    sourceChain: transaction.fromCoin.chain
-                )
-                : nil
+            swapTracking: swapTracking(for: transaction, hash: hash)
         )
+    }
+
+    /// The tracking metadata the swap row is recorded with.
+    ///
+    /// Neither a resting limit order nor a native market swap may be
+    /// arbitrated by the native source-chain poller: that poller confirms the
+    /// *inbound deposit* and would flip the row to `.successful` within
+    /// minutes, while the order can rest unfilled for 12-72h and the swap can
+    /// still be refunded. Tracking metadata is what makes the registry resolve a
+    /// service for this row, which is the condition both
+    /// `TransactionHistoryViewModel` and `TransactionStatusPoller` gate native
+    /// polling on.
+    ///
+    /// Passed inline (rather than a follow-up `attachSwapTracking`, the SwapKit
+    /// path) so the row can never exist untracked: everything needed is known
+    /// at record time.
+    static func swapTracking(for transaction: SwapTransaction, hash: String) -> SwapTrackingMetadataData? {
+        if transaction.isLimit {
+            return THORChainLimitTrackingService.metadata(
+                broadcastHash: hash,
+                sourceChain: transaction.fromCoin.chain
+            )
+        }
+        return NativeSwapTrackingService.metadata(broadcastHash: hash, quote: transaction.quote)
     }
 
     /// Mirrors Figma 74765:106224 — info banner anchored above the bottom

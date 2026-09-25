@@ -12,6 +12,9 @@ final class MockBalanceService: BalanceServiceProtocol {
     private(set) var updateBalanceCallCount = 0
     private(set) var lastUpdatedCoin: Coin?
 
+    /// Nonisolated so a test helper can build one as a default argument.
+    nonisolated init() {}
+
     /// Reports that a live balance landed — the stub always "succeeds".
     @discardableResult
     func updateBalance(for coin: Coin) async -> Bool {

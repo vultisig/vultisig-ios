@@ -16,37 +16,38 @@ struct KeysignMessageFactory {
     }
 
     func getKeysignMessages() throws -> [String] {
+        var approveMessages: [String] = []
         var messages: [String] = []
 
         if let approvePayload =  payload.approvePayload {
             let swaps = THORChainSwaps()
-            messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
+            approveMessages = try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
         if let swapPayload = payload.swapPayload {
-            let incrementNonce = payload.approvePayload != nil
+            let nonceOffset = payload.approveNonceOffset
             switch swapPayload {
             case .thorchain(let swapPayload):
                 let service = ThorchainServiceFactory.getService(for: .thorChain)
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps()
-                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, nonceOffset: nonceOffset)
             case .thorchainChainnet(let swapPayload):
                 let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps()
-                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, nonceOffset: nonceOffset)
             case .thorchainStagenet(let swapPayload):
                 let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps()
-                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, nonceOffset: nonceOffset)
             case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
                     messages = try SolanaHelper.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
                     let swaps = OneInchSwaps()
-                    messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                    messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, nonceOffset: nonceOffset)
                 }
             case .mayachain(let swapPayload):
                 // for MayaChain swaps, when it is a native token , then we just convert it to a normal send transaction
@@ -55,7 +56,7 @@ struct KeysignMessageFactory {
                     break
                 }
                 let swaps = THORChainSwaps()
-                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, nonceOffset: nonceOffset)
             case .swapkit(let swapKitPayload):
                 // Dispatch on SwapKit's `meta.txType`. For chains where the
                 // SwapKit wire shape is a plain native send (TON transfer,
@@ -108,7 +109,15 @@ struct KeysignMessageFactory {
         }
 
         if !messages.isEmpty {
-            return messages
+            return approveMessages + messages
+        }
+
+        // The approve legs also precede a token transaction that isn't a swap
+        // (e.g. a staking deposit). Any other fall-through keeps signing the
+        // approve legs alone.
+        let isTokenTransaction = payload.coin.chain.chainType == .EVM && !payload.coin.isNativeToken
+        if !approveMessages.isEmpty && !isTokenTransaction {
+            return approveMessages
         }
 
         switch payload.coin.chain {
@@ -121,7 +130,8 @@ struct KeysignMessageFactory {
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
-                return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
+                let helper = ERC20Helper.getHelper(coin: payload.coin)
+                return try approveMessages + helper.getPreSignedImageHash(keysignPayload: payload, nonceOffset: payload.approveNonceOffset)
             }
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: payload.coin.chain)

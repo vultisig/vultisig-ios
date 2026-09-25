@@ -105,6 +105,9 @@ struct FunctionTransactionVerifyScreen: View {
             securityScannerState: $depositVerifyViewModel.securityScannerState
         ) {
             cancelLimitOrderDisclosures
+            if depositVerifyViewModel.showsApprovalNotice(for: transaction) {
+                LPApprovalNotice()
+            }
         }
     }
 

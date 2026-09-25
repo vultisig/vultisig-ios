@@ -50,6 +50,11 @@ protocol TransactionBuilder {
     /// TCY unstake and RUJI liquid-unbond builders; every other builder uses the
     /// default `nil` and keeps its existing presentation.
     var withdrawDisplayAmount: Decimal? { get }
+
+    /// The ERC-20 approval an ERC20 router deposit signs, read when the form
+    /// hands off to Verify. Populated only by the LP-add builder; every other
+    /// builder uses the default `nil`.
+    var approvalDecision: ERC20ApprovalDecision? { get }
 }
 
 extension TransactionBuilder {
@@ -71,6 +76,9 @@ extension TransactionBuilder {
 
     /// Default — only the TCY unstake and RUJI liquid-unbond builders override this.
     var withdrawDisplayAmount: Decimal? { nil }
+
+    /// Default — only the LP-add builder overrides this.
+    var approvalDecision: ERC20ApprovalDecision? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly, with `gas` /
     /// `fee` and runtime-only fields left at the construction-time zero state.
@@ -107,7 +115,8 @@ extension TransactionBuilder {
             cosmosStakingPayload: cosmosStakingPayload,
             solanaStakingPayload: solanaStakingPayload,
             limitCancelContext: limitCancelContext,
-            withdrawDisplayAmount: withdrawDisplayAmount
+            withdrawDisplayAmount: withdrawDisplayAmount,
+            approvalDecision: approvalDecision
         )
     }
 

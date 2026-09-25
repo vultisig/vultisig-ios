@@ -56,4 +56,11 @@ final class THORChainTransactionStatusAPITests: XCTestCase {
     func testALeadingZeroHexDigitIsNotMistakenForAPrefix() throws {
         XCTAssertEqual(try txid(forHash: "0A1B2C"), "0A1B2C")
     }
+
+    /// Midgard indexes a Solana signature verbatim, and base58 is case
+    /// sensitive: the uppercased form of this real inbound returns an empty page.
+    func testASolanaSignatureKeepsItsCase() throws {
+        let signature = "2AxLNDvi5FLFHSLfgkt8duHhedTyFiiKY9EACv2J7oc7Bu3yHKM9owv7WHFaznq8YDHiXWUZQ5jEparfn3KfX4rt"
+        XCTAssertEqual(try txid(forHash: signature), signature)
+    }
 }

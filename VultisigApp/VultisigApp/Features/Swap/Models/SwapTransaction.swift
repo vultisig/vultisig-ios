@@ -88,6 +88,8 @@ struct SwapTransaction: Hashable {
     /// (a defaulted `let` is excluded from it); set once at construction, never
     /// mutated afterwards — the "immutable hand-off" contract still holds.
     var networkFeeEstimate: BigInt = .zero
+    /// Vault-funded ATA deposit resolved while the quote was current.
+    var solanaAtaRent: BigInt = .zero
 
     /// Native coin that pays for gas — `fromCoin` for native sources, the EVM-native
     /// sibling (e.g. ETH for an USDC source) otherwise. Precomputed at construction
@@ -117,6 +119,12 @@ struct SwapTransaction: Hashable {
     /// `advancedSettings`, which is the form's re-fetch trigger — folding it in
     /// would make picking a route re-quote.
     var selectedProvider: SwapProvider?
+
+    /// The ERC-20 approval read on the way into Verify, `nil` when the swap
+    /// can sign no approve. Verify's consent and the signed payload both come
+    /// from it, and the payload builders refuse a decision made for a different
+    /// spend.
+    var approvalDecision: ERC20ApprovalDecision?
 
     /// Final destination for the swapped funds: the user-set external recipient
     /// when present, otherwise the user's own address on the destination chain
@@ -158,6 +166,7 @@ extension SwapTransaction {
         gas: BigInt? = nil,
         gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
+        solanaAtaRent: BigInt? = nil,
         vultDiscountBps: Int? = nil,
         referralDiscountBps: Int? = nil
     ) -> SwapTransaction {
@@ -178,12 +187,23 @@ extension SwapTransaction {
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
             networkFeeEstimate: networkFeeEstimate,
+            solanaAtaRent: solanaAtaRent ?? self.solanaAtaRent,
             feeCoin: feeCoin,
             advancedSettings: advancedSettings,
             // Must be carried: `with` rebuilds field by field, so dropping it here
             // silently un-pins the route on the next refresh.
-            selectedProvider: selectedProvider
+            selectedProvider: selectedProvider,
+            // Carried for the same reason. A refresh that changes the spender
+            // re-reads it (`SwapVerifyViewModel.refreshData`), and signing
+            // refuses one decided for another spend.
+            approvalDecision: approvalDecision
         )
+    }
+
+    func with(approvalDecision: ERC20ApprovalDecision?) -> SwapTransaction {
+        var transaction = self
+        transaction.approvalDecision = approvalDecision
+        return transaction
     }
 }
 
@@ -196,7 +216,10 @@ extension SwapTransaction {
     private var fromAmountString: String { fromAmount.description }
 
     var fee: BigInt {
-        SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+        SwapCryptoLogic.fee(
+            quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee,
+            solanaAtaRent: solanaAtaRent
+        )
     }
 
     /// Network fee value shown on the verify/done screens. For EVM aggregator/
@@ -258,11 +281,19 @@ extension SwapTransaction {
         SwapCryptoLogic.inboundFeeDecimal(quote: quote, toCoin: toCoin)
     }
 
+    /// Whether the signed payload carries an approve ahead of the swap, as
+    /// decided on the way into Verify. Drives the allowance consent.
+    var signsApprove: Bool {
+        approvalDecision?.signsApprove ?? false
+    }
+
+    /// The static precondition for an approve (an ERC-20 source with a
+    /// spender), before any allowance is read. Consent follows `signsApprove`.
     var isApproveRequired: Bool {
         // Two distinct paths sign an ERC20 router approval that the quote-derived
         // check below cannot see, because neither has a router-bearing market
-        // quote. Both must gate on the source coin directly, or Verify silently
-        // omits the approval-consent checkbox while an allowance IS being signed:
+        // quote. Both must gate on the source coin directly, or the precondition
+        // misses an allowance that can be signed:
         //
         //  - Limit orders carry no market quote at all (`quote == nil`), yet an
         //    ERC20 source still deposits through the router (approve +
@@ -273,7 +304,7 @@ extension SwapTransaction {
         //
         // Both mirror the assembler/builder condition (`fromCoin.shouldApprove` =
         // EVM token source). The two are orthogonal, so this must stay an OR:
-        // dropping either side reintroduces that side's missing-consent bug.
+        // dropping either side reintroduces that side's missed approve.
         if isLimit || mode == .securedMint {
             return fromCoin.shouldApprove
         }
@@ -341,6 +372,10 @@ extension SwapTransaction {
 
     var totalFeeString: String {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
+    }
+
+    var feeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
+        SwapCryptoLogic.feeLabelKeys(feeChain: feeCoin.chain)
     }
 
     /// Network-fee crypto string for a placed LIMIT order. The limit "fee" is

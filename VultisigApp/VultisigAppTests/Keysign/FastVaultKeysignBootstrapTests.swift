@@ -167,19 +167,6 @@ final class FastVaultKeysignBootstrapTests: XCTestCase {
     }
 }
 
-extension FastVaultKeysignBootstrapError: Equatable {
-    public static func == (lhs: FastVaultKeysignBootstrapError, rhs: FastVaultKeysignBootstrapError) -> Bool {
-        switch (lhs, rhs) {
-        case (.missingSigningCoin, .missingSigningCoin),
-             (.noMessagesToSign, .noMessagesToSign),
-             (.missingPayload, .missingPayload):
-            return true
-        default:
-            return false
-        }
-    }
-}
-
 // swiftlint:disable async_without_await
 @MainActor
 private final class MockFastVaultSessionProvider: FastVaultKeysignSessionProviding {

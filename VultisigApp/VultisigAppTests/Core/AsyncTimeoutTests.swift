@@ -29,6 +29,12 @@ final class AsyncTimeoutTests: XCTestCase {
         }
     }
 
+    /// Synchronous so the operation really blocks its thread; `Task.sleep`
+    /// would honour cancellation and defeat the point of the test.
+    private static func blockThread(for interval: TimeInterval) {
+        Thread.sleep(forTimeInterval: interval)
+    }
+
     func testReturnsTheValueWhenTheOperationBeatsTheDeadline() async throws {
         let value = try await withTimeout(seconds: 5) { 42 }
         XCTAssertEqual(value, 42)
@@ -65,9 +71,9 @@ final class AsyncTimeoutTests: XCTestCase {
 
         do {
             _ = try await withTimeout(seconds: 0.1) {
-                // Uncancellable on purpose — Thread.sleep never checks for
+                // Uncancellable on purpose — a blocked thread never checks for
                 // cancellation, standing in for a wedged non-cooperative call.
-                Thread.sleep(forTimeInterval: operationDuration)
+                Self.blockThread(for: operationDuration)
                 return 1
             }
             XCTFail("Expected a timeout.")

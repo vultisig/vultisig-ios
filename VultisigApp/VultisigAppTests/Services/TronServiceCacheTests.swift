@@ -115,9 +115,7 @@ private final class TronCountingHTTPClient: HTTPClientProtocol, @unchecked Senda
     // swiftlint:disable:next async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         let path = target.path
-        lock.lock()
-        counts[path, default: 0] += 1
-        lock.unlock()
+        lock.withLock { counts[path, default: 0] += 1 }
 
         guard let json = responses[path] else {
             XCTFail("TronCountingHTTPClient has no stub for path '\(path)'")

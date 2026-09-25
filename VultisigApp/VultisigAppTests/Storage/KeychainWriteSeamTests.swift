@@ -115,14 +115,27 @@ final class KeychainWriteSeamTests: XCTestCase {
 
 /// Records what the write path hands to `SecItem`, and answers reads and updates
 /// as if the item were absent.
-private final class RecordingItemStore: KeychainItemStore {
+///
+/// `@unchecked Sendable`: everything mutable lives in `state`, which is only
+/// touched while holding `lock`.
+private final class RecordingItemStore: KeychainItemStore, @unchecked Sendable {
 
-    private(set) var calls: [String] = []
-    private(set) var updatedQueries: [[String: Any]] = []
-    private(set) var updatedAttributes: [[String: Any]] = []
-    private(set) var addedAttributes: [[String: Any]] = []
+    private struct State {
+        var calls: [String] = []
+        var updatedQueries: [[String: Any]] = []
+        var updatedAttributes: [[String: Any]] = []
+        var addedAttributes: [[String: Any]] = []
+    }
+
+    private let lock = NSLock()
+    private var state = State()
 
     private let addStatus: OSStatus
+
+    var calls: [String] { withState { $0.calls } }
+    var updatedQueries: [[String: Any]] { withState { $0.updatedQueries } }
+    var updatedAttributes: [[String: Any]] { withState { $0.updatedAttributes } }
+    var addedAttributes: [[String: Any]] { withState { $0.addedAttributes } }
 
     init(addStatus: OSStatus = errSecSuccess) {
         self.addStatus = addStatus
@@ -133,21 +146,31 @@ private final class RecordingItemStore: KeychainItemStore {
     }
 
     func add(_ attributes: [String: Any]) -> OSStatus {
-        calls.append("add")
-        addedAttributes.append(attributes)
+        withState { state in
+            state.calls.append("add")
+            state.addedAttributes.append(attributes)
+        }
         return addStatus
     }
 
     func update(_ query: [String: Any], attributes: [String: Any]) -> OSStatus {
-        calls.append("update")
-        updatedQueries.append(query)
-        updatedAttributes.append(attributes)
+        withState { state in
+            state.calls.append("update")
+            state.updatedQueries.append(query)
+            state.updatedAttributes.append(attributes)
+        }
         return errSecItemNotFound
     }
 
     func delete(_: [String: Any]) -> OSStatus {
-        calls.append("delete")
+        withState { $0.calls.append("delete") }
         return errSecSuccess
+    }
+
+    /// The lock is not recursive, so `body` must touch only the state it is
+    /// handed, never another member of this store.
+    private func withState<T>(_ body: (inout State) -> T) -> T {
+        lock.withLock { body(&state) }
     }
 }
 

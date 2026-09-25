@@ -853,7 +853,7 @@ private struct NoCustomRPC: RPCEndpointResolving {
 /// transactions this app validates. Everything else — a 4xx that is not a rate
 /// limit, a decode failure, a value this app refused — is a claim about the
 /// response, and stays a failure.
-private struct SkipOnTransportFailure<Wrapped> {
+private struct SkipOnTransportFailure<Wrapped: Sendable> {
 
     let wrapped: Wrapped
 

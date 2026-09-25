@@ -196,17 +196,17 @@ private struct StubStakingService: CosmosStakingServiceProtocol {
         self.rewards = rewards
     }
 
-    func fetchDelegations(chain _: Chain, address _: String) async throws -> [CosmosDelegation] { delegations }
-    func fetchUnbondingDelegations(chain _: Chain, address _: String) async throws -> [CosmosUnbondingDelegation] { unbondings }
-    func fetchDelegatorRewards(chain _: Chain, address _: String) async throws -> CosmosDelegatorRewards { rewards }
-    func fetchValidators(chain _: Chain) async throws -> [CosmosValidator] { validators }
-    func fetchRedelegations(chain _: Chain, address _: String) async throws -> [CosmosRedelegationEntry] { [] }
+    func fetchDelegations(chain _: Chain, address _: String) throws -> [CosmosDelegation] { delegations }
+    func fetchUnbondingDelegations(chain _: Chain, address _: String) throws -> [CosmosUnbondingDelegation] { unbondings }
+    func fetchDelegatorRewards(chain _: Chain, address _: String) throws -> CosmosDelegatorRewards { rewards }
+    func fetchValidators(chain _: Chain) throws -> [CosmosValidator] { validators }
+    func fetchRedelegations(chain _: Chain, address _: String) throws -> [CosmosRedelegationEntry] { [] }
 }
 
 private struct StubAPYResolver: CosmosStakingAPYResolverProtocol {
     let chainData: CosmosChainApyData?
 
-    func chainApy(chain _: Chain, stakingDenom _: String) async -> CosmosChainApyData? { chainData }
+    func chainApy(chain _: Chain, stakingDenom _: String) -> CosmosChainApyData? { chainData }
 
     func baselineFallback(chain: Chain) -> Decimal? {
         switch chain {

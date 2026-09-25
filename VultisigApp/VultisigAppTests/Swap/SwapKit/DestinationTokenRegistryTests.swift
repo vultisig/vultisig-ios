@@ -217,7 +217,7 @@ private final class FakeProvider: DestinationTokenProvider {
         self.buckets = buckets
     }
 
-    func tokens(for chain: Chain, forceRefresh _: Bool) async -> DestinationTokenBucket {
+    func tokens(for chain: Chain, forceRefresh _: Bool) -> DestinationTokenBucket {
         buckets[chain] ?? .empty(chain: chain)
     }
 }

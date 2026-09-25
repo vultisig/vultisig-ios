@@ -349,7 +349,7 @@ private final class RequestCountingHTTPClient: HTTPClientProtocol, @unchecked Se
         lock.withLock { count }
     }
 
-    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+    func request(_ target: TargetType) throws -> HTTPResponse<Data> {
         _ = target
         lock.withLock { count += 1 }
         throw TestError.unexpectedRequest

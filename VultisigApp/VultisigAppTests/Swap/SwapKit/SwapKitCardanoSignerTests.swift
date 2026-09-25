@@ -51,7 +51,7 @@ final class SwapKitCardanoSignerTests: XCTestCase {
     // MARK: - Pre-signing digest
 
     func testPreSigningHashFromUserCbor() throws {
-        let payload = try makePayload()
+        let payload = makePayload()
         let hashes = try SwapKitCardanoSigner.preSigningHashes(payload: payload)
         // Cardano signs a single Blake2b-256 digest of the body, independent
         // of input count.

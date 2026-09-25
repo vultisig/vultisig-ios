@@ -65,6 +65,9 @@ struct KeysignCustomMessageConfirmView: View {
 
     @ViewBuilder
     var heroSection: some View {
+        if let dappMetadata {
+            DAppRequestBanner(metadata: dappMetadata)
+        }
         if let title = viewModel.decodedFunctionName {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
@@ -73,8 +76,15 @@ struct KeysignCustomMessageConfirmView: View {
         }
     }
 
+    /// Only EVM messages decode a function name, so the banner alone has to be
+    /// enough to earn the hero section and its separator.
     var hasHeroSection: Bool {
-        viewModel.decodedFunctionName != nil
+        dappMetadata != nil || viewModel.decodedFunctionName != nil
+    }
+
+    private var dappMetadata: DAppMetadata? {
+        guard let metadata = viewModel.dappMetadata, !metadata.isEmpty else { return nil }
+        return metadata
     }
 
     var hasTransactionDetails: Bool {

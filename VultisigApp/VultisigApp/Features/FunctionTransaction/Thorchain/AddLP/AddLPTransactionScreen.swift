@@ -78,9 +78,6 @@ struct AddLPTransactionScreen: View {
                     viewModel.loadPools()
                 }
             }
-            if viewModel.showsApprovalInfo {
-                approvalInfo
-            }
             if let message = viewModel.blockingMessage {
                 blockingNotice(message)
             }
@@ -96,7 +93,6 @@ struct AddLPTransactionScreen: View {
     var showsPoolSection: Bool {
         viewModel.showsPoolPicker
             || viewModel.canRetryPools
-            || viewModel.showsApprovalInfo
             || viewModel.blockingMessage != nil
             || !viewModel.isThorchainEnabled
     }
@@ -139,32 +135,6 @@ struct AddLPTransactionScreen: View {
             .disabled(viewModel.pools.isEmpty || viewModel.isLoadingPools)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    var approvalInfo: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("erc20ApprovalRequired".localized)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Text("approvalRequiredMessageLP".localized)
-                .font(Theme.fonts.bodySRegular)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("approvalTransaction".localized)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.primaryAccent1)
-                Text("addLiquidityTransaction".localized)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.primaryAccent1)
-            }
-            .padding(.leading, 16)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Theme.colors.bgNeutral)
-        .cornerRadius(Theme.radius.sm)
     }
 
     func blockingNotice(_ message: String) -> some View {

@@ -227,7 +227,7 @@ final class RPCHealthProbeTests: XCTestCase {
 
 // MARK: - Stub
 
-private final class ProbeStubHTTPClient: HTTPClientProtocol {
+private final class ProbeStubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     private enum Queued {
         case decoded(Any)
@@ -235,11 +235,12 @@ private final class ProbeStubHTTPClient: HTTPClientProtocol {
         case error(Error)
     }
 
+    private let lock = NSLock()
     private var pending: Queued?
 
-    func queueDecoded<T>(_ value: T) { pending = .decoded(value) }
-    func queueRawSuccess() { pending = .rawSuccess }
-    func queueError(_ error: Error) { pending = .error(error) }
+    func queueDecoded<T>(_ value: T) { lock.withLock { pending = .decoded(value) } }
+    func queueRawSuccess() { lock.withLock { pending = .rawSuccess } }
+    func queueError(_ error: Error) { lock.withLock { pending = .error(error) } }
 
     private func stubResponse() -> HTTPURLResponse {
         HTTPURLResponse(
@@ -252,12 +253,20 @@ private final class ProbeStubHTTPClient: HTTPClientProtocol {
 
     // swiftlint:disable async_without_await
     func request(_: TargetType) async throws -> HTTPResponse<Data> {
-        switch pending {
+        // A queued decoded value stays put for the typed overload.
+        let queued: Queued? = lock.withLock {
+            switch pending {
+            case .rawSuccess, .error:
+                defer { pending = nil }
+                return pending
+            default:
+                return nil
+            }
+        }
+        switch queued {
         case .rawSuccess:
-            pending = nil
             return HTTPResponse(data: Data(), response: stubResponse())
         case .error(let error):
-            pending = nil
             throw error
         default:
             throw HTTPError.invalidResponse
@@ -268,9 +277,12 @@ private final class ProbeStubHTTPClient: HTTPClientProtocol {
         _: TargetType,
         responseType _: T.Type
     ) async throws -> HTTPResponse<T> {
-        guard let pending else { throw HTTPError.invalidResponse }
-        self.pending = nil
-        switch pending {
+        let queued: Queued? = lock.withLock {
+            defer { pending = nil }
+            return pending
+        }
+        guard let queued else { throw HTTPError.invalidResponse }
+        switch queued {
         case .error(let error):
             throw error
         case .decoded(let raw):

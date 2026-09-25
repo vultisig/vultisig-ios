@@ -327,12 +327,12 @@ private final class SuiRecordingHTTPClient: HTTPClientProtocol, @unchecked Senda
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
-        lock.lock()
-        if case .requestParameters(let body, _) = target.task {
-            bodies.append(body)
+        let next: Data? = lock.withLock {
+            if case .requestParameters(let body, _) = target.task {
+                bodies.append(body)
+            }
+            return payloads.isEmpty ? nil : payloads.removeFirst()
         }
-        let next = payloads.isEmpty ? nil : payloads.removeFirst()
-        lock.unlock()
 
         guard let next else { throw HTTPError.noData }
         // Force-unwrap is safe: a 200 response for a valid URL always initializes.

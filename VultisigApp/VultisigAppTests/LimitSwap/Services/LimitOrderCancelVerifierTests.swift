@@ -151,16 +151,19 @@ final class LimitOrderCancelVerifierTests: XCTestCase {
 
 // MARK: - Doubles
 
-private final class StubHTTPClient: HTTPClientProtocol {
+private final class StubHTTPClient: HTTPClientProtocol, @unchecked Sendable {
     private let json: String
-    private(set) var requestCount = 0
+    private let lock = NSLock()
+    private var _requestCount = 0
+
+    var requestCount: Int { lock.withLock { _requestCount } }
 
     init(json: String) {
         self.json = json
     }
 
     func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
-        requestCount += 1
+        lock.withLock { _requestCount += 1 }
         let response = HTTPURLResponse(
             url: URL(staticString: "https://example.invalid"),
             statusCode: 200,

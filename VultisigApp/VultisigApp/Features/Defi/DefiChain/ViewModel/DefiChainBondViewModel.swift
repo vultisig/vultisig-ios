@@ -57,8 +57,33 @@ final class DefiChainBondViewModel: ObservableObject {
         self.interactor = interactor ?? DefiInteractorResolver.bondInteractor(for: chain)
     }
 
+    /// Rebinds to the vault the screen now shows, and re-seeds the node lists
+    /// from it.
+    ///
+    /// The re-seed is what the stake and LP view models get for free: their
+    /// position arrays are computed off the live vault relationship, so a rebind
+    /// re-derives them. These two are published caches, so leaving them would
+    /// show the previous vault's bonds — and the `totalBondedBalance` derived
+    /// from them — under the new vault until a refresh for it completes.
+    /// `availableNodes` and the error are dropped rather than re-seeded because
+    /// both describe a fetch made for the vault being left.
+    ///
+    /// The vault is adopted unconditionally, and only the cleanup is conditional:
+    /// the same vault can arrive as a freshly fetched instance, and keeping the
+    /// previous one would leave this reading relationships through a superseded
+    /// object. Re-seeding on that path, though, would throw away a node list that
+    /// is still current.
     func update(vault: Vault) {
+        let isDifferentVault = vault.pubKeyECDSA != self.vault.pubKeyECDSA
         self.vault = vault
+        guard isDifferentVault else { return }
+        // Mirrors the cache-first rule in `refresh()`: a vault that has not
+        // opted this chain in shows nothing, however much it has persisted.
+        activeBondedNodes = hasBondPositions
+            ? sortedActiveBonds(vault.bondPositions.filter { $0.node.coin.chain == chain })
+            : []
+        availableNodes = []
+        refreshError = nil
     }
 
     func refresh() async {
@@ -75,22 +100,41 @@ final class DefiChainBondViewModel: ObservableObject {
             )
         }
 
+        // Read the published vault here, on the main actor; the `async let`
+        // child task would otherwise read the property off it.
+        let refreshingVault = vault
         async let canUnbondTask = interactor.canUnbond()
         async let canAddBondTask = interactor.canAddBond()
-        async let fetchTask = interactor.fetchBondPositions(vault: vault)
+        async let fetchTask = interactor.fetchBondPositions(vault: refreshingVault)
 
+        // Both capability answers are about `chain`, which is fixed for this view
+        // model's lifetime — neither takes a vault — so they survive a vault
+        // switch and are published as soon as they arrive, without waiting on the
+        // position fetch below.
         self.canUnbond = await canUnbondTask
         self.canAddBond = await canAddBondTask
 
+        let fetched: (active: [BondPosition], available: [BondNode])?
         do {
-            let (active, available) = try await fetchTask
-            self.activeBondedNodes = sortedActiveBonds(active)
-            self.availableNodes = available
+            fetched = try await fetchTask
         } catch {
             // Preserve last-known UI state on transient failures so cached positions stay visible
             logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
-            self.refreshError = "defiRefreshFailed".localized
+            fetched = nil
         }
+
+        // The screen is built once and outlives a vault switch, so `vault` may
+        // have been rebound while the fetch was suspended. What follows describes
+        // `refreshingVault` — the error included, since it stands for a fetch made
+        // for that vault — so a superseded pass publishes none of it.
+        guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+
+        guard let fetched else {
+            self.refreshError = "defiRefreshFailed".localized
+            return
+        }
+        self.activeBondedNodes = sortedActiveBonds(fetched.active)
+        self.availableNodes = fetched.available
     }
 
     private func sortedActiveBonds(_ positions: [BondPosition]) -> [BondPosition] {

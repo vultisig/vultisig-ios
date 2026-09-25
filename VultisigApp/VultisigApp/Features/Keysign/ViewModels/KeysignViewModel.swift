@@ -64,6 +64,9 @@ class KeysignViewModel: ObservableObject {
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
     @Published var retryReason: BroadcastRetryReason?
+    @Published var solanaAtaRentState: SolanaSwapAtaRentState = .notRequired
+    private var solanaAtaRentLookupGeneration = 0
+    private var solanaAtaRentLookupTask: Task<Void, Never>?
 
     private var broadcastRetryCount = 0
     private static let maxBroadcastRetries = 1
@@ -182,6 +185,25 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        solanaAtaRentLookupTask?.cancel()
+        solanaAtaRentLookupGeneration += 1
+        let rentLookupGeneration = solanaAtaRentLookupGeneration
+        if let data = SolanaSwapNetworkFee.transactionData(payload: keysignPayload) {
+            solanaAtaRentState = .loading
+            solanaAtaRentLookupTask = Task { [weak self] in
+                let result: SolanaSwapAtaRentState
+                do {
+                    result = .resolved(try await SolanaSwapNetworkFee.ataRent(transactionData: data))
+                } catch {
+                    result = .failed
+                }
+                guard let self, !Task.isCancelled,
+                      self.solanaAtaRentLookupGeneration == rentLookupGeneration else { return }
+                self.solanaAtaRentState = result
+            }
+        } else {
+            solanaAtaRentState = .notRequired
+        }
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
@@ -250,9 +272,10 @@ class KeysignViewModel: ObservableObject {
 
     /// dApp identity (name / url / icon) attached to the keysign request, if
     /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
-    /// metadata is treated as absent.
+    /// metadata is treated as absent. A message-signing request carries no
+    /// `KeysignPayload`, so its identity rides on the custom message instead.
     var dappMetadata: DAppMetadata? {
-        keysignPayload?.dappMetadata
+        keysignPayload?.dappMetadata ?? customMessagePayload?.dappMetadata
     }
 
     func getTransactionExplorerURL(txid: String) -> String {
@@ -742,20 +765,20 @@ class KeysignViewModel: ObservableObject {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
+        var approveTransactions: [SignedTransactionResult] = []
         var signedTransactions: [SignedTransactionResult] = []
 
         if let approvePayload = keysignPayload.approvePayload {
             let swaps = THORChainSwaps()
-            let transaction = try swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
-            signedTransactions.append(transaction)
+            approveTransactions = try swaps.getSignedApproveTransactions(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
         }
 
         if let swapPayload = keysignPayload.swapPayload {
-            let incrementNonce = keysignPayload.approvePayload != nil
+            let nonceOffset = keysignPayload.approveNonceOffset
             switch swapPayload {
             case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
 
             case .generic(let payload):
@@ -765,7 +788,7 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(transaction)
                 default:
                     let swaps = OneInchSwaps()
-                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                     signedTransactions.append(transaction)
                 }
             case .mayachain(let payload):
@@ -773,7 +796,7 @@ class KeysignViewModel: ObservableObject {
                     break
                 }
                 let swaps = THORChainSwaps()
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, nonceOffset: nonceOffset)
                 signedTransactions.append(transaction)
             case .swapkit(let payload):
                 // Dispatch on SwapKit's `meta.txType`. PSBT (BTC), SUI, and
@@ -859,7 +882,14 @@ class KeysignViewModel: ObservableObject {
             }
         }
 
-        if let signedTransactionType = SignedTransactionType(transactions: signedTransactions) {
+        if !signedTransactions.isEmpty, let signedTransactionType = SignedTransactionType(transactions: approveTransactions + signedTransactions) {
+            return signedTransactionType
+        }
+
+        // Mirrors `KeysignMessageFactory`: only a token transaction signs its
+        // own leg after the approve legs.
+        let isTokenTransaction = keysignPayload.coin.chainType == .EVM && !keysignPayload.coin.isNativeToken
+        if !isTokenTransaction, let signedTransactionType = SignedTransactionType(transactions: approveTransactions) {
             return signedTransactionType
         }
 
@@ -879,8 +909,12 @@ class KeysignViewModel: ObservableObject {
                 return .regular(transaction)
             } else {
                 let helper = ERC20Helper.getHelper(coin: keysignPayload.coin)
-                let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
+                let transaction = try helper.getSignedTransaction(
+                    keysignPayload: keysignPayload,
+                    signatures: signatures,
+                    nonceOffset: keysignPayload.approveNonceOffset
+                )
+                return SignedTransactionType(transactions: approveTransactions + [transaction]) ?? .regular(transaction)
             }
 
         case .THORChain:
@@ -1098,14 +1132,23 @@ class KeysignViewModel: ObservableObject {
                     }
                 }
 
-            case .regularWithApprove(let approve, let transaction):
+            case .regularWithApprove(let approves, let transaction):
                 let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
-                let approvalResult = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                let approveTxHash = approvalResult == SubstrateBroadcast.alreadyBroadcastedSentinel
-                    ? approve.transactionHash : approvalResult
+                // Nonce order, back to back. A leg a peer already sent comes
+                // back as the duplicate sentinel rather than an error, so the
+                // rest still go out.
+                for approve in approves {
+                    _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                }
+                // The local hash, not the node's reply: the two are the same
+                // keccak for a fresh broadcast, and a duplicate replies with
+                // only the sentinel.
+                let approveTxHash = transactionType.approveTransactionHash
                 self.approveTxid = approveTxHash
                 #if os(iOS)
-                TransactionLiveActivityBroadcast.recordApproval(hash: approveTxHash, payload: keysignPayload, vault: vault)
+                if let approveTxHash {
+                    TransactionLiveActivityBroadcast.recordApproval(hash: approveTxHash, payload: keysignPayload, vault: vault)
+                }
                 #endif
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.txid = regularTxHash
@@ -1386,6 +1429,12 @@ class KeysignViewModel: ObservableObject {
 
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+        if solanaAtaRentState == .loading { return ("loading".localized, .empty) }
+        if solanaAtaRentState == .failed {
+            return ("errorNetworkUnstableDescription".localized, .empty)
+        }
+        return gasViewModel.getCalculatedNetworkFee(
+            payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
+        )
     }
 }

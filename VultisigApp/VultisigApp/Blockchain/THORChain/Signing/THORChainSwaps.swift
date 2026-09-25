@@ -48,7 +48,7 @@ class THORChainSwaps {
 
     init() {}
 
-    func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
+    func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> Data {
         switch swapPayload.fromCoin.chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
@@ -58,7 +58,7 @@ class THORChainSwaps {
             return try helper.getSigningInputData(keysignPayload: keysignPayload, signingInput: swapInput)
         case .ethereum, .bscChain, .avalanche, .base, .arbitrum:
             let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-            let signedEvmTx = try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+            let signedEvmTx = try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload, nonceOffset: nonceOffset)
             return signedEvmTx
         case .gaiaChain:
             let helper = try CosmosHelper.getHelper(forChain: .gaiaChain)
@@ -74,8 +74,8 @@ class THORChainSwaps {
         }
     }
 
-    func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
-        let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+    func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> [String] {
+        let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, nonceOffset: nonceOffset)
 
         switch swapPayload.fromCoin.chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet, .ethereum, .bscChain, .avalanche, .gaiaChain, .base, .arbitrum:
@@ -103,21 +103,28 @@ class THORChainSwaps {
         }
     }
 
-    func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> Data {
-        let approveInput = EthereumSigningInput.with {
-            $0.transaction = .with {
-                $0.erc20Approve = .with {
-                    $0.amount = approvePayload.amount.magnitude.serialize()
-                    $0.spender = approvePayload.spender
+    /// One signing input per approve leg, in nonce order: `approve(spender, 0)`
+    /// at the payload nonce when the payload asks for an allowance reset, then
+    /// `approve(spender, amount)` one nonce later; a single input at the payload
+    /// nonce otherwise. Every leg uses the payload's fee fields.
+    func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> [Data] {
+        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+        return try approvePayload.legAmounts.enumerated().map { leg, amount in
+            let approveInput = EthereumSigningInput.with {
+                $0.transaction = .with {
+                    $0.erc20Approve = .with {
+                        $0.amount = amount.magnitude.serialize()
+                        $0.spender = approvePayload.spender
+                    }
                 }
+                $0.toAddress = keysignPayload.coin.contractAddress
             }
-            $0.toAddress = keysignPayload.coin.contractAddress
+            return try helper.getPreSignedInputData(
+                signingInput: approveInput,
+                keysignPayload: keysignPayload,
+                nonceOffset: Int64(leg)
+            )
         }
-        let inputData = try EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
-            signingInput: approveInput,
-            keysignPayload: keysignPayload
-        )
-        return inputData
     }
 
     func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> [String] {
@@ -125,26 +132,34 @@ class THORChainSwaps {
             approvePayload: approvePayload,
             keysignPayload: keysignPayload
         )
-        let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
-        return [preSigningOutput.dataHash.hexString]
+        return try inputData.map {
+            let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: $0)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+            if !preSigningOutput.errorMessage.isEmpty {
+                throw HelperError.runtimeError(preSigningOutput.errorMessage)
+            }
+            return preSigningOutput.dataHash.hexString
+        }
     }
 
-    func getSignedApproveTransaction(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+    /// The signed approve legs, in the nonce order they were built.
+    func getSignedApproveTransactions(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> [SignedTransactionResult] {
         let inputData = try getPreSignedApproveInputData(
             approvePayload: approvePayload,
             keysignPayload: keysignPayload
         )
-        let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
-        return signedEvmTx
+        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+        return try inputData.map {
+            try helper.getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: $0, signatures: signatures)
+        }
     }
 
-    func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
+    func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], nonceOffset: Int64) throws -> SignedTransactionResult {
 
         let inputData = try getPreSignedInputData(
             swapPayload: swapPayload,
             keysignPayload: keysignPayload,
-            incrementNonce: incrementNonce
+            nonceOffset: nonceOffset
         )
 
         switch swapPayload.fromCoin.chain {

@@ -17,9 +17,10 @@ import SwiftData
 /// happens off the main actor (on background tasks during balance/fee/broadcast
 /// calls). `CustomRPCStore` bridges that gap: it owns a thread-safe in-memory
 /// mirror that the networking layer reads synchronously, and only the store's
-/// MainActor methods read/write these rows.
+/// MainActor methods read/write these rows. That confinement lives in the
+/// store rather than on the class, because the conformances `@Model` generates
+/// are nonisolated.
 @Model
-@MainActor
 final class CustomRPCOverride {
     @Attribute(.unique) var chainRaw: String
     var url: String

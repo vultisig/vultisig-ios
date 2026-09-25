@@ -37,7 +37,8 @@ enum PolkadotHelper {
             let specVersion,
             let transactionVersion,
             let genesisHash,
-            _
+            _,
+            let allowDeath
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")
         }
@@ -62,20 +63,22 @@ enum PolkadotHelper {
             // After Asset Hub update, even native DOT transfers use assetTransfer
             // with assetID 0 and feeAssetID 0 for native DOT
             // WalletCore respects custom callIndices when provided, so we pin them explicitly.
-            // For Asset Hub, Balances pallet is module 10, method 3 (transfer_keep_alive)
             $0.balanceCall.assetTransfer = PolkadotBalance.AssetTransfer.with {
                 // ZERO ASSET ID AND FEE ASSET ID ARE FOR DOT (native token)
                 $0.assetID = 0
                 $0.feeAssetID = 0
                 $0.toAddress = toAddress.description
                 $0.value = keysignPayload.toAmount.magnitude.serialize()
-                // Set call indices for Asset Hub Balances.transfer_keep_alive
-                // Module 10 (Balances), Method 3 (transfer_keep_alive)
-                // Aligns with SDK (sdk#548) - avoids account reaping on existential deposit edge cases
+                // Asset Hub Balances pallet (module 10). Method 3
+                // (transfer_keep_alive) fails rather than reap the sender on an
+                // existential-deposit edge, and is what every send signs unless
+                // the initiator set allow_death, which selects method 0
+                // (transfer_allow_death). The call index is part of the signed
+                // bytes, so it comes from the payload alone, never the amount.
                 $0.callIndices = PolkadotCallIndices.with {
                     $0.custom = PolkadotCustomCallIndices.with {
-                        $0.moduleIndex = 10  // Balances pallet on Asset Hub
-                        $0.methodIndex = 3   // transfer_keep_alive method
+                        $0.moduleIndex = 10
+                        $0.methodIndex = allowDeath ? 0 : 3
                     }
                 }
             }

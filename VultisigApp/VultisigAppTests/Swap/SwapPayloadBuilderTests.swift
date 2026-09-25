@@ -9,6 +9,7 @@
 //
 
 import BigInt
+import WalletCore
 import XCTest
 @testable import VultisigApp
 
@@ -280,7 +281,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testOneInchPayloadUsesEvmTxToAsTarget() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .oneinch(makeEVMQuote(toAddress: "0xOneInchRouter"), fee: BigInt(1_000))
         )
 
@@ -303,7 +304,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testKyberSwapPayloadProviderIsKyberSwap() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .kyberswap(makeEVMQuote(toAddress: "0xKyber"), fee: BigInt(0))
         )
 
@@ -322,7 +323,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testLifiPayloadProviderIsLifi() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .lifi(makeEVMQuote(toAddress: "0xLifi"), fee: BigInt(0), integratorFee: nil)
         )
 
@@ -340,6 +341,114 @@ final class SwapPayloadBuilderTests: XCTestCase {
     }
 
     // MARK: - Jupiter (Solana)
+
+    func testSolanaSwapFeeMatchesInitiatorAndCosignerWithPriority() async throws {
+        let wire = solanaFeeFixture(signatures: 1, price: 1_000_000, limit: 100_000)
+        let quote: SwapQuote = .jupiter(
+            makeSolanaEVMQuote(base64: wire), fee: nil, platformFee: .zero, feeOnInput: false
+        )
+        let transaction = makeSolanaJupiterTransaction(quote: quote)
+        let specific = BlockChainSpecific.Solana(
+            recentBlockHash: "blockhash",
+            priorityFee: BigInt(1_000_000),
+            priorityLimit: BigInt(100_000),
+            fromAddressPubKey: nil,
+            toAddressPubKey: nil,
+            hasProgramId: false
+        )
+        let vault = makeVault()
+        let baseFee = try await SwapCryptoLogic.thorchainFee(
+            for: specific, fromCoin: transaction.fromCoin, fromAmount: 1, vault: vault
+        )
+        let initiatorFee = SwapCryptoLogic.fee(
+            quote: quote, fromCoin: transaction.fromCoin, thorchainFee: baseFee
+        )
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction, chainSpecific: specific, vault: vault, now: fixedNow
+        )
+        let cosignerFee = JoinKeysignGasViewModel().getCalculatedNetworkFee(payload: payload)
+        let unresolvedFee = JoinKeysignGasViewModel().getCalculatedNetworkFee(
+            payload: payload, solanaAtaRent: nil
+        )
+
+        XCTAssertEqual(baseFee, BigInt(105_000))
+        XCTAssertEqual(initiatorFee, BigInt(105_000))
+        XCTAssertEqual(unresolvedFee.feeCrypto, .empty)
+        let expectedSol = (Decimal(105_000) / pow(10, 9)).formatToDecimal(digits: 9)
+        XCTAssertEqual(cosignerFee.feeCrypto, "\(expectedSol) SOL")
+        XCTAssertEqual(
+            SwapCryptoLogic.fundingNetworkFee(
+                displayedFee: initiatorFee, gasEstimate: specific.gas, chain: .solana
+            ),
+            SolanaHelper.defaultFeeInLamports
+        )
+    }
+
+    func testSolanaSwapFeeWithoutPriorityUsesSignatureFee() {
+        let specific = solanaChainSpecific()
+        XCTAssertEqual(
+            SolanaSwapNetworkFee.fee(
+                chainSpecific: specific, transactionData: solanaFeeFixture(signatures: 1)
+            ),
+            BigInt(5_000)
+        )
+    }
+
+    func testSolanaSwapFeeCountsEverySignature() {
+        let wire = solanaFeeFixture(signatures: 2)
+        let specific = solanaChainSpecific()
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(chainSpecific: specific, transactionData: wire), BigInt(10_000))
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire), BigInt(10_000))
+    }
+
+    func testSolanaSwapFeeUsesWirePriorityInsteadOfQuoteMetadata() {
+        let specific = BlockChainSpecific.Solana(
+            recentBlockHash: "blockhash", priorityFee: BigInt(1_000_000),
+            priorityLimit: BigInt(100_000), fromAddressPubKey: nil,
+            toAddressPubKey: nil, hasProgramId: false
+        )
+        XCTAssertEqual(
+            SolanaSwapNetworkFee.fee(chainSpecific: specific, transactionData: solanaFeeFixture(signatures: 1)),
+            BigInt(5_000)
+        )
+    }
+
+    func testSolanaSwapFeeUsesDefaultLimitAndAddsResolvedAtaRent() async throws {
+        let wire = solanaFeeFixture(signatures: 1, price: 1_000_000, includeSwapAndAta: true)
+        // Both programs are SBF instructions, so the default limit is 400K.
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, BigInt(2_039_280))
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire), BigInt(405_000))
+        XCTAssertEqual(SolanaSwapNetworkFee.fee(transactionData: wire, ataRent: rent), BigInt(2_444_280))
+    }
+
+    func testSolanaSwapFeeSkipsExistingIdempotentAta() async throws {
+        let wire = solanaFeeFixture(signatures: 1, includeSwapAndAta: true)
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: true)
+        )
+        XCTAssertEqual(rent, .zero)
+    }
+
+    func testSolanaSwapFeeSkipsAtaPaidByAnotherSigner() async throws {
+        let wire = solanaFeeFixture(signatures: 2, includeSwapAndAta: true, ataPayer: 1)
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, .zero)
+    }
+
+    func testSolanaSwapFeeUsesToken2022AtaRent() async throws {
+        let wire = solanaFeeFixture(
+            signatures: 1, includeSwapAndAta: true, ataTokenProgram: .token2022
+        )
+        let rent = try await SolanaSwapNetworkFee.ataRent(
+            transactionData: wire, accounts: MockSolanaSwapAccounts(exists: false)
+        )
+        XCTAssertEqual(rent, BigInt(2_074_080))
+    }
 
     func testJupiterPayloadIsGenericSolanaWithBase64InTxData() async throws {
         let vault = makeVault()
@@ -502,7 +611,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
         // LiFi declares the fee token on the quote; here it matches the
         // source token.
         let vault = makeVault()
-        let transaction = makeTokenToNativeTransaction(
+        let transaction = try makeTokenToNativeTransaction(
             quote: .lifi(
                 makeEVMQuote(
                     toAddress: "0xLifi",
@@ -534,7 +643,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
         // native fee coin: empty contract serializes as nil token id with
         // the native coin's decimals.
         let vault = makeVault()
-        let transaction = makeTokenToNativeTransaction(
+        let transaction = try makeTokenToNativeTransaction(
             quote: .lifi(
                 makeEVMQuote(
                     toAddress: "0xLifi",
@@ -681,9 +790,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertNil(payload.approvePayload)
     }
 
-    func testBuildApprovePayloadNilWhenQuoteAbsent() {
+    func testApproveSpenderNilWhenQuoteAbsent() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
-        XCTAssertNil(SwapCryptoLogic.buildApprovePayload(fromCoin: usdc, amount: 100, quote: nil))
+        XCTAssertNil(try SwapCryptoLogic.approveSpender(fromCoin: usdc, quote: nil))
     }
 
     // MARK: - Missing-quote guard (internal error, not a money error)
@@ -755,7 +864,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: rune,            advancedSettings: .default
+            feeCoin: rune,
+            advancedSettings: .default
         )
     }
 
@@ -772,14 +882,15 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: cacao,            advancedSettings: .default
+            feeCoin: cacao,
+            advancedSettings: .default
         )
     }
 
-    private func makeERC20Transaction(quote: SwapQuote) -> SwapTransaction {
+    private func makeERC20Transaction(quote: SwapQuote) throws -> SwapTransaction {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        return SwapTransaction(
+        return try SwapTransaction(
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
@@ -789,8 +900,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
-        )
+            feeCoin: eth,
+            advancedSettings: .default
+        ).withApprovalDecided(.approve)
     }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {
@@ -831,14 +943,15 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
+            feeCoin: eth,
+            advancedSettings: .default
         )
     }
 
-    private func makeTokenToNativeTransaction(quote: SwapQuote) -> SwapTransaction {
+    private func makeTokenToNativeTransaction(quote: SwapQuote) throws -> SwapTransaction {
         let eth = makeContractCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, contract: "")
         let usdc = makeContractCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: usdcContract)
-        return SwapTransaction(
+        return try SwapTransaction(
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
@@ -848,8 +961,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,            advancedSettings: .default
-        )
+            feeCoin: eth,
+            advancedSettings: .default
+        ).withApprovalDecided(.approve)
     }
 
     private func makeThorQuote(
@@ -914,7 +1028,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: sol,            advancedSettings: .default
+            feeCoin: sol,
+            advancedSettings: .default
         )
     }
 
@@ -949,11 +1064,78 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
+    private func solanaFeeFixture(
+        signatures: Int,
+        price: UInt64? = nil,
+        limit: UInt32? = nil,
+        includeSwapAndAta: Bool = false,
+        ataPayer: UInt8 = 0,
+        ataTokenProgram: SolanaTokenProgram = .token
+    ) -> String {
+        let signatureSlots = Array(repeating: UInt8(0), count: signatures * 64)
+        let accountKeys = (1...signatures).flatMap { signer in
+            Array(repeating: UInt8(signer), count: 32)
+        }
+        var programKeys = [[UInt8]]()
+        var instructions = [[UInt8]]()
+        if price != nil || limit != nil {
+            programKeys.append(SolanaV0Transaction.computeBudgetProgramKey)
+            let programIndex = UInt8(signatures)
+            if let limit {
+                let data = [UInt8(2)] + (0..<4).map { UInt8(truncatingIfNeeded: limit >> ($0 * 8)) }
+                instructions.append([programIndex, 0, UInt8(data.count)] + data)
+            }
+            if let price {
+                let data = [UInt8(3)] + (0..<8).map { UInt8(truncatingIfNeeded: price >> ($0 * 8)) }
+                instructions.append([programIndex, 0, UInt8(data.count)] + data)
+            }
+        }
+        if includeSwapAndAta {
+            programKeys.append(Array(repeating: UInt8(9), count: 32))
+            instructions.append([UInt8(signatures + programKeys.count - 1), 0, 1, 9])
+            let ataKey = Base58.decodeNoCheck(string: SolanaAssociatedTokenAccount.programId)!
+            programKeys.append([UInt8](ataKey))
+            let ataProgramIndex = UInt8(signatures + programKeys.count - 1)
+            programKeys.append(Array(repeating: UInt8(10), count: 32))
+            let ataAddressIndex = UInt8(signatures + programKeys.count - 1)
+            let tokenKey = Base58.decodeNoCheck(string: ataTokenProgram.rawValue)!
+            programKeys.append([UInt8](tokenKey))
+            let tokenProgramIndex = UInt8(signatures + programKeys.count - 1)
+            instructions.append(
+                [ataProgramIndex, 6, ataPayer, ataAddressIndex, 0, 0, 0, tokenProgramIndex, 1, 1]
+            )
+        }
+        var bytes: [UInt8] = [UInt8(signatures)]
+        bytes.append(contentsOf: signatureSlots)
+        bytes.append(contentsOf: [0x80, UInt8(signatures), 0, UInt8(programKeys.count), UInt8(signatures + programKeys.count)])
+        bytes.append(contentsOf: accountKeys)
+        bytes.append(contentsOf: programKeys.flatMap { $0 })
+        bytes.append(contentsOf: Array(repeating: UInt8(2), count: 32))
+        bytes.append(UInt8(instructions.count))
+        bytes.append(contentsOf: instructions.flatMap { $0 })
+        bytes.append(0) // No address-table lookups.
+        return Data(bytes).base64EncodedString()
+    }
+
     private func cosmosChainSpecific() -> BlockChainSpecific {
         .Cosmos(accountNumber: 1, sequence: 0, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
     }
 
     private func ethereumChainSpecific() -> BlockChainSpecific {
         .Ethereum(maxFeePerGasWei: BigInt(2_000_000_000), priorityFeeWei: BigInt(1_000_000_000), nonce: 1, gasLimit: BigInt(300_000))
+    }
+}
+
+private struct MockSolanaSwapAccounts: SolanaSwapAccountFetching {
+    let exists: Bool
+
+    func fetchAddressLookupTables(addresses _: [String]) throws -> [String: [String]] { [:] }
+
+    func checkAccountExists(address _: String) throws -> (exists: Bool, isToken2022: Bool) {
+        (exists, false)
+    }
+
+    func fetchRentExemptMinimum(size: Int) throws -> UInt64 {
+        size == 170 ? 2_074_080 : 2_039_280
     }
 }

@@ -53,6 +53,9 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
 private extension BlockaidScannerService {
 
     func scanEvmTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
+        guard transaction.precedingTransactions.isEmpty else {
+            return try await scanEvmTransactionBulk(transaction)
+        }
         return try await runSecurityScan(transaction) {
             let response = try await blockaidRpcClient.scanEVMTransaction(
                 chain: transaction.chain,
@@ -62,6 +65,34 @@ private extension BlockaidScannerService {
                 data: transaction.data
             )
             return try response.toSecurityScannerResult(provider: Constants.providerName)
+        }
+    }
+
+    /// Scans the preceding transactions and `transaction` in signing order, so
+    /// e.g. a swap is simulated with its approve already applied. The verdict
+    /// is the least secure entry; any entry that failed to scan fails the scan.
+    func scanEvmTransactionBulk(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
+        let transactions = transaction.precedingTransactions + [transaction]
+        return try await runSecurityScan(transaction) {
+            let responses = try await blockaidRpcClient.scanEVMTransactionBulk(
+                chain: transaction.chain,
+                transactions: transactions.map {
+                    EthereumScanTransactionRequestJson.DataJson(
+                        from: $0.from,
+                        to: $0.to,
+                        data: $0.data,
+                        value: $0.amount.toHexString()
+                    )
+                }
+            )
+            guard responses.count == transactions.count else {
+                throw BlockaidScannerError.scannerError(
+                    "Expected \(transactions.count) bulk scan results, got \(responses.count)",
+                    payload: nil
+                )
+            }
+            let results = try responses.map { try $0.toSecurityScannerResult(provider: Constants.providerName) }
+            return results.dropFirst().reduce(results[0], SecurityScannerViewModel.lessSecure)
         }
     }
 

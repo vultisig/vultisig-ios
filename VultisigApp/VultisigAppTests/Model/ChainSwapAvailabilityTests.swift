@@ -68,7 +68,7 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .sei: false,
         .qbtc: false,
         .bittensor: false,
-        .kujira: false,
+        .kujira: false
     ]
 
     // MARK: - Per-chain assertions

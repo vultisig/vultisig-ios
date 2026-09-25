@@ -200,8 +200,9 @@ struct LimitSwapEntryView: View {
         // turns a prepared order into a `SwapTransaction` and navigates.
         //
         // Built SYNCHRONOUSLY (no await) so the Verify transaction is a consistent
-        // snapshot of the prepared draft and a single tap enqueues a single route
-        // — matching every other place/continue flow. `networkFeeEstimate` carries
+        // snapshot of the prepared draft. The only await is the ERC-20 approval
+        // read that follows, with the CTA disabled while it runs, so a single tap
+        // still enqueues a single route. `networkFeeEstimate` carries
         // the best-effort source-chain fee ESTIMATE (`vm.networkFeeEstimate`),
         // refreshed on asset/amount change; it drives display + tx-history only. The
         // REAL fee is re-derived from a fresh fetch at keysign time in
@@ -242,11 +243,15 @@ struct LimitSwapEntryView: View {
             advancedSettings: .default
         )
 
-        router.navigate(to: SwapRoute.verify(
-            transaction: transaction,
-            retrySignal: SwapRetrySignal(),
-            vaultPubKeyECDSA: vault.pubKeyECDSA
-        ))
+        Task {
+            // A failed approval read raises `placeOrderError` and stays here.
+            guard let decided = await vm.withApprovalDecision(transaction) else { return }
+            router.navigate(to: SwapRoute.verify(
+                transaction: decided,
+                retrySignal: SwapRetrySignal(),
+                vaultPubKeyECDSA: vault.pubKeyECDSA
+            ))
+        }
     }
 
     private func handleSwapAssets() {

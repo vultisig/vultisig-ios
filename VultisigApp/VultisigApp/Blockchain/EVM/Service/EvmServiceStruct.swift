@@ -263,6 +263,18 @@ struct EvmServiceStruct {
         return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
 
+    /// An `eth_call` against the latest block, answered either way: the node's
+    /// return data, or the error it reported. Callers that must tell a revert
+    /// from a node failure read the error's code and message from here.
+    func ethCall(from: String?, to: String, data: String) async throws -> EVMCallOutcome {
+        var call = ["to": to, "data": data]
+        if let from {
+            call["from"] = from
+        }
+        let response = try await rpcService.sendRawRPCRequest(method: "eth_call", params: [call, "latest"])
+        return try EVMCallOutcome(jsonRPCResponse: response)
+    }
+
     /// Reads native + ERC20 balances for `walletAddress` in a single `eth_call`
     /// to Multicall3 `aggregate3`. When `includeNative` is set, a `getEthBalance`
     /// call is prepended so the native balance comes back in the same round-trip.

@@ -61,6 +61,7 @@ extension CustomMessagePayload: ProtoMappable {
         self.vaultLocalPartyID = proto.vaultLocalPartyID
         self.vaultPublicKeyECDSA = proto.vaultPublicKeyEcdsa
         self.chain = proto.chain
+        self.dappMetadata = proto.hasDappMetadata ? DAppMetadata(proto: proto.dappMetadata) : nil
     }
 
     func mapToProtobuff() -> VSCustomMessagePayload {
@@ -70,6 +71,44 @@ extension CustomMessagePayload: ProtoMappable {
             $0.vaultLocalPartyID = vaultLocalPartyID
             $0.vaultPublicKeyEcdsa = vaultPublicKeyECDSA
             $0.chain = chain
+            // The field has explicit presence: assigning even an empty message
+            // adds bytes, and a payload with no dApp must encode exactly as it
+            // did before the field existed.
+            if let dappMetadata = dappMetadata?.normalized {
+                $0.dappMetadata = dappMetadata.mapToProtobuff()
+            }
+        }
+    }
+}
+
+extension DAppMetadata {
+
+    /// Trimmed copy, or `nil` when nothing is left. The decoder and both
+    /// encoders apply this one rule, so metadata that decodes to `nil` is never
+    /// written as a present-but-empty message and a round trip is stable.
+    var normalized: DAppMetadata? {
+        let trimmed = DAppMetadata(
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            url: url.trimmingCharacters(in: .whitespacesAndNewlines),
+            iconURL: iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Treats whitespace-only proto strings as missing — `isEmpty` and `host`
+    /// derive from these, so trim once at the boundary rather than
+    /// re-normalizing at every consumer.
+    init?(proto: VSDAppMetadata) {
+        let raw = DAppMetadata(name: proto.name, url: proto.url, iconURL: proto.iconURL)
+        guard let metadata = raw.normalized else { return nil }
+        self = metadata
+    }
+
+    func mapToProtobuff() -> VSDAppMetadata {
+        .with {
+            $0.name = name
+            $0.url = url
+            $0.iconURL = iconURL
         }
     }
 }
@@ -146,19 +185,7 @@ extension KeysignPayload: ProtoMappable {
 
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
-        if proto.hasDappMetadata {
-            // Treat whitespace-only proto strings as missing — `isEmpty` and
-            // `host` derive from these, so trim once at the boundary rather
-            // than re-normalizing at every consumer.
-            let metadata = DAppMetadata(
-                name: proto.dappMetadata.name.trimmingCharacters(in: .whitespacesAndNewlines),
-                url: proto.dappMetadata.url.trimmingCharacters(in: .whitespacesAndNewlines),
-                iconURL: proto.dappMetadata.iconURL.trimmingCharacters(in: .whitespacesAndNewlines)
-            )
-            self.dappMetadata = metadata.isEmpty ? nil : metadata
-        } else {
-            self.dappMetadata = nil
-        }
+        self.dappMetadata = proto.hasDappMetadata ? DAppMetadata(proto: proto.dappMetadata) : nil
     }
 
     func mapToProtobuff() -> VSKeysignPayload {
@@ -194,12 +221,8 @@ extension KeysignPayload: ProtoMappable {
 
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
-            if let dappMetadata {
-                $0.dappMetadata = .with {
-                    $0.name = dappMetadata.name
-                    $0.url = dappMetadata.url
-                    $0.iconURL = dappMetadata.iconURL
-                }
+            if let dappMetadata = dappMetadata?.normalized {
+                $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
         }
     }
@@ -210,12 +233,14 @@ extension ERC20ApprovePayload {
     init(proto: VSErc20ApprovePayload) {
         self.amount = BigInt(stringLiteral: proto.amount)
         self.spender = proto.spender
+        self.resetAllowanceFirst = proto.resetAllowanceFirst
     }
 
     func mapToProtobuff() -> VSErc20ApprovePayload {
         return .with {
             $0.amount = String(amount)
             $0.spender = String(spender)
+            $0.resetAllowanceFirst = resetAllowanceFirst
         }
     }
 }
@@ -541,7 +566,8 @@ extension BlockChainSpecific {
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
                 genesisHash: value.genesisHash,
-                gas: value.gas == 0 ? nil : BigInt(value.gas)
+                gas: value.gas == 0 ? nil : BigInt(value.gas),
+                allowDeath: value.allowDeath
             )
         case .suicheSpecific(let value):
             let coinsArray: [[String: String]] = value.coins.map { coin in
@@ -691,7 +717,7 @@ extension BlockChainSpecific {
                 $0.isActiveDestination = isActiveDestination
             })
 
-        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
+        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas, let allowDeath):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce
@@ -700,6 +726,7 @@ extension BlockChainSpecific {
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
                 $0.gas = UInt64(gas ?? 0)
+                $0.allowDeath = allowDeath
             })
         case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag, let transactionType):
             return .rippleSpecific(.with {

@@ -585,9 +585,7 @@ private final class PagingStubHTTPClient: HTTPClientProtocol, @unchecked Sendabl
               case .dashboard(_, _, let limit, let offset) = api else {
             throw HTTPError.invalidURL
         }
-        lock.lock()
-        recorded.append(Request(limit: limit, offset: offset))
-        lock.unlock()
+        lock.withLock { recorded.append(Request(limit: limit, offset: offset)) }
 
         // swiftlint:disable:next force_unwrapping
         let url = URL(string: "https://example.test")!

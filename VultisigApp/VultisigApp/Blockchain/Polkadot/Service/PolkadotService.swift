@@ -224,7 +224,8 @@ class PolkadotService: RpcService {
                 currentBlockNumber: gasInfo.currentBlockNumber,
                 specVersion: gasInfo.specVersion,
                 transactionVersion: gasInfo.transactionVersion,
-                genesisHash: gasInfo.genesisHash
+                genesisHash: gasInfo.genesisHash,
+                allowDeath: false
             ),
             utxos: [],
             memo: memo,

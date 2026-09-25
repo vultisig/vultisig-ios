@@ -193,6 +193,10 @@ enum EvmService {
         return try await (try service).fetchERC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
     }
 
+    func ethCall(from: String?, to: String, data: String) async throws -> EVMCallOutcome {
+        return try await (try service).ethCall(from: from, to: to, data: data)
+    }
+
     func fetchERC20Balances(
         contractAddresses: [String],
         walletAddress: String,

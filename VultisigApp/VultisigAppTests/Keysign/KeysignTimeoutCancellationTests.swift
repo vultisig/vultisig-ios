@@ -35,7 +35,7 @@ final class KeysignTimeoutCancellationTests: XCTestCase {
 
         func request(_: TargetType) async throws -> HTTPResponse<Data> {
             await Task.yield()
-            lock.lock(); _requestCount += 1; lock.unlock()
+            lock.withLock { _requestCount += 1 }
             let url = URL(string: "https://example.invalid")!
             let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return HTTPResponse(data: Data(), response: response)
