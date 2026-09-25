@@ -1367,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "Low risk transaction detected";
 "securityScannerMediumRiskTitle" = "Medium risk transaction detected";
 "securityScannerPoweredBy" = "Powered by ";
+"securityScannerSafeDescription" = "No malicious activity detected. This transaction is safe to sign.";
+"securityScannerSafeTitle" = "Scanned by Blockaid";
 "securityScannerTransactionNotScanned" = "Transaction not scanned by";
 "securityScannerTransactionScannedBy" = "Transaction scanned by";
 "securityScannerTransactionScanning" = "Scanning…";

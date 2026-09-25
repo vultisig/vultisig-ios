@@ -1367,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "检测到低风险交易";
 "securityScannerMediumRiskTitle" = "检测到中等风险交易";
 "securityScannerPoweredBy" = "由以下提供支持";
+"securityScannerSafeDescription" = "未检测到恶意活动。此交易可以安全签署。";
+"securityScannerSafeTitle" = "已通过 Blockaid 扫描";
 "securityScannerTransactionNotScanned" = "交易未被扫描";
 "securityScannerTransactionScannedBy" = "交易已被扫描";
 "securityScannerTransactionScanning" = "正在扫描…";

@@ -32,8 +32,11 @@ enum KeysignReviewSheetLayout {
 struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: View {
     let title: String
     let scanRing: KeysignReviewScanRing
-    let verdict: KeysignReviewVerdict?
+    let scanStatus: KeysignReviewScanStatus?
     let onClose: () -> Void
+    /// Swaps the sheet into `scanStatus`, once a scan result exists. A no-op
+    /// default keeps parity fixtures that never tap the mark unchanged.
+    let onTapScanMark: () -> Void
     /// `false` lays the body out in place, for rendering the sheet to an
     /// image: `ImageRenderer` does not draw scroll views.
     let bodyScrolls: Bool
@@ -44,15 +47,16 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
     @State private var bodyHeight: CGFloat = 0
     @State private var footerHeight: CGFloat = 0
     @State private var verdictHeight: CGFloat = 0
-    /// The last complete measurement, held while a switch to the verdict (or
-    /// back) waits for the incoming content to be measured.
+    /// The last complete measurement, held while a switch to the scan status
+    /// (or back) waits for the incoming content to be measured.
     @State private var settledHeight: CGFloat?
 
     init(
         title: String,
         scanRing: KeysignReviewScanRing,
-        verdict: KeysignReviewVerdict? = nil,
+        scanStatus: KeysignReviewScanStatus? = nil,
         onClose: @escaping () -> Void,
+        onTapScanMark: @escaping () -> Void = {},
         bodyScrolls: Bool = true,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder footer: @escaping () -> Footer,
@@ -60,8 +64,9 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
     ) {
         self.title = title
         self.scanRing = scanRing
-        self.verdict = verdict
+        self.scanStatus = scanStatus
         self.onClose = onClose
+        self.onTapScanMark = onTapScanMark
         self.bodyScrolls = bodyScrolls
         self.content = content
         self.footer = footer
@@ -70,10 +75,12 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
 
     var body: some View {
         VStack(spacing: KeysignReviewSheetLayout.sectionSpacing) {
-            KeysignReviewHeader(title: title, scanRing: scanRing, onClose: onClose, accessory: headerAccessory)
+            KeysignReviewHeader(
+                title: title, scanRing: scanRing, onClose: onClose, onTapScanMark: onTapScanMark, accessory: headerAccessory
+            )
 
-            if let verdict {
-                KeysignReviewVerdictView(verdict: verdict)
+            if let scanStatus {
+                KeysignReviewScanStatusView(status: scanStatus)
                     .fixedSize(horizontal: false, vertical: true)
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { verdictHeight = $0 }
                     .transition(.opacity)
@@ -97,11 +104,11 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
         .padding(.top, KeysignReviewSheetLayout.topInset)
         .padding(.horizontal, KeysignReviewSheetLayout.horizontalInset)
         #if os(macOS)
-        .padding(.bottom, verdict == nil ? KeysignReviewSheetLayout.bottomInset : KeysignReviewSheetLayout.verdictBottomInset)
+        .padding(.bottom, scanStatus == nil ? KeysignReviewSheetLayout.bottomInset : KeysignReviewSheetLayout.verdictBottomInset)
         #endif
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.colors.bgSurface1)
-        .animation(.easeInOut(duration: 0.2), value: verdict == nil)
+        .animation(.easeInOut(duration: 0.2), value: scanStatus == nil)
         .onChange(of: contentHeight) { _, height in
             guard let height else { return }
             settledHeight = height
@@ -118,7 +125,7 @@ struct KeysignReviewSheet<Content: View, Footer: View, HeaderAccessory: View>: V
     /// Everything the sheet needs to show without scrolling, once measured.
     var contentHeight: CGFloat? {
         let chrome = KeysignReviewSheetLayout.topInset + KeysignReviewSheetLayout.controlSize + KeysignReviewSheetLayout.sectionSpacing
-        if verdict != nil {
+        if scanStatus != nil {
             guard verdictHeight > 0 else { return nil }
             return (chrome + verdictHeight + KeysignReviewSheetLayout.verdictBottomInset).rounded(.up)
         }
@@ -131,8 +138,9 @@ extension KeysignReviewSheet where HeaderAccessory == EmptyView {
     init(
         title: String,
         scanRing: KeysignReviewScanRing,
-        verdict: KeysignReviewVerdict? = nil,
+        scanStatus: KeysignReviewScanStatus? = nil,
         onClose: @escaping () -> Void,
+        onTapScanMark: @escaping () -> Void = {},
         bodyScrolls: Bool = true,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder footer: @escaping () -> Footer
@@ -140,8 +148,9 @@ extension KeysignReviewSheet where HeaderAccessory == EmptyView {
         self.init(
             title: title,
             scanRing: scanRing,
-            verdict: verdict,
+            scanStatus: scanStatus,
             onClose: onClose,
+            onTapScanMark: onTapScanMark,
             bodyScrolls: bodyScrolls,
             content: content,
             footer: footer,

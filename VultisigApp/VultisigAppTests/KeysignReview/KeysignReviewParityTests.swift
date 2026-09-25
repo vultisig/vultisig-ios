@@ -300,7 +300,7 @@ final class KeysignReviewParityTests: XCTestCase {
         KeysignReviewSheet(
             title: title,
             scanRing: KeysignReviewScanRing(.scanned(result)),
-            verdict: KeysignReviewVerdict(result: result, onGoBack: {}, onContinueAnyway: {}),
+            scanStatus: .verdict(KeysignReviewVerdict(result: result, onGoBack: {}, onContinueAnyway: {})),
             onClose: {},
             content: { EmptyView() },
             footer: { EmptyView() }

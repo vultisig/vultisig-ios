@@ -102,6 +102,9 @@ extension KeysignReviewScanRing.Tone {
 /// Loading when a scan is retried or another outcome is tested.
 private struct KeysignReviewScanMark: View {
     let scanRing: KeysignReviewScanRing
+    /// Fires only while `isTappable`: while loading, hidden or unavailable
+    /// there is no result to show, so the mark stays decorative.
+    let onTap: () -> Void
 
     @State private var animationVM: RiveViewModel?
     @State private var animationInstance: RiveDataBindingViewModel.Instance?
@@ -109,7 +112,24 @@ private struct KeysignReviewScanMark: View {
     @State private var firedState: KeysignReviewScanRing.AnimationState?
     @State private var generation = 0
 
+    /// A result exists only once the animation has a terminal state to play.
+    private var isTappable: Bool { scanRing.animationState.isTerminal }
+
     var body: some View {
+        Group {
+            if isTappable {
+                Button(action: onTap) { mark }
+                    .buttonStyle(.plain)
+            } else {
+                mark
+            }
+        }
+        .onAppear { transition(to: scanRing.animationState) }
+        .onChange(of: scanRing.animationState) { _, state in transition(to: state) }
+        .onDisappear { clearAnimation() }
+    }
+
+    private var mark: some View {
         ZStack {
             if scanRing.animationState != .hidden {
                 Circle().fill(Theme.colors.bgSheetControl)
@@ -122,12 +142,11 @@ private struct KeysignReviewScanMark: View {
             }
         }
         .frame(width: KeysignReviewSheetLayout.controlSize, height: KeysignReviewSheetLayout.controlSize)
+        // Matches the close button's hit area on the opposite side.
+        .contentShape(Circle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(scanRing.accessibilityLabel ?? "")
         .accessibilityHidden(scanRing.accessibilityLabel == nil)
-        .onAppear { transition(to: scanRing.animationState) }
-        .onChange(of: scanRing.animationState) { _, state in transition(to: state) }
-        .onDisappear { clearAnimation() }
     }
 
     private func transition(to state: KeysignReviewScanRing.AnimationState) {
@@ -183,6 +202,8 @@ struct KeysignReviewHeader<Accessory: View>: View {
     let title: String
     let scanRing: KeysignReviewScanRing
     let onClose: () -> Void
+    /// Swaps the sheet into the Blockaid scan status, once a result exists.
+    let onTapScanMark: () -> Void
     /// Shown just before the close button.
     let accessory: () -> Accessory
 
@@ -211,7 +232,7 @@ struct KeysignReviewHeader<Accessory: View>: View {
     }
 
     private var scanMark: some View {
-        KeysignReviewScanMark(scanRing: scanRing)
+        KeysignReviewScanMark(scanRing: scanRing, onTap: onTapScanMark)
     }
 
     private var closeButton: some View {

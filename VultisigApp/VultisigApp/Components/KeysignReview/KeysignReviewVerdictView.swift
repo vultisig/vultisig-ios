@@ -6,25 +6,16 @@
 import SwiftUI
 
 /// An unsafe scan result, shown in place of the review's figures after Sign
-/// is tapped.
+/// is tapped, or after a tap on the header's scan mark.
 struct KeysignReviewVerdict {
     let result: SecurityScannerResult
     let onGoBack: () -> Void
     let onContinueAnyway: () -> Void
-}
-
-extension KeysignReviewVerdict {
-    /// Every review's verdict guard, in one place: shown only while the
-    /// security-scanner sheet is up and it has produced a result.
-    static func forSecurityScanner(
-        showSecurityScannerSheet: Bool,
-        result: SecurityScannerResult?,
-        onGoBack: @escaping () -> Void,
-        onContinueAnyway: @escaping () -> Void
-    ) -> KeysignReviewVerdict? {
-        guard showSecurityScannerSheet, let result else { return nil }
-        return KeysignReviewVerdict(result: result, onGoBack: onGoBack, onContinueAnyway: onContinueAnyway)
-    }
+    /// Reached by tapping the scan mark, "Continue anyway" must not bypass
+    /// the review's own signing preconditions (unchecked confirmations, a fee
+    /// still loading, a refused decode...). Driven by the same predicate the
+    /// Sign/Join button disables on, never a copy of it.
+    var isContinueAnywayDisabled: Bool = false
 }
 
 struct KeysignReviewVerdictView: View {
@@ -60,6 +51,8 @@ struct KeysignReviewVerdictView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .disabled(verdict.isContinueAnywayDisabled)
+                .opacity(verdict.isContinueAnywayDisabled ? 0.4 : 1)
             }
         }
     }
@@ -86,6 +79,21 @@ struct KeysignReviewVerdictView: View {
     }
 
     private var medallion: some View {
+        KeysignReviewStatusMedallion(tint: tint, icon: verdictIcon)
+    }
+
+    var verdictIcon: Icon {
+        Icon(isDanger ? .keysignReviewDanger : .keysignReviewWarning, color: tint, size: 20)
+    }
+}
+
+/// The circular status glyph shared by every scan-status view: a dark
+/// medallion with a soft tint glow behind a centred icon.
+struct KeysignReviewStatusMedallion: View {
+    let tint: Color
+    let icon: Icon
+
+    var body: some View {
         ZStack {
             Circle()
                 .fill(Theme.colors.bgPrimary)
@@ -104,13 +112,9 @@ struct KeysignReviewVerdictView: View {
                 .frame(width: 13.3, height: 6.7)
                 .blur(radius: 7.7)
 
-            verdictIcon
+            icon
         }
         .frame(width: 48, height: 49)
         .accessibilityHidden(true)
-    }
-
-    var verdictIcon: Icon {
-        Icon(isDanger ? .keysignReviewDanger : .keysignReviewWarning, color: tint, size: 20)
     }
 }

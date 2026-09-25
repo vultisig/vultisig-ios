@@ -32,8 +32,9 @@ struct FunctionTransactionReviewContent: View {
         KeysignReviewSheet(
             title: "overview".localized,
             scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
-            verdict: verdict,
-            onClose: reviewPresenter.dismiss
+            scanStatus: scanStatus,
+            onClose: reviewPresenter.dismiss,
+            onTapScanMark: revealScanStatus
         ) {
             FunctionTransactionReviewSummaryView(summary: summary) {
                 cancelLimitOrderDisclosures
@@ -82,16 +83,21 @@ struct FunctionTransactionReviewContent: View {
         )
     }
 
-    private var verdict: KeysignReviewVerdict? {
+    private var scanStatus: KeysignReviewScanStatus? {
         .forSecurityScanner(
             showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
             result: viewModel.securityScannerState.result,
-            onGoBack: { viewModel.showSecurityScannerSheet = false },
+            isContinueAnywayDisabled: isSigningBlocked,
+            onDismiss: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
                 signAndProceed()
             }
         )
+    }
+
+    private func revealScanStatus() {
+        viewModel.showSecurityScannerSheet = true
     }
 
     // MARK: - Summary

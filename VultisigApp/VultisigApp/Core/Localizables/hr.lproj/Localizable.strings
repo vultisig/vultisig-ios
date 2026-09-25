@@ -1367,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "Otkrivena transakcija s niskim rizikom";
 "securityScannerMediumRiskTitle" = "Otkrivena transakcija srednjeg rizika";
 "securityScannerPoweredBy" = "Pokrenut";
+"securityScannerSafeDescription" = "Nije otkrivena zlonamjerna aktivnost. Ova transakcija je sigurna za potpisivanje.";
+"securityScannerSafeTitle" = "Skenirao Blockaid";
 "securityScannerTransactionNotScanned" = "Transakcija nije skenirana prema";
 "securityScannerTransactionScannedBy" = "Transakcija skenirana";
 "securityScannerTransactionScanning" = "Skeniranje…";

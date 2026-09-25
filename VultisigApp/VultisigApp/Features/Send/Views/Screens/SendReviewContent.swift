@@ -52,8 +52,9 @@ struct SendReviewContent: View {
         KeysignReviewSheet(
             title: "sendOverview".localized,
             scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
-            verdict: verdict,
-            onClose: reviewPresenter.dismiss
+            scanStatus: scanStatus,
+            onClose: reviewPresenter.dismiss,
+            onTapScanMark: revealScanStatus
         ) {
             SendReviewSummaryView(input: summary)
         } footer: {
@@ -130,16 +131,21 @@ struct SendReviewContent: View {
         retrySignal.pendingRetryReason = nil
     }
 
-    private var verdict: KeysignReviewVerdict? {
+    private var scanStatus: KeysignReviewScanStatus? {
         .forSecurityScanner(
             showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
             result: viewModel.securityScannerState.result,
-            onGoBack: { viewModel.showSecurityScannerSheet = false },
+            isContinueAnywayDisabled: viewModel.signButtonDisabled,
+            onDismiss: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
                 signAndProceed()
             }
         )
+    }
+
+    private func revealScanStatus() {
+        viewModel.showSecurityScannerSheet = true
     }
 
     private var toAlias: String? {

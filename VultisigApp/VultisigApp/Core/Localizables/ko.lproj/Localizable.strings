@@ -1367,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "낮은 위험 트랜잭션 감지됨";
 "securityScannerMediumRiskTitle" = "중간 위험 트랜잭션 감지됨";
 "securityScannerPoweredBy" = "제공: ";
+"securityScannerSafeDescription" = "악성 활동이 감지되지 않았습니다. 이 거래는 서명해도 안전합니다.";
+"securityScannerSafeTitle" = "Blockaid에서 스캔함";
 "securityScannerTransactionNotScanned" = "트랜잭션이 스캔되지 않았습니다";
 "securityScannerTransactionScannedBy" = "트랜잭션 스캔됨";
 "securityScannerTransactionScanning" = "스캔 중…";

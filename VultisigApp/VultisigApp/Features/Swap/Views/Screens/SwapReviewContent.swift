@@ -40,8 +40,9 @@ struct SwapReviewContent: View {
         KeysignReviewSheet(
             title: "swapOverview".localized,
             scanRing: KeysignReviewScanRing(viewModel.securityScannerState, isScanComplete: isScanComplete),
-            verdict: verdict,
-            onClose: reviewPresenter.dismiss
+            scanStatus: scanStatus,
+            onClose: reviewPresenter.dismiss,
+            onTapScanMark: revealScanStatus
         ) {
             SwapReviewSummaryView(
                 summary: SwapReviewSummary(transaction: transaction, vault: vault)
@@ -53,7 +54,7 @@ struct SwapReviewContent: View {
                 isApproveCorrect: $vm.isApproveCorrect,
                 isApproveRequired: transaction.isApproveRequired,
                 isFastVault: vault.offersFastSigning,
-                isSignDisabled: !viewModel.canStartSigning || signButtonDisabled,
+                isSignDisabled: isSignDisabled,
                 onFastSign: { fastPasswordPresented = true },
                 onPairedSign: {
                     fastVaultPassword = .empty
@@ -118,16 +119,27 @@ struct SwapReviewContent: View {
         }
     }
 
-    private var verdict: KeysignReviewVerdict? {
+    private var scanStatus: KeysignReviewScanStatus? {
         .forSecurityScanner(
             showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
             result: viewModel.securityScannerState.result,
-            onGoBack: { viewModel.showSecurityScannerSheet = false },
+            isContinueAnywayDisabled: isSignDisabled,
+            onDismiss: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
                 signAndProceed()
             }
         )
+    }
+
+    /// The exact predicate `SigningCTAButtons` disables Sign on, reused so
+    /// "Continue anyway" can never sign something Sign itself would refuse.
+    private var isSignDisabled: Bool {
+        !viewModel.canStartSigning || signButtonDisabled
+    }
+
+    private func revealScanStatus() {
+        viewModel.showSecurityScannerSheet = true
     }
 
     /// A retryable broadcast failure reopens this review with a fresh quote.
