@@ -114,7 +114,7 @@ struct TransactionActivityCard: View {
                 }
             }
             route(showsDetails: showsDetails)
-            if showsHeader || (showsDetails && state.fee != nil) {
+            if showsHeader || (showsDetails && (state.fee != nil || state.elapsedTimeAnchor != nil)) {
                 Rectangle().fill(WidgetTheme.separator).frame(height: 0.5)
                 footer(showsDetails: showsDetails)
             }
@@ -217,6 +217,14 @@ struct TransactionActivityCard: View {
             if showsHeader {
                 TransactionActivityStatus(state: state, fontSize: 12)
                     .layoutPriority(1)
+            }
+            if showsDetails, let anchor = state.elapsedTimeAnchor {
+                Text(timerInterval: anchor...Date.distantFuture, countsDown: false)
+                    .font(WidgetTheme.labelFont(size: 11))
+                    .foregroundStyle(WidgetTheme.secondaryText)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             Spacer(minLength: 0)
             if showsDetails, let fee = state.fee {

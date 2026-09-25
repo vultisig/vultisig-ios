@@ -53,6 +53,20 @@ final class TransactionActivityStateTests: XCTestCase {
         XCTAssertNil(TransactionActivityState(phase: .confirmed, observedAt: date, revision: 2).staleDate)
     }
 
+    func testElapsedTimeAnchorTracksSubmittedAtOnlyWhileNonTerminal() {
+        let submittedAt = Date(timeIntervalSince1970: 200)
+        let inProgress = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
+                                                   showDetails: true, submittedAt: submittedAt)
+        XCTAssertEqual(inProgress.elapsedTimeAnchor, submittedAt)
+        let terminal = TransactionActivityState(phase: .confirmed, observedAt: Date(), revision: 1,
+                                                 showDetails: true, submittedAt: submittedAt)
+        XCTAssertNil(terminal.elapsedTimeAnchor)
+        let privateMode = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,
+                                                    submittedAt: submittedAt)
+        XCTAssertNil(privateMode.submittedAt)
+        XCTAssertNil(privateMode.elapsedTimeAnchor)
+    }
+
     func testRichPayloadCannotContainFullRecipient() {
         let address = "0x1234567890123456789012345678901234567890"
         let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1,

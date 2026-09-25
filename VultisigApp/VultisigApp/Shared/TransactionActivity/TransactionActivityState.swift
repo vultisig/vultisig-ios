@@ -181,6 +181,10 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
 
     /// An in-process observation is useful briefly; suspension cannot extend it.
     var staleDate: Date? { phase.isTerminal ? nil : observedAt.addingTimeInterval(90) }
+
+    /// Anchor for a `Text(timerInterval:)` elapsed-time display. Settled transactions
+    /// freeze their content, so ticking a clock past that point would mislead.
+    var elapsedTimeAnchor: Date? { phase.isTerminal ? nil : submittedAt }
 }
 
 enum TransactionActivityLink {
