@@ -189,35 +189,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
 
             Group {
-                if let signDirect = input.keysignPayload?.signDirect {
+                let decodedPayload = DecodedPayloadDetailView(payload: input.keysignPayload, vault: input.vault)
+                if decodedPayload.hasContent {
                     Separator()
-                    SignDirectDisplayView(signDirect: signDirect)
-                } else if let signAmino = input.keysignPayload?.signAmino {
-                    Separator()
-                    SignAminoDisplayView(signAmino: signAmino)
-                } else if let signSolana = input.keysignPayload?.signSolana {
-                    Separator()
-                    SignSolanaDisplayView(signSolana: signSolana)
-                } else if let signTon = input.keysignPayload?.signTon,
-                          let coin = input.keysignPayload?.coin,
-                          let vault = input.vault {
-                    Separator()
-                    SignTonDisplayView(
-                        signTon: signTon,
-                        keysignPayload: input.keysignPayload,
-                        vault: vault,
-                        fromAddress: coin.address
-                    )
-                } else if let signBitcoin = input.keysignPayload?.signBitcoin {
-                    Separator()
-                    SignBitcoinDisplayView(signBitcoin: signBitcoin)
-                } else if let signSui = input.keysignPayload?.signSui {
-                    Separator()
-                    SignSuiDisplayView(signSui: signSui)
-                } else if let signRipple = input.keysignPayload?.signRipple {
-                    Separator()
-                    SignRippleDisplayView(signRipple: signRipple)
                 }
+                decodedPayload
             }
         }
         .padding(24)

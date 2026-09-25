@@ -183,30 +183,8 @@ struct SendReviewSummaryView: View {
         }
     }
 
-    @ViewBuilder
     private var decodedPayload: some View {
-        if let signDirect = input.keysignPayload?.signDirect {
-            SignDirectDisplayView(signDirect: signDirect)
-        } else if let signAmino = input.keysignPayload?.signAmino {
-            SignAminoDisplayView(signAmino: signAmino)
-        } else if let signSolana = input.keysignPayload?.signSolana {
-            SignSolanaDisplayView(signSolana: signSolana)
-        } else if let signTon = input.keysignPayload?.signTon,
-                  let coin = input.keysignPayload?.coin,
-                  let vault = input.vault {
-            SignTonDisplayView(
-                signTon: signTon,
-                keysignPayload: input.keysignPayload,
-                vault: vault,
-                fromAddress: coin.address
-            )
-        } else if let signBitcoin = input.keysignPayload?.signBitcoin {
-            SignBitcoinDisplayView(signBitcoin: signBitcoin)
-        } else if let signSui = input.keysignPayload?.signSui {
-            SignSuiDisplayView(signSui: signSui)
-        } else if let signRipple = input.keysignPayload?.signRipple {
-            SignRippleDisplayView(signRipple: signRipple)
-        }
+        DecodedPayloadDetailView(payload: input.keysignPayload, vault: input.vault)
     }
 
     private func namedAddress(name: String?, address: String) -> some View {
