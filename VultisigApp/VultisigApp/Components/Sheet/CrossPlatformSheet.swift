@@ -17,6 +17,10 @@ extension View {
     ///   the sheet is still on screen races the dismissal animation and the
     ///   destination can be dropped. Defaults to `nil`, so existing call sites
     ///   are unaffected.
+    /// - Parameter useOverlayOnMacOS: forces the in-window overlay presentation
+    ///   instead of a native `.sheet` on macOS 26+. Needed where the sheet's
+    ///   content is Metal-backed Rive artwork, which a native macOS sheet can
+    ///   fail to composite.
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,

@@ -175,3 +175,23 @@ struct FastVaultEnterPasswordView: View {
             })
     }
 }
+
+extension View {
+    /// The fast-vault password prompt shared by every keysign review's sign
+    /// flow (Send, Swap, FunctionTransaction).
+    func fastVaultPasswordSheet(
+        isPresented: Binding<Bool>,
+        password: Binding<String>,
+        vault: Vault,
+        onSubmit: @escaping () -> Void
+    ) -> some View {
+        crossPlatformSheet(isPresented: isPresented) {
+            FastVaultEnterPasswordView(
+                isPresented: isPresented,
+                password: password,
+                vault: vault,
+                onSubmit: onSubmit
+            )
+        }
+    }
+}

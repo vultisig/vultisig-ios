@@ -74,20 +74,18 @@ struct FunctionTransactionReviewContent: View {
             }
         }
         .task { await viewModel.loadValidators(transaction: transaction) }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                isPresented: $fastPasswordPresented,
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { onSignPress() }
-            )
-        }
+        .fastVaultPasswordSheet(
+            isPresented: $fastPasswordPresented,
+            password: $fastVaultPassword,
+            vault: vault,
+            onSubmit: { onSignPress() }
+        )
     }
 
     private var verdict: KeysignReviewVerdict? {
-        guard viewModel.showSecurityScannerSheet, let result = viewModel.securityScannerState.result else { return nil }
-        return KeysignReviewVerdict(
-            result: result,
+        .forSecurityScanner(
+            showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
+            result: viewModel.securityScannerState.result,
             onGoBack: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
@@ -244,12 +242,11 @@ struct FunctionTransactionReviewContent: View {
                     // FunctionTransaction retries show no reason banner, so the
                     // signal is not threaded back to this review.
                     let context = SigningTxContext.functionCall(vault: vault, tx: transaction, retry: SendRetrySignal())
-                    let route: SigningRoute
-                    if let fastPassword = fastVaultPassword.nilIfEmpty {
-                        route = .keysign(.fast(context: context, keysignPayload: payload, fastVaultPassword: fastPassword))
-                    } else {
-                        route = .pair(context: context, keysignPayload: payload, fastVaultPassword: nil)
-                    }
+                    let route = SigningRoute.afterReview(
+                        context: context,
+                        keysignPayload: payload,
+                        fastVaultPassword: fastVaultPassword
+                    )
                     reviewPresenter.proceed(to: route, presentationID: presentationID)
                 }
             } catch {

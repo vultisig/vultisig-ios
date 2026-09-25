@@ -28,6 +28,24 @@ enum SigningRoute: Hashable {
     case keysign(SigningKeysignRoute)
 }
 
+extension SigningRoute {
+    /// Every review's fast-vs-paired branch, in one place. Fast vaults sign
+    /// server-side with no peer to pair with, so a present fast password
+    /// routes straight to keysign; an empty one means the user chose paired
+    /// signing. Security-relevant: keep this the single source of truth
+    /// rather than re-deriving it at each review's call site.
+    static func afterReview(
+        context: SigningTxContext,
+        keysignPayload: KeysignPayload,
+        fastVaultPassword: String
+    ) -> SigningRoute {
+        if let fastPassword = fastVaultPassword.nilIfEmpty {
+            return .keysign(.fast(context: context, keysignPayload: keysignPayload, fastVaultPassword: fastPassword))
+        }
+        return .pair(context: context, keysignPayload: keysignPayload, fastVaultPassword: nil)
+    }
+}
+
 /// The two keysign entry modes, merged from the former `.fastKeysign` +
 /// `.keysign(input:)` routes into one `.keysign` case. Route-safe to exactly
 /// the same degree as before: `.ready` carries the post-pairing `KeysignInput`

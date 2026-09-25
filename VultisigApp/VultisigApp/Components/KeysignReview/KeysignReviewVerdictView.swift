@@ -13,6 +13,20 @@ struct KeysignReviewVerdict {
     let onContinueAnyway: () -> Void
 }
 
+extension KeysignReviewVerdict {
+    /// Every review's verdict guard, in one place: shown only while the
+    /// security-scanner sheet is up and it has produced a result.
+    static func forSecurityScanner(
+        showSecurityScannerSheet: Bool,
+        result: SecurityScannerResult?,
+        onGoBack: @escaping () -> Void,
+        onContinueAnyway: @escaping () -> Void
+    ) -> KeysignReviewVerdict? {
+        guard showSecurityScannerSheet, let result else { return nil }
+        return KeysignReviewVerdict(result: result, onGoBack: onGoBack, onContinueAnyway: onContinueAnyway)
+    }
+}
+
 struct KeysignReviewVerdictView: View {
     let verdict: KeysignReviewVerdict
 

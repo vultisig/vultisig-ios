@@ -101,14 +101,12 @@ struct SwapReviewContent: View {
             viewModel.isLoading = false
             fastVaultPassword = .empty
         }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                isPresented: $fastPasswordPresented,
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { onSignPress() }
-            )
-        }
+        .fastVaultPasswordSheet(
+            isPresented: $fastPasswordPresented,
+            password: $fastVaultPassword,
+            vault: vault,
+            onSubmit: { onSignPress() }
+        )
     }
 
     @ViewBuilder
@@ -121,9 +119,9 @@ struct SwapReviewContent: View {
     }
 
     private var verdict: KeysignReviewVerdict? {
-        guard viewModel.showSecurityScannerSheet, let result = viewModel.securityScannerState.result else { return nil }
-        return KeysignReviewVerdict(
-            result: result,
+        .forSecurityScanner(
+            showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
+            result: viewModel.securityScannerState.result,
             onGoBack: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
@@ -163,12 +161,11 @@ struct SwapReviewContent: View {
             guard !Task.isCancelled else { return }
             // Preparation froze the transaction for the payload and everything
             // after it; the live display state is not read again.
-            let route: SigningRoute
-            if let password {
-                route = .keysign(.fast(context: prepared.context, keysignPayload: prepared.payload, fastVaultPassword: password))
-            } else {
-                route = .pair(context: prepared.context, keysignPayload: prepared.payload, fastVaultPassword: nil)
-            }
+            let route = SigningRoute.afterReview(
+                context: prepared.context,
+                keysignPayload: prepared.payload,
+                fastVaultPassword: password ?? ""
+            )
             reviewPresenter.proceed(to: route, presentationID: presentationID)
         }
     }

@@ -114,14 +114,12 @@ struct SendReviewContent: View {
                 viewModel.fastVaultPassword = ""
             }
         }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                isPresented: $fastPasswordPresented,
-                password: $viewModel.fastVaultPassword,
-                vault: vault,
-                onSubmit: { onSignPress() }
-            )
-        }
+        .fastVaultPasswordSheet(
+            isPresented: $fastPasswordPresented,
+            password: $viewModel.fastVaultPassword,
+            vault: vault,
+            onSubmit: { onSignPress() }
+        )
     }
 
     /// A retryable broadcast failure reopens this review. The load above
@@ -133,9 +131,9 @@ struct SendReviewContent: View {
     }
 
     private var verdict: KeysignReviewVerdict? {
-        guard viewModel.showSecurityScannerSheet, let result = viewModel.securityScannerState.result else { return nil }
-        return KeysignReviewVerdict(
-            result: result,
+        .forSecurityScanner(
+            showSecurityScannerSheet: viewModel.showSecurityScannerSheet,
+            result: viewModel.securityScannerState.result,
             onGoBack: { viewModel.showSecurityScannerSheet = false },
             onContinueAnyway: {
                 viewModel.showSecurityScannerSheet = false
@@ -197,16 +195,11 @@ struct SendReviewContent: View {
                 let payload = try await viewModel.validateForm()
                 await MainActor.run {
                     let context = SigningTxContext.send(vault: vault, tx: viewModel.transaction, retry: retrySignal)
-                    // Fast vaults sign server-side with no peer to pair with, so
-                    // the review hands straight to keysign and the pairing screen
-                    // never mounts. A present fast password is the fast-sign
-                    // signal; an empty one means the user chose paired signing.
-                    let route: SigningRoute
-                    if let fastPassword = viewModel.fastVaultPassword.nilIfEmpty {
-                        route = .keysign(.fast(context: context, keysignPayload: payload, fastVaultPassword: fastPassword))
-                    } else {
-                        route = .pair(context: context, keysignPayload: payload, fastVaultPassword: nil)
-                    }
+                    let route = SigningRoute.afterReview(
+                        context: context,
+                        keysignPayload: payload,
+                        fastVaultPassword: viewModel.fastVaultPassword
+                    )
                     reviewPresenter.proceed(to: route, presentationID: presentationID)
                 }
             } catch {
