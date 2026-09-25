@@ -6,20 +6,28 @@
 import SwiftUI
 import VultisigUIResources
 
-/// A label on the left and its value on the right.
+/// A label on the left and its value on the right. `labelStyle` defaults to
+/// the main review's type ramp; pass `.caption` for the swap's compact
+/// provider/slippage/fee-line rows.
 struct KeysignReviewRow<Value: View>: View {
     let label: String
+    var labelStyle: KeysignReviewTextStyle = .footnote
     let value: () -> Value
 
-    init(label: String, @ViewBuilder value: @escaping () -> Value) {
+    init(
+        label: String,
+        labelStyle: KeysignReviewTextStyle = .footnote,
+        @ViewBuilder value: @escaping () -> Value
+    ) {
         self.label = label
+        self.labelStyle = labelStyle
         self.value = value
     }
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Text(label)
-                .keysignReviewText(.footnote)
+                .keysignReviewText(labelStyle)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .fixedSize()
@@ -40,19 +48,24 @@ extension KeysignReviewRow where Value == KeysignReviewRowValue {
         value: String,
         image: String? = nil,
         color: Color = Theme.colors.textPrimary,
-        isMultiline: Bool = false
+        isMultiline: Bool = false,
+        labelStyle: KeysignReviewTextStyle = .footnote,
+        valueStyle: KeysignReviewTextStyle = .bodyS
     ) {
-        self.init(label: label) {
-            KeysignReviewRowValue(text: value, image: image, color: color, isMultiline: isMultiline)
+        self.init(label: label, labelStyle: labelStyle) {
+            KeysignReviewRowValue(text: value, image: image, color: color, isMultiline: isMultiline, style: valueStyle)
         }
     }
 }
 
+/// `style` defaults to the main review's value size; pass `.caption` for the
+/// swap's compact detail rows.
 struct KeysignReviewRowValue: View {
     let text: String
-    let image: String?
-    let color: Color
-    let isMultiline: Bool
+    var image: String? = nil
+    var color: Color = Theme.colors.textPrimary
+    var isMultiline: Bool = false
+    var style: KeysignReviewTextStyle = .bodyS
 
     var body: some View {
         HStack(spacing: 4) {
@@ -62,7 +75,7 @@ struct KeysignReviewRowValue: View {
                     .frame(width: 16, height: 16)
             }
             Text(text)
-                .keysignReviewText(.bodyS)
+                .keysignReviewText(style)
                 .foregroundStyle(color)
                 .lineLimit(isMultiline ? nil : 1)
                 .truncationMode(.middle)
@@ -88,53 +101,6 @@ struct KeysignReviewFeeRow: View {
             .keysignReviewText(.bodyS)
             .lineLimit(1)
         }
-    }
-}
-
-/// A compact row, as used by the swap's provider, slippage and fee lines.
-struct KeysignReviewDetailRow<Value: View>: View {
-    let label: String
-    let value: () -> Value
-
-    init(label: String, @ViewBuilder value: @escaping () -> Value) {
-        self.label = label
-        self.value = value
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text(label)
-                .keysignReviewText(.caption)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .lineLimit(1)
-                .fixedSize()
-
-            Spacer(minLength: 0)
-
-            value()
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-extension KeysignReviewDetailRow where Value == KeysignReviewDetailValue {
-    init(label: String, value: String, color: Color = Theme.colors.textPrimary) {
-        self.init(label: label) {
-            KeysignReviewDetailValue(text: value, color: color)
-        }
-    }
-}
-
-struct KeysignReviewDetailValue: View {
-    let text: String
-    let color: Color
-
-    var body: some View {
-        Text(text)
-            .keysignReviewText(.caption)
-            .foregroundStyle(color)
-            .lineLimit(1)
-            .truncationMode(.middle)
     }
 }
 

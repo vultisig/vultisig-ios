@@ -41,7 +41,7 @@ struct SwapReviewSummaryView: View {
             }
 
             if let provider = summary.provider {
-                KeysignReviewDetailRow(label: "provider".localized) {
+                KeysignReviewRow(label: "provider".localized, labelStyle: .caption) {
                     HStack(spacing: 4) {
                         VultisigImage(provider.logo)
                             .resizable()
@@ -55,7 +55,13 @@ struct SwapReviewSummaryView: View {
             }
 
             if let slippage = summary.slippage {
-                KeysignReviewDetailRow(label: "slippage".localized, value: slippage, color: Theme.colors.textSecondary)
+                KeysignReviewRow(
+                    label: "slippage".localized,
+                    value: slippage,
+                    color: Theme.colors.textSecondary,
+                    labelStyle: .caption,
+                    valueStyle: .caption
+                )
             }
 
             fees
@@ -82,9 +88,9 @@ struct SwapReviewSummaryView: View {
 
     private var feeLines: some View {
         ForEach(summary.feeLines) { line in
-            KeysignReviewDetailRow(label: line.label) {
+            KeysignReviewRow(label: line.label, labelStyle: .caption) {
                 if let value = line.value {
-                    KeysignReviewDetailValue(text: value, color: line.valueColor)
+                    KeysignReviewRowValue(text: value, color: line.valueColor, style: .caption)
                 }
             }
             .modifier(FeeLineIcon(icon: line.icon))
