@@ -335,7 +335,7 @@ struct HomeScreen: View {
                             navigateToJoinKeygen(selectedVault: selectedVault)
                         },
                         onKeysignTransaction: {
-                            navigateToJoinKeysignAfterScanner()
+                            navigateToJoinKeysign()
                         },
                         onSendCrypto: {
                             navigateToSendCrypto(selectedVault: selectedVault)
@@ -446,10 +446,6 @@ extension HomeScreen {
 
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
-        navigateToJoinKeysignAfterScanner()
-    }
-
-    fileprivate func navigateToJoinKeysignAfterScanner() {
         navigateToJoinKeysign()
     }
 
@@ -707,7 +703,7 @@ extension HomeScreen {
 
     fileprivate func navigateToJoinKeysign() {
         guard let vault = appViewModel.selectedVault else { return }
-        _ = scannerKeysignHandoff.requestJoin()
+        scannerKeysignHandoff.requestJoin()
         pendingReviewKind = nil
         presentedReview = nil
         joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)

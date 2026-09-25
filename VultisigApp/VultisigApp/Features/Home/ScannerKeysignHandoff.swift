@@ -16,11 +16,9 @@ struct ScannerKeysignHandoff {
         reviewIsReady = false
     }
 
-    /// Returns true only when no scanner dismissal is needed.
-    mutating func requestJoin() -> Bool {
+    mutating func requestJoin() {
         joinIsPending = true
         reviewIsReady = false
-        return !scannerIsActive
     }
 
     /// Payload preparation and sheet dismissal may finish in either order.
