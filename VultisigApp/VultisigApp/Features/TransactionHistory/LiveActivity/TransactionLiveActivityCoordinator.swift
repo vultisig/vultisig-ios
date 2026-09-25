@@ -131,7 +131,7 @@ final class TransactionLiveActivityCoordinator {
         start()
         refresh()
         await waitForPendingUpdates()
-        let ids = client.activities.compactMap { backgroundRecord(id: $0.recordID)?.id }
+        let ids = mostStaleFirst(client.activities.compactMap { backgroundRecord(id: $0.recordID)?.id })
         TransactionActivityDiagnostics.record("poll.eligibleRecords", detail: "count=\(ids.count)")
         for id in ids {
             guard !Task.isCancelled else { return }
@@ -142,6 +142,16 @@ final class TransactionLiveActivityCoordinator {
         guard !Task.isCancelled else { return }
         refresh()
         await waitForPendingUpdates()
+    }
+
+    /// Oldest last-observed first, so the bounded background window spends its 22s
+    /// budget on the records most overdue for an update.
+    private func mostStaleFirst(_ ids: [UUID]) -> [UUID] {
+        ids.sorted { lhs, rhs in
+            let lhsObservedAt = bindings.values.first(where: { $0.recordID == lhs })?.observedAt ?? .distantPast
+            let rhsObservedAt = bindings.values.first(where: { $0.recordID == rhs })?.observedAt ?? .distantPast
+            return lhsObservedAt < rhsObservedAt
+        }
     }
 
     func trackBroadcast(_ row: TransactionHistoryData) {

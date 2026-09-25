@@ -324,6 +324,23 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         XCTAssertEqual(client.requestCount, 3)
     }
 
+    func testBackgroundRefreshObservesMostStaleRecordsFirst() async {
+        let manager = coordinator()
+        let now = Date()
+        let newest = ActivityTestFixture.row(createdAt: now)
+        let middle = ActivityTestFixture.row(createdAt: now.addingTimeInterval(-30))
+        let oldest = ActivityTestFixture.row(createdAt: now.addingTimeInterval(-90))
+        for row in [newest, middle, oldest] { rows[row.id] = row }
+        // Admit out of staleness order so a passing test proves reordering, not admission order.
+        manager.admit(newest)
+        manager.admit(middle)
+        manager.admit(oldest)
+        client.isForeground = false
+        var observedOrder: [UUID] = []
+        await manager.refreshInBackground { observedOrder.append($0.id) }
+        XCTAssertEqual(observedOrder, [oldest.id, middle.id, newest.id])
+    }
+
     func testBackgroundLookupFailsClosedForUnreadableOrMissingVault() {
         let row = addRow()
         let manager = coordinator()
