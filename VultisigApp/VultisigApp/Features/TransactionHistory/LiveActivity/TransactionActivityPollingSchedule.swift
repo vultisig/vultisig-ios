@@ -33,3 +33,14 @@ struct TransactionActivityPollingSchedule {
         }.min() ?? NativeSwapTrackingService.baseInterval
     }
 }
+
+/// `TransactionActivityStaleness.floor` lives in `TransactionActivityState.swift` because that
+/// file also compiles into the widget extension target, which never sees `TransactionHistoryData`.
+extension TransactionActivityStaleness {
+    /// Scales the window past the floor only for providers whose own cadence already runs slow.
+    static let multiplier: TimeInterval = 8
+
+    static func window(for row: TransactionHistoryData) -> TimeInterval {
+        max(floor, TransactionActivityPollingSchedule.interval(for: row) * multiplier)
+    }
+}

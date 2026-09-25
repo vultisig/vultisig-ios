@@ -68,4 +68,24 @@ final class TransactionActivityPollingScheduleTests: XCTestCase {
         XCTAssertTrue(schedule.shouldObserve(row, now: completion.addingTimeInterval(5)))
         XCTAssertEqual(schedule.nextDelay(for: [row], now: completion), 5)
     }
+
+    func testStaleWindowFloorsFastCadencesToASaneBackgroundMinimum() {
+        let fast = ActivityTestFixture.row(chain: .solana)
+        XCTAssertEqual(TransactionActivityPollingSchedule.interval(for: fast), 2)
+        XCTAssertEqual(TransactionActivityStaleness.window(for: fast), TransactionActivityStaleness.floor)
+    }
+
+    func testStaleWindowScalesWithSlowerChainAndProviderCadences() {
+        let bitcoin = ActivityTestFixture.row(chain: .bitcoin)
+        XCTAssertEqual(TransactionActivityPollingSchedule.interval(for: bitcoin), 30)
+        XCTAssertEqual(TransactionActivityStaleness.window(for: bitcoin),
+                       max(TransactionActivityStaleness.floor, 30 * TransactionActivityStaleness.multiplier))
+
+        let limitOrder = ActivityTestFixture.row(chain: .bitcoin, type: .swap,
+            tracking: .init(providerKind: THORChainLimitTrackingService.providerKind))
+        XCTAssertEqual(TransactionActivityPollingSchedule.interval(for: limitOrder), THORChainLimitTrackingService.baseInterval)
+        XCTAssertEqual(TransactionActivityStaleness.window(for: limitOrder),
+                       max(TransactionActivityStaleness.floor, THORChainLimitTrackingService.baseInterval * TransactionActivityStaleness.multiplier))
+        XCTAssertGreaterThan(TransactionActivityStaleness.window(for: limitOrder), TransactionActivityStaleness.floor)
+    }
 }

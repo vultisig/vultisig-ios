@@ -155,6 +155,14 @@ final class TransactionActivityPolicyTests: XCTestCase {
         let row = ActivityTestFixture.row(status: .error, error: "timeout".localized)
         XCTAssertEqual(TransactionActivityPolicy.phase(for: row), .pending)
     }
+
+    func testStateDerivesStaleWindowFromRowCadenceNotAFlatDefault() {
+        let bitcoin = ActivityTestFixture.row(chain: .bitcoin)
+        let state = TransactionActivityPolicy.state(for: bitcoin, phase: .pending, observedAt: bitcoin.createdAt,
+            revision: 1, delayed: false, showDetails: true)
+        XCTAssertEqual(state.staleWindow, TransactionActivityStaleness.window(for: bitcoin))
+        XCTAssertGreaterThan(state.staleWindow, TransactionActivityStaleness.floor)
+    }
 }
 
 enum ActivityTestFixture {

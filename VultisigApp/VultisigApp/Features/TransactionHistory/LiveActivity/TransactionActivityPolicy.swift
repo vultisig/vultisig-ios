@@ -114,7 +114,8 @@ enum TransactionActivityPolicy {
             sourceImageKey: showDetails ? preparedImageKey(row.coinLogo) : nil,
             destinationImageKey: showDetails ? destinationLogo.flatMap(preparedImageKey) : nil,
             sourceSummary: row.amountCrypto.isEmpty ? row.coinTicker : row.amountCrypto,
-            destinationTicker: (row.type == .swap || row.type == .limit) && hasDestination ? row.toCoinTicker : nil
+            destinationTicker: (row.type == .swap || row.type == .limit) && hasDestination ? row.toCoinTicker : nil,
+            staleWindow: TransactionActivityStaleness.window(for: row)
         )
     }
 

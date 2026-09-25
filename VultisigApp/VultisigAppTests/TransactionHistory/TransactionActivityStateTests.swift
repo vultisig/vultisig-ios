@@ -49,8 +49,25 @@ final class TransactionActivityStateTests: XCTestCase {
         let date = Date(timeIntervalSince1970: 100)
         let state = TransactionActivityState(phase: .sourceConfirmed, observedAt: date, revision: 1)
         XCTAssertFalse(state.phase.isTerminal)
-        XCTAssertEqual(state.staleDate, date.addingTimeInterval(90))
+        XCTAssertEqual(state.staleDate, date.addingTimeInterval(TransactionActivityStaleness.floor))
         XCTAssertNil(TransactionActivityState(phase: .confirmed, observedAt: date, revision: 2).staleDate)
+    }
+
+    func testStaleDateUsesTheProvidedStaleWindowAndStaysNilWhenTerminal() {
+        let date = Date(timeIntervalSince1970: 100)
+        let state = TransactionActivityState(phase: .pending, observedAt: date, revision: 1, staleWindow: 500)
+        XCTAssertEqual(state.staleDate, date.addingTimeInterval(500))
+        let terminal = TransactionActivityState(phase: .confirmed, observedAt: date, revision: 1, staleWindow: 500)
+        XCTAssertNil(terminal.staleDate)
+    }
+
+    func testStaleWindowRoundTripsThroughEncodingAndDefaultsForOlderPayloads() throws {
+        let state = TransactionActivityState(phase: .pending, observedAt: Date(), revision: 1, staleWindow: 777)
+        let decoded = try JSONDecoder().decode(TransactionActivityState.self, from: JSONEncoder().encode(state))
+        XCTAssertEqual(decoded.staleWindow, 777)
+        let original = Data(#"{"schemaVersion":1,"phase":"pending","observedAt":42,"revision":1,"updateDelayed":false}"#.utf8)
+        let legacy = try JSONDecoder().decode(TransactionActivityState.self, from: original)
+        XCTAssertEqual(legacy.staleWindow, TransactionActivityStaleness.floor)
     }
 
     func testElapsedTimeAnchorTracksSubmittedAtOnlyWhileNonTerminal() {

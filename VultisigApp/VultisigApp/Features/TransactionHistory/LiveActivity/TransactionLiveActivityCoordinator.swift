@@ -411,7 +411,8 @@ final class TransactionLiveActivityCoordinator {
         bindings[key]?.revision = revision
         persist()
         let redacted = TransactionActivityState(phase: activity.state.phase, observedAt: activity.state.observedAt,
-                                                revision: revision, updateDelayed: activity.state.updateDelayed)
+                                                revision: revision, updateDelayed: activity.state.updateDelayed,
+                                                staleWindow: activity.state.staleWindow)
         await client.update(id: activity.id, state: redacted)
     }
 

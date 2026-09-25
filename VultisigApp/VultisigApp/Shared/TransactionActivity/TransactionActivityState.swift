@@ -1,6 +1,16 @@
 import Foundation
 import VultisigUIResources
 
+/// How long a backgrounded card may show its last observation before ActivityKit dims it stale.
+/// Lives here (not the app-only polling schedule) because this file also compiles into the
+/// widget extension target.
+enum TransactionActivityStaleness {
+    /// BGAppRefreshTask's earliest-begin-date is not a promised delivery time; real wakes
+    /// are commonly >= 15 minutes apart. A short floor would mark almost every backgrounded
+    /// card stale immediately, so this keeps most cadences comfortably fresh.
+    static let floor: TimeInterval = 3 * 60
+}
+
 /// Versioned value-only contract. Never add wallet identity, hashes, full addresses or memos.
 struct TransactionActivityState: Codable, Hashable, Sendable {
     enum Phase: String, Codable, CaseIterable, Sendable {
@@ -73,6 +83,8 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     /// Validated opaque keys of prepared shared-cache thumbnails.
     let sourceImageKey: String?
     let destinationImageKey: String?
+    /// Chain/provider-aware `staleDate` window. Never privacy-sensitive; always present.
+    let staleWindow: TimeInterval
 
     init(phase: Phase, observedAt: Date, revision: Int, updateDelayed: Bool = false,
          summary: String? = nil, network: String? = nil, showDetails: Bool = false,
@@ -80,12 +92,14 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
          provider: String? = nil, submittedAt: Date? = nil,
          sourceAssetID: String? = nil, destinationAssetID: String? = nil,
          sourceImageKey: String? = nil, destinationImageKey: String? = nil,
-         sourceSummary: String? = nil, destinationTicker: String? = nil) {
+         sourceSummary: String? = nil, destinationTicker: String? = nil,
+         staleWindow: TimeInterval = TransactionActivityStaleness.floor) {
         self.schemaVersion = 1
         self.phase = phase
         self.observedAt = observedAt
         self.revision = revision
         self.updateDelayed = updateDelayed
+        self.staleWindow = staleWindow
         self.summary = showDetails ? summary.map { Self.bounded($0, bytes: 240) } : nil
         self.sourceSummary = showDetails ? sourceSummary.map { Self.bounded($0, bytes: 160) } : nil
         self.destinationTicker = showDetails ? destinationTicker.map { Self.bounded($0, bytes: 80) } : nil
@@ -143,6 +157,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         case destinationAssetID
         case sourceImageKey
         case destinationImageKey
+        case staleWindow
     }
 
     init(from decoder: Decoder) throws {
@@ -165,6 +180,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
         destinationAssetID = Self.bundledAssetID(for: try values.decodeIfPresent(String.self, forKey: .destinationAssetID))
         sourceImageKey = Self.validatedImageKey(try values.decodeIfPresent(String.self, forKey: .sourceImageKey))
         destinationImageKey = Self.validatedImageKey(try values.decodeIfPresent(String.self, forKey: .destinationImageKey))
+        staleWindow = try values.decodeIfPresent(TimeInterval.self, forKey: .staleWindow) ?? TransactionActivityStaleness.floor
     }
 
     /// Scalar-wise byte bounding also handles a single huge combining grapheme.
@@ -180,7 +196,7 @@ struct TransactionActivityState: Codable, Hashable, Sendable {
     }
 
     /// An in-process observation is useful briefly; suspension cannot extend it.
-    var staleDate: Date? { phase.isTerminal ? nil : observedAt.addingTimeInterval(90) }
+    var staleDate: Date? { phase.isTerminal ? nil : observedAt.addingTimeInterval(staleWindow) }
 
     /// Anchor for a `Text(timerInterval:)` elapsed-time display. Settled transactions
     /// freeze their content, so ticking a clock past that point would mislead.
