@@ -159,13 +159,6 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
         }
     }
 
-    /// Whether Verify shows the LP approval notice: only when the approval read
-    /// on the way in signs an approve ahead of the deposit. Only an LP add
-    /// carries a decision on this screen.
-    func showsApprovalNotice(for transaction: SendTransaction) -> Bool {
-        transaction.approvalDecision?.signsApprove ?? false
-    }
-
     func scan(transaction: SendTransaction) async {
         await securityScanViewModel.scan(transaction: transaction)
     }

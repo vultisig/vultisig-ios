@@ -16,7 +16,6 @@
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
-"addLiquidityTransaction" = "2. Transakcija dodavanja likvidnosti";
 "addLpDestinationUnavailable" = "Nije moguće utvrditi odredište uplate. Pokušajte ponovno.";
 "addLpNoDepositablePools" = "Nijedan pool ovog lanca ne sadrži imovinu iz ovog trezora.";
 "addLpPoolTitle" = "Pool";
@@ -55,8 +54,6 @@
 "appLockPasscodeTitle" = "Zaporka za zaključavanje aplikacije";
 "apply" = "Primijeni";
 "applyReferral" = "Primijeni preporuku";
-"approvalRequiredMessageLP" = "Ovaj ERC20 token zahtijeva odobrenje prije dodavanja u bazen likvidnosti. Potpisat će se dvije transakcije:";
-"approvalTransaction" = "1. Transakcija odobrenja";
 "approvalTXHash" = "Hash odobrenja transakcije";
 "approve" = "Odobri";
 "approveAndSwap" = "Odobri i zamijeni";
@@ -470,7 +467,6 @@
 "enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
 "enterYourVaultsPassword" = "Unesite lozinku svog trezora";
-"erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
 "error" = "Greška";
 "errorCopy" = "Kopiraj";
 "errorMessageTitle" = "Poruka o pogrešci";

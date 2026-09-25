@@ -16,7 +16,6 @@
 "addFolder" = "Ordner hinzufügen";
 "addFriendsReferral" = "Freunde-Empfehlung hinzufügen";
 "addingToken" = "Token wird hinzugefügt...";
-"addLiquidityTransaction" = "2. Add liquidity transaction";
 "addLpDestinationUnavailable" = "Das Einzahlungsziel konnte nicht ermittelt werden. Bitte erneut versuchen.";
 "addLpNoDepositablePools" = "Kein Pool dieser Chain enthält ein Asset aus diesem Vault.";
 "addLpPoolTitle" = "Pool";
@@ -55,8 +54,6 @@
 "appLockPasscodeTitle" = "App-Sperrcode";
 "apply" = "Anwenden";
 "applyReferral" = "Empfehlung anwenden";
-"approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
-"approvalTransaction" = "1. Approval transaction";
 "approvalTXHash" = "Genehmigungs-Transaktions-Hash";
 "approve" = "Genehmigen";
 "approveAndSwap" = "Genehmigen und tauschen";
@@ -470,7 +467,6 @@
 "enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
 "enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
 "enterYourVaultsPassword" = "Geben Sie das Passwort Ihres Tresors ein";
-"erc20ApprovalRequired" = "ERC20 Approval Required";
 "error" = "Fehler";
 "errorCopy" = "Kopieren";
 "errorMessageTitle" = "Fehlermeldung";
