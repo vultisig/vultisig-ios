@@ -59,9 +59,10 @@ struct KeysignReviewScanRing: Equatable {
             self.init(tone: nil, animationState: .loading, accessibilityLabel: "securityScannerTransactionScanning".localized)
             return
         case .scanned(let result):
+            let tone = Tone.forResult(result)
             if result.isSecure {
                 self.init(
-                    tone: .safe,
+                    tone: tone,
                     animationState: .success,
                     accessibilityLabel: "\("securityScannerTransactionScannedBy".localized) \(result.provider.capitalized)"
                 )
@@ -69,14 +70,30 @@ struct KeysignReviewScanRing: Equatable {
             }
             switch result.riskLevel {
             case .high:
-                self.init(tone: .danger, animationState: .highRisk, accessibilityLabel: "securityScannerHighRiskTitle".localized)
+                self.init(tone: tone, animationState: .highRisk, accessibilityLabel: "securityScannerHighRiskTitle".localized)
             case .critical:
-                self.init(tone: .danger, animationState: .highRisk, accessibilityLabel: "securityScannerCriticalRiskTitle".localized)
+                self.init(tone: tone, animationState: .highRisk, accessibilityLabel: "securityScannerCriticalRiskTitle".localized)
             case .medium:
-                self.init(tone: .warning, animationState: .mediumRisk, accessibilityLabel: "securityScannerMediumRiskTitle".localized)
+                self.init(tone: tone, animationState: .mediumRisk, accessibilityLabel: "securityScannerMediumRiskTitle".localized)
             case .noRisk, .low:
-                self.init(tone: .warning, animationState: .mediumRisk, accessibilityLabel: "securityScannerLowRiskTitle".localized)
+                self.init(tone: tone, animationState: .mediumRisk, accessibilityLabel: "securityScannerLowRiskTitle".localized)
             }
+        }
+    }
+}
+
+extension KeysignReviewScanRing.Tone {
+    /// The tone for a completed scan result, independent of the ring's
+    /// loading/hidden states — shared by the ring's own `.scanned` case and
+    /// by anything else that needs just the tone (e.g. the verdict view),
+    /// so the two can never drift apart.
+    static func forResult(_ result: SecurityScannerResult) -> Self {
+        guard !result.isSecure else { return .safe }
+        switch result.riskLevel {
+        case .high, .critical:
+            return .danger
+        case .medium, .noRisk, .low:
+            return .warning
         }
     }
 }

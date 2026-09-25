@@ -65,7 +65,7 @@ struct KeysignReviewVerdictView: View {
     }
 
     private var isDanger: Bool {
-        KeysignReviewScanRing(.scanned(verdict.result)).tone == .danger
+        KeysignReviewScanRing.Tone.forResult(verdict.result) == .danger
     }
 
     private var tint: Color {
