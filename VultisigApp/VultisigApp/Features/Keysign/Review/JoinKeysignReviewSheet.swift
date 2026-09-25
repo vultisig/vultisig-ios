@@ -49,9 +49,9 @@ struct JoinKeysignReviewSheet: View {
     }
 
     private var verdict: KeysignReviewVerdict? {
-        guard showsRiskVerdict, let result = viewModel.securityScannerState.result else { return nil }
-        return KeysignReviewVerdict(
-            result: result,
+        .forSecurityScanner(
+            showSecurityScannerSheet: showsRiskVerdict,
+            result: viewModel.securityScannerState.result,
             onGoBack: { showsRiskVerdict = false },
             onContinueAnyway: {
                 showsRiskVerdict = false

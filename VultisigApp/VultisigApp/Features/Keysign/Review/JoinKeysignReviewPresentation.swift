@@ -182,7 +182,7 @@ enum JoinKeysignReviewPresentation {
             from: .init(
                 logo: swap.fromCoin.logo,
                 ticker: swap.fromCoin.ticker,
-                chainLogo: chainBadge(for: swap.fromCoin),
+                chainLogo: swap.fromCoin.chainBadgeLogo,
                 amount: fromAmount.formatForDisplay(),
                 fiat: viewModel.getFromFiatAmount(),
                 caption: nil,
@@ -191,7 +191,7 @@ enum JoinKeysignReviewPresentation {
             to: .init(
                 logo: swap.toCoin.logo,
                 ticker: swap.toCoin.ticker,
-                chainLogo: chainBadge(for: swap.toCoin),
+                chainLogo: swap.toCoin.chainBadgeLogo,
                 amount: toAmount.formatForDisplay(),
                 fiat: viewModel.getToFiatAmount(),
                 caption: viewModel.toAmountCaptionKey.localized,
@@ -272,10 +272,6 @@ enum JoinKeysignReviewPresentation {
     private static func feeValue(_ fee: (feeCrypto: String, feeFiat: String)) -> String {
         guard fee.feeFiat.isNotEmpty else { return fee.feeCrypto }
         return "\(fee.feeCrypto) (\(fee.feeFiat))"
-    }
-
-    private static func chainBadge(for coin: Coin) -> String? {
-        coin.logo == coin.chain.logo ? nil : coin.chain.logo
     }
 
     private static func liquidityDetails(for payload: KeysignPayload?) -> [String: String]? {
