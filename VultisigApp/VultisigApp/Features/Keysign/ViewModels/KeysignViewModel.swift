@@ -765,11 +765,12 @@ class KeysignViewModel: ObservableObject {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
+        var approveTransactions: [SignedTransactionResult] = []
         var signedTransactions: [SignedTransactionResult] = []
 
         if let approvePayload = keysignPayload.approvePayload {
             let swaps = THORChainSwaps()
-            signedTransactions += try swaps.getSignedApproveTransactions(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
+            approveTransactions = try swaps.getSignedApproveTransactions(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
         }
 
         if let swapPayload = keysignPayload.swapPayload {
@@ -881,7 +882,14 @@ class KeysignViewModel: ObservableObject {
             }
         }
 
-        if let signedTransactionType = SignedTransactionType(transactions: signedTransactions) {
+        if !signedTransactions.isEmpty, let signedTransactionType = SignedTransactionType(transactions: approveTransactions + signedTransactions) {
+            return signedTransactionType
+        }
+
+        // Mirrors `KeysignMessageFactory`: only a token transaction signs its
+        // own leg after the approve legs.
+        let isTokenTransaction = keysignPayload.coin.chainType == .EVM && !keysignPayload.coin.isNativeToken
+        if !isTokenTransaction, let signedTransactionType = SignedTransactionType(transactions: approveTransactions) {
             return signedTransactionType
         }
 
@@ -901,8 +909,12 @@ class KeysignViewModel: ObservableObject {
                 return .regular(transaction)
             } else {
                 let helper = ERC20Helper.getHelper(coin: keysignPayload.coin)
-                let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
+                let transaction = try helper.getSignedTransaction(
+                    keysignPayload: keysignPayload,
+                    signatures: signatures,
+                    nonceOffset: keysignPayload.approveNonceOffset
+                )
+                return SignedTransactionType(transactions: approveTransactions + [transaction]) ?? .regular(transaction)
             }
 
         case .THORChain:

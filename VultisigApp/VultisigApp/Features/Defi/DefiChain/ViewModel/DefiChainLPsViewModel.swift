@@ -19,6 +19,9 @@ final class DefiChainLPsViewModel: ObservableObject {
     private let interactor: LPsInteractor?
     private let storage: DefiPositionsStorageService
 
+    private var isRefreshing = false
+    private var refreshQueued = false
+
     /// See `DefiChainStakeViewModel.stakePositions` for why this is computed and not cached.
     var lpPositions: [LPPosition] {
         vault.lpPositions.filter { vaultLPPositions.contains($0.coin2) }
@@ -45,18 +48,44 @@ final class DefiChainLPsViewModel: ObservableObject {
     }
 
     func update(vault: Vault) {
+        let previousVaultKey = self.vault.pubKeyECDSA
         self.vault = vault
+        if isRefreshing, previousVaultKey != vault.pubKeyECDSA {
+            refreshQueued = true
+        }
     }
 
     func refresh() async {
+        guard !isRefreshing else {
+            refreshQueued = true
+            return
+        }
+
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        repeat {
+            refreshQueued = false
+            await performRefresh()
+        } while refreshQueued
+    }
+
+    private func performRefresh() async {
         guard let interactor else {
             initialLoadingDone = true
             return
         }
 
-        let dtos = await interactor.fetchLPPositions(vault: vault)
+        // Read the published vault here, on the main actor, before suspending.
+        let refreshingVault = vault
+        let dtos = await interactor.fetchLPPositions(vault: refreshingVault)
+
+        // See `DefiChainStakeViewModel.refresh()` for why a superseded pass has to
+        // drop its results rather than apply them to whatever vault is bound now.
+        guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+
         do {
-            try storage.upsert(lp: dtos, for: vault)
+            try storage.upsert(lp: dtos, for: refreshingVault)
         } catch {
             logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }

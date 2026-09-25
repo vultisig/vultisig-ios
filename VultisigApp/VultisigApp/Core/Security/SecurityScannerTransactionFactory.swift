@@ -275,7 +275,7 @@ private extension SecurityScannerTransactionFactory {
                 to: quote.tx.to,
                 amount: quote.tx.value,
                 data: quote.tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                precedingTransactions: try approveScanTransactions(transaction: transaction)
             )
         case .kyberswap(let quote, _):
             return try buildSwapSecurityScannerTransaction(
@@ -284,7 +284,7 @@ private extension SecurityScannerTransactionFactory {
                 to: quote.tx.to,
                 amount: quote.tx.value,
                 data: quote.tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                precedingTransactions: try approveScanTransactions(transaction: transaction)
             )
         case .swapkit(let response, _, _):
             guard case let .evm(tx) = response.tx else {
@@ -296,7 +296,7 @@ private extension SecurityScannerTransactionFactory {
                 to: tx.to,
                 amount: tx.value,
                 data: tx.data,
-                isApprovalRequired: transaction.isApproveRequired
+                precedingTransactions: try approveScanTransactions(transaction: transaction)
             )
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet, .jupiter:
             // Jupiter is Solana-only; this EVM scanner is never reached for it
@@ -312,27 +312,38 @@ private extension SecurityScannerTransactionFactory {
         to: String,
         amount: String,
         data: String,
-        isApprovalRequired: Bool
+        precedingTransactions: [SecurityScannerTransaction]
     ) throws -> SecurityScannerTransaction {
-        let chain = srcToken.chain
+        SecurityScannerTransaction(
+            chain: srcToken.chain,
+            type: SecurityTransactionType.swap,
+            from: from,
+            to: to,
+            amount: BigInt(amount) ?? .zero,
+            data: data,
+            precedingTransactions: precedingTransactions
+        )
+    }
 
-        if isApprovalRequired {
-            return SecurityScannerTransaction(
-                chain: chain,
-                type: SecurityTransactionType.swap,
-                from: from,
-                to: srcToken.contractAddress,
-                amount: BigInt.zero,
-                data: try EthereumFunction.approvalErc20Encoder(address: to, amount: BigInt(amount) ?? .zero)
-            )
-        } else {
-            return SecurityScannerTransaction(
-                chain: chain,
-                type: SecurityTransactionType.swap,
-                from: from,
-                to: to,
-                amount: BigInt(amount) ?? .zero,
-                data: data
+    /// The approve legs the swap signs ahead of itself, taken from the approval
+    /// decision the swap is signed with. Without them the swap reverts in
+    /// simulation for lack of allowance.
+    func approveScanTransactions(transaction: SwapTransaction) throws -> [SecurityScannerTransaction] {
+        guard let decision = transaction.approvalDecision else {
+            return []
+        }
+        let query = decision.query
+        guard let payload = decision.requirement.approvePayload(amount: query.amount, spender: query.spender) else {
+            return []
+        }
+        return try payload.legAmounts.map { amount in
+            SecurityScannerTransaction(
+                chain: query.chain,
+                type: SecurityTransactionType.approval,
+                from: query.owner,
+                to: query.token,
+                amount: .zero,
+                data: try EthereumFunction.approvalErc20Encoder(address: payload.spender, amount: amount)
             )
         }
     }

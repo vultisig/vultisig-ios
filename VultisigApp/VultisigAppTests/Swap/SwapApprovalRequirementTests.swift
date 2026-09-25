@@ -119,7 +119,7 @@ final class SwapApprovalRequirementTests: XCTestCase {
     /// is needed.
     func testThorchainTokenSwapWithoutApproveStillDepositsThroughTheRouter() async throws {
         let thorRouter = "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146"
-        let transaction = makeTransaction(quote: .thorchain(thorQuote(router: thorRouter))).withApprovalDecided(.notRequired)
+        let transaction = try makeTransaction(quote: .thorchain(thorQuote(router: thorRouter))).withApprovalDecided(.notRequired)
 
         let payload = try await build(transaction)
 
@@ -139,8 +139,8 @@ final class SwapApprovalRequirementTests: XCTestCase {
 
     /// The quote now approves another contract (a refreshed route, a rotated
     /// router) than the one the allowance was read for.
-    func testDecisionForAnotherSpenderIsRefused() async {
-        let decidedForOldRouter = oneInchTransaction().withApprovalDecided(.notRequired)
+    func testDecisionForAnotherSpenderIsRefused() async throws {
+        let decidedForOldRouter = try oneInchTransaction().withApprovalDecided(.notRequired)
         let otherRouterQuote = EVMQuote(
             dstAmount: "1",
             tx: EVMQuote.Transaction(
@@ -181,8 +181,8 @@ final class SwapApprovalRequirementTests: XCTestCase {
 
     // MARK: - Verify consent follows the carried decision
 
-    func testConsentIsNotAskedWhenNoApproveIsSigned() {
-        let viewModel = SwapVerifyViewModel(transaction: oneInchTransaction().withApprovalDecided(.notRequired))
+    func testConsentIsNotAskedWhenNoApproveIsSigned() throws {
+        let viewModel = SwapVerifyViewModel(transaction: try oneInchTransaction().withApprovalDecided(.notRequired))
         viewModel.isAmountCorrect = true
         viewModel.isFeeCorrect = true
 
@@ -190,9 +190,9 @@ final class SwapApprovalRequirementTests: XCTestCase {
         XCTAssertTrue(viewModel.canStartSigning, "No approve is signed, so there is nothing to consent to")
     }
 
-    func testConsentGatesSigningWhenAnApproveIsSigned() {
+    func testConsentGatesSigningWhenAnApproveIsSigned() throws {
         for requirement in [ERC20ApprovalRequirement.approve, .resetThenApprove] {
-            let viewModel = SwapVerifyViewModel(transaction: oneInchTransaction().withApprovalDecided(requirement))
+            let viewModel = SwapVerifyViewModel(transaction: try oneInchTransaction().withApprovalDecided(requirement))
             viewModel.isAmountCorrect = true
             viewModel.isFeeCorrect = true
 
@@ -205,9 +205,9 @@ final class SwapApprovalRequirementTests: XCTestCase {
 
     // MARK: - A Verify refresh that moves the spender reads it again
 
-    func testRefreshToAnotherSpenderReadsTheApprovalAgainAndResetsConsent() async {
+    func testRefreshToAnotherSpenderReadsTheApprovalAgainAndResetsConsent() async throws {
         let otherRouter = "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
-        let original = fundedOneInchTransaction().withApprovalDecided(.approve)
+        let original = try fundedOneInchTransaction().withApprovalDecided(.approve)
         let interactor = RefreshingApprovalStub(
             refreshed: .oneinch(oneInchQuote(from: original.fromCoin, router: otherRouter), fee: nil),
             requirement: .resetThenApprove
@@ -224,8 +224,8 @@ final class SwapApprovalRequirementTests: XCTestCase {
         XCTAssertFalse(viewModel.isApproveCorrect, "Consent for the old spender's approve does not carry over")
     }
 
-    func testRefreshToTheSameSpenderKeepsTheDecision() async {
-        let original = fundedOneInchTransaction().withApprovalDecided(.approve)
+    func testRefreshToTheSameSpenderKeepsTheDecision() async throws {
+        let original = try fundedOneInchTransaction().withApprovalDecided(.approve)
         let interactor = RefreshingApprovalStub(
             refreshed: .oneinch(oneInchQuote(from: original.fromCoin, dstAmount: "2"), fee: nil),
             requirement: .notRequired
@@ -500,7 +500,7 @@ private final class RefreshingApprovalStub: SwapInteractor {
 
     func resolveApproval(for transaction: SwapTransaction, vault: Vault) async throws -> ERC20ApprovalDecision? {
         resolveApprovalCallCount += 1
-        let query = SwapCryptoLogic.approvalQuery(
+        let query = try SwapCryptoLogic.approvalQuery(
             fromCoin: transaction.fromCoin,
             amount: transaction.amountInCoinDecimal,
             quote: transaction.quote
