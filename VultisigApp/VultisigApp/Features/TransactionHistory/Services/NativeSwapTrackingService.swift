@@ -129,10 +129,17 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
     /// One observation outside the schedule. `shouldApply` is re-checked after
     /// every network round-trip, so a caller whose context went away while the
     /// request was in flight discards the answer instead of writing it.
+    ///
+    /// `backgroundObservation` keeps signature parity with the other
+    /// `SwapTrackingService` providers the Live Activity background runner
+    /// dispatches to (see `TransactionActivityBackgroundService`); this
+    /// provider's poll/backoff behavior does not otherwise depend on it.
     func forceRefresh(
         tx: TransactionHistoryData,
+        backgroundObservation: Bool = false,
         shouldApply: @escaping @MainActor () -> Bool = { true }
     ) async {
+        _ = backgroundObservation
         await refresh(tx: tx, shouldApply: shouldApply)
     }
 

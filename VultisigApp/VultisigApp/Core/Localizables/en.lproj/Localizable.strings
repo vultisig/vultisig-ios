@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "Touch ID Unlock";
 "track" = "Track";
 "transaction" = "Transaction";
+"transactionActivityApproval" = "Approve";
+"transactionActivityFailed" = "Failed";
+"transactionActivityFee" = "Est. fee";
+"transactionActivityLimit" = "Limit";
+"transactionActivitySending" = "Sending";
+"transactionActivitySwap" = "Swap";
+"transactionActivityTitle" = "Transaction";
+"transactionActivityTransaction" = "Transaction";
+"transactionActivityUnavailable" = "This transaction is no longer available on this device.";
 "transactionBroadcasted" = "Transaction broadcasted";
 "transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";

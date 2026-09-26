@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "Otključavanje Touch ID-jem";
 "track" = "Prati";
 "transaction" = "Transakcija";
+"transactionActivityApproval" = "Odobri";
+"transactionActivityFailed" = "Neuspjelo";
+"transactionActivityFee" = "Procijenjena naknada";
+"transactionActivityLimit" = "Limit";
+"transactionActivitySending" = "Slanje";
+"transactionActivitySwap" = "Zamjena";
+"transactionActivityTitle" = "Transakcija";
+"transactionActivityTransaction" = "Transakcija";
+"transactionActivityUnavailable" = "Ova transakcija više nije dostupna na ovom uređaju.";
 "transactionBroadcasted" = "Transakcija odaslana";
 "transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";

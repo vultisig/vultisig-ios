@@ -11,6 +11,8 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     case send
     case swap
     case approve
+    /// A broadcast contract, staking, claim, or other non-transfer operation.
+    case transaction
     /// A THORChain limit (`=<`) order — a RESTING order, not a swap that
     /// happened.
     ///
@@ -32,10 +34,8 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     /// to `.send` renders that limit as a transferred quantity (a USDC
     /// activation reads as a send of 1,000,000,000,000,000 USDC).
     ///
-    /// ⚠️ Typed rather than suppressed. A limit-order CANCEL gets no row because
-    /// the order's own row narrates its lifecycle and keeps the hash linked; a
-    /// TrustSet has no parent row, so hiding it would erase the fee the user paid
-    /// and the XRP reserve they locked.
+    /// The typed receipt preserves the fee and locked reserve without claiming
+    /// that the trust limit was a transferred amount.
     case trustLineActivation
 }
 

@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "Touch ID로 잠금 해제";
 "track" = "추적";
 "transaction" = "트랜잭션";
+"transactionActivityApproval" = "승인";
+"transactionActivityFailed" = "실패";
+"transactionActivityFee" = "예상 수수료";
+"transactionActivityLimit" = "지정가";
+"transactionActivitySending" = "전송 중";
+"transactionActivitySwap" = "스왑";
+"transactionActivityTitle" = "거래";
+"transactionActivityTransaction" = "트랜잭션";
+"transactionActivityUnavailable" = "이 기기에서 이 거래를 더 이상 사용할 수 없습니다.";
 "transactionBroadcasted" = "트랜잭션이 브로드캐스트되었습니다";
 "transactionBytes" = "트랜잭션 바이트";
 "transactionComplete" = "완료";

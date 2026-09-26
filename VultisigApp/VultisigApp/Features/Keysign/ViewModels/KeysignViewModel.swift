@@ -1140,11 +1140,17 @@ class KeysignViewModel: ObservableObject {
                 for approve in approves {
                     _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
                 }
-                let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 // The local hash, not the node's reply: the two are the same
                 // keccak for a fresh broadcast, and a duplicate replies with
                 // only the sentinel.
-                self.approveTxid = transactionType.approveTransactionHash
+                let approveTxHash = transactionType.approveTransactionHash
+                self.approveTxid = approveTxHash
+                #if os(iOS)
+                if let approveTxHash {
+                    TransactionLiveActivityBroadcast.recordApproval(hash: approveTxHash, payload: keysignPayload, vault: vault)
+                }
+                #endif
+                let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.txid = regularTxHash
             }
         } catch {
@@ -1179,6 +1185,15 @@ class KeysignViewModel: ObservableObject {
               txid != "Transaction already broadcasted." else {
             return
         }
+
+        #if os(iOS)
+        // A cancelled broadcast can retain its deterministic hash without any
+        // positive chain evidence. Keep its pending lookup, but do not claim submission.
+        if !Self.isTerminalStatus(status) {
+            TransactionLiveActivityBroadcast.record(hash: txid, approveHash: approveTxid, payload: keysignPayload,
+                                                   vault: vault)
+        }
+        #endif
 
         let storage = StoredPendingTransactionStorage.shared
         let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)

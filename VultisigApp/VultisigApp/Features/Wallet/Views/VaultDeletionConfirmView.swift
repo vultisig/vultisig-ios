@@ -117,6 +117,9 @@ struct VaultDeletionConfirmView: View {
                     modelContext.delete(targetToBeDeleted)
                 }
                 try modelContext.save()
+                #if os(iOS)
+                TransactionLiveActivityCoordinator.shared.refresh()
+                #endif
             } catch {
                 Log.wallet.view.error("Error: \(error.localizedDescription, privacy: .public)")
             }

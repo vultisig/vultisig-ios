@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "触控 ID 解锁";
 "track" = "跟踪";
 "transaction" = "交易";
+"transactionActivityApproval" = "批准";
+"transactionActivityFailed" = "失败";
+"transactionActivityFee" = "预计费用";
+"transactionActivityLimit" = "限价";
+"transactionActivitySending" = "发送中";
+"transactionActivitySwap" = "兑换";
+"transactionActivityTitle" = "交易";
+"transactionActivityTransaction" = "交易";
+"transactionActivityUnavailable" = "此设备上已无法查看这笔交易。";
 "transactionBroadcasted" = "交易已广播";
 "transactionBytes" = "交易字节";
 "transactionComplete" = "完成";

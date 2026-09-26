@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "Desbloqueo con Touch ID";
 "track" = "Rastrear";
 "transaction" = "Transacción";
+"transactionActivityApproval" = "Aprobar";
+"transactionActivityFailed" = "Fallida";
+"transactionActivityFee" = "Comisión estimada";
+"transactionActivityLimit" = "Límite";
+"transactionActivitySending" = "Enviando";
+"transactionActivitySwap" = "Intercambio";
+"transactionActivityTitle" = "Transacción";
+"transactionActivityTransaction" = "Transacción";
+"transactionActivityUnavailable" = "Esta transacción ya no está disponible en este dispositivo.";
 "transactionBroadcasted" = "Transacción difundida";
 "transactionBytes" = "Bytes de la transacción";
 "transactionComplete" = "Hecho";

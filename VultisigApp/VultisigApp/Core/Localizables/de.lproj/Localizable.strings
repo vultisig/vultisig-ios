@@ -1643,6 +1643,15 @@
 "touchIDUnlockTitle" = "Entsperren mit Touch ID";
 "track" = "Verfolgen";
 "transaction" = "Transaktion";
+"transactionActivityApproval" = "Genehmigen";
+"transactionActivityFailed" = "Fehlgeschlagen";
+"transactionActivityFee" = "Geschätzte Gebühr";
+"transactionActivityLimit" = "Limit";
+"transactionActivitySending" = "Wird gesendet";
+"transactionActivitySwap" = "Tausch";
+"transactionActivityTitle" = "Transaktion";
+"transactionActivityTransaction" = "Transaktion";
+"transactionActivityUnavailable" = "Diese Transaktion ist auf diesem Gerät nicht mehr verfügbar.";
 "transactionBroadcasted" = "Transaktion übertragen";
 "transactionBytes" = "Transaktions-Bytes";
 "transactionComplete" = "Erledigt";

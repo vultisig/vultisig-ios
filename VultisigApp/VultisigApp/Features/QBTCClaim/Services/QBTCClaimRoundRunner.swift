@@ -109,7 +109,8 @@ extension QBTCClaimOrchestrator {
         let runner = QBTCClaimRoundRunner()
         return QBTCClaimOrchestrator(
             generateProof: { try await proofService.generateProof($0) },
-            runBtcRound: { try await runner.runBtcRound(input: $0) }
+            runBtcRound: { try await runner.runBtcRound(input: $0) },
+            recordBroadcast: recordClaimBroadcast
         )
     }
 
@@ -143,8 +144,16 @@ extension QBTCClaimOrchestrator {
                     messageID: QBTCClaimResultMessage.messageID,
                     body: body
                 )
-            }
+            },
+            recordBroadcast: recordClaimBroadcast
         )
+    }
+
+    @MainActor
+    private static func recordClaimBroadcast(hash: String, input: QBTCClaimRunInput) {
+        #if os(iOS)
+        TransactionLiveActivityBroadcast.recordClaim(hash: hash, coin: input.qbtcCoin, vault: input.vault)
+        #endif
     }
 
 }

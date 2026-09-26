@@ -71,6 +71,7 @@ struct VultisigApp: App {
         // the tx-history viewmodel and the native status poller can route by
         // `providerKind`. New providers register here.
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+        SwapTrackingRegistry.shared.register(NativeSwapTrackingService.shared)
         SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
         SwapTrackingRegistry.shared.register(NativeSwapTrackingService.shared)
 
@@ -221,8 +222,12 @@ extension VultisigApp {
                     // `.inactive` and must not be decided again here — see
                     // `AppViewModel.sceneBecameActive()`.
                     appViewModel.sceneBecameActive()
+                    TransactionActivityBackgroundService.shared.enteredForeground()
+                    TransactionLiveActivityCoordinator.shared.start()
+                    TransactionLiveActivityCoordinator.shared.refresh()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
                     Task { @MainActor in
+                        guard UIApplication.shared.applicationState == .active else { return }
                         SwapTrackingRegistry.shared.setActiveOnAll(true)
                         await SwapTrackingRegistry.shared.resumeAllInFlight()
                     }
@@ -241,14 +246,16 @@ extension VultisigApp {
                     appViewModel.sceneBecameInactive(comingFrom: previousPhase)
                 case .background:
                     resetLogin()
-                    Task { @MainActor in
-                        SwapTrackingRegistry.shared.setActiveOnAll(false)
-                    }
+                    SwapTrackingRegistry.shared.setActiveOnAll(false)
+                    TransactionActivityBackgroundService.shared.enteredBackground()
                 @unknown default:
                     break
                 }
             }
             .onAppear {
+                if TransactionActivityBackgroundService.shared.start() {
+                    TransactionLiveActivityCoordinator.shared.start()
+                }
                 #if DEBUG
                 if CommandLine.arguments.contains("-disableAnimations") {
                     UIView.setAnimationsEnabled(false)
@@ -312,7 +319,9 @@ extension VultisigApp {
                 }
 
                 Task { @MainActor in
-                    await SwapTrackingRegistry.shared.resumeAllInFlight()
+                    let active = UIApplication.shared.applicationState != .background
+                    SwapTrackingRegistry.shared.setActiveOnAll(active)
+                    if active { await SwapTrackingRegistry.shared.resumeAllInFlight() }
                 }
             }
     }
