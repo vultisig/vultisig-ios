@@ -18,21 +18,12 @@ struct SwapRouter {
                 let toCoin = lookupCoin(id: toCoinID, in: vault)
                 buildDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
             }
-        case .verify(let transaction, let retrySignal, let vaultPubKeyECDSA):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
-            }
         }
     }
 
     @ViewBuilder
     func buildDetailsScreen(fromCoin: Coin?, toCoin: Coin?, vault: Vault) -> some View {
         SwapDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
-    }
-
-    @ViewBuilder
-    func buildVerifyScreen(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) -> some View {
-        SwapVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
     }
 
     // MARK: - SwiftData lookups

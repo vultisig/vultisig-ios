@@ -52,8 +52,9 @@ final class SwapVerifyViewModel {
     func onLoad() {
         // SecurityScannerViewModel stays an ObservableObject (used elsewhere),
         // so we bridge its @Published `state` into our @Observable property via Combine.
+        // It publishes on MainActor. Deliver synchronously so scan completion
+        // cannot overtake a queued scanning state and restart the artwork.
         securityScannerCancellable = securityScanViewModel.$state
-            .receive(on: RunLoop.main)
             .sink { [weak self] state in
                 self?.securityScannerState = state
             }

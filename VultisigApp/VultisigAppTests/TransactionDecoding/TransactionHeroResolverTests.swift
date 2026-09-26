@@ -193,8 +193,8 @@ final class TransactionHeroResolverTests: XCTestCase {
 
     func testEveryVerifySurfaceIsWiredToTheResolverBySomeScreen() throws {
         let hookups: [(path: String, surface: String)] = [
-            ("Features/FunctionTransaction/Common/Screen/FunctionTransactionVerifyScreen.swift", ".functionCallVerify"),
-            ("Features/Send/Views/Screens/SendVerifyScreen.swift", ".sendVerify"),
+            ("Features/FunctionTransaction/Common/Screen/FunctionTransactionReviewContent.swift", ".functionCallVerify"),
+            ("Features/Send/Views/Screens/SendReviewContent.swift", ".sendVerify"),
             ("Features/Keysign/Views/KeysignMessageConfirmView.swift", ".keysignConfirm")
         ]
 
@@ -225,20 +225,25 @@ final class TransactionHeroResolverTests: XCTestCase {
         }
     }
 
-    func testCosmosStakingSummaryUsesTheSharedHeroVocabulary() throws {
-        let source = try appSource(
-            "Features/FunctionTransaction/Common/View/CosmosStakingVerifySummaryView.swift"
+    func testCosmosStakingReviewUsesTheSharedHeroVocabulary() throws {
+        let review = try appSource(
+            "Features/FunctionTransaction/Common/Screen/FunctionTransactionReviewContent.swift"
         )
-        XCTAssertTrue(source.contains("TransactionHeroResolver.hero("))
-        XCTAssertTrue(source.contains("HeroContentView(content: hero)"))
-        XCTAssertFalse(source.contains("private var headlineKey"))
+        let summary = try appSource(
+            "Features/FunctionTransaction/Common/View/FunctionTransactionReviewSummaryView.swift"
+        )
+        XCTAssertTrue(review.contains("TransactionHeroResolver.hero("))
+        XCTAssertTrue(summary.contains("let hero = heroContent"))
+        XCTAssertTrue(summary.contains("case .title"))
+        XCTAssertTrue(summary.contains("case .projected"))
+        XCTAssertFalse(review.contains("private var headlineKey"))
     }
 
     /// The presentations the registry owns are reached through it, not around it.
     func testNoScreenCallsAProviderPresentationDirectly() throws {
         let screens = [
-            "Features/FunctionTransaction/Common/Screen/FunctionTransactionVerifyScreen.swift",
-            "Features/Send/Views/Screens/SendVerifyScreen.swift",
+            "Features/FunctionTransaction/Common/Screen/FunctionTransactionReviewContent.swift",
+            "Features/Send/Views/Screens/SendReviewContent.swift",
             "Features/Keysign/Views/KeysignMessageConfirmView.swift",
             "Features/Send/Views/Screens/SendDoneScreen.swift",
             "Features/Keysign/Views/JoinKeysignDoneView.swift"

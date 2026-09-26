@@ -6,10 +6,9 @@
 //  detents. SwiftUI does NOT animate a `presentationDetents` change on its own:
 //  switching the active detent snaps. To get a smooth height transition we
 //  momentarily WIDEN the detent set to include both the current and the target
-//  detents, wait ~300ms for the system to register the wider set, switch the
-//  `selection` to the target (now an animatable move within the wider set),
-//  wait ~300ms for the move to finish, then collapse the set back down to just
-//  the target so the drag-to-resize affordance reflects the resting state.
+//  detents, yield one presentation update so the system registers that set,
+//  switch the `selection` to the target (now an animatable move within the
+//  wider set), then collapse the set after the move settles.
 //
 //  The host passes the `target` detent for its current sub-state; the modifier
 //  re-runs the choreography whenever `target` changes. The animation `Task` is
@@ -24,16 +23,24 @@
 import SwiftUI
 
 private struct AnimatedPresentationDetentsModifier: ViewModifier {
+    private static var registrationDelay: Duration { .milliseconds(20) }
+    private static var animationDuration: Double { 0.3 }
+    private static var settleDelay: Duration { .milliseconds(350) }
+
     let target: PresentationDetent
     let alwaysAvailable: [PresentationDetent]
+    let animatesFirstChange: Bool
 
     @State private var detents: Set<PresentationDetent>
     @State private var selection: PresentationDetent
     @State private var animationTask: Task<Void, Never>?
+    @State private var hasChanged = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(target: PresentationDetent, alwaysAvailable: [PresentationDetent]) {
+    init(target: PresentationDetent, alwaysAvailable: [PresentationDetent], animatesFirstChange: Bool) {
         self.target = target
         self.alwaysAvailable = alwaysAvailable
+        self.animatesFirstChange = animatesFirstChange
         _detents = State(initialValue: Set([target] + alwaysAvailable))
         _selection = State(initialValue: target)
     }
@@ -42,6 +49,12 @@ private struct AnimatedPresentationDetentsModifier: ViewModifier {
         content
             .presentationDetents(detents, selection: $selection)
             .onChange(of: target) { _, newTarget in
+                defer { hasChanged = true }
+                guard animatesFirstChange || hasChanged else {
+                    detents = Set([newTarget] + alwaysAvailable)
+                    selection = newTarget
+                    return
+                }
                 animate(to: newTarget)
             }
             .onDisappear {
@@ -52,12 +65,24 @@ private struct AnimatedPresentationDetentsModifier: ViewModifier {
             }
     }
 
-    /// Mirror `VaultManagementSheet`'s 300ms / 300ms ordering:
+    /// Move between two registered detents without a second, delayed layout
+    /// animation:
     /// 1. Widen the set to include both current and target (so the move can animate).
-    /// 2. After 300ms, switch the selection to the target — this is the animated move.
-    /// 3. After a further 300ms, collapse the set back to just the target.
+    /// 2. On the next presentation update, switch the selection to the target.
+    /// 3. Collapse the set back to just the target after the native move settles.
     private func animate(to newTarget: PresentationDetent) {
         animationTask?.cancel()
+
+        guard newTarget != selection else {
+            detents = Set([newTarget] + alwaysAvailable)
+            return
+        }
+
+        guard !reduceMotion else {
+            detents = Set([newTarget] + alwaysAvailable)
+            selection = newTarget
+            return
+        }
 
         // Widen to include both the current selection and the new target plus
         // any always-available detents, so the upcoming selection change is an
@@ -65,10 +90,15 @@ private struct AnimatedPresentationDetentsModifier: ViewModifier {
         detents = Set([selection, newTarget] + alwaysAvailable)
 
         animationTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(300))
+            // A single run-loop yield is usually enough. The short fallback
+            // delay also covers the first update on slower presentation hosts.
+            await Task.yield()
+            try? await Task.sleep(for: Self.registrationDelay)
             guard !Task.isCancelled else { return }
-            selection = newTarget
-            try? await Task.sleep(for: .milliseconds(300))
+            withAnimation(.easeInOut(duration: Self.animationDuration)) {
+                selection = newTarget
+            }
+            try? await Task.sleep(for: Self.settleDelay)
             guard !Task.isCancelled else { return }
             detents = Set([newTarget] + alwaysAvailable)
         }
@@ -85,13 +115,18 @@ extension View {
     ///     animates the sheet to the new height.
     ///   - alwaysAvailable: detents kept in the set at all times (e.g. a
     ///     drag-to-`.large` affordance) regardless of the current target.
+    ///   - animatesFirstChange: `false` applies the first change at once, for
+    ///     a sheet whose starting target is a placeholder it replaces before it
+    ///     is on screen, such as a height it has yet to measure.
     func animatedPresentationDetents(
         target: PresentationDetent,
-        alwaysAvailable: [PresentationDetent] = []
+        alwaysAvailable: [PresentationDetent] = [],
+        animatesFirstChange: Bool = true
     ) -> some View {
         modifier(AnimatedPresentationDetentsModifier(
             target: target,
-            alwaysAvailable: alwaysAvailable
+            alwaysAvailable: alwaysAvailable,
+            animatesFirstChange: animatesFirstChange
         ))
     }
 }

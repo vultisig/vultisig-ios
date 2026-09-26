@@ -83,13 +83,13 @@ extension TransactionBuilder {
     /// Builds the immutable `SendTransaction` struct directly, with `gas` /
     /// `fee` and runtime-only fields left at the construction-time zero state.
     ///
-    /// ⚠️ **Unpriced.** Nothing downstream of `FunctionTransactionRoute.verify`
-    /// re-resolves the two fee figures for display — `FunctionTransactionVerifyScreen`
-    /// renders whatever the hand-off carried — so a transaction navigated
-    /// straight from here discloses a zero fee. Use
-    /// `buildPricedSendTransaction(vault:)` at any seam that hands the result to
-    /// Verify; this stays for the flows that stamp their own fee (the Cosmos
-    /// staking constant, a THORChain deposit's fixed gas) and for tests.
+    /// ⚠️ **Unpriced.** Nothing downstream of the review re-resolves the two
+    /// fee figures for display — `FunctionTransactionReviewContent` renders
+    /// whatever the hand-off carried — so a transaction reviewed straight from
+    /// here discloses a zero fee. Use `buildPricedSendTransaction(vault:)` at
+    /// any seam that hands the result to the review; this stays for the flows
+    /// that stamp their own fee (the Cosmos staking constant, a THORChain
+    /// deposit's fixed gas) and for tests.
     func buildSendTransaction(vault: Vault) -> SendTransaction {
         SendTransaction(
             coin: coin,

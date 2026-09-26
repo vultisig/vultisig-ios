@@ -16,7 +16,6 @@
 "addFolder" = "폴더 추가";
 "addFriendsReferral" = "친구 추천 코드 추가";
 "addingToken" = "토큰 추가 중...";
-"addLiquidityTransaction" = "2. 유동성 추가 트랜잭션";
 "addLpDestinationUnavailable" = "입금 대상을 확인할 수 없습니다. 다시 시도해 주세요.";
 "addLpNoDepositablePools" = "이 체인의 풀 중 이 볼트가 보유한 자산이 있는 풀이 없습니다.";
 "addLpPoolTitle" = "풀";
@@ -55,8 +54,6 @@
 "appLockPasscodeTitle" = "앱 잠금 패스코드";
 "apply" = "적용";
 "applyReferral" = "추천 코드 적용";
-"approvalRequiredMessageLP" = "이 ERC20 토큰은 유동성 풀에 추가하기 전에 승인이 필요합니다. 두 개의 트랜잭션이 서명됩니다:";
-"approvalTransaction" = "1. 승인 트랜잭션";
 "approvalTXHash" = "승인 Tx 해시";
 "approve" = "승인";
 "approveAndSwap" = "승인 및 스왑";
@@ -470,7 +467,6 @@
 "enterYourSeedphraseSubtitle" = "각 단어 사이에 공백을 넣으세요. 12개 또는 24개 단어의 시드 문구가 지원됩니다.";
 "enterYourSeedphraseSubtitleHighlight" = "12개 또는 24개";
 "enterYourVaultsPassword" = "볼트 비밀번호 입력";
-"erc20ApprovalRequired" = "ERC20 승인 필요";
 "error" = "오류";
 "errorCopy" = "복사";
 "errorMessageTitle" = "오류 메시지";
@@ -1371,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "낮은 위험 트랜잭션 감지됨";
 "securityScannerMediumRiskTitle" = "중간 위험 트랜잭션 감지됨";
 "securityScannerPoweredBy" = "제공: ";
+"securityScannerSafeDescription" = "악성 활동이 감지되지 않았습니다. 이 거래는 서명해도 안전합니다.";
+"securityScannerSafeTitle" = "Blockaid에서 스캔함";
 "securityScannerTransactionNotScanned" = "트랜잭션이 스캔되지 않았습니다";
 "securityScannerTransactionScannedBy" = "트랜잭션 스캔됨";
 "securityScannerTransactionScanning" = "스캔 중…";

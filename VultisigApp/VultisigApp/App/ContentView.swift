@@ -81,6 +81,9 @@ struct ContentView: View {
                 }
             }
         }
+        // Inside the router's environment, or the review's signing push goes
+        // to a detached router.
+        .keysignReviewHost()
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)
         .accentColor(.white)
@@ -206,7 +209,7 @@ struct ContentView: View {
             appViewModel.restartNavigation = false
         }
         .onChange(of: appViewModel.showSplashView) { oldValue, newValue in
-            // Clear any orphaned sheet blur counter when transitioning from splash to main content.
+            // Clear the orphaned sheet blur counter when transitioning from splash to main content.
             // No sheets can be presenting at this moment (home screen hasn't loaded yet),
             // so any counter > 0 is stale from a previous session's view lifecycle.
             if oldValue && !newValue {

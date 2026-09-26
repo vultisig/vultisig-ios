@@ -13,7 +13,6 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     @Binding var securityScannerState: SecurityScannerState
     let contentPadding: CGFloat
     let contentFooter: () -> ContentFooter
-    @State private var isTransactionDetailsExpanded: Bool = false
 
     init(input: SendCryptoVerifySummary, securityScannerState: Binding<SecurityScannerState>, contentPadding: CGFloat = 0) where ContentFooter == EmptyView {
         self.input = input
@@ -72,9 +71,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // were moving. Dispatched here — the one view both the initiator's
             // Verify screen and a co-signer's Join screen render — so a peer
             // device can never be shown Payment framing for a trust line.
-            if isRippleTrustSet {
+            if input.isRippleTrustSet {
                 Group {
-                    if let trustSet = rippleTrustSet {
+                    if let trustSet = input.reviewableRippleTrustSet {
                         getValueCell(for: "rippleTrustLineIssuer", with: trustSet.issuer)
                         Separator()
                         getValueCell(for: "rippleTrustLineCurrency", with: trustSet.ticker)
@@ -111,14 +110,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // read out of the bytes, not out of the request. In the normal row
             // list rather than a section of their own: they identify the
             // destination, which is what the rows around them are for.
-            if let kamino = kaminoState.display {
+            if let kamino = input.kaminoState.display {
                 getValueCell(for: "kaminoVerifyVault", with: kamino.vaultName)
                 Separator()
                 getValueCell(for: "kaminoVerifyCurator", with: kamino.curatorWithRiskTier)
                 Separator()
             }
 
-            if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
+            if input.shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
                 getValueCell(
                     for: "amount",
                     with: tokenDisplay,
@@ -128,8 +127,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 Separator()
             }
 
-            if hasTransactionDetails {
-                transactionDetailsSection
+            if input.hasTransactionDetails {
+                SendTransactionDetailsSection(input: input)
                 Separator()
             } else {
                 Group {
@@ -181,7 +180,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // Bound once: the decode parses the wire message and derives the
             // signer's share account for each curated vault, so reading the
             // property twice per render would do that work twice.
-            let kamino = kaminoState
+            let kamino = input.kaminoState
             Group {
                 if kamino.hasVisibleDetail {
                     Separator()
@@ -190,35 +189,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
 
             Group {
-                if let signDirect = input.keysignPayload?.signDirect {
+                let decodedPayload = DecodedPayloadDetailView(payload: input.keysignPayload, vault: input.vault)
+                if decodedPayload.hasContent {
                     Separator()
-                    SignDirectDisplayView(signDirect: signDirect)
-                } else if let signAmino = input.keysignPayload?.signAmino {
-                    Separator()
-                    SignAminoDisplayView(signAmino: signAmino)
-                } else if let signSolana = input.keysignPayload?.signSolana {
-                    Separator()
-                    SignSolanaDisplayView(signSolana: signSolana)
-                } else if let signTon = input.keysignPayload?.signTon,
-                          let coin = input.keysignPayload?.coin,
-                          let vault = input.vault {
-                    Separator()
-                    SignTonDisplayView(
-                        signTon: signTon,
-                        keysignPayload: input.keysignPayload,
-                        vault: vault,
-                        fromAddress: coin.address
-                    )
-                } else if let signBitcoin = input.keysignPayload?.signBitcoin {
-                    Separator()
-                    SignBitcoinDisplayView(signBitcoin: signBitcoin)
-                } else if let signSui = input.keysignPayload?.signSui {
-                    Separator()
-                    SignSuiDisplayView(signSui: signSui)
-                } else if let signRipple = input.keysignPayload?.signRipple {
-                    Separator()
-                    SignRippleDisplayView(signRipple: signRipple)
                 }
+                decodedPayload
             }
         }
         .padding(24)
@@ -310,12 +285,12 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         // transaction simulation, which reads a TrustSet as an ordinary send. A
         // co-signer must not be shown "You're sending <limit> <ticker>" for a
         // transaction that moves nothing.
-        if isRippleTrustSet {
+        if input.isRippleTrustSet {
             // Nothing is being sent — a trust line is being opened. When the
             // terms are unreadable the header stays generic rather than naming a
             // ticker we couldn't decode.
             Text(
-                rippleTrustSet.map { String(format: "rippleTrustLineHeroTitle".localized, $0.ticker) }
+                input.reviewableRippleTrustSet.map { String(format: "rippleTrustLineHeroTitle".localized, $0.ticker) }
                     ?? "rippleTrustLineActivationTitle".localized
             )
             .foregroundStyle(Theme.colors.textPrimary)
@@ -348,7 +323,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 // A Kamino transaction says what it is here rather than "you're
                 // sending", which describes a transfer and is the one thing a
                 // vault deposit is not.
-                Text(kaminoState.display?.headerTitle ?? NSLocalizedString("youreSending", comment: ""))
+                Text(input.kaminoState.display?.headerTitle ?? NSLocalizedString("youreSending", comment: ""))
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.bodyMMedium)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -377,134 +352,6 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             .padding(.bottom, 8)
         }
     }
-
-    var hasTransactionDetails: Bool {
-        let hasSignature = !(input.decodedFunctionSignature?.isEmpty ?? true)
-        let hasArguments = !(input.decodedFunctionArguments?.isEmpty ?? true)
-        return hasSignature || hasArguments
-    }
-
-    var transactionDetailsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Button {
-                withAnimation {
-                    isTransactionDetailsExpanded.toggle()
-                }
-            } label: {
-                HStack(alignment: .center) {
-                    Text("transactionDetails".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    Spacer()
-                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
-                        .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
-                }
-            }
-            .buttonStyle(.borderless)
-
-            if isTransactionDetailsExpanded {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        if let signature = input.decodedFunctionSignature, !signature.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("functionSignature".localized)
-                                    .foregroundStyle(Theme.colors.textTertiary)
-                                    .font(Theme.fonts.bodySMedium)
-
-                                Text(signature)
-                                    .foregroundStyle(Theme.colors.turquoise)
-                                    .font(Theme.fonts.bodySMedium)
-                                    .textSelection(.enabled)
-                            }
-                        }
-
-                        if let args = input.decodedFunctionArguments, !args.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("functionArguments".localized)
-                                    .foregroundStyle(Theme.colors.textTertiary)
-                                    .font(Theme.fonts.bodySMedium)
-
-                                Text(args)
-                                    .foregroundStyle(Theme.colors.turquoise)
-                                    .font(Theme.fonts.bodySMedium)
-                                    .textSelection(.enabled)
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(16)
-                }
-                .frame(maxHeight: 300)
-                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
-            }
-        }
-    }
-
-    /// Render state for a Kamino Earn transaction, derived from the KEYSIGN
-    /// PAYLOAD on whichever device is rendering.
-    ///
-    /// Always from the payload, never from `input`: this is the one view both
-    /// the initiator's Verify screen and a co-signer's Join screen render, and
-    /// the whole value of the decode is that each device derives the claim from
-    /// the bytes it is about to sign rather than from anything it was told.
-    ///
-    /// Cheap for everything else — the guard inside is `signSolana == nil`,
-    /// which every non-raw-Solana payload fails immediately.
-    var kaminoState: KaminoVerifyPresentation.State {
-        KaminoVerifyPresentation.state(for: input.keysignPayload)
-    }
-
-    /// Render state for an XRPL TrustSet.
-    ///
-    /// Taken from the KEYSIGN PAYLOAD whenever one is present, so a co-signer
-    /// reads the transaction it is about to sign rather than anything the
-    /// initiator claims about it. The `input` value covers the initiator's Verify
-    /// screen, which renders before its payload is built.
-    var rippleTrustSetState: RippleTrustSetPresentation.State {
-        let fromPayload = RippleTrustSetPresentation.state(for: input.keysignPayload)
-        guard fromPayload == .notTrustSet else { return fromPayload }
-        return input.rippleTrustSet
-    }
-
-    /// Terms to render, when they can be read at all.
-    var rippleTrustSet: RippleTrustSetPresentation.Display? {
-        guard case .reviewable(let display) = rippleTrustSetState else { return nil }
-        return display
-    }
-
-    /// True for ANY TrustSet, readable or not — the flag that must gate every
-    /// Payment-shaped row, so an unreviewable TrustSet can never borrow them.
-    var isRippleTrustSet: Bool {
-        rippleTrustSetState != .notTrustSet
-    }
-
-    /// True when the hero doesn't already show a resolved amount/coin, so the
-    /// "amount" detail row should render with the fallback `tokenDisplay` value.
-    var shouldShowAmountRow: Bool {
-        // signSui carries no to_amount; the value lives in the PTB bytes.
-        if input.keysignPayload?.signSui != nil {
-            return false
-        }
-        // A TrustSet's amount IS the limit, rendered as its own labelled row (or
-        // withheld when unreadable). Showing it as "amount" would read as a
-        // transfer.
-        if isRippleTrustSet {
-            return false
-        }
-        // signRipple carries the amount inside the raw JSON (and offers have no
-        // amount at all); the decoded terms render it below.
-        if input.keysignPayload?.signRipple != nil {
-            return false
-        }
-        switch input.hero {
-        // Projected settlement does not replace disclosure of the signed amount.
-        case nil, .title, .projected:
-            return true
-        case .send, .receive, .swap:
-            return false
-        }
-    }
-
 }
 
 #Preview("Without SignData") {

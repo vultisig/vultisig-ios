@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainDetailScreen: View {
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     let nativeCoin: Coin
     let vault: Vault
     @Binding var refreshTrigger: Bool
@@ -40,6 +41,8 @@ struct ChainDetailScreen: View {
     /// account's reserve floor, so it is never done without showing the cost and
     /// the limit that will be signed.
     @State private var coinToActivate: Coin?
+    /// The review the activation sheet hands on, held until that sheet is gone.
+    @State private var pendingTrustLineReview: KeysignReview?
     @StateObject private var trustLineActivation = RippleTrustLineActivationViewModel()
 
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
@@ -213,21 +216,18 @@ struct ChainDetailScreen: View {
                 coinToShow = nil
             }
         }
-        .crossPlatformSheet(isPresented: Binding(
-            get: { coinToActivate != nil },
-            set: { if !$0 { coinToActivate = nil } }
-        )) {
+        // An item sheet for its `onDismiss`: the review is a root sheet, and it
+        // can only present once this one is fully off screen.
+        .crossPlatformSheet(item: $coinToActivate, onDismiss: presentPendingTrustLineReview) { coin in
             RippleTrustLineActivationSheet(
                 viewModel: trustLineActivation,
-                coin: coinToActivate,
+                coin: coin,
                 isPresented: Binding(
                     get: { coinToActivate != nil },
                     set: { if !$0 { coinToActivate = nil } }
                 ),
                 onActivate: {
-                    if let coin = coinToActivate {
-                        confirmTrustLineActivation(for: coin)
-                    }
+                    confirmTrustLineActivation(for: coin)
                 }
             )
         }
@@ -469,18 +469,24 @@ private extension ChainDetailScreen {
     }
 
     /// The user accepted the reserve cost. Hand the TrustSet to the shared
-    /// verify → keysign flow, which is where the payload is built, reviewed and
+    /// review → keysign flow, which is where the payload is built, reviewed and
     /// signed like any other transaction. Details is skipped: a TrustSet has no
     /// destination or amount for the user to fill in — the limit is fixed and the
     /// sheet just showed it.
     func confirmTrustLineActivation(for coin: Coin) {
         guard let tx = trustLineActivation.makeActivationTransaction(coin: coin, vault: vault) else { return }
-        coinToActivate = nil
+        pendingTrustLineReview = .send(tx: tx, retrySignal: SendRetrySignal(), vault: vault)
         // The search field underneath this sheet keeps its focus across the
         // sheet's life, so releasing it here is what stops its keyboard
-        // outliving the dismissal and landing on top of Verify.
+        // outliving the dismissal and landing on top of the review.
         focusSearch = false
-        router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
+        coinToActivate = nil
+    }
+
+    func presentPendingTrustLineReview() {
+        guard let review = pendingTrustLineReview else { return }
+        pendingTrustLineReview = nil
+        reviewPresenter.present(review)
     }
 
     func onCopy() {
@@ -541,4 +547,5 @@ private extension ChainDetailScreen {
         vault: .example
     )
     .environmentObject(HomeViewModel())
+    .environment(KeysignReviewPresenter())
 }

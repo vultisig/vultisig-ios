@@ -13,14 +13,15 @@ struct TransactionHistoryScreen: View {
 
     @Environment(\.openURL) var openURL
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     /// A cancel parked while the detail sheet dismisses. See `startCancel`.
     @State private var pendingCancel: PendingLimitOrderCancel?
-    /// True while the cancel is being priced on its way to Verify.
+    /// True while the cancel is being priced on its way to the review.
     @State private var isPreparingCancel = false
     /// Surfaced when a cancel cannot be assembled at all — no inbound vault, no
     /// dust floor, no priced fee. There is nothing safe to sign in that state, so
-    /// the flow stops here rather than showing a half-built Verify screen.
+    /// the flow stops here rather than showing a half-built review.
     @State private var cancelError: HelperError?
     /// A Try again parked while the detail sheet dismisses. See `startTryAgain`.
     @State private var pendingTryAgain: SwapTryAgainPair?
@@ -373,14 +374,14 @@ struct TransactionHistoryScreen: View {
         viewModel.selectedDetail = nil
     }
 
-    /// Price the cancel and push straight to Verify.
+    /// Price the cancel and open its review.
     ///
     /// There is no confirmation screen in between: a cancel arrives from the
     /// order card with its assets, amounts and memo already fixed, so it has no
     /// editable field and nothing left to decide. Same shape as the Solana
     /// unstake/withdraw rows, which build their transaction here and go straight
-    /// to Verify. Everything the removed screen said now rides on the request's
-    /// disclosures and renders on Verify, above the signing button.
+    /// to review. Everything the removed screen said now rides on the request's
+    /// disclosures and renders in the review, above the signing button.
     private func prepareAndPresentPendingCancel() {
         guard let pending = pendingCancel else { return }
         pendingCancel = nil
@@ -393,7 +394,7 @@ struct TransactionHistoryScreen: View {
                     vault: pending.vault,
                     request: pending.request
                 )
-                router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: pending.vault))
+                reviewPresenter.present(.functionTransaction(tx: tx, vault: pending.vault))
             } catch {
                 // Surfaced rather than swallowed: without an inbound vault, a
                 // verified dust floor and a priced fee there is no safe cancel to

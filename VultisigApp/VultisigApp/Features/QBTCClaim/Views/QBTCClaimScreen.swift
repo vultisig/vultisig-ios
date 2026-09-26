@@ -34,6 +34,7 @@ struct QBTCClaimScreen: View {
         }
         .crossPlatformSheet(isPresented: $viewModel.isPasswordSheetPresented) {
             FastVaultEnterPasswordView(
+                isPresented: $viewModel.isPasswordSheetPresented,
                 password: $viewModel.fastVaultPassword,
                 vault: viewModel.vault,
                 onSubmit: { viewModel.startClaim() }

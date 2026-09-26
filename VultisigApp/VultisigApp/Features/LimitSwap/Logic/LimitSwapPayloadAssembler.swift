@@ -30,8 +30,8 @@ enum LimitSwapAssemblyError: Error, Equatable, LocalizedError {
     /// a plain transfer that would strand them on the vault with no memo.
     case noRouterForTokenSource(String)
 
-    /// Friendly, localized message for the shared Verify screen's error alert
-    /// (`SwapVerifyScreen` renders `error.localizedDescription`). Without this
+    /// Friendly, localized message for the swap review's error alert
+    /// (`SwapReviewContent` renders `error.localizedDescription`). Without this
     /// `LocalizedError` conformance the alert fell back to the raw NSError form
     /// — "(VultisigApp.LimitSwapAssemblyError error 3.)".
     var errorDescription: String? {

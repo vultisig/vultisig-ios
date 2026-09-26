@@ -187,21 +187,6 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.blockingMessage, failure.localizedDescription)
     }
 
-    // MARK: - Verify's two-transaction notice
-
-    /// The notice moved from the form to Verify: it shows only when the
-    /// approval read on Continue signs an approve ahead of the deposit.
-    func testVerifyShowsTheApprovalNoticeOnlyWhenAnApproveIsSigned() throws {
-        let verify = FunctionTransactionVerifyViewModel()
-        let undecided = lpAdd(decided: nil)
-        let query = try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: undecided))
-
-        XCTAssertFalse(verify.showsApprovalNotice(for: undecided))
-        XCTAssertFalse(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .notRequired))))
-        XCTAssertTrue(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .approve))))
-        XCTAssertTrue(verify.showsApprovalNotice(for: lpAdd(decided: ERC20ApprovalDecision(query: query, requirement: .resetThenApprove))))
-    }
-
     /// Pricing on the way to Verify copies the transaction; the decision has
     /// to survive it or signing refuses the deposit.
     func testTheDecisionSurvivesPricingOnTheWayToVerify() throws {

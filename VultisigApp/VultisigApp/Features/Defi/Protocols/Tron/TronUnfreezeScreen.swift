@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TronUnfreezeScreen: View {
     @StateObject private var viewModel: TronUnfreezeViewModel
-    @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     init(vault: Vault, frozenBandwidthBalance: Decimal, frozenEnergyBalance: Decimal) {
         self._viewModel = StateObject(
@@ -53,6 +53,6 @@ struct TronUnfreezeScreen: View {
 
     private func onVerify() {
         guard let tx = viewModel.makeTransaction() else { return }
-        router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: viewModel.vault))
+        reviewPresenter.present(.send(tx: tx, retrySignal: SendRetrySignal(), vault: viewModel.vault))
     }
 }
