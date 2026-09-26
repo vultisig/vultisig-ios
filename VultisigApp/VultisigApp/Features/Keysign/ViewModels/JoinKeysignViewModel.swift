@@ -117,6 +117,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
+    private var reviewScanGeneration = 0
     /// The hero for a transaction that only resolves after an on-chain read — a
     /// fractional unstake read against the signer's own position, today, but
     /// general over any operation whose figure is settled against a balance the
@@ -715,19 +716,35 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func loadSimulation() async {
+        let generation = reviewScanGeneration
         guard let payload = keysignPayload else {
-            didLoadSimulation = true
+            finishReviewScan(scannerResult: nil)
             return
         }
         securityScannerState = .scanning
         let result = await BlockaidSimulationService.shared.scan(keysignPayload: payload)
+        guard !Task.isCancelled, generation == reviewScanGeneration else { return }
         blockaidSimulation = result.simulation
-        if let scannerResult = result.scannerResult {
+        finishReviewScan(scannerResult: result.scannerResult)
+    }
+
+    func finishReviewScan(scannerResult: SecurityScannerResult?) {
+        if let scannerResult {
             securityScannerState = .scanned(scannerResult)
         } else {
             securityScannerState = .idle
         }
         didLoadSimulation = true
+    }
+
+    /// A reopened overview starts with the Rive Loading state again. An older
+    /// scan may still be returning after dismissal; its generation cannot
+    /// replace the result for the new presentation.
+    func resetReviewScan() {
+        reviewScanGeneration += 1
+        blockaidSimulation = nil
+        securityScannerState = .idle
+        didLoadSimulation = false
     }
 
     /// Resolves the hero for a transaction whose figure needs an on-chain read, so
@@ -773,29 +790,12 @@ class JoinKeysignViewModel: ObservableObject {
         resolvedHero ?? heroContent
     }
 
-    var providerDisplayName: String {
-        keysignPayload?.swapPayload?.providerDisplayName ?? .empty
-    }
-
     /// dApp identity (name / url / icon) attached to the keysign request, if
     /// any. Used by `DAppRequestBanner` on the verify and done screens. Empty
     /// metadata is treated as absent. A message-signing request carries no
     /// `KeysignPayload`, so its identity rides on the custom message instead.
     var dappMetadata: DAppMetadata? {
         keysignPayload?.dappMetadata ?? customMessagePayload?.dappMetadata
-    }
-
-    func getFromAmount() -> String {
-        guard let payload = keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return "\(amount.formatForDisplay()) \(payload.fromCoin.ticker)"
-    }
-
-    func getToAmount() -> String {
-        guard let payload = keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        return "\(amount.formatForDisplay()) \(payload.toCoin.ticker)"
-
     }
 
     /// Caption over the destination amount on the swap confirm screen. A market
@@ -843,13 +843,6 @@ class JoinKeysignViewModel: ObservableObject {
         return gasViewModel.getCalculatedNetworkFee(
             payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
         )
-    }
-
-    /// Labels for the swap confirm's network-fee and total rows, keyed on the
-    /// chain `getCalculatedNetworkFee` prices the fee on (`payload.coin`).
-    var swapFeeLabelKeys: SwapCryptoLogic.FeeLabelKeys {
-        guard let chain = keysignPayload?.coin.chain else { return .exact }
-        return SwapCryptoLogic.feeLabelKeys(feeChain: chain)
     }
 
     /// Swap-fee row for the swap confirm screen, nil when the payload

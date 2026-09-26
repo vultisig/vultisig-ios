@@ -59,8 +59,8 @@ enum LimitOrderCancelPresentation {
     /// co-signer just sees which order it is closing instead of a bare title.
     ///
     /// ⚠️ The co-signer's disclosure of the donated dust does not live here.
-    /// It is its own line on the JOIN screen (`KeysignMessageConfirmView`), fed
-    /// by `attachedDust(in:)` — which is the screen where a co-signer decides
+    /// It is its own row in the co-signer's review (`JoinKeysignReviewPresentation`),
+    /// fed by `attachedDust(in:)` — which is the screen where a co-signer decides
     /// whether to sign, and therefore the screen where that money has to be
     /// named.
     static func hero(forSignedMemo memo: String?) -> HeroContent? {

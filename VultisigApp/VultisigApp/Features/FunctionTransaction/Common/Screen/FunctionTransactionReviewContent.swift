@@ -36,7 +36,7 @@ struct FunctionTransactionReviewContent: View {
             onClose: reviewPresenter.dismiss,
             onTapScanMark: revealScanStatus
         ) {
-            FunctionTransactionReviewSummaryView(summary: summary) {
+            KeysignReviewSummaryContentView(summary: .function(summary)) {
                 cancelLimitOrderDisclosures
             }
             .blur(radius: viewModel.isLoading ? 1 : 0)

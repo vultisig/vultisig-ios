@@ -7,20 +7,35 @@ import OSLog
 
 struct JoinKeysignView: View {
     let vault: Vault
+    let receivedURL: URL?
+    @ObservedObject var viewModel: JoinKeysignViewModel
+    @ObservedObject var serviceDelegate: ServiceDelegate
+    let onStatusChange: (JoinKeysignStatus, JoinKeysignReviewPresentation.Kind?) -> Void
+    let onCancel: () -> Void
 
-    @StateObject private var serviceDelegate = ServiceDelegate()
-    @StateObject var viewModel = JoinKeysignViewModel()
     /// The keysign ceremony view-model, owned here so this host can crossfade
     /// the shared `KeysignView` animation to the cosigner `JoinKeysignDoneView`
     /// once the ceremony finishes — the same pattern the initiator uses.
     @StateObject private var keysignVM = KeysignViewModel()
+    @State private var wasReviewStatus = false
 
-    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var appViewModelLegacy: AppViewModel
 
     var body: some View {
-        content
+        Group {
+            switch JoinKeysignReviewPresentation.surface(
+                status: viewModel.status,
+                payload: viewModel.keysignPayload,
+                hasCustomMessage: viewModel.customMessagePayload != nil
+            ) {
+            case .transactionReview:
+                Color.clear
+                    .allowsHitTesting(false)
+            case .session:
+                content
+            }
+        }
             .onLoad {
                 setData()
             }
@@ -30,6 +45,25 @@ struct JoinKeysignView: View {
                 } catch {
                     Log.keysign.view.error("fail to get thorchain network id, \(error.localizedDescription, privacy: .public)")
                 }
+            }
+            .onReceive(viewModel.$status) { status in
+                let kind = JoinKeysignReviewPresentation.presentedKind(
+                    status: status,
+                    payload: viewModel.keysignPayload,
+                    hasCustomMessage: viewModel.customMessagePayload != nil
+                )
+                if let newKind = JoinKeysignReviewPresentation.newReviewKind(
+                    status: status,
+                    payload: viewModel.keysignPayload,
+                    hasCustomMessage: viewModel.customMessagePayload != nil,
+                    wasReviewStatus: wasReviewStatus
+                ) {
+                    viewModel.resetReviewScan()
+                    onStatusChange(status, newKind)
+                } else if kind == nil {
+                    onStatusChange(status, nil)
+                }
+                wasReviewStatus = kind != nil
             }
     }
 
@@ -195,19 +229,10 @@ struct JoinKeysignView: View {
 
     var keysignMessageConfirm: some View {
         ZStack {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                // Check if it's an LP operation by looking at the memo
-                if let memo = viewModel.keysignPayload?.memo, memo.starts(with: "+:") || memo.starts(with: "-:") {
-                    // LP operation - show regular message confirm instead of swap
-                    KeysignMessageConfirmView(viewModel: viewModel)
-                } else {
-                    // Regular swap
-                    KeysignSwapConfirmView(viewModel: viewModel)
-                }
-            } else if viewModel.customMessagePayload != nil {
+            if viewModel.customMessagePayload != nil {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
             } else {
-                KeysignMessageConfirmView(viewModel: viewModel)
+                CircularProgressIndicator(size: 24)
             }
         }
     }
@@ -236,15 +261,20 @@ struct JoinKeysignView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            viewModel.isShowingScanner = false
-            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-        }
+        viewModel.isShowingScanner = false
+        viewModel.handleDeeplinkScan(receivedURL)
     }
 }
 
 #Preview {
-    JoinKeysignView(vault: Vault.example)
+    JoinKeysignView(
+        vault: Vault.example,
+        receivedURL: nil,
+        viewModel: JoinKeysignViewModel(),
+        serviceDelegate: ServiceDelegate(),
+        onStatusChange: { _, _ in },
+        onCancel: {}
+    )
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(AppViewModel())
@@ -258,6 +288,12 @@ extension JoinKeysignView {
         ZStack {
             Background()
             main
+        }
+        .overlay(alignment: .topLeading) {
+            if !isInAnimationState {
+                ToolbarButton(image: .xmark, action: onCancel)
+                    .padding(16)
+            }
         }
         .if(!isInAnimationState) {
             $0
@@ -298,6 +334,12 @@ extension JoinKeysignView {
             Background()
             main
         }
+        .overlay(alignment: .topLeading) {
+            if !isInAnimationState {
+                ToolbarButton(image: .xmark, action: onCancel)
+                    .padding(16)
+            }
+        }
     }
 
     @ViewBuilder
@@ -315,7 +357,7 @@ extension JoinKeysignView {
     }
 
     var headerMac: some View {
-        JoinKeygenHeader(title: keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", hideBackButton: keysignVM.status == .KeysignFinished)
+        JoinKeygenHeader(title: keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", hideBackButton: true)
     }
 }
 #endif

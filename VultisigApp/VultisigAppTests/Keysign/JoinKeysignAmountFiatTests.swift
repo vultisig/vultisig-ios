@@ -75,6 +75,215 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(vm.getAmountFiat(), "", "Swaps show fiat on the hero from/to rows, not the amount field")
     }
 
+    func testCosignerReviewClassifiesSwapAndLiquidityBySignedMemo() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: from))
+        let swapPayload = makePayload(coin: from, toAmount: 1, swapPayload: swap)
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: swapPayload), .swap)
+
+        let liquidityPayload = makePayload(coin: from, toAmount: 1, swapPayload: swap, memo: "+:ETH.ETH:0xpaired")
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: liquidityPayload), .function)
+    }
+
+    func testCosignerReviewClassifiesSignedStakeAndWithdrawAsFunction() {
+        let tcy = makeCoin(.thorChain, ticker: "TCY", decimals: 8, isNative: false)
+        let specific = BlockChainSpecific.THORChain(accountNumber: 0, sequence: 0, fee: 0, isDeposit: true)
+        let stake = makePayload(coin: tcy, toAmount: 100_000_000, memo: "tcy+", chainSpecific: specific)
+        let withdraw = makePayload(coin: tcy, toAmount: 0, memo: "tcy-:5006", chainSpecific: specific)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: stake), .function)
+        XCTAssertEqual(JoinKeysignReviewPresentation.kind(for: withdraw), .function)
+        let stakeSummary = JoinKeysignReviewPresentation.functionSummary(viewModel: makeViewModel(payload: stake))
+        XCTAssertFalse(stakeSummary?.rows.contains(where: { $0.label == "to".localized }) ?? true)
+    }
+
+    func testCosignerSwapSummaryUsesReceivedAmountsAndRecipient() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: from))
+        let vm = makeViewModel(payload: makePayload(coin: from, toAmount: 1, swapPayload: swap))
+        let summary = JoinKeysignReviewPresentation.swapSummary(viewModel: vm)
+
+        XCTAssertEqual(summary?.from.amount, "3")
+        XCTAssertEqual(summary?.to.amount, Decimal(3000).formatForDisplay())
+        XCTAssertEqual(summary?.from.ticker, "ETH")
+        XCTAssertEqual(summary?.to.ticker, "USDC")
+    }
+
+    func testCosignerSwapFeeRowsUseInitiatorLabelsAndParenthesizedFiat() {
+        let from = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let feeCoin = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc")
+        setPrice(2.0, for: from)
+        setPrice(1.0, for: feeCoin)
+        let vm = makeViewModel(payload: makePayload(
+            coin: from,
+            toAmount: 1,
+            swapPayload: .generic(makeGenericSwapPayload(from: from, swapFee: "1000000"))
+        ))
+        let networkFee = vm.getCalculatedNetworkFee()
+        let summary = JoinKeysignReviewPresentation.swapSummary(viewModel: vm)
+
+        XCTAssertEqual(summary?.feeLines.first?.label, "networkFee".localized)
+        XCTAssertEqual(
+            summary?.feeLines.first?.value,
+            "\(networkFee.feeCrypto) (\(networkFee.feeFiat))"
+        )
+        XCTAssertEqual(summary?.feeLines.dropFirst().first?.label, "vultisigFee".localized)
+        XCTAssertEqual(summary?.feeLines.dropFirst().first?.value, "1 USDC (\(Decimal(1).formatToFiatForFee(includeCurrencySymbol: true)))")
+        XCTAssertEqual(summary?.totalFee, Decimal(1).formatToFiat(includeCurrencySymbol: true))
+        XCTAssertNil(summary?.slippage, "Quote-only slippage must not be invented from a received payload")
+    }
+
+    func testCosignerLiquidityUsesFunctionOverviewSummary() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let swap = SwapPayload.generic(makeGenericSwapPayload(from: eth))
+        let vm = makeViewModel(payload: makePayload(
+            coin: eth, toAmount: 1, swapPayload: swap, memo: "+:ETH.ETH:0xpaired"
+        ))
+
+        let summary = JoinKeysignReviewPresentation.functionSummary(viewModel: vm)
+        let sharedContent = JoinKeysignReviewPresentation.summary(for: .function, viewModel: vm)
+
+        XCTAssertEqual(summary?.vaultAddress, eth.address)
+        XCTAssertEqual(summary?.rows.first?.label, "to".localized)
+        XCTAssertEqual(summary?.rows.first?.value, "0xrecipient")
+        guard case .function = sharedContent else {
+            return XCTFail("Liquidity must use the shared function overview renderer")
+        }
+    }
+
+    func testCosignerSendSummaryUsesReceivedDestination() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let vm = makeViewModel(payload: makePayload(coin: eth, toAmount: BigInt("1000000000000000000")))
+        let summary = JoinKeysignReviewPresentation.sendSummary(viewModel: vm)
+
+        XCTAssertEqual(summary.fromAddress, eth.address)
+        XCTAssertEqual(summary.toAddress, "0xrecipient")
+        XCTAssertEqual(summary.amount, "1")
+        XCTAssertEqual(summary.coinTicker, "ETH")
+    }
+
+    func testCosignerSheetOnlyPresentsForTransactionJoinStatus() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.presentedKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false
+        ), .send)
+        XCTAssertNil(JoinKeysignReviewPresentation.presentedKind(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false
+        ))
+        XCTAssertNil(JoinKeysignReviewPresentation.presentedKind(
+            status: .JoinKeysign, payload: nil, hasCustomMessage: true
+        ))
+    }
+
+    func testTransactionReviewReplacesSessionContentUntilSigningStarts() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false
+        ), .transactionReview(.send))
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .KeysignStarted, payload: payload, hasCustomMessage: false
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .JoinKeysign, payload: nil, hasCustomMessage: true
+        ), .session)
+        XCTAssertEqual(JoinKeysignReviewPresentation.surface(
+            status: .QBTCClaim, payload: payload, hasCustomMessage: false
+        ), .session)
+    }
+
+    func testRepeatedJoinStatusDoesNotResetOrReopenReview() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let payload = makePayload(coin: eth, toAmount: 1)
+
+        XCTAssertEqual(JoinKeysignReviewPresentation.newReviewKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false, wasReviewStatus: false
+        ), .send)
+        XCTAssertNil(JoinKeysignReviewPresentation.newReviewKind(
+            status: .JoinKeysign, payload: payload, hasCustomMessage: false, wasReviewStatus: true
+        ))
+        XCTAssertNil(JoinKeysignReviewPresentation.newReviewKind(
+            status: .WaitingForKeysignToStart, payload: payload, hasCustomMessage: false, wasReviewStatus: true
+        ))
+    }
+
+    func testScannerKeysignHandoffWaitsForDismissal() {
+        var handoff = ScannerKeysignHandoff()
+
+        handoff.requestJoin()
+        XCTAssertTrue(handoff.reviewReady(), "A prepared direct link can present immediately")
+        handoff.scannerOpened()
+        handoff.requestJoin()
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Dismissal alone must not present an unprepared review")
+        XCTAssertTrue(handoff.reviewReady(), "A review ready after dismissal can present immediately")
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "The dismissal must hand off only once")
+    }
+
+    func testScannerKeysignHandoffWaitsForDismissalAfterReviewIsReady() {
+        var handoff = ScannerKeysignHandoff()
+
+        handoff.scannerOpened()
+        handoff.requestJoin()
+        XCTAssertFalse(handoff.reviewReady(), "Readiness while scanning cannot present over the scanner")
+        XCTAssertTrue(handoff.scannerDismissed(isPresentingAgain: false))
+        XCTAssertFalse(handoff.reviewReady(), "A repeated ready event cannot reopen a dismissed review")
+    }
+
+    func testScannerKeysignHandoffIgnoresCancellationAndReopen() {
+        var handoff = ScannerKeysignHandoff()
+
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Cancelling cannot open the overview")
+
+        handoff.scannerOpened()
+        handoff.requestJoin()
+        XCTAssertFalse(handoff.reviewReady())
+        handoff.scannerOpened()
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: true), "An old dismissal cannot close a new scan")
+        XCTAssertFalse(handoff.scannerDismissed(isPresentingAgain: false), "Reopening cancels the old QR handoff")
+    }
+
+    func testCosignerScanResetsToLoadingWhenReviewReopens() {
+        let vm = JoinKeysignViewModel()
+        vm.securityScannerState = .scanned(KeysignReviewScanFixture.result(.high))
+        vm.didLoadSimulation = true
+
+        vm.resetReviewScan()
+
+        XCTAssertEqual(KeysignReviewScanRing(vm.securityScannerState, isScanComplete: vm.didLoadSimulation).animationState, .loading)
+        XCTAssertFalse(vm.didLoadSimulation)
+    }
+
+    func testCosignerRiskVerdictOnlyRequiresAcknowledgementForUnsafeResult() {
+        XCTAssertTrue(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.medium))
+        ))
+        XCTAssertTrue(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.high))
+        ))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(
+            .scanned(KeysignReviewScanFixture.result(.low))
+        ))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(.idle))
+        XCTAssertFalse(JoinKeysignReviewPresentation.requiresRiskAcknowledgement(.notScanned(provider: "blockaid")))
+    }
+
+    func testUnavailableCosignerScanCompletesAndHidesAnimation() {
+        let vm = JoinKeysignViewModel()
+        vm.securityScannerState = .scanning
+
+        vm.finishReviewScan(scannerResult: nil)
+
+        XCTAssertTrue(vm.didLoadSimulation)
+        XCTAssertEqual(KeysignReviewScanRing(vm.securityScannerState, isScanComplete: vm.didLoadSimulation), .hidden)
+    }
+
     // MARK: - Co-signer keysign hero (JoinKeysignViewModel.heroContent)
 
     /// The co-signer builds its hero through the same
@@ -120,14 +329,20 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         return vm
     }
 
-    private func makePayload(coin: Coin, toAmount: BigInt, swapPayload: SwapPayload? = nil) -> KeysignPayload {
+    private func makePayload(
+        coin: Coin,
+        toAmount: BigInt,
+        swapPayload: SwapPayload? = nil,
+        memo: String? = nil,
+        chainSpecific: BlockChainSpecific? = nil
+    ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
             toAddress: "0xrecipient",
             toAmount: toAmount,
-            chainSpecific: .Ethereum(maxFeePerGasWei: 0, priorityFeeWei: 0, nonce: 0, gasLimit: 21000),
+            chainSpecific: chainSpecific ?? .Ethereum(maxFeePerGasWei: 0, priorityFeeWei: 0, nonce: 0, gasLimit: 21000),
             utxos: [],
-            memo: nil,
+            memo: memo,
             swapPayload: swapPayload,
             approvePayload: nil,
             vaultPubKeyECDSA: "",
@@ -144,7 +359,7 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         )
     }
 
-    private func makeGenericSwapPayload(from: Coin) -> GenericSwapPayload {
+    private func makeGenericSwapPayload(from: Coin, swapFee: String? = nil) -> GenericSwapPayload {
         GenericSwapPayload(
             fromCoin: from,
             toCoin: makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: "0xusdc"),
@@ -158,13 +373,14 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
                     data: "0x",
                     value: "0",
                     gasPrice: "1",
-                    gas: 100_000
+                    gas: 100_000,
+                    swapFee: swapFee
                 )
             ),
             provider: .oneInch,
-            swapFeeChain: nil,
-            swapFeeTokenId: nil,
-            swapFeeDecimals: nil
+            swapFeeChain: swapFee == nil ? nil : Chain.ethereum.name,
+            swapFeeTokenId: swapFee == nil ? nil : "0xusdc",
+            swapFeeDecimals: swapFee == nil ? nil : 6
         )
     }
 

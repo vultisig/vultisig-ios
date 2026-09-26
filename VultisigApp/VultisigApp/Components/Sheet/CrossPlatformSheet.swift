@@ -8,8 +8,8 @@
 import SwiftUI
 
 extension View {
-    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
-        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, sheetContent: sheetContent))
+    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, onDismiss: (() -> Void)? = nil, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
+        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, onDismiss: onDismiss, sheetContent: sheetContent))
     }
 
     /// - Parameter onDismiss: run AFTER the sheet has finished dismissing.
@@ -35,6 +35,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
 
     let isDismissable: Bool
+    let onDismiss: (() -> Void)?
     var sheetContent: () -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -43,9 +44,10 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @State private var internalIsPresented: Bool = false
     @State private var dismissTask: Task<Void, Never>?
 
-    init(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+    init(isPresented: Binding<Bool>, isDismissable: Bool = true, onDismiss: (() -> Void)? = nil, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
         self.isDismissable = isDismissable
+        self.onDismiss = onDismiss
         self.sheetContent = sheetContent
     }
 
@@ -112,6 +114,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                 try? await Task.sleep(for: .milliseconds(300))
                 guard !Task.isCancelled else { return }
                 isPresented = false
+                onDismiss?()
             }
         }
     }
@@ -119,7 +122,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 
     func nativeSheet(content: Content) -> some View {
         content
-            .sheet(isPresented: $isPresented) {
+            .sheet(isPresented: $isPresented, onDismiss: onDismiss) {
                 sheetContent()
                     .environment(\.isSheetPresented, true)
                     .interactiveDismissDisabled(!isDismissable)

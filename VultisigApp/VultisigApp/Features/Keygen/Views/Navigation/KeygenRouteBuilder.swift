@@ -78,11 +78,6 @@ struct KeygenRouteBuilder {
     }
 
     @ViewBuilder
-    func buildJoinKeysignScreen(vault: Vault) -> some View {
-        JoinKeysignView(vault: vault)
-    }
-
-    @ViewBuilder
     func buildMacScannerScreen(
         type: DeeplinkFlowType,
         selectedVault: Vault?

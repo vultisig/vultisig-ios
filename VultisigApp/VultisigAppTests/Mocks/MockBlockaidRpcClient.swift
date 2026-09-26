@@ -22,6 +22,8 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
     var simulateResult: Result<BlockaidEvmSimulationResponseJson, Error> = .failure(StubError.notStubbed)
     private(set) var simulateCallCount = 0
     private(set) var simulatedMemos: [String] = []
+    private(set) var simulatedAmounts: [String] = []
+    private(set) var simulatedRecipients: [String] = []
 
     var simulateSolanaResult: Result<BlockaidSolanaSimulationResponseJson, Error> = .failure(StubError.notStubbed)
     private(set) var simulateSolanaCallCount = 0
@@ -36,6 +38,8 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
     ) async throws -> BlockaidEvmSimulationResponseJson {
         simulateCallCount += 1
         simulatedMemos.append(data)
+        simulatedAmounts.append(amount)
+        simulatedRecipients.append(to)
         return try simulateResult.get()
     }
 

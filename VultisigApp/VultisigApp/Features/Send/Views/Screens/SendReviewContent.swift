@@ -56,7 +56,7 @@ struct SendReviewContent: View {
             onClose: reviewPresenter.dismiss,
             onTapScanMark: revealScanStatus
         ) {
-            SendReviewSummaryView(input: summary)
+            KeysignReviewSummaryContentView(summary: .send(summary))
         } footer: {
             SendReviewFooter(
                 isAmountCorrect: $viewModel.isAmountCorrect,

@@ -98,6 +98,7 @@ class AppViewModel: ObservableObject {
     @Published private(set) var showingVaultSelector: Bool = false
     @Published var restartNavigation: Bool = false
     @Published var showCamera: Bool = false
+    @Published var pendingJoinKeysignRequest: UUID?
 
     private let logic = AccountLogic()
     private let lockService: AppLockService
