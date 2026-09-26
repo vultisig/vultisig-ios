@@ -129,6 +129,9 @@ struct HomeScreen: View {
         }
         .onChange(of: appViewModel.restartNavigation) { _, newValue in
             guard newValue else { return }
+            // The co-signer flow is an overlay on Home, not a route, so the
+            // Done button's `restart()` can only close it from here.
+            if joinKeysignSession != nil { clearJoinSession() }
             if let vault = appViewModel.selectedVault {
                 transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
             }
