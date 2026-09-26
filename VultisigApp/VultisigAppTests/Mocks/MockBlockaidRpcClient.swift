@@ -8,11 +8,10 @@ import Foundation
 
 // swiftlint:disable unused_parameter async_without_await
 
-/// Test-only `BlockaidRpcClientProtocol` double that records `simulateEVMTransaction`
-/// call counts and returns whatever `Result` the test configures.
+/// Test-only `BlockaidRpcClientProtocol` double that records the EVM simulate
+/// and scan calls and returns whatever `Result` the test configures.
 ///
-/// Other RPC methods are not exercised by simulation tests and throw to surface
-/// accidental usage.
+/// Other RPC methods throw to surface accidental usage.
 final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
 
     enum StubError: Error {
@@ -53,6 +52,9 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
         return try simulateSolanaResult.get()
     }
 
+    var scanEVMResult: Result<BlockaidTransactionScanResponseJson, Error> = .failure(StubError.notStubbed)
+    private(set) var scanEVMCallCount = 0
+
     func scanEVMTransaction(
         chain: Chain,
         from: String,
@@ -60,7 +62,19 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
         amount: String,
         data: String
     ) async throws -> BlockaidTransactionScanResponseJson {
-        throw StubError.notStubbed
+        scanEVMCallCount += 1
+        return try scanEVMResult.get()
+    }
+
+    var scanEVMBulkResult: Result<[BlockaidTransactionScanResponseJson], Error> = .failure(StubError.notStubbed)
+    private(set) var scannedEVMBulkTransactions: [[EthereumScanTransactionRequestJson.DataJson]] = []
+
+    func scanEVMTransactionBulk(
+        chain: Chain,
+        transactions: [EthereumScanTransactionRequestJson.DataJson]
+    ) async throws -> [BlockaidTransactionScanResponseJson] {
+        scannedEVMBulkTransactions.append(transactions)
+        return try scanEVMBulkResult.get()
     }
 
     func scanBitcoinTransaction(

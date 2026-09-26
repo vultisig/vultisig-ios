@@ -45,7 +45,21 @@ class ERC20Helper {
         }
     }
 
-    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+    /// Mirrors the SDK's generic-contract-call predicate: a token coin with a
+    /// zero amount and `0x` calldata in the memo (e.g. a staking `depositFor`)
+    /// sends that calldata to `toAddress` instead of transferring the token.
+    static func isGenericContractCall(_ keysignPayload: KeysignPayload) -> Bool {
+        guard keysignPayload.swapPayload == nil,
+              !keysignPayload.coin.isNativeToken,
+              keysignPayload.toAmount == .zero,
+              let memo = keysignPayload.memo
+        else {
+            return false
+        }
+        return memo.hasPrefix("0x")
+    }
+
+    func getPreSignedInputData(keysignPayload: KeysignPayload, nonceOffset: Int64 = 0) throws -> Data {
 
         guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
@@ -60,9 +74,25 @@ class ERC20Helper {
 
         var input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: intChainID.hexString())!
-            $0.nonce = Data(hexString: nonce.hexString())!
-            $0.toAddress = keysignPayload.coin.contractAddress
-            $0.transaction = EthereumTransaction.with {
+            $0.nonce = Data(hexString: (nonce + nonceOffset).hexString())!
+        }
+
+        if Self.isGenericContractCall(keysignPayload) {
+            guard let memo = keysignPayload.memo,
+                  let data = Data(hexString: memo.stripHexPrefix())
+            else {
+                throw HelperError.runtimeError("invalid contract call data in memo")
+            }
+            input.toAddress = keysignPayload.toAddress
+            input.transaction = EthereumTransaction.with {
+                $0.contractGeneric = EthereumTransaction.ContractGeneric.with {
+                    $0.amount = keysignPayload.toAmount.serializeForEvm()
+                    $0.data = data
+                }
+            }
+        } else {
+            input.toAddress = keysignPayload.coin.contractAddress
+            input.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
@@ -81,8 +111,8 @@ class ERC20Helper {
         return try input.serializedData()
     }
 
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+    func getPreSignedImageHash(keysignPayload: KeysignPayload, nonceOffset: Int64 = 0) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, nonceOffset: nonceOffset)
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -92,14 +122,15 @@ class ERC20Helper {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+                              signatures: [String: TssKeysignResponse],
+                              nonceOffset: Int64 = 0) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, nonceOffset: nonceOffset)
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)

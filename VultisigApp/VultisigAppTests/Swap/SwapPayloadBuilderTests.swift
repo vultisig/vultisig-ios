@@ -281,7 +281,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testOneInchPayloadUsesEvmTxToAsTarget() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .oneinch(makeEVMQuote(toAddress: "0xOneInchRouter"), fee: BigInt(1_000))
         )
 
@@ -304,7 +304,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testKyberSwapPayloadProviderIsKyberSwap() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .kyberswap(makeEVMQuote(toAddress: "0xKyber"), fee: BigInt(0))
         )
 
@@ -323,7 +323,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testLifiPayloadProviderIsLifi() async throws {
         let vault = makeVault()
-        let transaction = makeERC20Transaction(
+        let transaction = try makeERC20Transaction(
             quote: .lifi(makeEVMQuote(toAddress: "0xLifi"), fee: BigInt(0), integratorFee: nil)
         )
 
@@ -611,7 +611,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
         // LiFi declares the fee token on the quote; here it matches the
         // source token.
         let vault = makeVault()
-        let transaction = makeTokenToNativeTransaction(
+        let transaction = try makeTokenToNativeTransaction(
             quote: .lifi(
                 makeEVMQuote(
                     toAddress: "0xLifi",
@@ -643,7 +643,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
         // native fee coin: empty contract serializes as nil token id with
         // the native coin's decimals.
         let vault = makeVault()
-        let transaction = makeTokenToNativeTransaction(
+        let transaction = try makeTokenToNativeTransaction(
             quote: .lifi(
                 makeEVMQuote(
                     toAddress: "0xLifi",
@@ -792,7 +792,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     func testApproveSpenderNilWhenQuoteAbsent() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
-        XCTAssertNil(SwapCryptoLogic.approveSpender(fromCoin: usdc, quote: nil))
+        XCTAssertNil(try SwapCryptoLogic.approveSpender(fromCoin: usdc, quote: nil))
     }
 
     // MARK: - Missing-quote guard (internal error, not a money error)
@@ -887,10 +887,10 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    private func makeERC20Transaction(quote: SwapQuote) -> SwapTransaction {
+    private func makeERC20Transaction(quote: SwapQuote) throws -> SwapTransaction {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        return SwapTransaction(
+        return try SwapTransaction(
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
@@ -948,10 +948,10 @@ final class SwapPayloadBuilderTests: XCTestCase {
         )
     }
 
-    private func makeTokenToNativeTransaction(quote: SwapQuote) -> SwapTransaction {
+    private func makeTokenToNativeTransaction(quote: SwapQuote) throws -> SwapTransaction {
         let eth = makeContractCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, contract: "")
         let usdc = makeContractCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, contract: usdcContract)
-        return SwapTransaction(
+        return try SwapTransaction(
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
