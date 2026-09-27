@@ -170,6 +170,10 @@ struct DefiChainMainScreen: View {
                         coin: nativeCoin,
                         onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
                         onUnbond: { onTransactionToPresent(.unbond(coin: nativeCoin.toCoinMeta(), node: $0)) },
+                        // Real sheet wiring lands in the next commit; this
+                        // keeps DefiChainBondedView's new required parameter
+                        // satisfied so this commit builds on its own.
+                        onShowRewardHistory: { _ in },
                         emptyStateView: { emptyStateView }
                     )
                 }

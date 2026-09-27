@@ -769,6 +769,7 @@
 "label" = "Označiti";
 "language" = "Jezik";
 "languageChangeTitle" = "Jezik promijenjen";
+"lastReward" = "Posljednja Nagrada";
 "learnMore" = "Saznaj više";
 "Leave" = "Napusti";
 "legal" = "Pravno";
@@ -970,6 +971,7 @@
 "nextAward" = "Sljedeća Nagrada";
 "nextChurn" = "Sljedeća Rotacija";
 "nextPayout" = "Sljedeća isplata";
+"nextReward" = "Sljedeća Nagrada";
 "nftTransfer" = "NFT prijenos";
 "no" = "Ne";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
@@ -1272,6 +1274,8 @@
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
 "retry" = "Pokušaj ponovo";
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
+"rewardHistoryNodeAddress" = "Čvor: %@";
+"rewardHistoryUnavailable" = "Povijest Nagrada Nedostupna";
 "rippleCustomTokenInvalidFormat" = "Unesite XRP token kao currency.issuer — kod tokena (npr. USD ili SOLO), a zatim adresu izdavatelja.";
 "rippleFieldAmount" = "Iznos";
 "rippleFieldDeliverMin" = "Deliver Min";
@@ -1640,6 +1644,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON nominatorski poolovi podržavaju samo potpuno povlačenje. Cijeli vaš ulog bit će povučen.";
 "tonWithdrawalPendingMessage" = "Povlačenje u tijeku. Vaš %@ bit će otključan oko %@.";
 "totalFee" = "Ukupna naknada";
+"totalRewardsEarned" = "Ukupno Zarađene Nagrade";
 "touchIDUnlockTitle" = "Otključavanje Touch ID-jem";
 "track" = "Prati";
 "transaction" = "Transakcija";
@@ -1716,6 +1721,7 @@
 "unstakeCoin" = "Povuci %@";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "unverifiedFunction" = "Neprovjerena funkcija";
+"upcoming" = "Nadolazeće";
 "updateNow" = "Ažuriraj sada";
 "upgrade" = "Nadogradi";
 "upgradeNow" = "Nadogradi sada";
