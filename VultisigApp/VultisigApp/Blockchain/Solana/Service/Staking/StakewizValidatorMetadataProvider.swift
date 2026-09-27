@@ -19,7 +19,8 @@
 //  Field mapping (Stakewiz → ValidatorMetadata):
 //    name         -> name
 //    image/keybase -> logoURL  (Stakewiz image preferred, Keybase only as fallback)
-//    apy_estimate -> apyEstimate  (percent on the wire, stored as a fraction)
+//    total_apy    -> apyEstimate  (percent on the wire, stored as a fraction;
+//                 staking + Jito MEV. `apy_estimate` overstates realized yield)
 //    wiz_score    -> score
 //    commission / delinquent / vote_identity are surfaced via the row itself so
 //    callers can prefer Stakewiz commission/delinquency when present.
@@ -150,7 +151,7 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
         return nil
     }
 
-    /// Stakewiz reports `apy_estimate` as a percentage (e.g. `5.72`). Store it
+    /// Stakewiz reports `total_apy` as a percentage (e.g. `5.72`). Store it
     /// as a fraction to match `ValidatorMetadata.apyEstimate` (e.g. `0.0572`).
     private static func apyFraction(from percent: Double?) -> Decimal? {
         guard let percent, percent.isFinite, percent > 0 else { return nil }
@@ -226,7 +227,7 @@ private struct StakewizValidator: Decodable {
         case name
         case image
         case keybase
-        case apyEstimate = "apy_estimate"
+        case apyEstimate = "total_apy"
         case commission
         case wizScore = "wiz_score"
         case delinquent
