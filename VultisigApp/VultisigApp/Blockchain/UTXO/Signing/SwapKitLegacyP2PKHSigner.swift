@@ -39,6 +39,7 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
     case truncated
     case invalidMagic
     case missingUnsignedTx
+    case unsupportedVersion(UInt32)
     case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingPrevUtxo(inputIndex: Int)
@@ -58,6 +59,8 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
             return "SwapKit PSBT magic bytes are invalid"
         case .missingUnsignedTx:
             return "SwapKit PSBT is missing the unsigned-tx global record"
+        case .unsupportedVersion(let version):
+            return "SwapKit PSBT unsigned-tx version \(version) is unsupported; only version 1 and 2 are reproducible on this signing path"
         case .malformedPSBT(let reason):
             return "SwapKit PSBT is malformed: \(reason)"
         case .unsupportedScript(let detail):
@@ -108,104 +111,99 @@ struct ParsedLegacyTx {
 
 enum SwapKitLegacyP2PKHSigner {
 
-    /// Pre-signing hashes for a DOGE/BCH/DASH PSBT. The caller picks `coin`
-    /// (`.dogecoin`, `.bitcoinCash`, `.dash`) — WalletCore picks the right
-    /// hash type (BCH gets SIGHASH_FORKID via `hashTypeForCoin`). `targetAddress`
-    /// is the SwapKit-returned deposit address — populated on the input even
-    /// though the frozen plan supersedes; WalletCore's pre-flight validation
-    /// rejects empty addresses.
+    /// Pre-signing hashes for a DOGE/BCH/DASH PSBT, one per input, computed
+    /// directly from the parsed PSBT (see `MARK: - Direct sighash + assembly`
+    /// below) rather than through WalletCore's legacy Bitcoin signer — that
+    /// signer has no version input and always emits version 1, silently
+    /// dropping the PSBT's declared version/locktime.
     static func preSigningHashes(
         psbtBytes: Data,
-        coin: CoinType,
-        targetAddress: String = ""
+        coin: CoinType
     ) throws -> [String] {
-        let input = try buildSigningInput(
-            psbtBytes: psbtBytes,
-            coin: coin,
-            targetAddress: targetAddress
-        )
-        let serialized = try input.serializedData()
-        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: serialized)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
-        if !preSignOutputs.errorMessage.isEmpty {
-            throw SwapKitLegacyP2PKHSignerError.planError(preSignOutputs.errorMessage)
-        }
-        return preSignOutputs.hashPublicKeys
-            .map { $0.dataHash.hexString }
+        let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
+        return perInputSighashes(tx: tx, inputs: inputs, coin: coin)
+            .map { $0.hexString }
             .sorted()
     }
 
-    /// Assemble a signed legacy P2PKH transaction. ECDSA-DER signatures from
-    /// MPC verified against each per-input preimage hash, then
-    /// `TransactionCompiler.compileWithSignatures` produces the broadcast tx.
+    /// Assemble a signed legacy P2PKH transaction directly: verify each MPC
+    /// signature against its per-input sighash, then serialize the tx with
+    /// the PSBT's own version/locktime and the real scriptSigs.
     static func compileSignedTransaction(
         psbtBytes: Data,
         coin: CoinType,
         signatures: [String: TssKeysignResponse],
-        pubKeyHex: String,
-        targetAddress: String = ""
+        pubKeyHex: String
     ) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: pubKeyHex),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
             throw SwapKitLegacyP2PKHSignerError.invalidPublicKey(pubKeyHex)
         }
-        let input = try buildSigningInput(
-            psbtBytes: psbtBytes,
-            coin: coin,
-            targetAddress: targetAddress
-        )
-        let serialized = try input.serializedData()
-        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: serialized)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
-        if !preSignOutputs.errorMessage.isEmpty {
-            throw SwapKitLegacyP2PKHSignerError.planError(preSignOutputs.errorMessage)
-        }
-        let allSignatures = DataVector()
-        let publicKeys = DataVector()
+        let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
+        let sighashes = perInputSighashes(tx: tx, inputs: inputs, coin: coin)
         let signatureProvider = SignatureProvider(signatures: signatures)
-        for h in preSignOutputs.hashPublicKeys {
-            let preImageHash = h.dataHash
-            let signature = signatureProvider.getDerSignature(preHash: preImageHash)
-            guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
+        let type = sighashType(for: coin)
+
+        var scriptSigs: [Data] = []
+        scriptSigs.reserveCapacity(inputs.count)
+        for sighash in sighashes {
+            let derSignature = signatureProvider.getDerSignature(preHash: sighash)
+            guard publicKey.verifyAsDER(signature: derSignature, message: sighash) else {
                 throw SwapKitLegacyP2PKHSignerError.signatureVerifyFailed
             }
-            allSignatures.add(data: signature)
-            publicKeys.add(data: pubkeyData)
+            var sigPlusType = derSignature
+            sigPlusType.append(UInt8(type & 0xff))
+            scriptSigs.append(pushData(sigPlusType) + pushData(pubkeyData))
         }
-        let compileBytes = TransactionCompiler.compileWithSignatures(
-            coinType: coin,
-            txInputData: serialized,
-            signatures: allSignatures,
-            publicKeys: publicKeys
-        )
-        let output = try BitcoinSigningOutput(serializedBytes: compileBytes)
-        if !output.errorMessage.isEmpty {
-            throw SwapKitLegacyP2PKHSignerError.planError(output.errorMessage)
-        }
+
+        let rawTransaction = serializeSignedTransaction(tx: tx, inputs: inputs, scriptSigs: scriptSigs)
+        let transactionHash = Data(hash256(rawTransaction).reversed()).hexString
         return SignedTransactionResult(
-            rawTransaction: output.encoded.hexString,
-            transactionHash: output.transactionID
+            rawTransaction: rawTransaction.hexString,
+            transactionHash: transactionHash
         )
     }
 
     /// Build the `BitcoinSigningInput` with a **frozen** `BitcoinTransactionPlan`
-    /// derived directly from the PSBT bytes. Critically, we do NOT call
-    /// `AnySigner.plan(...)` — that would re-select UTXOs and recompute fees,
-    /// changing the broadcast tx_id and breaking NEAR Intents tracking.
-    /// `targetAddress` populates `BitcoinSigningInput.toAddress` so WalletCore's
-    /// pre-flight validation accepts the input (the frozen plan supersedes
-    /// the field at signing time, but the validator still rejects empty).
-    /// Exposed `internal` so per-chain unit tests can pin the structural
-    /// shape (input count, scriptPubKey patterns, plan amount/change/fee).
+    /// derived directly from the PSBT bytes. No longer used by
+    /// `preSigningHashes`/`compileSignedTransaction` (see the direct
+    /// sighash + assembly path below) — kept so per-chain unit tests can
+    /// still pin the structural shape (input count, scriptPubKey patterns,
+    /// plan amount/change/fee) independently of the signing math.
     static func buildSigningInput(
         psbtBytes: Data,
         coin: CoinType,
         targetAddress: String = ""
     ) throws -> BitcoinSigningInput {
+        let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
+        // Output scriptPubKeys come from the PSBT body verbatim. WalletCore's
+        // `BitcoinSigner` reconstructs each output from `toAddress` /
+        // `changeAddress` (NOT from the frozen plan — the plan dictates
+        // amounts/fees/UTXOs but the output scripts are derived from the
+        // address strings on `BitcoinSigningInput`). To preserve the PSBT's
+        // actual recipients we derive both addresses from the parsed P2PKH
+        // hash160s and reject any non-P2PKH output (OP_RETURN, P2SH, P2WSH
+        // we can't faithfully re-emit through the address-only API).
+        return try assembleSigningInput(
+            coin: coin,
+            inputs: inputs,
+            outputs: tx.outputs,
+            targetAddressHint: targetAddress
+        )
+    }
+
+    // MARK: - Shared PSBT parsing
+
+    /// Steps shared by every entry point: parse BIP-174 framing, parse the
+    /// legacy unsigned-tx body (validates version — see
+    /// `parseLegacyUnsignedTx`), drain the per-input/output maps, and
+    /// resolve each input's prev-tx scriptPubKey + amount + P2PKH key hash.
+    private static func parseForSigning(
+        psbtBytes: Data
+    ) throws -> (tx: ParsedLegacyTx, inputs: [LegacyP2PKHInput]) {
         guard !psbtBytes.isEmpty else { throw SwapKitLegacyP2PKHSignerError.missingPSBT }
 
-        // 1. Parse BIP-174 framing.
         let framingPrefix: (cursor: PSBTCursor, globals: [Data: Data], unsignedTxBytes: Data)
         do {
             framingPrefix = try SwapKitPSBTParser.parseFraming(psbtBytes: psbtBytes)
@@ -213,10 +211,8 @@ enum SwapKitLegacyP2PKHSigner {
             throw mapParserError(err)
         }
 
-        // 2. Parse the legacy unsigned-tx body.
         let parsedTx = try parseLegacyUnsignedTx(framingPrefix.unsignedTxBytes)
 
-        // 3. Drain the per-input and per-output maps off the cursor.
         var cursor = framingPrefix.cursor
         var inputMaps: [[Data: Data]] = []
         inputMaps.reserveCapacity(parsedTx.inputs.count)
@@ -237,11 +233,11 @@ enum SwapKitLegacyP2PKHSigner {
             }
         }
 
-        // 4. Resolve per-input scriptPubKey + amount + keyHash. SwapKit
-        // ships either NON_WITNESS_UTXO (full prev-tx, key `0x00`) or
-        // WITNESS_UTXO (key `0x01`, BTC-style compact). Spec says legacy
-        // P2PKH SHOULD use NON_WITNESS_UTXO (DOGE confirmed in spike); we
-        // accept both for robustness against upstream changes.
+        // Resolve per-input scriptPubKey + amount + keyHash. SwapKit ships
+        // either NON_WITNESS_UTXO (full prev-tx, key `0x00`) or WITNESS_UTXO
+        // (key `0x01`, BTC-style compact). Spec says legacy P2PKH SHOULD use
+        // NON_WITNESS_UTXO (DOGE confirmed in spike); we accept both for
+        // robustness against upstream changes.
         var inputs: [LegacyP2PKHInput] = []
         for (index, parsedInput) in parsedTx.inputs.enumerated() {
             let (amount, scriptPubKey) = try resolvePrevUtxo(
@@ -262,24 +258,187 @@ enum SwapKitLegacyP2PKHSigner {
                 keyHash: keyHash
             ))
         }
-
-        // Output scriptPubKeys come from the PSBT body verbatim. WalletCore's
-        // `BitcoinSigner` reconstructs each output from `toAddress` /
-        // `changeAddress` (NOT from the frozen plan — the plan dictates
-        // amounts/fees/UTXOs but the output scripts are derived from the
-        // address strings on `BitcoinSigningInput`). To preserve the PSBT's
-        // actual recipients we derive both addresses from the parsed P2PKH
-        // hash160s and reject any non-P2PKH output (OP_RETURN, P2SH, P2WSH
-        // we can't faithfully re-emit through the address-only API).
-        return try assembleSigningInput(
-            coin: coin,
-            inputs: inputs,
-            outputs: parsedTx.outputs,
-            targetAddressHint: targetAddress
-        )
+        try validateOutputShape(inputs: inputs, outputs: parsedTx.outputs)
+        return (parsedTx, inputs)
     }
 
-    // MARK: - Frozen plan assembly
+    /// SwapKit always ships one deposit output plus an optional change
+    /// output, and every output must be a P2PKH we can faithfully re-emit
+    /// (anything else — OP_RETURN, P2SH, P2WSH, multisig — we hard-reject so
+    /// we never broadcast a tx that differs from the PSBT's intent).
+    private static func validateOutputShape(inputs: [LegacyP2PKHInput], outputs: [LegacyP2PKHOutput]) throws {
+        guard !inputs.isEmpty, !outputs.isEmpty else {
+            throw SwapKitLegacyP2PKHSignerError.planError("empty inputs or outputs")
+        }
+        guard outputs.count <= 2 else {
+            throw SwapKitLegacyP2PKHSignerError.unsupportedScript(
+                "PSBT has \(outputs.count) outputs; legacy signer expects 1 deposit + optional 1 change"
+            )
+        }
+        for (idx, out) in outputs.enumerated() {
+            _ = try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
+        }
+    }
+
+    // MARK: - Direct sighash + assembly (preserves PSBT version/locktime)
+    //
+    // WalletCore's legacy Bitcoin `SigningInput` proto has no version field —
+    // its C++/Rust signer always constructs a version-1 `Transaction`
+    // regardless of what's asked. Going through it (as this file did before
+    // issue #5483) silently re-versions every broadcast to 1 and drops any
+    // non-zero locktime. Computing the sighash and assembling the signed tx
+    // directly — the same approach `BitcoinPsbtSigner` already uses for
+    // BTC's segwit PSBT path — lets us honor whatever version/locktime the
+    // PSBT declares.
+
+    /// BCH signs with a BIP-143-style digest under SIGHASH_FORKID (WalletCore's
+    /// own Rust `ForkIdSighash` delegates verbatim to its witness-v0 digest —
+    /// this mirrors that, with the P2PKH scriptPubKey standing in for the
+    /// witness-program-derived scriptCode). DOGE and DASH have no fork-id
+    /// history and use the original pre-BIP143 whole-tx-substitution sighash.
+    private static func isForkIdCoin(_ coin: CoinType) -> Bool {
+        coin == .bitcoinCash
+    }
+
+    /// SIGHASH_ALL, with SIGHASH_FORKID (`0x40`) added for BCH.
+    private static func sighashType(for coin: CoinType) -> UInt32 {
+        isForkIdCoin(coin) ? 0x41 : 0x01
+    }
+
+    private static func perInputSighashes(
+        tx: ParsedLegacyTx,
+        inputs: [LegacyP2PKHInput],
+        coin: CoinType
+    ) -> [Data] {
+        let type = sighashType(for: coin)
+        let forkId = isForkIdCoin(coin)
+        return inputs.indices.map { index in
+            forkId
+                ? forkIdSighash(tx: tx, inputs: inputs, signingIndex: index, sighashType: type)
+                : legacySighash(tx: tx, inputs: inputs, signingIndex: index, sighashType: type)
+        }
+    }
+
+    /// Classic pre-BIP143 sighash (DOGE, DASH — SIGHASH_ALL, no
+    /// ANYONECANPAY, no fork id): substitute the signed input's scriptSig
+    /// with its scriptPubKey, empty every other input's scriptSig,
+    /// serialize the whole transaction, append the 4-byte LE sighash type,
+    /// hash256.
+    private static func legacySighash(
+        tx: ParsedLegacyTx,
+        inputs: [LegacyP2PKHInput],
+        signingIndex: Int,
+        sighashType: UInt32
+    ) -> Data {
+        var data = Data()
+        data.append(writeUInt32LE(tx.version))
+        data.append(writeVarInt(UInt64(inputs.count)))
+        for (index, input) in inputs.enumerated() {
+            data.append(input.prevTxIdLE)
+            data.append(writeUInt32LE(input.prevIndex))
+            let scriptSig = index == signingIndex ? input.scriptPubKey : Data()
+            data.append(writeVarInt(UInt64(scriptSig.count)))
+            data.append(scriptSig)
+            data.append(writeUInt32LE(input.sequence))
+        }
+        data.append(writeVarInt(UInt64(tx.outputs.count)))
+        for output in tx.outputs {
+            data.append(writeUInt64LE(UInt64(bitPattern: output.amount)))
+            data.append(writeVarInt(UInt64(output.scriptPubKey.count)))
+            data.append(output.scriptPubKey)
+        }
+        data.append(writeUInt32LE(tx.locktime))
+        data.append(writeUInt32LE(sighashType))
+        return hash256(data)
+    }
+
+    /// BIP-143-with-fork-id sighash (BCH). Structurally identical to
+    /// `BitcoinPsbtSigner`'s P2WPKH digest, with the P2PKH scriptPubKey
+    /// standing in for the witness-program-derived scriptCode.
+    private static func forkIdSighash(
+        tx: ParsedLegacyTx,
+        inputs: [LegacyP2PKHInput],
+        signingIndex: Int,
+        sighashType: UInt32
+    ) -> Data {
+        let hashPrevouts = hash256(inputs.reduce(Data()) { acc, input in
+            acc + input.prevTxIdLE + writeUInt32LE(input.prevIndex)
+        })
+        let hashSequence = hash256(inputs.reduce(Data()) { acc, input in
+            acc + writeUInt32LE(input.sequence)
+        })
+        let hashOutputs = hash256(tx.outputs.reduce(Data()) { acc, output in
+            acc + writeUInt64LE(UInt64(bitPattern: output.amount))
+                + writeVarInt(UInt64(output.scriptPubKey.count)) + output.scriptPubKey
+        })
+        let input = inputs[signingIndex]
+
+        var preimage = Data()
+        preimage.append(writeUInt32LE(tx.version))
+        preimage.append(hashPrevouts)
+        preimage.append(hashSequence)
+        preimage.append(input.prevTxIdLE)
+        preimage.append(writeUInt32LE(input.prevIndex))
+        preimage.append(writeVarInt(UInt64(input.scriptPubKey.count)))
+        preimage.append(input.scriptPubKey)
+        preimage.append(writeUInt64LE(UInt64(input.amount)))
+        preimage.append(writeUInt32LE(input.sequence))
+        preimage.append(hashOutputs)
+        preimage.append(writeUInt32LE(tx.locktime))
+        preimage.append(writeUInt32LE(sighashType))
+        return hash256(preimage)
+    }
+
+    /// Serializes the fully-signed legacy transaction: version, inputs (with
+    /// the real `scriptSig` per input), outputs, locktime — all lifted
+    /// verbatim from the parsed PSBT except for `scriptSigs`, which don't
+    /// exist until signing.
+    private static func serializeSignedTransaction(
+        tx: ParsedLegacyTx,
+        inputs: [LegacyP2PKHInput],
+        scriptSigs: [Data]
+    ) -> Data {
+        var data = Data()
+        data.append(writeUInt32LE(tx.version))
+        data.append(writeVarInt(UInt64(inputs.count)))
+        for (index, input) in inputs.enumerated() {
+            data.append(input.prevTxIdLE)
+            data.append(writeUInt32LE(input.prevIndex))
+            let scriptSig = scriptSigs[index]
+            data.append(writeVarInt(UInt64(scriptSig.count)))
+            data.append(scriptSig)
+            data.append(writeUInt32LE(input.sequence))
+        }
+        data.append(writeVarInt(UInt64(tx.outputs.count)))
+        for output in tx.outputs {
+            data.append(writeUInt64LE(UInt64(bitPattern: output.amount)))
+            data.append(writeVarInt(UInt64(output.scriptPubKey.count)))
+            data.append(output.scriptPubKey)
+        }
+        data.append(writeUInt32LE(tx.locktime))
+        return data
+    }
+
+    /// Bitcoin script push: `<len><data>` for data under 76 bytes
+    /// (`OP_PUSHDATA1`'s threshold) — DER signatures and compressed pubkeys
+    /// never reach it, but this stays correct rather than assuming.
+    private static func pushData(_ data: Data) -> Data {
+        var out = Data()
+        if data.count < 0x4c {
+            out.append(UInt8(data.count))
+        } else if data.count <= 0xff {
+            out.append(0x4c)
+            out.append(UInt8(data.count))
+        } else {
+            out.append(0x4d)
+            out.append(UInt8(data.count & 0xff))
+            out.append(UInt8((data.count >> 8) & 0xff))
+        }
+        out.append(data)
+        return out
+    }
+
+    // MARK: - Frozen plan assembly (test-only shape, see `buildSigningInput`)
 
     private static func assembleSigningInput(
         coin: CoinType,
@@ -287,24 +446,6 @@ enum SwapKitLegacyP2PKHSigner {
         outputs: [LegacyP2PKHOutput],
         targetAddressHint: String
     ) throws -> BitcoinSigningInput {
-        guard !inputs.isEmpty, !outputs.isEmpty else {
-            throw SwapKitLegacyP2PKHSignerError.planError("empty inputs or outputs")
-        }
-        // WalletCore's BitcoinSigner reconstructs every output from
-        // `toAddress` + `changeAddress` (and optionally `outputOpReturn` /
-        // `extraOutputs`). It does NOT consume per-output scripts from the
-        // frozen plan — only `amount`, `change`, `fee`, and UTXOs flow
-        // through. So to preserve the PSBT's exact output scripts we
-        // assert every output is a P2PKH we can faithfully re-emit through
-        // the address-only API. Anything else (OP_RETURN, P2SH, P2WSH,
-        // multisig) we cannot signal through `BitcoinSigningInput` without
-        // changing the scriptPubKey — hard-reject so we never broadcast a
-        // tx that differs from the PSBT's intent.
-        guard outputs.count <= 2 else {
-            throw SwapKitLegacyP2PKHSignerError.unsupportedScript(
-                "PSBT has \(outputs.count) outputs; legacy signer expects 1 deposit + optional 1 change"
-            )
-        }
         let outputKeyHashes = try outputs.enumerated().map { (idx, out) -> Data in
             try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
         }
@@ -550,6 +691,16 @@ enum SwapKitLegacyP2PKHSigner {
             // after version, but PSBT unsigned-tx records strip witness data
             // (segwit txes are emitted without the marker in PSBT context).
             // DOGE/BCH/DASH have no segwit; this branch never fires for them.
+            //
+            // Only versions 1 and 2 are reproducible: the direct sighash +
+            // assembly below re-serializes this exact version, so any value
+            // is technically "supported" mechanically — but a version we've
+            // never observed in the wild is more likely a wire-format change
+            // we haven't accounted for than a legitimate new value, so we
+            // fail loudly rather than sign and broadcast a guess.
+            guard version == 1 || version == 2 else {
+                throw SwapKitLegacyP2PKHSignerError.unsupportedVersion(version)
+            }
             let inCount = try c.readCompactSize()
             var inputs: [(prevTxIdLE: Data, prevIndex: UInt32, sequence: UInt32)] = []
             for _ in 0..<inCount {
@@ -617,4 +768,39 @@ enum SwapKitLegacyP2PKHSigner {
         case .malformed(let reason): return .malformedPSBT(reason: reason)
         }
     }
+}
+
+// MARK: - Byte helpers (mirrors `BitcoinPsbtSigner`'s private helpers)
+
+private func writeUInt32LE(_ value: UInt32) -> Data {
+    withUnsafeBytes(of: value.littleEndian) { Data($0) }
+}
+
+private func writeUInt64LE(_ value: UInt64) -> Data {
+    withUnsafeBytes(of: value.littleEndian) { Data($0) }
+}
+
+/// Bitcoin CompactSize varint encoding.
+private func writeVarInt(_ value: UInt64) -> Data {
+    if value < 0xFD {
+        return Data([UInt8(value)])
+    }
+    if value <= 0xFFFF {
+        var buf = Data([0xFD])
+        buf.append(writeUInt32LE(UInt32(value)).prefix(2))
+        return buf
+    }
+    if value <= 0xFFFFFFFF {
+        var buf = Data([0xFE])
+        buf.append(writeUInt32LE(UInt32(value)))
+        return buf
+    }
+    var buf = Data([0xFF])
+    buf.append(writeUInt64LE(value))
+    return buf
+}
+
+/// double-SHA256 (Bitcoin's hash256).
+private func hash256(_ data: Data) -> Data {
+    Hash.sha256SHA256(data: data)
 }

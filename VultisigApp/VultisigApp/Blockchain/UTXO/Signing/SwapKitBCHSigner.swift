@@ -55,8 +55,7 @@ enum SwapKitBCHSigner {
         do {
             return try SwapKitLegacyP2PKHSigner.preSigningHashes(
                 psbtBytes: payload.txPayload,
-                coin: .bitcoinCash,
-                targetAddress: payload.targetAddress
+                coin: .bitcoinCash
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitBCHSignerError.underlying(err)
@@ -76,8 +75,7 @@ enum SwapKitBCHSigner {
                 psbtBytes: payload.txPayload,
                 coin: .bitcoinCash,
                 signatures: signatures,
-                pubKeyHex: pubKeyHex,
-                targetAddress: payload.targetAddress
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitBCHSignerError.underlying(err)

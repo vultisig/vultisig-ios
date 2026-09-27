@@ -48,8 +48,7 @@ enum SwapKitDashSigner {
         do {
             return try SwapKitLegacyP2PKHSigner.preSigningHashes(
                 psbtBytes: payload.txPayload,
-                coin: .dash,
-                targetAddress: payload.targetAddress
+                coin: .dash
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitDashSignerError.underlying(err)
@@ -66,8 +65,7 @@ enum SwapKitDashSigner {
                 psbtBytes: payload.txPayload,
                 coin: .dash,
                 signatures: signatures,
-                pubKeyHex: pubKeyHex,
-                targetAddress: payload.targetAddress
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitDashSignerError.underlying(err)
