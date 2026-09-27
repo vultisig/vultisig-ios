@@ -5,7 +5,7 @@
 //  Resolves a per-validator staking APY for the Solana DeFi stake rows. Two
 //  sources, in order:
 //
-//    1. Stakewiz `apy_estimate` passthrough — the metadata provider already
+//    1. Stakewiz `total_apy` passthrough — the metadata provider already
 //       fetches `/validators` and caches it 1 h; the estimate it carries
 //       (`ValidatorMetadata.apyEstimate`, stored as a fraction) is the
 //       preferred, network-measured value.

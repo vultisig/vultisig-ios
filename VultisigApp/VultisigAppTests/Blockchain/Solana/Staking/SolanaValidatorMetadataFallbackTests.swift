@@ -72,7 +72,7 @@ final class SolanaValidatorMetadataFallbackTests: XCTestCase {
             "keybase": "",
             "image": "https://media.stakewiz.com/yurbason.png",
             "commission": 0,
-            "apy_estimate": 5.72,
+            "total_apy": 5.72,
             "wiz_score": 99.44,
             "delinquent": false
           }

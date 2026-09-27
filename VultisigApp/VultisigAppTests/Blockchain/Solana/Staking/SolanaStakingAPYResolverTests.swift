@@ -2,7 +2,7 @@
 //  SolanaStakingAPYResolverTests.swift
 //  VultisigAppTests
 //
-//  Pins the two-source APY resolution: the Stakewiz `apy_estimate` passthrough
+//  Pins the two-source APY resolution: the Stakewiz `total_apy` passthrough
 //  wins when present; otherwise the on-chain inflation/fraction-staked fallback
 //  applies; otherwise nil (the view hides the row).
 //
