@@ -261,6 +261,7 @@
 "contractAddressCopied" = "Dirección del contrato copiada";
 "copyAddress" = "Copiar dirección";
 "copyContractAddress" = "Copiar dirección del contrato";
+"copyLink" = "Copiar enlace";
 "correctAmountCheck" = "La cantidad es correcta";
 "cosmosStakingActionClaim" = "Reclamar";
 "cosmosStakingActionDelegate" = "Hacer Staking";
@@ -894,6 +895,7 @@
 "limitSwap.verify.title" = "Estás colocando una orden límite";
 "limitSwap.warning.priceAtOrBelowMarket" = "Precio ya disponible, considera un swap de mercado";
 "limitSwap.warning.priceFarAboveMarket" = "Puede no ejecutarse antes del vencimiento";
+"linkCopied" = "Enlace copiado";
 "liquidityPools" = "Pools de liquidez";
 "loading" = "Loading...";
 "loadingDetails" = "Cargando detalles";
@@ -1426,6 +1428,8 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";
+"shareQRCode" = "Compartir código QR";
+"shareQRImage" = "Compartir imagen QR";
 "shareQRType" = "Tipo";
 "shareQRTypeFormat" = "%d-de-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";

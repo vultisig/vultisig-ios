@@ -13,6 +13,7 @@ import SwiftUI
 /// the payload, the preview type, and the post-pair navigation closure.
 struct PairScreen: View {
     @StateObject private var shareSheetViewModel = ShareSheetViewModel()
+    @State private var isShareQRSheetPresented = false
 
     let vault: Vault
     var keysignPayload: KeysignPayload?
@@ -77,13 +78,30 @@ struct PairScreen: View {
         }
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
+                ToolbarButton(image: .upload4) {
+                    isShareQRSheetPresented = true
+                }
+                // Also gated on the QR having finished rendering, matching
+                // the icon's prior visibility (`NavigationQRShareButton` only
+                // ever appeared once `renderedImage` was set by the async
+                // `KeysignDiscoveryView.setData()`); otherwise the sheet
+                // could open before there is anything to copy or share.
+                .showIf(
+                    Self.showsShareQRButton(fastVaultPassword: fastVaultPassword)
+                        && shareSheetViewModel.qrCodeData != nil
                 )
-                .showIf(fastVaultPassword == nil)
             }
         }
+        .crossPlatformSheet(isPresented: $isShareQRSheetPresented) {
+            ShareQRCodeSheet(shareSheetViewModel: shareSheetViewModel)
+        }
+    }
+
+    /// Fast vaults (server co-signed, `fastVaultPassword` present) have no
+    /// peer to share a join QR with, so the button stays hidden there; secure
+    /// (N-of-M) vaults always show it. Extracted as a static function so the
+    /// rule is directly testable without a view model on this screen.
+    static func showsShareQRButton(fastVaultPassword: String?) -> Bool {
+        fastVaultPassword == nil
     }
 }
