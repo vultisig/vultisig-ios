@@ -11,6 +11,10 @@ struct THORChainAPIService {
     let httpClient: HTTPClientProtocol
     private let decoder = JSONDecoder()
     let cache = THORChainAPICache()
+    /// Historical (`?height=`) node-details responses, keyed by
+    /// `"\(nodeAddress)_\(height)"`. Unlike `cache`, entries never expire —
+    /// a past block's node state cannot change.
+    let historicalNodeDetailsCache = TTLCache<String, NodeDetailsResponse>()
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

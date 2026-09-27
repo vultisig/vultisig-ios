@@ -19,4 +19,11 @@ protocol BondInteractor {
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode])
     func canUnbond() async -> Bool
     func canAddBond() async -> Bool
+    /// This bond address's realized reward at each of the node's last 20
+    /// churns, newest first — powers the Total Rewards Earned sheet.
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry]
+    /// The chain's bond address for `vault` — what `fetchRewardHistory`
+    /// calls `myBondAddress`. `nil` when the vault has no coin for this
+    /// chain, mirroring `fetchBondPositions`'s own early-return guard.
+    func bondCoinAddress(in vault: Vault) async -> String?
 }

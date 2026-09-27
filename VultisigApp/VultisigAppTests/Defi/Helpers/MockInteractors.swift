@@ -89,6 +89,11 @@ final class MockBondInteractor: BondInteractor, @unchecked Sendable {
     var error: Error?
     /// Set to hold `fetchBondPositions` open mid-call.
     var gate: InteractorCallGate?
+    var rewardHistoryStub: [BondRewardHistoryEntry] = []
+    /// Set to fail `fetchRewardHistory` instead of returning `rewardHistoryStub`.
+    var rewardHistoryError: Error?
+    private(set) var rewardHistoryCallCount = 0
+    var bondCoinAddressStub: String? = "thor1mockbondaddress"
 
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
         await gate?.wait()
@@ -101,6 +106,16 @@ final class MockBondInteractor: BondInteractor, @unchecked Sendable {
     func canUnbond() async -> Bool { canUnbondStub }
 
     func canAddBond() async -> Bool { canAddBondStub }
+
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
+        rewardHistoryCallCount += 1
+        if let rewardHistoryError {
+            throw rewardHistoryError
+        }
+        return rewardHistoryStub
+    }
+
+    func bondCoinAddress(in vault: Vault) async -> String? { bondCoinAddressStub }
 }
 
 final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {

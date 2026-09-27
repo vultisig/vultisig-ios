@@ -9,9 +9,10 @@ import Foundation
 
 enum MayaChainBondsAPI: TargetType {
     case getAllNodes
-    case getNodeDetails(nodeAddress: String)
+    case getNodeDetails(nodeAddress: String, height: Int?)
     case getHealth
     case getNetwork
+    case getChurns
     case getMimir
     case getLastBlock
 
@@ -19,9 +20,7 @@ enum MayaChainBondsAPI: TargetType {
         switch self {
         case .getAllNodes, .getNodeDetails, .getMimir, .getLastBlock:
             return URL(string: "https://mayanode.mayachain.info")!
-        case .getHealth:
-            return URL(string: "https://midgard.mayachain.info/v2")!
-        case .getNetwork:
+        case .getHealth, .getNetwork, .getChurns:
             return URL(string: "https://midgard.mayachain.info/v2")!
         }
     }
@@ -30,12 +29,14 @@ enum MayaChainBondsAPI: TargetType {
         switch self {
         case .getAllNodes:
             return "/mayachain/nodes"
-        case .getNodeDetails(let nodeAddress):
+        case .getNodeDetails(let nodeAddress, _):
             return "/mayachain/node/\(nodeAddress)"
         case .getHealth:
             return "/health"
         case .getNetwork:
             return "/network"
+        case .getChurns:
+            return "/churns"
         case .getMimir:
             return "/mayachain/mimir"
         case .getLastBlock:
@@ -45,21 +46,23 @@ enum MayaChainBondsAPI: TargetType {
 
     var method: HTTPMethod {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir, .getLastBlock:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
             return .get
         }
     }
 
     var task: HTTPTask {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir, .getLastBlock:
+        case .getNodeDetails(_, let height?):
+            return .requestParameters(["height": height], .urlEncoding)
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
             return .requestPlain
         }
     }
 
     var headers: [String: String]? {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir, .getLastBlock:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
             return ["X-Client-ID": "vultisig"]
         }
     }

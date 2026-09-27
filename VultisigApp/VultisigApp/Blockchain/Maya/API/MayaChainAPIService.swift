@@ -11,6 +11,10 @@ struct MayaChainAPIService {
     let httpClient: HTTPClientProtocol
     private let decoder = JSONDecoder()
     let cache = MayaChainAPICache()
+    /// Historical (`?height=`) node-details responses, keyed by
+    /// `"\(nodeAddress)_\(height)"`. Unlike `cache`, entries never expire —
+    /// a past block's node state cannot change.
+    let historicalNodeDetailsCache = TTLCache<String, MayaNodeResponse>()
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
@@ -124,6 +128,7 @@ actor MayaChainAPICache {
     private var health: (data: MayaHealth, timestamp: Date)?
     private var pools: (data: [MayaPoolResponse], timestamp: Date)?
     private var mimir: (data: MayaMimir, timestamp: Date)?
+    private var churns: (data: [ChurnEntry], timestamp: Date)?
 
     private let cacheValidityDuration: TimeInterval = 300 // 5 minutes
 
@@ -173,6 +178,18 @@ actor MayaChainAPICache {
 
     func cacheMimir(_ data: MayaMimir) {
         mimir = (data, Date())
+    }
+
+    func getCachedChurns() -> [ChurnEntry]? {
+        guard let cached = churns,
+              Date().timeIntervalSince(cached.timestamp) < cacheValidityDuration else {
+            return nil
+        }
+        return cached.data
+    }
+
+    func cacheChurns(_ data: [ChurnEntry]) {
+        churns = (data, Date())
     }
 }
 

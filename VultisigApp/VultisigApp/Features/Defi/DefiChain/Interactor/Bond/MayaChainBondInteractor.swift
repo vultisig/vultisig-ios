@@ -16,6 +16,7 @@ private struct BondPositionDraft: Sendable {
     let apy: Double
     let nextReward: Decimal
     let nextChurn: Date?
+    let lastReward: Decimal?
 }
 
 struct MayaChainBondInteractor: BondInteractor {
@@ -52,13 +53,21 @@ struct MayaChainBondInteractor: BondInteractor {
                     address: node.address,
                     state: nodeState
                 )
+                // One extra `?height=` query for the card's Last Reward —
+                // see the identical comment in THORChainBondInteractor.
+                let lastReward = try? await mayaChainAPIService.getBondRewardHistory(
+                    nodeAddress: node.address,
+                    myBondAddress: cacaoAddress,
+                    limit: 1
+                ).first?.amount
                 drafts.append(
                     BondPositionDraft(
                         node: bondNode,
                         amount: metrics.myBond,
                         apy: metrics.apr,
                         nextReward: metrics.myAward,
-                        nextChurn: nextChurn
+                        nextChurn: nextChurn,
+                        lastReward: lastReward
                     )
                 )
             } catch {
@@ -90,6 +99,14 @@ struct MayaChainBondInteractor: BondInteractor {
     func canAddBond() async -> Bool {
         return true
     }
+
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
+        try await mayaChainAPIService.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
+    }
+
+    func bondCoinAddress(in vault: Vault) async -> String? {
+        await bondCoinSnapshot(in: vault)?.address
+    }
 }
 
 extension MayaChainBondInteractor {
@@ -120,6 +137,7 @@ private extension MayaChainBondInteractor {
                 apy: draft.apy,
                 nextReward: draft.nextReward,
                 nextChurn: draft.nextChurn,
+                lastReward: draft.lastReward,
                 vault: vault
             )
         }

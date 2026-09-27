@@ -88,16 +88,23 @@ struct DefiPositionsStorageService {
             // uncompared, re-opens the hole. `node` is absent from both lists
             // because this method does not write it — it is part of the lookup
             // key that `id` is built from.
+            // `lastReward` is transient (see `BondPosition.lastReward`), so
+            // it never dirties SwiftData's own observation graph — but it
+            // still needs comparing here, or a churn that only moves
+            // `lastReward` (amount/apy/nextChurn all unchanged) would be
+            // skipped entirely by the `continue` below.
             guard existing.amount != position.amount
                 || existing.apy != position.apy
                 || existing.nextReward != position.nextReward
                 || existing.nextChurn != position.nextChurn
+                || existing.lastReward != position.lastReward
             else { continue }
 
             existing.amount = position.amount
             existing.apy = position.apy
             existing.nextReward = position.nextReward
             existing.nextChurn = position.nextChurn
+            existing.lastReward = position.lastReward
         }
 
         try saveAndNotify()

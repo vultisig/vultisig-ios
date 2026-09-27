@@ -43,13 +43,49 @@ extension MayaChainAPIService {
         }
     }
 
-    /// Get detailed node information including bond providers and current award
-    func getNodeDetails(nodeAddress: String) async throws -> MayaNodeResponse {
+    /// Get detailed node information including bond providers and current award.
+    ///
+    /// `height` snapshots the node at a past block — used to read the award
+    /// about to be paid at a specific churn (`height: churnHeight - 1`).
+    /// Historical responses never change, so they're cached indefinitely by
+    /// `nodeAddress + height`; the live snapshot (`height == nil`) is not
+    /// cached here.
+    func getNodeDetails(nodeAddress: String, height: Int? = nil) async throws -> MayaNodeResponse {
+        guard let height else {
+            let response = try await httpClient.request(
+                MayaChainBondsAPI.getNodeDetails(nodeAddress: nodeAddress, height: nil),
+                responseType: MayaNodeResponse.self
+            )
+            return response.data
+        }
+
+        return try await historicalNodeDetailsCache.value(
+            for: "\(nodeAddress)_\(height)",
+            now: Date(),
+            ttl: .infinity
+        ) {
+            let response = try await self.httpClient.request(
+                MayaChainBondsAPI.getNodeDetails(nodeAddress: nodeAddress, height: height),
+                responseType: MayaNodeResponse.self
+            )
+            return response.data
+        }
+    }
+
+    /// Get recent churns history (with 5-minute cache), mirroring THORChain's
+    /// `getChurns()`.
+    func getChurns() async throws -> [ChurnEntry] {
+        if let cached = await cache.getCachedChurns() {
+            return cached
+        }
+
         let response = try await httpClient.request(
-            MayaChainBondsAPI.getNodeDetails(nodeAddress: nodeAddress),
-            responseType: MayaNodeResponse.self
+            MayaChainBondsAPI.getChurns,
+            responseType: [ChurnEntry].self
         )
-        return response.data
+        let data = response.data
+        await cache.cacheChurns(data)
+        return data
     }
 
     /// Get network-wide bond information (APR and next churn date)
@@ -67,43 +103,88 @@ extension MayaChainAPIService {
         nodeAddress: String,
         myBondAddress: String
     ) async throws -> MayaBondMetrics {
-        // 1. Fetch node details
+        // 1. Fetch node details and this address's share of the live award
         let nodeData = try await getNodeDetails(nodeAddress: nodeAddress)
-        let bondProviders = nodeData.bondProviders.providers
+        let share = BondRewardMath.share(
+            providers: nodeData.bondProviders.providers.map { ($0.bondAddress, $0.totalBond) },
+            nodeOperatorFeeBps: Decimal(string: nodeData.bondProviders.nodeOperatorFee) ?? 0,
+            currentAward: Decimal(string: nodeData.currentAward) ?? 0,
+            myBondAddress: myBondAddress
+        ) ?? BondRewardMath.Share(myBond: 0, myAward: 0)
 
-        // 2. Calculate my bond and total bond from pools
-        var myBond: Decimal = 0
-        var totalBond: Decimal = 0
-
-        for provider in bondProviders {
-            let providerBond = provider.totalBond
-            if provider.bondAddress == myBondAddress {
-                myBond = providerBond
-            }
-            totalBond += providerBond
-        }
-
-        // 3. Calculate ownership percentage
-        let myBondOwnershipPercentage = totalBond > 0 ? myBond / totalBond : 0
-
-        // 4. Calculate node operator fee (convert from basis points)
-        let nodeOperatorFee = (Decimal(string: nodeData.bondProviders.nodeOperatorFee) ?? 0) / 10000
-
-        // 5. Calculate current award after node operator fee
-        let currentAward = (Decimal(string: nodeData.currentAward) ?? 0) * (1 - nodeOperatorFee)
-        let myAward = myBondOwnershipPercentage * currentAward
-
-        // 6. Get network info to estimate APR
+        // 2. Get network info to estimate APR
         // For Maya, we'll use the network-wide bonding APY as the base
         let network = try await getNetwork()
         let networkAPR = Double(network.bondingAPY ?? "0") ?? 0
 
         return MayaBondMetrics(
-            myBond: myBond,
-            myAward: myAward,
+            myBond: share.myBond,
+            myAward: share.myAward,
             apr: networkAPR,
             nodeStatus: nodeData.status
         )
+    }
+
+    /// This bond address's share of the award paid at each of the vault's
+    /// last `limit` churns, newest first. Mirrors
+    /// `THORChainAPIService.getBondRewardHistory` — see it for the
+    /// batched-stop-at-first-gap and caching rationale.
+    func getBondRewardHistory(
+        nodeAddress: String,
+        myBondAddress: String,
+        limit: Int = BondRewardHistoryConfig.limit
+    ) async throws -> [BondRewardHistoryEntry] {
+        let churns = try await getChurns()
+        let recentChurns = churns
+            .sorted { (Int($0.height) ?? 0) > (Int($1.height) ?? 0) }
+            .prefix(limit)
+
+        let queries: [(height: Int, date: Date)] = recentChurns.compactMap { churn in
+            guard
+                let churnHeight = Int(churn.height),
+                let dateNanos = Double(churn.date)
+            else { return nil }
+            return (height: churnHeight - 1, date: Date(timeIntervalSince1970: dateNanos / 1_000_000_000))
+        }
+
+        var entries: [BondRewardHistoryEntry] = []
+        for batch in queries.chunked(into: BondRewardHistoryConfig.concurrency) {
+            // See the identical comment in THORChainAPIService.getBondRewardHistory.
+            try Task.checkCancellation()
+
+            let batchResults = await withBoundedConcurrency(
+                batch,
+                maxConcurrent: BondRewardHistoryConfig.concurrency
+            ) { query -> BondRewardHistoryQueryResult in
+                do {
+                    let node = try await self.getNodeDetails(nodeAddress: nodeAddress, height: query.height)
+                    guard let share = BondRewardMath.share(
+                        providers: node.bondProviders.providers.map { ($0.bondAddress, $0.totalBond) },
+                        nodeOperatorFeeBps: Decimal(string: node.bondProviders.nodeOperatorFee) ?? 0,
+                        currentAward: Decimal(string: node.currentAward) ?? 0,
+                        myBondAddress: myBondAddress
+                    ) else {
+                        return .notAProvider
+                    }
+                    return .found(BondRewardHistoryEntry(churnHeight: query.height + 1, churnDate: query.date, amount: share.myAward))
+                } catch {
+                    return .failed(error)
+                }
+            }
+
+            for result in batchResults {
+                switch result {
+                case .found(let entry):
+                    entries.append(entry)
+                case .notAProvider:
+                    return entries
+                case .failed(let error):
+                    // See the identical comment in THORChainAPIService.getBondRewardHistory.
+                    throw error
+                }
+            }
+        }
+        return entries
     }
 
     /// Estimate next churn ETA for MayaChain
