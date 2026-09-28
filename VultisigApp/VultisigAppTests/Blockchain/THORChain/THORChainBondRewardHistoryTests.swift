@@ -170,54 +170,112 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         }
     }
 
-    /// Cancelling the caller's task must stop the NEXT batch from ever being
-    /// scheduled — `withBoundedConcurrency` alone only stops scheduling
-    /// WITHIN one batch, so without the `Task.checkCancellation()` at the
-    /// top of the outer loop, a vault bonded continuously across 15 churns
-    /// would still issue every one of the 3 batches even after cancellation.
-    func testCancellationStopsSchedulingFurtherBatches() async {
+    /// Cancelling before batch 1 resolves must prevent every later batch
+    /// from ever being scheduled. Deterministic, not timed: the stub
+    /// suspends every node-details request until the test releases it, and
+    /// — critically — never throws on cancellation itself (unlike a plain
+    /// `Task.sleep`, which cancels itself and would make this pass even
+    /// with no cancellation handling at all in `getBondRewardHistory`). The
+    /// test waits for exactly `concurrency` requests to arrive (all of
+    /// batch 1, in flight simultaneously), cancels, THEN releases them —
+    /// so the only things that can stop batch 2/3 from running are
+    /// `getBondRewardHistory`'s own `Task.checkCancellation()` before each
+    /// batch and `withBoundedConcurrency`'s fail-closed throw once a batch
+    /// observes the cancellation. Either mechanism alone is enough to pass
+    /// this test; it fails only if BOTH are removed, which is what "prove
+    /// it: RED by mutation" below actually verifies for this file — the two
+    /// are intentionally overlapping defenses for adjacent race windows,
+    /// not independently isolable from outside the function.
+    func testCancellationStopsSchedulingFurtherBatches() async throws {
         // 15 churns, all continuously bonded -> 3 batches of 5 if uncancelled.
         let churnCount = 15
         let churns = (1...churnCount).map { (height: $0 * 100, dateNanos: Int64($0) * 100_000_000_000) }
-        var byHeight: [Int: Data] = [:]
-        for churn in churns {
-            byHeight[churn.height - 1] = nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])
-        }
-        let stub = CountingDelayedBondsHTTPClient(
+        let nodeDetails = nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])
+        let stub = GatedCountingBondsHTTPClient(
             churns: churnsJSON(churns),
-            nodeDetailsByHeight: byHeight,
-            delayNanos: 30_000_000
+            nodeDetailsData: nodeDetails,
+            arrivalTarget: BondRewardHistoryConfig.concurrency
         )
         let service = THORChainAPIService(httpClient: stub)
 
         let task = Task {
             try? await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
         }
-        // Let the first batch (5 concurrent requests) start, then cancel
-        // before it — or any later batch — would otherwise finish.
-        try? await Task.sleep(nanoseconds: 10_000_000)
-        task.cancel()
-        _ = await task.value
 
-        let requestCount = await stub.nodeDetailsRequestCount
-        XCTAssertLessThan(requestCount, churnCount, "cancellation must have prevented at least the later batches from being scheduled")
+        // All of batch 1 (one request per concurrency slot) is now in
+        // flight and suspended — batch 2 cannot have started yet, since
+        // batch 1's own `withBoundedConcurrency` call hasn't returned.
+        // Bounded rather than an unbounded `await`: a regression that hangs
+        // (rather than failing) must still fail this test in finite time,
+        // not wedge the whole suite.
+        let arrived = expectation(description: "batch 1 fully arrived")
+        Task { await stub.waitForArrivals(); arrived.fulfill() }
+        await fulfillment(of: [arrived], timeout: 5)
+
+        task.cancel()
+        await stub.release()
+
+        let completed = expectation(description: "getBondRewardHistory returned after cancellation")
+        Task { _ = await task.value; completed.fulfill() }
+        await fulfillment(of: [completed], timeout: 10)
+
+        let requestCount = await stub.totalRequestCount
+        XCTAssertEqual(requestCount, BondRewardHistoryConfig.concurrency, "cancellation must have prevented every later batch from ever being scheduled")
     }
 }
 
-/// Delays every node-details response and counts how many were issued —
-/// used to prove cancellation actually stops later batches rather than
-/// merely letting the whole 20-request walk complete quietly in the
-/// background.
-private actor CountingDelayedBondsHTTPClient: HTTPClientProtocol {
+/// Suspends every node-details request until released, and counts them —
+/// deliberately ignores cancellation itself (unlike `Task.sleep`), so a
+/// passing test proves `getBondRewardHistory`'s OWN cancellation handling
+/// is what stopped later batches, not the stub aborting on its own.
+///
+/// Parks each suspended request's continuation in a QUEUE, not a single
+/// property: `arrivalTarget` requests suspend concurrently (one per
+/// bounded-concurrency slot), and a single `var continuation` would be
+/// silently overwritten by the 2nd..Nth arrival, leaking the 1st..(N-1)th
+/// forever — the exact "SWIFT TASK CONTINUATION MISUSE: leaked its
+/// continuation without resuming it" hang this actor used to cause.
+/// `release()` drains and resumes every queued continuation, so nothing
+/// parked here can ever be left unresumed.
+private actor GatedCountingBondsHTTPClient: HTTPClientProtocol {
     private let churns: Data
-    private let nodeDetailsByHeight: [Int: Data]
-    private let delayNanos: UInt64
-    private(set) var nodeDetailsRequestCount = 0
+    private let nodeDetailsData: Data
+    private let arrivalTarget: Int
+    private var arrivedCount = 0
+    private var arrivalContinuation: CheckedContinuation<Void, Never>?
+    private var isReleased = false
+    private var pendingReleaseContinuations: [CheckedContinuation<Void, Never>] = []
+    private(set) var totalRequestCount = 0
 
-    init(churns: Data, nodeDetailsByHeight: [Int: Data], delayNanos: UInt64) {
+    init(churns: Data, nodeDetailsData: Data, arrivalTarget: Int) {
         self.churns = churns
-        self.nodeDetailsByHeight = nodeDetailsByHeight
-        self.delayNanos = delayNanos
+        self.nodeDetailsData = nodeDetailsData
+        self.arrivalTarget = arrivalTarget
+    }
+
+    /// Returns once `arrivalTarget` node-details requests have arrived and
+    /// are suspended (never once any have completed).
+    func waitForArrivals() async {
+        guard arrivedCount < arrivalTarget else { return }
+        await withCheckedContinuation { arrivalContinuation = $0 }
+    }
+
+    /// Resumes every request parked so far, and lets any future one resolve
+    /// immediately too. Also unblocks a still-pending `waitForArrivals()` —
+    /// if the expected count is never reached (a regression stops requests
+    /// from arriving at all), the test's `fulfillment(of:timeout:)` still
+    /// times out and fails as expected, but without this, the `Task`
+    /// wrapping `waitForArrivals()` would stay suspended forever after the
+    /// test itself has already moved on and finished.
+    func release() {
+        isReleased = true
+        arrivalContinuation?.resume()
+        arrivalContinuation = nil
+        let continuations = pendingReleaseContinuations
+        pendingReleaseContinuations.removeAll()
+        for continuation in continuations {
+            continuation.resume()
+        }
     }
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
@@ -227,19 +285,22 @@ private actor CountingDelayedBondsHTTPClient: HTTPClientProtocol {
             return HTTPResponse(data: churns, response: response)
         }
 
-        nodeDetailsRequestCount += 1
-        try await Task.sleep(nanoseconds: delayNanos)
-
-        guard
-            case let .requestParameters(params, _) = target.task,
-            let height = params["height"] as? Int,
-            let data = nodeDetailsByHeight[height]
-        else {
-            throw HTTPError.statusCode(404, Data())
+        totalRequestCount += 1
+        arrivedCount += 1
+        if arrivedCount == arrivalTarget {
+            arrivalContinuation?.resume()
+            arrivalContinuation = nil
         }
+
+        if !isReleased {
+            await withCheckedContinuation { continuation in
+                pendingReleaseContinuations.append(continuation)
+            }
+        }
+
         let url = target.baseURL.appendingPathComponent(target.path)
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        return HTTPResponse(data: data, response: response)
+        return HTTPResponse(data: nodeDetailsData, response: response)
     }
 
     func requestEmpty(_: TargetType) async throws -> HTTPResponse<EmptyResponse> { // swiftlint:disable:this async_without_await

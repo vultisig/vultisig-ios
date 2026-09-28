@@ -13,16 +13,36 @@ import XCTest
 
 final class BoundedConcurrencyTests: XCTestCase {
 
-    func testEmptyInputReturnsEmptyOutput() async {
-        let results: [Int] = await withBoundedConcurrency([], maxConcurrent: 4) { $0 }
+    func testEmptyInputReturnsEmptyOutput() async throws {
+        let results: [Int] = try await withBoundedConcurrency([], maxConcurrent: 4) { $0 }
         XCTAssertTrue(results.isEmpty)
+    }
+
+    /// The fail-closed contract applies at zero items too: an
+    /// already-cancelled caller must not read `[]` back as "the complete
+    /// (empty) answer" — it's indistinguishable from a caller that was
+    /// simply never cancelled and genuinely had nothing to do.
+    func testCancelledCallWithEmptyInputThrows() async {
+        let task = Task<[Int], Error> {
+            try await withBoundedConcurrency([], maxConcurrent: 4) { $0 }
+        }
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("an already-cancelled call must throw even with no items to process")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
     }
 
     /// Completion order is scrambled (later items finish first); the
     /// returned array must still read back in input order.
-    func testResultOrderMatchesInputOrderDespiteOutOfOrderCompletion() async {
+    func testResultOrderMatchesInputOrderDespiteOutOfOrderCompletion() async throws {
         let items = Array(0..<10)
-        let results = await withBoundedConcurrency(items, maxConcurrent: 4) { item -> Int in
+        let results = try await withBoundedConcurrency(items, maxConcurrent: 4) { item -> Int in
             // Odd items finish "faster" by not sleeping at all; even items
             // sleep briefly, so completion order is deliberately scrambled.
             if item.isMultiple(of: 2) {
@@ -37,10 +57,10 @@ final class BoundedConcurrencyTests: XCTestCase {
     /// bracket the operation's own in-flight span, so a slot only frees (and
     /// `withBoundedConcurrency` only schedules the next item) once `exit`
     /// has actually run.
-    func testNeverExceedsMaxConcurrent() async {
+    func testNeverExceedsMaxConcurrent() async throws {
         let counter = ConcurrencyCounter()
         let items = Array(0..<12)
-        _ = await withBoundedConcurrency(items, maxConcurrent: 3) { _ -> Int in
+        _ = try await withBoundedConcurrency(items, maxConcurrent: 3) { _ -> Int in
             await counter.enter()
             try? await Task.sleep(nanoseconds: 2_000_000)
             await counter.exit()
@@ -59,7 +79,7 @@ final class BoundedConcurrencyTests: XCTestCase {
         let items = Array(0..<20)
 
         let task = Task {
-            await withBoundedConcurrency(items, maxConcurrent: 2) { _ -> Int in
+            try? await withBoundedConcurrency(items, maxConcurrent: 2) { _ -> Int in
                 await counter.recordStart()
                 try? await Task.sleep(nanoseconds: 20_000_000)
                 return 0
@@ -74,6 +94,47 @@ final class BoundedConcurrencyTests: XCTestCase {
 
         let started = await counter.startCount
         XCTAssertLessThan(started, items.count, "cancellation must have prevented most of the 20 items from ever starting")
+    }
+
+    /// The contract is fail-closed: a cancelled call must THROW, never
+    /// return fewer results than requested read as "the complete answer".
+    /// Items 0 and 2 launch alongside the one fast item (1) — with
+    /// `maxConcurrent: 3` all three start immediately — and are still
+    /// slowly running when cancellation lands right after item 1's
+    /// completion is observed. The old (buggy) contract broke the
+    /// observation loop there, silently dropped 0 and 2 (already in flight,
+    /// but never captured because the loop had already exited) and never
+    /// scheduled 3, 4, 5 at all, then handed back `compactMap` = `[1]` — a
+    /// hole in the MIDDLE of the sequence, indistinguishable from "these
+    /// were the only churns that mattered."
+    func testCancellationThrowsInsteadOfReturningAGappedArray() async {
+        let items = Array(0..<6)
+
+        let task = Task {
+            try await withBoundedConcurrency(items, maxConcurrent: 3) { item -> Int in
+                // Item 1 resolves fast; 0 and 2 (launched in the same initial
+                // batch) and 3/4/5 (which would only launch after a slot
+                // frees) are slow — generous margin against CI jitter.
+                if item != 1 {
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                }
+                return item
+            }
+        }
+
+        // Cancel before ANY item has completed, so whichever one finishes
+        // first (item 1) is observed by the loop already-cancelled.
+        try? await Task.sleep(nanoseconds: 30_000_000)
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("a cancelled call must throw, not return a gapped/partial array read as complete")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
     }
 }
 

@@ -105,23 +105,41 @@ final class BondRewardHistoryViewModelTests: XCTestCase {
     /// `cancelLoad` is what the sheet calls from `.onDisappear` — closing the
     /// sheet mid-fetch must not leave the view model reporting a result for
     /// a view nobody is looking at.
+    ///
+    /// Gated rather than timed: the interactor call is held open until the
+    /// test itself releases it, so there is no artificial delay left to
+    /// "beat" once `cancelLoad` has run. A no-op `cancelLoad` would publish
+    /// almost immediately after the gate opens; a correct one never does,
+    /// for the whole poll window — that asymmetry is what makes this
+    /// discriminating rather than a wall-clock guess.
     func testCancelLoadStopsTheInFlightFetchFromPublishingAResult() async {
         let interactor = MockBondInteractor()
         interactor.rewardHistoryStub = [BondRewardHistoryEntry(churnHeight: 100, churnDate: Date(), amount: 1)]
+        let gate = InteractorCallGate()
+        interactor.rewardHistoryGate = gate
 
         let viewModel = BondRewardHistoryViewModel(
             vault: .example,
             chain: .thorChain,
             coin: .example,
             node: makeNode(),
-            interactor: SlowMockBondInteractor(wrapped: interactor)
+            interactor: interactor
         )
 
         viewModel.load()
-        viewModel.cancelLoad()
-        try? await Task.sleep(nanoseconds: 50_000_000)
 
-        XCTAssertTrue(viewModel.history.isEmpty, "cancelled before the slow fetch could publish")
+        // Bounded rather than an unbounded `await`: a regression that hangs
+        // instead of calling through to the gate must still fail this test
+        // in finite time.
+        let arrived = expectation(description: "fetchRewardHistory arrived")
+        Task { await gate.waitForArrival(); arrived.fulfill() }
+        await fulfillment(of: [arrived], timeout: 5)
+
+        viewModel.cancelLoad()      // cancel while it's still suspended
+        await gate.open()           // let the (already-cancelled) call resolve normally
+
+        let publishedAnyway = await waitUntilTrueOrTimeout(timeout: 0.3) { !viewModel.history.isEmpty }
+        XCTAssertFalse(publishedAnyway, "a fetch cancelled before it resolved must not publish, even though the interactor call itself completed")
     }
 
     private func waitUntil(timeout: TimeInterval = 2, _ condition: @escaping () -> Bool) async {
@@ -130,29 +148,16 @@ final class BondRewardHistoryViewModelTests: XCTestCase {
             try? await Task.sleep(nanoseconds: 5_000_000)
         }
     }
-}
 
-/// Wraps `MockBondInteractor` with an artificial delay so
-/// `testCancelLoadStopsTheInFlightFetchFromPublishingAResult` can cancel
-/// before the fetch resolves.
-private final class SlowMockBondInteractor: BondInteractor, @unchecked Sendable {
-    private let wrapped: MockBondInteractor
-
-    init(wrapped: MockBondInteractor) {
-        self.wrapped = wrapped
+    /// Like `waitUntil`, but reports whether `condition` was ever observed
+    /// true — used to prove an absence (nothing published) rather than an
+    /// eventual presence.
+    private func waitUntilTrueOrTimeout(timeout: TimeInterval, _ condition: @escaping () -> Bool) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if condition() { return true }
+            try? await Task.sleep(nanoseconds: 5_000_000)
+        }
+        return condition()
     }
-
-    func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
-        try await wrapped.fetchBondPositions(vault: vault)
-    }
-
-    func canUnbond() async -> Bool { await wrapped.canUnbond() }
-    func canAddBond() async -> Bool { await wrapped.canAddBond() }
-
-    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
-        try await Task.sleep(nanoseconds: 200_000_000)
-        return try await wrapped.fetchRewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
-    }
-
-    func bondCoinAddress(in vault: Vault) async -> String? { await wrapped.bondCoinAddress(in: vault) }
 }

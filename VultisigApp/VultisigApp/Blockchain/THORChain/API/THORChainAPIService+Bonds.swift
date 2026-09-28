@@ -172,7 +172,7 @@ extension THORChainAPIService {
             // returning normally is not itself a signal here.
             try Task.checkCancellation()
 
-            let batchResults = await withBoundedConcurrency(
+            let batchResults = try await withBoundedConcurrency(
                 batch,
                 maxConcurrent: BondRewardHistoryConfig.concurrency
             ) { query -> BondRewardHistoryQueryResult in
@@ -199,7 +199,11 @@ extension THORChainAPIService {
                 case .notAProvider:
                     // A successfully decoded snapshot without this address is
                     // the real "wasn't bonded yet" signal — stop here, before
-                    // the next batch is ever scheduled.
+                    // the next batch is ever scheduled. Still checked for
+                    // cancellation first: this is a normal-looking return
+                    // path, and a cancelled caller must never read ANY
+                    // result — including a legitimate one — as trustworthy.
+                    try Task.checkCancellation()
                     return entries
                 case .failed(let error):
                     // A network/decode failure is NOT the same signal: silently
@@ -212,6 +216,12 @@ extension THORChainAPIService {
                 }
             }
         }
+        // Explicit even though every batch above already checks (and
+        // `withBoundedConcurrency` itself fails closed on cancellation): the
+        // gap this closes is between the last batch's processing finishing
+        // and this function returning, so cancellation is checked after the
+        // LAST batch too, not just before every batch.
+        try Task.checkCancellation()
         return entries
     }
 

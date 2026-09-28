@@ -14,6 +14,17 @@
 //  cancellation — `withTaskGroup` cancels its children when its own task is
 //  cancelled.
 //
+//  The contract is fail-closed: cancellation THROWS, it never returns fewer
+//  results than requested. Completion order does not match input order, so
+//  "stop scheduling and hand back whatever completed so far" does not
+//  produce a clean prefix or suffix — it produces a HOLE wherever the
+//  in-flight items that were never captured happened to sit (see the
+//  `testCancellationThrowsInsteadOfReturningAGappedArray` regression test).
+//  A caller reading a shorter array has no way to tell "cancelled, this is
+//  partial" from "these were genuinely all the results" — for
+//  `getBondRewardHistory` specifically, that reads as "no more churns",
+//  which is a silent correctness bug, not a degraded-but-safe outcome.
+//
 
 import Foundation
 
@@ -21,7 +32,14 @@ func withBoundedConcurrency<Item: Sendable, Result: Sendable>(
     _ items: [Item],
     maxConcurrent: Int,
     operation: @escaping @Sendable (Item) async -> Result
-) async -> [Result] {
+) async throws -> [Result] {
+    precondition(maxConcurrent > 0, "withBoundedConcurrency requires maxConcurrent > 0")
+
+    // Checked before the empty-item short-circuit too: "cancellation always
+    // throws" is the whole contract, and an already-cancelled caller getting
+    // a silent `[]` back for empty input is the same "can't tell cancelled
+    // from complete" problem as a gapped array, just at zero items.
+    try Task.checkCancellation()
     guard !items.isEmpty else { return [] }
 
     var results = [Result?](repeating: nil, count: items.count)
@@ -53,11 +71,19 @@ func withBoundedConcurrency<Item: Sendable, Result: Sendable>(
         }
     }
 
-    // Every index is filled on the normal path (scheduling only stops once
-    // `items` is exhausted). `compactMap` rather than a forced unwrap is
-    // what makes the cancellation path above safe: cancelling before every
-    // index is scheduled leaves trailing `nil`s, which this simply drops —
-    // the caller's own task is cancelled too, so a partial result is
-    // discarded either way, and a crash here would be strictly worse.
-    return results.compactMap { $0 }
+    // Checked unconditionally, even on the path where every index DID get
+    // filled: if cancellation was ever observed above, `results` may still
+    // hold gaps from children that completed after the loop broke (their
+    // completion is awaited implicitly when the task group's scope exits,
+    // but never captured — this loop already stopped reading from `group`),
+    // and even a "lucky" fully-filled array must still be rejected, because
+    // a caller cannot tell a genuine complete answer from that coincidence.
+    try Task.checkCancellation()
+
+    return results.map { result in
+        guard let result else {
+            preconditionFailure("withBoundedConcurrency scheduled every index exactly once")
+        }
+        return result
+    }
 }

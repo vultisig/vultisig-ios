@@ -152,7 +152,7 @@ extension MayaChainAPIService {
             // See the identical comment in THORChainAPIService.getBondRewardHistory.
             try Task.checkCancellation()
 
-            let batchResults = await withBoundedConcurrency(
+            let batchResults = try await withBoundedConcurrency(
                 batch,
                 maxConcurrent: BondRewardHistoryConfig.concurrency
             ) { query -> BondRewardHistoryQueryResult in
@@ -177,6 +177,8 @@ extension MayaChainAPIService {
                 case .found(let entry):
                     entries.append(entry)
                 case .notAProvider:
+                    // See the identical comment in THORChainAPIService.getBondRewardHistory.
+                    try Task.checkCancellation()
                     return entries
                 case .failed(let error):
                     // See the identical comment in THORChainAPIService.getBondRewardHistory.
@@ -184,6 +186,8 @@ extension MayaChainAPIService {
                 }
             }
         }
+        // See the identical comment in THORChainAPIService.getBondRewardHistory.
+        try Task.checkCancellation()
         return entries
     }
 
