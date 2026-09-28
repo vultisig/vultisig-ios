@@ -43,6 +43,7 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
     case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingPrevUtxo(inputIndex: Int)
+    case pubkeyDoesNotMatchInput(inputIndex: Int)
     case invalidPrevUtxo(inputIndex: Int, reason: String)
     case planError(String)
     case invalidPublicKey(String)
@@ -67,6 +68,8 @@ enum SwapKitLegacyP2PKHSignerError: Error, LocalizedError {
             return "SwapKit PSBT script not supported: \(detail)"
         case .missingPrevUtxo(let i):
             return "SwapKit PSBT input #\(i) is missing prev-tx UTXO record"
+        case .pubkeyDoesNotMatchInput(let i):
+            return "SwapKit PSBT input #\(i) is locked to a different key than the signing public key"
         case .invalidPrevUtxo(let i, let reason):
             return "SwapKit PSBT input #\(i) prev-tx UTXO invalid: \(reason)"
         case .planError(let detail):
@@ -141,6 +144,10 @@ enum SwapKitLegacyP2PKHSigner {
             throw SwapKitLegacyP2PKHSignerError.invalidPublicKey(pubKeyHex)
         }
         let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
+        let ourKeyHash = Hash.ripemd(data: Hash.sha256(data: pubkeyData))
+        for (index, input) in inputs.enumerated() where input.keyHash != ourKeyHash {
+            throw SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(inputIndex: index)
+        }
         let sighashes = perInputSighashes(tx: tx, inputs: inputs, coin: coin)
         let signatureProvider = SignatureProvider(signatures: signatures)
         let type = sighashType(for: coin)

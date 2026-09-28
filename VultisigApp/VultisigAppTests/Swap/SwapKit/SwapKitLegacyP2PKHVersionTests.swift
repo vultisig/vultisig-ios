@@ -45,9 +45,9 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             payload: payload,
             preSigningHashes: SwapKitDogeSigner.preSigningHashes,
             compileSignedTransaction: SwapKitDogeSigner.compileSignedTransaction,
-            expectedHashes: ["30d6ff2d31e934a1d32c37b8ea8e55c2d312291201b7017e25d6e2b17a50906a"],
-            expectedRawTransaction: "010000000150e47ac786c07578b8e92d014b46854300b2c7b7395eb72ccc0727e5443a5ab4000000006b4830450221008584ece98bb35f06d30c82e83f3142a369764caabe35f387c8ebcbadd065d68b02206f71a2429b3984ca55c2cc628873376fac975eb229022caa52b7a52cdf9dc957012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d0b08a3c170000001976a91419fb7ab04f2de927ced3b8337ab45d5d046db6cf88ac00c2eb0b000000001976a914c4919dca916dc416c06d51cb1940a7ba268c475d88ac00000000",
-            expectedTransactionHash: "b52c634511ab22d0c5fd5a72da1781f108340c5e61f14440f00751919a2f7b7f"
+            expectedHashes: ["6bfef636ab4f8566180f6e6d7108512778c6a74e94c0587cea282cb7e3c105c3"],
+            expectedRawTransaction: "010000000150e47ac786c07578b8e92d014b46854300b2c7b7395eb72ccc0727e5443a5ab4000000006a4730440220132233eeecc4da24fefc9004d8a0b408ef0c6d5d58e8bf61d3b8fa9762cbe9ca02201368145b07bb3d245dedf4f91c8b7c1836b3f787c25738757da94891c9e67357012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d0b08a3c170000001976a91419fb7ab04f2de927ced3b8337ab45d5d046db6cf88ac00c2eb0b000000001976a914c4919dca916dc416c06d51cb1940a7ba268c475d88ac00000000",
+            expectedTransactionHash: "68f8b067ef2d5cebe62e7aaedb8effcc0632687ec4fc63d7ff1113e96ce46d54"
         )
     }
 
@@ -57,9 +57,9 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             payload: payload,
             preSigningHashes: SwapKitBCHSigner.preSigningHashes,
             compileSignedTransaction: SwapKitBCHSigner.compileSignedTransaction,
-            expectedHashes: ["4d0c3edbae26aeb12f486e5a91b7a8f0700d4b77f68c98237e63fe7089d8fc99"],
-            expectedRawTransaction: "010000000183bb97c24c0e9d34f160fe21ccda7832ec1e070d7968e35ffe41f5de374633a3000000006b483045022100afd17d179cf9d986645229d90130cc1d22488a6c9250d0a3607f24763346a37a022046b58f99880dc973e8103182b93aeb495d03c3daa731609a1d43865a65712e81412103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02141af702000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac90d00300000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac00000000",
-            expectedTransactionHash: "bdf995eb37656eb2f11cc3ba7de700b26919ec7e1bd442a371e81f4698f72668"
+            expectedHashes: ["b13cf93cd79070dc27844d5b6b7834dd08bad9fd460c1e17a1ab06ae38afd569"],
+            expectedRawTransaction: "010000000183bb97c24c0e9d34f160fe21ccda7832ec1e070d7968e35ffe41f5de374633a3000000006a47304402202d3df90f84ddcf99696266c32dd2698f6a0d9a3f1bc81c4aac88b2e7c999833b02200dff8cb9fd5c87982e9463b9a1f7dea47a177d9c93f33269c4ab553a06e8d82e412103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02141af702000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac90d00300000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac00000000",
+            expectedTransactionHash: "484f2711b3d79eb99d76ad3722f2ddb00684f5dd0328bbefad8c890b4ffed662"
         )
     }
 
@@ -69,9 +69,9 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             payload: payload,
             preSigningHashes: SwapKitDashSigner.preSigningHashes,
             compileSignedTransaction: SwapKitDashSigner.compileSignedTransaction,
-            expectedHashes: ["f81468f5a0d83c215d2eea28c246ee776c551dc9a72f6da7114ad7169d1c14bc"],
-            expectedRawTransaction: "01000000019d7ddfe60d82f4a419e044dbfd8f2a01b87a5333e328df0b7d76cfff718cdf41000000006a47304402204eb17129bb43a3d7ff6caf20391fdf6296b58f5d7b63f9da965ec61a58a1a31b022054bd15f4665253b5d4c49068c21c34456cfa90b67344ab57dec92e79b0267d6a012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d099373b000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688aca02e6300000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688ac00000000",
-            expectedTransactionHash: "838bb5a6aac778bdb2fe5e3cfa329dd0b7331bb674ffc7d3dacfc4487811a0bf"
+            expectedHashes: ["4c90d18789476ab67f88fdf2770bd8a760d50a23971c1fbde192c836452eaf75"],
+            expectedRawTransaction: "01000000019d7ddfe60d82f4a419e044dbfd8f2a01b87a5333e328df0b7d76cfff718cdf41000000006a47304402204bc6641cc1d982c7fbba1f2e780832a0531ac9bac6fa87aa4cbe65064babc0de02204f82fd7d216bfb958e31d41c48ff23edf96373ca47a3840dbb508a55e7e692bc012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d099373b000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688aca02e6300000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688ac00000000",
+            expectedTransactionHash: "47b5bcaed4bd4f8cd687cb32a7ee511957b6bd74cf51d1ac49886aa6606a210d"
         )
     }
 
@@ -182,6 +182,71 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
         }
     }
 
+    // MARK: - Input locked to a different key is rejected (issue #5483 review follow-up)
+
+    func testDogeRejectsInputLockedToADifferentKey() throws {
+        let mismatched = try PSBTInputKeyPatcher.patchInputKeyHash(
+            base64: loadBase64(fixture: "v3-real-doge-swap"),
+            to: Data(repeating: 0x11, count: 20)
+        )
+        let payload = try makeDogePayload(base64: mismatched)
+        XCTAssertThrowsError(try SwapKitDogeSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: [:],
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
+            guard case SwapKitDogeSignerError.underlying(let inner) = err else {
+                return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
+            }
+            guard case .pubkeyDoesNotMatchInput(let inputIndex) = inner else {
+                return XCTFail("expected .pubkeyDoesNotMatchInput, got \(inner)")
+            }
+            XCTAssertEqual(inputIndex, 0)
+        }
+    }
+
+    func testBchRejectsInputLockedToADifferentKey() throws {
+        let mismatched = try PSBTInputKeyPatcher.patchInputKeyHash(
+            base64: loadBase64(fixture: "v3-real-bch-swap"),
+            to: Data(repeating: 0x11, count: 20)
+        )
+        let payload = try makeBchPayload(base64: mismatched)
+        XCTAssertThrowsError(try SwapKitBCHSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: [:],
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
+            guard case SwapKitBCHSignerError.underlying(let inner) = err else {
+                return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
+            }
+            guard case .pubkeyDoesNotMatchInput(let inputIndex) = inner else {
+                return XCTFail("expected .pubkeyDoesNotMatchInput, got \(inner)")
+            }
+            XCTAssertEqual(inputIndex, 0)
+        }
+    }
+
+    func testDashRejectsInputLockedToADifferentKey() throws {
+        let mismatched = try PSBTInputKeyPatcher.patchInputKeyHash(
+            base64: loadBase64(fixture: "v3-real-dash-swap"),
+            to: Data(repeating: 0x11, count: 20)
+        )
+        let payload = try makeDashPayload(base64: mismatched)
+        XCTAssertThrowsError(try SwapKitDashSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: [:],
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
+            guard case SwapKitDashSignerError.underlying(let inner) = err else {
+                return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
+            }
+            guard case .pubkeyDoesNotMatchInput(let inputIndex) = inner else {
+                return XCTFail("expected .pubkeyDoesNotMatchInput, got \(inner)")
+            }
+            XCTAssertEqual(inputIndex, 0)
+        }
+    }
+
     // MARK: - Shared assertions
 
     /// Pins pre-image hashes + assembled signed transaction against a
@@ -241,15 +306,30 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
 
     // MARK: - Payload builders
 
+    /// Every test in this file signs with `SigningGoldenSigner`'s fixed key,
+    /// but the committed fixtures were captured from real third-party swaps
+    /// (their input is locked to some other, unknown key). Re-point the
+    /// input's P2PKH key hash at our own signing key so signing actually
+    /// succeeds the ownership check added for the mismatched-key regression
+    /// below — the fixture's own recipient/change outputs are untouched.
     private func loadBase64(fixture: String) throws -> String {
         let response = try SwapKitFixtureLoader.decode(SwapKitSwapResponse.self, from: fixture)
+        let base64: String
         switch response.tx {
-        case .dogecoinPsbt(let base64), .bitcoinCashPsbt(let base64), .dashPsbt(let base64):
-            return base64
+        case .dogecoinPsbt(let value), .bitcoinCashPsbt(let value), .dashPsbt(let value):
+            base64 = value
         default:
             throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "unexpected tx case for \(fixture)"])
         }
+        return try PSBTInputKeyPatcher.patchInputKeyHash(base64: base64, to: Self.ourKeyHash)
     }
+
+    /// hash160 of `SigningGoldenSigner.publicKeyHex(for: .secp256k1)` — the
+    /// key every test in this file signs with.
+    private static let ourKeyHash: Data = {
+        let pubkey = Data(hexString: SigningGoldenSigner.publicKeyHex(for: .secp256k1))!
+        return Hash.ripemd(data: Hash.sha256(data: pubkey))
+    }()
 
     private func makeDogePayload(base64: String) throws -> SwapKitSwapPayload {
         let bytes = try XCTUnwrap(Data(base64Encoded: base64))
@@ -430,6 +510,73 @@ private enum PSBTVersionPatcher {
                 }
                 return bytes.base64EncodedString()
             }
+        }
+    }
+}
+
+// MARK: - Test-only PSBT input key-hash patcher
+
+/// Test-only: patches the hash160 embedded in the single `NON_WITNESS_UTXO`
+/// input record's referenced P2PKH output (the UTXO being spent), leaving
+/// every other byte — including the unsigned tx's own output scripts —
+/// untouched. Every fixture in this suite has exactly one input and one
+/// output in its embedded prev-tx.
+private enum PSBTInputKeyPatcher {
+    static func patchInputKeyHash(base64: String, to newHash: Data) throws -> String {
+        guard newHash.count == 20 else { throw PSBTVersionPatchError.malformed }
+        guard var bytes = Data(base64Encoded: base64) else { throw PSBTVersionPatchError.malformed }
+
+        // Skip the global map (the unsigned tx) to reach the first input map.
+        var offset = bytes.startIndex + 5
+        while true {
+            guard offset < bytes.endIndex else { throw PSBTVersionPatchError.malformed }
+            let keyLen = Int(bytes[offset])
+            offset += 1
+            if keyLen == 0 { break }
+            offset += keyLen
+            let valueLen = Int(bytes[offset])
+            offset += 1
+            offset += valueLen
+        }
+
+        // Find the input map's NON_WITNESS_UTXO record (key `0x00`).
+        while true {
+            guard offset < bytes.endIndex else { throw PSBTVersionPatchError.malformed }
+            let keyLen = Int(bytes[offset])
+            offset += 1
+            if keyLen == 0 { throw PSBTVersionPatchError.malformed }
+            let keyStart = offset
+            offset += keyLen
+            let valueLen = Int(bytes[offset])
+            offset += 1
+            let valueStart = offset
+            offset += valueLen
+            guard keyLen == 1, bytes[keyStart] == 0x00 else { continue }
+
+            // The value is the full embedded prev-tx: version(4) + inputs +
+            // outputs + locktime(4). Patch every output's P2PKH hash160
+            // (`76 a9 14 <20> 88 ac`, hash at bytes 3..<23 of the script).
+            var p = valueStart + 4
+            let inCount = Int(bytes[p])
+            p += 1
+            for _ in 0..<inCount {
+                p += 32 + 4
+                let sigLen = Int(bytes[p])
+                p += 1
+                p += sigLen
+                p += 4
+            }
+            let outCount = Int(bytes[p])
+            p += 1
+            for _ in 0..<outCount {
+                p += 8
+                let scriptLen = Int(bytes[p])
+                p += 1
+                let scriptStart = p
+                bytes.replaceSubrange((scriptStart + 3)..<(scriptStart + 23), with: newHash)
+                p += scriptLen
+            }
+            return bytes.base64EncodedString()
         }
     }
 }
