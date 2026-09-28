@@ -72,6 +72,10 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         selectedAssets.contains(where: { $0.id == asset.id })
     }
 
+    func iconLogo(for asset: WidgetWatchlistAsset) -> String {
+        LocalWidgetWatchlistCatalog.logo(for: asset.id) ?? asset.iconLogo
+    }
+
     func load(force: Bool = false) async {
         guard force || !hasLoaded else { return }
         hasLoaded = true
@@ -192,7 +196,7 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         seedDefaultSelection: Bool
     ) {
         let fetched = marketAssets.map(WidgetWatchlistAsset.init)
-        let catalog = mergedAssets(fetched + LocalWidgetWatchlistCatalog.assets)
+        let catalog = mergedMarketCatalog(fetched: fetched, local: LocalWidgetWatchlistCatalog.assets)
         let catalogByID = Dictionary(uniqueKeysWithValues: catalog.map { ($0.id, $0) })
         let refreshedSelection = selectedAssets.map { catalogByID[$0.id] ?? $0 }
 
@@ -204,6 +208,17 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
             selectedAssets = refreshedSelection
             persistSelection(reloadWidget: false)
         }
+    }
+
+    private func mergedMarketCatalog(
+        fetched: [WidgetWatchlistAsset],
+        local: [WidgetWatchlistAsset]
+    ) -> [WidgetWatchlistAsset] {
+        let localByID = Dictionary(uniqueKeysWithValues: local.map { ($0.id, $0) })
+        let fetchedIDs = Set(fetched.map(\.id))
+        let mergedFetched = fetched.map { localByID[$0.id] ?? $0 }
+        let localOnly = local.filter { !fetchedIDs.contains($0.id) }
+        return mergedAssets(mergedFetched + localOnly)
     }
 
     private func mergedAssets(_ assets: [WidgetWatchlistAsset]) -> [WidgetWatchlistAsset] {
@@ -220,7 +235,7 @@ private extension WidgetWatchlistAsset {
             id: identity.id.lowercased(),
             symbol: identity.symbol.uppercased(),
             name: identity.name,
-            imageURL: nil
+            imageURL: identity.imageURL
         )
     }
 

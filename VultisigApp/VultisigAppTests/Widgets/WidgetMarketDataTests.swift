@@ -85,6 +85,49 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(url.absoluteString, "https://api.vultisig.com/coingeicko/api/v3/search?query=bitcoin%20cash")
     }
 
+    func testSearchResponseDecodesValidatedThumbnailURLAndRejectsUnsafeURL() async throws {
+        let data = Data(#"""
+        {
+          "coins": [
+            {
+              "id": "akash-network",
+              "symbol": "akt",
+              "name": "Akash Network",
+              "thumb": "https://coin-images.coingecko.com/coins/images/12785/thumb/akash-logo.png",
+              "large": "https://coin-images.coingecko.com/coins/images/12785/large/akash-logo.png"
+            },
+            {
+              "id": "fallback-large",
+              "symbol": "safe",
+              "name": "Fallback Large",
+              "thumb": "http://coin-images.coingecko.com/coins/images/2/thumb/unsafe.png",
+              "large": "https://coin-images.coingecko.com/coins/images/2/large/safe.png"
+            },
+            {
+              "id": "unsafe-coin",
+              "symbol": "bad",
+              "name": "Unsafe Coin",
+              "thumb": "http://coin-images.coingecko.com/coins/images/1/thumb/bad.png"
+            }
+          ]
+        }
+        """#.utf8)
+        let client = WidgetMarketClient(httpClient: WidgetHTTPClientStub(data: data))
+
+        let assets = try await client.searchAssets(matching: "akash")
+
+        XCTAssertEqual(assets.first?.id, "akash-network")
+        XCTAssertEqual(
+            assets.first?.imageURL?.absoluteString,
+            "https://coin-images.coingecko.com/coins/images/12785/thumb/akash-logo.png"
+        )
+        XCTAssertEqual(
+            assets[1].imageURL?.absoluteString,
+            "https://coin-images.coingecko.com/coins/images/2/large/safe.png"
+        )
+        XCTAssertNil(assets.last?.imageURL)
+    }
+
     func testIconURLAcceptsHTTPSHostsAndRejectsInsecureURLs() throws {
         let approved = try XCTUnwrap(
             URL(string: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
@@ -190,6 +233,7 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertTrue(LocalWidgetWatchlistCatalog.assets.contains { asset in
             asset.id == "thorchain" && asset.symbol == "RUNE"
         })
+        XCTAssertEqual(LocalWidgetWatchlistCatalog.logo(for: "thorchain"), "rune")
     }
 
     func testLocalWatchlistCatalogDeduplicatesByCoinGeckoID() {
@@ -212,6 +256,16 @@ final class WidgetMarketDataTests: XCTestCase {
         ])
 
         XCTAssertEqual(assets.map(\.id), ["thorchain"])
+    }
+
+    func testLocalWatchlistCatalogReportsLogoByCoinGeckoIDWithoutMutatingSharedMeta() {
+        let metas = [
+            coinMeta(chain: .thorChain, ticker: "RUNE", priceProviderId: "thorchain")
+        ]
+        let assets = LocalWidgetWatchlistCatalog.assets(from: metas)
+
+        XCTAssertEqual(assets.first?.imageURL, nil)
+        XCTAssertEqual(LocalWidgetWatchlistCatalog.logo(for: "thorchain", in: metas), "rune")
     }
 
     @MainActor
@@ -264,6 +318,55 @@ final class WidgetMarketDataTests: XCTestCase {
         await corruptViewModel.load()
 
         XCTAssertEqual(corruptViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+    }
+
+    @MainActor
+    func testWatchlistSettingsPrefersLocalRuneRowWhenRemoteMarketDuplicatesID() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/6595/large/rune.png")
+        )
+        let remote = WidgetMarketListStub(assets: [
+            marketAsset(id: "thorchain", symbol: "REMOTE", imageURL: imageURL)
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults
+        )
+
+        await viewModel.load()
+        let rune = try XCTUnwrap(viewModel.assets.first { $0.id == "thorchain" })
+
+        XCTAssertEqual(rune.symbol, "RUNE")
+        XCTAssertNil(rune.imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: rune), "rune")
+        XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["thorchain"])
+        XCTAssertEqual(viewModel.selectedAssets.first?.imageURL, imageURL)
+    }
+
+    @MainActor
+    func testWatchlistSettingsUsesRemoteURLForRemoteOnlyTopMarket() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/1234/large/remote.png")
+        )
+        let remote = WidgetMarketListStub(assets: [
+            marketAsset(id: "remote-only-token", symbol: "ROT", imageURL: imageURL)
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults
+        )
+
+        await viewModel.load()
+        let asset = try XCTUnwrap(viewModel.assets.first { $0.id == "remote-only-token" })
+
+        XCTAssertEqual(asset.imageURL, imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: asset), imageURL.absoluteString)
     }
 
     @MainActor
@@ -354,10 +457,16 @@ final class WidgetMarketDataTests: XCTestCase {
             marketAsset(id: "ethereum", symbol: "ETH"),
             marketAsset(id: "bitcoin", symbol: "BTC")
         ])
+        let remoteOnlyURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/12345/thumb/ether-fi.png")
+        )
+        let duplicateURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/1027/thumb/ethereum.png")
+        )
         let search = WidgetMarketSearchStub(results: [
             "eth": [
-                WidgetAssetIdentity(id: "ethereum", symbol: "ETH", name: "Ethereum"),
-                WidgetAssetIdentity(id: "ether-fi", symbol: "ETHFI", name: "ether.fi")
+                WidgetAssetIdentity(id: "ethereum", symbol: "ETH", name: "Ethereum", imageURL: duplicateURL),
+                WidgetAssetIdentity(id: "ether-fi", symbol: "ETHFI", name: "ether.fi", imageURL: remoteOnlyURL)
             ]
         ])
         let viewModel = WidgetWatchlistSettingsViewModel(
@@ -374,7 +483,39 @@ final class WidgetMarketDataTests: XCTestCase {
 
         XCTAssertEqual(viewModel.filteredAssets.first?.id, "ethereum")
         XCTAssertEqual(viewModel.filteredAssets.filter { $0.id == "ethereum" }.count, 1)
-        XCTAssertTrue(viewModel.filteredAssets.contains { $0.id == "ether-fi" })
+        let remoteOnly = try XCTUnwrap(viewModel.filteredAssets.first { $0.id == "ether-fi" })
+        XCTAssertEqual(remoteOnly.imageURL, remoteOnlyURL)
+        XCTAssertEqual(viewModel.iconLogo(for: remoteOnly), remoteOnlyURL.absoluteString)
+    }
+
+    @MainActor
+    func testWatchlistSearchPrefersLocalRuneOverDuplicateRemoteResult() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/6595/thumb/rune.png")
+        )
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: [
+            "rune": [WidgetAssetIdentity(id: "thorchain", symbol: "REMOTE", name: "Remote Rune", imageURL: imageURL)]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "rune"
+        await waitForSearchToFinish(viewModel)
+        let rune = try XCTUnwrap(viewModel.filteredAssets.first { $0.id == "thorchain" })
+
+        XCTAssertEqual(viewModel.filteredAssets.filter { $0.id == "thorchain" }.count, 1)
+        XCTAssertEqual(rune.symbol, "RUNE")
+        XCTAssertNil(rune.imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: rune), "rune")
     }
 
     @MainActor
@@ -841,12 +982,12 @@ final class WidgetMarketDataTests: XCTestCase {
         )
     }
 
-    private func marketAsset(id: String, symbol: String) -> WidgetMarketAsset {
+    private func marketAsset(id: String, symbol: String, imageURL: URL? = nil) -> WidgetMarketAsset {
         WidgetMarketAsset(
             id: id,
             symbol: symbol,
             name: id.capitalized,
-            imageURL: nil,
+            imageURL: imageURL,
             iconData: nil,
             currentPrice: 1,
             priceChangePercentage24h: nil,

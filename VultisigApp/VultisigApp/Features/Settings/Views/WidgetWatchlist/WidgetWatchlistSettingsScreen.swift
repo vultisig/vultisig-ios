@@ -150,7 +150,7 @@ struct WidgetWatchlistSettingsScreen: View {
 
         return HStack(spacing: 12) {
             AsyncImageView(
-                logo: asset.iconLogo,
+                logo: viewModel.iconLogo(for: asset),
                 size: CGSize(width: 36, height: 36),
                 ticker: asset.symbol,
                 tokenChainLogo: nil
