@@ -261,6 +261,7 @@
 "contractAddressCopied" = "合约地址已复制";
 "copyAddress" = "复制地址";
 "copyContractAddress" = "复制合约地址";
+"copyLink" = "复制链接";
 "correctAmountCheck" = "金额正确";
 "cosmosStakingActionClaim" = "领取";
 "cosmosStakingActionDelegate" = "质押";
@@ -894,6 +895,7 @@
 "limitSwap.verify.title" = "您正在下达限价单";
 "limitSwap.warning.priceAtOrBelowMarket" = "价格已可用，建议使用市价兑换";
 "limitSwap.warning.priceFarAboveMarket" = "可能在到期前无法成交";
+"linkCopied" = "链接已复制";
 "liquidityPools" = "流动性池";
 "loading" = "加载中...";
 "loadingDetails" = "正在加载详情";
@@ -1426,6 +1428,8 @@
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
+"shareQRCode" = "分享二维码";
+"shareQRImage" = "分享二维码图片";
 "shareQRType" = "类型";
 "shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "份额 ( 余额: %@ )";

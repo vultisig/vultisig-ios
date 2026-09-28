@@ -261,6 +261,7 @@
 "contractAddressCopied" = "Contract address copied";
 "copyAddress" = "Copy address";
 "copyContractAddress" = "Copy contract address";
+"copyLink" = "Copy Link";
 "correctAmountCheck" = "The amount is correct";
 "cosmosStakingActionClaim" = "Claim";
 "cosmosStakingActionDelegate" = "Stake";
@@ -894,6 +895,7 @@
 "limitSwap.verify.title" = "You're placing a limit order";
 "limitSwap.warning.priceAtOrBelowMarket" = "Price already available, consider market swap";
 "limitSwap.warning.priceFarAboveMarket" = "May not fill within expiry";
+"linkCopied" = "Link copied";
 "liquidityPools" = "Liquidity Pools";
 "loading" = "Loading...";
 "loadingDetails" = "Loading details";
@@ -1426,6 +1428,8 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "share" = "Share";
 "shareOf" = "share %d of %d";
+"shareQRCode" = "Share QR Code";
+"shareQRImage" = "Share QR Image";
 "shareQRType" = "Type";
 "shareQRTypeFormat" = "%d-of-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";

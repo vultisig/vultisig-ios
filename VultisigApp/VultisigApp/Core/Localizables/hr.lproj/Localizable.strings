@@ -261,6 +261,7 @@
 "contractAddressCopied" = "Adresa ugovora kopirana";
 "copyAddress" = "Kopiraj adresu";
 "copyContractAddress" = "Kopiraj adresu ugovora";
+"copyLink" = "Kopiraj poveznicu";
 "correctAmountCheck" = "Iznos je točan";
 "cosmosStakingActionClaim" = "Preuzmi";
 "cosmosStakingActionDelegate" = "Uloži";
@@ -894,6 +895,7 @@
 "limitSwap.verify.title" = "Postavljaš limit nalog";
 "limitSwap.warning.priceAtOrBelowMarket" = "Cijena već dostupna, razmotri tržišnu zamjenu";
 "limitSwap.warning.priceFarAboveMarket" = "Možda se neće izvršiti prije isteka";
+"linkCopied" = "Poveznica kopirana";
 "liquidityPools" = "Bazeni likvidnosti";
 "loading" = "Učitavanje...";
 "loadingDetails" = "Učitavanje detalja";
@@ -1426,6 +1428,8 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";
+"shareQRCode" = "Podijeli QR kod";
+"shareQRImage" = "Podijeli QR sliku";
 "shareQRType" = "Vrsta";
 "shareQRTypeFormat" = "%d-od-%d";
 "sharesBalance" = "Udjeli ( Stanje: %@ )";
