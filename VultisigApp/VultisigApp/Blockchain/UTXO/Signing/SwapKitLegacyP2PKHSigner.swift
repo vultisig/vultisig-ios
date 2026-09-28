@@ -119,11 +119,23 @@ enum SwapKitLegacyP2PKHSigner {
     /// below) rather than through WalletCore's legacy Bitcoin signer — that
     /// signer has no version input and always emits version 1, silently
     /// dropping the PSBT's declared version/locktime.
+    ///
+    /// Verifies every input is locked to `pubKeyHex` before returning any
+    /// hash: this is the message the local TSS party hands to the MPC
+    /// network, so an unowned input must be rejected here, before a
+    /// signature over it can ever be produced — rejecting only at
+    /// `compileSignedTransaction` would be too late, since the MPC round
+    /// would already have signed it.
     static func preSigningHashes(
         psbtBytes: Data,
-        coin: CoinType
+        coin: CoinType,
+        pubKeyHex: String
     ) throws -> [String] {
+        guard let pubkeyData = Data(hexString: pubKeyHex) else {
+            throw SwapKitLegacyP2PKHSignerError.invalidPublicKey(pubKeyHex)
+        }
         let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
+        try verifyOwnership(inputs: inputs, pubkeyData: pubkeyData)
         return perInputSighashes(tx: tx, inputs: inputs, coin: coin)
             .map { $0.hexString }
             .sorted()
@@ -131,7 +143,9 @@ enum SwapKitLegacyP2PKHSigner {
 
     /// Assemble a signed legacy P2PKH transaction directly: verify each MPC
     /// signature against its per-input sighash, then serialize the tx with
-    /// the PSBT's own version/locktime and the real scriptSigs.
+    /// the PSBT's own version/locktime and the real scriptSigs. Re-checks
+    /// input ownership as defense in depth — `preSigningHashes` is the
+    /// primary gate, since it runs before any signature exists.
     static func compileSignedTransaction(
         psbtBytes: Data,
         coin: CoinType,
@@ -144,10 +158,7 @@ enum SwapKitLegacyP2PKHSigner {
             throw SwapKitLegacyP2PKHSignerError.invalidPublicKey(pubKeyHex)
         }
         let (tx, inputs) = try parseForSigning(psbtBytes: psbtBytes)
-        let ourKeyHash = Hash.ripemd(data: Hash.sha256(data: pubkeyData))
-        for (index, input) in inputs.enumerated() where input.keyHash != ourKeyHash {
-            throw SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(inputIndex: index)
-        }
+        try verifyOwnership(inputs: inputs, pubkeyData: pubkeyData)
         let sighashes = perInputSighashes(tx: tx, inputs: inputs, coin: coin)
         let signatureProvider = SignatureProvider(signatures: signatures)
         let type = sighashType(for: coin)
@@ -284,6 +295,21 @@ enum SwapKitLegacyP2PKHSigner {
         }
         for (idx, out) in outputs.enumerated() {
             _ = try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
+        }
+    }
+
+    /// Every input must be locked to `pubkeyData` — SwapKit's frozen plan
+    /// always spends this vault's own UTXOs. Without this check, the direct
+    /// assembly path would build a scriptSig from `pubkeyData` regardless of
+    /// which key an input actually requires: the resulting transaction
+    /// looks structurally valid locally but fails `OP_EQUALVERIFY` at
+    /// broadcast for a mismatched input — or, called from
+    /// `preSigningHashes`, would ask the MPC network to sign an input this
+    /// vault does not own at all.
+    private static func verifyOwnership(inputs: [LegacyP2PKHInput], pubkeyData: Data) throws {
+        let ourKeyHash = Hash.ripemd(data: Hash.sha256(data: pubkeyData))
+        for (index, input) in inputs.enumerated() where input.keyHash != ourKeyHash {
+            throw SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(inputIndex: index)
         }
     }
 

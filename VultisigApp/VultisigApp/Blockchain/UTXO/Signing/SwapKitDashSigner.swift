@@ -44,11 +44,14 @@ enum SwapKitDashSignerError: Error, LocalizedError {
 
 enum SwapKitDashSigner {
 
-    static func preSigningHashes(payload: SwapKitSwapPayload) throws -> [String] {
+    /// Verifies every input is locked to `pubKeyHex` before returning any
+    /// hash — see `SwapKitLegacyP2PKHSigner.preSigningHashes`.
+    static func preSigningHashes(payload: SwapKitSwapPayload, pubKeyHex: String) throws -> [String] {
         do {
             return try SwapKitLegacyP2PKHSigner.preSigningHashes(
                 psbtBytes: payload.txPayload,
-                coin: .dash
+                coin: .dash,
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitDashSignerError.underlying(err)

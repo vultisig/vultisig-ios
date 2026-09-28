@@ -50,12 +50,15 @@ enum SwapKitBCHSigner {
 
     /// Compute BCH preimage hashes (BIP-143-style with SIGHASH_FORKID) for
     /// every input. WalletCore handles the per-input preimage construction
-    /// via `CoinType.bitcoinCash`.
-    static func preSigningHashes(payload: SwapKitSwapPayload) throws -> [String] {
+    /// via `CoinType.bitcoinCash`. Verifies every input is locked to
+    /// `pubKeyHex` before returning any hash — see
+    /// `SwapKitLegacyP2PKHSigner.preSigningHashes`.
+    static func preSigningHashes(payload: SwapKitSwapPayload, pubKeyHex: String) throws -> [String] {
         do {
             return try SwapKitLegacyP2PKHSigner.preSigningHashes(
                 psbtBytes: payload.txPayload,
-                coin: .bitcoinCash
+                coin: .bitcoinCash,
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitBCHSignerError.underlying(err)

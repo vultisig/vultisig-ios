@@ -9,10 +9,18 @@
 //  sighash+assembly rewrite:
 //
 //  1. v1 regression — pre-image hashes and the assembled transaction stay
-//     byte-identical to the WalletCore-driven implementation that shipped
-//     before this fix. Golden values below were captured by running the
-//     pre-fix code against the committed v1 fixtures with a fixed
-//     deterministic test key (`SigningGoldenSigner`).
+//     byte-identical to WalletCore's OWN legacy Bitcoin signer for a v1
+//     PSBT. This is a genuine differential test, not the new code compared
+//     to itself: `WalletCoreOracle` below reconstructs the exact pre-#5483
+//     algorithm — `buildSigningInput` (verified unchanged since f18ce993d
+//     via `git diff`, see the wiki plan) feeding WalletCore's own
+//     `TransactionCompiler.preImageHashes` / `.compileWithSignatures`
+//     directly — and the tests assert the new direct-sighash path matches
+//     that independent oracle exactly, for every v1 fixture. A hard-coded
+//     golden would go stale the moment the fixture (or the test key) needed
+//     to change, as happened twice already in this file's history; the live
+//     oracle can't go stale, because it's computed from the same WalletCore
+//     binary CI links against.
 //  2. v2 handling — version/locktime are preserved from the PSBT, version 3
 //     is rejected with a typed error, and the signed transaction's inputs
 //     and outputs (everything except scriptSig, which only exists once
@@ -37,41 +45,38 @@ import XCTest
 @MainActor
 final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
 
-    // MARK: - v1 regression (byte-identical to the pre-#5483-fix WalletCore path)
+    // MARK: - v1 regression (differential against WalletCore's own legacy signer)
 
-    func testDogeV1SigningIsByteIdenticalToPreFixGolden() throws {
+    func testDogeV1SigningMatchesWalletCoreOracle() throws {
         let payload = try makeDogePayload(base64: loadBase64(fixture: "v3-real-doge-swap"))
-        try assertV1Golden(
+        try assertV1MatchesWalletCoreOracle(
             payload: payload,
-            preSigningHashes: SwapKitDogeSigner.preSigningHashes,
-            compileSignedTransaction: SwapKitDogeSigner.compileSignedTransaction,
-            expectedHashes: ["6bfef636ab4f8566180f6e6d7108512778c6a74e94c0587cea282cb7e3c105c3"],
-            expectedRawTransaction: "010000000150e47ac786c07578b8e92d014b46854300b2c7b7395eb72ccc0727e5443a5ab4000000006a4730440220132233eeecc4da24fefc9004d8a0b408ef0c6d5d58e8bf61d3b8fa9762cbe9ca02201368145b07bb3d245dedf4f91c8b7c1836b3f787c25738757da94891c9e67357012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d0b08a3c170000001976a91419fb7ab04f2de927ced3b8337ab45d5d046db6cf88ac00c2eb0b000000001976a914c4919dca916dc416c06d51cb1940a7ba268c475d88ac00000000",
-            expectedTransactionHash: "68f8b067ef2d5cebe62e7aaedb8effcc0632687ec4fc63d7ff1113e96ce46d54"
+            coin: .dogecoin,
+            buildSigningInput: SwapKitDogeSigner.buildSigningInput,
+            preSigningHashes: { try SwapKitDogeSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
+            compileSignedTransaction: SwapKitDogeSigner.compileSignedTransaction
         )
     }
 
-    func testBchV1SigningIsByteIdenticalToPreFixGolden() throws {
+    func testBchV1SigningMatchesWalletCoreOracle() throws {
         let payload = try makeBchPayload(base64: loadBase64(fixture: "v3-real-bch-swap"))
-        try assertV1Golden(
+        try assertV1MatchesWalletCoreOracle(
             payload: payload,
-            preSigningHashes: SwapKitBCHSigner.preSigningHashes,
-            compileSignedTransaction: SwapKitBCHSigner.compileSignedTransaction,
-            expectedHashes: ["b13cf93cd79070dc27844d5b6b7834dd08bad9fd460c1e17a1ab06ae38afd569"],
-            expectedRawTransaction: "010000000183bb97c24c0e9d34f160fe21ccda7832ec1e070d7968e35ffe41f5de374633a3000000006a47304402202d3df90f84ddcf99696266c32dd2698f6a0d9a3f1bc81c4aac88b2e7c999833b02200dff8cb9fd5c87982e9463b9a1f7dea47a177d9c93f33269c4ab553a06e8d82e412103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02141af702000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac90d00300000000001976a91476a04053bda0a88bda5177b86a15c3b29f55987388ac00000000",
-            expectedTransactionHash: "484f2711b3d79eb99d76ad3722f2ddb00684f5dd0328bbefad8c890b4ffed662"
+            coin: .bitcoinCash,
+            buildSigningInput: SwapKitBCHSigner.buildSigningInput,
+            preSigningHashes: { try SwapKitBCHSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
+            compileSignedTransaction: SwapKitBCHSigner.compileSignedTransaction
         )
     }
 
-    func testDashV1SigningIsByteIdenticalToPreFixGolden() throws {
+    func testDashV1SigningMatchesWalletCoreOracle() throws {
         let payload = try makeDashPayload(base64: loadBase64(fixture: "v3-real-dash-swap"))
-        try assertV1Golden(
+        try assertV1MatchesWalletCoreOracle(
             payload: payload,
-            preSigningHashes: SwapKitDashSigner.preSigningHashes,
-            compileSignedTransaction: SwapKitDashSigner.compileSignedTransaction,
-            expectedHashes: ["4c90d18789476ab67f88fdf2770bd8a760d50a23971c1fbde192c836452eaf75"],
-            expectedRawTransaction: "01000000019d7ddfe60d82f4a419e044dbfd8f2a01b87a5333e328df0b7d76cfff718cdf41000000006a47304402204bc6641cc1d982c7fbba1f2e780832a0531ac9bac6fa87aa4cbe65064babc0de02204f82fd7d216bfb958e31d41c48ff23edf96373ca47a3840dbb508a55e7e692bc012103a524739c987b6e5b8cb2340ad77b63a69253d93187aa5b334cab8f8144702687ffffffff02d099373b000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688aca02e6300000000001976a9141b2a522cc8d42b0be7ceb8db711416794d50c84688ac00000000",
-            expectedTransactionHash: "47b5bcaed4bd4f8cd687cb32a7ee511957b6bd74cf51d1ac49886aa6606a210d"
+            coin: .dash,
+            buildSigningInput: SwapKitDashSigner.buildSigningInput,
+            preSigningHashes: { try SwapKitDashSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
+            compileSignedTransaction: SwapKitDashSigner.compileSignedTransaction
         )
     }
 
@@ -86,7 +91,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             psbtBase64: v2Base64,
             expectedVersion: 2,
             expectedLocktime: 0,
-            preSigningHashes: SwapKitDogeSigner.preSigningHashes,
+            preSigningHashes: { try SwapKitDogeSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
             compileSignedTransaction: SwapKitDogeSigner.compileSignedTransaction
         )
     }
@@ -100,7 +105,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             psbtBase64: v2Base64,
             expectedVersion: 2,
             expectedLocktime: 0,
-            preSigningHashes: SwapKitBCHSigner.preSigningHashes,
+            preSigningHashes: { try SwapKitBCHSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
             compileSignedTransaction: SwapKitBCHSigner.compileSignedTransaction
         )
     }
@@ -114,7 +119,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             psbtBase64: v2Base64,
             expectedVersion: 2,
             expectedLocktime: 0,
-            preSigningHashes: SwapKitDashSigner.preSigningHashes,
+            preSigningHashes: { try SwapKitDashSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
             compileSignedTransaction: SwapKitDashSigner.compileSignedTransaction
         )
     }
@@ -130,7 +135,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             psbtBase64: patched,
             expectedVersion: 2,
             expectedLocktime: 700_000,
-            preSigningHashes: SwapKitDogeSigner.preSigningHashes,
+            preSigningHashes: { try SwapKitDogeSigner.preSigningHashes(payload: $0, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)) },
             compileSignedTransaction: SwapKitDogeSigner.compileSignedTransaction
         )
     }
@@ -141,7 +146,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
         let v1Base64 = try loadBase64(fixture: "v3-real-doge-swap")
         let v3Base64 = try PSBTVersionPatcher.patch(base64: v1Base64, version: 3)
         let payload = try makeDogePayload(base64: v3Base64)
-        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(payload: payload)) { err in
+        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(payload: payload, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1))) { err in
             guard case SwapKitDogeSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
             }
@@ -156,7 +161,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
         let v1Base64 = try loadBase64(fixture: "v3-real-bch-swap")
         let v3Base64 = try PSBTVersionPatcher.patch(base64: v1Base64, version: 3)
         let payload = try makeBchPayload(base64: v3Base64)
-        XCTAssertThrowsError(try SwapKitBCHSigner.preSigningHashes(payload: payload)) { err in
+        XCTAssertThrowsError(try SwapKitBCHSigner.preSigningHashes(payload: payload, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1))) { err in
             guard case SwapKitBCHSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
             }
@@ -171,7 +176,7 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
         let v1Base64 = try loadBase64(fixture: "v3-real-dash-swap")
         let v3Base64 = try PSBTVersionPatcher.patch(base64: v1Base64, version: 3)
         let payload = try makeDashPayload(base64: v3Base64)
-        XCTAssertThrowsError(try SwapKitDashSigner.preSigningHashes(payload: payload)) { err in
+        XCTAssertThrowsError(try SwapKitDashSigner.preSigningHashes(payload: payload, pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1))) { err in
             guard case SwapKitDashSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
             }
@@ -183,6 +188,12 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
     }
 
     // MARK: - Input locked to a different key is rejected (issue #5483 review follow-up)
+    //
+    // Checked at `preSigningHashes` — the message handed to the MPC network
+    // — not just at `compileSignedTransaction`: rejecting only post-signing
+    // would be too late, since a signature over an unowned input would
+    // already exist. `compileSignedTransaction` carries the identical guard
+    // as defense in depth and isn't separately tested here.
 
     func testDogeRejectsInputLockedToADifferentKey() throws {
         let mismatched = try PSBTInputKeyPatcher.patchInputKeyHash(
@@ -190,9 +201,8 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             to: Data(repeating: 0x11, count: 20)
         )
         let payload = try makeDogePayload(base64: mismatched)
-        XCTAssertThrowsError(try SwapKitDogeSigner.compileSignedTransaction(
+        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(
             payload: payload,
-            signatures: [:],
             pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
         )) { err in
             guard case SwapKitDogeSignerError.underlying(let inner) = err else {
@@ -211,9 +221,8 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             to: Data(repeating: 0x11, count: 20)
         )
         let payload = try makeBchPayload(base64: mismatched)
-        XCTAssertThrowsError(try SwapKitBCHSigner.compileSignedTransaction(
+        XCTAssertThrowsError(try SwapKitBCHSigner.preSigningHashes(
             payload: payload,
-            signatures: [:],
             pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
         )) { err in
             guard case SwapKitBCHSignerError.underlying(let inner) = err else {
@@ -232,9 +241,8 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
             to: Data(repeating: 0x11, count: 20)
         )
         let payload = try makeDashPayload(base64: mismatched)
-        XCTAssertThrowsError(try SwapKitDashSigner.compileSignedTransaction(
+        XCTAssertThrowsError(try SwapKitDashSigner.preSigningHashes(
             payload: payload,
-            signatures: [:],
             pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
         )) { err in
             guard case SwapKitDashSignerError.underlying(let inner) = err else {
@@ -249,26 +257,37 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
 
     // MARK: - Shared assertions
 
-    /// Pins pre-image hashes + assembled signed transaction against a
-    /// captured pre-fix golden. `SigningGoldenSigner`'s fixed test key makes
-    /// ECDSA signing deterministic (RFC6979), so the same PSBT + key always
-    /// produces the same signature and therefore the same raw tx bytes.
-    private func assertV1Golden(
+    /// Differential proof for a v1 PSBT: computes the pre-image hashes and
+    /// the fully assembled/signed transaction TWICE — once through the new
+    /// direct-sighash path, once through `WalletCoreOracle` (the exact
+    /// pre-#5483 algorithm, driving WalletCore's own `TransactionCompiler`
+    /// directly) — and asserts they match exactly. `SigningGoldenSigner`'s
+    /// fixed test key makes ECDSA signing deterministic (RFC6979), so both
+    /// paths sign with the identical key and the same signature.
+    private func assertV1MatchesWalletCoreOracle(
         payload: SwapKitSwapPayload,
+        coin: CoinType,
+        buildSigningInput: (SwapKitSwapPayload) throws -> BitcoinSigningInput,
         preSigningHashes: (SwapKitSwapPayload) throws -> [String],
         compileSignedTransaction: (SwapKitSwapPayload, [String: TssKeysignResponse], String) throws -> SignedTransactionResult,
-        expectedHashes: [String],
-        expectedRawTransaction: String,
-        expectedTransactionHash: String,
         file: StaticString = #filePath,
         line: UInt = #line
     ) throws {
-        let hashes = try preSigningHashes(payload)
-        XCTAssertEqual(hashes, expectedHashes, "pre-image hashes drifted from the pre-fix golden", file: file, line: line)
-        let signatures = try SigningGoldenSigner.signatures(forImageHashes: hashes, curve: .secp256k1)
-        let signed = try compileSignedTransaction(payload, signatures, SigningGoldenSigner.publicKeyHex(for: .secp256k1))
-        XCTAssertEqual(signed.rawTransaction, expectedRawTransaction, "raw tx drifted from the pre-fix golden", file: file, line: line)
-        XCTAssertEqual(signed.transactionHash, expectedTransactionHash, "txid drifted from the pre-fix golden", file: file, line: line)
+        let signingInput = try buildSigningInput(payload)
+        let oracleHashes = try WalletCoreOracle.preSigningHashes(input: signingInput, coin: coin)
+
+        let newHashes = try preSigningHashes(payload)
+        XCTAssertEqual(newHashes, oracleHashes, "pre-image hashes must match WalletCore's own legacy signer for a v1 PSBT", file: file, line: line)
+
+        let pubKeyHex = SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        let signatures = try SigningGoldenSigner.signatures(forImageHashes: oracleHashes, curve: .secp256k1)
+        let oracleSigned = try WalletCoreOracle.compileSignedTransaction(
+            input: signingInput, coin: coin, signatures: signatures, pubKeyHex: pubKeyHex
+        )
+        let newSigned = try compileSignedTransaction(payload, signatures, pubKeyHex)
+
+        XCTAssertEqual(newSigned.rawTransaction, oracleSigned.rawTransaction, "raw tx must match WalletCore's own legacy signer for a v1 PSBT", file: file, line: line)
+        XCTAssertEqual(newSigned.transactionHash, oracleSigned.transactionHash, "txid must match WalletCore's own legacy signer for a v1 PSBT", file: file, line: line)
     }
 
     /// Signs `payload` end-to-end and checks: the raw tx's version/locktime
@@ -321,15 +340,8 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
         default:
             throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "unexpected tx case for \(fixture)"])
         }
-        return try PSBTInputKeyPatcher.patchInputKeyHash(base64: base64, to: Self.ourKeyHash)
+        return try PSBTInputKeyPatcher.patchToTestKey(base64: base64)
     }
-
-    /// hash160 of `SigningGoldenSigner.publicKeyHex(for: .secp256k1)` — the
-    /// key every test in this file signs with.
-    private static let ourKeyHash: Data = {
-        let pubkey = Data(hexString: SigningGoldenSigner.publicKeyHex(for: .secp256k1))!
-        return Hash.ripemd(data: Hash.sha256(data: pubkey))
-    }()
 
     private func makeDogePayload(base64: String) throws -> SwapKitSwapPayload {
         let bytes = try XCTUnwrap(Data(base64Encoded: base64))
@@ -475,6 +487,78 @@ final class SwapKitLegacyP2PKHVersionTests: XCTestCase {
     }
 }
 
+// MARK: - WalletCore oracle (the exact pre-#5483 algorithm)
+
+/// Reconstructs `SwapKitLegacyP2PKHSigner`'s pre-#5483 `preSigningHashes` /
+/// `compileSignedTransaction` verbatim (confirmed byte-for-byte against
+/// `git show f18ce993d:.../SwapKitLegacyP2PKHSigner.swift` — see the wiki
+/// plan), driving WalletCore's own `TransactionCompiler` directly rather
+/// than calling anything this PR touched. `buildSigningInput` (which builds
+/// its `BitcoinSigningInput` input) is unchanged since f18ce993d too, save
+/// for two guards that moved to a shared validator with no behavior change
+/// (also diffed in the wiki plan). This makes the oracle a genuine
+/// independent implementation, not the new sighash code compared to itself.
+private enum WalletCoreOracle {
+    enum OracleError: Error { case compilerError(String) }
+
+    static func preSigningHashes(input: BitcoinSigningInput, coin: CoinType) throws -> [String] {
+        let serialized = try input.serializedData()
+        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: serialized)
+        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
+        guard preSignOutputs.errorMessage.isEmpty else {
+            throw OracleError.compilerError(preSignOutputs.errorMessage)
+        }
+        return preSignOutputs.hashPublicKeys
+            .map { $0.dataHash.hexString }
+            .sorted()
+    }
+
+    static func compileSignedTransaction(
+        input: BitcoinSigningInput,
+        coin: CoinType,
+        signatures: [String: TssKeysignResponse],
+        pubKeyHex: String
+    ) throws -> SignedTransactionResult {
+        guard let pubkeyData = Data(hexString: pubKeyHex),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            throw OracleError.compilerError("invalid public key")
+        }
+        let serialized = try input.serializedData()
+        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: serialized)
+        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
+        guard preSignOutputs.errorMessage.isEmpty else {
+            throw OracleError.compilerError(preSignOutputs.errorMessage)
+        }
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        let signatureProvider = SignatureProvider(signatures: signatures)
+        for h in preSignOutputs.hashPublicKeys {
+            let preImageHash = h.dataHash
+            let signature = signatureProvider.getDerSignature(preHash: preImageHash)
+            guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
+                throw OracleError.compilerError("signature did not verify")
+            }
+            allSignatures.add(data: signature)
+            publicKeys.add(data: pubkeyData)
+        }
+        let compileBytes = TransactionCompiler.compileWithSignatures(
+            coinType: coin,
+            txInputData: serialized,
+            signatures: allSignatures,
+            publicKeys: publicKeys
+        )
+        let output = try BitcoinSigningOutput(serializedBytes: compileBytes)
+        guard output.errorMessage.isEmpty else {
+            throw OracleError.compilerError(output.errorMessage)
+        }
+        return SignedTransactionResult(
+            rawTransaction: output.encoded.hexString,
+            transactionHash: output.transactionID
+        )
+    }
+}
+
 // MARK: - Test-only PSBT version/locktime patcher
 
 private enum PSBTVersionPatchError: Error { case malformed }
@@ -519,25 +603,56 @@ private enum PSBTVersionPatcher {
 /// Test-only: patches the hash160 embedded in the single `NON_WITNESS_UTXO`
 /// input record's referenced P2PKH output (the UTXO being spent), leaving
 /// every other byte — including the unsigned tx's own output scripts —
-/// untouched. Every fixture in this suite has exactly one input and one
-/// output in its embedded prev-tx.
-private enum PSBTInputKeyPatcher {
+/// untouched, EXCEPT the unsigned tx's own input outpoint hash, which is
+/// recomputed to keep the PSBT internally consistent (the outpoint must
+/// still reference the NON_WITNESS_UTXO's actual, now-patched, transaction).
+/// Every fixture in every test file that uses this has exactly one input
+/// and one output in its embedded prev-tx. Not `private` — reused by the
+/// structural DOGE/BCH/DASH test files, which sign nothing but still need a
+/// self-consistent input once `preSigningHashes` requires a matching key.
+enum PSBTInputKeyPatcher {
+    /// hash160 of `SigningGoldenSigner.publicKeyHex(for: .secp256k1)` — the
+    /// only private key these tests actually hold, so it's the only key any
+    /// test in this suite can sign a matching input with.
+    static let testKeyHash: Data = {
+        let pubkey = Data(hexString: SigningGoldenSigner.publicKeyHex(for: .secp256k1))!
+        return Hash.ripemd(data: Hash.sha256(data: pubkey))
+    }()
+
+    /// Re-points a fixture's input at `testKeyHash` so it signs successfully
+    /// once ownership is enforced. The committed fixtures were captured from
+    /// real third-party swaps (their input is locked to some other, unknown
+    /// key); this makes the input's key self-consistent with the only
+    /// private key this test suite holds.
+    static func patchToTestKey(base64: String) throws -> String {
+        try patchInputKeyHash(base64: base64, to: testKeyHash)
+    }
+
     static func patchInputKeyHash(base64: String, to newHash: Data) throws -> String {
         guard newHash.count == 20 else { throw PSBTVersionPatchError.malformed }
         guard var bytes = Data(base64Encoded: base64) else { throw PSBTVersionPatchError.malformed }
 
-        // Skip the global map (the unsigned tx) to reach the first input map.
+        // Locate the global unsigned-tx record; its (single) input's
+        // outpoint hash needs patching once we know the NEW embedded
+        // prev-tx's actual hash, below.
         var offset = bytes.startIndex + 5
+        var unsignedTxValueStart = -1
         while true {
             guard offset < bytes.endIndex else { throw PSBTVersionPatchError.malformed }
             let keyLen = Int(bytes[offset])
             offset += 1
             if keyLen == 0 { break }
+            let keyStart = offset
             offset += keyLen
             let valueLen = Int(bytes[offset])
             offset += 1
+            let valueStart = offset
             offset += valueLen
+            if keyLen == 1, bytes[keyStart] == 0x00 {
+                unsignedTxValueStart = valueStart
+            }
         }
+        guard unsignedTxValueStart >= 0 else { throw PSBTVersionPatchError.malformed }
 
         // Find the input map's NON_WITNESS_UTXO record (key `0x00`).
         while true {
@@ -576,6 +691,17 @@ private enum PSBTInputKeyPatcher {
                 bytes.replaceSubrange((scriptStart + 3)..<(scriptStart + 23), with: newHash)
                 p += scriptLen
             }
+
+            // The unsigned tx's input references this prev-tx by hash
+            // (internal little-endian wire order, i.e. the raw hash256
+            // output with no further byte reversal). Recompute it now that
+            // the prev-tx's content changed, or the PSBT would reference a
+            // transaction that no longer matches its own embedded UTXO.
+            let patchedPrevTx = bytes.subdata(in: valueStart..<(valueStart + valueLen))
+            let newPrevTxId = Hash.sha256SHA256(data: patchedPrevTx)
+            let unsignedTxPrevTxIdStart = unsignedTxValueStart + 4 + 1 // version(4) + input-count(1)
+            bytes.replaceSubrange(unsignedTxPrevTxIdStart..<(unsignedTxPrevTxIdStart + 32), with: newPrevTxId)
+
             return bytes.base64EncodedString()
         }
     }

@@ -70,7 +70,10 @@ final class SwapKitBitcoinCashTests: XCTestCase {
 
     func testBchSignerProducesOneHashPerInput() throws {
         let payload = try makePayload()
-        let hashes = try SwapKitBCHSigner.preSigningHashes(payload: payload)
+        let hashes = try SwapKitBCHSigner.preSigningHashes(
+            payload: payload,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )
         XCTAssertEqual(hashes.count, 1, "Fixture has 1 input → 1 preimage hash")
         for hash in hashes {
             XCTAssertEqual(hash.count, 64)
@@ -109,7 +112,10 @@ final class SwapKitBitcoinCashTests: XCTestCase {
             subProvider: "NEAR",
             swapID: "test"
         )
-        XCTAssertThrowsError(try SwapKitBCHSigner.preSigningHashes(payload: empty)) { err in
+        XCTAssertThrowsError(try SwapKitBCHSigner.preSigningHashes(
+            payload: empty,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
             guard case SwapKitBCHSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped error, got \(err)")
             }
@@ -141,9 +147,13 @@ final class SwapKitBitcoinCashTests: XCTestCase {
             SwapKitSwapResponse.self,
             from: "v3-real-bch-swap"
         )
-        guard case let .bitcoinCashPsbt(base64) = response.tx else {
+        guard case let .bitcoinCashPsbt(originalBase64) = response.tx else {
             throw NSError(domain: "test", code: 0)
         }
+        // `preSigningHashes` now verifies the input is locked to the signing
+        // key; re-point it at the only key this test suite holds (see
+        // `PSBTInputKeyPatcher`, `SwapKitLegacyP2PKHVersionTests.swift`).
+        let base64 = try PSBTInputKeyPatcher.patchToTestKey(base64: originalBase64)
         let bytes = try XCTUnwrap(Data(base64Encoded: base64))
         return SwapKitSwapPayload(
             fromCoin: makeBchCoin(),
