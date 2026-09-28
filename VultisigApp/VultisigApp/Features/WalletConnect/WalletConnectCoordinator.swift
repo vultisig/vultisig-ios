@@ -18,6 +18,7 @@ protocol WalletConnectPairingClient {
     func pair(uri: String) async throws
     func observeSessionProposals(_ handler: @escaping @MainActor (WalletConnectProposal) -> Void)
     func observeSessionRequests(_ handler: @escaping @MainActor (WalletConnectIncomingRequest) -> Void)
+    func observeAuthenticationRequests(_ handler: @escaping @MainActor (WalletConnectAuthenticationRequest) -> Void)
     func approve(
         proposal: WalletConnectProposal,
         approval: WalletConnectEVMNamespaceApproval
@@ -25,6 +26,7 @@ protocol WalletConnectPairingClient {
     func reject(proposal: WalletConnectProposal) async throws
     func respond(topic: String, requestId: WalletConnectRequestID, result: String) async throws
     func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws
+    func rejectAuthentication(_ request: WalletConnectAuthenticationRequest) async throws
     func disconnect(topic: String) async throws
 }
 
@@ -78,7 +80,34 @@ final class WalletConnectCoordinator: ObservableObject {
             self?.pendingProposal = proposal
         }
         pairingClient.observeSessionRequests { [weak self] request in
+            guard WalletConnectEVMNamespaceAdapter.supportedMethods.contains(request.method) else {
+                Task { @MainActor in
+                    await self?.rejectUnsupportedSessionRequest(request)
+                }
+                return
+            }
             self?.pendingMessageRequest = request
+        }
+        pairingClient.observeAuthenticationRequests { [weak self] request in
+            Task { @MainActor in
+                await self?.rejectAuthenticationRequest(request)
+            }
+        }
+    }
+
+    private func rejectUnsupportedSessionRequest(_ request: WalletConnectIncomingRequest) async {
+        do {
+            try await pairingClient.rejectRequest(topic: request.topic, requestId: request.requestId)
+        } catch {
+            logger.error("Failed to reject WalletConnect request: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func rejectAuthenticationRequest(_ request: WalletConnectAuthenticationRequest) async {
+        do {
+            try await pairingClient.rejectAuthentication(request)
+        } catch {
+            logger.error("Failed to reject WalletConnect auth: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -280,22 +309,21 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
             .receive(on: DispatchQueue.main)
             .sink { event in
                 let session = Sign.instance.getSessions().first { $0.topic == event.request.topic }
-                guard let request = event.request.walletConnectIncomingRequest(
+                handler(event.request.walletConnectIncomingRequest(
                     verifyContext: event.context,
                     session: session
-                ) else { return }
-                handler(request)
+                ))
             }
+    }
 
+    func observeAuthenticationRequests(_ handler: @escaping @MainActor (WalletConnectAuthenticationRequest) -> Void) {
         // One-Click Auth / session-authenticate is intentionally not mapped to
-        // generic message signing in PR4. These requests have different SIWE
-        // semantics and must be handled by a dedicated auth flow in a later PR.
+        // generic message signing. These requests have different SIWE semantics
+        // and must be handled by a dedicated auth flow in a later PR.
         authenticateCancellable = Sign.instance.authenticateRequestPublisher
             .receive(on: DispatchQueue.main)
             .sink { event in
-                Task { @MainActor in
-                    try? await Sign.instance.rejectSession(requestId: event.request.id)
-                }
+                handler(WalletConnectAuthenticationRequest(requestId: event.request.id.walletConnectRequestID))
             }
     }
 
@@ -379,6 +407,14 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         }
     }
 
+    func rejectAuthentication(_ request: WalletConnectAuthenticationRequest) async throws {
+        do {
+            try await Sign.instance.rejectSession(requestId: request.requestId.rpcID)
+        } catch {
+            throw WalletConnectError.rejectionFailed(error.localizedDescription)
+        }
+    }
+
     func disconnect(topic: String) async throws {
         do {
             try await Sign.instance.disconnect(topic: topic)
@@ -425,11 +461,8 @@ private extension Request {
     func walletConnectIncomingRequest(
         verifyContext: VerifyContext?,
         session: Session?
-    ) -> WalletConnectIncomingRequest? {
-        guard WalletConnectEVMNamespaceAdapter.supportedMethods.contains(method) else {
-            return nil
-        }
-        return WalletConnectIncomingRequest(
+    ) -> WalletConnectIncomingRequest {
+        WalletConnectIncomingRequest(
             topic: topic,
             requestId: id.walletConnectRequestID,
             method: method,
@@ -575,6 +608,8 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
 
     func observeSessionRequests(_: @escaping @MainActor (WalletConnectIncomingRequest) -> Void) {}
 
+    func observeAuthenticationRequests(_: @escaping @MainActor (WalletConnectAuthenticationRequest) -> Void) {}
+
     func pair(uri _: String) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
@@ -599,6 +634,11 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
     }
 
     func rejectRequest(topic _: String, requestId _: WalletConnectRequestID) async throws {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func rejectAuthentication(_: WalletConnectAuthenticationRequest) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }

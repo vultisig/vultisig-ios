@@ -11,11 +11,32 @@ final class WalletConnectCoordinatorRequestTests: XCTestCase {
         client.requestHandler?(incoming(method: "eth_sendTransaction", requestId: "1"))
         XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("1"))
 
-        client.requestHandler?(incoming(method: "wallet_sendCalls", requestId: "2"))
-        XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("1"))
-
         client.requestHandler?(incoming(method: "personal_sign", requestId: "3"))
         XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("3"))
+    }
+
+    func testUnsupportedSessionRequestIsRejectedAndNotPublished() async {
+        let client = FakeWalletConnectPairingClient()
+        let coordinator = WalletConnectCoordinator(pairingClient: client, isConfigured: true)
+
+        client.requestHandler?(incoming(method: "wallet_sendCalls", requestId: "2"))
+        await waitUntil { client.rejections == ["topic:2"] }
+
+        XCTAssertNil(coordinator.pendingMessageRequest)
+        XCTAssertEqual(client.rejections, ["topic:2"])
+    }
+
+    func testSessionAuthenticateIsRejectedAndNotPublishedAsMessageRequest() async {
+        let client = FakeWalletConnectPairingClient()
+        let coordinator = WalletConnectCoordinator(pairingClient: client, isConfigured: true)
+
+        client.authenticationHandler?(WalletConnectAuthenticationRequest(requestId: "auth-1"))
+        await waitUntil { client.authenticationRejections == [.string("auth-1")] }
+
+        XCTAssertNil(coordinator.pendingMessageRequest)
+        XCTAssertEqual(client.authenticationRejections, [.string("auth-1")])
+        XCTAssertTrue(client.rejections.isEmpty)
+        XCTAssertTrue(client.responses.isEmpty)
     }
 
     func testApproveMessageRequestNormalizesAndResponds() async throws {
@@ -90,6 +111,17 @@ final class WalletConnectCoordinatorRequestTests: XCTestCase {
             XCTFail("Expected empty hash to throw")
         } catch {
             XCTAssertTrue(client.responses.isEmpty)
+        }
+    }
+
+    private func waitUntil(
+        timeout: TimeInterval = 1,
+        condition: @escaping @MainActor () -> Bool
+    ) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if condition() { return }
+            await Task.yield()
         }
     }
 
@@ -176,17 +208,19 @@ private final class FakeWalletConnectPairingClient: WalletConnectPairingClient {
     }
 
     var requestHandler: (@MainActor (WalletConnectIncomingRequest) -> Void)?
+    var authenticationHandler: (@MainActor (WalletConnectAuthenticationRequest) -> Void)?
     var responses: [Response] = []
     var rejections: [String] = []
+    var authenticationRejections: [WalletConnectRequestID] = []
 
     func configure(with _: WalletConnectConfiguration) throws {}
     func pair(uri _: String) async throws { await Task.yield() }
     func observeSessionProposals(_: @escaping @MainActor (WalletConnectProposal) -> Void) {}
     func observeSessionRequests(_ handler: @escaping @MainActor (WalletConnectIncomingRequest) -> Void) {
-        requestHandler = { request in
-            guard WalletConnectEVMNamespaceAdapter.supportedMethods.contains(request.method) else { return }
-            handler(request)
-        }
+        requestHandler = handler
+    }
+    func observeAuthenticationRequests(_ handler: @escaping @MainActor (WalletConnectAuthenticationRequest) -> Void) {
+        authenticationHandler = handler
     }
     func approve(proposal _: WalletConnectProposal, approval _: WalletConnectEVMNamespaceApproval) async throws -> String {
         await Task.yield()
@@ -200,6 +234,10 @@ private final class FakeWalletConnectPairingClient: WalletConnectPairingClient {
     func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws {
         await Task.yield()
         rejections.append("\(topic):\(requestId.stringValue)")
+    }
+    func rejectAuthentication(_ request: WalletConnectAuthenticationRequest) async throws {
+        await Task.yield()
+        authenticationRejections.append(request.requestId)
     }
     func disconnect(topic _: String) async throws { await Task.yield() }
 }
