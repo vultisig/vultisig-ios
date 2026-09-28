@@ -17,7 +17,7 @@ struct WalletConnectProposal: Identifiable, Equatable {
     let name: String
     let url: String
     let icons: [String]
-    let verificationStatus: String?
+    let verifyContext: WalletConnectVerifyContext?
     let requiredNamespaces: [WalletConnectNamespaceRequest]
     let optionalNamespaces: [WalletConnectNamespaceRequest]
     let sessionProperties: [String: String]?

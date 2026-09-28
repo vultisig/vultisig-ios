@@ -298,7 +298,7 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         proposalCancellable = Sign.instance.sessionProposalPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] event in
-                let snapshot = event.proposal.walletConnectSnapshot
+                let snapshot = event.proposal.walletConnectSnapshot(verifyContext: event.context)
                 self?.proposalsByID[snapshot.id] = event.proposal
                 handler(snapshot)
             }
@@ -425,13 +425,13 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
 }
 
 private extension Session.Proposal {
-    var walletConnectSnapshot: WalletConnectProposal {
+    func walletConnectSnapshot(verifyContext: VerifyContext?) -> WalletConnectProposal {
         WalletConnectProposal(
             id: String(describing: id),
             name: proposer.name,
             url: proposer.url,
             icons: proposer.icons,
-            verificationStatus: nil,
+            verifyContext: verifyContext?.walletConnectVerifyContext,
             requiredNamespaces: requiredNamespaces.walletConnectRequests,
             optionalNamespaces: optionalNamespaces?.walletConnectRequests ?? [],
             sessionProperties: sessionProperties
