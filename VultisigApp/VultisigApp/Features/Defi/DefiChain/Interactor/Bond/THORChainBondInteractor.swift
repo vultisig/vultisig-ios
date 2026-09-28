@@ -16,6 +16,7 @@ private struct BondPositionDraft: Sendable {
     let apy: Double
     let nextReward: Decimal
     let nextChurn: Date?
+    let lastReward: Decimal?
 }
 
 struct THORChainBondInteractor: BondInteractor {
@@ -50,12 +51,26 @@ struct THORChainBondInteractor: BondInteractor {
                             address: node.address,
                             state: nodeState
                         )
+                        // One extra `?height=` query for the card's Last
+                        // Reward. The sheet's own view model currently
+                        // resolves a fresh interactor/API service, so it does
+                        // not yet reuse this exact height's cache entry —
+                        // that's a follow-up, not a correctness issue here. A
+                        // failure or "no prior churn" here must not fail the
+                        // whole position: the card just shows no Last Reward,
+                        // not a blank list.
+                        let lastReward = try? await thorchainAPIService.getBondRewardHistory(
+                            nodeAddress: node.address,
+                            myBondAddress: runeAddress,
+                            limit: 1
+                        ).first?.amount
                         return BondPositionDraft(
                             node: bondNode,
                             amount: metrics.myBond,
                             apy: metrics.apy,
                             nextReward: metrics.myAward,
-                            nextChurn: nextChurn
+                            nextChurn: nextChurn,
+                            lastReward: lastReward
                         )
                     } catch {
                         logger.error("Error calculating metrics for node \(node.address): \(error)")
@@ -100,6 +115,14 @@ struct THORChainBondInteractor: BondInteractor {
     func canAddBond() async -> Bool {
         return true
     }
+
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
+        try await thorchainAPIService.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
+    }
+
+    func bondCoinAddress(in vault: Vault) async -> String? {
+        await bondCoinSnapshot(in: vault)?.address
+    }
 }
 
 extension THORChainBondInteractor {
@@ -130,6 +153,7 @@ private extension THORChainBondInteractor {
                 apy: draft.apy,
                 nextReward: draft.nextReward,
                 nextChurn: draft.nextChurn,
+                lastReward: draft.lastReward,
                 vault: vault
             )
         }

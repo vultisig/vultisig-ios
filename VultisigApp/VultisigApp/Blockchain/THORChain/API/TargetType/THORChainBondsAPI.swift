@@ -9,7 +9,7 @@ import Foundation
 
 enum THORChainBondsAPI: TargetType {
     case getBondedNodes(address: String)
-    case getNodeDetails(nodeAddress: String)
+    case getNodeDetails(nodeAddress: String, height: Int?)
     case getChurns
     case getChurnInterval
 
@@ -26,7 +26,7 @@ enum THORChainBondsAPI: TargetType {
         switch self {
         case .getBondedNodes(let address):
             return "/bonds/\(address)"
-        case .getNodeDetails(let nodeAddress):
+        case .getNodeDetails(let nodeAddress, _):
             return "/thorchain/node/\(nodeAddress)"
         case .getChurns:
             return "/churns"
@@ -44,6 +44,8 @@ enum THORChainBondsAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
+        case .getNodeDetails(_, let height?):
+            return .requestParameters(["height": height], .urlEncoding)
         case .getBondedNodes, .getNodeDetails, .getChurns, .getChurnInterval:
             return .requestPlain
         }

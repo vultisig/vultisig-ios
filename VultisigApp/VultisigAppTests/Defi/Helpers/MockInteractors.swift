@@ -45,11 +45,18 @@ actor InteractorCallGate {
         await withCheckedContinuation { arrivalWaiter = $0 }
     }
 
-    /// Called from the test. Lets the held call return.
+    /// Called from the test. Lets the held call return. Also unblocks a
+    /// still-pending `waitForArrival()`: if the guarded call is never
+    /// actually made (a regression short-circuits before reaching `wait()`),
+    /// the test's own bounded wait around `waitForArrival()` still times out
+    /// and fails as expected, but without this, that wrapping `Task` would
+    /// stay suspended forever after the test has already moved on.
     func open() {
         isOpen = true
         waiter?.resume()
         waiter = nil
+        arrivalWaiter?.resume()
+        arrivalWaiter = nil
     }
 }
 
@@ -89,6 +96,16 @@ final class MockBondInteractor: BondInteractor, @unchecked Sendable {
     var error: Error?
     /// Set to hold `fetchBondPositions` open mid-call.
     var gate: InteractorCallGate?
+    var rewardHistoryStub: [BondRewardHistoryEntry] = []
+    /// Set to fail `fetchRewardHistory` instead of returning `rewardHistoryStub`.
+    var rewardHistoryError: Error?
+    private(set) var rewardHistoryCallCount = 0
+    /// Set to hold `fetchRewardHistory` open mid-call — lets a test cancel
+    /// the caller while this call is still suspended, then release it and
+    /// observe whether the (by-then-cancelled) caller still published the
+    /// result, without guessing at wall-clock timing.
+    var rewardHistoryGate: InteractorCallGate?
+    var bondCoinAddressStub: String? = "thor1mockbondaddress"
 
     func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
         await gate?.wait()
@@ -101,6 +118,17 @@ final class MockBondInteractor: BondInteractor, @unchecked Sendable {
     func canUnbond() async -> Bool { canUnbondStub }
 
     func canAddBond() async -> Bool { canAddBondStub }
+
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
+        rewardHistoryCallCount += 1
+        await rewardHistoryGate?.wait()
+        if let rewardHistoryError {
+            throw rewardHistoryError
+        }
+        return rewardHistoryStub
+    }
+
+    func bondCoinAddress(in vault: Vault) async -> String? { bondCoinAddressStub }
 }
 
 final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {

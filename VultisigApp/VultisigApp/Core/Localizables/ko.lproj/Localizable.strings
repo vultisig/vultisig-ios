@@ -770,6 +770,7 @@
 "label" = "라벨";
 "language" = "언어";
 "languageChangeTitle" = "언어가 변경됨";
+"lastReward" = "마지막 보상";
 "learnMore" = "더 알아보기";
 "Leave" = "나가기";
 "legal" = "법적 사항";
@@ -972,6 +973,7 @@
 "nextAward" = "다음 보상";
 "nextChurn" = "다음 처른";
 "nextPayout" = "다음 지급";
+"nextReward" = "다음 보상";
 "nftTransfer" = "NFT 전송";
 "no" = "아니오";
 "noActiveChainsFound" = "활성 체인을 찾을 수 없습니다";
@@ -1274,6 +1276,8 @@
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";
+"rewardHistoryNodeAddress" = "노드: %@";
+"rewardHistoryUnavailable" = "보상 내역을 불러올 수 없습니다";
 "rippleCustomTokenInvalidFormat" = "XRP 토큰을 currency.issuer 형식으로 입력하세요 — 토큰 코드(예: USD 또는 SOLO) 다음에 발행자 주소를 입력합니다.";
 "rippleFieldAmount" = "금액";
 "rippleFieldDeliverMin" = "Deliver Min";
@@ -1643,6 +1647,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON 노미네이터 풀은 전액 인출만 지원합니다. 전체 스테이킹이 해제됩니다.";
 "tonWithdrawalPendingMessage" = "출금 진행 중입니다. %@은(는) %@경에 잠금 해제됩니다.";
 "totalFee" = "총 수수료";
+"totalRewardsEarned" = "총 획득 보상";
 "touchIDUnlockTitle" = "Touch ID로 잠금 해제";
 "track" = "추적";
 "transaction" = "트랜잭션";
@@ -1719,6 +1724,7 @@
 "unstakeCoin" = "%@ 언스테이킹";
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
 "unverifiedFunction" = "확인되지 않은 함수";
+"upcoming" = "예정";
 "updateNow" = "지금 업데이트";
 "upgrade" = "업그레이드";
 "upgradeNow" = "지금 업그레이드";

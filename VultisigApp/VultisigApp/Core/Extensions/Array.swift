@@ -20,6 +20,18 @@ extension Array {
 
         return self[index]
     }
+
+    /// Splits into consecutive slices of at most `size` elements each — the
+    /// last slice may be shorter. Empty input always yields no chunks,
+    /// regardless of `size`; a non-positive `size` on non-empty input
+    /// returns the whole array as one slice, avoiding an infinite loop.
+    func chunked(into size: Int) -> [[Element]] {
+        guard !isEmpty else { return [] }
+        guard size > 0 else { return [self] }
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0..<Swift.min($0 + size, count)])
+        }
+    }
 }
 
 extension Array: @retroactive RawRepresentable where Element: Codable {

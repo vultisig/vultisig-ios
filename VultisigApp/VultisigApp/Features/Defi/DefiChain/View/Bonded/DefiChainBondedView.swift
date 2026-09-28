@@ -13,6 +13,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
     let coin: Coin
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode?) -> Void
+    var onShowRewardHistory: (BondPosition) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var body: some View {
@@ -101,7 +102,8 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
             canUnbond: viewModel.canUnbond,
             canAddBond: viewModel.canAddBond,
             onBond: onBond,
-            onUnbond: onUnbond
+            onUnbond: onUnbond,
+            onShowRewardHistory: onShowRewardHistory
         )
     }
 }
@@ -112,6 +114,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
         coin: Coin.example,
         onBond: { _ in },
         onUnbond: { _ in },
+        onShowRewardHistory: { _ in },
         emptyStateView: { EmptyView() }
     )
 }

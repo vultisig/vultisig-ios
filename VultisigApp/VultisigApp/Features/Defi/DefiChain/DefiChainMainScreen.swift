@@ -25,6 +25,12 @@ struct DefiChainMainScreen: View {
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @StateObject private var screenModel: DefiChainScreenModel
     @State private var showPositionSelection = false
+    @State private var showRewardHistorySheet = false
+    /// Constructed once, when the user taps Last Reward — held here (not
+    /// built inline in the `crossPlatformSheet` content closure) so a
+    /// parent re-render while the sheet is open reuses the same instance
+    /// instead of discarding its loaded history and restarting the fetch.
+    @State private var rewardHistoryViewModel: BondRewardHistoryViewModel?
     @State private var isLoading = false
     @State private var error: HelperError?
     @State private var refreshErrorToast: String?
@@ -131,6 +137,11 @@ struct DefiChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
+        .crossPlatformSheet(isPresented: $showRewardHistorySheet) {
+            if let rewardHistoryViewModel {
+                BondRewardHistorySheet(viewModel: rewardHistoryViewModel)
+            }
+        }
         .crossPlatformToolbar(ignoresTopEdge: true) {
             #if os(macOS)
             CustomToolbarItem(placement: .trailing) {
@@ -170,6 +181,15 @@ struct DefiChainMainScreen: View {
                         coin: nativeCoin,
                         onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
                         onUnbond: { onTransactionToPresent(.unbond(coin: nativeCoin.toCoinMeta(), node: $0)) },
+                        onShowRewardHistory: { node in
+                            rewardHistoryViewModel = BondRewardHistoryViewModel(
+                                vault: vault,
+                                chain: chain,
+                                coin: nativeCoin,
+                                node: node
+                            )
+                            showRewardHistorySheet = true
+                        },
                         emptyStateView: { emptyStateView }
                     )
                 }

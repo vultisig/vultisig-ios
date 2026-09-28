@@ -770,6 +770,7 @@
 "label" = "Label";
 "language" = "Language";
 "languageChangeTitle" = "Language changed";
+"lastReward" = "Last Reward";
 "learnMore" = "Learn more";
 "Leave" = "Leave";
 "legal" = "Legal";
@@ -972,6 +973,7 @@
 "nextAward" = "Next Award";
 "nextChurn" = "Next Churn";
 "nextPayout" = "Next payout";
+"nextReward" = "Next Reward";
 "nftTransfer" = "NFT Transfer";
 "no" = "No";
 "noActiveChainsFound" = "No active chains found";
@@ -1274,6 +1276,8 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";
+"rewardHistoryNodeAddress" = "Node: %@";
+"rewardHistoryUnavailable" = "Reward History Unavailable";
 "rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";
 "rippleFieldDeliverMin" = "Deliver Min";
@@ -1643,6 +1647,7 @@
 "tonUnstakeFullWithdrawalNotice" = "TON nominator pools support full withdrawal only. Your entire stake will be unstaked.";
 "tonWithdrawalPendingMessage" = "Withdrawal in progress. Your %@ will be unlocked around %@.";
 "totalFee" = "Total Fee";
+"totalRewardsEarned" = "Total Rewards Earned";
 "touchIDUnlockTitle" = "Touch ID Unlock";
 "track" = "Track";
 "transaction" = "Transaction";
@@ -1719,6 +1724,7 @@
 "unstakeCoin" = "Unstake %@";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "unverifiedFunction" = "Unverified function";
+"upcoming" = "Upcoming";
 "updateNow" = "Update Now";
 "upgrade" = "Upgrade";
 "upgradeNow" = "Upgrade now";

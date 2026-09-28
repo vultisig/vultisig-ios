@@ -770,6 +770,7 @@
 "label" = "Rótulo";
 "language" = "Idioma";
 "languageChangeTitle" = "Idioma alterado";
+"lastReward" = "Última Recompensa";
 "learnMore" = "Saiba mais";
 "Leave" = "Sair";
 "legal" = "Jurídico";
@@ -972,6 +973,7 @@
 "nextAward" = "Próxima Recompensa";
 "nextChurn" = "Próxima Rotação";
 "nextPayout" = "Próximo Pagamento";
+"nextReward" = "Próxima Recompensa";
 "nftTransfer" = "Transferência de NFT";
 "no" = "Não";
 "noActiveChainsFound" = "Nenhuma chain ativa encontrada";
@@ -1274,6 +1276,8 @@
 "restart" = "Por favor, reinicie o aplicativo para aplicar as novas configurações de idioma.";
 "retry" = "Tentar novamente";
 "reviewYourVaultDevices" = "Revise os dispositivos do seu cofre";
+"rewardHistoryNodeAddress" = "Nó: %@";
+"rewardHistoryUnavailable" = "Histórico de Recompensas Indisponível";
 "rippleCustomTokenInvalidFormat" = "Insira um token XRP como currency.issuer — o código do token (ex.: USD ou SOLO), seguido do endereço do emissor.";
 "rippleFieldAmount" = "Valor";
 "rippleFieldDeliverMin" = "Deliver Min";
@@ -1643,6 +1647,7 @@
 "tonUnstakeFullWithdrawalNotice" = "Os pools de nominadores TON suportam apenas o levantamento total. Todo o seu stake será retirado.";
 "tonWithdrawalPendingMessage" = "Saque em andamento. Seu %@ será desbloqueado por volta de %@.";
 "totalFee" = "Taxa total";
+"totalRewardsEarned" = "Total de Recompensas Ganhas";
 "touchIDUnlockTitle" = "Desbloquear com Touch ID";
 "track" = "Acompanhar";
 "transaction" = "Transação";
@@ -1719,6 +1724,7 @@
 "unstakeCoin" = "Retirar %@";
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "unverifiedFunction" = "Função não verificada";
+"upcoming" = "Próximo";
 "updateNow" = "Atualizar agora";
 "upgrade" = "Atualizar";
 "upgradeNow" = "Atualizar agora";

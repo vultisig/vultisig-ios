@@ -14,6 +14,7 @@ struct DefiChainActiveNodeView: View {
     let canAddBond: Bool
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
+    var onShowRewardHistory: () -> Void
 
     let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -72,10 +73,11 @@ struct DefiChainActiveNodeView: View {
             Separator(color: Theme.colors.border, opacity: 1)
 
             VStack(alignment: .leading, spacing: 14) {
+                nextChurnView
                 HStack(alignment: .top, spacing: 16) {
-                    nextChurnView
+                    nextRewardView
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    nextAwardView
+                    lastRewardView
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 bondButtonsView
@@ -101,17 +103,43 @@ struct DefiChainActiveNodeView: View {
         }
     }
 
-    var nextAwardView: some View {
+    var nextRewardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Icon(.trophy, color: Theme.colors.textTertiary, size: 16)
-                Text("nextAward".localized)
+                Text("nextReward".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
             }
             HiddenBalanceText(coin.formatWithTicker(value: activeNode.nextReward))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
+        }
+    }
+
+    var lastRewardView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Icon(.bagClock, color: Theme.colors.textTertiary, size: 16)
+                Text("lastReward".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+            Button(action: onShowRewardHistory) {
+                HStack(spacing: 4) {
+                    if let lastReward = activeNode.lastReward {
+                        HiddenBalanceText(coin.formatWithTicker(value: lastReward))
+                            .font(Theme.fonts.bodyMMedium)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                    } else {
+                        Text("-")
+                            .font(Theme.fonts.bodyMMedium)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                    }
+                    Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
+                }
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -145,7 +173,8 @@ struct DefiChainActiveNodeView: View {
             canUnbond: false,
             canAddBond: true,
             onUnbond: { _ in },
-            onBond: { _ in }
+            onBond: { _ in },
+            onShowRewardHistory: {}
         )
 
         DefiChainActiveNodeView(
@@ -156,12 +185,14 @@ struct DefiChainActiveNodeView: View {
                 apy: 0.1,
                 nextReward: 200,
                 nextChurn: Date().addingTimeInterval(400),
+                lastReward: 150,
                 vault: .example
             ),
             canUnbond: true,
             canAddBond: true,
             onUnbond: { _ in },
-            onBond: { _ in }
+            onBond: { _ in },
+            onShowRewardHistory: {}
         )
     }
     .environmentObject(HomeViewModel())
