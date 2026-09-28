@@ -18,6 +18,7 @@ struct WalletConnectSessionBinding: Codable, Equatable, Identifiable {
 protocol WalletConnectSessionBindingStoring {
     func binding(for topic: String) -> WalletConnectSessionBinding?
     func save(_ binding: WalletConnectSessionBinding)
+    func removeBinding(for topic: String)
     func allBindings() -> [WalletConnectSessionBinding]
 }
 
@@ -40,10 +41,12 @@ final class WalletConnectSessionBindingStore: WalletConnectSessionBindingStoring
     }
 
     func save(_ binding: WalletConnectSessionBinding) {
-        var bindings = allBindings().filter { $0.topic != binding.topic }
-        bindings.append(binding)
-        guard let data = try? JSONEncoder().encode(bindings) else { return }
-        userDefaults.set(data, forKey: key)
+        let bindings = allBindings().filter { $0.topic != binding.topic } + [binding]
+        save(bindings)
+    }
+
+    func removeBinding(for topic: String) {
+        save(allBindings().filter { $0.topic != topic })
     }
 
     func allBindings() -> [WalletConnectSessionBinding] {
@@ -52,5 +55,10 @@ final class WalletConnectSessionBindingStore: WalletConnectSessionBindingStoring
             return []
         }
         return bindings
+    }
+
+    private func save(_ bindings: [WalletConnectSessionBinding]) {
+        guard let data = try? JSONEncoder().encode(bindings) else { return }
+        userDefaults.set(data, forKey: key)
     }
 }

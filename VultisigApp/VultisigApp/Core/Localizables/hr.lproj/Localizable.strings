@@ -1855,9 +1855,13 @@
 "walletBalanceExceededError" = "Ukupni iznosi naknada premašuju saldo vašeg novčanika. Pokušajte ponovno.";
 "walletConnect" = "WalletConnect";
 "walletConnectApproveWithVault" = "Approve with vault";
+"walletConnectBoundVault" = "Vault: %@";
 "walletConnectChains" = "Chains";
+"walletConnectDisconnect" = "Disconnect";
+"walletConnectDisconnectFailed" = "Could not disconnect WalletConnect session.";
 "walletConnectErrorApprovalFailed" = "WalletConnect approval failed: %@";
 "walletConnectErrorConfigurationFailed" = "WalletConnect configuration failed: %@";
+"walletConnectErrorDisconnectionFailed" = "WalletConnect disconnect failed: %@";
 "walletConnectErrorInvalidURI" = "Invalid WalletConnect URI.";
 "walletConnectErrorMissingProjectId" = "WalletConnect is disabled because WalletConnectProjectId is not configured.";
 "walletConnectErrorMissingRequiredChain" = "Selected vault does not have an account for required chain: %@";
@@ -1875,6 +1879,11 @@
 "walletConnectMethods" = "Methods";
 "walletConnectOptional" = "Optional";
 "walletConnectRequired" = "Required";
+"walletConnectSessionMetadata" = "Created: %@ • Topic: %@";
+"walletConnectSessions" = "WalletConnect sessions";
+"walletConnectSessionsDescription" = "Review locally stored WalletConnect dApp session bindings. dApp metadata is shown for display only.";
+"walletConnectSessionsEmpty" = "No WalletConnect sessions stored on this device.";
+"walletConnectUnknownVault" = "Unknown vault";
 "walletConnectVerification" = "Verification: %@";
 "wantToCreateVaultPrivately" = "Želite li stvoriti trezor privatno?";
 "wantToSignPrivately" = "Želite li potpisivati privatno?";

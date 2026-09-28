@@ -30,6 +30,7 @@ struct SettingsMainScreen: View {
         generalOptions.append(.widgetWatchlist)
         #endif
         generalOptions.append(.addressBook)
+        generalOptions.append(.walletConnectSessions)
 
         return [
             SettingsOptionGroup(
@@ -161,6 +162,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
+        case .walletConnectSessions:
+            router.navigate(to: SettingsRoute.walletConnectSessions)
         case .managePasscode:
             router.navigate(to: SettingsRoute.managePasscode)
         case .faq:

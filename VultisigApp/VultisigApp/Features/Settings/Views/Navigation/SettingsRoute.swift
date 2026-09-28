@@ -14,6 +14,7 @@ enum SettingsRoute: Hashable {
     case language
     case currency
     case widgetWatchlist
+    case walletConnectSessions
     case addressBook
     case addAddressBook(address: String? = nil, chain: AddressBookChainType? = nil)
     case editAddressBook(addressBookItem: AddressBookItem)
