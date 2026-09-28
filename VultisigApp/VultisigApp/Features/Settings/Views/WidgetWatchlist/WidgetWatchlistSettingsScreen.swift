@@ -10,18 +10,21 @@ struct WidgetWatchlistSettingsScreen: View {
 
     var body: some View {
         Screen {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    selectionSummary
-                    searchField
-                    partialLoadError
-                        .showIf(viewModel.loadFailed && !viewModel.assets.isEmpty)
-                    searchStatus
-                    assetSection
+            VStack(spacing: 14) {
+                selectionSummary
+                searchField
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: 14) {
+                        partialLoadError
+                            .showIf(viewModel.loadFailed && !viewModel.assets.isEmpty)
+                        searchStatus
+                        assetSection
+                    }
                 }
             }
         }
         .screenTitle("watchlist".localized)
+        .screenEdgeInsets(.init(bottom: 0))
         .withLoading(isLoading: $viewModel.isLoading)
         .task { await viewModel.load() }
     }
@@ -89,15 +92,24 @@ struct WidgetWatchlistSettingsScreen: View {
 
     @ViewBuilder
     private var assetSection: some View {
-        SettingsSectionView(title: "widgetWatchlistAssets".localized) {
-            let assets = viewModel.filteredAssets
+        let assets = viewModel.filteredAssets
+
+        VStack(alignment: .leading, spacing: 12) {
+            Text("widgetWatchlistAssets".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
             if assets.isEmpty {
                 statusView
+                    .commonListContainer()
             } else {
-                ForEach(Array(assets.enumerated()), id: \.element.id) { index, asset in
-                    assetRow(asset)
-                        .commonListItemContainer(index: index, itemsCount: assets.count)
+                LazyVStack(spacing: .zero) {
+                    ForEach(Array(assets.enumerated()), id: \.element.id) { index, asset in
+                        assetRow(asset)
+                            .commonListItemContainer(index: index, itemsCount: assets.count)
+                    }
                 }
+                .commonListContainer()
             }
         }
     }
