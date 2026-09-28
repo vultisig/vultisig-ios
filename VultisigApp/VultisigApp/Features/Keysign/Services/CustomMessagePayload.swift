@@ -80,15 +80,25 @@ struct CustomMessagePayload: Codable, Hashable {
             // TRON: message has TIP-191/legacy header prefix from extension, hash with keccak256
             let hash = data.sha3(.keccak256)
             return [hash.hexString]
-        } else if method == "personal_sign" || (method != "sign_message" && chain.lowercased() != "solana") {
-            // For Ethereum personal_sign, use keccak256 hash
-            // For Solana sign_message, use the message directly without hashing
+        } else if method == "personal_sign" {
+            // Ethereum personal_sign signs the EIP-191 prefixed message bytes,
+            // not the raw message keccak. WalletConnect dApps verify this exact
+            // digest for both UTF-8 and 0x-encoded message parameters.
+            return [Self.ethereumPersonalSignDigest(data).hexString]
+        } else if method != "sign_message" && chain.lowercased() != "solana" {
+            // EVM-family custom-message fallback for historical extension
+            // payloads that are not explicit personal_sign or EIP-712 requests.
             let hash = data.sha3(.keccak256)
             return [hash.hexString]
         } else {
             // For Solana and other chains that don't use keccak256, use the message directly
             return [data.hexString]
         }
+    }
+
+    private static func ethereumPersonalSignDigest(_ message: Data) -> Data {
+        let prefix = Data("\u{19}Ethereum Signed Message:\n\(message.count)".utf8)
+        return (prefix + message).sha3(.keccak256)
     }
 
     /// Resolves the chain used for key derivation while refusing known retired chains.

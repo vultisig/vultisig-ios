@@ -230,7 +230,7 @@ final class CustomMessageDAppMetadataTests: XCTestCase {
     func testKeysignMessagesIgnoreMetadata() {
         let cases: [(label: String, method: String, message: String, chain: String, expected: String)] = [
             ("personal_sign", "personal_sign", "0x48656c6c6f", "Ethereum",
-             "06b3dfaec148fb1bb2b066f10ec285e7c9bf402ab32aa78a5d38e34566810cd2"),
+             "aa744ba2ca576ec62ca0045eca00ad3917fdf7ffa34fbbae50828a5a69c1580e"),
             ("EIP-712", "eth_signTypedData_v4", Self.typedDataJSON, "Ethereum",
              "be609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2"),
             ("Cosmos", "sign", "Hello Vultisig", "Cosmos",
