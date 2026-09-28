@@ -312,7 +312,16 @@ class JoinKeysignViewModel: ObservableObject {
         let keysignPayload = await withZcashBranchId(keysignPayload)
         self.keysignPayload = keysignPayload
         do {
-            let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
+            // `self.vault` may not be the session's vault yet: the caller's
+            // auto-select (matching `keysignPayload.vaultPubKeyECDSA` against
+            // the user's local vaults) runs after this is called, both for
+            // an inline QR payload and one fetched via `ensureKeysignPayload`.
+            // Resolve the signing vault independently here so the Cardano
+            // body check always uses the right vault's key, never a stale
+            // previously-selected one — `manageQrCodeStates` still catches a
+            // genuine mismatch afterward.
+            let signingVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA }) ?? vault
+            let keysignFactory = KeysignMessageFactory(payload: keysignPayload, vaultPubKeyEdDSA: signingVault.pubKeyEdDSA)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()

@@ -112,7 +112,9 @@ struct FastVaultKeysignBootstrap {
                 logger.info("Refreshed Solana blockhash before generating keysign messages")
             }
             finalPayload = workingPayload
-            keysignMessages = try KeysignMessageFactory(payload: workingPayload).getKeysignMessages().sorted()
+            keysignMessages = try KeysignMessageFactory(payload: workingPayload, vaultPubKeyEdDSA: vault.pubKeyEdDSA)
+                .getKeysignMessages()
+                .sorted()
             coin = workingPayload.coin
         } else if let customMessagePayload {
             keysignMessages = customMessagePayload.keysignMessages
