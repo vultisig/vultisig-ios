@@ -39,11 +39,19 @@ struct WalletConnectPresentationModifier: ViewModifier {
             .presentsWhenUnlocked($showMessageRequest)
             .sheet(isPresented: $showMessageRequest) {
                 if let request = coordinator.pendingMessageRequest {
-                    WalletConnectMessageRequestSheet(
-                        incomingRequest: request,
-                        coordinator: coordinator
-                    )
-                    .interactiveDismissDisabled()
+                    if request.method == "eth_sendTransaction" {
+                        WalletConnectTransactionRequestSheet(
+                            incomingRequest: request,
+                            coordinator: coordinator
+                        )
+                        .interactiveDismissDisabled()
+                    } else {
+                        WalletConnectMessageRequestSheet(
+                            incomingRequest: request,
+                            coordinator: coordinator
+                        )
+                        .interactiveDismissDisabled()
+                    }
                 }
             }
     }

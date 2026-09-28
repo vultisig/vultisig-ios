@@ -23,7 +23,7 @@ protocol WalletConnectPairingClient {
         approval: WalletConnectEVMNamespaceApproval
     ) async throws -> String
     func reject(proposal: WalletConnectProposal) async throws
-    func respond(topic: String, requestId: WalletConnectRequestID, signature: String) async throws
+    func respond(topic: String, requestId: WalletConnectRequestID, result: String) async throws
     func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws
     func disconnect(topic: String) async throws
 }
@@ -141,7 +141,20 @@ final class WalletConnectCoordinator: ObservableObject {
             throw configurationError ?? .notConfigured
         }
         let normalized = try WalletConnectEVMSignatureFormatter().normalizedSignature(signature)
-        try await pairingClient.respond(topic: request.topic, requestId: request.requestId, signature: normalized)
+        try await pairingClient.respond(topic: request.topic, requestId: request.requestId, result: normalized)
+        if pendingMessageRequest?.requestId == request.requestId {
+            pendingMessageRequest = nil
+        }
+    }
+
+    func approveTransactionRequest(_ request: WalletConnectTransactionRequest, transactionHash: String) async throws {
+        guard isConfigured else {
+            throw configurationError ?? .notConfigured
+        }
+        guard !transactionHash.isEmpty else {
+            throw WalletConnectError.responseFailed("Empty transaction hash")
+        }
+        try await pairingClient.respond(topic: request.topic, requestId: request.requestId, result: transactionHash)
         if pendingMessageRequest?.requestId == request.requestId {
             pendingMessageRequest = nil
         }
@@ -342,12 +355,12 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         }
     }
 
-    func respond(topic: String, requestId: WalletConnectRequestID, signature: String) async throws {
+    func respond(topic: String, requestId: WalletConnectRequestID, result: String) async throws {
         do {
             try await Sign.instance.respond(
                 topic: topic,
                 requestId: requestId.rpcID,
-                response: .response(AnyCodable(signature))
+                response: .response(AnyCodable(result))
             )
         } catch {
             throw WalletConnectError.responseFailed(error.localizedDescription)
@@ -413,7 +426,7 @@ private extension Request {
         verifyContext: VerifyContext?,
         session: Session?
     ) -> WalletConnectIncomingRequest? {
-        guard WalletConnectEVMNamespaceAdapter.supportedMessageMethods.contains(method) else {
+        guard WalletConnectEVMNamespaceAdapter.supportedMethods.contains(method) else {
             return nil
         }
         return WalletConnectIncomingRequest(
@@ -580,7 +593,7 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }
 
-    func respond(topic _: String, requestId _: WalletConnectRequestID, signature _: String) async throws {
+    func respond(topic _: String, requestId _: WalletConnectRequestID, result _: String) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }
