@@ -320,7 +320,16 @@ class JoinKeysignViewModel: ObservableObject {
             // body check always uses the right vault's key, never a stale
             // previously-selected one — `manageQrCodeStates` still catches a
             // genuine mismatch afterward.
-            let signingVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA }) ?? vault
+            //
+            // Only fall back to `vault` when it actually owns the payload.
+            // Falling back unconditionally would run the Cardano body check
+            // against the wrong vault's key, fail, and set `.FailedToStart` —
+            // shadowing the `.VaultMismatch` `manageQrCodeStates` would
+            // otherwise report once this returns.
+            guard let signingVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA })
+                ?? (vault.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA ? vault : nil) else {
+                return
+            }
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload, vaultPubKeyEdDSA: signingVault.pubKeyEdDSA)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
