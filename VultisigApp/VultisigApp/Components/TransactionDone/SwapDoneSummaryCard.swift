@@ -44,7 +44,6 @@ struct SwapDoneSummaryCard: View {
     }
 
     let fields: Fields
-    @Environment(\.notifyHashCopied) var notifyHashCopied
 
     @State private var showFees: Bool = false
 
@@ -165,11 +164,26 @@ struct SwapDoneSummaryCard: View {
 
     private var summaryCard: some View {
         VStack(spacing: 0) {
-            getCell(title: "swapTXHash", value: fields.txHash, valueMaxWidth: 120, showCopyButton: true)
+            // Same shared row Send Done uses (`TransactionDoneHashRowView`) —
+            // copy + explorer-link parity with Android's `TxDetails`, not a
+            // swap-only variant.
+            TransactionDoneHashRowView(
+                title: "swapTXHash",
+                hash: fields.txHash,
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: fields.txHash),
+                showCopy: true
+            )
+            .padding(.vertical)
 
             if let approveHash = fields.approveHash, !approveHash.isEmpty {
                 separator
-                getCell(title: "approvalTXHash", value: approveHash, valueMaxWidth: 120, showCopyButton: true)
+                TransactionDoneHashRowView(
+                    title: "approvalTXHash",
+                    hash: approveHash,
+                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: approveHash),
+                    showCopy: true
+                )
+                .padding(.vertical)
             }
 
             separator
@@ -382,7 +396,6 @@ struct SwapDoneSummaryCard: View {
         bracketValue: String? = nil,
         valueMaxWidth: CGFloat? = nil,
         bracketMaxWidth: CGFloat? = nil,
-        showCopyButton: Bool = false,
         valueColor: Color = Theme.colors.textPrimary
     ) -> some View {
         HStack {
@@ -407,17 +420,6 @@ struct SwapDoneSummaryCard: View {
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)
-            }
-
-            if showCopyButton {
-                Button {
-                    notifyHashCopied()
-                    ClipboardManager.copyToClipboard(ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: value))
-                } label: {
-                    Image(systemName: "doc.on.clipboard")
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
-                }
             }
         }
         .padding(.vertical)
