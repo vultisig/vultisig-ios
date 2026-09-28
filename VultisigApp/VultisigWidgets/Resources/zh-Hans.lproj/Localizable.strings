@@ -17,6 +17,7 @@
 "widget.marketCap" = "市值";
 "widget.marketData" = "市场数据";
 "widget.marketDataUnavailable" = "市场数据暂时不可用";
+"widget.noAvailableData" = "暂无可用数据";
 "widget.price" = "价格";
 "widget.sevenDay" = "7日";
 "widget.temporarilyUnavailable" = "暂时不可用";

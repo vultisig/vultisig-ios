@@ -38,13 +38,7 @@ struct WidgetMarketRow: View {
             }
             .frame(width: 104, alignment: .leading)
 
-            WidgetSparkline(
-                values: asset.sparkline,
-                isPositive: finiteChange.map { $0 >= 0 },
-                lineWidth: isCompact ? 1.5 : 1.7
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: isCompact ? 28 : 34)
+            chartColumn
 
             VStack(alignment: .trailing, spacing: 1) {
                 Text(WidgetMarketFormatting.price(asset.currentPrice, currency: currency))
@@ -71,6 +65,31 @@ struct WidgetMarketRow: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
+    private var chartColumn: some View {
+        Group {
+            if Self.hasUsableSparkline(asset.sparkline) {
+                WidgetSparkline(
+                    values: usableSparklineValues,
+                    isPositive: finiteChange.map { $0 >= 0 },
+                    lineWidth: isCompact ? 1.5 : 1.7
+                )
+                .accessibilityLabel(Text("widget.sevenDay"))
+            } else {
+                Text("widget.noAvailableData")
+                    .font(WidgetTheme.labelFont(size: isCompact ? 9 : 10))
+                    .foregroundStyle(WidgetTheme.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.65)
+                    .allowsTightening(true)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .accessibilityLabel(Text("widget.noAvailableData"))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: isCompact ? 28 : 34)
+    }
+
     private var changeColor: Color {
         guard let change = finiteChange else { return WidgetTheme.secondaryText }
         return change >= 0 ? WidgetTheme.positive : WidgetTheme.negative
@@ -87,9 +106,27 @@ struct WidgetMarketRow: View {
         return change
     }
 
+    private var usableSparklineValues: [Double] {
+        asset.sparkline.filter(\.isFinite)
+    }
+
+    private static func hasUsableSparkline(_ values: [Double]) -> Bool {
+        values.filter(\.isFinite).count > 1
+    }
+
     private var accessibilityLabel: String {
         let price = WidgetMarketFormatting.price(asset.currentPrice, currency: currency)
         let change = WidgetMarketFormatting.accessibilityChange(asset.priceChangePercentage24h)
+        guard Self.hasUsableSparkline(asset.sparkline) else {
+            return [
+                asset.name,
+                asset.symbol,
+                price,
+                change,
+                String(localized: "widget.noAvailableData")
+            ].joined(separator: ", ")
+        }
+
         return String(
             format: String(localized: "widget.accessibility.asset"),
             locale: .current,
@@ -100,3 +137,32 @@ struct WidgetMarketRow: View {
         )
     }
 }
+
+#if DEBUG
+struct WidgetMarketRowPreviews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 0) {
+            WidgetMarketRow(asset: asset(sparkline: []), currency: "USD", isCompact: true)
+            WidgetMarketRow(asset: asset(sparkline: [4_200]), currency: "USD", isCompact: true)
+            WidgetMarketRow(asset: asset(sparkline: [4_100, 4_180, 4_240]), currency: "USD", isCompact: true)
+        }
+        .padding()
+        .background(WidgetTheme.background)
+        .previewLayout(.sizeThatFits)
+    }
+
+    private static func asset(sparkline: [Double]) -> WidgetMarketAsset {
+        WidgetMarketAsset(
+            id: "ethereum",
+            symbol: "ETH",
+            name: "Ethereum",
+            imageURL: nil,
+            iconData: nil,
+            currentPrice: 4_200,
+            priceChangePercentage24h: 1.5,
+            marketCapRank: 2,
+            sparkline: sparkline
+        )
+    }
+}
+#endif

@@ -17,6 +17,7 @@
 "widget.marketCap" = "시가총액";
 "widget.marketData" = "시장 데이터";
 "widget.marketDataUnavailable" = "시장 데이터를 일시적으로 사용할 수 없습니다";
+"widget.noAvailableData" = "사용 가능한 데이터가 없습니다";
 "widget.price" = "가격";
 "widget.sevenDay" = "7일";
 "widget.temporarilyUnavailable" = "일시적으로 사용할 수 없음";

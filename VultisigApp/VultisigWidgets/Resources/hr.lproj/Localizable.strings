@@ -17,6 +17,7 @@
 "widget.marketCap" = "Tržišna kapitalizacija";
 "widget.marketData" = "Tržišni podaci";
 "widget.marketDataUnavailable" = "Tržišni podaci privremeno nisu dostupni";
+"widget.noAvailableData" = "Nema dostupnih podataka";
 "widget.price" = "Cijena";
 "widget.sevenDay" = "7D";
 "widget.temporarilyUnavailable" = "Privremeno nedostupno";

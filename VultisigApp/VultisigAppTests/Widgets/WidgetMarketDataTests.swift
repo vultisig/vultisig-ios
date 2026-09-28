@@ -396,9 +396,7 @@ final class WidgetMarketDataTests: XCTestCase {
 
         let loadTask = Task { await viewModel.load() }
         await remote.waitUntilStarted()
-        for _ in 0..<100 where viewModel.assets.isEmpty {
-            await Task.yield()
-        }
+        await waitForFirstAssetID("cached", in: viewModel)
 
         XCTAssertEqual(viewModel.assets.first?.id, "cached")
         XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
@@ -953,6 +951,30 @@ final class WidgetMarketDataTests: XCTestCase {
         for _ in 0..<100 where viewModel.isSearching {
             await Task.yield()
         }
+    }
+
+    @MainActor
+    private func waitForFirstAssetID(
+        _ expectedID: String,
+        in viewModel: WidgetWatchlistSettingsViewModel,
+        timeout: TimeInterval = 2,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if viewModel.assets.first?.id == expectedID {
+                return
+            }
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+
+        XCTFail(
+            "Timed out waiting for first asset ID \"\(expectedID)\"; current first asset ID: "
+                + "\(viewModel.assets.first?.id ?? "nil")",
+            file: file,
+            line: line
+        )
     }
 
     private func temporaryDefaults() throws -> (String, UserDefaults) {

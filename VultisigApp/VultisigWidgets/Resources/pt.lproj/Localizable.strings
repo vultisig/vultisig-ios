@@ -17,6 +17,7 @@
 "widget.marketCap" = "Capitalização";
 "widget.marketData" = "Dados de mercado";
 "widget.marketDataUnavailable" = "Os dados de mercado estão temporariamente indisponíveis";
+"widget.noAvailableData" = "Não há dados disponíveis";
 "widget.price" = "Preço";
 "widget.sevenDay" = "7D";
 "widget.temporarilyUnavailable" = "Temporariamente indisponível";
