@@ -9,7 +9,7 @@ import WidgetKit
 @MainActor
 final class WidgetWatchlistSettingsViewModel: ObservableObject {
     @Published private(set) var selectedAssets: [WidgetWatchlistAsset]
-    @Published private(set) var catalogAssets: [WidgetWatchlistAsset] = []
+    @Published private(set) var catalogAssets: [WidgetWatchlistAsset]
     @Published var isLoading = false
     @Published private(set) var loadFailed = false
 
@@ -26,6 +26,7 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         self.marketService = WidgetMarketService(remote: marketClient, cache: marketCache)
         self.defaults = defaults
         self.selectedAssets = WidgetSharedStorage.watchlistAssets(in: defaults)
+        self.catalogAssets = LocalWidgetWatchlistCatalog.assets
         self.hasStoredSelection = WidgetSharedStorage.hasStoredWatchlist(in: defaults)
     }
 
@@ -105,16 +106,24 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         seedDefaultSelection: Bool
     ) {
         let fetched = marketAssets.map(WidgetWatchlistAsset.init)
-        let fetchedByID = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })
-        let refreshedSelection = selectedAssets.map { fetchedByID[$0.id] ?? $0 }
+        let catalog = mergedAssets(fetched + LocalWidgetWatchlistCatalog.assets)
+        let catalogByID = Dictionary(uniqueKeysWithValues: catalog.map { ($0.id, $0) })
+        let refreshedSelection = selectedAssets.map { catalogByID[$0.id] ?? $0 }
 
-        catalogAssets = fetched
+        catalogAssets = catalog
         if seedDefaultSelection && !hasStoredSelection {
             selectedAssets = Array(fetched.prefix(WidgetSharedStorage.maximumWatchlistAssets))
             persistSelection(reloadWidget: true)
         } else if refreshedSelection != selectedAssets {
             selectedAssets = refreshedSelection
             persistSelection(reloadWidget: false)
+        }
+    }
+
+    private func mergedAssets(_ assets: [WidgetWatchlistAsset]) -> [WidgetWatchlistAsset] {
+        assets.reduce(into: [WidgetWatchlistAsset]()) { result, asset in
+            guard !result.contains(where: { $0.id == asset.id }) else { return }
+            result.append(asset)
         }
     }
 }

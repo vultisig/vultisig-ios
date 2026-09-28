@@ -186,6 +186,34 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
     }
 
+    func testLocalWatchlistCatalogIncludesNativeRune() {
+        XCTAssertTrue(LocalWidgetWatchlistCatalog.assets.contains { asset in
+            asset.id == "thorchain" && asset.symbol == "RUNE"
+        })
+    }
+
+    func testLocalWatchlistCatalogDeduplicatesByCoinGeckoID() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .ethereum, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .base, ticker: "ETH", priceProviderId: "ethereum")
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["ethereum"])
+        XCTAssertEqual(assets.map(\.symbol), ["ETH"])
+    }
+
+    func testLocalWatchlistCatalogExcludesEmptyPriceIDsAndNonProductionNetworks() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .ethereum, ticker: "NOPE", priceProviderId: ""),
+            coinMeta(chain: .ethereumSepolia, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .thorChainStagenet, ticker: "RUNE", priceProviderId: "thorchain"),
+            coinMeta(chain: .thorChainChainnet, ticker: "RUNE", priceProviderId: "thorchain"),
+            coinMeta(chain: .thorChain, ticker: "RUNE", priceProviderId: "thorchain")
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["thorchain"])
+    }
+
     @MainActor
     func testWatchlistSettingsSeedsTopFiveOnlyWithoutStoredSelection() async throws {
         let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
@@ -214,6 +242,7 @@ final class WidgetMarketDataTests: XCTestCase {
         await defaultViewModel.load()
 
         XCTAssertEqual(defaultViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+        XCTAssertFalse(defaultViewModel.selectedAssets.contains { $0.id == "thorchain" })
         XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
 
         WidgetSharedStorage.setWatchlistAssets([], in: defaults)
@@ -268,7 +297,8 @@ final class WidgetMarketDataTests: XCTestCase {
             await Task.yield()
         }
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertEqual(viewModel.assets.first?.id, "cached")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertTrue(viewModel.selectedAssets.isEmpty)
         XCTAssertFalse(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.isLoading)
@@ -276,7 +306,8 @@ final class WidgetMarketDataTests: XCTestCase {
         await remote.resume()
         await loadTask.value
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["fresh"])
+        XCTAssertEqual(viewModel.assets.first?.id, "fresh")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["fresh"])
         XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.loadFailed)
@@ -310,7 +341,8 @@ final class WidgetMarketDataTests: XCTestCase {
 
         await viewModel.load()
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertEqual(viewModel.assets.first?.id, "cached")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertTrue(viewModel.loadFailed)
     }
 
@@ -502,6 +534,23 @@ final class WidgetMarketDataTests: XCTestCase {
 
     private func watchlistAsset(id: String, symbol: String) -> WidgetWatchlistAsset {
         WidgetWatchlistAsset(id: id, symbol: symbol, name: id.capitalized, imageURL: nil)
+    }
+
+    private func coinMeta(
+        chain: Chain,
+        ticker: String,
+        priceProviderId: String,
+        isNativeToken: Bool = true
+    ) -> CoinMeta {
+        CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: ticker.lowercased(),
+            decimals: 8,
+            priceProviderId: priceProviderId,
+            contractAddress: isNativeToken ? "" : "contract-\(ticker.lowercased())",
+            isNativeToken: isNativeToken
+        )
     }
 
     private func marketAsset(id: String, symbol: String) -> WidgetMarketAsset {
