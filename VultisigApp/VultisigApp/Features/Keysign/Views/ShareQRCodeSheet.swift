@@ -15,6 +15,7 @@ struct ShareQRCodeSheet: View {
     @Binding var isPresented: Bool
 
     @State private var bannerText: String?
+    @State private var dismissTask: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,6 +35,7 @@ struct ShareQRCodeSheet: View {
         .background(Theme.colors.bgPrimary)
         .presentationDragIndicator(.visible)
         .applySheetSize(150, 460)
+        .onDisappear { dismissTask?.cancel() }
     }
 
     private var buttons: some View {
@@ -58,7 +60,11 @@ struct ShareQRCodeSheet: View {
         ClipboardManager.copyToClipboard(qrCodeData)
         bannerText = "linkCopied".localized
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+        // Cancelled on disappear so a pending close can't dismiss a reopened sheet.
+        dismissTask?.cancel()
+        dismissTask = Task {
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
             isPresented = false
         }
     }
