@@ -14,11 +14,6 @@ private let logger = Log.wallet.viewModel
 class ShareSheetViewModel: ObservableObject {
     @Published var renderedImage: Image? = nil
     @Published var qrCodeData: String?
-    /// The plain QR image passed into `render()`, before it is composited
-    /// into the branded `QRShareSheetImage` card. Lets a caller show a QR
-    /// preview (e.g. the "Share QR Code" sheet) without re-deriving or
-    /// re-rendering anything.
-    @Published var qrCodeImage: Image?
 
     func render(
         qrCodeImage: Image,
@@ -53,13 +48,11 @@ class ShareSheetViewModel: ObservableObject {
         renderer.scale = displayScale
         setImage(renderer)
         self.qrCodeData = qrCodeData
-        self.qrCodeImage = qrCodeImage
     }
     func clear() {
         logger.debug("clear image reference")
         renderedImage = nil
         qrCodeData = nil
-        qrCodeImage = nil
     }
 }
 
