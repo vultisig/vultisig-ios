@@ -75,7 +75,7 @@ struct WidgetMarketRow: View {
                 )
                 .accessibilityLabel(Text("widget.sevenDay"))
             } else {
-                Text("widget.noAvailableData")
+                Text("widgetNoAvailableData")
                     .font(WidgetTheme.labelFont(size: isCompact ? 9 : 10))
                     .foregroundStyle(WidgetTheme.secondaryText)
                     .multilineTextAlignment(.center)
@@ -83,7 +83,7 @@ struct WidgetMarketRow: View {
                     .minimumScaleFactor(0.65)
                     .allowsTightening(true)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .accessibilityLabel(Text("widget.noAvailableData"))
+                    .accessibilityLabel(Text("widgetNoAvailableData"))
             }
         }
         .frame(maxWidth: .infinity)
@@ -117,17 +117,7 @@ struct WidgetMarketRow: View {
     private var accessibilityLabel: String {
         let price = WidgetMarketFormatting.price(asset.currentPrice, currency: currency)
         let change = WidgetMarketFormatting.accessibilityChange(asset.priceChangePercentage24h)
-        guard Self.hasUsableSparkline(asset.sparkline) else {
-            return [
-                asset.name,
-                asset.symbol,
-                price,
-                change,
-                String(localized: "widget.noAvailableData")
-            ].joined(separator: ", ")
-        }
-
-        return String(
+        let assetLabel = String(
             format: String(localized: "widget.accessibility.asset"),
             locale: .current,
             asset.name,
@@ -135,6 +125,15 @@ struct WidgetMarketRow: View {
             price,
             change
         )
+
+        guard Self.hasUsableSparkline(asset.sparkline) else {
+            return [
+                assetLabel,
+                String(localized: "widgetNoAvailableData")
+            ].joined(separator: ", ")
+        }
+
+        return assetLabel
     }
 }
 

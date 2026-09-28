@@ -17,7 +17,6 @@
 "widget.marketCap" = "Market Cap";
 "widget.marketData" = "Market data";
 "widget.marketDataUnavailable" = "Market data is temporarily unavailable";
-"widget.noAvailableData" = "No available data";
 "widget.price" = "Price";
 "widget.sevenDay" = "7D";
 "widget.temporarilyUnavailable" = "Temporarily unavailable";
@@ -31,3 +30,4 @@
 "widget.watchlist.configure" = "Choose assets in Vultisig Settings";
 "widget.watchlist.description" = "Follow up to five cryptocurrencies selected in Vultisig.";
 "widget.watchlist.marketDataUnavailable" = "Watchlist market data is temporarily unavailable";
+"widgetNoAvailableData" = "No available data";
