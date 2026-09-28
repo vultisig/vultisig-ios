@@ -34,7 +34,7 @@ struct ShareQRCodeSheet: View {
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .background(Theme.colors.bgPrimary)
         .presentationDragIndicator(.visible)
-        .applySheetSize(150, 460)
+        .applySheetSize(460, 150)
         .onDisappear { dismissTask?.cancel() }
     }
 
