@@ -12,41 +12,28 @@ import VultisigUIResources
 /// "Copy Link" can never diverge from what the QR encodes.
 struct ShareQRCodeSheet: View {
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
+    @Binding var isPresented: Bool
 
     @State private var bannerText: String?
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
             Text("shareQRCode".localized)
                 .font(Theme.fonts.title3)
                 .foregroundStyle(Theme.colors.textPrimary)
-
-            qrPreview
-
+            Spacer()
             buttons
+            Spacer()
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 28)
-        .padding(.bottom, 24)
+        .padding(.top, 22)
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)
-        .background(Theme.colors.bgSurface1)
         .withBanner(text: $bannerText)
-        .presentationDetents([.height(420)])
+        .presentationDetents([.height(150)])
+        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .background(Theme.colors.bgPrimary)
         .presentationDragIndicator(.visible)
-        .applySheetSize(420, 460)
-    }
-
-    private var qrPreview: some View {
-        Theme.radius.xl.shape
-            .fill(Theme.colors.bgSurface1)
-            .overlay(
-                shareSheetViewModel.qrCodeImage?
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .padding(12)
-            )
-            .frame(width: 200, height: 200)
-            .background(VultisigImage("qr-code-container").resizable())
+        .applySheetSize(150, 460)
     }
 
     private var buttons: some View {
@@ -70,6 +57,10 @@ struct ShareQRCodeSheet: View {
         guard let qrCodeData = shareSheetViewModel.qrCodeData else { return }
         ClipboardManager.copyToClipboard(qrCodeData)
         bannerText = "linkCopied".localized
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            isPresented = false
+        }
     }
 }
 
@@ -77,6 +68,6 @@ struct ShareQRCodeSheet: View {
     let viewModel = ShareSheetViewModel()
     return Color.clear
         .crossPlatformSheet(isPresented: .constant(true)) {
-            ShareQRCodeSheet(shareSheetViewModel: viewModel)
+            ShareQRCodeSheet(shareSheetViewModel: viewModel, isPresented: .constant(true))
         }
 }

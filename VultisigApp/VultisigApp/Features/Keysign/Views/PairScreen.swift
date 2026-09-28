@@ -93,7 +93,7 @@ struct PairScreen: View {
             }
         }
         .crossPlatformSheet(isPresented: $isShareQRSheetPresented) {
-            ShareQRCodeSheet(shareSheetViewModel: shareSheetViewModel)
+            ShareQRCodeSheet(shareSheetViewModel: shareSheetViewModel, isPresented: $isShareQRSheetPresented)
         }
     }
 
