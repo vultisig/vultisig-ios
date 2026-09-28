@@ -171,7 +171,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                         logger.info("Refreshed Solana blockhash before generating keysign messages")
                     }
 
-                    let keysignFactory = KeysignMessageFactory(payload: finalPayload)
+                    let keysignFactory = KeysignMessageFactory(payload: finalPayload, vaultPubKeyEdDSA: vault.pubKeyEdDSA)
                     let preSignedImageHash = try keysignFactory.getKeysignMessages()
                     self.keysignMessages = preSignedImageHash.sorted()
                     coin = keysignPayload.coin

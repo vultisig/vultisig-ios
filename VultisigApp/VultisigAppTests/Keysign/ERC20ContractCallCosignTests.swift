@@ -30,7 +30,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
         let payload = try sdkPayload(Self.sdkStakeWithApprove)
         XCTAssertEqual(payload.approvePayload, ERC20ApprovePayload(amount: Self.stakeAmount, spender: Self.sVult))
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages, [
             "b32122eba723d0708b9d9d3d060221d0358d4d804cd23618fb1d1ebc93e6255f",
@@ -42,7 +42,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
         let payload = try sdkPayload(Self.sdkStakeWithoutApprove)
         XCTAssertNil(payload.approvePayload)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages, ["5c6fba48875693208e53e74405307a0378d9aa062409c19e1329985d6a3f77f5"])
     }
@@ -69,7 +69,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
         let payload = try sdkPayload(Self.sdkStakeWithApprove, resetAllowanceFirst: true)
         let approve = try XCTUnwrap(payload.approvePayload)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages.count, 3)
         XCTAssertEqual(
@@ -86,7 +86,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
     func testSignedVultStakeCarriesTheApproveThenTheDeposit() throws {
         let payload = try sdkPayload(Self.sdkStakeWithApprove)
         let signatures = try SigningGoldenSigner.signatures(
-            forImageHashes: KeysignMessageFactory(payload: payload).getKeysignMessages(),
+            forImageHashes: KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages(),
             curve: .secp256k1
         )
         let viewModel = KeysignViewModel()
@@ -115,7 +115,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
     func testSignedResetVultStakeCarriesBothApprovesThenTheDepositAtTheThirdNonce() throws {
         let payload = try sdkPayload(Self.sdkStakeWithApprove, resetAllowanceFirst: true)
         let signatures = try SigningGoldenSigner.signatures(
-            forImageHashes: KeysignMessageFactory(payload: payload).getKeysignMessages(),
+            forImageHashes: KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages(),
             curve: .secp256k1
         )
         let viewModel = KeysignViewModel()
@@ -145,7 +145,7 @@ final class ERC20ContractCallCosignTests: XCTestCase {
     func testSignedVultStakeWithoutApproveIsRegular() throws {
         let payload = try sdkPayload(Self.sdkStakeWithoutApprove)
         let signatures = try SigningGoldenSigner.signatures(
-            forImageHashes: KeysignMessageFactory(payload: payload).getKeysignMessages(),
+            forImageHashes: KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages(),
             curve: .secp256k1
         )
         let viewModel = KeysignViewModel()

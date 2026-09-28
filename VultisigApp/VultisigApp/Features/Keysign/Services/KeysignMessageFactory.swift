@@ -11,8 +11,16 @@ struct KeysignMessageFactory {
 
     private let payload: KeysignPayload
 
-    init(payload: KeysignPayload) {
+    /// The vault's own EdDSA public key, read off the verifying device's
+    /// local `Vault` — never a field from `payload` itself, which for a
+    /// peer-relayed keysign is proto-deserialized from the counterparty and
+    /// therefore untrusted. The SwapKit Cardano prebuilt path checks outputs
+    /// against it; it has no default so no signing call site can omit it.
+    private let vaultPubKeyEdDSA: String
+
+    init(payload: KeysignPayload, vaultPubKeyEdDSA: String) {
         self.payload = payload
+        self.vaultPubKeyEdDSA = vaultPubKeyEdDSA
     }
 
     func getKeysignMessages() throws -> [String] {
@@ -85,9 +93,16 @@ struct KeysignMessageFactory {
                 case "TRON":
                     messages += try SwapKitTronSigner.preSigningHashes(payload: swapKitPayload)
                 case "CARDANO_PREBUILT":
-                    // SwapKit-built CBOR. Hash item 0 of the envelope with
-                    // Blake2b-256 — that's the Cardano signing digest.
-                    messages += try SwapKitCardanoSigner.preSigningHashes(payload: swapKitPayload)
+                    // SwapKit-built CBOR. Decode + validate the body (every
+                    // output must pay back to the vault except at most one
+                    // plain-ADA deposit within quote, fee bounded, no
+                    // cert/withdrawal/mint/etc.), then hash item 0 of the
+                    // envelope with Blake2b-256 — that's the Cardano signing
+                    // digest.
+                    messages += try SwapKitCardanoSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        vaultPubKeyEdDSA: vaultPubKeyEdDSA
+                    )
                 case "TON", "CARDANO", "XRP":
                     // Fall through to the existing per-chain helper below
                     // (deposit-only flows: the SwapKit builder already pointed
