@@ -160,31 +160,38 @@ struct SwapDoneSummaryCard: View {
             .foregroundStyle(Theme.colors.bgPrimary)
     }
 
+    // MARK: - Hash rows
+
+    /// Same row Send Done uses, so both match Android's shared "Transaction Hash" title.
+    var mainHashRow: TransactionDoneHashRowView {
+        TransactionDoneHashRowView(
+            hash: fields.txHash,
+            explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: fields.txHash),
+            showCopy: true
+        )
+    }
+
+    var approvalHashRow: TransactionDoneHashRowView? {
+        guard let approveHash = fields.approveHash, !approveHash.isEmpty else { return nil }
+        return TransactionDoneHashRowView(
+            title: "approvalTXHash",
+            hash: approveHash,
+            explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: approveHash),
+            showCopy: true
+        )
+    }
+
     // MARK: - Summary card
 
     private var summaryCard: some View {
         VStack(spacing: 0) {
-            // Same shared row Send Done uses (`TransactionDoneHashRowView`) —
-            // copy + explorer-link parity with Android's `TxDetails`, not a
-            // swap-only variant. Android's main swap row is titled
-            // "Transaction Hash" too, so this keeps the row's default title
-            // rather than overriding it.
-            TransactionDoneHashRowView(
-                hash: fields.txHash,
-                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: fields.txHash),
-                showCopy: true
-            )
-            .padding(.vertical)
-
-            if let approveHash = fields.approveHash, !approveHash.isEmpty {
-                separator
-                TransactionDoneHashRowView(
-                    title: "approvalTXHash",
-                    hash: approveHash,
-                    explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: approveHash),
-                    showCopy: true
-                )
+            mainHashRow
                 .padding(.vertical)
+
+            if let approvalHashRow {
+                separator
+                approvalHashRow
+                    .padding(.vertical)
             }
 
             separator

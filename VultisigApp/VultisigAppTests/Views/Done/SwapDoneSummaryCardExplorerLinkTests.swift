@@ -10,6 +10,11 @@
 //  the destination chain's explorer for a hash that only exists on the
 //  source chain.
 //
+//  These tests also pin the card's wiring into `TransactionDoneHashRowView`:
+//  the main row always carries `fields.txHash`, the approval row (when
+//  present) always carries `fields.approveHash` — swapping the two would
+//  still pass a test that only checks `fields.chain`.
+//
 
 import BigInt
 @testable import VultisigApp
@@ -29,7 +34,38 @@ final class SwapDoneSummaryCardExplorerLinkTests: XCTestCase {
         token = nil
     }
 
-    func testInitiatorFieldsChainIsTheSourceChainNotTheDestination() {
+    func testInitiatorMainHashRowUsesSourceChainTxHashAndDefaultTitle() {
+        let transaction = makeCrossChainTransaction()
+        let card = SwapDoneSummaryCard.initiator(
+            transaction: transaction,
+            vault: TestStore.makeVault(pubKey: "swap-done-explorer-initiator"),
+            sendSummaryViewModel: SendSummaryViewModel(),
+            hash: "cardano-tx-hash",
+            approveHash: "cardano-approve-hash"
+        )
+
+        XCTAssertEqual(card.mainHashRow.hash, "cardano-tx-hash")
+        XCTAssertEqual(card.mainHashRow.explorerLink, "https://cardanoscan.io/transaction/cardano-tx-hash")
+        XCTAssertEqual(card.mainHashRow.title, "transactionHash")
+    }
+
+    func testInitiatorApprovalHashRowUsesSourceChainApproveHashAndOverriddenTitle() throws {
+        let transaction = makeCrossChainTransaction()
+        let card = SwapDoneSummaryCard.initiator(
+            transaction: transaction,
+            vault: TestStore.makeVault(pubKey: "swap-done-explorer-initiator"),
+            sendSummaryViewModel: SendSummaryViewModel(),
+            hash: "cardano-tx-hash",
+            approveHash: "cardano-approve-hash"
+        )
+
+        let approvalRow = try XCTUnwrap(card.approvalHashRow)
+        XCTAssertEqual(approvalRow.hash, "cardano-approve-hash")
+        XCTAssertEqual(approvalRow.explorerLink, "https://cardanoscan.io/transaction/cardano-approve-hash")
+        XCTAssertEqual(approvalRow.title, "approvalTXHash")
+    }
+
+    func testApprovalHashRowIsNilWhenApproveHashIsNil() {
         let transaction = makeCrossChainTransaction()
         let card = SwapDoneSummaryCard.initiator(
             transaction: transaction,
@@ -39,15 +75,23 @@ final class SwapDoneSummaryCardExplorerLinkTests: XCTestCase {
             approveHash: nil
         )
 
-        XCTAssertEqual(card.fields.chain, .cardano)
-        XCTAssertNotEqual(card.fields.chain, .ethereum)
-        XCTAssertEqual(
-            ExplorerLinkBuilder.getExplorerURL(chain: card.fields.chain, txid: card.fields.txHash),
-            "https://cardanoscan.io/transaction/cardano-tx-hash"
-        )
+        XCTAssertNil(card.approvalHashRow)
     }
 
-    func testCosignerFieldsChainIsTheSourceChainNotTheDestination() {
+    func testApprovalHashRowIsNilWhenApproveHashIsEmpty() {
+        let transaction = makeCrossChainTransaction()
+        let card = SwapDoneSummaryCard.initiator(
+            transaction: transaction,
+            vault: TestStore.makeVault(pubKey: "swap-done-explorer-initiator"),
+            sendSummaryViewModel: SendSummaryViewModel(),
+            hash: "cardano-tx-hash",
+            approveHash: ""
+        )
+
+        XCTAssertNil(card.approvalHashRow)
+    }
+
+    func testCosignerMainHashRowUsesSourceChainAndTxHash() {
         let keysignPayload = makeCrossChainKeysignPayload()
         let card = SwapDoneSummaryCard.cosigner(
             keysignPayload: keysignPayload,
@@ -57,12 +101,9 @@ final class SwapDoneSummaryCardExplorerLinkTests: XCTestCase {
             networkFee: "0.17 ADA"
         )
 
-        XCTAssertEqual(card.fields.chain, .cardano)
-        XCTAssertNotEqual(card.fields.chain, .ethereum)
-        XCTAssertEqual(
-            ExplorerLinkBuilder.getExplorerURL(chain: card.fields.chain, txid: card.fields.txHash),
-            "https://cardanoscan.io/transaction/cardano-tx-hash"
-        )
+        XCTAssertEqual(card.mainHashRow.hash, "cardano-tx-hash")
+        XCTAssertEqual(card.mainHashRow.explorerLink, "https://cardanoscan.io/transaction/cardano-tx-hash")
+        XCTAssertNil(card.approvalHashRow)
     }
 
     // MARK: - Fixtures
