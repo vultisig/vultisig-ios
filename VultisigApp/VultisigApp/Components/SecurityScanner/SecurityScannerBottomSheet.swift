@@ -8,24 +8,6 @@
 import SwiftUI
 import VultisigUIResources
 
-struct SecurityScannerBottomSheet: View & BottomSheetProperties {
-    let securityScannerModel: SecurityScannerResult?
-    let onContinueAnyway: () -> Void
-    let onDismissRequest: () -> Void
-
-    var body: some View {
-        if let securityScannerModel {
-            let contentStyle = securityScannerModel.getSecurityScannerBottomSheetStyle()
-            SecurityScannerBottomSheetContent(
-                contentStyle: contentStyle,
-                securityScannerProvider: securityScannerModel.provider,
-                onDismissRequest: onDismissRequest,
-                onContinueAnyway: onContinueAnyway
-            )
-        }
-    }
-}
-
 struct SecurityScannerBottomSheetContent: View {
     let contentStyle: SecurityScannerBottomSheetStyle
     let securityScannerProvider: String?
@@ -95,36 +77,6 @@ struct SettingsSecurityScannerBottomSheet: View, BottomSheetProperties {
             securityScannerProvider: nil,
             onDismissRequest: onDismissRequest,
             onContinueAnyway: onContinueAnyway
-        )
-    }
-}
-
-private extension SecurityScannerResult {
-    func getSecurityScannerBottomSheetStyle() -> SecurityScannerBottomSheetStyle {
-        let title: String
-        switch riskLevel {
-        case .medium:
-            title = "securityScannerMediumRiskTitle".localized
-        case .high:
-            title = "securityScannerHighRiskTitle".localized
-        case .critical:
-            title = "securityScannerCriticalRiskTitle".localized
-        case .noRisk, .low:
-            title = "securityScannerLowRiskTitle".localized
-        }
-
-        let description = self.description ?? "securityScannerDefaultDescription".localized
-        let (color, icon) = if riskLevel == .critical || riskLevel == .high {
-            (Theme.colors.alertError, "exclamationmark.triangle")
-        } else {
-            (Theme.colors.alertWarning, "exclamationmark.circle")
-        }
-
-        return SecurityScannerBottomSheetStyle(
-            title: title,
-            description: description,
-            image: icon,
-            imageColor: color
         )
     }
 }

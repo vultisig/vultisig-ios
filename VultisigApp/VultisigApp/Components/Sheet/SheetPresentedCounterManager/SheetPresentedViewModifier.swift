@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension View {
-    /// Blurs navigation stack when `.platformSheet` gets presented
+    /// Blurs navigation stack when `.crossPlatformSheet` gets presented.
     func sheetPresentedStyle() -> some View {
         modifier(SheetPresentedViewModifier())
     }

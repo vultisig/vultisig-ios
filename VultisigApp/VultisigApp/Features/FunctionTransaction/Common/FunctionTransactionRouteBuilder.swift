@@ -27,11 +27,6 @@ struct FunctionTransactionRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
-        FunctionTransactionVerifyScreen(transaction: tx, vault: vault)
-    }
-
-    @ViewBuilder
     func buildFunctionTransactionScreen(
         vault: Vault,
         transactionType: FunctionTransactionType

@@ -5,11 +5,10 @@
 
 import SwiftUI
 
-/// Amount + ticker with an optional fiat sub-line, in the swap verify asset
-/// cell's typography and layout (`bodyLMedium` amount, `caption12` fiat —
-/// see `SwapVerifyScreen.getSwapAssetCell`). Shared by the send verify
-/// surfaces (initiator + co-sign, hero and non-hero headers) so amounts
-/// render with the same UX as the swap screens and the surfaces can't drift.
+/// Amount + ticker with an optional fiat sub-line (`bodyLMedium` amount,
+/// `caption12` fiat). Shared by the send summary surfaces (co-sign, hero and
+/// non-hero headers) so amounts render with the same UX and the surfaces
+/// can't drift.
 struct CoinAmountFiatLabel: View {
     let amount: String
     let ticker: String

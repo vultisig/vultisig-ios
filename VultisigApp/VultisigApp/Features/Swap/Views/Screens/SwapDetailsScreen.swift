@@ -24,6 +24,7 @@ struct SwapDetailsScreen: View {
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     var body: some View {
         @Bindable var vm = detailsViewModel
@@ -138,6 +139,9 @@ struct SwapDetailsScreen: View {
             #endif
         }
         .swapRefreshTick {
+            // The review refreshes its own quote while it is up; two loops
+            // re-quoting at once would race.
+            guard !reviewPresenter.isPresenting else { return }
             detailsViewModel.updateTimer(vault: vault)
         }
         .onChange(of: detailsViewModel.fromCoin) { _, _ in
@@ -276,16 +280,15 @@ struct SwapDetailsScreen: View {
             PrimaryButton(title: continueButtonTitle) {
                 // The amount here is a plain `TextField` with no `@FocusState`
                 // to release, so the responder is resigned directly — otherwise
-                // Verify is pushed over a live keyboard and the screen comes
-                // back laid out for one that is gone.
+                // the review opens over a live keyboard and the form comes back
+                // laid out for one that is gone.
                 hideKeyboard()
                 Task {
                     // Reads the ERC-20 approval once; a failure stays on the form.
                     guard let transaction = await detailsViewModel.prepareTransaction(vault: vault) else { return }
-                    let retrySignal = SwapRetrySignal()
-                    router.navigate(to: SwapRoute.verify(
+                    reviewPresenter.present(.swap(
                         transaction: transaction,
-                        retrySignal: retrySignal,
+                        retrySignal: SwapRetrySignal(),
                         vaultPubKeyECDSA: vault.pubKeyECDSA
                     ))
                 }

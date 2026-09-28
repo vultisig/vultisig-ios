@@ -29,7 +29,8 @@ struct SendDetailsScreen: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
+    @Environment(\.router) private var router
 
     init(coin: Coin?, viewModel: SendDetailsViewModel, vault: Vault) {
         self._coin = State(initialValue: coin)
@@ -112,7 +113,9 @@ struct SendDetailsScreen: View {
                 viewModel.debouncedValidateAmount()
             }
             .onDisappear {
-                viewModel.stopMediator()
+                if !router.isShowingSigningRoute {
+                    viewModel.stopMediator()
+                }
                 viewModel.tearDownPendingTransactionState()
             }
             .crossPlatformSheet(isPresented: $settingsPresented) {
@@ -312,6 +315,7 @@ struct SendDetailsScreen: View {
     }
 
     func validateForm() async {
+        guard !viewModel.isValidatingForm, !reviewPresenter.isPresenting else { return }
         switch viewModel.selectedTab {
         case .none:
             viewModel.onSelect(tab: .asset)
@@ -328,14 +332,18 @@ struct SendDetailsScreen: View {
 
             if await viewModel.validateForm() {
                 await MainActor.run {
+                    guard !reviewPresenter.isPresenting else { return }
                     do {
                         let immutableTx = try viewModel.makeTransaction()
-                        // Release focus before the push: left set, SwiftUI
-                        // restores it when Verify pops and the field comes back
-                        // focused against a layout measured without the
-                        // keyboard.
+                        // Release focus before the review opens, so the
+                        // keyboard is not left up under the sheet and the field
+                        // does not come back focused when it closes.
                         focusedField = nil
-                        router.navigate(to: SendRoute.verify(
+                        // Clear the previous session before review can start a
+                        // new one. A navigation push may start pairing before
+                        // this screen disappears, so disappearance cannot own it.
+                        viewModel.stopMediator()
+                        reviewPresenter.present(.send(
                             tx: immutableTx,
                             retrySignal: SendRetrySignal(),
                             vault: vault

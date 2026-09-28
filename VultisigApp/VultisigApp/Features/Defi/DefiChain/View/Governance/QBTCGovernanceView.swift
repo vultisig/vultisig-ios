@@ -24,6 +24,9 @@ struct QBTCGovernanceView: View {
     var canVote: Bool = true
 
     @State private var selectedProposal: CosmosGovProposal?
+    /// A vote cast in the proposal sheet, held until that sheet is gone: it
+    /// opens the review, a root sheet that cannot present over this one.
+    @State private var pendingVote: (() -> Void)?
 
     var body: some View {
         Group {
@@ -43,7 +46,7 @@ struct QBTCGovernanceView: View {
                 populatedState
             }
         }
-        .crossPlatformSheet(item: $selectedProposal) { proposal in
+        .crossPlatformSheet(item: $selectedProposal, onDismiss: castPendingVote) { proposal in
             GovernanceProposalDetailScreen(
                 proposal: proposal,
                 tally: viewModel.tally(for: proposal),
@@ -51,15 +54,21 @@ struct QBTCGovernanceView: View {
                 myVote: viewModel.myVote(for: proposal),
                 canVote: canVote,
                 onVote: { choice in
+                    pendingVote = { onVote(proposal, choice) }
                     selectedProposal = nil
-                    onVote(proposal, choice)
                 },
                 onWeightedVote: { options in
+                    pendingVote = { onWeightedVote(proposal, options) }
                     selectedProposal = nil
-                    onWeightedVote(proposal, options)
                 }
             )
         }
+    }
+
+    private func castPendingVote() {
+        guard let vote = pendingVote else { return }
+        pendingVote = nil
+        vote()
     }
 
     @ViewBuilder

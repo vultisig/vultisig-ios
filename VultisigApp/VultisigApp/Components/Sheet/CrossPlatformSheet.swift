@@ -8,8 +8,8 @@
 import SwiftUI
 
 extension View {
-    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
-        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, sheetContent: sheetContent))
+    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, onDismiss: (() -> Void)? = nil, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
+        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, onDismiss: onDismiss, sheetContent: sheetContent))
     }
 
     /// - Parameter onDismiss: run AFTER the sheet has finished dismissing.
@@ -17,12 +17,17 @@ extension View {
     ///   the sheet is still on screen races the dismissal animation and the
     ///   destination can be dropped. Defaults to `nil`, so existing call sites
     ///   are unaffected.
+    /// - Parameter useOverlayOnMacOS: forces the in-window overlay presentation
+    ///   instead of a native `.sheet` on macOS 26+. Needed where the sheet's
+    ///   content is Metal-backed Rive artwork, which a native macOS sheet can
+    ///   fail to composite.
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        useOverlayOnMacOS: Bool = false,
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) -> some View {
-        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, sheetContent: sheetContent))
+        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, useOverlayOnMacOS: useOverlayOnMacOS, sheetContent: sheetContent))
     }
 }
 
@@ -30,6 +35,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
 
     let isDismissable: Bool
+    let onDismiss: (() -> Void)?
     var sheetContent: () -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -38,9 +44,10 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @State private var internalIsPresented: Bool = false
     @State private var dismissTask: Task<Void, Never>?
 
-    init(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+    init(isPresented: Binding<Bool>, isDismissable: Bool = true, onDismiss: (() -> Void)? = nil, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
         self.isDismissable = isDismissable
+        self.onDismiss = onDismiss
         self.sheetContent = sheetContent
     }
 
@@ -80,6 +87,12 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                             .inset(by: 0.5)
                             .strokeBorder(Theme.colors.borderExtraLight)
                     )
+                    .onExitCommand {
+                        // A nested prompt owns Escape before its parent
+                        // overlay sees it (for example, the signing password).
+                        guard isDismissable else { return }
+                        isPresented = false
+                    }
             }
         }
         .onChange(of: isPresented) { _, newValue in
@@ -101,6 +114,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                 try? await Task.sleep(for: .milliseconds(300))
                 guard !Task.isCancelled else { return }
                 isPresented = false
+                onDismiss?()
             }
         }
     }
@@ -108,7 +122,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 
     func nativeSheet(content: Content) -> some View {
         content
-            .sheet(isPresented: $isPresented) {
+            .sheet(isPresented: $isPresented, onDismiss: onDismiss) {
                 sheetContent()
                     .environment(\.isSheetPresented, true)
                     .interactiveDismissDisabled(!isDismissable)
@@ -135,7 +149,10 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     @Binding var item: Item?
 
     var onDismiss: (() -> Void)?
+    let useOverlayOnMacOS: Bool
     var sheetContent: (Item) -> SheetContent
+
+    @FocusState private var overlayFocused: Bool
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
     @State private var isPresented: Bool = false
@@ -147,16 +164,20 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     init(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        useOverlayOnMacOS: Bool = false,
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) {
         self._item = item
         self.onDismiss = onDismiss
+        self.useOverlayOnMacOS = useOverlayOnMacOS
         self.sheetContent = sheetContent
     }
 
     func body(content: Content) -> some View {
         #if os(macOS)
-        if #available(macOS 26.0, *) {
+        if useOverlayOnMacOS {
+            customSheet(content: content)
+        } else if #available(macOS 26.0, *) {
             nativeSheet(content: content)
         } else {
             customSheet(content: content)
@@ -168,29 +189,40 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
 
     #if os(macOS)
     func customSheet(content: Content) -> some View {
-        ZStack {
-            content
-                .blur(radius: internalItem != nil ? 5 : 0)
+        content
+            .disabled(item != nil || internalItem != nil)
+            .accessibilityHidden(item != nil || internalItem != nil)
+            .blur(radius: internalItem != nil ? 5 : 0)
+            // An overlay cannot grow its host window to fit a tall review.
+            // The review's scrollable body receives the available window size.
+            .overlay {
+                GeometryReader { geometry in
+                    ZStack {
+                        if let currentItem = internalItem {
+                            Color.black.opacity(0.1)
+                                .ignoresSafeArea()
+                                .onTapGesture { dismissOverlay() }
 
-            if let currentItem = internalItem {
-                // Semi-transparent backdrop
-                Color.black.opacity(0.1)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.interpolatingSpring(duration: 0.2)) {
-                            internalItem = nil
+                            sheetContent(currentItem)
+                                .environment(\.isSheetPresented, true)
+                                .clipShape(Theme.radius.xl.shape)
+                                .overlay(
+                                    Theme.radius.xl.shape
+                                        .inset(by: 0.5)
+                                        .strokeBorder(Theme.colors.borderExtraLight)
+                                )
+                                .focusable()
+                                .focusEffectDisabled()
+                                .focused($overlayFocused)
+                                .onAppear { overlayFocused = true }
+                                .onExitCommand { dismissOverlay() }
                         }
                     }
-
-                sheetContent(currentItem)
-                    .clipShape(Theme.radius.xl.shape)
-                    .overlay(
-                        Theme.radius.xl.shape
-                            .inset(by: 0.5)
-                            .strokeBorder(Theme.colors.borderExtraLight)
-                    )
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                }
             }
-        }
+        .onAppear { internalItem = item }
+        .onDisappear { dismissTask?.cancel() }
         .onChange(of: item) { _, newValue in
             // A new item cancels the pending close, as in the boolean sheet
             // above — and here the stale task carries `onDismiss` with it, so
@@ -216,6 +248,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                 onDismiss?()
             }
         }
+    }
+
+    private func dismissOverlay() {
+        // Invalidate the review immediately, just like its close button.
+        // Keeping the binding alive through the fade lets an in-flight sign
+        // preparation proceed after the user has already cancelled.
+        item = nil
     }
     #endif
 

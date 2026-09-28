@@ -16,7 +16,6 @@
 "addFolder" = "Aggiungi cartella";
 "addFriendsReferral" = "Aggiungi un referral di amici";
 "addingToken" = "Aggiunta token...";
-"addLiquidityTransaction" = "2. Transazione di aggiunta liquidità";
 "addLpDestinationUnavailable" = "Impossibile determinare la destinazione del deposito. Riprova.";
 "addLpNoDepositablePools" = "Nessun pool di questa chain contiene un asset di questo vault.";
 "addLpPoolTitle" = "Pool";
@@ -55,8 +54,6 @@
 "appLockPasscodeTitle" = "Codice di blocco dell'app";
 "apply" = "Applica";
 "applyReferral" = "Applica referral";
-"approvalRequiredMessageLP" = "Questo token ERC20 richiede approvazione prima di essere aggiunto alla pool di liquidità. Verranno firmate due transazioni:";
-"approvalTransaction" = "1. Transazione di approvazione";
 "approvalTXHash" = "Hash transazione di approvazione";
 "approve" = "Approva";
 "approveAndSwap" = "Approva e scambia";
@@ -470,7 +467,6 @@
 "enterYourSeedphraseSubtitle" = "Lascia uno spazio tra ogni parola. Sono supportate seed phrase di 12 o 24 parole.";
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "enterYourVaultsPassword" = "Inserisci la password del tuo vault";
-"erc20ApprovalRequired" = "Richiesta Approvazione ERC20";
 "error" = "Errore";
 "errorCopy" = "Copia";
 "errorMessageTitle" = "Messaggio di errore";
@@ -1371,6 +1367,8 @@
 "securityScannerLowRiskTitle" = "Transazione a basso rischio rilevato";
 "securityScannerMediumRiskTitle" = "Transazione a rischio medio rilevato";
 "securityScannerPoweredBy" = "Offerto da";
+"securityScannerSafeDescription" = "Nessuna attività dannosa rilevata. Questa transazione è sicura da firmare.";
+"securityScannerSafeTitle" = "Scansionato da Blockaid";
 "securityScannerTransactionNotScanned" = "Transazione non scansionata da";
 "securityScannerTransactionScannedBy" = "Transazione scansionata da";
 "securityScannerTransactionScanning" = "Scansione ...";

@@ -12,7 +12,7 @@ struct ReferralTransactionFlowScreen: View {
     let thornameDetails: THORName?
     let currentBlockHeight: UInt64
 
-    @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(viewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockHeight: UInt64) {
@@ -62,6 +62,6 @@ struct ReferralTransactionFlowScreen: View {
     }
 
     private func moveToNext(tx: SendTransaction, vault: Vault) {
-        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
+        reviewPresenter.present(.functionTransaction(tx: tx, vault: vault))
     }
 }

@@ -37,14 +37,15 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         XCTAssertEqual(mock.simulateCallCount, 0)
     }
 
-    func test_simulate_returnsNil_whenMemoMissing() async {
-        let payload = Self.ethereumPayload(memo: nil)
+    func test_scan_nativeEvmTransferWithoutMemo_usesSignedValueAndEmptyCalldata() async {
+        mock.simulateResult = .success(Self.transferResponse(symbol: "ETH", decimals: 18, rawAmount: "1"))
+        let payload = Self.ethereumPayload(memo: nil, amount: 123)
 
-        let result = await service.scan(keysignPayload: payload)
+        _ = await service.scan(keysignPayload: payload)
 
-        XCTAssertNil(result.simulation)
-        XCTAssertNil(result.scannerResult)
-        XCTAssertEqual(mock.simulateCallCount, 0)
+        XCTAssertEqual(mock.simulateCallCount, 1)
+        XCTAssertEqual(mock.simulatedMemos, ["0x"])
+        XCTAssertEqual(mock.simulatedAmounts, ["0x7b"])
     }
 
     func test_simulate_returnsNil_whenMemoNotHexPrefixed() async {
@@ -100,6 +101,74 @@ final class BlockaidSimulationServiceTests: XCTestCase {
         _ = await service.scan(keysignPayload: upper)
 
         XCTAssertEqual(mock.simulateCallCount, 1, "casing differences must not split the cache entry")
+    }
+
+    func test_scan_evmDifferentRecipientsAndValuesHaveSeparateCacheEntries() async {
+        mock.simulateResult = .success(Self.transferResponse(symbol: "ETH", decimals: 18, rawAmount: "1"))
+        let first = Self.ethereumPayload(memo: nil, amount: 1)
+        let second = Self.ethereumPayload(memo: nil, amount: 2)
+        let third = Self.ethereumPayload(memo: nil, amount: 1, toAddress: "0xAnother")
+
+        _ = await service.scan(keysignPayload: first)
+        _ = await service.scan(keysignPayload: second)
+        _ = await service.scan(keysignPayload: third)
+        _ = await service.scan(keysignPayload: first)
+
+        XCTAssertEqual(mock.simulateCallCount, 3)
+    }
+
+    func test_scan_genericEvmSwap_usesQuoteTransactionRatherThanPayloadTransfer() async {
+        mock.simulateResult = .success(Self.transferResponse(symbol: "ETH", decimals: 18, rawAmount: "1"))
+        let payload = Self.ethereumPayload(
+            memo: nil,
+            amount: 123,
+            swapPayload: Self.genericSwapPayload()
+        )
+
+        _ = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(mock.simulatedRecipients, ["0xrouter"])
+        XCTAssertEqual(mock.simulatedAmounts, ["0x07"])
+        XCTAssertEqual(mock.simulatedMemos, ["0xabcdef"])
+    }
+
+    func test_scan_plainErc20Transfer_usesContractAndSignedTransferCalldata() async {
+        mock.simulateResult = .success(Self.transferResponse(symbol: "USDC", decimals: 6, rawAmount: "1"))
+        let payload = Self.ethereumPayload(
+            memo: nil,
+            amount: 123,
+            toAddress: "0x2222222222222222222222222222222222222222",
+            isNative: false
+        )
+
+        _ = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(mock.simulatedRecipients, ["0x1111111111111111111111111111111111111111"])
+        XCTAssertEqual(mock.simulatedAmounts, ["0x00"])
+        XCTAssertTrue(mock.simulatedMemos.first?.hasPrefix("0xa9059cbb") == true)
+    }
+
+    func test_scan_nativeTransferSuccessTransitionsRingFromLoadingToSuccess() async {
+        mock.simulateResult = .success(Self.riskResponse(resultType: "Benign"))
+        let payload = Self.ethereumPayload(memo: nil, amount: 1)
+        XCTAssertEqual(KeysignReviewScanRing(.idle).animationState, .loading)
+
+        let result = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(result.scannerResult?.riskLevel, .noRisk)
+        guard let scannerResult = result.scannerResult else { return XCTFail("Expected a Blockaid verdict") }
+        XCTAssertEqual(KeysignReviewScanRing(.scanned(scannerResult), isScanComplete: true).animationState, .success)
+    }
+
+    func test_scan_nativeTransferRiskTransitionsRingToMediumRisk() async {
+        mock.simulateResult = .success(Self.riskResponse(resultType: "Warning"))
+        let payload = Self.ethereumPayload(memo: nil, amount: 1)
+
+        let result = await service.scan(keysignPayload: payload)
+
+        XCTAssertEqual(result.scannerResult?.riskLevel, .medium)
+        guard let scannerResult = result.scannerResult else { return XCTFail("Expected a Blockaid verdict") }
+        XCTAssertEqual(KeysignReviewScanRing(.scanned(scannerResult), isScanComplete: true).animationState, .mediumRisk)
     }
 
     // MARK: - Solana
@@ -167,21 +236,27 @@ final class BlockaidSimulationServiceTests: XCTestCase {
 
 private extension BlockaidSimulationServiceTests {
 
-    static func ethereumPayload(memo: String?) -> KeysignPayload {
+    static func ethereumPayload(
+        memo: String?,
+        amount: BigInt = 0,
+        toAddress: String = "0xTo",
+        isNative: Bool = true,
+        swapPayload: SwapPayload? = nil
+    ) -> KeysignPayload {
         let asset = CoinMeta(
             chain: .ethereum,
             ticker: "ETH",
             logo: "eth",
             decimals: 18,
             priceProviderId: "ethereum",
-            contractAddress: "",
-            isNativeToken: true
+            contractAddress: isNative ? "" : "0x1111111111111111111111111111111111111111",
+            isNativeToken: isNative
         )
         let coin = Coin(asset: asset, address: "0xFrom", hexPublicKey: "hex")
         return KeysignPayload(
             coin: coin,
-            toAddress: "0xTo",
-            toAmount: BigInt(0),
+            toAddress: toAddress,
+            toAmount: amount,
             chainSpecific: BlockChainSpecific.Ethereum(
                 maxFeePerGasWei: BigInt(1),
                 priorityFeeWei: BigInt(1),
@@ -190,7 +265,7 @@ private extension BlockaidSimulationServiceTests {
             ),
             utxos: [],
             memo: memo,
-            swapPayload: nil,
+            swapPayload: swapPayload,
             approvePayload: nil,
             vaultPubKeyECDSA: "",
             vaultLocalPartyID: "",
@@ -204,6 +279,29 @@ private extension BlockaidSimulationServiceTests {
             skipBroadcast: false,
             signData: nil
         )
+    }
+
+    static func genericSwapPayload() -> SwapPayload {
+        let from = ethereumPayload(memo: nil).coin
+        let to = Coin.example
+        return .generic(GenericSwapPayload(
+            fromCoin: from,
+            toCoin: to,
+            fromAmount: 123,
+            toAmountDecimal: 456,
+            quote: EVMQuote(
+                dstAmount: "456",
+                tx: EVMQuote.Transaction(
+                    from: "0xFrom",
+                    to: "0xRouter",
+                    data: "0xabcdef",
+                    value: "7",
+                    gasPrice: "1",
+                    gas: 100_000
+                )
+            ),
+            provider: .oneInch
+        ))
     }
 
     static func bitcoinPayload(memo: String?) -> KeysignPayload {
@@ -330,6 +428,22 @@ private extension BlockaidSimulationServiceTests {
                 accountSummary: BlockaidEvmSimulationJson.AccountSummary(assetsDiffs: [diff])
             ),
             validation: nil,
+            error: nil
+        )
+    }
+
+    static func riskResponse(resultType: String) -> BlockaidEvmSimulationResponseJson {
+        BlockaidEvmSimulationResponseJson(
+            simulation: nil,
+            validation: .init(
+                status: "Success",
+                classification: resultType,
+                resultType: resultType,
+                description: nil,
+                reason: nil,
+                features: [],
+                error: nil
+            ),
             error: nil
         )
     }

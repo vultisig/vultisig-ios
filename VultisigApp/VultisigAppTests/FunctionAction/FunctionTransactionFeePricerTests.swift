@@ -20,7 +20,7 @@ import XCTest
 /// fetched the chain-specific data and copied `chainSpecific.gas` alone.
 /// `displayFee` reads `fee` on EVM, UTXO and Cardano, so those three disclosed
 /// `0` — and signing re-fetched a real fee and charged it. Nothing downstream of
-/// `FunctionTransactionRoute.verify` re-resolves the figures for display, so the
+/// the review re-resolves the figures for display, so the
 /// hand-off is the only chance to get them right.
 @MainActor
 final class FunctionTransactionFeePricerTests: XCTestCase {

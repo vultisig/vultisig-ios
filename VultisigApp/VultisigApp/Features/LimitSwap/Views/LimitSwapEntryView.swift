@@ -11,17 +11,17 @@ import SwiftUI
 /// changes stay local — they do not mutate the Market path's state.
 ///
 /// "Place Order" assembles the limit memo, runs the byte-cap pre-flight,
-/// and routes into the **shared** `SwapRoute.verify(...)` screen with a
-/// `SwapTransaction` carrying `limitContext`. From there the standard
-/// Swap pipeline (Verify → Pair → Keysign → Done) handles the rest —
-/// each screen surfaces limit-specific UI when `transaction.isLimit`.
+/// and opens the **shared** swap review with a `SwapTransaction` carrying
+/// `limitContext`. From there the standard Swap pipeline (review → Pair →
+/// Keysign → Done) handles the rest — each step surfaces limit-specific UI
+/// when `transaction.isLimit`.
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
     let initialToCoin: Coin
     let vault: Vault
 
-    @Environment(\.router) private var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     /// Constructed eagerly in `init` from `initialFromCoin` / `initialToCoin`
     /// so the VM is non-optional throughout the view's lifetime.
@@ -229,7 +229,7 @@ struct LimitSwapEntryView: View {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             // Pre-estimated source-chain broadcast fee (fee coin's smallest units)
-            // so the shared Verify/Done screens can show and persist the limit
+            // so the shared review and Done can show and persist the limit
             // order's network fee — the resting `=<` order carries no market quote.
             networkFeeEstimate: vm.networkFeeEstimate,
             // Gas is paid in the source chain's NATIVE coin, not the source
@@ -246,7 +246,7 @@ struct LimitSwapEntryView: View {
         Task {
             // A failed approval read raises `placeOrderError` and stays here.
             guard let decided = await vm.withApprovalDecision(transaction) else { return }
-            router.navigate(to: SwapRoute.verify(
+            reviewPresenter.present(.swap(
                 transaction: decided,
                 retrySignal: SwapRetrySignal(),
                 vaultPubKeyECDSA: vault.pubKeyECDSA

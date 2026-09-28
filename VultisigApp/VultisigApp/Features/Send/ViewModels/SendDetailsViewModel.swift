@@ -1113,9 +1113,9 @@ final class SendDetailsViewModel {
 
     // MARK: - Mediator lifecycle
 
-    /// Stops the keysign Mediator service when leaving the Send flow.
-    /// Mirrors `SendCryptoViewModel.stopMediator` — kept here so the screen
-    /// can call it from `.onDisappear`.
+    /// Clears a previous session before review or when exiting the form.
+    /// Disappearance into a signing route must not call this: that destination
+    /// may already have started a new session.
     func stopMediator() {
         Mediator.shared.stop()
         logger.info("mediator server stopped.")

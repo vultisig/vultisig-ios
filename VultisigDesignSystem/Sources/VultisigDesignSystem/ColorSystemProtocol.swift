@@ -13,6 +13,7 @@ public protocol ColorSystemProtocol {
 
     var buttonBevelLight: Color { get }
     var buttonBevelDark: Color { get }
+    var medallionInsetShadow: Color { get }
 
     var textButtonDark: Color { get }
     var textButtonLight: Color { get }
@@ -22,6 +23,7 @@ public protocol ColorSystemProtocol {
     var bgSurface1: Color { get }
     var bgSurface2: Color { get }
     var bgSurface12: Color { get }
+    var bgSheetControl: Color { get }
 
     var lockPasscodeField: Color { get }
 
@@ -44,6 +46,7 @@ public protocol ColorSystemProtocol {
     var border: Color { get }
     var borderLight: Color { get }
     var borderExtraLight: Color { get }
+    var borderNormal: Color { get }
 
     var alertSuccess: Color { get }
     var alertError: Color { get }

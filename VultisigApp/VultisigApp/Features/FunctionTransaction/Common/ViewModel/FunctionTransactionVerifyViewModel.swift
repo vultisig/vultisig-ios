@@ -23,8 +23,26 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var resolvedHero: HeroContent?
+    @Published private(set) var validatorsByAddress: [String: CosmosValidator] = [:]
 
     let blockChainService = BlockChainService.shared
+    private let stakingService: CosmosStakingServiceProtocol
+
+    init(stakingService: CosmosStakingServiceProtocol = CosmosStakingService()) {
+        self.stakingService = stakingService
+    }
+
+    func loadValidators(transaction: SendTransaction) async {
+        validatorsByAddress = [:]
+        guard transaction.cosmosStakingPayload != nil else { return }
+        do {
+            let list = try await stakingService.fetchValidators(chain: transaction.coin.chain)
+            try Task.checkCancellation()
+            validatorsByAddress = Dictionary(list.map { ($0.operatorAddress, $0) }, uniquingKeysWith: { _, latest in latest })
+        } catch {
+            // Keep the distinguishable valoper fallback if metadata is unavailable.
+        }
+    }
 
     func onLoad() {
         securityScanViewModel.$state
@@ -139,13 +157,6 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
             }
             throw HelperError.runtimeError(errorMessage)
         }
-    }
-
-    /// Whether Verify shows the LP approval notice: only when the approval read
-    /// on the way in signs an approve ahead of the deposit. Only an LP add
-    /// carries a decision on this screen.
-    func showsApprovalNotice(for transaction: SendTransaction) -> Bool {
-        transaction.approvalDecision?.signsApprove ?? false
     }
 
     func scan(transaction: SendTransaction) async {

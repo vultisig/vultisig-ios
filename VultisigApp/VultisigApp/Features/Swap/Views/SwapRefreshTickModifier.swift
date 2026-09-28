@@ -2,7 +2,7 @@
 //  SwapRefreshTickModifier.swift
 //  VultisigApp
 //
-//  Shared 1-second tick used by SwapDetailsScreen and SwapVerifyScreen for
+//  Shared 1-second tick used by SwapDetailsScreen and SwapReviewContent for
 //  their quote-refresh countdowns. Both screens previously declared their own
 //  `Timer.publish` + `onReceive` boilerplate; this modifier centralises it.
 //

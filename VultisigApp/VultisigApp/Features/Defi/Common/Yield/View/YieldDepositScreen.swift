@@ -10,7 +10,7 @@ import SwiftUI
 /// to the shared verify screen.
 struct YieldDepositScreen: View {
     @StateObject private var viewModel: YieldDepositViewModel
-    @Environment(\.router) private var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     @State private var percentageSelected: Double?
     @State private var error: HelperError?
@@ -113,8 +113,8 @@ struct YieldDepositScreen: View {
         }
 
         await MainActor.run {
-            router.navigate(
-                to: SendRoute.verify(
+            reviewPresenter.present(
+                .send(
                     tx: displayTx,
                     retrySignal: SendRetrySignal(),
                     vault: viewModel.vault,

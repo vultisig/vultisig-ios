@@ -78,9 +78,10 @@ struct MacScannerView: View {
             cameraViewModel.shouldJoinKeygen = false
         }
         .onChange(of: cameraViewModel.shouldKeysignTransaction) { _, shouldNavigate in
-            guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
-            router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+            guard shouldNavigate, appViewModel.selectedVault != nil else { return }
             cameraViewModel.shouldKeysignTransaction = false
+            appViewModel.pendingJoinKeysignRequest = UUID()
+            router.navigateToRoot()
         }
         .withError(error: $deeplinkError, errorType: .warning) {
             deeplinkError = nil

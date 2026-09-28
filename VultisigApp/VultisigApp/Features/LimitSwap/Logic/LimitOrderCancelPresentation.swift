@@ -42,7 +42,7 @@ enum LimitOrderCancelPresentation {
     ///
     /// The dust does not stop being disclosed — it is a cost row in the summary
     /// card, beside the network fee, where it reads as what it is. See
-    /// `FunctionTransactionVerifyScreen.cancelLimitOrderRows`.
+    /// `FunctionTransactionReviewContent.cancelLimitOrderRows`.
     static func hero(for transaction: SendTransaction) -> HeroContent? {
         guard let cancel = transaction.limitCancelContext else { return nil }
         return .title(text: title, caption: "\(cancel.sourceAsset) → \(cancel.targetAsset)")
@@ -59,8 +59,8 @@ enum LimitOrderCancelPresentation {
     /// co-signer just sees which order it is closing instead of a bare title.
     ///
     /// ⚠️ The co-signer's disclosure of the donated dust does not live here.
-    /// It is its own line on the JOIN screen (`KeysignMessageConfirmView`), fed
-    /// by `attachedDust(in:)` — which is the screen where a co-signer decides
+    /// It is its own row in the co-signer's review (`JoinKeysignReviewPresentation`),
+    /// fed by `attachedDust(in:)` — which is the screen where a co-signer decides
     /// whether to sign, and therefore the screen where that money has to be
     /// named.
     static func hero(forSignedMemo memo: String?) -> HeroContent? {

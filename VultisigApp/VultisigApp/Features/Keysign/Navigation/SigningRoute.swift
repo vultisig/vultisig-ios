@@ -6,15 +6,15 @@
 //  FunctionCall). The signing screens (`PairScreen`, `KeysignView`) are already
 //  single shared components; this collapses the `pair → keysign` ROUTING that
 //  each flow used to re-declare in its own `*Route` enum + builder + router.
-//  Each flow's per-flow `verify` screen navigates INTO these cases. The former
+//  Each flow's review (`KeysignReview`) proceeds INTO these cases. The former
 //  `.fastKeysign` + `.keysign(input:)` routes are merged into one
 //  `.keysign(SigningKeysignRoute)`. The done/overview is no longer a route:
 //  `SigningKeysignScreen` crossfades to it in place once keysign finishes.
 //
 //  The flow-specific variance is folded behind `SigningTxContext`, which
-//  threads the transaction identity + retry signal from verify through
-//  pair/keysign so the keysign screen can build the overview inline and pop
-//  back to verify on a retryable failure.
+//  threads the transaction identity + retry signal from the review through
+//  pair/keysign so the keysign screen can build the overview inline and
+//  reopen the review on a retryable failure.
 //
 //  Vault convention: Send/FunctionCall carry the live `Vault` (as their
 //  routes always have). Swap deliberately carries `Vault.pubKeyECDSA` and
@@ -26,6 +26,24 @@
 enum SigningRoute: Hashable {
     case pair(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(SigningKeysignRoute)
+}
+
+extension SigningRoute {
+    /// Every review's fast-vs-paired branch, in one place. Fast vaults sign
+    /// server-side with no peer to pair with, so a present fast password
+    /// routes straight to keysign; an empty one means the user chose paired
+    /// signing. Security-relevant: keep this the single source of truth
+    /// rather than re-deriving it at each review's call site.
+    static func afterReview(
+        context: SigningTxContext,
+        keysignPayload: KeysignPayload,
+        fastVaultPassword: String
+    ) -> SigningRoute {
+        if let fastPassword = fastVaultPassword.nilIfEmpty {
+            return .keysign(.fast(context: context, keysignPayload: keysignPayload, fastVaultPassword: fastPassword))
+        }
+        return .pair(context: context, keysignPayload: keysignPayload, fastVaultPassword: nil)
+    }
 }
 
 /// The two keysign entry modes, merged from the former `.fastKeysign` +
@@ -43,9 +61,9 @@ enum SigningKeysignRoute: Hashable {
     case fast(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String)
 }
 
-/// Flow-specific transaction identity threaded from `verify` through
+/// Flow-specific transaction identity threaded from the review through
 /// `pair`/`fastKeysign` into `keysign`, so the keysign screen can render the
-/// inline overview/done surface and pop back to `verify` on a retryable
+/// inline overview/done surface and reopen the review on a retryable
 /// broadcast failure. Keeps each flow's existing vault convention
 /// (Send/FunctionCall carry the live `Vault`; Swap carries `pubKeyECDSA` and
 /// re-fetches).

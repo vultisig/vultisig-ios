@@ -11,6 +11,7 @@ private let logger = Log.defi.view
 
 struct DefiChainMainScreen: View {
     @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     @ObservedObject var vault: Vault
     let chain: Chain
 
@@ -379,14 +380,14 @@ struct DefiChainMainScreen: View {
 
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
         guard let tx = screenModel.makeGovernanceVoteTransaction(proposal: proposal, choice: choice) else { return }
-        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
+        reviewPresenter.present(.functionTransaction(tx: tx, vault: vault))
     }
 
     func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
         guard let tx = screenModel.makeGovernanceWeightedVoteTransaction(proposal: proposal, options: options) else {
             return
         }
-        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
+        reviewPresenter.present(.functionTransaction(tx: tx, vault: vault))
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {
@@ -410,7 +411,7 @@ struct DefiChainMainScreen: View {
         }
     }
 
-    /// Builds the unsigned tx and pushes straight to Verify — used by the Solana
+    /// Builds the unsigned tx and opens its review — used by the Solana
     /// unstake/withdraw rows, which have no editable field and are already gated
     /// upstream (active/activating for unstake, fully inactive for withdraw), so
     /// the intermediate confirm screen would be redundant. The chain-specific
@@ -420,7 +421,7 @@ struct DefiChainMainScreen: View {
             isLoading = true
             defer { isLoading = false }
             let sendTx = await screenModel.buildVerifyTransaction(for: builder)
-            router.navigate(to: FunctionTransactionRoute.verify(tx: sendTx, vault: vault))
+            reviewPresenter.present(.functionTransaction(tx: sendTx, vault: vault))
         }
     }
 }
@@ -573,4 +574,5 @@ private extension DefiChainMainScreen {
 #Preview {
     DefiChainMainScreen(vault: .example, chain: .thorChain)
         .environmentObject(HomeViewModel())
+        .environment(KeysignReviewPresenter())
 }

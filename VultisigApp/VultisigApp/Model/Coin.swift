@@ -490,3 +490,14 @@ extension Coin {
         }
     }
 }
+
+// MARK: - Review
+
+extension Coin {
+    /// The chain's logo, badged on the coin's own unless the coin IS the
+    /// chain's native asset, so e.g. ETH on Base never reads as ETH on
+    /// Ethereum.
+    var chainBadgeLogo: String? {
+        logo == chain.logo ? nil : chain.logo
+    }
+}

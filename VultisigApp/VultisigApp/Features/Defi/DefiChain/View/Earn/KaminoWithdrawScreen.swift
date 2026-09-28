@@ -19,7 +19,7 @@ import SwiftUI
 
 struct KaminoWithdrawScreen: View {
     @StateObject private var viewModel: KaminoWithdrawViewModel
-    @Environment(\.router) private var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     @State private var percentageSelected: Double?
     @State private var error: HelperError?
@@ -166,8 +166,8 @@ struct KaminoWithdrawScreen: View {
             return
         }
 
-        router.navigate(
-            to: SendRoute.verify(
+        reviewPresenter.present(
+            .send(
                 tx: withdraw.transaction,
                 retrySignal: SendRetrySignal(),
                 vault: viewModel.vault,

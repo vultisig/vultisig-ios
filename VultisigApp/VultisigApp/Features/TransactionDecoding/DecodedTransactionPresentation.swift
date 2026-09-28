@@ -15,7 +15,7 @@ enum DecodedTransactionPresentation {
     static let deliberatelySilent: [DecodedOperation: String] = [
         // These screens already provide a more specific presentation.
         .transfer: "the send screens already describe a transfer",
-        .swap: "SwapVerifyScreen renders both sides, which a verb cannot improve on",
+        .swap: "the swap review renders both sides, which a verb cannot improve on",
         .approve: "the approval screens name the spender and the allowance",
 
         // Nothing useful to add.

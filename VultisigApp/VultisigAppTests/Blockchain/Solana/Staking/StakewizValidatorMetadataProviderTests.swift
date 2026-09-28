@@ -32,7 +32,7 @@ final class StakewizValidatorMetadataProviderTests: XCTestCase {
         XCTAssertEqual(meta?.name, "Yurbason")
         // No Keybase identity in this row → falls back to the Stakewiz image.
         XCTAssertEqual(meta?.logoURL, "https://media.stakewiz.com/yurbason.png")
-        // apy_estimate 5.72 (percent) stored as the 0.0572 fraction.
+        // total_apy 5.72 (percent) stored as the 0.0572 fraction.
         let apy = (meta?.apyEstimate as NSDecimalNumber?)?.doubleValue ?? 0
         XCTAssertEqual(apy, 0.0572, accuracy: 0.00001)
         XCTAssertEqual(meta?.score, 99) // wiz_score 99.44 → rounded
@@ -180,7 +180,8 @@ final class StakewizValidatorMetadataProviderTests: XCTestCase {
             "keybase": "",
             "image": "https://media.stakewiz.com/yurbason.png",
             "commission": 0,
-            "apy_estimate": 5.72,
+            "apy_estimate": 8.14,
+            "total_apy": 5.72,
             "wiz_score": 99.44,
             "delinquent": false
           },
@@ -190,7 +191,7 @@ final class StakewizValidatorMetadataProviderTests: XCTestCase {
             "keybase": "web34ever",
             "image": "https://media.stakewiz.com/web34ever.png",
             "commission": 5,
-            "apy_estimate": 5.81,
+            "total_apy": 5.81,
             "wiz_score": 98.5,
             "delinquent": false
           }

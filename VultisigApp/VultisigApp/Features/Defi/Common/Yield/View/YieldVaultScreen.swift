@@ -24,6 +24,7 @@ struct YieldVaultScreen: View {
 
     @StateObject private var model: YieldViewModel
     @Environment(\.router) private var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
 
     /// Per-vault, per-provider persisted dismissal for the empty-state info banner.
     @AppStorage private var infoBannerDismissed: Bool
@@ -412,8 +413,8 @@ struct YieldVaultScreen: View {
                 toAddress: recipient,
                 amount: redemption.amount.description
             )
-            router.navigate(
-                to: SendRoute.verify(
+            reviewPresenter.present(
+                .send(
                     tx: displayTx,
                     retrySignal: SendRetrySignal(),
                     vault: vault,

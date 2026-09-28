@@ -22,21 +22,6 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildVerifyScreen(
-        tx: SendTransaction,
-        retrySignal: SendRetrySignal,
-        vault: Vault,
-        prebuiltKeysignPayload: KeysignPayload? = nil
-    ) -> some View {
-        SendVerifyScreen(
-            transaction: tx,
-            retrySignal: retrySignal,
-            vault: vault,
-            prebuiltKeysignPayload: prebuiltKeysignPayload
-        )
-    }
-
-    @ViewBuilder
     func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
         BanxaDisclaimer(url: getBuyURL(address: address, blockChainCode: blockChainCode, coinType: coinType))
     }

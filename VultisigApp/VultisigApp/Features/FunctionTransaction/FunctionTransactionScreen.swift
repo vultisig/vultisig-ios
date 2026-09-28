@@ -11,7 +11,7 @@ import SwiftUI
 private let logger = Log.send.view
 
 struct FunctionTransactionScreen: View {
-    @Environment(\.router) var router
+    @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     let vault: Vault
     let transactionType: FunctionTransactionType
     private let mayaCacaoStakingPreflight = MayaCacaoStakingPreflight()
@@ -369,14 +369,14 @@ struct FunctionTransactionScreen: View {
                         "Failed to derive staking display fee: \(error.localizedDescription, privacy: .public)"
                     )
                 }
-                router.navigate(to: FunctionTransactionRoute.verify(tx: immutableTx, vault: vault))
+                reviewPresenter.present(.functionTransaction(tx: immutableTx, vault: vault))
                 return
             }
 
             // Priced before it is disclosed. Nothing downstream re-resolves the
             // fee for display, so this figure is the one the user approves.
             let sendTx = await transactionBuilder.buildPricedSendTransaction(vault: vault)
-            router.navigate(to: FunctionTransactionRoute.verify(tx: sendTx, vault: vault))
+            reviewPresenter.present(.functionTransaction(tx: sendTx, vault: vault))
         }
     }
 
@@ -417,4 +417,5 @@ struct FunctionTransactionScreen: View {
         vault: .example,
         transactionType: .bond(coin: .example, node: "test")
     )
+    .environment(KeysignReviewPresenter())
 }

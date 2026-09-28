@@ -9,7 +9,7 @@ import SwiftUI
 /// `.unverified` tokens. Deliberately does NOT list them: the sheet exists to
 /// make the user pause on the fact that their selection includes unverified
 /// entries, not to be a wall of tickers and addresses nobody reads. Mirrors
-/// `SecurityScannerBottomSheet`: the safe action is the primary button,
+/// the scan verdict (`KeysignReviewVerdictView`): the safe action is the primary button,
 /// "continue anyway" is the quiet secondary.
 ///
 /// Trade-off to be aware of when changing this: the ⚠ badge on the grid cell
