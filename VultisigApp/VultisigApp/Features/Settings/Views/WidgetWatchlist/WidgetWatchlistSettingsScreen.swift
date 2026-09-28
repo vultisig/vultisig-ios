@@ -13,8 +13,10 @@ struct WidgetWatchlistSettingsScreen: View {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 14) {
                     selectionSummary
+                    searchField
                     partialLoadError
                         .showIf(viewModel.loadFailed && !viewModel.assets.isEmpty)
+                    searchStatus
                     assetSection
                 }
             }
@@ -62,15 +64,39 @@ struct WidgetWatchlistSettingsScreen: View {
         .padding(.vertical, 8)
     }
 
+    private var searchField: some View {
+        SearchTextField(value: $viewModel.searchText)
+    }
+
+    @ViewBuilder
+    private var searchStatus: some View {
+        if viewModel.isSearching {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        } else if viewModel.searchFailed && viewModel.filteredAssets.isEmpty {
+            Text("widgetWatchlistLoadError".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        } else if viewModel.searchFailed {
+            Text("widgetWatchlistLoadError".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+        }
+    }
+
     @ViewBuilder
     private var assetSection: some View {
         SettingsSectionView(title: "widgetWatchlistAssets".localized) {
-            if viewModel.assets.isEmpty {
+            let assets = viewModel.filteredAssets
+            if assets.isEmpty {
                 statusView
             } else {
-                ForEach(Array(viewModel.assets.enumerated()), id: \.element.id) { index, asset in
+                ForEach(Array(assets.enumerated()), id: \.element.id) { index, asset in
                     assetRow(asset)
-                        .commonListItemContainer(index: index, itemsCount: viewModel.assets.count)
+                        .commonListItemContainer(index: index, itemsCount: assets.count)
                 }
             }
         }
@@ -92,7 +118,19 @@ struct WidgetWatchlistSettingsScreen: View {
             }
             .frame(maxWidth: .infinity)
             .padding(24)
+        } else if showsEmptySearchResult {
+            Text("noResultFound".localized)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(24)
         }
+    }
+
+    private var showsEmptySearchResult: Bool {
+        viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isNotEmpty &&
+            !viewModel.isSearching &&
+            !viewModel.searchFailed
     }
 
     private func assetRow(_ asset: WidgetWatchlistAsset) -> some View {

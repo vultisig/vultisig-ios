@@ -10,29 +10,55 @@ import WidgetKit
 final class WidgetWatchlistSettingsViewModel: ObservableObject {
     @Published private(set) var selectedAssets: [WidgetWatchlistAsset]
     @Published private(set) var catalogAssets: [WidgetWatchlistAsset]
+    @Published private(set) var isSearching = false
+    @Published private(set) var searchFailed = false
     @Published var isLoading = false
+    @Published var searchText = "" {
+        didSet { searchTextDidChange() }
+    }
     @Published private(set) var loadFailed = false
 
     private let marketService: WidgetMarketService
+    private let searchClient: (any WidgetAssetSearching)?
     private let defaults: UserDefaults?
+    private let searchDebounceNanoseconds: UInt64
+    private var remoteSearchAssets: [WidgetWatchlistAsset] = []
+    private var searchTask: Task<Void, Never>?
+    private var searchGeneration = 0
     private var hasLoaded = false
     private var hasStoredSelection: Bool
 
     init(
         marketClient: any WidgetMarketRemote = WidgetMarketClient(),
+        searchClient: (any WidgetAssetSearching)? = nil,
         marketCache: WidgetMarketCache = WidgetMarketCache(),
-        defaults: UserDefaults? = WidgetSharedStorage.defaults
+        defaults: UserDefaults? = WidgetSharedStorage.defaults,
+        searchDebounceNanoseconds: UInt64 = 300_000_000
     ) {
         self.marketService = WidgetMarketService(remote: marketClient, cache: marketCache)
+        self.searchClient = searchClient ?? (marketClient as? any WidgetAssetSearching)
         self.defaults = defaults
+        self.searchDebounceNanoseconds = searchDebounceNanoseconds
         self.selectedAssets = WidgetSharedStorage.watchlistAssets(in: defaults)
         self.catalogAssets = LocalWidgetWatchlistCatalog.assets
         self.hasStoredSelection = WidgetSharedStorage.hasStoredWatchlist(in: defaults)
     }
 
+    deinit {
+        searchTask?.cancel()
+    }
+
     var assets: [WidgetWatchlistAsset] {
         let catalogIDs = Set(catalogAssets.map(\.id))
         return selectedAssets.filter { !catalogIDs.contains($0.id) } + catalogAssets
+    }
+
+    var filteredAssets: [WidgetWatchlistAsset] {
+        let query = normalizedSearchText
+        guard !query.isEmpty else { return assets }
+
+        let localMatches = assets.filter { $0.matchesSearch(query) }
+        return mergedAssets(localMatches + remoteSearchAssets)
     }
 
     var selectionCount: Int { selectedAssets.count }
@@ -94,6 +120,65 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         persistSelection(reloadWidget: true)
     }
 
+    private var normalizedSearchText: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func searchTextDidChange() {
+        searchGeneration += 1
+        let generation = searchGeneration
+        let query = normalizedSearchText
+        searchTask?.cancel()
+        remoteSearchAssets = []
+        searchFailed = false
+
+        guard !query.isEmpty else {
+            isSearching = false
+            return
+        }
+
+        guard let searchClient else {
+            isSearching = false
+            return
+        }
+
+        isSearching = true
+        searchTask = Task { [weak self, searchDebounceNanoseconds] in
+            if searchDebounceNanoseconds > 0 {
+                try? await Task.sleep(nanoseconds: searchDebounceNanoseconds)
+            }
+            guard !Task.isCancelled else { return }
+            await self?.performRemoteSearch(
+                query: query,
+                generation: generation,
+                searchClient: searchClient
+            )
+        }
+    }
+
+    private func performRemoteSearch(
+        query: String,
+        generation: Int,
+        searchClient: any WidgetAssetSearching
+    ) async {
+        do {
+            let identities = try await searchClient.searchAssets(matching: query)
+            guard generation == searchGeneration, query == normalizedSearchText else { return }
+            remoteSearchAssets = identities.map { WidgetWatchlistAsset(identity: $0) }
+            searchFailed = false
+            isSearching = false
+        } catch is CancellationError {
+            return
+        } catch let error as URLError where error.code == .cancelled {
+            return
+        } catch {
+            guard generation == searchGeneration, query == normalizedSearchText else { return }
+            remoteSearchAssets = []
+            searchFailed = true
+            isSearching = false
+        }
+    }
+
     private func persistSelection(reloadWidget: Bool) {
         WidgetSharedStorage.setWatchlistAssets(selectedAssets, in: defaults)
         hasStoredSelection = true
@@ -125,5 +210,22 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
             guard !result.contains(where: { $0.id == asset.id }) else { return }
             result.append(asset)
         }
+    }
+}
+
+private extension WidgetWatchlistAsset {
+    init(identity: WidgetAssetIdentity) {
+        self.init(
+            id: identity.id.lowercased(),
+            symbol: identity.symbol.uppercased(),
+            name: identity.name,
+            imageURL: nil
+        )
+    }
+
+    func matchesSearch(_ query: String) -> Bool {
+        id.localizedCaseInsensitiveContains(query) ||
+            symbol.localizedCaseInsensitiveContains(query) ||
+            name.localizedCaseInsensitiveContains(query)
     }
 }
