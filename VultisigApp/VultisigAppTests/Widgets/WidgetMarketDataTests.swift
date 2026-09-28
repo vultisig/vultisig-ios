@@ -408,6 +408,120 @@ final class WidgetMarketDataTests: XCTestCase {
     }
 
     @MainActor
+    func testWatchlistSearchRetainsMatchingRemoteResultWhileShorterQueryIsPending() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plughcoin": [WidgetAssetIdentity(id: "plughcoin-token", symbol: "PLUGHCOIN", name: "Plughcoin Token")],
+            "plugh": [WidgetAssetIdentity(id: "plughcoin-token", symbol: "PLUGHCOIN", name: "Plughcoin Token")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plughcoin"
+        await search.waitUntilStarted("plughcoin")
+        await search.resume("plughcoin")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plughcoin-token"])
+
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+
+        XCTAssertTrue(viewModel.isSearching)
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plughcoin-token"])
+
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+    }
+
+    @MainActor
+    func testWatchlistSearchHidesUnrelatedRemoteResultWhileDivergentQueryIsPending() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plugh": [WidgetAssetIdentity(id: "plugh-token", symbol: "PLUGH", name: "Plugh Token")],
+            "zzz": [WidgetAssetIdentity(id: "zebra-coin", symbol: "ZZZ", name: "Zebra Coin")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plugh-token"])
+
+        viewModel.searchText = "zzz"
+        await search.waitUntilStarted("zzz")
+
+        XCTAssertTrue(viewModel.isSearching)
+        XCTAssertFalse(viewModel.filteredAssets.contains { $0.id == "plugh-token" })
+        XCTAssertTrue(viewModel.filteredAssets.isEmpty)
+
+        await search.resume("zzz")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["zebra-coin"])
+    }
+
+    @MainActor
+    func testWatchlistSearchClearsRemoteResultsForEmptyQueryAndFinalEmptyResponse() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plugh": [WidgetAssetIdentity(id: "plugh-token", symbol: "PLUGH", name: "Plugh Token")],
+            "zzzz": []
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plugh-token"])
+
+        viewModel.searchText = ""
+
+        XCTAssertEqual(viewModel.filteredAssets.first?.id, "bitcoin")
+        XCTAssertFalse(viewModel.filteredAssets.contains { $0.id == "plugh-token" })
+        XCTAssertFalse(viewModel.isSearching)
+
+        viewModel.searchText = "zzzz"
+        await search.waitUntilStarted("zzzz")
+        await search.resume("zzzz")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertTrue(viewModel.filteredAssets.isEmpty)
+        XCTAssertFalse(viewModel.searchFailed)
+        XCTAssertFalse(viewModel.isSearching)
+    }
+
+    @MainActor
     func testWatchlistSearchKeepsOfflineLocalResults() async throws {
         let (suiteName, defaults) = try temporaryDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -487,7 +601,7 @@ final class WidgetMarketDataTests: XCTestCase {
         let assets = (1...5).map { marketAsset(id: "asset-\($0)", symbol: "A\($0)") }
         let remote = WidgetMarketListStub(assets: assets)
         let search = WidgetMarketSearchStub(results: [
-            "six": [WidgetAssetIdentity(id: "asset-6", symbol: "A6", name: "Asset 6")]
+            "six": [WidgetAssetIdentity(id: "asset-six", symbol: "SIX", name: "Asset Six")]
         ])
         let viewModel = WidgetWatchlistSettingsViewModel(
             marketClient: remote,

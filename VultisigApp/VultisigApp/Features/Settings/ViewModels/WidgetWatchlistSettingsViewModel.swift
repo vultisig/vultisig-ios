@@ -58,7 +58,8 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         guard !query.isEmpty else { return assets }
 
         let localMatches = assets.filter { $0.matchesSearch(query) }
-        return mergedAssets(localMatches + remoteSearchAssets)
+        let remoteMatches = remoteSearchAssets.filter { $0.matchesSearch(query) }
+        return mergedAssets(localMatches + remoteMatches)
     }
 
     var selectionCount: Int { selectedAssets.count }
@@ -129,10 +130,10 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         let generation = searchGeneration
         let query = normalizedSearchText
         searchTask?.cancel()
-        remoteSearchAssets = []
         searchFailed = false
 
         guard !query.isEmpty else {
+            remoteSearchAssets = []
             isSearching = false
             return
         }

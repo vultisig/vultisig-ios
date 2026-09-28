@@ -73,11 +73,7 @@ struct WidgetWatchlistSettingsScreen: View {
 
     @ViewBuilder
     private var searchStatus: some View {
-        if viewModel.isSearching {
-            ProgressView()
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-        } else if viewModel.searchFailed && viewModel.filteredAssets.isEmpty {
+        if viewModel.searchFailed && viewModel.filteredAssets.isEmpty {
             Text("widgetWatchlistLoadError".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
