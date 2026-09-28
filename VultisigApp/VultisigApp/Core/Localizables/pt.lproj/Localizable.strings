@@ -1603,7 +1603,6 @@
 "swapSlippageToleranceTooTight" = "O preço ultrapassou a sua tolerância de slippage. Aumente a definição de slippage nas definições de troca ou tente um valor menor.";
 "swapTrackingLink" = "Link de rastreamento da troca";
 "swapTradingHalted" = "A negociação deste ativo está temporariamente suspensa. Tente novamente mais tarde.";
-"swapTXHash" = "Hash da Tx da troca";
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
 "swapVerifyCheckbox3Description" = "Concordo em fornecer permissão ERC20 para o valor exato da troca";

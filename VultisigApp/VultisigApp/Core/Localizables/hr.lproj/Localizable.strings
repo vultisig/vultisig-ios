@@ -1603,7 +1603,6 @@
 "swapSlippageToleranceTooTight" = "Cijena je premašila vašu toleranciju klizanja. Povećajte postavku klizanja u postavkama zamjene ili pokušajte s manjim iznosom.";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
 "swapTradingHalted" = "Trgovanje ovom imovinom privremeno je zaustavljeno. Pokušajte ponovno kasnije.";
-"swapTXHash" = "Zamjenski Tx hash";
 "swapVerifyCheckbox1Description" = "Iznos zamjene je točan";
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dopuštenje za točan iznos zamjene";

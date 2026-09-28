@@ -2,9 +2,16 @@
 //  TransactionDoneHashRowView.swift
 //  VultisigApp
 //
-//  Tx-hash row used by every "done" surface (Send / Swap / QBTC /
-//  cosigner). Renders the truncated hash, the optional copy button,
+//  Tx-hash row used by every "done" surface (Send / Swap approval+main
+//  hash / QBTC / cosigner) — one shared component, mirroring Android's
+//  `TxDetails`. Renders the truncated hash, the optional copy button,
 //  and the explorer-link button.
+//
+//  The explorer button is hidden whenever `explorerLink` is empty
+//  (e.g. a chain with no mapped explorer) rather than rendering a dead
+//  button, and the copy action falls back to the raw hash in that
+//  case instead of copying nothing — same rule Android's `TxDetails`
+//  applies.
 //
 
 import SwiftUI
@@ -13,13 +20,33 @@ struct TransactionDoneHashRowView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.notifyHashCopied) var notifyHashCopied
 
+    /// Localization key for the row's leading label. Defaults to
+    /// "transactionHash" — Send Done and Swap Done's main hash row both use
+    /// it (Android titles both "Transaction Hash"); Swap Done's approval row
+    /// overrides it to "approvalTXHash" without duplicating the view.
+    let title: String
     let hash: String
     let explorerLink: String
     let showCopy: Bool
 
+    init(title: String = "transactionHash", hash: String, explorerLink: String, showCopy: Bool) {
+        self.title = title
+        self.hash = hash
+        self.explorerLink = explorerLink
+        self.showCopy = showCopy
+    }
+
+    var hasExplorerLink: Bool {
+        explorerLink.isNotEmpty
+    }
+
+    var clipboardValue: String {
+        hasExplorerLink ? explorerLink : hash
+    }
+
     var body: some View {
         HStack(spacing: 32) {
-            Text(NSLocalizedString("transactionHash", comment: ""))
+            Text(title.localized)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
@@ -33,7 +60,9 @@ struct TransactionDoneHashRowView: View {
                     hashView
                 }
 
-                explorerLinkView
+                if hasExplorerLink {
+                    explorerLinkView
+                }
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -77,7 +106,7 @@ struct TransactionDoneHashRowView: View {
 
     func copyHash() {
         notifyHashCopied()
-        ClipboardManager.copyToClipboard(explorerLink)
+        ClipboardManager.copyToClipboard(clipboardValue)
     }
 }
 
@@ -85,6 +114,14 @@ struct TransactionDoneHashRowView: View {
     TransactionDoneHashRowView(
         hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
         explorerLink: "https://thorchain.net/tx/294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
+        showCopy: true
+    )
+}
+
+#Preview("No explorer link") {
+    TransactionDoneHashRowView(
+        hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
+        explorerLink: "",
         showCopy: true
     )
 }
