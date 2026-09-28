@@ -68,7 +68,10 @@ final class SwapKitDashTests: XCTestCase {
 
     func testDashSignerProducesOneHashPerInput() throws {
         let payload = try makePayload()
-        let hashes = try SwapKitDashSigner.preSigningHashes(payload: payload)
+        let hashes = try SwapKitDashSigner.preSigningHashes(
+            payload: payload,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )
         XCTAssertEqual(hashes.count, 1)
         // `XCTAssertEqual` is non-fatal, so a count mismatch would
         // continue into `hashes[0]` and crash with an index out-of-range
@@ -109,9 +112,13 @@ final class SwapKitDashTests: XCTestCase {
             SwapKitSwapResponse.self,
             from: "v3-real-dash-swap"
         )
-        guard case let .dashPsbt(base64) = response.tx else {
+        guard case let .dashPsbt(originalBase64) = response.tx else {
             throw NSError(domain: "test", code: 0)
         }
+        // `preSigningHashes` now verifies the input is locked to the signing
+        // key; re-point it at the only key this test suite holds (see
+        // `PSBTInputKeyPatcher`, `SwapKitLegacyP2PKHVersionTests.swift`).
+        let base64 = try PSBTInputKeyPatcher.patchToTestKey(base64: originalBase64)
         let bytes = try XCTUnwrap(Data(base64Encoded: base64))
         return SwapKitSwapPayload(
             fromCoin: makeDashCoin(),

@@ -75,7 +75,10 @@ final class SwapKitDogeTests: XCTestCase {
 
     func testDogeSignerProducesOneHashPerInput() throws {
         let payload = try makePayload()
-        let hashes = try SwapKitDogeSigner.preSigningHashes(payload: payload)
+        let hashes = try SwapKitDogeSigner.preSigningHashes(
+            payload: payload,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )
         XCTAssertEqual(hashes.count, 1, "Fixture has 1 input → 1 preimage hash")
         for hash in hashes {
             XCTAssertEqual(hash.count, 64, "SHA256d preimage hashes are 32 bytes → 64 hex chars")
@@ -128,7 +131,10 @@ final class SwapKitDogeTests: XCTestCase {
 
     func testDogeSignerRejectsEmptyPayload() {
         let empty = makeEmptyPayload()
-        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(payload: empty)) { err in
+        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(
+            payload: empty,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
             guard case SwapKitDogeSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped SwapKitLegacyP2PKHSignerError, got \(err)")
             }
@@ -152,7 +158,10 @@ final class SwapKitDogeTests: XCTestCase {
             subProvider: "NEAR",
             swapID: "test"
         )
-        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(payload: bad)) { err in
+        XCTAssertThrowsError(try SwapKitDogeSigner.preSigningHashes(
+            payload: bad,
+            pubKeyHex: SigningGoldenSigner.publicKeyHex(for: .secp256k1)
+        )) { err in
             guard case SwapKitDogeSignerError.underlying(let inner) = err else {
                 return XCTFail("expected wrapped error, got \(err)")
             }
@@ -184,9 +193,13 @@ final class SwapKitDogeTests: XCTestCase {
             SwapKitSwapResponse.self,
             from: "v3-real-doge-swap"
         )
-        guard case let .dogecoinPsbt(base64) = response.tx else {
+        guard case let .dogecoinPsbt(originalBase64) = response.tx else {
             throw NSError(domain: "test", code: 0)
         }
+        // `preSigningHashes` now verifies the input is locked to the signing
+        // key; re-point it at the only key this test suite holds (see
+        // `PSBTInputKeyPatcher`, `SwapKitLegacyP2PKHVersionTests.swift`).
+        let base64 = try PSBTInputKeyPatcher.patchToTestKey(base64: originalBase64)
         let bytes = try XCTUnwrap(Data(base64Encoded: base64))
         return SwapKitSwapPayload(
             fromCoin: makeDogeCoin(),

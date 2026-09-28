@@ -42,13 +42,15 @@ enum SwapKitDogeSigner {
     /// Compute legacy ECDSA P2PKH sighashes for every input in the SwapKit
     /// DOGE PSBT. WalletCore handles the per-input preimage construction via
     /// `CoinType.dogecoin` + `BitcoinScript.buildPayToPublicKeyHash` (same
-    /// path as the native DOGE send).
-    static func preSigningHashes(payload: SwapKitSwapPayload) throws -> [String] {
+    /// path as the native DOGE send). Verifies every input is locked to
+    /// `pubKeyHex` before returning any hash — see
+    /// `SwapKitLegacyP2PKHSigner.preSigningHashes`.
+    static func preSigningHashes(payload: SwapKitSwapPayload, pubKeyHex: String) throws -> [String] {
         do {
             return try SwapKitLegacyP2PKHSigner.preSigningHashes(
                 psbtBytes: payload.txPayload,
                 coin: .dogecoin,
-                targetAddress: payload.targetAddress
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitDogeSignerError.underlying(err)
@@ -69,8 +71,7 @@ enum SwapKitDogeSigner {
                 psbtBytes: payload.txPayload,
                 coin: .dogecoin,
                 signatures: signatures,
-                pubKeyHex: pubKeyHex,
-                targetAddress: payload.targetAddress
+                pubKeyHex: pubKeyHex
             )
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitDogeSignerError.underlying(err)

@@ -81,11 +81,20 @@ struct KeysignMessageFactory {
                 case "PSBT":
                     messages += try SwapKitBTCSigner.preSigningHashes(payload: swapKitPayload)
                 case "PSBT_DOGE":
-                    messages += try SwapKitDogeSigner.preSigningHashes(payload: swapKitPayload)
+                    messages += try SwapKitDogeSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        pubKeyHex: payload.coin.hexPublicKey
+                    )
                 case "PSBT_BCH":
-                    messages += try SwapKitBCHSigner.preSigningHashes(payload: swapKitPayload)
+                    messages += try SwapKitBCHSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        pubKeyHex: payload.coin.hexPublicKey
+                    )
                 case "PSBT_DASH":
-                    messages += try SwapKitDashSigner.preSigningHashes(payload: swapKitPayload)
+                    messages += try SwapKitDashSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        pubKeyHex: payload.coin.hexPublicKey
+                    )
                 case "PSBT_ZEC":
                     messages += try SwapKitZcashSigner.preSigningHashes(payload: swapKitPayload, zcashBranchId: payload.chainSpecific.zcashBranchId)
                 case "SUI":
