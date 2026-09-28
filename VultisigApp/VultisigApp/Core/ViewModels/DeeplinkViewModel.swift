@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum DeeplinkFlowType {
+enum DeeplinkFlowType: Equatable {
     case NewVault
     case SignTransaction
     case Send
@@ -23,6 +23,7 @@ class DeeplinkViewModel: ObservableObject {
     @Published var receivedUrl: URL? = nil
     @Published var viewID = UUID()
     @Published var address: String? = nil
+    @Published var walletConnectURI: String? = nil
 
     // Properties for Send deeplink flow
     @Published var assetChain: String? = nil
@@ -76,6 +77,7 @@ class DeeplinkViewModel: ObservableObject {
         jsonData = nil
         receivedUrl = nil
         address = nil
+        walletConnectURI = nil
         assetChain = nil
         assetTicker = nil
         sendAmount = nil
@@ -89,6 +91,7 @@ class DeeplinkViewModel: ObservableObject {
         tssType = result.tssType
         jsonData = result.jsonData
         address = result.address
+        walletConnectURI = result.walletConnectURI
         assetChain = result.assetChain
         assetTicker = result.assetTicker
         sendAmount = result.sendAmount
@@ -111,6 +114,7 @@ struct DeeplinkLogic {
         var tssType: TssType?
         var jsonData: String?
         var address: String?
+        var walletConnectURI: String?
         var assetChain: String?
         var assetTicker: String?
         var sendAmount: String?
@@ -120,6 +124,10 @@ struct DeeplinkLogic {
     }
 
     func extractParameters(_ url: URL, vaults: [Vault]) throws -> DeeplinkResult {
+        if let walletConnectURI = WalletConnectURIParser.normalizedURI(from: url) {
+            return buildWalletConnectResult(uri: walletConnectURI)
+        }
+
         guard let urlComponents = URLComponents(string: url.absoluteString) else {
             return buildAddressOnlyResult(url: url)
         }
@@ -189,6 +197,14 @@ struct DeeplinkLogic {
         result.address = Utils.sanitizeAddress(address: addressString)
         result.type = .Unknown
         result.shouldNotify = true
+        return result
+    }
+
+    private func buildWalletConnectResult(uri: String) -> DeeplinkResult {
+        var result = DeeplinkResult()
+        result.type = .Unknown
+        result.walletConnectURI = uri
+        result.shouldNotify = false
         return result
     }
 

@@ -34,6 +34,7 @@ struct VultisigApp: App {
 
     init() {
         VultisigResources.registerFonts()
+        WalletConnectCoordinator.shared.configureFromMainBundle()
 
 #if os(macOS)
         // Check for --version flag

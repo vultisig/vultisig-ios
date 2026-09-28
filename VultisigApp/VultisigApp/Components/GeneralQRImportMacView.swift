@@ -167,6 +167,16 @@ struct GeneralQRImportMacView: View {
             }
 
             try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+
+            if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+                Task { @MainActor in
+                    do {
+                        try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
+                    } catch {
+                        deeplinkError = error
+                    }
+                }
+            }
         } catch {
             deeplinkError = error
         }

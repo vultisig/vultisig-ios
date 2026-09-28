@@ -49,6 +49,13 @@ packages:
   RiveRuntime:
     url: https://github.com/rive-app/rive-ios
     from: 6.5.11
+  ReownSwift:
+    url: https://github.com/reown-com/reown-swift
+    # Pin before the Yttrium binary artifact, which collides with vscore.xcframework's modulemap output.
+    exactVersion: 1.0.7
+  Starscream:
+    url: https://github.com/daltoniam/Starscream
+    from: 4.0.4
   SwiftLintPlugins:
     url: https://github.com/SimplyDanny/SwiftLintPlugins
     from: 0.63.1
@@ -197,6 +204,7 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: Allow access to your local network to discover and connect to your other devices on the same Wi-Fi so they can pair and sign transactions together.
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Allow access to your photo library to save vault backup QR codes and select saved QR code images to import vaults or addresses.
+        INFOPLIST_KEY_WalletConnectProjectId: $(WALLETCONNECT_PROJECT_ID)
         "INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]": "Vultisig needs screen recording permission to scan QR codes displayed on your screen."
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": YES
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": YES
@@ -220,6 +228,9 @@ targets:
           # Default VULTI_LOG selector string, surfaced to the app via the
           # Info.plist `VultiLogConfig` key (which expands `$(VULTI_LOG_CONFIG)`).
           VULTI_LOG_CONFIG: "*:info"
+          # Runtime-supplied Reown Cloud project ID. Keep empty in source so
+          # WalletConnect stays disabled unless a local/CI config injects it.
+          WALLETCONNECT_PROJECT_ID: ""
         Release:
           # Matches the current pbxproj — Release is effectively Debug-like.
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
@@ -227,6 +238,9 @@ targets:
           ALLOW_TARGET_PLATFORM_SPECIALIZATION: YES
           # No LOGGING flag here → logging is compiled out; keep the plist default off.
           VULTI_LOG_CONFIG: "*:off"
+          # Runtime-supplied Reown Cloud project ID. Keep empty in source so
+          # WalletConnect stays disabled unless a local/CI config injects it.
+          WALLETCONNECT_PROJECT_ID: ""
 
     dependencies:
       # The iOS-only widget extension is embedded only in the iOS destination;
@@ -256,6 +270,9 @@ targets:
       - package: CodeScanner
       - package: CryptoSwift
       - package: RiveRuntime
+      - package: ReownSwift
+        product: WalletConnect
+      - package: Starscream
       - package: VultisigCommonData
       - package: WalletCore
         product: WalletCore
