@@ -32,11 +32,13 @@ struct ContentView: View {
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @Environment(\.sheetPresentedCounterManager) var sheetPresentedCounterManager
     @ObservedObject private var appLockHost = AppLockHost.shared
+    @ObservedObject private var walletConnectCoordinator = WalletConnectCoordinator.shared
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
     @State private var pendingDeeplinks: [URL] = []
     @State private var dismissSplashTask: Task<Void, Never>?
+    @State private var showWalletConnectProposal = false
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -88,6 +90,23 @@ struct ContentView: View {
         .colorScheme(.dark)
         .accentColor(.white)
         .sheetPresentedStyle()
+        .presentsWhenUnlocked(on: walletConnectCoordinator.pendingProposal?.id) {
+            showWalletConnectProposal = walletConnectCoordinator.pendingProposal != nil
+        }
+        .onChange(of: walletConnectCoordinator.pendingProposal?.id) { _, proposalId in
+            guard proposalId == nil else { return }
+            showWalletConnectProposal = false
+        }
+        .presentsWhenUnlocked($showWalletConnectProposal)
+        .sheet(isPresented: $showWalletConnectProposal) {
+            if let proposal = walletConnectCoordinator.pendingProposal {
+                WalletConnectProposalApprovalSheet(
+                    proposal: proposal,
+                    coordinator: walletConnectCoordinator
+                )
+                .interactiveDismissDisabled()
+            }
+        }
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
