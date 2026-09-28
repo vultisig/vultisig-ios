@@ -51,17 +51,22 @@ final class TransactionDoneHashRowViewTests: XCTestCase {
         XCTAssertEqual(row.title, "transactionHash")
     }
 
-    /// Swap Done reuses the same row for its main and approval hash cells,
-    /// overriding only the title — no parallel swap-only view or icon.
-    func testSwapDoneOverridesTitlePerRow() {
-        let mainRow = TransactionDoneHashRowView(title: "swapTXHash", hash: "abc123", explorerLink: "", showCopy: true)
+    /// Swap Done reuses the same row for its main and approval hash cells —
+    /// no parallel swap-only view or icon. The main row keeps the shared
+    /// default title (Android titles it "Transaction Hash" too); only the
+    /// approval row overrides it.
+    func testSwapDoneMainRowKeepsDefaultTitle() {
+        let mainRow = TransactionDoneHashRowView(hash: "abc123", explorerLink: "", showCopy: true)
+        XCTAssertEqual(mainRow.title, "transactionHash")
+    }
+
+    func testSwapDoneApprovalRowOverridesTitle() {
         let approvalRow = TransactionDoneHashRowView(
             title: "approvalTXHash",
             hash: "def456",
             explorerLink: "",
             showCopy: true
         )
-        XCTAssertEqual(mainRow.title, "swapTXHash")
         XCTAssertEqual(approvalRow.title, "approvalTXHash")
     }
 }

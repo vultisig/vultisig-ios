@@ -20,9 +20,10 @@ struct TransactionDoneHashRowView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.notifyHashCopied) var notifyHashCopied
 
-    /// Localization key for the row's leading label. Defaults to the
-    /// Send Done row's title; Swap Done overrides it per row
-    /// ("swapTXHash" / "approvalTXHash") without duplicating the view.
+    /// Localization key for the row's leading label. Defaults to
+    /// "transactionHash" — Send Done and Swap Done's main hash row both use
+    /// it (Android titles both "Transaction Hash"); Swap Done's approval row
+    /// overrides it to "approvalTXHash" without duplicating the view.
     let title: String
     let hash: String
     let explorerLink: String

@@ -166,9 +166,10 @@ struct SwapDoneSummaryCard: View {
         VStack(spacing: 0) {
             // Same shared row Send Done uses (`TransactionDoneHashRowView`) —
             // copy + explorer-link parity with Android's `TxDetails`, not a
-            // swap-only variant.
+            // swap-only variant. Android's main swap row is titled
+            // "Transaction Hash" too, so this keeps the row's default title
+            // rather than overriding it.
             TransactionDoneHashRowView(
-                title: "swapTXHash",
                 hash: fields.txHash,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: fields.chain, txid: fields.txHash),
                 showCopy: true
