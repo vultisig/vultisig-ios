@@ -97,6 +97,14 @@ struct WidgetAssetIdentity: Equatable, Sendable, Identifiable {
     let id: String
     let symbol: String
     let name: String
+    let imageURL: URL?
+
+    init(id: String, symbol: String, name: String, imageURL: URL? = nil) {
+        self.id = id
+        self.symbol = symbol
+        self.name = name
+        self.imageURL = imageURL
+    }
 }
 
 protocol WidgetAssetSearching: Sendable {
@@ -145,7 +153,12 @@ final class WidgetMarketClient: WidgetMarketLookup, @unchecked Sendable {
         let response = try await httpClient.request(WidgetMarketAPI.search(query: trimmedQuery))
         let responseBody = try decoder.decode(RemoteSearchResponse.self, from: response.data)
         return responseBody.coins.prefix(20).map {
-            WidgetAssetIdentity(id: $0.id.lowercased(), symbol: $0.symbol.uppercased(), name: $0.name)
+            WidgetAssetIdentity(
+                id: $0.id.lowercased(),
+                symbol: $0.symbol.uppercased(),
+                name: $0.name,
+                imageURL: $0.validatedImageURL
+            )
         }
     }
 
@@ -179,6 +192,15 @@ private struct RemoteSearchResponse: Decodable {
         let id: String
         let name: String
         let symbol: String
+        let thumb: URL?
+        let large: URL?
+
+        var validatedImageURL: URL? {
+            [thumb, large]
+                .compactMap { $0 }
+                .compactMap { try? WidgetMarketAPI.validatedImageURL($0) }
+                .first
+        }
     }
 }
 

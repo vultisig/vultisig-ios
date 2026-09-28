@@ -30,3 +30,4 @@
 "widget.watchlist.configure" = "Elige activos en Ajustes de Vultisig";
 "widget.watchlist.description" = "Sigue hasta cinco criptomonedas seleccionadas en Vultisig.";
 "widget.watchlist.marketDataUnavailable" = "Los datos de mercado de la lista no están disponibles temporalmente";
+"widgetNoAvailableData" = "No hay datos disponibles";

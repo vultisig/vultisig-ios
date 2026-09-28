@@ -10,16 +10,21 @@ struct WidgetWatchlistSettingsScreen: View {
 
     var body: some View {
         Screen {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    selectionSummary
-                    partialLoadError
-                        .showIf(viewModel.loadFailed && !viewModel.assets.isEmpty)
-                    assetSection
+            VStack(spacing: 14) {
+                selectionSummary
+                searchField
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: 14) {
+                        partialLoadError
+                            .showIf(viewModel.loadFailed && !viewModel.assets.isEmpty)
+                        searchStatus
+                        assetSection
+                    }
                 }
             }
         }
         .screenTitle("watchlist".localized)
+        .screenEdgeInsets(.init(bottom: 0))
         .withLoading(isLoading: $viewModel.isLoading)
         .task { await viewModel.load() }
     }
@@ -62,16 +67,45 @@ struct WidgetWatchlistSettingsScreen: View {
         .padding(.vertical, 8)
     }
 
+    private var searchField: some View {
+        SearchTextField(value: $viewModel.searchText)
+    }
+
+    @ViewBuilder
+    private var searchStatus: some View {
+        if viewModel.searchFailed && viewModel.filteredAssets.isEmpty {
+            Text("widgetWatchlistLoadError".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        } else if viewModel.searchFailed {
+            Text("widgetWatchlistLoadError".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+        }
+    }
+
     @ViewBuilder
     private var assetSection: some View {
-        SettingsSectionView(title: "widgetWatchlistAssets".localized) {
-            if viewModel.assets.isEmpty {
+        let assets = viewModel.filteredAssets
+
+        VStack(alignment: .leading, spacing: 12) {
+            Text("widgetWatchlistAssets".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            if assets.isEmpty {
                 statusView
+                    .commonListContainer()
             } else {
-                ForEach(Array(viewModel.assets.enumerated()), id: \.element.id) { index, asset in
-                    assetRow(asset)
-                        .commonListItemContainer(index: index, itemsCount: viewModel.assets.count)
+                LazyVStack(spacing: .zero) {
+                    ForEach(Array(assets.enumerated()), id: \.element.id) { index, asset in
+                        assetRow(asset)
+                            .commonListItemContainer(index: index, itemsCount: assets.count)
+                    }
                 }
+                .commonListContainer()
             }
         }
     }
@@ -92,7 +126,19 @@ struct WidgetWatchlistSettingsScreen: View {
             }
             .frame(maxWidth: .infinity)
             .padding(24)
+        } else if showsEmptySearchResult {
+            Text("noResultFound".localized)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(24)
         }
+    }
+
+    private var showsEmptySearchResult: Bool {
+        viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isNotEmpty &&
+            !viewModel.isSearching &&
+            !viewModel.searchFailed
     }
 
     private func assetRow(_ asset: WidgetWatchlistAsset) -> some View {
@@ -104,7 +150,7 @@ struct WidgetWatchlistSettingsScreen: View {
 
         return HStack(spacing: 12) {
             AsyncImageView(
-                logo: asset.iconLogo,
+                logo: viewModel.iconLogo(for: asset),
                 size: CGSize(width: 36, height: 36),
                 ticker: asset.symbol,
                 tokenChainLogo: nil

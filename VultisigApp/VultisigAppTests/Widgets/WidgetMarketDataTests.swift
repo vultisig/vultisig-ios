@@ -85,6 +85,49 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(url.absoluteString, "https://api.vultisig.com/coingeicko/api/v3/search?query=bitcoin%20cash")
     }
 
+    func testSearchResponseDecodesValidatedThumbnailURLAndRejectsUnsafeURL() async throws {
+        let data = Data(#"""
+        {
+          "coins": [
+            {
+              "id": "akash-network",
+              "symbol": "akt",
+              "name": "Akash Network",
+              "thumb": "https://coin-images.coingecko.com/coins/images/12785/thumb/akash-logo.png",
+              "large": "https://coin-images.coingecko.com/coins/images/12785/large/akash-logo.png"
+            },
+            {
+              "id": "fallback-large",
+              "symbol": "safe",
+              "name": "Fallback Large",
+              "thumb": "http://coin-images.coingecko.com/coins/images/2/thumb/unsafe.png",
+              "large": "https://coin-images.coingecko.com/coins/images/2/large/safe.png"
+            },
+            {
+              "id": "unsafe-coin",
+              "symbol": "bad",
+              "name": "Unsafe Coin",
+              "thumb": "http://coin-images.coingecko.com/coins/images/1/thumb/bad.png"
+            }
+          ]
+        }
+        """#.utf8)
+        let client = WidgetMarketClient(httpClient: WidgetHTTPClientStub(data: data))
+
+        let assets = try await client.searchAssets(matching: "akash")
+
+        XCTAssertEqual(assets.first?.id, "akash-network")
+        XCTAssertEqual(
+            assets.first?.imageURL?.absoluteString,
+            "https://coin-images.coingecko.com/coins/images/12785/thumb/akash-logo.png"
+        )
+        XCTAssertEqual(
+            assets[1].imageURL?.absoluteString,
+            "https://coin-images.coingecko.com/coins/images/2/large/safe.png"
+        )
+        XCTAssertNil(assets.last?.imageURL)
+    }
+
     func testIconURLAcceptsHTTPSHostsAndRejectsInsecureURLs() throws {
         let approved = try XCTUnwrap(
             URL(string: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png")
@@ -186,6 +229,60 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertTrue(WidgetSharedStorage.watchlistAssets(in: defaults).isEmpty)
     }
 
+    func testLocalWatchlistCatalogIncludesNativeRune() {
+        XCTAssertTrue(LocalWidgetWatchlistCatalog.assets.contains { asset in
+            asset.id == "thorchain" && asset.symbol == "RUNE"
+        })
+        XCTAssertEqual(LocalWidgetWatchlistCatalog.logo(for: "thorchain"), "rune")
+    }
+
+    func testLocalWatchlistCatalogDeduplicatesByCoinGeckoID() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .ethereum, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .base, ticker: "ETH", priceProviderId: "ethereum")
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["ethereum"])
+        XCTAssertEqual(assets.map(\.symbol), ["ETH"])
+    }
+
+    func testLocalWatchlistCatalogNamesSharedIDsAfterHomeChain() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .robinhood, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .ethereum, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .polygon, ticker: "SOL", priceProviderId: "solana", isNativeToken: false),
+            coinMeta(chain: .solana, ticker: "SOL", priceProviderId: "solana"),
+            coinMeta(chain: .arbitrum, ticker: "USD₮0", priceProviderId: "tether", isNativeToken: false),
+            coinMeta(chain: .ethereum, ticker: "USDT", priceProviderId: "tether", isNativeToken: false)
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["ethereum", "solana", "tether"])
+        XCTAssertEqual(assets.map(\.name), ["Ethereum", "Solana", "USDT"])
+        XCTAssertEqual(assets.map(\.symbol), ["ETH", "SOL", "USDT"])
+    }
+
+    func testLocalWatchlistCatalogExcludesEmptyPriceIDsAndNonProductionNetworks() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .ethereum, ticker: "NOPE", priceProviderId: ""),
+            coinMeta(chain: .ethereumSepolia, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .thorChainStagenet, ticker: "RUNE", priceProviderId: "thorchain"),
+            coinMeta(chain: .thorChainChainnet, ticker: "RUNE", priceProviderId: "thorchain"),
+            coinMeta(chain: .thorChain, ticker: "RUNE", priceProviderId: "thorchain")
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["thorchain"])
+    }
+
+    func testLocalWatchlistCatalogReportsLogoByCoinGeckoIDWithoutMutatingSharedMeta() {
+        let metas = [
+            coinMeta(chain: .thorChain, ticker: "RUNE", priceProviderId: "thorchain")
+        ]
+        let assets = LocalWidgetWatchlistCatalog.assets(from: metas)
+
+        XCTAssertEqual(assets.first?.imageURL, nil)
+        XCTAssertEqual(LocalWidgetWatchlistCatalog.logo(for: "thorchain", in: metas), "rune")
+    }
+
     @MainActor
     func testWatchlistSettingsSeedsTopFiveOnlyWithoutStoredSelection() async throws {
         let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
@@ -214,6 +311,7 @@ final class WidgetMarketDataTests: XCTestCase {
         await defaultViewModel.load()
 
         XCTAssertEqual(defaultViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+        XCTAssertFalse(defaultViewModel.selectedAssets.contains { $0.id == "thorchain" })
         XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
 
         WidgetSharedStorage.setWatchlistAssets([], in: defaults)
@@ -235,6 +333,55 @@ final class WidgetMarketDataTests: XCTestCase {
         await corruptViewModel.load()
 
         XCTAssertEqual(corruptViewModel.selectedAssets.map(\.id), assets.prefix(5).map(\.id))
+    }
+
+    @MainActor
+    func testWatchlistSettingsPrefersLocalRuneRowWhenRemoteMarketDuplicatesID() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/6595/large/rune.png")
+        )
+        let remote = WidgetMarketListStub(assets: [
+            marketAsset(id: "thorchain", symbol: "REMOTE", imageURL: imageURL)
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults
+        )
+
+        await viewModel.load()
+        let rune = try XCTUnwrap(viewModel.assets.first { $0.id == "thorchain" })
+
+        XCTAssertEqual(rune.symbol, "RUNE")
+        XCTAssertNil(rune.imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: rune), "rune")
+        XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["thorchain"])
+        XCTAssertEqual(viewModel.selectedAssets.first?.imageURL, imageURL)
+    }
+
+    @MainActor
+    func testWatchlistSettingsUsesRemoteURLForRemoteOnlyTopMarket() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/1234/large/remote.png")
+        )
+        let remote = WidgetMarketListStub(assets: [
+            marketAsset(id: "remote-only-token", symbol: "ROT", imageURL: imageURL)
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults
+        )
+
+        await viewModel.load()
+        let asset = try XCTUnwrap(viewModel.assets.first { $0.id == "remote-only-token" })
+
+        XCTAssertEqual(asset.imageURL, imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: asset), imageURL.absoluteString)
     }
 
     @MainActor
@@ -264,11 +411,10 @@ final class WidgetMarketDataTests: XCTestCase {
 
         let loadTask = Task { await viewModel.load() }
         await remote.waitUntilStarted()
-        for _ in 0..<100 where viewModel.assets.isEmpty {
-            await Task.yield()
-        }
+        await waitForFirstAssetID("cached", in: viewModel)
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertEqual(viewModel.assets.first?.id, "cached")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertTrue(viewModel.selectedAssets.isEmpty)
         XCTAssertFalse(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.isLoading)
@@ -276,7 +422,8 @@ final class WidgetMarketDataTests: XCTestCase {
         await remote.resume()
         await loadTask.value
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["fresh"])
+        XCTAssertEqual(viewModel.assets.first?.id, "fresh")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["fresh"])
         XCTAssertTrue(WidgetSharedStorage.hasStoredWatchlist(in: defaults))
         XCTAssertFalse(viewModel.loadFailed)
@@ -310,8 +457,345 @@ final class WidgetMarketDataTests: XCTestCase {
 
         await viewModel.load()
 
-        XCTAssertEqual(viewModel.assets.map(\.id), ["cached"])
+        XCTAssertEqual(viewModel.assets.first?.id, "cached")
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "thorchain" })
         XCTAssertTrue(viewModel.loadFailed)
+    }
+
+    @MainActor
+    func testWatchlistSearchFiltersLocalFirstAndDeduplicatesRemoteResults() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [
+            marketAsset(id: "ethereum", symbol: "ETH"),
+            marketAsset(id: "bitcoin", symbol: "BTC")
+        ])
+        let remoteOnlyURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/12345/thumb/ether-fi.png")
+        )
+        let duplicateURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/1027/thumb/ethereum.png")
+        )
+        let search = WidgetMarketSearchStub(results: [
+            "eth": [
+                WidgetAssetIdentity(id: "ethereum", symbol: "ETH", name: "Ethereum", imageURL: duplicateURL),
+                WidgetAssetIdentity(id: "ether-fi", symbol: "ETHFI", name: "ether.fi", imageURL: remoteOnlyURL)
+            ]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "eth"
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.first?.id, "ethereum")
+        XCTAssertEqual(viewModel.filteredAssets.filter { $0.id == "ethereum" }.count, 1)
+        let remoteOnly = try XCTUnwrap(viewModel.filteredAssets.first { $0.id == "ether-fi" })
+        XCTAssertEqual(remoteOnly.imageURL, remoteOnlyURL)
+        XCTAssertEqual(viewModel.iconLogo(for: remoteOnly), remoteOnlyURL.absoluteString)
+    }
+
+    @MainActor
+    func testWatchlistSearchKeepsSettledRemoteResultsThatOnlyMatchLoosely() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: [
+            "ether fi": [WidgetAssetIdentity(id: "ether-fi", symbol: "ETHFI", name: "ether.fi")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "ether fi"
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["ether-fi"])
+    }
+
+    @MainActor
+    func testWatchlistSearchPrefersLocalRuneOverDuplicateRemoteResult() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let imageURL = try XCTUnwrap(
+            URL(string: "https://coin-images.coingecko.com/coins/images/6595/thumb/rune.png")
+        )
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: [
+            "rune": [WidgetAssetIdentity(id: "thorchain", symbol: "REMOTE", name: "Remote Rune", imageURL: imageURL)]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "rune"
+        await waitForSearchToFinish(viewModel)
+        let rune = try XCTUnwrap(viewModel.filteredAssets.first { $0.id == "thorchain" })
+
+        XCTAssertEqual(viewModel.filteredAssets.filter { $0.id == "thorchain" }.count, 1)
+        XCTAssertEqual(rune.symbol, "RUNE")
+        XCTAssertNil(rune.imageURL)
+        XCTAssertEqual(viewModel.iconLogo(for: rune), "rune")
+    }
+
+    @MainActor
+    func testWatchlistSearchIgnoresStaleCancelledResponses() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "old": [WidgetAssetIdentity(id: "old-coin", symbol: "OLD", name: "Old Coin")],
+            "new": [WidgetAssetIdentity(id: "new-coin", symbol: "NEW", name: "New Coin")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "old"
+        await search.waitUntilStarted("old")
+        viewModel.searchText = "new"
+        await search.waitUntilStarted("new")
+        await search.resume("new")
+        await waitForSearchToFinish(viewModel)
+        await search.resume("old")
+        await Task.yield()
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["new-coin"])
+    }
+
+    @MainActor
+    func testWatchlistSearchRetainsMatchingRemoteResultWhileShorterQueryIsPending() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plughcoin": [WidgetAssetIdentity(id: "plughcoin-token", symbol: "PLUGHCOIN", name: "Plughcoin Token")],
+            "plugh": [WidgetAssetIdentity(id: "plughcoin-token", symbol: "PLUGHCOIN", name: "Plughcoin Token")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plughcoin"
+        await search.waitUntilStarted("plughcoin")
+        await search.resume("plughcoin")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plughcoin-token"])
+
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+
+        XCTAssertTrue(viewModel.isSearching)
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plughcoin-token"])
+
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+    }
+
+    @MainActor
+    func testWatchlistSearchHidesUnrelatedRemoteResultWhileDivergentQueryIsPending() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plugh": [WidgetAssetIdentity(id: "plugh-token", symbol: "PLUGH", name: "Plugh Token")],
+            "zzz": [WidgetAssetIdentity(id: "zebra-coin", symbol: "ZZZ", name: "Zebra Coin")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plugh-token"])
+
+        viewModel.searchText = "zzz"
+        await search.waitUntilStarted("zzz")
+
+        XCTAssertTrue(viewModel.isSearching)
+        XCTAssertFalse(viewModel.filteredAssets.contains { $0.id == "plugh-token" })
+        XCTAssertTrue(viewModel.filteredAssets.isEmpty)
+
+        await search.resume("zzz")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["zebra-coin"])
+    }
+
+    @MainActor
+    func testWatchlistSearchClearsRemoteResultsForEmptyQueryAndFinalEmptyResponse() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchGateStub(results: [
+            "plugh": [WidgetAssetIdentity(id: "plugh-token", symbol: "PLUGH", name: "Plugh Token")],
+            "zzzz": []
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "plugh"
+        await search.waitUntilStarted("plugh")
+        await search.resume("plugh")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["plugh-token"])
+
+        viewModel.searchText = ""
+
+        XCTAssertEqual(viewModel.filteredAssets.first?.id, "bitcoin")
+        XCTAssertFalse(viewModel.filteredAssets.contains { $0.id == "plugh-token" })
+        XCTAssertFalse(viewModel.isSearching)
+
+        viewModel.searchText = "zzzz"
+        await search.waitUntilStarted("zzzz")
+        await search.resume("zzzz")
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertTrue(viewModel.filteredAssets.isEmpty)
+        XCTAssertFalse(viewModel.searchFailed)
+        XCTAssertFalse(viewModel.isSearching)
+    }
+
+    @MainActor
+    func testWatchlistSearchKeepsOfflineLocalResults() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(error: URLError(.notConnectedToInternet))
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "bit"
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.first?.id, "bitcoin")
+        XCTAssertTrue(viewModel.searchFailed)
+    }
+
+    @MainActor
+    func testWatchlistSearchReportsEmptySuccessfulResults() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: ["zzzz": []])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "zzzz"
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertTrue(viewModel.filteredAssets.isEmpty)
+        XCTAssertFalse(viewModel.searchFailed)
+    }
+
+    @MainActor
+    func testWatchlistSearchPersistsSelectedRemoteIdentityWithoutPrice() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        WidgetSharedStorage.setWatchlistAssets([], in: defaults)
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: [
+            "aka": [WidgetAssetIdentity(id: "akash-network", symbol: "AKT", name: "Akash Network")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "aka"
+        await waitForSearchToFinish(viewModel)
+        let asset = try XCTUnwrap(viewModel.filteredAssets.first)
+        viewModel.setSelected(true, asset: asset)
+        viewModel.searchText = ""
+
+        XCTAssertEqual(viewModel.selectedAssets.map(\.id), ["akash-network"])
+        XCTAssertEqual(WidgetSharedStorage.watchlistAssets(in: defaults).map(\.id), ["akash-network"])
+        XCTAssertTrue(viewModel.assets.contains { $0.id == "akash-network" })
+    }
+
+    @MainActor
+    func testWatchlistSearchRespectsFiveSelectionCapForRemoteResults() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let assets = (1...5).map { marketAsset(id: "asset-\($0)", symbol: "A\($0)") }
+        let remote = WidgetMarketListStub(assets: assets)
+        let search = WidgetMarketSearchStub(results: [
+            "six": [WidgetAssetIdentity(id: "asset-six", symbol: "SIX", name: "Asset Six")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "six"
+        await waitForSearchToFinish(viewModel)
+        let asset = try XCTUnwrap(viewModel.filteredAssets.first)
+        viewModel.setSelected(true, asset: asset)
+
+        XCTAssertEqual(viewModel.selectedAssets.map(\.id), assets.map(\.id))
+        XCTAssertFalse(viewModel.canSelectMore)
     }
 
     func testSparklineSamplerKeepsEndpointsAndRequestedCount() {
@@ -500,16 +984,70 @@ final class WidgetMarketDataTests: XCTestCase {
         })
     }
 
+    @MainActor
+    private func waitForSearchToFinish(_ viewModel: WidgetWatchlistSettingsViewModel) async {
+        for _ in 0..<100 where viewModel.isSearching {
+            await Task.yield()
+        }
+    }
+
+    @MainActor
+    private func waitForFirstAssetID(
+        _ expectedID: String,
+        in viewModel: WidgetWatchlistSettingsViewModel,
+        timeout: TimeInterval = 2,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if viewModel.assets.first?.id == expectedID {
+                return
+            }
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+
+        XCTFail(
+            "Timed out waiting for first asset ID \"\(expectedID)\"; current first asset ID: "
+                + "\(viewModel.assets.first?.id ?? "nil")",
+            file: file,
+            line: line
+        )
+    }
+
+    private func temporaryDefaults() throws -> (String, UserDefaults) {
+        let suiteName = "WidgetMarketDataTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        return (suiteName, defaults)
+    }
+
     private func watchlistAsset(id: String, symbol: String) -> WidgetWatchlistAsset {
         WidgetWatchlistAsset(id: id, symbol: symbol, name: id.capitalized, imageURL: nil)
     }
 
-    private func marketAsset(id: String, symbol: String) -> WidgetMarketAsset {
+    private func coinMeta(
+        chain: Chain,
+        ticker: String,
+        priceProviderId: String,
+        isNativeToken: Bool = true
+    ) -> CoinMeta {
+        CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: ticker.lowercased(),
+            decimals: 8,
+            priceProviderId: priceProviderId,
+            contractAddress: isNativeToken ? "" : "contract-\(ticker.lowercased())",
+            isNativeToken: isNativeToken
+        )
+    }
+
+    private func marketAsset(id: String, symbol: String, imageURL: URL? = nil) -> WidgetMarketAsset {
         WidgetMarketAsset(
             id: id,
             symbol: symbol,
             name: id.capitalized,
-            imageURL: nil,
+            imageURL: imageURL,
             iconData: nil,
             currentPrice: 1,
             priceChangePercentage24h: nil,
@@ -661,5 +1199,52 @@ private actor WidgetMarketGateStub: WidgetMarketRemote {
     func resume() {
         continuation?.resume()
         continuation = nil
+    }
+}
+
+private actor WidgetMarketSearchStub: WidgetAssetSearching {
+    private let results: [String: [WidgetAssetIdentity]]
+    private let error: Error?
+
+    init(results: [String: [WidgetAssetIdentity]] = [:], error: Error? = nil) {
+        self.results = results
+        self.error = error
+    }
+
+    func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
+        await Task.yield()
+        if let error { throw error }
+        return results[query.lowercased()] ?? []
+    }
+}
+
+private actor WidgetMarketSearchGateStub: WidgetAssetSearching {
+    private let results: [String: [WidgetAssetIdentity]]
+    private var startedQueries: Set<String> = []
+    private var continuations: [String: CheckedContinuation<Void, Never>] = [:]
+
+    init(results: [String: [WidgetAssetIdentity]]) {
+        self.results = results
+    }
+
+    func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
+        let normalized = query.lowercased()
+        startedQueries.insert(normalized)
+        await withCheckedContinuation { continuation in
+            continuations[normalized] = continuation
+        }
+        return results[normalized] ?? []
+    }
+
+    func waitUntilStarted(_ query: String) async {
+        while !startedQueries.contains(query.lowercased()) {
+            await Task.yield()
+        }
+    }
+
+    func resume(_ query: String) {
+        let normalized = query.lowercased()
+        continuations[normalized]?.resume()
+        continuations[normalized] = nil
     }
 }

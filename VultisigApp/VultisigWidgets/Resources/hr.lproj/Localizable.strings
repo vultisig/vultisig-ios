@@ -30,3 +30,4 @@
 "widget.watchlist.configure" = "Odaberi imovinu u postavkama Vultisiga";
 "widget.watchlist.description" = "Prati do pet kriptovaluta odabranih u Vultisigu.";
 "widget.watchlist.marketDataUnavailable" = "Tržišni podaci popisa privremeno nisu dostupni";
+"widgetNoAvailableData" = "Nema dostupnih podataka";
