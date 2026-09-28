@@ -162,7 +162,7 @@ final class SwapApprovalRequirementTests: XCTestCase {
         let payload = try await build(oneInchTransaction().withApprovalDecided(.resetThenApprove), nonce: 7)
         let approve = try XCTUnwrap(payload.approvePayload)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         let approveLegs = try THORChainSwaps()
             .getPreSignedApproveInputData(approvePayload: approve, keysignPayload: payload)

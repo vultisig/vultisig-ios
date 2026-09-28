@@ -14,12 +14,11 @@ struct KeysignMessageFactory {
     /// The vault's own EdDSA public key, read off the verifying device's
     /// local `Vault` — never a field from `payload` itself, which for a
     /// peer-relayed keysign is proto-deserialized from the counterparty and
-    /// therefore untrusted. Only the SwapKit Cardano prebuilt path needs it
-    /// (to check outputs pay the vault's own address); every other call
-    /// site can omit it.
+    /// therefore untrusted. The SwapKit Cardano prebuilt path checks outputs
+    /// against it; it has no default so no signing call site can omit it.
     private let vaultPubKeyEdDSA: String
 
-    init(payload: KeysignPayload, vaultPubKeyEdDSA: String = "") {
+    init(payload: KeysignPayload, vaultPubKeyEdDSA: String) {
         self.payload = payload
         self.vaultPubKeyEdDSA = vaultPubKeyEdDSA
     }

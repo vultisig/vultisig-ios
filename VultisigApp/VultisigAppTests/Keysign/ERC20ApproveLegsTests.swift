@@ -25,7 +25,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
         let payload = try fixturePayload(file: "mayaswap", name: "Swap ARB.USDC to CACAO")
         XCTAssertEqual(payload.approvePayload?.amount, BigInt(7_160_000))
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages, [
             "8fc58a393062400da51d6f16d97763008ebf807e8a4e03ae530faf94a7d593c7",
@@ -38,7 +38,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
         let payload = try fixturePayload(file: "arb", name: "Swap from ARB.ARB to ARB.ETH via 1inch")
         XCTAssertNotNil(payload.approvePayload)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages, [
             "cbec83beda9f91c7c6ce4283131e6eb4cd52dfa64dfa471efe38023ddc4a5a92",
@@ -232,7 +232,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
     func testResetMovesTheGenericSwapTwoNoncesOn() throws {
         let payload = oneInchApproveSwapPayload(reset: true)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages.count, 3)
         XCTAssertEqual(
@@ -249,7 +249,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
     func testWithoutResetTheGenericSwapStaysOneNonceOn() throws {
         let payload = oneInchApproveSwapPayload(reset: false)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages.count, 2)
         let atEight = oneInchApproveSwapPayload(reset: false, nonce: 8)
@@ -264,7 +264,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
     func testResetMovesTheRouterDepositTwoNoncesOn() throws {
         let payload = mayaRouterApproveSwapPayload(reset: true)
 
-        let messages = try KeysignMessageFactory(payload: payload).getKeysignMessages()
+        let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages.count, 3)
         let atNine = mayaRouterApproveSwapPayload(reset: true, nonce: 9)
@@ -292,7 +292,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
     func testThreeLegSwapSignsBothApproveLegsThenTheSwap() throws {
         let payload = oneInchApproveSwapPayload(reset: true)
         let signatures = try SigningGoldenSigner.signatures(
-            forImageHashes: KeysignMessageFactory(payload: payload).getKeysignMessages(),
+            forImageHashes: KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages(),
             curve: .secp256k1
         )
         let viewModel = KeysignViewModel()
