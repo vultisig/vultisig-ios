@@ -246,6 +246,21 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(assets.map(\.symbol), ["ETH"])
     }
 
+    func testLocalWatchlistCatalogNamesSharedIDsAfterHomeChain() {
+        let assets = LocalWidgetWatchlistCatalog.assets(from: [
+            coinMeta(chain: .robinhood, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .ethereum, ticker: "ETH", priceProviderId: "ethereum"),
+            coinMeta(chain: .polygon, ticker: "SOL", priceProviderId: "solana", isNativeToken: false),
+            coinMeta(chain: .solana, ticker: "SOL", priceProviderId: "solana"),
+            coinMeta(chain: .arbitrum, ticker: "USD₮0", priceProviderId: "tether", isNativeToken: false),
+            coinMeta(chain: .ethereum, ticker: "USDT", priceProviderId: "tether", isNativeToken: false)
+        ])
+
+        XCTAssertEqual(assets.map(\.id), ["ethereum", "solana", "tether"])
+        XCTAssertEqual(assets.map(\.name), ["Ethereum", "Solana", "USDT"])
+        XCTAssertEqual(assets.map(\.symbol), ["ETH", "SOL", "USDT"])
+    }
+
     func testLocalWatchlistCatalogExcludesEmptyPriceIDsAndNonProductionNetworks() {
         let assets = LocalWidgetWatchlistCatalog.assets(from: [
             coinMeta(chain: .ethereum, ticker: "NOPE", priceProviderId: ""),
@@ -484,6 +499,29 @@ final class WidgetMarketDataTests: XCTestCase {
         let remoteOnly = try XCTUnwrap(viewModel.filteredAssets.first { $0.id == "ether-fi" })
         XCTAssertEqual(remoteOnly.imageURL, remoteOnlyURL)
         XCTAssertEqual(viewModel.iconLogo(for: remoteOnly), remoteOnlyURL.absoluteString)
+    }
+
+    @MainActor
+    func testWatchlistSearchKeepsSettledRemoteResultsThatOnlyMatchLoosely() async throws {
+        let (suiteName, defaults) = try temporaryDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let remote = WidgetMarketListStub(assets: [marketAsset(id: "bitcoin", symbol: "BTC")])
+        let search = WidgetMarketSearchStub(results: [
+            "ether fi": [WidgetAssetIdentity(id: "ether-fi", symbol: "ETHFI", name: "ether.fi")]
+        ])
+        let viewModel = WidgetWatchlistSettingsViewModel(
+            marketClient: remote,
+            searchClient: search,
+            marketCache: WidgetMarketCache(fileURL: nil),
+            defaults: defaults,
+            searchDebounceNanoseconds: 0
+        )
+
+        await viewModel.load()
+        viewModel.searchText = "ether fi"
+        await waitForSearchToFinish(viewModel)
+
+        XCTAssertEqual(viewModel.filteredAssets.map(\.id), ["ether-fi"])
     }
 
     @MainActor

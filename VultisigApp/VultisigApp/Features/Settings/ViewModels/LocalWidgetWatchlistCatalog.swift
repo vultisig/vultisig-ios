@@ -30,13 +30,32 @@ enum LocalWidgetWatchlistCatalog {
     }
 
     private static func entries(from metas: [CoinMeta]) -> [Entry] {
-        var seenIDs = Set<String>()
-        return metas.reduce(into: [Entry]()) { result, meta in
-            guard let entry = entry(from: meta), seenIDs.insert(entry.asset.id).inserted else {
-                return
+        var result = [Entry]()
+        var ranks = [Int]()
+        var indexByID = [String: Int]()
+        for meta in metas {
+            guard let entry = entry(from: meta) else { continue }
+            let rank = canonicalRank(of: meta, id: entry.asset.id)
+            if let index = indexByID[entry.asset.id] {
+                guard rank < ranks[index] else { continue }
+                result[index] = entry
+                ranks[index] = rank
+            } else {
+                indexByID[entry.asset.id] = result.count
+                result.append(entry)
+                ranks.append(rank)
             }
-            result.append(entry)
         }
+        return result
+    }
+
+    /// Several chains share a price id (ETH on every L2, wrapped tokens); the
+    /// row must be named after the asset's home chain, not whichever is listed first.
+    private static func canonicalRank(of meta: CoinMeta, id: String) -> Int {
+        if meta.isNativeToken {
+            return meta.chain.name.lowercased() == id ? 0 : 1
+        }
+        return meta.chain == .ethereum ? 2 : 3
     }
 
     private static func entry(from meta: CoinMeta) -> Entry? {

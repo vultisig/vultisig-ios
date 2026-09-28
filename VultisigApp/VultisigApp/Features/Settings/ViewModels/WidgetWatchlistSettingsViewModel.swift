@@ -58,7 +58,11 @@ final class WidgetWatchlistSettingsViewModel: ObservableObject {
         guard !query.isEmpty else { return assets }
 
         let localMatches = assets.filter { $0.matchesSearch(query) }
-        let remoteMatches = remoteSearchAssets.filter { $0.matchesSearch(query) }
+        // Remote results already match the current query once the search settles;
+        // filtering is only needed to hide stale results while a new query is pending.
+        let remoteMatches = isSearching
+            ? remoteSearchAssets.filter { $0.matchesSearch(query) }
+            : remoteSearchAssets
         return mergedAssets(localMatches + remoteMatches)
     }
 
