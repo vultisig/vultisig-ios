@@ -251,7 +251,7 @@ struct TransactionActivityCard: View {
                       let image = UIImage(data: data) {
                 Image(uiImage: image).resizable().scaledToFit()
             } else {
-                // A neutral asset glyph avoids assigning a known logo by ticker alone.
+                // Do not infer a logo from ticker.
                 Image(systemName: "circle.hexagongrid.fill")
                     .font(WidgetTheme.iconFont(size: size * 0.48))
                     .foregroundStyle(WidgetTheme.secondaryText)

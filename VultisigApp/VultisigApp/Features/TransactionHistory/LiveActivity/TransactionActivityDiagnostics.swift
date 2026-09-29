@@ -2,8 +2,7 @@
 import Foundation
 import UIKit
 
-/// Use only local UUIDs, lifecycle values and sanitized error codes in diagnostics.
-/// Include UTC time in the message so copied logs retain it; LOGGING / VULTI_LOG still apply.
+/// Records sanitized lifecycle diagnostics with copyable UTC timestamps.
 @MainActor
 enum TransactionActivityDiagnostics {
     static func record(_ event: String, recordID: UUID? = nil, runID: UUID? = nil, detail: @autoclosure () -> String = "") {

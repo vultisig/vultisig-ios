@@ -36,6 +36,7 @@ struct SettingsAdvancedView: View {
         case thorchainStagenet
         case sell
         case tssBatching
+        case transactionLiveActivities
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
@@ -77,6 +78,12 @@ struct SettingsAdvancedView: View {
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
+            )
+        case .transactionLiveActivities:
+            SettingToggleCell(
+                title: "Transaction Live Activities",
+                icon: "livephoto",
+                isEnabled: $settingsViewModel.transactionLiveActivitiesEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

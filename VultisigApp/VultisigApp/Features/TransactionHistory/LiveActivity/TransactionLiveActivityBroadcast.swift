@@ -6,7 +6,6 @@ import SwiftData
 @MainActor
 enum TransactionLiveActivityBroadcast {
     static func record(hash: String, approveHash: String?, payload: KeysignPayload, vault: Vault) {
-        // Every device that actually broadcasts can observe its receipt.
         let rows = TransactionBroadcastReceipt.rows(hash: hash, approveHash: approveHash, payload: payload,
                                                    pubKey: vault.pubKeyECDSA)
         rows.forEach(saveAndTrack)

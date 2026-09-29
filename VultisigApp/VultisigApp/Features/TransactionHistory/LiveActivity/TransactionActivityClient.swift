@@ -56,9 +56,7 @@ final class SystemTransactionActivityClient: TransactionActivityClient {
             TransactionActivityDiagnostics.record("activity.updateSkipped", detail: "reason=handleMissing")
             return
         }
-        TransactionActivityDiagnostics.record("activity.updateStarted", recordID: activity.attributes.recordID, detail: "phase=\(state.phase.rawValue) revision=\(state.revision)")
         await activity.update(ActivityContent(state: state, staleDate: state.staleDate))
-        TransactionActivityDiagnostics.record("activity.updateReturned", recordID: activity.attributes.recordID, detail: "phase=\(state.phase.rawValue) revision=\(state.revision)")
     }
 
     func end(id: String, state: TransactionActivityState, immediately: Bool) async {
@@ -67,10 +65,8 @@ final class SystemTransactionActivityClient: TransactionActivityClient {
             return
         }
         retained[id] = activity
-        TransactionActivityDiagnostics.record("activity.endStarted", recordID: activity.attributes.recordID, detail: "phase=\(state.phase.rawValue) immediate=\(immediately)")
         await activity.end(ActivityContent(state: state, staleDate: nil),
                            dismissalPolicy: immediately ? .immediate : .after(Date().addingTimeInterval(60)))
-        TransactionActivityDiagnostics.record("activity.endReturned", recordID: activity.attributes.recordID, detail: "phase=\(state.phase.rawValue)")
     }
 
     private enum ActivityClientError: Error { case payloadTooLarge }

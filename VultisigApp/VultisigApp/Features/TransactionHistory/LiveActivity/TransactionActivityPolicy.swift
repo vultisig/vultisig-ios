@@ -4,6 +4,7 @@ import VultisigUIResources
 
 enum TransactionActivityPolicy {
     static let nativeSourceProviderKind = "nativeSource"
+    static let featureEnabledKey = "transactionLiveActivitiesEnabled"
     static let ledgerKey = "transactionLiveActivitiesLedgerV1"
     static let maximumAge: TimeInterval = 7.5 * 60 * 60
 
@@ -13,6 +14,11 @@ enum TransactionActivityPolicy {
         #else
         false
         #endif
+    }
+
+    static func isFeatureEnabled(defaults: UserDefaults = .standard) -> Bool {
+        guard let stored = defaults.object(forKey: featureEnabledKey) as? Bool else { return true }
+        return stored
     }
 
     /// Only the app stores this digest. ActivityKit receives the random record UUID.

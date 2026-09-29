@@ -71,6 +71,10 @@ final class TransactionLiveActivityCoordinator {
         !defaults.bool(forKey: "showVaultBalance")
     }
 
+    private var isFeatureEnabled: Bool {
+        TransactionActivityPolicy.isFeatureEnabled(defaults: defaults)
+    }
+
     func start() {
         guard !started else { return }
         started = true
@@ -97,7 +101,7 @@ final class TransactionLiveActivityCoordinator {
     }
 
     func refresh() {
-        if !showDetails || !client.isAuthorized { cancelAllImagePreparation() }
+        if !isFeatureEnabled || !showDetails || !client.isAuthorized { cancelAllImagePreparation() }
         enqueue { [weak self] in await self?.reconcile() }
     }
 
@@ -116,7 +120,7 @@ final class TransactionLiveActivityCoordinator {
 
     /// Never admit records here. Only the foreground broadcast path can create an activity.
     func backgroundRecord(id: UUID, now: Date = Date()) -> TransactionHistoryData? {
-        guard client.isAuthorized,
+        guard isFeatureEnabled, client.isAuthorized,
               let binding = bindings.values.first(where: { $0.recordID == id && !$0.ended && !$0.phase.isTerminal }),
               client.activities.contains(where: { $0.recordID == id && $0.id == binding.activityID && $0.isActive }),
               let row = try? lookup(id),
@@ -155,6 +159,7 @@ final class TransactionLiveActivityCoordinator {
     }
 
     func trackBroadcast(_ row: TransactionHistoryData) {
+        guard isFeatureEnabled else { return }
         start()
         enqueue { [weak self] in self?.admit(row) }
     }
@@ -170,6 +175,7 @@ final class TransactionLiveActivityCoordinator {
     }
 
     func admit(_ row: TransactionHistoryData, now: Date = Date()) {
+        guard isFeatureEnabled else { return }
         let key = TransactionActivityPolicy.identity(row)
         guard bindings[key] == nil else { return }
         // Persist the one-shot decision before request. A crash, rejection, capacity
@@ -221,8 +227,19 @@ final class TransactionLiveActivityCoordinator {
     }
 
     func reconcile(now: Date = Date()) async {
-        if !showDetails || !client.isAuthorized { cancelAllImagePreparation() }
+        if !isFeatureEnabled || !showDetails || !client.isAuthorized { cancelAllImagePreparation() }
         let activities = client.activities
+        guard isFeatureEnabled else {
+            let boundActivityIDs = Set(bindings.values.compactMap(\.activityID))
+            for key in bindings.keys where bindings[key]?.ended == false {
+                await finish(key: key, immediately: true)
+            }
+            for activity in activities where activity.isActive && !boundActivityIDs.contains(activity.id) {
+                await client.end(id: activity.id, state: endedState(revision: activity.state.revision + 1), immediately: true)
+            }
+            persist()
+            return
+        }
         for activity in activities {
             guard let pair = bindings.first(where: { $0.value.recordID == activity.recordID }) else {
                 await client.end(id: activity.id, state: endedState(revision: activity.state.revision + 1), immediately: true)
@@ -257,7 +274,6 @@ final class TransactionLiveActivityCoordinator {
                 }
                 continue
             }
-            // Reconcile the persisted binding against the system's current activity ID.
             bindings[pair.key]?.activityID = activity.id
         }
         for (key, binding) in bindings where !binding.ended {
@@ -301,7 +317,6 @@ final class TransactionLiveActivityCoordinator {
             TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=noWritableBinding")
             return
         }
-        TransactionActivityDiagnostics.record("publish.started", recordID: row.id, detail: "phase=\((phaseOverride ?? TransactionActivityPolicy.phase(for: row)).rawValue)")
         guard client.isAuthorized else {
             TransactionActivityDiagnostics.record("publish.skipped", recordID: row.id, detail: "reason=notAuthorized")
             await finish(key: key, immediately: true)

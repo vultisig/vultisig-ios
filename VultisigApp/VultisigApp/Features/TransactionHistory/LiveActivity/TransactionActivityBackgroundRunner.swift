@@ -149,10 +149,7 @@ final class TransactionActivityBackgroundRunner {
 
     private func updateSchedule() {
         guard hasWork() else {
-            TransactionActivityDiagnostics.record("schedule.cancelRequested", detail: "reason=noBackgroundWork")
             runtime.cancelScheduled()
-            // Cancellation has no result payload; do not claim a pending request existed.
-            TransactionActivityDiagnostics.record("schedule.cancelReturned", detail: "reason=noBackgroundWork")
             scheduleAttempted = false
             return
         }
@@ -168,7 +165,6 @@ final class TransactionActivityBackgroundRunner {
         // earliestBeginDate is a floor, not a promise; iOS decides the actual delivery time.
         let delay = max(Self.minimumScheduleDelay, nextPollDelay())
         let date = Date().addingTimeInterval(delay)
-        TransactionActivityDiagnostics.record("schedule.requested", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")
         do {
             try runtime.schedule(date)
             TransactionActivityDiagnostics.record("schedule.accepted", detail: "earliestBegin=\(date.ISO8601Format()) delaySeconds=\(delay)")

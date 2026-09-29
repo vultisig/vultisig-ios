@@ -56,6 +56,30 @@ final class TransactionLiveActivityCoordinatorTests: XCTestCase {
         return row
     }
 
+    func testFeatureToggleDefaultsOnAndCanDisableAdmission() async {
+        XCTAssertTrue(TransactionActivityPolicy.isFeatureEnabled(defaults: defaults))
+        let row = addRow()
+        let manager = coordinator()
+        defaults.set(false, forKey: TransactionActivityPolicy.featureEnabledKey)
+        manager.admit(row)
+        manager.trackBroadcast(row)
+        await manager.waitForPendingUpdates()
+        XCTAssertEqual(client.requestCount, 0)
+        XCTAssertFalse(manager.hasBackgroundWork)
+    }
+
+    func testDisablingFeatureEndsExistingActivitiesImmediately() async {
+        let row = addRow()
+        let manager = coordinator()
+        manager.admit(row)
+        XCTAssertEqual(client.requestCount, 1)
+        defaults.set(false, forKey: TransactionActivityPolicy.featureEnabledKey)
+        await manager.reconcile()
+        XCTAssertTrue(client.immediateEnds.last ?? false)
+        XCTAssertFalse(client.activities.first?.isActive ?? true)
+        XCTAssertFalse(manager.hasBackgroundWork)
+    }
+
     func testImagePreparationDoesNotBlockAdmissionOrStatusAndPreservesDelayedFreshness() async {
         let row = ActivityTestFixture.row(coinLogo: "https://example.com/coin.png")
         rows[row.id] = row
