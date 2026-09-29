@@ -8,7 +8,8 @@ import SwiftUI
 enum KeysignReviewSheetLayout {
     /// Leaves room for the grabber above the header.
     static let topInset: CGFloat = 22
-    static let horizontalInset: CGFloat = 16
+    /// The sheet itself is edge-to-edge; content keeps the Figma inset.
+    static let horizontalInset: CGFloat = 24
     #if os(macOS)
     static let bottomInset: CGFloat = 32
     static let verdictBottomInset: CGFloat = 16
@@ -170,6 +171,7 @@ private struct KeysignReviewSheetSizing: ViewModifier {
             .presentationDragIndicator(.visible)
             .presentationBackground(Theme.colors.bgSurface1)
             .presentationCornerRadius(KeysignReviewSheetLayout.cornerRadius)
+            .presentationSizingPage()
             // Snaps to the first measurement, which lands before the sheet is
             // up; later changes (a fee arriving, the verdict) animate.
             .animatedPresentationDetents(
