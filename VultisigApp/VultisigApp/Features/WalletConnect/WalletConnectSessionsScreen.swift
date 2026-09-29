@@ -9,6 +9,10 @@ import SwiftUI
 struct WalletConnectSessionsScreen: View {
     @Query(sort: \Vault.order) private var vaults: [Vault]
     @StateObject private var viewModel = WalletConnectSessionsViewModel()
+#if DEBUG
+    @State private var showDebugURIAlert = false
+    @State private var debugURI = ""
+#endif
 
     private var showError: Binding<Bool> {
         Binding(
@@ -22,6 +26,9 @@ struct WalletConnectSessionsScreen: View {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 14) {
                     description
+#if DEBUG
+                    debugAddButton
+#endif
                     sessionsSection
                 }
             }
@@ -34,6 +41,23 @@ struct WalletConnectSessionsScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "walletConnectDisconnectFailed".localized)
         }
+#if DEBUG
+        .alert("Add WalletConnect URI", isPresented: $showDebugURIAlert) {
+            TextField("wc:...", text: $debugURI)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            Button("Cancel", role: .cancel) {
+                debugURI = ""
+            }
+            Button("Accept") {
+                let uri = debugURI
+                debugURI = ""
+                Task { await viewModel.pairDebugURI(uri) }
+            }
+        } message: {
+            Text("Paste a WalletConnect URI for debug testing.")
+        }
+#endif
     }
 
     private var description: some View {
@@ -43,6 +67,21 @@ struct WalletConnectSessionsScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 8)
     }
+
+#if DEBUG
+    private var debugAddButton: some View {
+        PrimaryButton(
+            title: "Add",
+            isLoading: viewModel.isPairingDebugURI,
+            type: .secondary,
+            size: .mini
+        ) {
+            showDebugURIAlert = true
+        }
+        .disabled(viewModel.isPairingDebugURI)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+#endif
 
     @ViewBuilder
     private var sessionsSection: some View {
