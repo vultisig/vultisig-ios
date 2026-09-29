@@ -94,6 +94,7 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         guard configuredProjectId != configuration.projectId else { return }
 
         Networking.configure(
+            relayHost: "relay.walletconnect.com",
             groupIdentifier: configuration.keychainAccessGroup,
             projectId: configuration.projectId,
             socketFactory: WalletConnectSocketFactory()
