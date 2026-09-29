@@ -38,15 +38,29 @@ final class WalletConnectTransactionRequestBuilderTests: XCTestCase {
         }
     }
 
-    func testRejectsUnsupportedGasFeeNonceOverridesInsteadOfDroppingIntent() {
+    func testAcceptsGasLimitOverrideForWalletConnectTransactions() throws {
+        let vault = makeVault(pubKey: "bound-vault", chain: .ethereum, address: "0x1111111111111111111111111111111111111111")
+
+        let request = try WalletConnectTransactionRequestBuilder().build(
+            incoming: incoming(paramsJSON: transactionJSON(extra: "\"gas\":\"0x5208\"")),
+            binding: binding(pubKey: "bound-vault"),
+            vaults: [vault]
+        )
+
+        XCTAssertEqual(request.requestedOverrides.gas, BigInt(21_000))
+        XCTAssertEqual(request.transaction.estimatedGasLimit, BigInt(21_000))
+        XCTAssertEqual(request.transaction.customGasLimit, BigInt(21_000))
+    }
+
+    func testRejectsUnsupportedFeeAndNonceOverridesInsteadOfDroppingIntent() {
         let vault = makeVault(pubKey: "bound-vault", chain: .ethereum, address: "0x1111111111111111111111111111111111111111")
 
         XCTAssertThrowsError(try WalletConnectTransactionRequestBuilder().build(
-            incoming: incoming(paramsJSON: transactionJSON(extra: "\"gas\":\"0x5208\",\"nonce\":\"0x1\"")),
+            incoming: incoming(paramsJSON: transactionJSON(extra: "\"gas\":\"0x5208\",\"maxFeePerGas\":\"0x1\",\"nonce\":\"0x1\"")),
             binding: binding(pubKey: "bound-vault"),
             vaults: [vault]
         )) { error in
-            XCTAssertEqual(error as? WalletConnectTransactionRequestError, .unsupportedOverride("gas, nonce"))
+            XCTAssertEqual(error as? WalletConnectTransactionRequestError, .unsupportedOverride("maxFeePerGas, nonce"))
         }
     }
 

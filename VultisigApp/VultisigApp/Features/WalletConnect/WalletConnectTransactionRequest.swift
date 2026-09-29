@@ -35,7 +35,6 @@ struct WalletConnectTransactionOverrides: Equatable {
 
     var unsupportedFields: [String] {
         var fields: [String] = []
-        if gas != nil { fields.append("gas") }
         if gasPrice != nil { fields.append("gasPrice") }
         if maxFeePerGas != nil { fields.append("maxFeePerGas") }
         if maxPriorityFeePerGas != nil { fields.append("maxPriorityFeePerGas") }
@@ -215,8 +214,8 @@ struct WalletConnectTransactionRequestBuilder {
             gas: .zero,
             fee: .zero,
             feeMode: .default,
-            estimatedGasLimit: nil,
-            customGasLimit: nil,
+            estimatedGasLimit: parsed.overrides.gas,
+            customGasLimit: parsed.overrides.gas,
             customByteFee: nil,
             sendMaxAmount: false,
             isStakingOperation: false,
