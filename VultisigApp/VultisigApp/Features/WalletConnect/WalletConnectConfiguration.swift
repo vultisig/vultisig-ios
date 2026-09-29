@@ -11,13 +11,15 @@ struct WalletConnectConfiguration: Equatable {
     let appDescription: String
     let appURL: URL
     let appIconURL: URL
+    let keychainAccessGroup: String
 
     static func fromMainBundle() throws -> WalletConnectConfiguration {
         let projectId = Bundle.main.object(forInfoDictionaryKey: "WalletConnectProjectId") as? String
-        return try WalletConnectConfiguration(projectId: projectId)
+        let keychainAccessGroup = Bundle.main.object(forInfoDictionaryKey: "WalletConnectKeychainAccessGroup") as? String
+        return try WalletConnectConfiguration(projectId: projectId, keychainAccessGroup: keychainAccessGroup)
     }
 
-    init(projectId: String?) throws {
+    init(projectId: String?, keychainAccessGroup: String?) throws {
         guard let projectId = projectId?.trimmingCharacters(in: .whitespacesAndNewlines),
               !projectId.isEmpty,
               projectId != "$(WALLETCONNECT_PROJECT_ID)" else {
@@ -25,6 +27,9 @@ struct WalletConnectConfiguration: Equatable {
         }
 
         self.projectId = projectId
+        self.keychainAccessGroup = keychainAccessGroup?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+            ?? Bundle.main.bundleIdentifier
+            ?? "com.vultisig.wallet"
         self.appName = "Vultisig"
         self.appDescription = "Vultisig Wallet"
         self.appURL = URL(string: "https://vultisig.com")!
