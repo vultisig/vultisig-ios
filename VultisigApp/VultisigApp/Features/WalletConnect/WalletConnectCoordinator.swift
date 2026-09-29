@@ -25,6 +25,7 @@ final class WalletConnectCoordinator: ObservableObject {
     private let pairingClient: WalletConnectPairingClient
     private var isConfigured = false
     private(set) var configurationError: WalletConnectError?
+    private var pairingURIInFlight: String?
 
     init(pairingClient: WalletConnectPairingClient? = nil) {
         self.pairingClient = pairingClient ?? ReownWalletConnectPairingClient()
@@ -48,14 +49,19 @@ final class WalletConnectCoordinator: ObservableObject {
     }
 
     func pair(uri: String) async throws {
-        guard WalletConnectURIParser.normalizedURI(from: uri) != nil else {
+        guard let normalizedURI = WalletConnectURIParser.normalizedURI(from: uri) else {
             throw WalletConnectError.invalidURI
         }
         guard isConfigured else {
             throw configurationError ?? .notConfigured
         }
+        guard pairingURIInFlight == nil else {
+            throw WalletConnectError.pairingFailed("A WalletConnect pairing is already in progress")
+        }
 
-        try await pairingClient.pair(uri: uri)
+        pairingURIInFlight = normalizedURI
+        defer { pairingURIInFlight = nil }
+        try await pairingClient.pair(uri: normalizedURI)
     }
 }
 

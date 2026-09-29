@@ -209,6 +209,7 @@ extension CreateVaultView {
             }
             .crossPlatformSheet(isPresented: $showSheet, onDismiss: {
                 if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+                    deeplinkViewModel.resetData()
                     Task { @MainActor in
                         do {
                             try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
