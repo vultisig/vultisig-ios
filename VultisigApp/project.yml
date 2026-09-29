@@ -150,6 +150,10 @@ targets:
       # below, not via XcodeGen's `info:` / `entitlements:` blocks (which
       # would regenerate and overwrite them).
 
+    configFiles:
+      Debug: Config/WalletConnect.xcconfig
+      Release: Config/WalletConnect.xcconfig
+
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vultisig.wallet
@@ -228,9 +232,6 @@ targets:
           # Default VULTI_LOG selector string, surfaced to the app via the
           # Info.plist `VultiLogConfig` key (which expands `$(VULTI_LOG_CONFIG)`).
           VULTI_LOG_CONFIG: "*:info"
-          # Runtime-supplied Reown Cloud project ID. Keep empty in source so
-          # WalletConnect stays disabled unless a local/CI config injects it.
-          WALLETCONNECT_PROJECT_ID: ""
         Release:
           # Matches the current pbxproj — Release is effectively Debug-like.
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
@@ -238,9 +239,6 @@ targets:
           ALLOW_TARGET_PLATFORM_SPECIALIZATION: YES
           # No LOGGING flag here → logging is compiled out; keep the plist default off.
           VULTI_LOG_CONFIG: "*:off"
-          # Runtime-supplied Reown Cloud project ID. Keep empty in source so
-          # WalletConnect stays disabled unless a local/CI config injects it.
-          WALLETCONNECT_PROJECT_ID: ""
 
     dependencies:
       # The iOS-only widget extension is embedded only in the iOS destination;
