@@ -93,9 +93,13 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
     func configure(with configuration: WalletConnectConfiguration) throws {
         guard configuredProjectId != configuration.projectId else { return }
 
+        // TODO: Switch this to `WidgetSharedStorage.appGroupIdentifier` after Reown splits
+        // app-group UserDefaults from Keychain access-group configuration. In Reown 1.0.7,
+        // `groupIdentifier` is also used as `kSecAttrAccessGroup`, so local signing needs
+        // the TeamID-prefixed keychain group rather than the App Group identifier.
         Networking.configure(
             relayHost: "relay.walletconnect.com",
-            groupIdentifier: WidgetSharedStorage.appGroupIdentifier,
+            groupIdentifier: configuration.keychainAccessGroup,
             projectId: configuration.projectId,
             socketFactory: WalletConnectSocketFactory()
         )
