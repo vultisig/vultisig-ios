@@ -49,15 +49,8 @@ struct GeneralCodeScannerView: View {
         }
         do {
             let validDeeplink = try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
-            if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+            if deeplinkViewModel.walletConnectURI != nil {
                 showSheet = false
-                Task { @MainActor in
-                    do {
-                        try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
-                    } catch {
-                        localError = error
-                    }
-                }
                 return
             }
 

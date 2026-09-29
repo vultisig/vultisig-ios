@@ -25,6 +25,7 @@ struct CreateVaultView: View {
     @State var showImportSelectionSheet: Bool = false
     @State var navigateToScanQR = false
     @State var navigateToGeneralQRImport = false
+    @State private var deeplinkError: Error?
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
@@ -206,7 +207,17 @@ extension CreateVaultView {
                 ))
                 shouldJoinKeygen = false
             }
-            .crossPlatformSheet(isPresented: $showSheet) {
+            .crossPlatformSheet(isPresented: $showSheet, onDismiss: {
+                if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+                    Task { @MainActor in
+                        do {
+                            try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
+                        } catch {
+                            deeplinkError = error
+                        }
+                    }
+                }
+            }, sheetContent: {
                 GeneralCodeScannerView(
                     showSheet: $showSheet,
                     selectedChain: .constant(nil),
@@ -214,7 +225,7 @@ extension CreateVaultView {
                         shouldJoinKeygen = true
                     }
                 )
-            }
+            })
             .onChange(of: showSheet) { _, isShowing in
                 if !isShowing {
                     // Sheet just closed, check for pending keygen deeplink
@@ -227,6 +238,9 @@ extension CreateVaultView {
                         deeplinkViewModel.jsonData = nil
                     }
                 }
+            }
+            .withError(error: $deeplinkError, errorType: .warning) {
+                deeplinkError = nil
             }
     }
 
