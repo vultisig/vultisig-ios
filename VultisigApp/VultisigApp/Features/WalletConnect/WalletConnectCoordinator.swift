@@ -94,7 +94,7 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         guard configuredProjectId != configuration.projectId else { return }
 
         Networking.configure(
-            groupIdentifier: "",
+            groupIdentifier: WidgetSharedStorage.appGroupIdentifier,
             projectId: configuration.projectId,
             socketFactory: WalletConnectSocketFactory()
         )
