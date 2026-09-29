@@ -95,7 +95,7 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
 
         Networking.configure(
             relayHost: "relay.walletconnect.com",
-            groupIdentifier: configuration.keychainAccessGroup,
+            groupIdentifier: WidgetSharedStorage.appGroupIdentifier,
             projectId: configuration.projectId,
             socketFactory: WalletConnectSocketFactory()
         )
