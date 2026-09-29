@@ -162,11 +162,28 @@ private final class WalletConnectSocket: WebSocketConnecting {
     var onText: ((String) -> Void)?
     var request: URLRequest
 
-    private let socket: WebSocket
+    private var socket: WebSocket?
 
     init(url: URL) {
         self.request = URLRequest(url: url)
-        self.socket = WebSocket(request: request)
+    }
+
+    func connect() {
+        let socket = makeSocket()
+        self.socket = socket
+        socket.connect()
+    }
+
+    func disconnect() {
+        socket?.disconnect()
+    }
+
+    func write(string: String, completion: (() -> Void)?) {
+        socket?.write(string: string, completion: completion)
+    }
+
+    private func makeSocket() -> WebSocket {
+        let socket = WebSocket(request: request)
         socket.callbackQueue = DispatchQueue(
             label: "com.vultisig.wallet.walletconnect.socket",
             qos: .utility,
@@ -175,18 +192,7 @@ private final class WalletConnectSocket: WebSocketConnecting {
         socket.onEvent = { [weak self] event in
             self?.handle(event)
         }
-    }
-
-    func connect() {
-        socket.connect()
-    }
-
-    func disconnect() {
-        socket.disconnect()
-    }
-
-    func write(string: String, completion: (() -> Void)?) {
-        socket.write(string: string, completion: completion)
+        return socket
     }
 
     private func handle(_ event: WebSocketEvent) {
