@@ -33,13 +33,42 @@ struct WalletConnectTransactionOverrides: Equatable {
     let maxPriorityFeePerGas: BigInt?
     let nonce: BigInt?
 
-    var unsupportedFields: [String] {
-        var fields: [String] = []
-        if gasPrice != nil { fields.append("gasPrice") }
-        if maxFeePerGas != nil { fields.append("maxFeePerGas") }
-        if maxPriorityFeePerGas != nil { fields.append("maxPriorityFeePerGas") }
-        if nonce != nil { fields.append("nonce") }
+    var unsupportedFields: [String] { [] }
+
+    var displayFields: [(String, BigInt)] {
+        var fields: [(String, BigInt)] = []
+        if let gas { fields.append(("gas", gas)) }
+        if let gasPrice { fields.append(("gasPrice", gasPrice)) }
+        if let maxFeePerGas { fields.append(("maxFeePerGas", maxFeePerGas)) }
+        if let maxPriorityFeePerGas { fields.append(("maxPriorityFeePerGas", maxPriorityFeePerGas)) }
+        if let nonce { fields.append(("nonce", nonce)) }
         return fields
+    }
+
+    func applying(to chainSpecific: BlockChainSpecific) throws -> BlockChainSpecific {
+        guard case let .Ethereum(currentMaxFeePerGas, currentPriorityFee, currentNonce, currentGasLimit) = chainSpecific else {
+            return chainSpecific
+        }
+        let resolvedMaxFeePerGas = maxFeePerGas ?? gasPrice ?? currentMaxFeePerGas
+        let resolvedPriorityFee = maxPriorityFeePerGas ?? (gasPrice == nil ? currentPriorityFee : .zero)
+        guard resolvedPriorityFee <= resolvedMaxFeePerGas else {
+            throw WalletConnectTransactionRequestError.invalidParams("maxPriorityFeePerGas must not exceed maxFeePerGas")
+        }
+        let resolvedNonce: Int64
+        if let nonce {
+            guard nonce <= BigInt(Int64.max), let intNonce = Int64(nonce.description) else {
+                throw WalletConnectTransactionRequestError.invalidParams("nonce is too large")
+            }
+            resolvedNonce = intNonce
+        } else {
+            resolvedNonce = currentNonce
+        }
+        return .Ethereum(
+            maxFeePerGasWei: resolvedMaxFeePerGas,
+            priorityFeeWei: resolvedPriorityFee,
+            nonce: resolvedNonce,
+            gasLimit: gas ?? currentGasLimit
+        )
     }
 }
 
@@ -166,6 +195,12 @@ struct WalletConnectTransactionRequestParser {
             throw WalletConnectTransactionRequestError.invalidParams("\(label) must be a minimal hex quantity")
         }
         return parsed
+    }
+}
+
+extension KeysignPayload {
+    func applyingWalletConnectOverrides(_ overrides: WalletConnectTransactionOverrides) throws -> KeysignPayload {
+        try withChainSpecific(overrides.applying(to: chainSpecific))
     }
 }
 

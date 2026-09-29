@@ -84,6 +84,7 @@ struct WalletConnectTransactionRequestSheet: View {
                     title: "walletConnectTransactionData".localized,
                     value: request.data.isEmpty ? "walletConnectTransactionEmptyData".localized : request.data
                 )
+                overrideRows(for: request)
                 actions(for: request)
             }
             .padding(24)
@@ -205,6 +206,13 @@ struct WalletConnectTransactionRequestSheet: View {
         }
     }
 
+    @ViewBuilder
+    private func overrideRows(for request: WalletConnectTransactionRequest) -> some View {
+        ForEach(request.requestedOverrides.displayFields, id: \.0) { field, value in
+            detailRow(title: "WalletConnect override: \(field)", value: value.description)
+        }
+    }
+
     private func actions(for request: WalletConnectTransactionRequest) -> some View {
         VStack(spacing: 12) {
             SigningCTAButtons(
@@ -240,7 +248,9 @@ struct WalletConnectTransactionRequestSheet: View {
         isApproving = true
         Task { @MainActor in
             do {
-                keysignPayload = try await verifyViewModel.createKeysignPayload(tx: request.transaction)
+                keysignPayload = try await verifyViewModel
+                    .createKeysignPayload(tx: request.transaction)
+                    .applyingWalletConnectOverrides(request.requestedOverrides)
                 if fast {
                     fastPasswordPresented = true
                 } else {

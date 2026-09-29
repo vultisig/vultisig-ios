@@ -52,16 +52,60 @@ final class WalletConnectTransactionRequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.transaction.customGasLimit, BigInt(21_000))
     }
 
-    func testRejectsUnsupportedFeeAndNonceOverridesInsteadOfDroppingIntent() {
+    func testAcceptsFeeAndNonceOverridesForWalletConnectTransactions() throws {
         let vault = makeVault(pubKey: "bound-vault", chain: .ethereum, address: "0x1111111111111111111111111111111111111111")
 
-        XCTAssertThrowsError(try WalletConnectTransactionRequestBuilder().build(
-            incoming: incoming(paramsJSON: transactionJSON(extra: "\"gas\":\"0x5208\",\"maxFeePerGas\":\"0x1\",\"nonce\":\"0x1\"")),
+        let request = try WalletConnectTransactionRequestBuilder().build(
+            incoming: incoming(paramsJSON: transactionJSON(extra: "\"gas\":\"0x5208\",\"maxFeePerGas\":\"0x64\",\"maxPriorityFeePerGas\":\"0x2\",\"nonce\":\"0x1\"")),
             binding: binding(pubKey: "bound-vault"),
             vaults: [vault]
-        )) { error in
-            XCTAssertEqual(error as? WalletConnectTransactionRequestError, .unsupportedOverride("maxFeePerGas, nonce"))
+        )
+
+        XCTAssertEqual(request.requestedOverrides.gas, BigInt(21_000))
+        XCTAssertEqual(request.requestedOverrides.maxFeePerGas, BigInt(100))
+        XCTAssertEqual(request.requestedOverrides.maxPriorityFeePerGas, BigInt(2))
+        XCTAssertEqual(request.requestedOverrides.nonce, BigInt(1))
+    }
+
+    func testAppliesWalletConnectOverridesToEthereumKeysignPayload() throws {
+        let payload = KeysignPayload(
+            coin: makeVault(pubKey: "vault", chain: .ethereum, address: "0x1111111111111111111111111111111111111111").coins[0],
+            toAddress: "0x2222222222222222222222222222222222222222",
+            toAmount: .zero,
+            chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(10), priorityFeeWei: BigInt(1), nonce: 7, gasLimit: BigInt(21_000)),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "vault",
+            vaultLocalPartyID: "local-vault",
+            libType: "DKLS",
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+        let overrides = WalletConnectTransactionOverrides(
+            gas: BigInt(30_000),
+            gasPrice: nil,
+            maxFeePerGas: BigInt(100),
+            maxPriorityFeePerGas: BigInt(2),
+            nonce: BigInt(1)
+        )
+
+        let updated = try payload.applyingWalletConnectOverrides(overrides)
+
+        guard case let .Ethereum(maxFee, priorityFee, nonce, gasLimit) = updated.chainSpecific else {
+            return XCTFail("Expected Ethereum chain specific")
         }
+        XCTAssertEqual(maxFee, BigInt(100))
+        XCTAssertEqual(priorityFee, BigInt(2))
+        XCTAssertEqual(nonce, 1)
+        XCTAssertEqual(gasLimit, BigInt(30_000))
     }
 
     func testRejectsMissingBoundVaultMissingNativeCoinAndUnsupportedChain() {
