@@ -149,6 +149,11 @@ struct WalletConnectTransactionRequestSheet: View {
             Text(error.localizedDescription)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.alertWarning)
+#if DEBUG
+            detailRow(title: "Debug method", value: incomingRequest.method)
+            detailRow(title: "Debug chain", value: incomingRequest.chainId ?? "nil")
+            detailRow(title: "Debug params", value: incomingRequest.paramsJSON)
+#endif
             PrimaryButton(
                 title: "reject".localized,
                 isLoading: isRejecting,
@@ -158,6 +163,16 @@ struct WalletConnectTransactionRequestSheet: View {
             .disabled(isRejecting)
         }
         .padding(24)
+        .onAppear {
+            logTransactionRequestFailure(error)
+        }
+    }
+
+    private func logTransactionRequestFailure(_ error: Error) {
+        let chainId = incomingRequest.chainId ?? "nil"
+        Log.app.other.error(
+            "WalletConnect transaction request failed: method=\(incomingRequest.method, privacy: .public) chain=\(chainId, privacy: .public) error=\(error.localizedDescription, privacy: .public) params=\(incomingRequest.paramsJSON, privacy: .public)"
+        )
     }
 
     private func header(for request: WalletConnectTransactionRequest) -> some View {
