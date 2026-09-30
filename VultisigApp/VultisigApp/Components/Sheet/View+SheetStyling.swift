@@ -45,4 +45,20 @@ extension View {
         self
         #endif
     }
+
+    /// Force native iOS sheets to use the page-sized presentation when the API
+    /// is available. iOS 18+ can otherwise choose a fitted/form-sized sheet,
+    /// which leaves side gaps around bottom review sheets.
+    @ViewBuilder
+    func presentationSizingPage() -> some View {
+        #if os(iOS)
+        if #available(iOS 18.0, *) {
+            self.presentationSizing(.page)
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
 }
