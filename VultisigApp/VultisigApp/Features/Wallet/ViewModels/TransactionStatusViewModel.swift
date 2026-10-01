@@ -12,6 +12,7 @@ import SwiftUI
 @MainActor
 class TransactionStatusViewModel: ObservableObject {
     @Published var status: TransactionStatus = .broadcasted(estimatedTime: "")
+    @Published private(set) var paidNetworkFeeCrypto: String?
 
     private let txHash: String
     private let chain: Chain
@@ -142,6 +143,9 @@ class TransactionStatusViewModel: ObservableObject {
 
     private func updateStatus(from result: TransactionStatusResult) {
         let previousStatus = status
+        if let paidNetworkFeeCrypto = result.paidNetworkFeeCrypto(for: chain) {
+            self.paidNetworkFeeCrypto = paidNetworkFeeCrypto
+        }
 
         switch result.status {
         case .notFound, .pending:
@@ -187,7 +191,8 @@ class TransactionStatusViewModel: ObservableObject {
                     txHash: txHash,
                     pubKeyECDSA: pubKeyECDSA,
                     status: historyStatus,
-                    errorMessage: errorMessage
+                    errorMessage: errorMessage,
+                    feeCrypto: paidNetworkFeeCrypto
                 )
             }
         }

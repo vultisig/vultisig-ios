@@ -50,12 +50,65 @@ struct TransactionStatusResult {
     let status: TransactionConfirmationStatus
     let blockNumber: Int?
     let confirmations: Int?
+    /// Actual fee paid on-chain in the chain's base units, when the status
+    /// provider can prove it. TON fills this from `total_fees` in nanotons;
+    /// callers keep their estimated-fee fallback when this is `nil`.
+    let paidNetworkFeeBaseUnits: String?
+
+    init(
+        status: TransactionConfirmationStatus,
+        blockNumber: Int?,
+        confirmations: Int?,
+        paidNetworkFeeBaseUnits: String? = nil
+    ) {
+        self.status = status
+        self.blockNumber = blockNumber
+        self.confirmations = confirmations
+        self.paidNetworkFeeBaseUnits = paidNetworkFeeBaseUnits
+    }
 
     enum TransactionConfirmationStatus: Equatable {
         case notFound
         case pending
         case confirmed
         case failed(reason: String)
+    }
+}
+
+extension TransactionStatusResult {
+    func paidNetworkFeeCrypto(for chain: Chain) -> String? {
+        guard chain == .ton, let paidNetworkFeeBaseUnits else { return nil }
+        return Self.formatTonNetworkFee(nanotons: paidNetworkFeeBaseUnits)
+    }
+
+    static func formatTonNetworkFee(nanotons: String) -> String? {
+        guard !nanotons.isEmpty,
+              nanotons.unicodeScalars.allSatisfy({ (48...57).contains($0.value) }) else {
+            return nil
+        }
+
+        let trimmed = String(nanotons.drop { $0 == "0" })
+        guard !trimmed.isEmpty else { return "0 TON" }
+
+        let scale = 9
+        if trimmed.count <= scale {
+            let padding = String(repeating: "0", count: scale - trimmed.count)
+            let fraction = trimmingTrailingZeros(from: padding + trimmed)
+            return "0.\(fraction) TON"
+        }
+
+        let splitIndex = trimmed.index(trimmed.endIndex, offsetBy: -scale)
+        let whole = String(trimmed[..<splitIndex])
+        let fraction = trimmingTrailingZeros(from: String(trimmed[splitIndex...]))
+        return fraction.isEmpty ? "\(whole) TON" : "\(whole).\(fraction) TON"
+    }
+
+    private static func trimmingTrailingZeros(from value: String) -> String {
+        var result = value
+        while result.last == "0" {
+            result.removeLast()
+        }
+        return result
     }
 }
 

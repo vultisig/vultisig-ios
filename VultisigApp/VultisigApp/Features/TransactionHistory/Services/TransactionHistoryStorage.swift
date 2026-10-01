@@ -80,7 +80,13 @@ final class TransactionHistoryStorage {
 
     // MARK: - Update Status
 
-    func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus, errorMessage: String? = nil) throws {
+    func updateStatus(
+        txHash: String,
+        pubKeyECDSA: String,
+        status: TransactionHistoryStatus,
+        errorMessage: String? = nil,
+        feeCrypto: String? = nil
+    ) throws {
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.txHash == txHash && item.pubKeyECDSA == pubKeyECDSA
         }
@@ -94,6 +100,10 @@ final class TransactionHistoryStorage {
         }
         if let errorMessage {
             item.errorMessage = errorMessage
+        }
+        if let feeCrypto {
+            item.feeCrypto = feeCrypto
+            item.feeFiat = .empty
         }
         try modelContext.save()
     }

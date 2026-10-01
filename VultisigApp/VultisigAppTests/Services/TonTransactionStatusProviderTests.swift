@@ -84,6 +84,44 @@ final class TonTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .confirmed)
     }
 
+    func test_checkStatus_confirmedWithPlainTotalFees_exposesPaidNetworkFee() async throws {
+        http.queueDecoded(Self.response(
+            exitCode: 0,
+            actionSuccess: true,
+            totalFees: "123456789"
+        ))
+        let result = try await provider.checkStatus(query: Self.query)
+        XCTAssertEqual(result.status, .confirmed)
+        XCTAssertEqual(result.paidNetworkFeeBaseUnits, "123456789")
+    }
+
+    func test_checkStatus_confirmedWithMissingTotalFees_keepsEstimatedFeeFallback() async throws {
+        http.queueDecoded(Self.response(exitCode: 0, actionSuccess: true, totalFees: nil))
+        let result = try await provider.checkStatus(query: Self.query)
+        XCTAssertEqual(result.status, .confirmed)
+        XCTAssertNil(result.paidNetworkFeeBaseUnits)
+    }
+
+    func test_checkStatus_confirmedWithMalformedTotalFees_keepsEstimatedFeeFallback() async throws {
+        for malformed in ["", "0.05", "-1", "+1", "1_000", " 1000"] {
+            http.queueDecoded(Self.response(
+                exitCode: 0,
+                actionSuccess: true,
+                totalFees: malformed
+            ))
+            let result = try await provider.checkStatus(query: Self.query)
+            XCTAssertEqual(result.status, .confirmed)
+            XCTAssertNil(result.paidNetworkFeeBaseUnits, "Expected \(malformed) to be ignored")
+        }
+    }
+
+    func test_formatTonNetworkFee_scalesNanotonsForConsumerDisplay() {
+        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "50000000"), "0.05 TON")
+        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "1234567890"), "1.23456789 TON")
+        XCTAssertNil(TransactionStatusResult.formatTonNetworkFee(nanotons: "0.05"))
+        XCTAssertNil(TransactionStatusResult.formatTonNetworkFee(nanotons: "-1"))
+    }
+
     func test_checkStatus_exitCodeOne_returnsConfirmed() async throws {
         // TVM convention: 1 is the "alternative success" code used by some checks.
         http.queueDecoded(Self.response(exitCode: 1, actionSuccess: true))
@@ -138,7 +176,8 @@ final class TonTransactionStatusProviderTests: XCTestCase {
         aborted: Bool? = nil,
         exitCode: Int? = nil,
         actionSuccess: Bool? = nil,
-        actionResultCode: Int? = nil
+        actionResultCode: Int? = nil,
+        totalFees: String? = nil
     ) -> TonTransactionStatusResponse {
         typealias Description = TonTransactionStatusResponse.TonTransaction.TonDescription
         let computePhase: Description.ComputePhase?
@@ -162,11 +201,12 @@ final class TonTransactionStatusProviderTests: XCTestCase {
             computePhase: computePhase,
             action: action
         )
-        return response(description: description)
+        return response(description: description, totalFees: totalFees)
     }
 
     private static func response(
-        description: TonTransactionStatusResponse.TonTransaction.TonDescription?
+        description: TonTransactionStatusResponse.TonTransaction.TonDescription?,
+        totalFees: String? = nil
     ) -> TonTransactionStatusResponse {
         let tx = TonTransactionStatusResponse.TonTransaction(
             account: nil,
@@ -175,7 +215,7 @@ final class TonTransactionStatusProviderTests: XCTestCase {
             now: nil,
             origStatus: nil,
             endStatus: nil,
-            totalFees: nil,
+            totalFees: totalFees,
             data: nil,
             description: description
         )

@@ -124,6 +124,7 @@ struct DoneScreen<
         }
         .screenTitle(navigationTitle)
         .screenBackButtonHidden()
+        .environment(\.paidNetworkFeeCrypto, statusService.paidNetworkFeeCrypto)
         .environment(\.notifyHashCopied) { showAlert = true }
     }
 
