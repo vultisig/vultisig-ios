@@ -151,8 +151,8 @@ targets:
       # would regenerate and overwrite them).
 
     configFiles:
-      Debug: Config/WalletConnect.xcconfig
-      Release: Config/WalletConnect.xcconfig
+      Debug: Config/WalletConnect.base.xcconfig
+      Release: Config/WalletConnect.base.xcconfig
 
     settings:
       base:
