@@ -218,15 +218,26 @@ final class BlockChainService {
         )
     }
 
-    /// Check if we should use cache for the given chain and cache key
-    private func shouldUseCache(for chain: Chain, cacheKey: String) -> BlockChainSpecific? {
+    static func allowsBlockSpecificCache(for chain: Chain) -> Bool {
         // Skip cache for chains that support pending transactions to ensure fresh nonce
         guard !chain.supportsPendingTransactions else {
-            return nil
+            return false
         }
 
-        // Skip cache for Solana to ensure fresh blockhash (expires in ~60 seconds)
-        guard chain != .solana else {
+        // Skip cache for Solana to ensure fresh blockhash (expires in ~60 seconds).
+        // Skip Sui because its chain-specific value embeds a bounded selection of
+        // spendable coin objects for the requested amount; reusing it for a later
+        // larger send can hand keysign an under-funded object set.
+        guard chain != .solana, chain != .sui else {
+            return false
+        }
+
+        return true
+    }
+
+    /// Check if we should use cache for the given chain and cache key
+    private func shouldUseCache(for chain: Chain, cacheKey: String) -> BlockChainSpecific? {
+        guard Self.allowsBlockSpecificCache(for: chain) else {
             return nil
         }
 
@@ -242,15 +253,9 @@ final class BlockChainService {
         return localCacheItem.blockSpecific
     }
 
-    /// Set cache only for chains that don't support pending transactions
+    /// Set cache only for chains whose block-specific payload is safe to reuse.
     private func setCacheIfAllowed(for chain: Chain, cacheKey: String, blockSpecific: BlockChainSpecific) {
-        // Only cache for chains that don't support pending transactions
-        guard !chain.supportsPendingTransactions else {
-            return
-        }
-
-        // Don't cache Solana to ensure fresh blockhash
-        guard chain != .solana else {
+        guard Self.allowsBlockSpecificCache(for: chain) else {
             return
         }
 

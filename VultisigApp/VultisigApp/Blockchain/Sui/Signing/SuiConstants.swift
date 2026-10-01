@@ -66,11 +66,11 @@ enum SuiSpendableCoinError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .nativeSelectionCannotCoverAmountAndGas:
-            return "Insufficient SUI balance in spendable coin objects to cover the amount plus gas."
+            return "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas".localized
         case .tokenSelectionCannotCoverAmount:
-            return "Insufficient token balance in spendable SUI coin objects to cover the amount."
+            return "suiSpendableCoinErrorTokenSelectionCannotCoverAmount".localized
         case .tokenSelectionCannotCoverGas:
-            return "No single spendable SUI coin object can cover the gas fee."
+            return "suiSpendableCoinErrorTokenSelectionCannotCoverGas".localized
         }
     }
 }
