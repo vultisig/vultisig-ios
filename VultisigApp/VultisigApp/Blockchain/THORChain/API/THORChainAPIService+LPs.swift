@@ -17,7 +17,7 @@ extension THORChainAPIService {
     ///
     /// ## Data Sources:
     /// - **Primary**: `https://gateway.liquify.com/chain/thorchain_midgard/v2` (Liquify gateway → Midgard v2)
-    /// - **Pool Stats**: `/v2/pools?status=available&period={period}`
+    /// - **Pool Stats**: `/v2/pools?period={period}` (client keeps available and staged pools)
     /// - **Depth History**: `/v2/history/depths/{asset}?interval=day&count={N}`
     ///
     /// ## LUVI-Based APR Calculation:
@@ -113,7 +113,7 @@ extension THORChainAPIService {
     /// - Returns: Array of complete LP positions with current values and manually calculated APR from LUVI history
     /// - Note: API calls are made sequentially to respect rate limiting
     func getLPPositions(address: String, userLPs: [CoinMeta], period: String? = nil) async throws -> [THORChainLPPosition] {
-        // First, fetch all pool stats to get the list of available pools
+        // First, fetch all pool stats to get the list of LP-supported pools
         let poolStats = try await getPoolStats(period: period)
 
         var positions: [THORChainLPPosition] = []
@@ -127,7 +127,7 @@ extension THORChainAPIService {
         }
 
         // Process each pool sequentially to respect API rate limiting
-        for poolStat in userPools where poolStat.isAvailable {
+        for poolStat in userPools where poolStat.supportsPairedLPAdd {
             do {
                 // Fetch LP details for this specific pool
                 let lpDetails = try? await getLiquidityProviderDetails(

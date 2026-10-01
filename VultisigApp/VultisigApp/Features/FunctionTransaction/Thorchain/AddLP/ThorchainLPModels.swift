@@ -19,6 +19,19 @@ struct ThorchainPool: Codable {
     let pendingInboundAsset: String
     let pendingInboundRune: String
 
+    var isAvailable: Bool {
+        status.caseInsensitiveCompare("Available") == .orderedSame
+    }
+
+    var isStaged: Bool {
+        status.caseInsensitiveCompare("Staged") == .orderedSame
+    }
+
+    /// Pools that may receive a paired LP add. Suspended or unknown statuses are hidden.
+    var supportsPairedLPAdd: Bool {
+        isAvailable || isStaged
+    }
+
     enum CodingKeys: String, CodingKey {
         case asset
         case status

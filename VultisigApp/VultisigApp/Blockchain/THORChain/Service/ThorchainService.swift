@@ -547,13 +547,13 @@ extension ThorchainService {
             )
             let pools = response.data
 
-            // Filter only available pools
-            let availablePools = pools.filter { $0.status == "Available" }
+            // Filter to pools that support paired LP adds. Suspended pools stay hidden.
+            let supportedPools = pools.filter(\.supportsPairedLPAdd)
 
             // Cache the result
-            cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
+            cacheLPPools.set(cacheKey, (data: supportedPools, timestamp: Date()))
 
-            return availablePools
+            return supportedPools
         }
     }
 
