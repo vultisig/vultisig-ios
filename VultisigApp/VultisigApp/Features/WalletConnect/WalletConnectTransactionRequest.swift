@@ -309,6 +309,18 @@ struct WalletConnectTransactionChainResolver {
     }
 }
 
+extension WalletConnectTransactionOverrides {
+    func feeDisplayValue(ticker: String) -> String {
+        if let maxFeePerGas {
+            return "maxFeePerGas: \(maxFeePerGas) wei"
+        }
+        if let gasPrice {
+            return "gasPrice: \(gasPrice) wei"
+        }
+        return String(format: "walletConnectTransactionEstimatedFeeValue".localized, ticker)
+    }
+}
+
 extension String {
     var walletConnectIsEVMAddress: Bool {
         hasPrefix("0x") && count == 42 && dropFirst(2).allSatisfy(\.isHexDigit)
@@ -316,5 +328,10 @@ extension String {
 
     var walletConnectIsHexData: Bool {
         hasPrefix("0x") && dropFirst(2).allSatisfy(\.isHexDigit) && dropFirst(2).count.isMultiple(of: 2)
+    }
+
+    var walletConnectShortAddress: String {
+        guard count > 12 else { return self }
+        return "\(prefix(6))…\(suffix(4))"
     }
 }

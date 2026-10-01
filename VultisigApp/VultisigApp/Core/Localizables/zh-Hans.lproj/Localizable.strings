@@ -2024,3 +2024,11 @@
 "walletConnectSessionsHelperNote" = "Connections are linked to the vault you approved.
 You can disconnect them at any time.";
 "walletConnectApprovedNetworksUnknown" = "Approved networks";
+
+"walletConnectFrom" = "From";
+"walletConnectTo" = "To";
+"walletConnectTransactionEstimatedFee" = "Max network fee";
+"walletConnectTransactionEstimatedFeeValue" = "Estimated in %1$@ during signing";
+"walletConnectTransactionDetails" = "Transaction details";
+"walletConnectAcknowledgeAmount" = "The amount is correct";
+"walletConnectAcknowledgeRecipient" = "I’m sending to the correct address";

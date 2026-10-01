@@ -51,7 +51,7 @@ struct WalletConnectTransactionRequestSheet: View {
                 rejectionContent(error: error)
             }
         }
-        .background(Theme.colors.bgPrimary)
+        .background(Color.walletConnectBackground)
         .interactiveDismissDisabled()
         .withError(error: $actionError, errorType: .warning) {
             actionError = nil
@@ -68,27 +68,169 @@ struct WalletConnectTransactionRequestSheet: View {
     }
 
     private func approvalContent(for request: WalletConnectTransactionRequest) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header(for: request)
-                WalletConnectVerifyContextView(verifyContext: request.verifyContext)
-                detailRow(title: "walletConnectTransactionMethod".localized, value: request.method)
-                detailRow(title: "walletConnectTransactionChain".localized, value: request.chain.name)
-                detailRow(title: "walletConnectTransactionFrom".localized, value: request.from)
-                detailRow(title: "walletConnectTransactionTo".localized, value: request.to)
-                detailRow(
-                    title: "walletConnectTransactionValue".localized,
-                    value: "\(request.valueAmount) \(request.transaction.coin.ticker)"
-                )
-                detailRow(
-                    title: "walletConnectTransactionData".localized,
-                    value: request.data.isEmpty ? "walletConnectTransactionEmptyData".localized : request.data
-                )
-                overrideRows(for: request)
-                actions(for: request)
+        VStack(spacing: 0) {
+            WalletConnectSheetHeader(
+                title: "walletConnectTransactionRequest".localized,
+                onClose: isApproving || isRejecting ? nil : reject
+            )
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    WalletConnectDAppIdentityPanel(
+                        name: request.dappMetadata.name,
+                        host: request.dappMetadata.host,
+                        iconURL: request.dappMetadata.iconURL,
+                        verifyContext: request.verifyContext
+                    )
+
+                    WalletConnectVerifyContextView(verifyContext: request.verifyContext)
+
+                    transactionHero(for: request)
+                    transferCards(for: request)
+                    metadataSection(for: request)
+                    nativeTransferAcknowledgments
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
             }
-            .padding(24)
+
+            actions(for: request)
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
+                .background(Color.walletConnectBackground)
         }
+    }
+
+    private func transactionHero(for request: WalletConnectTransactionRequest) -> some View {
+        VStack(spacing: 10) {
+            AsyncImageView(
+                logo: request.transaction.coin.logo,
+                size: CGSize(width: 72, height: 72),
+                ticker: request.transaction.coin.ticker,
+                tokenChainLogo: request.transaction.coin.chain.logo
+            )
+            Text("\(request.valueAmount) \(request.transaction.coin.ticker)")
+                .font(Theme.fonts.largeTitle)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.walletConnectTextPrimary)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 2)
+    }
+
+    private func transferCards(for request: WalletConnectTransactionRequest) -> some View {
+        VStack(spacing: 9) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("walletConnectFrom".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Color.walletConnectTextTertiary)
+                WalletConnectVaultCard(
+                    title: signingVault?.name ?? "walletConnectUnknownVault".localized,
+                    subtitle: request.from.walletConnectShortAddress,
+                    showsChevron: false
+                )
+                .frame(height: 52)
+            }
+            .padding(16)
+            .background(Color.walletConnectSurface)
+            .overlay(Theme.radius.lg.shape.stroke(Color.walletConnectBorder, lineWidth: 1))
+            .clipShape(Theme.radius.lg.shape)
+
+            Image(systemName: "chevron.down")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.walletConnectTextSecondary)
+                .frame(width: 33, height: 33)
+                .background(Circle().fill(Color.walletConnectSurface))
+                .overlay(Circle().stroke(Color.walletConnectBorder, lineWidth: 1))
+                .padding(.vertical, -2)
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("walletConnectTo".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Color.walletConnectTextTertiary)
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(Color(hex: "1A2E47"))
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "person.crop.circle")
+                                .font(.system(size: 16))
+                                .foregroundStyle(Color.walletConnectTextSecondary)
+                        )
+                    Text(request.to.walletConnectShortAddress)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Color.walletConnectTextPrimary)
+                        .textSelection(.enabled)
+                    Spacer()
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.walletConnectSurface)
+            .overlay(Theme.radius.lg.shape.stroke(Color.walletConnectBorder, lineWidth: 1))
+            .clipShape(Theme.radius.lg.shape)
+        }
+    }
+
+    private func metadataSection(for request: WalletConnectTransactionRequest) -> some View {
+        VStack(spacing: 0) {
+            WalletConnectMetadataRow(
+                label: "walletConnectTransactionChain".localized,
+                value: request.chain.name,
+                iconName: request.chain.logo
+            )
+            WalletConnectMetadataRow(
+                label: "walletConnectTransactionEstimatedFee".localized,
+                value: request.requestedOverrides.feeDisplayValue(ticker: request.transaction.coin.ticker)
+            )
+            WalletConnectDivider()
+                .padding(.vertical, 8)
+            disclosureRow(for: request)
+        }
+    }
+
+    private func disclosureRow(for request: WalletConnectTransactionRequest) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("walletConnectTransactionDetails".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Color.walletConnectTextPrimary)
+                    Text(request.method)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Color.walletConnectTextTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.walletConnectTextSecondary)
+            }
+            detailRow(title: "walletConnectTransactionData".localized, value: request.data.isEmpty ? "walletConnectTransactionEmptyData".localized : request.data)
+            overrideRows(for: request)
+        }
+    }
+
+    private var nativeTransferAcknowledgments: some View {
+        VStack(spacing: 10) {
+            acknowledgmentRow("walletConnectAcknowledgeAmount".localized)
+            acknowledgmentRow("walletConnectAcknowledgeRecipient".localized)
+        }
+    }
+
+    private func acknowledgmentRow(_ title: String) -> some View {
+        HStack(spacing: 14) {
+            Theme.radius.xs.shape
+                .stroke(Color.walletConnectTextSecondary, lineWidth: 1.4)
+                .frame(width: 22, height: 22)
+            Text(title)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundStyle(Color.walletConnectTextPrimary)
+            Spacer()
+        }
+        .frame(height: 28)
     }
 
     private func signingContent(for request: WalletConnectTransactionRequest) -> some View {
@@ -146,7 +288,7 @@ struct WalletConnectTransactionRequestSheet: View {
         VStack(alignment: .leading, spacing: 20) {
             Text("walletConnectTransactionRequest".localized)
                 .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(Color.walletConnectTextPrimary)
             Text(error.localizedDescription)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.alertWarning)
@@ -180,13 +322,13 @@ struct WalletConnectTransactionRequestSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("walletConnectTransactionRequest".localized)
                 .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(Color.walletConnectTextPrimary)
             Text(request.dappMetadata.name)
                 .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(Color.walletConnectTextPrimary)
             Text(request.dappMetadata.host)
                 .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textTertiary)
+                .foregroundStyle(Color.walletConnectTextTertiary)
         }
     }
 
@@ -194,14 +336,14 @@ struct WalletConnectTransactionRequestSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
+                .foregroundStyle(Color.walletConnectTextTertiary)
             Text(value)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(Color.walletConnectTextPrimary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Theme.colors.bgSurface2)
+                .background(Color.walletConnectSurface)
                 .clipShape(Theme.radius.md.shape)
         }
     }
@@ -285,26 +427,6 @@ struct WalletConnectTransactionRequestSheet: View {
                 actionError = error
             }
             isRejecting = false
-        }
-    }
-}
-
-private struct WalletConnectVerifyContextView: View {
-    let verifyContext: WalletConnectVerifyContext?
-
-    var body: some View {
-        if let verifyContext {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(verifyContext.titleLocalizationKey.localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(verifyContext.isWarning ? Theme.colors.alertWarning : Theme.colors.textPrimary)
-                Text(String(format: verifyContext.messageLocalizationKey.localized, verifyContext.origin))
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-            .padding(12)
-            .background(Theme.colors.bgSurface1)
-            .clipShape(Theme.radius.md.shape)
         }
     }
 }
