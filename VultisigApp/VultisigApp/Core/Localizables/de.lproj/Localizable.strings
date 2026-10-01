@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "Schreibgeschützt";
 "suiResultOfCmd" = "Ergebnis von Befehl";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "Das SUI-Guthaben in ausgebbaren Coin-Objekten reicht nicht aus, um den Betrag plus Gas zu decken.";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Das Token-Guthaben in ausgebbaren SUI-Coin-Objekten reicht nicht aus, um den Betrag zu decken.";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Die ausgewählten, ausgebbaren Token-Coin-Objekte reichen nicht aus, um den Token-Betrag zu decken.";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "Kein einzelnes ausgebbares SUI-Coin-Objekt kann die Gasgebühr decken.";
 "suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";

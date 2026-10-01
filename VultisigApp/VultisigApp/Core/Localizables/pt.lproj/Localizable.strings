@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "Somente leitura";
 "suiResultOfCmd" = "Resultado do cmd";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "O saldo de SUI em objetos de moeda gastáveis não é suficiente para cobrir o valor mais o gas.";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "O saldo do token em objetos de moeda SUI gastáveis não é suficiente para cobrir o valor.";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Os objetos de moeda do token selecionados e gastáveis não são suficientes para cobrir o valor.";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "Nenhum objeto de moeda SUI gastável consegue cobrir a taxa de gas.";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transação Sui";

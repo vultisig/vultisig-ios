@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "읽기 전용";
 "suiResultOfCmd" = "명령 결과";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "사용 가능한 코인 객체의 SUI 잔액이 금액과 가스를 충당하기에 부족합니다.";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "사용 가능한 SUI 코인 객체의 토큰 잔액이 금액을 충당하기에 부족합니다.";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "선택한 사용 가능한 토큰 코인 객체가 금액을 충당하기에 부족합니다.";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "가스 수수료를 충당할 수 있는 단일 사용 가능 SUI 코인 객체가 없습니다.";
 "suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";
