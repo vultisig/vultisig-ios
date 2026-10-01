@@ -68,6 +68,21 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     /// Drives `loadPools()` to completion. The load is a detached task, so a
     /// test that read `pools` straight after `onLoad()` would read an empty list
     /// and pass for the wrong reason.
+    private func pool(_ asset: String, status: String) -> ThorchainPool {
+        ThorchainPool(
+            asset: asset,
+            status: status,
+            balanceAsset: "1000",
+            balanceRune: "1000",
+            poolUnits: "1000",
+            lpUnits: "1000",
+            synthUnits: "0",
+            synthSupply: "0",
+            pendingInboundAsset: "0",
+            pendingInboundRune: "0"
+        )
+    }
+
     private func awaitPools(_ viewModel: AddLPTransactionViewModel) async throws {
         for _ in 0..<200 where viewModel.poolsState == .loading || viewModel.poolsState == .idle {
             try await Task.sleep(for: .milliseconds(5))
@@ -477,6 +492,51 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     }
 
     // MARK: - Submission gates
+
+    func testAStagedPoolBuildsOnlyWithAPairedThorchainAddress() async throws {
+        let ether = AddLPFixture.ether()
+        let viewModel = makeChainViewModel(
+            coin: ether,
+            holdings: [ether, AddLPFixture.rune()],
+            pools: [pool(AddLPFixture.ethPool, status: "Staged")]
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(viewModel.selectedPool?.thorchainAsset, AddLPFixture.ethPool)
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.ethPool):\(AddLPFixture.thorAddress)")
+    }
+
+    func testAStagedPoolWithNoPairedThorchainAddressDoesNotBuildAnAsymmetricMemo() async throws {
+        let ether = AddLPFixture.ether()
+        let rune = AddLPFixture.rune()
+        let vault = FunctionActionFixture.makeVault(coins: [ether, rune])
+        let viewModel = AddLPTransactionViewModel(
+            coin: ether,
+            pairedCoin: nil,
+            protocolChain: .thorChain,
+            poolSource: .chosen,
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: AddLPFixture.healthyFetch,
+            fetchPools: { [self.pool(AddLPFixture.ethPool, status: "Staged")] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertTrue(viewModel.isThorchainEnabled, "RUNE is enabled, but the paired memo address is absent")
+        XCTAssertFalse(viewModel.hasThorchainPairedAddress)
+        XCTAssertNil(built, "staged pool adds must not degrade into `+:POOL` asymmetric deposits")
+        XCTAssertEqual(viewModel.blockingMessage, "thorChainNotEnabledForLP".localized)
+    }
 
     /// A THORChain pool credits a RUNE account the memo names. Without one,
     /// `+:POOL` alone is an asymmetric asset-only deposit — a different

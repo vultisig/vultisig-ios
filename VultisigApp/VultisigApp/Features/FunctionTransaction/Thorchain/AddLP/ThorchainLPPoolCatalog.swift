@@ -34,6 +34,7 @@ enum ThorchainLPPoolCatalog {
     ) -> [THORChainAsset] {
         let swapAsset = chain.swapAsset.uppercased()
         return pools.compactMap { pool in
+            guard pool.supportsPairedLPAdd else { return nil }
             let components = pool.asset.split(separator: ".").map { String($0).uppercased() }
             guard components.count >= 2, components[0] == swapAsset else { return nil }
             guard let coin = depositCoin(forPool: pool.asset, in: holdings) else { return nil }

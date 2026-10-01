@@ -100,4 +100,13 @@ struct THORChainPoolStats: Codable {
     var isAvailable: Bool {
         status.lowercased() == "available"
     }
+
+    var isStaged: Bool {
+        status.lowercased() == "staged"
+    }
+
+    /// Pools that may receive a paired LP add. Suspended or unknown statuses are hidden.
+    var supportsPairedLPAdd: Bool {
+        isAvailable || isStaged
+    }
 }

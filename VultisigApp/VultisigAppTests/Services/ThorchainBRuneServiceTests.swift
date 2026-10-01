@@ -81,4 +81,61 @@ final class ThorchainBRuneServiceTests: XCTestCase {
             try ThorchainService.parseStakingReceiptAmount(data: data, denom: "x/staking-x/brune")
         )
     }
+
+    func testFetchLPPoolsKeepsAvailableAndStagedButHidesSuspended() async throws {
+        let service = ThorchainService(httpClient: ThorchainPoolsHTTPClient(json: """
+        [
+          {
+            "asset": "ETH.ETH",
+            "status": "Available",
+            "balance_asset": "1000",
+            "balance_rune": "1000",
+            "pool_units": "1000",
+            "LP_units": "1000",
+            "synth_units": "0",
+            "synth_supply": "0",
+            "pending_inbound_asset": "0",
+            "pending_inbound_rune": "0"
+          },
+          {
+            "asset": "BTC.BTC",
+            "status": "Staged",
+            "balance_asset": "1000",
+            "balance_rune": "1000",
+            "pool_units": "1000",
+            "LP_units": "1000",
+            "synth_units": "0",
+            "synth_supply": "0",
+            "pending_inbound_asset": "0",
+            "pending_inbound_rune": "0"
+          },
+          {
+            "asset": "ETH.DAI-0X6B175474E89094C44DA98B954EEDEAC495271D0F",
+            "status": "Suspended",
+            "balance_asset": "1000",
+            "balance_rune": "1000",
+            "pool_units": "1000",
+            "LP_units": "1000",
+            "synth_units": "0",
+            "synth_supply": "0",
+            "pending_inbound_asset": "0",
+            "pending_inbound_rune": "0"
+          }
+        ]
+        """))
+
+        let pools = try await service.fetchLPPools()
+
+        XCTAssertEqual(pools.map(\.asset), ["ETH.ETH", "BTC.BTC"])
+    }
+}
+
+private struct ThorchainPoolsHTTPClient: HTTPClientProtocol {
+    let json: String
+
+    func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
+        let url = URL(string: "https://example.invalid")!
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return HTTPResponse(data: Data(json.utf8), response: response)
+    }
 }

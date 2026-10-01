@@ -42,7 +42,7 @@ enum THORChainLPsAPI: TargetType {
             return .requestPlain
 
         case .getPoolStats(let period):
-            var params: [String: String] = ["status": "available"]
+            var params: [String: String] = [:]
             if let period = period {
                 params["period"] = period
             } else {

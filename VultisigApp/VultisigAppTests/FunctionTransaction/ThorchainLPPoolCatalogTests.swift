@@ -17,6 +17,21 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
         AddLPFixture.pool(AddLPFixture.btcPool)
     ]
 
+    private func pool(_ asset: String, status: String) -> ThorchainPool {
+        ThorchainPool(
+            asset: asset,
+            status: status,
+            balanceAsset: "1000",
+            balanceRune: "1000",
+            poolUnits: "1000",
+            lpUnits: "1000",
+            synthUnits: "0",
+            synthSupply: "0",
+            pendingInboundAsset: "0",
+            pendingInboundRune: "0"
+        )
+    }
+
     func testOnlyTheChainsOwnPoolsAreOffered() {
         let offered = ThorchainLPPoolCatalog.depositablePools(
             on: .ethereum,
@@ -41,6 +56,20 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
         )
 
         XCTAssertEqual(offered.map(\.thorchainAsset), [AddLPFixture.ethPool])
+    }
+
+    func testAvailableAndStagedPoolsAreOfferedButSuspendedPoolsAreHidden() {
+        let offered = ThorchainLPPoolCatalog.depositablePools(
+            on: .ethereum,
+            pools: [
+                pool(AddLPFixture.ethPool, status: "Available"),
+                pool(AddLPFixture.usdcPool, status: "Staged"),
+                pool("ETH.DAI-0X6B175474E89094C44DA98B954EEDEAC495271D0F", status: "Suspended")
+            ],
+            holdings: [AddLPFixture.ether(), AddLPFixture.usdc()]
+        )
+
+        XCTAssertEqual(offered.map(\.thorchainAsset), [AddLPFixture.ethPool, AddLPFixture.usdcPool])
     }
 
     /// The memo needs the contract-suffixed name; the row shows the asset.

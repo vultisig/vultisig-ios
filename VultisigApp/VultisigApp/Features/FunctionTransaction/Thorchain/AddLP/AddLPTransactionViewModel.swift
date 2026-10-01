@@ -237,6 +237,13 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         protocolChain != .thorChain || vault.nativeCoin(for: .thorChain) != nil
     }
 
+    /// A THORChain LP add must name the paired account. Without this, the same
+    /// `+:POOL` prefix becomes an asymmetric add, which staged pools must not
+    /// silently enable.
+    var hasThorchainPairedAddress: Bool {
+        protocolChain != .thorChain || pairedAddress?.nilIfEmpty != nil
+    }
+
     /// Adds RUNE to the vault so a THORChain deposit can name a paired address.
     ///
     /// Carried over from the form this replaces, where it was the only way out
@@ -460,7 +467,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         // DIFFERENT operation — `+:POOL` alone is an asymmetric, asset-only
         // deposit — so an absent RUNE coin blocks rather than silently changing
         // what is signed.
-        guard isThorchainEnabled else { return nil }
+        guard isThorchainEnabled, hasThorchainPairedAddress else { return nil }
         guard let poolName else { return nil }
         guard let amount = HumanDecimalAmount.parse(
             amountField.rawValue,
@@ -509,7 +516,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     /// Why the deposit cannot proceed, or nil when nothing is wrong.
     var blockingMessage: String? {
-        if !isThorchainEnabled {
+        if !isThorchainEnabled || !hasThorchainPairedAddress {
             return "thorChainNotEnabledForLP".localized
         }
         if let approvalError {
