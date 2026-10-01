@@ -49,7 +49,7 @@ struct WalletConnectMessageRequestSheet: View {
                 rejectionContent(error: error)
             }
         }
-        .background(Theme.colors.bgPrimary)
+        .background(Color.walletConnectBackground)
         .interactiveDismissDisabled()
         .withError(error: $actionError, errorType: .warning) {
             actionError = nil
@@ -66,17 +66,39 @@ struct WalletConnectMessageRequestSheet: View {
     }
 
     private func approvalContent(for request: WalletConnectMessageRequest) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header(for: request)
-                verifyContextView(request.verifyContext)
-                detailRow(title: "walletConnectMessageMethod".localized, value: request.method)
-                detailRow(title: "walletConnectMessageChain".localized, value: request.chain.name)
-                detailRow(title: "walletConnectMessageAddress".localized, value: request.address)
-                detailRow(title: "messageToSign".localized, value: request.displayMessage)
-                actions(for: request)
+        VStack(spacing: 0) {
+            WalletConnectSheetHeader(
+                title: "walletConnectMessageRequest".localized,
+                onClose: isApproving || isRejecting ? nil : reject
+            )
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    WalletConnectDAppIdentityPanel(
+                        name: request.dappMetadata.name,
+                        host: request.dappMetadata.host,
+                        iconURL: request.dappMetadata.iconURL,
+                        verifyContext: request.verifyContext
+                    )
+                    WalletConnectVerifyContextView(verifyContext: request.verifyContext)
+                    WalletConnectMetadataRow(
+                        label: "walletConnectMessageChain".localized,
+                        value: request.chain.name,
+                        iconName: request.chain.logo
+                    )
+                    detailRow(title: "walletConnectMessageMethod".localized, value: request.method)
+                    detailRow(title: "walletConnectMessageAddress".localized, value: request.address)
+                    detailRow(title: "messageToSign".localized, value: request.displayMessage)
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
             }
-            .padding(24)
+
+            actions(for: request)
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
+                .background(Color.walletConnectBackground)
         }
     }
 
@@ -163,23 +185,6 @@ struct WalletConnectMessageRequestSheet: View {
         }
     }
 
-    @ViewBuilder
-    private func verifyContextView(_ verifyContext: WalletConnectVerifyContext?) -> some View {
-        if let verifyContext {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(verifyContext.titleLocalizationKey.localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(verifyContext.isWarning ? Theme.colors.alertWarning : Theme.colors.textPrimary)
-                Text(String(format: verifyContext.messageLocalizationKey.localized, verifyContext.origin))
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-            .padding(12)
-            .background(Theme.colors.bgSurface1)
-            .clipShape(Theme.radius.md.shape)
-        }
-    }
-
     private func detailRow(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
@@ -191,7 +196,7 @@ struct WalletConnectMessageRequestSheet: View {
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Theme.colors.bgSurface2)
+                .background(Color.walletConnectSurface)
                 .clipShape(Theme.radius.md.shape)
         }
     }
