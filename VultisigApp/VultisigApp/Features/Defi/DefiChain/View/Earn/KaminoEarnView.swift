@@ -78,15 +78,11 @@ struct KaminoEarnView<EmptyState: View>: View {
     private func vaultCard(for row: KaminoEarnRow) -> some View {
         VStack(spacing: 16) {
             vaultIdentityRow(for: row)
-            if row.hasPosition {
+            // Both figures need the PnL. While it loads they shimmer in place
+            // rather than popping in, which would read as a layout jump.
+            if row.hasPosition, row.pnlToken != nil || viewModel.isLoading {
                 depositedRow(for: row)
-                // Kept on screen while the value is still being fetched, rather
-                // than appearing once it lands. A row that pops into existence
-                // reads as a layout jump; a labelled row with a shimmering value
-                // says which figure the screen is waiting on.
-                if row.pnlToken != nil || viewModel.isLoading {
-                    earnedRow(for: row)
-                }
+                earnedRow(for: row)
             }
             if row.apy30d != nil || viewModel.isLoading {
                 apyRow(for: row)
@@ -192,11 +188,15 @@ struct KaminoEarnView<EmptyState: View>: View {
     /// and earned lines read as a pair rather than as two stacked columns.
     @ViewBuilder
     private func depositedRow(for row: KaminoEarnRow) -> some View {
-        figureRow(
-            label: String(format: "kaminoEarnDeposited".localized, tokenString(row.tokenAmount, in: row)),
-            fiat: fiatString(fiatValue(for: row)),
-            valueColor: Theme.colors.textPrimary
-        )
+        if let principal = row.principalToken {
+            figureRow(
+                label: String(format: "kaminoEarnDeposited".localized, tokenString(principal, in: row)),
+                fiat: fiatString(fiatValue(principal, in: row)),
+                valueColor: Theme.colors.textPrimary
+            )
+        } else {
+            figurePlaceholder
+        }
     }
 
     @ViewBuilder
@@ -247,11 +247,15 @@ struct KaminoEarnView<EmptyState: View>: View {
                 valueColor: pnlColor(pnl)
             )
         } else {
-            HStack(alignment: .firstTextBaseline) {
-                valuePlaceholder(width: 120)
-                Spacer()
-                valuePlaceholder(width: 64)
-            }
+            figurePlaceholder
+        }
+    }
+
+    private var figurePlaceholder: some View {
+        HStack(alignment: .firstTextBaseline) {
+            valuePlaceholder(width: 120)
+            Spacer()
+            valuePlaceholder(width: 64)
         }
     }
 

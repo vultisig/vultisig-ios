@@ -160,6 +160,84 @@ final class KaminoEarnViewModelTests: XCTestCase {
         XCTAssertEqual(row.coin?.ticker, "USDC")
     }
 
+    // MARK: - Deposited vs earned
+
+    /// The value already contains the interest, so showing it as "Deposited"
+    /// beside "Earned" counted the interest twice.
+    func testDepositedIsTheValueLessTheInterestItAlreadyContains() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertEqual(row.principalToken, Decimal(string: "1000"))
+        XCTAssertEqual(
+            row.tokenAmount,
+            Decimal(string: "1053.604181"),
+            "What the position is worth, which the totals add up, still includes the interest."
+        )
+    }
+
+    func testALossIsAddedBackOntoTheValueToRecoverTheDeposit() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "-3.5")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        XCTAssertEqual(viewModel.rows.first?.principalToken, Decimal(string: "1057.104181"))
+    }
+
+    /// Live PnL strings carry far more digits than the mint; the deposit is cut
+    /// to the token's precision, never rounded up past what was put in.
+    func testDepositedIsTruncatedToTheTokenPrecision() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.6041814")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        XCTAssertEqual(viewModel.rows.first?.principalToken, Decimal(string: "999.999999"))
+    }
+
+    /// A deposit or withdrawal moves the PnL, so a figure read against another
+    /// share balance cannot stand in for a failed read: subtracted from the new
+    /// value it would misstate the deposit, even push it below zero.
+    func testACachedPnlIsDroppedOnceTheShareBalanceHasMoved() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+        await viewModel.refresh(owner: owner)
+
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "10")]
+        service.pnl = [:]
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertNil(row.pnlToken)
+        XCTAssertNil(row.principalToken)
+    }
+
+    /// Without the PnL there is no telling how much of the value is interest,
+    /// and the value itself standing in for the deposit is the double count.
+    func testAnUnreadPnlLeavesTheDepositUnknownRatherThanTheValue() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertNil(row.principalToken)
+        XCTAssertTrue(row.hasPosition)
+    }
+
     // MARK: - Failure discipline
 
     func testFailedPositionsReadKeepsTheLastKnownRows() async throws {

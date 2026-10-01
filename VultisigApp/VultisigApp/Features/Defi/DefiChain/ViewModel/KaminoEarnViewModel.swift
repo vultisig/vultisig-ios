@@ -103,8 +103,9 @@ final class KaminoEarnViewModel: ObservableObject {
     ///   must not make a position look like it vanished);
     /// - a failed per-vault state/metrics read keeps that row's cached values,
     ///   because without `tokensPerShare` the shares cannot be valued at all;
-    /// - a failed `/pnl` read keeps the last figure that was read, and only
-    ///   leaves the profit-and-loss line blank when there has never been one.
+    /// - a failed `/pnl` read keeps the last figure read against the same share
+    ///   balance, and otherwise leaves the deposited and earned lines blank — the
+    ///   deposit is the value less the PnL, so it cannot be shown without one.
     ///
     /// An empty `/positions` response is a real "holds nothing" answer and is
     /// allowed to zero a row — the vault stays listed, since the user enabled it.
@@ -218,7 +219,7 @@ final class KaminoEarnViewModel: ObservableObject {
             // next launch would seed a row whose profit-and-loss line has
             // quietly gone — a display gap outliving the outage that caused it.
             let pnlToken = await pnlToken(owner: owner, descriptor: descriptor)
-                ?? cachedPnlToken(for: descriptor)
+                ?? cachedPnlToken(for: descriptor, shares: shares)
 
             freshRows.append(
                 KaminoEarnRow(
@@ -311,11 +312,12 @@ final class KaminoEarnViewModel: ObservableObject {
         }
     }
 
-    /// The profit and loss a previous pass established for this vault, read from
-    /// the rows on display — which are the persisted ones until this refresh
-    /// publishes, exactly the source `keepCached` reads.
-    private func cachedPnlToken(for descriptor: KaminoVaultDescriptor) -> Decimal? {
-        rows.first(where: { $0.id == descriptor.address })?.pnlToken
+    /// The PnL a previous pass read, reused only while the share balance is
+    /// unchanged: a deposit or withdrawal moves it, and a stale one misstates the deposit.
+    private func cachedPnlToken(for descriptor: KaminoVaultDescriptor, shares: KaminoShareAmount) -> Decimal? {
+        guard let cached = storage.position(for: vault, vaultAddress: descriptor.address),
+              cached.shares?.baseUnits == shares.baseUnits else { return nil }
+        return cached.pnlToken
     }
 
     private func persist(_ snapshots: [KaminoPositionSnapshot]) {
@@ -338,12 +340,20 @@ struct KaminoEarnRow: Identifiable, Equatable {
     let descriptor: KaminoVaultDescriptor
     /// On-chain vault name once hydrated, the registry's fallback until then.
     let name: String
-    /// Deposited amount in the vault's underlying token, human units.
+    /// What the position is worth now in the vault's underlying token, human
+    /// units — interest included, which is what the totals add up.
     let tokenAmount: Decimal
     /// 30-day APY as a fraction (`0.0391` = 3.91%), or `nil` to hide the row.
     let apy30d: Decimal?
-    /// Lifetime profit and loss in the underlying token, or `nil` to hide the row.
+    /// Lifetime profit and loss in the underlying token, or `nil` to hide the
+    /// deposited and earned rows.
     let pnlToken: Decimal?
+
+    /// What was deposited: the value less its lifetime PnL, truncated to the
+    /// token's precision; `nil` while the PnL is unknown.
+    var principalToken: Decimal? {
+        pnlToken.map { (tokenAmount - $0).truncated(toPlaces: descriptor.tokenDecimals) }
+    }
 
     /// Whether the user holds anything in this vault. What the card shows turns
     /// on it: an enabled vault with no deposit has no position to describe, so

@@ -94,12 +94,12 @@ final class KaminoPosition {
         BigInt(sharesBaseUnits).map { KaminoShareAmount(baseUnits: $0, decimals: shareDecimals) }
     }
 
-    /// The exact deposited amount in the vault's underlying token.
+    /// The exact current value in the vault's underlying token, interest included.
     var tokenAmount: KaminoTokenAmount? {
         BigInt(tokenBaseUnits).map { KaminoTokenAmount(baseUnits: $0, decimals: tokenDecimals) }
     }
 
-    /// Human-units deposited amount for display and fiat conversion. Zero when
+    /// Human-units current value for totals and fiat conversion. Zero when
     /// the stored value cannot be read, so a corrupted row is never counted.
     var tokenAmountDecimal: Decimal {
         tokenAmount?.decimalValue ?? .zero
