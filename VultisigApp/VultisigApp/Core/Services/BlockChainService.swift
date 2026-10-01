@@ -15,6 +15,14 @@ struct BlockSpecificCacheItem {
     let blockSpecific: BlockChainSpecific
     let date: Date
 }
+
+protocol SuiGasInfoProviding {
+    func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]])
+    func dryRunTransaction(transactionBytes: String) async throws -> (computationCost: BigInt, storageCost: BigInt)
+}
+
+extension SuiService: SuiGasInfoProviding {}
+
 final class BlockChainService {
 
     private let logger = Log.chain.service
@@ -66,13 +74,17 @@ final class BlockChainService {
     /// without the network.
     private let blockhashProvider: SolanaFinalizedBlockhashProviding
 
-    init(blockhashProvider: SolanaFinalizedBlockhashProviding = SolanaService.shared) {
+    init(
+        blockhashProvider: SolanaFinalizedBlockhashProviding = SolanaService.shared,
+        suiGasInfoProvider: SuiGasInfoProviding = SuiService.shared
+    ) {
         self.blockhashProvider = blockhashProvider
+        self.sui = suiGasInfoProvider
     }
 
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
-    private let sui = SuiService.shared
+    private let sui: SuiGasInfoProviding
     private let dot = PolkadotService.shared
     private let tao = BittensorService.shared
     private let maya = MayachainService.shared
@@ -580,7 +592,9 @@ private extension BlockChainService {
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
+}
 
+extension BlockChainService {
     func fetchSpecific(for coin: Coin,
                        action: Action,
                        sendMaxAmount: Bool,
@@ -1103,7 +1117,9 @@ private extension BlockChainService {
             return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo, isSwap: action == .swap, amount: amount)
         }
     }
+}
 
+private extension BlockChainService {
     func normalizeGasLimit(coin: Coin, action: Action) -> BigInt {
         switch action {
         case .transfer:

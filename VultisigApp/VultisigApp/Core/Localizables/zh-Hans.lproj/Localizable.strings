@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "只读";
 "suiResultOfCmd" = "命令结果";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "可花费币对象中的 SUI 余额不足，无法覆盖金额和 gas。";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "可花费 SUI 币对象中的代币余额不足，无法覆盖金额。";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "所选代币对象的余额不足，无法覆盖代币金额。";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "没有单个可花费的 SUI 币对象可以覆盖 gas 费用。";
 "suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";
