@@ -1,0 +1,3 @@
+// Copy this file to WalletConnect.xcconfig and set your own Reown Cloud project ID.
+// The local WalletConnect.xcconfig file is git-ignored so personal project IDs are not committed.
+WALLETCONNECT_PROJECT_ID = YOUR_REOWN_PROJECT_ID
