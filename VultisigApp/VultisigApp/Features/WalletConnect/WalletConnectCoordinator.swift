@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import Combine
 import CryptoSwift
 import Foundation
 import OSLog
@@ -15,26 +16,42 @@ import WalletConnectSign
 protocol WalletConnectPairingClient {
     func configure(with configuration: WalletConnectConfiguration) throws
     func pair(uri: String) async throws
+    func observeSessionProposals(_ handler: @escaping @MainActor (WalletConnectProposal) -> Void)
+    func approve(
+        proposal: WalletConnectProposal,
+        approval: WalletConnectEVMNamespaceApproval
+    ) async throws -> String
+    func reject(proposal: WalletConnectProposal) async throws
 }
 
 @MainActor
 final class WalletConnectCoordinator: ObservableObject {
     static let shared = WalletConnectCoordinator()
 
+    @Published private(set) var pendingProposal: WalletConnectProposal?
+
     private let logger = Log.app.other
     private let pairingClient: WalletConnectPairingClient
+    private let bindingStore: WalletConnectSessionBindingStoring
     private var isConfigured = false
     private(set) var configurationError: WalletConnectError?
     private var pairingURIInFlight: String?
 
-    init(pairingClient: WalletConnectPairingClient? = nil) {
+    init(
+        pairingClient: WalletConnectPairingClient? = nil,
+        bindingStore: WalletConnectSessionBindingStoring = WalletConnectSessionBindingStore.shared
+    ) {
         self.pairingClient = pairingClient ?? ReownWalletConnectPairingClient()
+        self.bindingStore = bindingStore
     }
 
     func configureFromMainBundle() {
         do {
             let configuration = try WalletConnectConfiguration.fromMainBundle()
             try pairingClient.configure(with: configuration)
+            pairingClient.observeSessionProposals { [weak self] proposal in
+                self?.pendingProposal = proposal
+            }
             isConfigured = true
             configurationError = nil
         } catch let error as WalletConnectError {
@@ -63,30 +80,87 @@ final class WalletConnectCoordinator: ObservableObject {
         defer { pairingURIInFlight = nil }
         try await pairingClient.pair(uri: normalizedURI)
     }
+
+    func approvePendingProposal(with vault: Vault) async throws {
+        guard let proposal = pendingProposal else {
+            throw WalletConnectError.noPendingProposal
+        }
+        guard isConfigured else {
+            throw configurationError ?? .notConfigured
+        }
+
+        let approval = try WalletConnectEVMNamespaceAdapter().buildApproval(
+            requiredNamespaces: proposal.requiredNamespaces,
+            optionalNamespaces: proposal.optionalNamespaces,
+            accounts: vault.walletConnectEVMAccounts
+        )
+        let topic = try await pairingClient.approve(proposal: proposal, approval: approval)
+        bindingStore.save(WalletConnectSessionBinding(
+            topic: topic,
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
+            dappName: proposal.name,
+            dappURL: proposal.url,
+            createdAt: Date()
+        ))
+        pendingProposal = nil
+    }
+
+    func rejectPendingProposal() async throws {
+        guard let proposal = pendingProposal else {
+            throw WalletConnectError.noPendingProposal
+        }
+        guard isConfigured else {
+            throw configurationError ?? .notConfigured
+        }
+
+        try await pairingClient.reject(proposal: proposal)
+        pendingProposal = nil
+    }
 }
 
 enum WalletConnectError: LocalizedError, Equatable {
     case missingProjectId
     case notConfigured
     case invalidURI
+    case noPendingProposal
     case configurationFailed(String)
     case pairingFailed(String)
+    case approvalFailed(String)
+    case rejectionFailed(String)
     case unsupportedCryptoRecovery
 
     var errorDescription: String? {
         switch self {
         case .missingProjectId:
-            return "WalletConnect is disabled because WalletConnectProjectId is not configured."
+            return NSLocalizedString("walletConnectErrorMissingProjectId", comment: "")
         case .notConfigured:
-            return "WalletConnect is not configured."
+            return NSLocalizedString("walletConnectErrorNotConfigured", comment: "")
         case .invalidURI:
-            return "Invalid WalletConnect URI."
+            return NSLocalizedString("walletConnectErrorInvalidURI", comment: "")
+        case .noPendingProposal:
+            return NSLocalizedString("walletConnectErrorNoPendingProposal", comment: "")
         case .configurationFailed(let message):
-            return "WalletConnect configuration failed: \(message)"
+            return String(
+                format: NSLocalizedString("walletConnectErrorConfigurationFailed", comment: ""),
+                message
+            )
         case .pairingFailed(let message):
-            return "WalletConnect pairing failed: \(message)"
+            return String(
+                format: NSLocalizedString("walletConnectErrorPairingFailed", comment: ""),
+                message
+            )
+        case .approvalFailed(let message):
+            return String(
+                format: NSLocalizedString("walletConnectErrorApprovalFailed", comment: ""),
+                message
+            )
+        case .rejectionFailed(let message):
+            return String(
+                format: NSLocalizedString("walletConnectErrorRejectionFailed", comment: ""),
+                message
+            )
         case .unsupportedCryptoRecovery:
-            return "WalletConnect public-key recovery is not implemented yet."
+            return NSLocalizedString("walletConnectErrorUnsupportedCryptoRecovery", comment: "")
         }
     }
 }
@@ -95,6 +169,8 @@ enum WalletConnectError: LocalizedError, Equatable {
 @MainActor
 private final class ReownWalletConnectPairingClient: WalletConnectPairingClient {
     private var configuredProjectId: String?
+    private var proposalCancellable: AnyCancellable?
+    private var proposalsByID: [String: Session.Proposal] = [:]
 
     func configure(with configuration: WalletConnectConfiguration) throws {
         guard configuredProjectId != configuration.projectId else { return }
@@ -116,6 +192,16 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         configuredProjectId = configuration.projectId
     }
 
+    func observeSessionProposals(_ handler: @escaping @MainActor (WalletConnectProposal) -> Void) {
+        proposalCancellable = Sign.instance.sessionProposalPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] event in
+                let snapshot = event.proposal.walletConnectSnapshot
+                self?.proposalsByID[snapshot.id] = event.proposal
+                handler(snapshot)
+            }
+    }
+
     func pair(uri: String) async throws {
         let walletConnectURI: WalletConnectURI
         do {
@@ -128,6 +214,75 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
             try await Pair.instance.pair(uri: walletConnectURI)
         } catch {
             throw WalletConnectError.pairingFailed(error.localizedDescription)
+        }
+    }
+
+    func approve(
+        proposal: WalletConnectProposal,
+        approval: WalletConnectEVMNamespaceApproval
+    ) async throws -> String {
+        guard let rawProposal = proposalsByID[proposal.id] else {
+            throw WalletConnectError.noPendingProposal
+        }
+
+        do {
+            let namespaces = try AutoNamespaces.build(
+                sessionProposal: rawProposal,
+                chains: approval.chains.compactMap { Blockchain($0) },
+                methods: approval.methods,
+                events: approval.events,
+                accounts: approval.accounts.compactMap { Account($0) }
+            )
+            let session = try await Sign.instance.approve(
+                proposalId: rawProposal.id,
+                namespaces: namespaces,
+                sessionProperties: proposal.sessionProperties
+            )
+            proposalsByID[proposal.id] = nil
+            return session.topic
+        } catch {
+            throw WalletConnectError.approvalFailed(error.localizedDescription)
+        }
+    }
+
+    func reject(proposal: WalletConnectProposal) async throws {
+        guard let rawProposal = proposalsByID[proposal.id] else {
+            throw WalletConnectError.noPendingProposal
+        }
+
+        do {
+            try await Sign.instance.rejectSession(proposalId: rawProposal.id, reason: .userRejected)
+            proposalsByID[proposal.id] = nil
+        } catch {
+            throw WalletConnectError.rejectionFailed(error.localizedDescription)
+        }
+    }
+}
+
+private extension Session.Proposal {
+    var walletConnectSnapshot: WalletConnectProposal {
+        WalletConnectProposal(
+            id: String(describing: id),
+            name: proposer.name,
+            url: proposer.url,
+            icons: proposer.icons,
+            verificationStatus: nil,
+            requiredNamespaces: requiredNamespaces.walletConnectRequests,
+            optionalNamespaces: optionalNamespaces?.walletConnectRequests ?? [],
+            sessionProperties: sessionProperties
+        )
+    }
+}
+
+private extension Dictionary where Key == String, Value == ProposalNamespace {
+    var walletConnectRequests: [WalletConnectNamespaceRequest] {
+        map { key, value in
+            WalletConnectNamespaceRequest(
+                namespace: key,
+                chains: value.chains?.map(\.absoluteString) ?? [],
+                methods: Array(value.methods).sorted(),
+                events: Array(value.events).sorted()
+            )
         }
     }
 }
@@ -217,7 +372,22 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }
 
+    func observeSessionProposals(_: @escaping @MainActor (WalletConnectProposal) -> Void) {}
+
     func pair(uri _: String) async throws {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func approve(
+        proposal _: WalletConnectProposal,
+        approval _: WalletConnectEVMNamespaceApproval
+    ) async throws -> String {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func reject(proposal _: WalletConnectProposal) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }

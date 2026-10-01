@@ -993,6 +993,7 @@
 "noLocalNetworkPermissionDescription" = "Vultisig 需要本地网络访问权限才能找到同一 Wi-Fi 下的其他设备。请在“设置”中开启该权限，确保两台设备连接到同一网络，然后重试。";
 "noLocalNetworkPermissionTitle" = "找不到附近的设备";
 "noMessagesToSign" = "没有需要签名的消息";
+"none" = "None";
 "noPoolsAvailable" = "没有可用的资金池";
 "noPositionsFound" = "未找到任何持仓";
 "noPositionsSelectedSubtitle" = "您已禁用此链的所有仓位。启用至少一个仓位以查看余额并管理操作";
@@ -1244,6 +1245,7 @@
 "referralRewardsBannerTitle" = "不要错过奖励";
 "referredSaveOnSwaps" = "在交换中节省 %@ - 添加推荐";
 "registrationFee" = "注册费";
+"reject" = "Reject";
 "relaySendCeremonyDeadlineExceeded" = "超时：发送中继消息时，仪式已超时";
 "relaySendExhausted" = "尝试 %d 次后仍无法发送消息：%@";
 "relaySendInvalidMessage" = "无法发送消息：%@";
@@ -1851,6 +1853,29 @@
 "waitingForKeySignStart" = "等待签名过程开始...";
 "waitingOnDevices..." = "等待设备...";
 "walletBalanceExceededError" = "总金额和费用超过您钱包的余额。请重试";
+"walletConnect" = "WalletConnect";
+"walletConnectApproveWithVault" = "Approve with vault";
+"walletConnectChains" = "Chains";
+"walletConnectErrorApprovalFailed" = "WalletConnect approval failed: %@";
+"walletConnectErrorConfigurationFailed" = "WalletConnect configuration failed: %@";
+"walletConnectErrorInvalidURI" = "Invalid WalletConnect URI.";
+"walletConnectErrorMissingProjectId" = "WalletConnect is disabled because WalletConnectProjectId is not configured.";
+"walletConnectErrorMissingRequiredChain" = "Selected vault does not have an account for required chain: %@";
+"walletConnectErrorNoEVMAccounts" = "Selected vault has no EVM accounts.";
+"walletConnectErrorNoPendingProposal" = "No WalletConnect proposal is pending.";
+"walletConnectErrorNotConfigured" = "WalletConnect is not configured.";
+"walletConnectErrorPairingFailed" = "WalletConnect pairing failed: %@";
+"walletConnectErrorRejectionFailed" = "WalletConnect rejection failed: %@";
+"walletConnectErrorUnsupportedCryptoRecovery" = "WalletConnect public-key recovery is not implemented yet.";
+"walletConnectErrorUnsupportedRequiredChain" = "Unsupported required chain: %@";
+"walletConnectErrorUnsupportedRequiredEvent" = "Unsupported required event: %@";
+"walletConnectErrorUnsupportedRequiredMethod" = "Unsupported required method: %@";
+"walletConnectErrorUnsupportedRequiredNamespace" = "Unsupported required namespace: %@";
+"walletConnectEvents" = "Events";
+"walletConnectMethods" = "Methods";
+"walletConnectOptional" = "Optional";
+"walletConnectRequired" = "Required";
+"walletConnectVerification" = "Verification: %@";
 "wantToCreateVaultPrivately" = "想要私密创建保险库？";
 "wantToSignPrivately" = "想要私密签名？";
 "watchlist" = "关注列表";
@@ -1932,3 +1957,16 @@
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
 "zipImportUnsafeVaults" = "已导入 %1$d 个保险库。跳过 %2$d 个。无法导入 %3$@：它会覆盖此设备上已有的保险库。";
+
+// WalletConnect approved screens
+"connect" = "Connect";
+"walletConnectConnectionRequest" = "Connection request";
+"walletConnectDomainMatches" = "Domain matches";
+"walletConnectNetworks" = "Networks";
+"walletConnectShowAllNetworks" = "Show all %d networks";
+"walletConnectShowFewerNetworks" = "Show fewer networks";
+"walletConnectPermissions" = "Permissions";
+"walletConnectPermissionViewAddresses" = "View wallet addresses";
+"walletConnectPermissionRequestSignatures" = "Request signatures";
+"walletConnectApproveEveryRequest" = "You approve every request.";
+"walletConnectSelectVault" = "Select vault";

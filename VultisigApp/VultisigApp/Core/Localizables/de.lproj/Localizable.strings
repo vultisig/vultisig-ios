@@ -993,6 +993,7 @@
 "noLocalNetworkPermissionDescription" = "Vultisig benötigt Zugriff auf das lokale Netzwerk, um deine anderen Geräte im selben WLAN zu finden. Aktiviere ihn in den Einstellungen, stelle sicher, dass beide Geräte im selben Netzwerk sind, und versuche es erneut.";
 "noLocalNetworkPermissionTitle" = "Keine Geräte in der Nähe gefunden";
 "noMessagesToSign" = "Es gibt keine zu signierenden Nachrichten";
+"none" = "None";
 "noPoolsAvailable" = "No pools available";
 "noPositionsFound" = "Keine Positionen gefunden";
 "noPositionsSelectedSubtitle" = "Sie haben alle Positionen für diese Kette deaktiviert. Aktivieren Sie mindestens eine Position, um Guthaben anzuzeigen und Aktionen zu verwalten.";
@@ -1244,6 +1245,7 @@
 "referralRewardsBannerTitle" = "Keine Prämien verpassen";
 "referredSaveOnSwaps" = "Speichern Sie %@ bei Swaps - Fügen Sie eine Empfehlung hinzu";
 "registrationFee" = "Registrierungsgebühr";
+"reject" = "Reject";
 "relaySendCeremonyDeadlineExceeded" = "Zeitüberschreitung: Das Zeitlimit der Zeremonie wurde beim Senden einer Relay-Nachricht überschritten";
 "relaySendExhausted" = "Die Nachricht konnte nach %d Versuchen nicht gesendet werden: %@";
 "relaySendInvalidMessage" = "Die Nachricht konnte nicht gesendet werden: %@";
@@ -1851,6 +1853,29 @@
 "waitingForKeySignStart" = "Warten auf Unterzeichnungsbeginn...";
 "waitingOnDevices..." = "Warten auf Geräte...";
 "walletBalanceExceededError" = "Die Gesamtmenge und die Gebühr überschreiten das Saldo deiner Brieftasche. Versuche es erneut.";
+"walletConnect" = "WalletConnect";
+"walletConnectApproveWithVault" = "Approve with vault";
+"walletConnectChains" = "Chains";
+"walletConnectErrorApprovalFailed" = "WalletConnect approval failed: %@";
+"walletConnectErrorConfigurationFailed" = "WalletConnect configuration failed: %@";
+"walletConnectErrorInvalidURI" = "Invalid WalletConnect URI.";
+"walletConnectErrorMissingProjectId" = "WalletConnect is disabled because WalletConnectProjectId is not configured.";
+"walletConnectErrorMissingRequiredChain" = "Selected vault does not have an account for required chain: %@";
+"walletConnectErrorNoEVMAccounts" = "Selected vault has no EVM accounts.";
+"walletConnectErrorNoPendingProposal" = "No WalletConnect proposal is pending.";
+"walletConnectErrorNotConfigured" = "WalletConnect is not configured.";
+"walletConnectErrorPairingFailed" = "WalletConnect pairing failed: %@";
+"walletConnectErrorRejectionFailed" = "WalletConnect rejection failed: %@";
+"walletConnectErrorUnsupportedCryptoRecovery" = "WalletConnect public-key recovery is not implemented yet.";
+"walletConnectErrorUnsupportedRequiredChain" = "Unsupported required chain: %@";
+"walletConnectErrorUnsupportedRequiredEvent" = "Unsupported required event: %@";
+"walletConnectErrorUnsupportedRequiredMethod" = "Unsupported required method: %@";
+"walletConnectErrorUnsupportedRequiredNamespace" = "Unsupported required namespace: %@";
+"walletConnectEvents" = "Events";
+"walletConnectMethods" = "Methods";
+"walletConnectOptional" = "Optional";
+"walletConnectRequired" = "Required";
+"walletConnectVerification" = "Verification: %@";
 "wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
 "wantToSignPrivately" = "Möchtest du privat signieren?";
 "watchlist" = "Beobachtungsliste";
@@ -1932,3 +1957,16 @@
 "zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
 "zipImportUnsafeVaults" = "%1$d Tresor(e) importiert. %2$d übersprungen. %3$@ konnte nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
+
+// WalletConnect approved screens
+"connect" = "Connect";
+"walletConnectConnectionRequest" = "Connection request";
+"walletConnectDomainMatches" = "Domain matches";
+"walletConnectNetworks" = "Networks";
+"walletConnectShowAllNetworks" = "Show all %d networks";
+"walletConnectShowFewerNetworks" = "Show fewer networks";
+"walletConnectPermissions" = "Permissions";
+"walletConnectPermissionViewAddresses" = "View wallet addresses";
+"walletConnectPermissionRequestSignatures" = "Request signatures";
+"walletConnectApproveEveryRequest" = "You approve every request.";
+"walletConnectSelectVault" = "Select vault";
