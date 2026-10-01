@@ -48,6 +48,7 @@ struct RippleTrustLineActivationSheet: View {
                                 .multilineTextAlignment(.center)
                         } else if viewModel.quote != nil {
                             costRows(coin: coin)
+                            activationError
                             blockingMessage
                         }
                     }
@@ -119,6 +120,16 @@ struct RippleTrustLineActivationSheet: View {
     }
 
     @ViewBuilder
+    private var activationError: some View {
+        if let activationError = viewModel.activationError {
+            Text(activationError)
+                .foregroundStyle(Theme.colors.alertError)
+                .font(Theme.fonts.caption12)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    @ViewBuilder
     private var blockingMessage: some View {
         if let insufficientXRPMessage = viewModel.insufficientXRPMessage {
             Text(insufficientXRPMessage)
@@ -131,8 +142,16 @@ struct RippleTrustLineActivationSheet: View {
     /// No Cancel button: the sheet is dismissible by swipe on iOS and by the
     /// toolbar close on macOS, so a third way out is redundant chrome.
     private var actions: some View {
-        PrimaryButton(title: "rippleTrustLineActivateAction".localized, action: onActivate)
-            .disabled(!viewModel.canActivate)
+        PrimaryButton(title: "rippleTrustLineActivateAction".localized) {
+            guard viewModel.beginActivation() else { return }
+            onActivate()
+            if isPresented {
+                viewModel.failActivation()
+            } else {
+                viewModel.finishActivation()
+            }
+        }
+        .disabled(!viewModel.canActivate || viewModel.isActivating)
     }
 
     @ViewBuilder

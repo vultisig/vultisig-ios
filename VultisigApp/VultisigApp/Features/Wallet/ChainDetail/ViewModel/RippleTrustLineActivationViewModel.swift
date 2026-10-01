@@ -19,9 +19,13 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
 
     @Published private(set) var quote: RippleTrustLineActivationQuote?
     @Published private(set) var isLoading = false
+    @Published private(set) var isActivating = false
     /// Set when the cost can't be quoted at all — the sheet shows this instead of
     /// an Activate button it can't price.
     @Published private(set) var errorMessage: String?
+    /// Set when the already-quoted activation could not hand off to review. The
+    /// quote stays visible so the user can retry without reopening the sheet.
+    @Published private(set) var activationError: String?
 
     private let service: RippleService
 
@@ -44,6 +48,27 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
         return true
     }
 
+    /// Claims the activation attempt slot, or reports that it is already taken.
+    ///
+    /// This is separate from quote loading: once the quote is on screen a failed
+    /// handoff must release only the activation attempt, not erase the quote the
+    /// user needs to retry.
+    func beginActivation() -> Bool {
+        guard canActivate, !isActivating else { return false }
+        isActivating = true
+        activationError = nil
+        return true
+    }
+
+    func finishActivation() {
+        isActivating = false
+    }
+
+    func failActivation(message: String = "somethingWentWrongTryAgain".localized) {
+        activationError = message
+        isActivating = false
+    }
+
     /// Quotes the activation of `coin`'s trust line, paid for from `nativeCoin`.
     ///
     /// - Parameters:
@@ -53,6 +78,8 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
     func load(coin: Coin, nativeCoin: Coin) async {
         isLoading = true
         errorMessage = nil
+        activationError = nil
+        isActivating = false
         // Clear the quote too, not just the error. This view model is a
         // screen-level `@StateObject`, so it outlives any one sheet presentation
         // — and every path that returns before the assignment at the end would

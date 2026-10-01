@@ -673,6 +673,60 @@ final class RippleTrustLineActivationTests: XCTestCase {
         )
     }
 
+    /// A failed handoff after the quote is loaded must not erase the quote. The
+    /// inline activation error is cleared by the next retry, and the retry still
+    /// produces the same TrustSet route payload as the existing success flow.
+    @MainActor
+    func testActivationFailureKeepsQuoteAndRetryCanRouteToReview() async {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+        let meta = Self.coin(tokenId: "USD.\(Self.issuer)")
+        let coin = Coin(
+            asset: meta,
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let vault = Vault.example
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        await viewModel.load(coin: coin, nativeCoin: nativeCoin)
+        let quotedLimit = viewModel.quote?.limitValue
+        let quotedIssuer = viewModel.quote?.issuer
+
+        XCTAssertNotNil(viewModel.quote, "the quote must be loaded before activation can fail")
+        XCTAssertTrue(viewModel.beginActivation())
+        viewModel.failActivation(message: "Activation failed")
+
+        XCTAssertFalse(viewModel.isActivating)
+        XCTAssertEqual(viewModel.activationError, "Activation failed")
+        XCTAssertEqual(viewModel.quote?.limitValue, quotedLimit, "activation failure must not clear the quote")
+        XCTAssertEqual(viewModel.quote?.issuer, quotedIssuer)
+
+        XCTAssertTrue(viewModel.beginActivation(), "retry must clear the inline activation error and reclaim the slot")
+        XCTAssertNil(viewModel.activationError)
+        let tx = viewModel.makeActivationTransaction(coin: coin, vault: vault)
+        let transaction = try? XCTUnwrap(tx)
+        guard let transaction else { return XCTFail("expected retry to produce an activation transaction") }
+
+        XCTAssertEqual(transaction.transactionType, .rippleTrustSet)
+        XCTAssertEqual(transaction.toAddress, Self.issuer)
+        XCTAssertEqual(transaction.amount, RippleTrustLineLimit.defaultLimitDisplayValue())
+        viewModel.finishActivation()
+        XCTAssertFalse(viewModel.isActivating)
+    }
+
     /// Two taps in one runloop turn must not both start a quote. If they do, the
     /// two `load`s interleave over one `quote` and the sheet can pair one token
     /// with another token's reserve, limit and issuer.
