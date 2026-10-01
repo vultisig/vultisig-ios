@@ -1957,3 +1957,16 @@
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
 "zipImportUnsafeVaults" = "已导入 %1$d 个保险库。跳过 %2$d 个。无法导入 %3$@：它会覆盖此设备上已有的保险库。";
+
+// WalletConnect approved screens
+"connect" = "Connect";
+"walletConnectConnectionRequest" = "Connection request";
+"walletConnectDomainMatches" = "Domain matches";
+"walletConnectNetworks" = "Networks";
+"walletConnectShowAllNetworks" = "Show all %d networks";
+"walletConnectShowFewerNetworks" = "Show fewer networks";
+"walletConnectPermissions" = "Permissions";
+"walletConnectPermissionViewAddresses" = "View wallet addresses";
+"walletConnectPermissionRequestSignatures" = "Request signatures";
+"walletConnectApproveEveryRequest" = "You approve every request.";
+"walletConnectSelectVault" = "Select vault";

@@ -1957,3 +1957,16 @@
 "zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
 "zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";
 "zipImportUnsafeVaults" = "Importati %1$d vault. Saltati %2$d. %3$@ non è stato importato: sovrascriverebbe un vault già presente su questo dispositivo.";
+
+// WalletConnect approved screens
+"connect" = "Connect";
+"walletConnectConnectionRequest" = "Connection request";
+"walletConnectDomainMatches" = "Domain matches";
+"walletConnectNetworks" = "Networks";
+"walletConnectShowAllNetworks" = "Show all %d networks";
+"walletConnectShowFewerNetworks" = "Show fewer networks";
+"walletConnectPermissions" = "Permissions";
+"walletConnectPermissionViewAddresses" = "View wallet addresses";
+"walletConnectPermissionRequestSignatures" = "Request signatures";
+"walletConnectApproveEveryRequest" = "You approve every request.";
+"walletConnectSelectVault" = "Select vault";

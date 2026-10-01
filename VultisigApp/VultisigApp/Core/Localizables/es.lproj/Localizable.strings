@@ -1957,3 +1957,16 @@
 "zipImportAllDuplicates" = "Las %d bóveda(s) ya existen y fueron omitidas: %@.";
 "zipImportPartialSuccess" = "Se importaron %d bóveda(s). Se omitieron %d duplicado(s): %@.";
 "zipImportUnsafeVaults" = "Se importaron %1$d bóveda(s). Se omitieron %2$d. %3$@ no se pudo importar: sobrescribiría una bóveda que ya está en este dispositivo.";
+
+// WalletConnect approved screens
+"connect" = "Connect";
+"walletConnectConnectionRequest" = "Connection request";
+"walletConnectDomainMatches" = "Domain matches";
+"walletConnectNetworks" = "Networks";
+"walletConnectShowAllNetworks" = "Show all %d networks";
+"walletConnectShowFewerNetworks" = "Show fewer networks";
+"walletConnectPermissions" = "Permissions";
+"walletConnectPermissionViewAddresses" = "View wallet addresses";
+"walletConnectPermissionRequestSignatures" = "Request signatures";
+"walletConnectApproveEveryRequest" = "You approve every request.";
+"walletConnectSelectVault" = "Select vault";

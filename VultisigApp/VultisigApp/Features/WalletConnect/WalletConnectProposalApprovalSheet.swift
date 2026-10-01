@@ -15,6 +15,8 @@ struct WalletConnectProposalApprovalSheet: View {
     @State private var actionError: Error?
     @State private var isApproving = false
     @State private var isRejecting = false
+    @State private var showAllNetworks = false
+    @State private var showVaultSelection = false
 
     private var selectedVault: Vault? {
         vaults.first { $0.pubKeyECDSA == selectedVaultPubKey } ?? vaults.first
@@ -38,19 +40,48 @@ struct WalletConnectProposalApprovalSheet: View {
         selectedVault != nil && approvalError == nil && !isApproving && !isRejecting
     }
 
+    private var networks: [WalletConnectChainDisplay] {
+        WalletConnectChainDisplay.unique(
+            from: (proposal.requiredNamespaces + proposal.optionalNamespaces).flatMap(\.chains)
+        )
+    }
+
+    private var visibleNetworks: [WalletConnectChainDisplay] {
+        showAllNetworks ? networks : Array(networks.prefix(3))
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                namespaceSection(title: "walletConnectRequired".localized, namespaces: proposal.requiredNamespaces)
-                namespaceSection(title: "walletConnectOptional".localized, namespaces: proposal.optionalNamespaces)
-                vaultSelector
-                approvalWarning
-                actions
+        VStack(spacing: 0) {
+            WalletConnectSheetHeader(
+                title: "walletConnectConnectionRequest".localized,
+                onClose: isApproving || isRejecting ? nil : reject
+            )
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    WalletConnectCenteredDAppIdentity(
+                        name: proposal.name,
+                        host: proposal.displayHost,
+                        iconURL: proposal.icons.first,
+                        verifyContext: proposal.verifyContext
+                    )
+                    .padding(.top, 6)
+
+                    WalletConnectVerifyContextView(verifyContext: proposal.verifyContext)
+
+                    vaultSelector
+                    networksCard
+                    permissionsSection
+                    approvalWarning
+                    reminder
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
             }
-            .padding(24)
+
+            decisionFooter
         }
-        .background(Theme.colors.bgPrimary)
+        .background(Color.walletConnectBackground.ignoresSafeArea())
         .onAppear {
             if selectedVaultPubKey.isEmpty {
                 selectedVaultPubKey = vaults.first?.pubKeyECDSA ?? ""
@@ -61,79 +92,218 @@ struct WalletConnectProposalApprovalSheet: View {
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("walletConnect".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Text(proposal.name)
-                .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
-            Text(proposal.displayHost)
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textTertiary)
-
-            if let verificationStatus = proposal.verificationStatus {
-                Text(String(format: "walletConnectVerification".localized, verificationStatus))
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            }
+    private var vaultSelector: some View {
+        Button {
+            showVaultSelection = true
+        } label: {
+            WalletConnectVaultCard(
+                title: selectedVault?.name ?? "vault".localized,
+                subtitle: selectedVault?.signerPartDescription ?? "-",
+                style: selectedVault?.offersFastSigning == true ? .fast : .secure,
+                showsChevron: true
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(vaults.isEmpty || isApproving || isRejecting)
+        .crossPlatformSheet(isPresented: $showVaultSelection) {
+            vaultSelectionSheet
         }
     }
 
-    private func namespaceSection(title: String, namespaces: [WalletConnectNamespaceRequest]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
+    private var vaultSelectionSheet: some View {
+        VStack(spacing: 0) {
+            vaultSelectionHeader
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 16)
 
-            if namespaces.isEmpty {
-                Text("none".localized)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            } else {
-                ForEach(Array(namespaces.enumerated()), id: \.offset) { _, namespace in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(namespace.namespace)
-                            .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                        labeledList(title: "walletConnectChains".localized, values: namespace.chains)
-                        labeledList(title: "walletConnectMethods".localized, values: namespace.methods)
-                        labeledList(title: "walletConnectEvents".localized, values: namespace.events)
+            List {
+                ForEach(Array(vaults.enumerated()), id: \.element.pubKeyECDSA) { index, vault in
+                    Button {
+                        selectedVaultPubKey = vault.pubKeyECDSA
+                        showVaultSelection = false
+                    } label: {
+                        vaultSelectionRow(vault)
                     }
-                    .padding(12)
-                    .background(Theme.colors.bgSurface1)
-                    .clipShape(Theme.radius.md.shape)
+                    .buttonStyle(.plain)
+                    .commonListItemContainer(index: index, itemsCount: vaults.count)
+                    .plainListItem()
+                    .background(Theme.colors.bgPrimary)
                 }
             }
+            .customSectionSpacing(0)
+            .listStyle(.plain)
+            .buttonStyle(.borderless)
+            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
+            .background(Theme.colors.bgPrimary)
         }
+        .presentationDragIndicator(.visible)
+        .presentationCompactAdaptation(.none)
+        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .background(Theme.colors.bgPrimary)
     }
 
-    private func labeledList(title: String, values: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+    private var vaultSelectionHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("vaults".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title3)
+            Text(vaultSelectionSubtitle)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .font(Theme.fonts.caption12)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 8)
+    }
+
+    private var vaultSelectionSubtitle: String {
+        let vaultsText = vaults.count == 1 ? "vault".localized : "vaults".localized
+        return "\(vaults.count) \(vaultsText)"
+    }
+
+    private func vaultSelectionRow(_ vault: Vault) -> some View {
+        HStack {
+            HStack(spacing: 12) {
+                VaultIconTypeView(isFastVault: vault.offersFastSigning)
+                    .padding(12)
+                    .background(Circle().fill(Theme.colors.bgSurface2))
+                    .overlay(
+                        Circle()
+                            .inset(by: 0.5)
+                            .stroke(Theme.colors.borderLight, lineWidth: 1)
+                    )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(vault.name)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodySMedium)
+                        .lineLimit(1)
+                    Text(vault.signerPartDescription)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                        .font(Theme.fonts.priceFootnote)
+                }
+            }
+
+            Spacer()
+
+            if vault.pubKeyECDSA == selectedVaultPubKey {
+                Icon(.check, color: Theme.colors.alertSuccess, size: 24)
+            }
+        }
+        .padding(12)
+        .background(vault.pubKeyECDSA == selectedVaultPubKey ? selectedVaultRowBackground : nil)
+        .contentShape(Rectangle())
+    }
+
+    private var selectedVaultRowBackground: some View {
+        Theme.radius.md.shape
+            .fill(Theme.colors.bgSurface1)
+    }
+
+    private var networksCard: some View {
+        Button {
+            guard networks.count > 3 else { return }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showAllNetworks.toggle()
+            }
+        } label: {
+            VStack(spacing: 0) {
+                HStack(spacing: 10) {
+                    Text("walletConnectNetworks".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Color.walletConnectTextPrimary)
+                    Text("\(networks.count)")
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Color.walletConnectTextSecondary)
+                        .frame(minWidth: 28, minHeight: 22)
+                        .background(Capsule().fill(Color(hex: "1B3C66")))
+                    Spacer()
+                    if networks.count > 3 {
+                        Image(systemName: showAllNetworks ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.walletConnectTextSecondary)
+                    }
+                }
+                .padding(.bottom, 12)
+
+                ForEach(Array(visibleNetworks.enumerated()), id: \.element.id) { index, network in
+                    HStack(spacing: 12) {
+                        WalletConnectNetworkIcon(display: network, size: 32)
+                        Text(network.name)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Color.walletConnectTextPrimary)
+                        Spacer()
+                    }
+                    .frame(height: 44)
+
+                    if index < visibleNetworks.count - 1 {
+                        WalletConnectDivider()
+                    }
+                }
+
+                if networks.count > 3 {
+                    Text(showAllNetworks ? "walletConnectShowFewerNetworks".localized : String(format: "walletConnectShowAllNetworks".localized, networks.count))
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Color(hex: "62A9FF"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 10)
+                }
+
+                namespaceSummary
+                    .padding(.top, 12)
+            }
+            .padding(18)
+            .background(Color.walletConnectSurface)
+            .clipShape(Theme.radius.lg.shape)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var namespaceSummary: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            labeledList(title: "walletConnectRequired".localized, namespaces: proposal.requiredNamespaces)
+            labeledList(title: "walletConnectOptional".localized, namespaces: proposal.optionalNamespaces)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func labeledList(title: String, namespaces: [WalletConnectNamespaceRequest]) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Text(values.isEmpty ? "none".localized : values.joined(separator: ", "))
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textPrimary)
+                .foregroundStyle(Color.walletConnectTextTertiary)
+            Text(namespaceDescription(namespaces))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Color.walletConnectTextSecondary)
+                .lineLimit(4)
         }
     }
 
-    private var vaultSelector: some View {
+    private var permissionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("walletConnectApproveWithVault".localized)
-                .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Picker("vault".localized, selection: $selectedVaultPubKey) {
-                ForEach(vaults, id: \.pubKeyECDSA) { vault in
-                    Text(vault.name).tag(vault.pubKeyECDSA)
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(Theme.colors.textPrimary)
+            Text("walletConnectPermissions".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Color.walletConnectTextTertiary)
+            permissionRow(icon: "wallet.pass", title: "walletConnectPermissionViewAddresses".localized)
+            permissionRow(icon: "signature", title: "walletConnectPermissionRequestSignatures".localized)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func permissionRow(icon: String, title: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.walletConnectTextSecondary)
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(Color.walletConnectSurface))
+            Text(title)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Color.walletConnectTextPrimary)
+            Spacer()
+        }
+        .frame(height: 36)
     }
 
     @ViewBuilder
@@ -142,27 +312,54 @@ struct WalletConnectProposalApprovalSheet: View {
             Text(approvalError.localizedDescription)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.alertWarning)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Color.walletConnectSurface)
+                .clipShape(Theme.radius.md.shape)
         }
     }
 
-    private var actions: some View {
-        VStack(spacing: 12) {
-            PrimaryButton(
-                title: "approve".localized,
-                isLoading: isApproving,
-                type: .primary,
-                action: approve
-            )
-            .disabled(!canApprove)
+    private var reminder: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            WalletConnectDivider()
+            Text("walletConnectApproveEveryRequest".localized)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundStyle(Color.walletConnectTextTertiary)
+        }
+    }
 
+    private var decisionFooter: some View {
+        HStack(spacing: 10) {
             PrimaryButton(
                 title: "reject".localized,
                 isLoading: isRejecting,
                 type: .secondary,
                 action: reject
             )
+            .frame(width: 131)
             .disabled(isApproving || isRejecting)
+
+            PrimaryButton(
+                title: "connect".localized,
+                isLoading: isApproving,
+                type: .primary,
+                action: approve
+            )
+            .disabled(!canApprove)
         }
+        .padding(.horizontal, 24)
+        .padding(.top, 4)
+        .padding(.bottom, 30)
+        .background(Color.walletConnectBackground)
+    }
+
+    private func namespaceDescription(_ namespaces: [WalletConnectNamespaceRequest]) -> String {
+        guard !namespaces.isEmpty else { return "none".localized }
+        return namespaces.map { namespace in
+            let methods = namespace.methods.isEmpty ? "none".localized : namespace.methods.joined(separator: ", ")
+            let events = namespace.events.isEmpty ? "none".localized : namespace.events.joined(separator: ", ")
+            return "\(namespace.namespace): \(methods); \(events)"
+        }.joined(separator: "\n")
     }
 
     private func approve() {
