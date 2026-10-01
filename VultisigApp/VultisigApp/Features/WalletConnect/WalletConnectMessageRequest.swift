@@ -33,6 +33,10 @@ struct WalletConnectIncomingRequest: Equatable {
     let verifyContext: WalletConnectVerifyContext?
 }
 
+struct WalletConnectAuthenticationRequest: Equatable {
+    let requestId: WalletConnectRequestID
+}
+
 struct WalletConnectMessageRequest: Identifiable, Equatable {
     var id: String { requestId.stringValue }
 
