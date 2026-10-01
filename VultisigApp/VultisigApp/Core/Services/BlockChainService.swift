@@ -810,9 +810,19 @@ private extension BlockChainService {
             }
 
             let selectionBudget = SuiConstants.payloadSelectionGasBudget(for: gasBudget)
+            let selectedCoins = selectCoins(gasBudget: selectionBudget)
+            if sendAmount > .zero {
+                try SuiCoinType.validateSpendablePayloadCoins(
+                    selectedCoins,
+                    isNativeToken: coin.isNativeToken,
+                    contractAddress: coin.contractAddress,
+                    amount: sendAmount,
+                    gasBudget: gasBudget
+                )
+            }
             return .Sui(
                 referenceGasPrice: referenceGasPrice,
-                coins: selectCoins(gasBudget: selectionBudget),
+                coins: selectedCoins,
                 gasBudget: gasBudget
             )
 
