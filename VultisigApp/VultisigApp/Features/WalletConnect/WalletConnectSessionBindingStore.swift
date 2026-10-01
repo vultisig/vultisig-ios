@@ -12,7 +12,52 @@ struct WalletConnectSessionBinding: Codable, Equatable, Identifiable {
     let vaultPubKeyECDSA: String
     let dappName: String
     let dappURL: String
+    let dappIconURL: String?
+    let approvedChains: [String]
     let createdAt: Date
+
+    init(
+        topic: String,
+        vaultPubKeyECDSA: String,
+        dappName: String,
+        dappURL: String,
+        dappIconURL: String? = nil,
+        approvedChains: [String] = [],
+        createdAt: Date
+    ) {
+        self.topic = topic
+        self.vaultPubKeyECDSA = vaultPubKeyECDSA
+        self.dappName = dappName
+        self.dappURL = dappURL
+        self.dappIconURL = dappIconURL
+        self.approvedChains = approvedChains
+        self.createdAt = createdAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case topic
+        case vaultPubKeyECDSA
+        case dappName
+        case dappURL
+        case dappIconURL
+        case approvedChains
+        case createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        topic = try container.decode(String.self, forKey: .topic)
+        vaultPubKeyECDSA = try container.decode(String.self, forKey: .vaultPubKeyECDSA)
+        dappName = try container.decode(String.self, forKey: .dappName)
+        dappURL = try container.decode(String.self, forKey: .dappURL)
+        dappIconURL = try container.decodeIfPresent(String.self, forKey: .dappIconURL)
+        approvedChains = try container.decodeIfPresent([String].self, forKey: .approvedChains) ?? []
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+    }
+}
+
+extension Notification.Name {
+    static let walletConnectSessionBindingsDidChange = Notification.Name("walletConnectSessionBindingsDidChange")
 }
 
 protocol WalletConnectSessionBindingStoring {
@@ -27,6 +72,20 @@ final class WalletConnectSessionBindingStore: WalletConnectSessionBindingStoring
 
     private let userDefaults: UserDefaults
     private let key: String
+
+    static func activeDAppCount(bindingStore: WalletConnectSessionBindingStoring = WalletConnectSessionBindingStore()) -> Int {
+        Set(bindingStore.allBindings().map(normalizedDAppKey(for:))).count
+    }
+
+    private static func normalizedDAppKey(for binding: WalletConnectSessionBinding) -> String {
+        if let host = URL(string: binding.dappURL)?.host?.lowercased(), !host.isEmpty {
+            return host
+        }
+        if !binding.dappURL.isEmpty {
+            return binding.dappURL.lowercased()
+        }
+        return binding.dappName.lowercased()
+    }
 
     init(
         userDefaults: UserDefaults = .standard,
@@ -60,5 +119,6 @@ final class WalletConnectSessionBindingStore: WalletConnectSessionBindingStoring
     private func save(_ bindings: [WalletConnectSessionBinding]) {
         guard let data = try? JSONEncoder().encode(bindings) else { return }
         userDefaults.set(data, forKey: key)
+        NotificationCenter.default.post(name: .walletConnectSessionBindingsDidChange, object: self)
     }
 }

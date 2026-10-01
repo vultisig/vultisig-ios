@@ -35,12 +35,36 @@ final class WalletConnectSessionsViewModel: ObservableObject {
     }
 
     func load() {
-        bindings = bindingStore.allBindings().sorted { lhs, rhs in
-            if lhs.createdAt == rhs.createdAt {
-                return lhs.topic < rhs.topic
+        bindings = dedupeByDApp(
+            bindingStore.allBindings().sorted { lhs, rhs in
+                if lhs.createdAt == rhs.createdAt {
+                    return lhs.topic < rhs.topic
+                }
+                return lhs.createdAt > rhs.createdAt
             }
-            return lhs.createdAt > rhs.createdAt
+        )
+    }
+
+    private func dedupeByDApp(_ bindings: [WalletConnectSessionBinding]) -> [WalletConnectSessionBinding] {
+        var seenKeys = Set<String>()
+        var uniqueBindings: [WalletConnectSessionBinding] = []
+        for binding in bindings {
+            let key = normalizedDAppKey(for: binding)
+            guard !seenKeys.contains(key) else { continue }
+            seenKeys.insert(key)
+            uniqueBindings.append(binding)
         }
+        return uniqueBindings
+    }
+
+    private func normalizedDAppKey(for binding: WalletConnectSessionBinding) -> String {
+        if let host = URL(string: binding.dappURL)?.host?.lowercased(), !host.isEmpty {
+            return host
+        }
+        if !binding.dappURL.isEmpty {
+            return binding.dappURL.lowercased()
+        }
+        return binding.dappName.lowercased()
     }
 
     func remove(_ binding: WalletConnectSessionBinding) async {

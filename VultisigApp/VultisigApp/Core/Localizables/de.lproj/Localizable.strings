@@ -1880,7 +1880,7 @@
 "walletConnectOptional" = "Optional";
 "walletConnectRequired" = "Required";
 "walletConnectSessionMetadata" = "Created: %@ • Topic: %@";
-"walletConnectSessions" = "WalletConnect sessions";
+"walletConnectSessions" = "Connected dApps";
 "walletConnectSessionsDescription" = "Review locally stored WalletConnect dApp session bindings. dApp metadata is shown for display only.";
 "walletConnectSessionsEmpty" = "No WalletConnect sessions stored on this device.";
 "walletConnectUnknownVault" = "Unknown vault";
@@ -1979,3 +1979,10 @@
 "walletConnectPermissionRequestSignatures" = "Request signatures";
 "walletConnectApproveEveryRequest" = "You approve every request.";
 "walletConnectSelectVault" = "Select vault";
+
+"walletConnectActiveConnections" = "%d active connections";
+"walletConnectConnected" = "Connected";
+"walletConnectApprovedNetworks" = "Approved networks";
+"walletConnectSessionsHelperNote" = "Connections are linked to the vault you approved.
+You can disconnect them at any time.";
+"walletConnectApprovedNetworksUnknown" = "Approved networks";

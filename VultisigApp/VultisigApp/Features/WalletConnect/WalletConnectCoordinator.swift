@@ -101,6 +101,8 @@ final class WalletConnectCoordinator: ObservableObject {
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             dappName: proposal.name,
             dappURL: proposal.url,
+            dappIconURL: proposal.icons.first,
+            approvedChains: approval.chains,
             createdAt: Date()
         ))
         pendingProposal = nil
