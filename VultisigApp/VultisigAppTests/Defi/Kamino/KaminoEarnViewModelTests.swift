@@ -224,6 +224,25 @@ final class KaminoEarnViewModelTests: XCTestCase {
         XCTAssertNil(row.principalToken)
     }
 
+    /// With the share balance unchanged nothing was deposited, so value accrued
+    /// since the cached read is interest: the deposit holds and Earned grows.
+    func testACachedPnlCarriesForwardInterestAccruedSinceItWasRead() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+        await viewModel.refresh(owner: owner)
+
+        service.infos[steakhouse.address] = KaminoFixtures.makeSteakhouseInfo(tokensPerShare: "1.0546041812651029025")
+        service.pnl = [:]
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertEqual(row.tokenAmount, Decimal(string: "1054.604181"))
+        XCTAssertEqual(row.pnlToken, Decimal(string: "54.604181"))
+        XCTAssertEqual(row.principalToken, Decimal(string: "1000"))
+    }
+
     /// Without the PnL there is no telling how much of the value is interest,
     /// and the value itself standing in for the deposit is the double count.
     func testAnUnreadPnlLeavesTheDepositUnknownRatherThanTheValue() async throws {
@@ -595,16 +614,20 @@ private enum KaminoFixtures {
         tokenPriceUsd: decimal("73.900426936257595")
     )
 
-    static let steakhouseInfo = KaminoVaultInfo(
-        descriptor: KaminoVaultRegistry.steakhouseUSDC,
-        name: "Steakhouse USDC",
-        minDeposit: KaminoTokenAmount(baseUnits: 100_000, decimals: 6),
-        minWithdraw: KaminoShareAmount(baseUnits: 1_000, decimals: 6),
-        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu",
-        apy30d: decimal("0.03994268764493801732"),
-        tokensPerShare: rate("1.0536041812651029025"),
-        tokenPriceUsd: decimal("0.99987")
-    )
+    static let steakhouseInfo = makeSteakhouseInfo(tokensPerShare: "1.0536041812651029025")
+
+    static func makeSteakhouseInfo(tokensPerShare: String) -> KaminoVaultInfo {
+        KaminoVaultInfo(
+            descriptor: KaminoVaultRegistry.steakhouseUSDC,
+            name: "Steakhouse USDC",
+            minDeposit: KaminoTokenAmount(baseUnits: 100_000, decimals: 6),
+            minWithdraw: KaminoShareAmount(baseUnits: 1_000, decimals: 6),
+            lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu",
+            apy30d: decimal("0.03994268764493801732"),
+            tokensPerShare: rate(tokensPerShare),
+            tokenPriceUsd: decimal("0.99987")
+        )
+    }
 
     /// Fixture parsers. Force-unwrapped on purpose: a fixture that stops parsing
     /// is a broken test, not a runtime condition to tolerate.

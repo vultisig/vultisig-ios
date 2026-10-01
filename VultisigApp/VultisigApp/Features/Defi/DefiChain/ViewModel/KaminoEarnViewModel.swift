@@ -219,7 +219,7 @@ final class KaminoEarnViewModel: ObservableObject {
             // next launch would seed a row whose profit-and-loss line has
             // quietly gone — a display gap outliving the outage that caused it.
             let pnlToken = await pnlToken(owner: owner, descriptor: descriptor)
-                ?? cachedPnlToken(for: descriptor, shares: shares)
+                ?? cachedPnlToken(for: descriptor, shares: shares, value: tokenAmount.decimalValue)
 
             freshRows.append(
                 KaminoEarnRow(
@@ -312,12 +312,18 @@ final class KaminoEarnViewModel: ObservableObject {
         }
     }
 
-    /// The PnL a previous pass read, reused only while the share balance is
-    /// unchanged: a deposit or withdrawal moves it, and a stale one misstates the deposit.
-    private func cachedPnlToken(for descriptor: KaminoVaultDescriptor, shares: KaminoShareAmount) -> Decimal? {
+    /// The PnL a previous pass read, carried forward only while the share balance
+    /// is unchanged. Then nothing was deposited or withdrawn, so every change in
+    /// value since is interest; any other change would misstate the deposit.
+    private func cachedPnlToken(
+        for descriptor: KaminoVaultDescriptor,
+        shares: KaminoShareAmount,
+        value: Decimal
+    ) -> Decimal? {
         guard let cached = storage.position(for: vault, vaultAddress: descriptor.address),
-              cached.shares?.baseUnits == shares.baseUnits else { return nil }
-        return cached.pnlToken
+              cached.shares?.baseUnits == shares.baseUnits,
+              let cachedPnl = cached.pnlToken else { return nil }
+        return cachedPnl + (value - cached.tokenAmountDecimal)
     }
 
     private func persist(_ snapshots: [KaminoPositionSnapshot]) {
