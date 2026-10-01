@@ -25,6 +25,8 @@ struct SettingsRouter {
             viewBuilder.buildCurrencyScreen()
         case .widgetWatchlist:
             viewBuilder.buildWidgetWatchlistScreen()
+        case .walletConnectSessions:
+            viewBuilder.buildWalletConnectSessionsScreen()
         case .notifications:
             viewBuilder.buildNotificationsScreen()
         case .addressBook:

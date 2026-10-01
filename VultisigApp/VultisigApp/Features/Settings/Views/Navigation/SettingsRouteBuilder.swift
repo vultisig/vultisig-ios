@@ -39,6 +39,11 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
+    func buildWalletConnectSessionsScreen() -> some View {
+        WalletConnectSessionsScreen()
+    }
+
+    @ViewBuilder
     func buildNotificationsScreen() -> some View {
         NotificationsSettingsScreen()
     }

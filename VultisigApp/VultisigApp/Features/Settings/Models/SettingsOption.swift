@@ -29,6 +29,7 @@ enum SettingsOption: String, Identifiable {
     case language
     case currency
     case widgetWatchlist
+    case walletConnectSessions
     case notifications
     case addressBook
     case managePasscode
@@ -57,6 +58,8 @@ enum SettingsOption: String, Identifiable {
             return "currency"
         case .widgetWatchlist:
             return "watchlist"
+        case .walletConnectSessions:
+            return "walletConnectSessions"
         case .notifications:
             return "notifications"
         case .addressBook:
@@ -102,6 +105,8 @@ enum SettingsOption: String, Identifiable {
             return .circleDollar
         case .widgetWatchlist:
             return .eye
+        case .walletConnectSessions:
+            return .connectedDots3
         case .notifications:
             return .bell
         case .addressBook:

@@ -17,6 +17,7 @@ struct SettingsMainScreen: View {
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showReferralBannerSheet = false
+    @State private var walletConnectConnectionCount = 0
 
     var groups: [SettingsOptionGroup] {
         var generalOptions: [SettingsOption] = [
@@ -30,6 +31,7 @@ struct SettingsMainScreen: View {
         generalOptions.append(.widgetWatchlist)
         #endif
         generalOptions.append(.addressBook)
+        generalOptions.append(.walletConnectSessions)
 
         return [
             SettingsOptionGroup(
@@ -99,6 +101,10 @@ struct SettingsMainScreen: View {
                 showReferralBannerSheet = false
             }.presentationDetents([.height(400)])
         }
+        .onAppear(perform: loadWalletConnectConnectionCount)
+        .onReceive(NotificationCenter.default.publisher(for: .walletConnectSessionBindingsDidChange)) { _ in
+            loadWalletConnectConnectionCount()
+        }
     }
 
     func groupView(for group: SettingsOptionGroup) -> some View {
@@ -161,6 +167,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
+        case .walletConnectSessions:
+            router.navigate(to: SettingsRoute.walletConnectSessions)
         case .managePasscode:
             router.navigate(to: SettingsRoute.managePasscode)
         case .faq:
@@ -178,9 +186,15 @@ struct SettingsMainScreen: View {
             return settingsViewModel.selectedLanguage.rawValue
         case .currency:
             return settingsViewModel.selectedCurrency.rawValue
+        case .walletConnectSessions:
+            return String(walletConnectConnectionCount)
         default:
             return nil
         }
+    }
+
+    func loadWalletConnectConnectionCount() {
+        walletConnectConnectionCount = WalletConnectSessionBindingStore.activeDAppCount()
     }
 
     var appVersion: some View {

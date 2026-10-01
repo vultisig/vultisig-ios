@@ -22,6 +22,7 @@ protocol WalletConnectPairingClient {
         approval: WalletConnectEVMNamespaceApproval
     ) async throws -> String
     func reject(proposal: WalletConnectProposal) async throws
+    func disconnect(topic: String) async throws
 }
 
 @MainActor
@@ -100,6 +101,8 @@ final class WalletConnectCoordinator: ObservableObject {
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             dappName: proposal.name,
             dappURL: proposal.url,
+            dappIconURL: proposal.icons.first,
+            approvedChains: approval.chains,
             createdAt: Date()
         ))
         pendingProposal = nil
@@ -116,6 +119,12 @@ final class WalletConnectCoordinator: ObservableObject {
         try await pairingClient.reject(proposal: proposal)
         pendingProposal = nil
     }
+
+    func disconnectSession(topic: String) async throws {
+        bindingStore.removeBinding(for: topic)
+        guard isConfigured else { return }
+        try await pairingClient.disconnect(topic: topic)
+    }
 }
 
 enum WalletConnectError: LocalizedError, Equatable {
@@ -127,6 +136,7 @@ enum WalletConnectError: LocalizedError, Equatable {
     case pairingFailed(String)
     case approvalFailed(String)
     case rejectionFailed(String)
+    case disconnectionFailed(String)
     case unsupportedCryptoRecovery
 
     var errorDescription: String? {
@@ -157,6 +167,11 @@ enum WalletConnectError: LocalizedError, Equatable {
         case .rejectionFailed(let message):
             return String(
                 format: NSLocalizedString("walletConnectErrorRejectionFailed", comment: ""),
+                message
+            )
+        case .disconnectionFailed(let message):
+            return String(
+                format: NSLocalizedString("walletConnectErrorDisconnectionFailed", comment: ""),
                 message
             )
         case .unsupportedCryptoRecovery:
@@ -255,6 +270,14 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
             proposalsByID[proposal.id] = nil
         } catch {
             throw WalletConnectError.rejectionFailed(error.localizedDescription)
+        }
+    }
+
+    func disconnect(topic: String) async throws {
+        do {
+            try await Sign.instance.disconnect(topic: topic)
+        } catch {
+            throw WalletConnectError.disconnectionFailed(error.localizedDescription)
         }
     }
 }
@@ -388,6 +411,11 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
     }
 
     func reject(proposal _: WalletConnectProposal) async throws {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func disconnect(topic _: String) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }

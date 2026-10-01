@@ -59,4 +59,43 @@ final class WalletConnectSessionBindingStoreTests: XCTestCase {
 
         XCTAssertEqual(store.allBindings(), [replacement])
     }
+
+    func testRemoveBindingDeletesOnlyMatchingTopic() {
+        let first = WalletConnectSessionBinding(
+            topic: "topic-1",
+            vaultPubKeyECDSA: "pubkey-1",
+            dappName: "First",
+            dappURL: "https://first.example",
+            createdAt: Date(timeIntervalSince1970: 1)
+        )
+        let second = WalletConnectSessionBinding(
+            topic: "topic-2",
+            vaultPubKeyECDSA: "pubkey-2",
+            dappName: "Second",
+            dappURL: "https://second.example",
+            createdAt: Date(timeIntervalSince1970: 2)
+        )
+        store.save(first)
+        store.save(second)
+
+        store.removeBinding(for: "topic-1")
+
+        XCTAssertNil(store.binding(for: "topic-1"))
+        XCTAssertEqual(store.allBindings(), [second])
+    }
+
+    func testRemoveBindingIgnoresUnknownTopic() {
+        let binding = WalletConnectSessionBinding(
+            topic: "topic-1",
+            vaultPubKeyECDSA: "pubkey-1",
+            dappName: "Example",
+            dappURL: "https://example.com",
+            createdAt: Date(timeIntervalSince1970: 1)
+        )
+        store.save(binding)
+
+        store.removeBinding(for: "missing-topic")
+
+        XCTAssertEqual(store.allBindings(), [binding])
+    }
 }
