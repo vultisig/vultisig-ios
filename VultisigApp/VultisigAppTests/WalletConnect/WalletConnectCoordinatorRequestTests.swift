@@ -1,17 +1,21 @@
+import BigInt
 import XCTest
 @testable import VultisigApp
 
 @MainActor
 final class WalletConnectCoordinatorRequestTests: XCTestCase {
-    func testObservesOnlySupportedMessageRequests() {
+    func testObservesSupportedMessageAndTransactionRequests() {
         let client = FakeWalletConnectPairingClient()
         let coordinator = WalletConnectCoordinator(pairingClient: client, isConfigured: true)
 
         client.requestHandler?(incoming(method: "eth_sendTransaction", requestId: "1"))
-        XCTAssertNil(coordinator.pendingMessageRequest)
+        XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("1"))
 
-        client.requestHandler?(incoming(method: "personal_sign", requestId: "2"))
-        XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("2"))
+        client.requestHandler?(incoming(method: "wallet_sendCalls", requestId: "2"))
+        XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("1"))
+
+        client.requestHandler?(incoming(method: "personal_sign", requestId: "3"))
+        XCTAssertEqual(coordinator.pendingMessageRequest?.requestId, .string("3"))
     }
 
     func testApproveMessageRequestNormalizesAndResponds() async throws {
@@ -25,7 +29,7 @@ final class WalletConnectCoordinatorRequestTests: XCTestCase {
         XCTAssertEqual(client.responses, [FakeWalletConnectPairingClient.Response(
             topic: "topic",
             requestId: "10",
-            signature: "0x" + String(repeating: "ab", count: 64) + "1b"
+            result: "0x" + String(repeating: "ab", count: 64) + "1b"
         )])
     }
 
@@ -62,6 +66,33 @@ final class WalletConnectCoordinatorRequestTests: XCTestCase {
         XCTAssertEqual(client.responses.first?.requestId, .integer(10))
     }
 
+    func testApproveTransactionRequestRespondsWithHashAndPreservesIntegerRequestID() async throws {
+        let client = FakeWalletConnectPairingClient()
+        let coordinator = WalletConnectCoordinator(pairingClient: client, isConfigured: true)
+        let request = transactionRequest(requestId: .integer(99))
+
+        try await coordinator.approveTransactionRequest(request, transactionHash: "0xabc123")
+
+        XCTAssertEqual(client.responses, [FakeWalletConnectPairingClient.Response(
+            topic: "topic",
+            requestId: .integer(99),
+            result: "0xabc123"
+        )])
+    }
+
+    func testApproveTransactionRequestRejectsEmptyHash() async {
+        let client = FakeWalletConnectPairingClient()
+        let coordinator = WalletConnectCoordinator(pairingClient: client, isConfigured: true)
+        let request = transactionRequest(requestId: .integer(99))
+
+        do {
+            try await coordinator.approveTransactionRequest(request, transactionHash: "")
+            XCTFail("Expected empty hash to throw")
+        } catch {
+            XCTAssertTrue(client.responses.isEmpty)
+        }
+    }
+
     private func incoming(method: String, requestId: String) -> WalletConnectIncomingRequest {
         WalletConnectIncomingRequest(
             topic: "topic",
@@ -73,6 +104,49 @@ final class WalletConnectCoordinatorRequestTests: XCTestCase {
             dappURL: "https://example.com",
             dappIcon: nil,
             verifyContext: nil
+        )
+    }
+
+    private func transactionRequest(requestId: WalletConnectRequestID) -> WalletConnectTransactionRequest {
+        let vault = Vault(name: "vault")
+        vault.pubKeyECDSA = "vault-pub"
+        vault.localPartyID = "local"
+        let meta = CoinMeta(
+            chain: .ethereum,
+            ticker: Chain.ethereum.ticker,
+            logo: "",
+            decimals: 18,
+            priceProviderId: "",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        let coin = Coin(asset: meta, address: "0x1111111111111111111111111111111111111111", hexPublicKey: "")
+        let transaction = SendTransaction.empty(coin: coin, vault: vault).copy(
+            toAddress: "0x2222222222222222222222222222222222222222",
+            amount: "0"
+        )
+        return WalletConnectTransactionRequest(
+            topic: "topic",
+            requestId: requestId,
+            method: "eth_sendTransaction",
+            chain: .ethereum,
+            from: "0x1111111111111111111111111111111111111111",
+            to: "0x2222222222222222222222222222222222222222",
+            valueWei: .zero,
+            valueAmount: "0",
+            data: "",
+            requestedOverrides: WalletConnectTransactionOverrides(
+                gas: nil,
+                gasPrice: nil,
+                maxFeePerGas: nil,
+                maxPriorityFeePerGas: nil,
+                nonce: nil
+            ),
+            vaultPubKeyECDSA: "vault-pub",
+            vaultLocalPartyID: "local",
+            dappMetadata: DAppMetadata(name: "Example", url: "https://example.com", iconURL: ""),
+            verifyContext: nil,
+            transaction: transaction
         )
     }
 
@@ -98,7 +172,7 @@ private final class FakeWalletConnectPairingClient: WalletConnectPairingClient {
     struct Response: Equatable {
         let topic: String
         let requestId: WalletConnectRequestID
-        let signature: String
+        let result: String
     }
 
     var requestHandler: (@MainActor (WalletConnectIncomingRequest) -> Void)?
@@ -110,7 +184,7 @@ private final class FakeWalletConnectPairingClient: WalletConnectPairingClient {
     func observeSessionProposals(_: @escaping @MainActor (WalletConnectProposal) -> Void) {}
     func observeSessionRequests(_ handler: @escaping @MainActor (WalletConnectIncomingRequest) -> Void) {
         requestHandler = { request in
-            guard WalletConnectEVMNamespaceAdapter.supportedMessageMethods.contains(request.method) else { return }
+            guard WalletConnectEVMNamespaceAdapter.supportedMethods.contains(request.method) else { return }
             handler(request)
         }
     }
@@ -119,9 +193,9 @@ private final class FakeWalletConnectPairingClient: WalletConnectPairingClient {
         return "topic"
     }
     func reject(proposal _: WalletConnectProposal) async throws { await Task.yield() }
-    func respond(topic: String, requestId: WalletConnectRequestID, signature: String) async throws {
+    func respond(topic: String, requestId: WalletConnectRequestID, result: String) async throws {
         await Task.yield()
-        responses.append(Response(topic: topic, requestId: requestId, signature: signature))
+        responses.append(Response(topic: topic, requestId: requestId, result: result))
     }
     func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws {
         await Task.yield()

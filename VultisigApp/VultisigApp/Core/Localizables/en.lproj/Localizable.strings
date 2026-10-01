@@ -1896,6 +1896,23 @@
 "walletConnectSessions" = "Connected dApps";
 "walletConnectSessionsDescription" = "Review locally stored WalletConnect dApp session bindings. dApp metadata is shown for display only.";
 "walletConnectSessionsEmpty" = "No WalletConnect sessions stored on this device.";
+"walletConnectTransactionChain" = "Chain";
+"walletConnectTransactionData" = "Data";
+"walletConnectTransactionEmptyData" = "No data";
+"walletConnectTransactionErrorInvalidParams" = "Invalid WalletConnect transaction request: %@";
+"walletConnectTransactionErrorMissingBoundAccount" = "The connected vault does not contain the requested account for this chain.";
+"walletConnectTransactionErrorMissingBoundVault" = "This WalletConnect session is not bound to an available vault.";
+"walletConnectTransactionErrorMissingChainId" = "WalletConnect transaction request is missing a chain.";
+"walletConnectTransactionErrorMissingNativeCoin" = "The connected vault does not contain the native coin for %@.";
+"walletConnectTransactionErrorUnsupportedChain" = "Unsupported WalletConnect chain: %@";
+"walletConnectTransactionErrorUnsupportedMethod" = "Unsupported WalletConnect transaction method: %@";
+"walletConnectTransactionErrorUnsupportedOverride" = "This WalletConnect transaction includes unsupported gas, fee, or nonce overrides (%@). Rejecting instead of signing a different transaction.";
+"walletConnectTransactionFrom" = "From";
+"walletConnectTransactionMethod" = "Method";
+"walletConnectTransactionRequest" = "WalletConnect transaction request";
+"walletConnectTransactionResponding" = "Sending transaction hash to WalletConnect…";
+"walletConnectTransactionTo" = "To";
+"walletConnectTransactionValue" = "Value";
 "walletConnectUnknownVault" = "Unknown vault";
 "walletConnectVerification" = "Verification: %@";
 "walletConnectVerifyInvalidMessage" = "WalletConnect reports %@ as invalid. Treat this request as risky.";
@@ -2007,3 +2024,11 @@
 "walletConnectSessionsHelperNote" = "Connections are linked to the vault you approved.
 You can disconnect them at any time.";
 "walletConnectApprovedNetworksUnknown" = "Approved networks";
+
+"walletConnectFrom" = "From";
+"walletConnectTo" = "To";
+"walletConnectTransactionEstimatedFee" = "Max network fee";
+"walletConnectTransactionEstimatedFeeValue" = "Estimated in %1$@ during signing";
+"walletConnectTransactionDetails" = "Transaction details";
+"walletConnectAcknowledgeAmount" = "The amount is correct";
+"walletConnectAcknowledgeRecipient" = "I’m sending to the correct address";
