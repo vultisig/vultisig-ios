@@ -17,11 +17,14 @@ protocol WalletConnectPairingClient {
     func configure(with configuration: WalletConnectConfiguration) throws
     func pair(uri: String) async throws
     func observeSessionProposals(_ handler: @escaping @MainActor (WalletConnectProposal) -> Void)
+    func observeSessionRequests(_ handler: @escaping @MainActor (WalletConnectIncomingRequest) -> Void)
     func approve(
         proposal: WalletConnectProposal,
         approval: WalletConnectEVMNamespaceApproval
     ) async throws -> String
     func reject(proposal: WalletConnectProposal) async throws
+    func respond(topic: String, requestId: WalletConnectRequestID, signature: String) async throws
+    func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws
     func disconnect(topic: String) async throws
 }
 
@@ -30,6 +33,7 @@ final class WalletConnectCoordinator: ObservableObject {
     static let shared = WalletConnectCoordinator()
 
     @Published private(set) var pendingProposal: WalletConnectProposal?
+    @Published private(set) var pendingMessageRequest: WalletConnectIncomingRequest?
 
     private let logger = Log.app.other
     private let pairingClient: WalletConnectPairingClient
@@ -40,19 +44,22 @@ final class WalletConnectCoordinator: ObservableObject {
 
     init(
         pairingClient: WalletConnectPairingClient? = nil,
-        bindingStore: WalletConnectSessionBindingStoring = WalletConnectSessionBindingStore.shared
+        bindingStore: WalletConnectSessionBindingStoring = WalletConnectSessionBindingStore.shared,
+        isConfigured: Bool = false
     ) {
         self.pairingClient = pairingClient ?? ReownWalletConnectPairingClient()
         self.bindingStore = bindingStore
+        self.isConfigured = isConfigured
+        if isConfigured {
+            observePairingClientEvents()
+        }
     }
 
     func configureFromMainBundle() {
         do {
             let configuration = try WalletConnectConfiguration.fromMainBundle()
             try pairingClient.configure(with: configuration)
-            pairingClient.observeSessionProposals { [weak self] proposal in
-                self?.pendingProposal = proposal
-            }
+            observePairingClientEvents()
             isConfigured = true
             configurationError = nil
         } catch let error as WalletConnectError {
@@ -63,6 +70,15 @@ final class WalletConnectCoordinator: ObservableObject {
             isConfigured = false
             configurationError = .configurationFailed(error.localizedDescription)
             logger.error("WalletConnect disabled: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func observePairingClientEvents() {
+        pairingClient.observeSessionProposals { [weak self] proposal in
+            self?.pendingProposal = proposal
+        }
+        pairingClient.observeSessionRequests { [weak self] request in
+            self?.pendingMessageRequest = request
         }
     }
 
@@ -120,6 +136,27 @@ final class WalletConnectCoordinator: ObservableObject {
         pendingProposal = nil
     }
 
+    func approveMessageRequest(_ request: WalletConnectMessageRequest, signature: String) async throws {
+        guard isConfigured else {
+            throw configurationError ?? .notConfigured
+        }
+        let normalized = try WalletConnectEVMSignatureFormatter().normalizedSignature(signature)
+        try await pairingClient.respond(topic: request.topic, requestId: request.requestId, signature: normalized)
+        if pendingMessageRequest?.requestId == request.requestId {
+            pendingMessageRequest = nil
+        }
+    }
+
+    func rejectMessageRequest(_ request: WalletConnectIncomingRequest) async throws {
+        guard isConfigured else {
+            throw configurationError ?? .notConfigured
+        }
+        try await pairingClient.rejectRequest(topic: request.topic, requestId: request.requestId)
+        if pendingMessageRequest?.requestId == request.requestId {
+            pendingMessageRequest = nil
+        }
+    }
+
     func disconnectSession(topic: String) async throws {
         bindingStore.removeBinding(for: topic)
         guard isConfigured else { return }
@@ -136,6 +173,7 @@ enum WalletConnectError: LocalizedError, Equatable {
     case pairingFailed(String)
     case approvalFailed(String)
     case rejectionFailed(String)
+    case responseFailed(String)
     case disconnectionFailed(String)
     case unsupportedCryptoRecovery
 
@@ -169,6 +207,11 @@ enum WalletConnectError: LocalizedError, Equatable {
                 format: NSLocalizedString("walletConnectErrorRejectionFailed", comment: ""),
                 message
             )
+        case .responseFailed(let message):
+            return String(
+                format: NSLocalizedString("walletConnectErrorResponseFailed", comment: ""),
+                message
+            )
         case .disconnectionFailed(let message):
             return String(
                 format: NSLocalizedString("walletConnectErrorDisconnectionFailed", comment: ""),
@@ -185,6 +228,8 @@ enum WalletConnectError: LocalizedError, Equatable {
 private final class ReownWalletConnectPairingClient: WalletConnectPairingClient {
     private var configuredProjectId: String?
     private var proposalCancellable: AnyCancellable?
+    private var requestCancellable: AnyCancellable?
+    private var authenticateCancellable: AnyCancellable?
     private var proposalsByID: [String: Session.Proposal] = [:]
 
     func configure(with configuration: WalletConnectConfiguration) throws {
@@ -214,6 +259,30 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
                 let snapshot = event.proposal.walletConnectSnapshot
                 self?.proposalsByID[snapshot.id] = event.proposal
                 handler(snapshot)
+            }
+    }
+
+    func observeSessionRequests(_ handler: @escaping @MainActor (WalletConnectIncomingRequest) -> Void) {
+        requestCancellable = Sign.instance.sessionRequestPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { event in
+                let session = Sign.instance.getSessions().first { $0.topic == event.request.topic }
+                guard let request = event.request.walletConnectIncomingRequest(
+                    verifyContext: event.context,
+                    session: session
+                ) else { return }
+                handler(request)
+            }
+
+        // One-Click Auth / session-authenticate is intentionally not mapped to
+        // generic message signing in PR4. These requests have different SIWE
+        // semantics and must be handled by a dedicated auth flow in a later PR.
+        authenticateCancellable = Sign.instance.authenticateRequestPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { event in
+                Task { @MainActor in
+                    try? await Sign.instance.rejectSession(requestId: event.request.id)
+                }
             }
     }
 
@@ -273,6 +342,30 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
         }
     }
 
+    func respond(topic: String, requestId: WalletConnectRequestID, signature: String) async throws {
+        do {
+            try await Sign.instance.respond(
+                topic: topic,
+                requestId: requestId.rpcID,
+                response: .response(AnyCodable(signature))
+            )
+        } catch {
+            throw WalletConnectError.responseFailed(error.localizedDescription)
+        }
+    }
+
+    func rejectRequest(topic: String, requestId: WalletConnectRequestID) async throws {
+        do {
+            try await Sign.instance.respond(
+                topic: topic,
+                requestId: requestId.rpcID,
+                response: .error(JSONRPCError(code: 5000, message: "User rejected request"))
+            )
+        } catch {
+            throw WalletConnectError.rejectionFailed(error.localizedDescription)
+        }
+    }
+
     func disconnect(topic: String) async throws {
         do {
             try await Sign.instance.disconnect(topic: topic)
@@ -294,6 +387,76 @@ private extension Session.Proposal {
             optionalNamespaces: optionalNamespaces?.walletConnectRequests ?? [],
             sessionProperties: sessionProperties
         )
+    }
+}
+
+private extension RPCID {
+    var walletConnectRequestID: WalletConnectRequestID {
+        switch self {
+        case .left(let string): return .string(string)
+        case .right(let integer): return .integer(integer)
+        }
+    }
+}
+
+private extension WalletConnectRequestID {
+    var rpcID: RPCID {
+        switch self {
+        case .string(let string): return RPCID(string)
+        case .integer(let integer): return RPCID(integer)
+        }
+    }
+}
+
+private extension Request {
+    func walletConnectIncomingRequest(
+        verifyContext: VerifyContext?,
+        session: Session?
+    ) -> WalletConnectIncomingRequest? {
+        guard WalletConnectEVMNamespaceAdapter.supportedMessageMethods.contains(method) else {
+            return nil
+        }
+        return WalletConnectIncomingRequest(
+            topic: topic,
+            requestId: id.walletConnectRequestID,
+            method: method,
+            chainId: chainId.absoluteString,
+            paramsJSON: params.walletConnectJSONString,
+            dappName: session?.peer.name ?? "WalletConnect",
+            dappURL: session?.peer.url ?? "",
+            dappIcon: session?.peer.icons.first,
+            verifyContext: verifyContext?.walletConnectVerifyContext
+        )
+    }
+}
+
+private extension VerifyContext {
+    var walletConnectVerifyContext: WalletConnectVerifyContext {
+        WalletConnectVerifyContext(
+            origin: origin ?? "",
+            validation: validation.walletConnectValidation
+        )
+    }
+}
+
+private extension VerifyContext.ValidationStatus {
+    var walletConnectValidation: WalletConnectVerifyContext.Validation {
+        switch self {
+        case .valid: return .valid
+        case .invalid: return .invalid
+        case .scam: return .scam
+        case .unknown: return .unknown
+        }
+    }
+}
+
+private extension AnyCodable {
+    var walletConnectJSONString: String {
+        guard let data = try? JSONEncoder().encode(self),
+              let json = String(data: data, encoding: .utf8) else {
+            return "[]"
+        }
+        return json
     }
 }
 
@@ -397,6 +560,8 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
 
     func observeSessionProposals(_: @escaping @MainActor (WalletConnectProposal) -> Void) {}
 
+    func observeSessionRequests(_: @escaping @MainActor (WalletConnectIncomingRequest) -> Void) {}
+
     func pair(uri _: String) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
@@ -411,6 +576,16 @@ private final class ReownWalletConnectPairingClient: WalletConnectPairingClient 
     }
 
     func reject(proposal _: WalletConnectProposal) async throws {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func respond(topic _: String, requestId _: WalletConnectRequestID, signature _: String) async throws {
+        await Task.yield()
+        throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
+    }
+
+    func rejectRequest(topic _: String, requestId _: WalletConnectRequestID) async throws {
         await Task.yield()
         throw WalletConnectError.configurationFailed("WalletConnectSign or Starscream is not linked.")
     }

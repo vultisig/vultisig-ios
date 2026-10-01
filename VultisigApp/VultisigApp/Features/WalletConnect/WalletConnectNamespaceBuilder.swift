@@ -97,11 +97,13 @@ protocol WalletConnectChainNamespaceAdapter {
 
 struct WalletConnectEVMNamespaceAdapter: WalletConnectChainNamespaceAdapter {
     static let namespace = "eip155"
-    static let supportedMethods = [
-        "eth_sendTransaction",
+    static let supportedMessageMethods = [
         "personal_sign",
         "eth_signTypedData_v4"
     ]
+    static let supportedMethods = [
+        "eth_sendTransaction"
+    ] + supportedMessageMethods
     static let supportedEvents = [
         "accountsChanged",
         "chainChanged"
