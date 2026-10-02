@@ -126,13 +126,16 @@ enum TronContractPayloadGuard {
         let amount: BigInt
     }
 
+    /// Only the canonical 68-byte encoding counts as a transfer: trailing bytes
+    /// or a non-zero address pad would be signed without being bound to Verify.
     private static func decodeTrc20Transfer(_ data: Data) -> Trc20Transfer? {
         let bytes = Data(data)
-        guard bytes.count >= 4 + 2 * abiWordLength,
+        guard bytes.count == 4 + 2 * abiWordLength,
               bytes.prefix(4) == trc20TransferSelector else {
             return nil
         }
         let recipientWord = bytes.subdata(in: 4..<(4 + abiWordLength))
+        guard recipientWord.prefix(abiWordLength - 20).allSatisfy({ $0 == 0 }) else { return nil }
         let amountWord = bytes.subdata(in: (4 + abiWordLength)..<(4 + 2 * abiWordLength))
         return Trc20Transfer(
             recipient: Data([addressPrefix]) + recipientWord.suffix(20),

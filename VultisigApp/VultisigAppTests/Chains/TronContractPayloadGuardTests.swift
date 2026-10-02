@@ -244,6 +244,20 @@ final class TronContractPayloadGuardTests: XCTestCase {
         assertRefused(payload)
     }
 
+    func testTransferCalldataWithTrailingBytesIsNotTreatedAsTransfer() {
+        let data = Self.trc20Transfer(to: recipient, amount: 10) + "deadbeef"
+        let payload = makePayload(coin: usdt, toAddress: recipient, toAmount: 10, trigger: trigger(contract: usdtContract, data: data))
+
+        assertRefused(payload)
+    }
+
+    func testTransferCalldataWithDirtyAddressPadIsNotTreatedAsTransfer() {
+        let dirty = "0xa9059cbb" + "ff" + Self.word(of: recipient).dropFirst(2) + Self.amountWord(10)
+        let payload = makePayload(coin: usdt, toAddress: recipient, toAmount: 10, trigger: trigger(contract: usdtContract, data: dirty))
+
+        assertRefused(payload)
+    }
+
     func testRefusalAlsoBlocksPreSignedImageHash() {
         let data = Self.trc20Transfer(to: attacker, amount: 10)
         let payload = makePayload(coin: usdt, toAddress: recipient, toAmount: 10, trigger: trigger(contract: usdtContract, data: data))

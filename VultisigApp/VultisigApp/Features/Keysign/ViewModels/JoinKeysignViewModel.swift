@@ -649,7 +649,8 @@ class JoinKeysignViewModel: ObservableObject {
         guard let pair = ContractCallExtractor.extract(
             signature: params.functionSignature,
             argsJson: params.functionArguments,
-            toAddress: keysignPayload?.toAddress
+            toAddress: keysignPayload?.tronTriggerSmartContractPayload?.contractAddress
+                ?? keysignPayload?.toAddress
         ) else { return nil }
 
         guard let chain = resolvedContractCallChain() else { return nil }
