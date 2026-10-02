@@ -314,10 +314,12 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
     func testValidateBalanceFailsWhenAmountExceeds() {
         let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(rawBalance: "100000000000000000")) // 0.1 ETH
         vm.amount = "1"  // 1 ETH (10x balance)
+        vm.gas = BigInt(30_000_000_000) // gas price, 30 gwei
+        vm.fee = BigInt(630_000_000_000_000) // 21000 × 30 gwei
         XCTAssertFalse(vm.validateBalance())
         XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
             coin: vm.coin,
-            required: BigInt(1_000_000_000_000_000_000) + vm.gas,
+            required: BigInt(1_000_000_000_000_000_000) + vm.fee,
             available: BigInt(100_000_000_000_000_000),
             includesNetworkCosts: true
         ))

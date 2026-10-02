@@ -1224,8 +1224,7 @@ final class SendDetailsViewModel {
                 coin: coin,
                 amount: amount,
                 sendMaxAmount: sendMaxAmount,
-                fee: fee,
-                gas: gas
+                networkFee: SendCryptoLogic.displayFee(coin: coin, gas: gas, fee: fee)
             )
             setAmountError(message: InsufficientFundsMessage.text(
                 coin: coin,
