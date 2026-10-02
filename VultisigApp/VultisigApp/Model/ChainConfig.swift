@@ -24,8 +24,8 @@ extension Chain {
         let chainType: ChainType
         let banxaBlockchainCode: String
         let minimumSendAmount: BigInt?
-        /// Localization key for the network label when it differs from the `name` identifier.
-        var displayNameKey: String?
+        /// Network label when it differs from the `name` identifier (not localized: same in every locale).
+        var displayName: String?
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -47,7 +47,7 @@ extension Chain {
 
     var name: String { config.name }
     /// User-facing network label; `name` stays the wire and storage identifier.
-    var displayName: String { config.displayNameKey?.localized ?? config.name }
+    var displayName: String { config.displayName ?? config.name }
     var ticker: String { config.ticker }
     var feeUnit: String { config.feeUnit }
     var swapAsset: String { config.swapAsset }
@@ -134,7 +134,7 @@ extension Chain {
         case .dydx:
             return ChainConfig(name: "Dydx", ticker: "ADYDX", feeUnit: "adydx", swapAsset: "DYDX", logo: "dydx", chainID: nil, coinType: .dydx, chainType: .Cosmos, banxaBlockchainCode: "DYDX", minimumSendAmount: nil)
         case .ton:
-            return ChainConfig(name: "Ton", ticker: "TON", feeUnit: "TON", swapAsset: "TON", logo: "ton", chainID: nil, coinType: .ton, chainType: .Ton, banxaBlockchainCode: "TON", minimumSendAmount: nil, displayNameKey: "tonNetworkDisplayName")
+            return ChainConfig(name: "Ton", ticker: "TON", feeUnit: "TON", swapAsset: "TON", logo: "ton", chainID: nil, coinType: .ton, chainType: .Ton, banxaBlockchainCode: "TON", minimumSendAmount: nil, displayName: "TON (GRAM)")
         case .osmosis:
             return ChainConfig(name: "Osmosis", ticker: "UOSMO", feeUnit: "uosmo", swapAsset: "OSMO", logo: "osmo", chainID: nil, coinType: .osmosis, chainType: .Cosmos, banxaBlockchainCode: "OSMOSIS", minimumSendAmount: nil)
         case .terra:

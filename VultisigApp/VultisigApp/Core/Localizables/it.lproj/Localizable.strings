@@ -542,7 +542,6 @@
 "formInvalid" = "Modulo non valido";
 "formInvalidDefaultMessage" = "Il modulo non è valido. Per favore, correggi i campi contrassegnati con una stella rossa.";
 "forwardTonAmount" = "Importo GRAM Inoltrato";
-"tonNetworkDisplayName" = "TON (GRAM)";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di un timeout.";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
 "from" = "Da";
