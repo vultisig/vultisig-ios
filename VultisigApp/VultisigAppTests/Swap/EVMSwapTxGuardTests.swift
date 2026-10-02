@@ -28,21 +28,21 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - 1inch routers
 
     func testOneInchAcceptsV6AndV5OnStandardChain() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6)))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV5)))
+        try swapFor(payload(provider: .oneInch, to: oneInchV6))
+        try swapFor(payload(provider: .oneInch, to: oneInchV5))
     }
 
     func testOneInchRouterComparisonIsCaseInsensitive() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6.uppercased().replacingOccurrences(of: "0X", with: "0x"))))
+        try swapFor(payload(provider: .oneInch, to: oneInchV6.uppercased().replacingOccurrences(of: "0X", with: "0x")))
     }
 
     func testOneInchZkSyncRequiresItsOwnRouter() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, chain: .zksync, to: oneInchZkSync)))
+        try swapFor(payload(provider: .oneInch, chain: .zksync, to: oneInchZkSync))
         assertRouterRejected(payload(provider: .oneInch, chain: .zksync, to: oneInchV6))
     }
 
     func testOneInchRobinhoodRequiresItsOwnRouter() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, chain: .robinhood, to: oneInchRobinhood)))
+        try swapFor(payload(provider: .oneInch, chain: .robinhood, to: oneInchRobinhood))
         assertRouterRejected(payload(provider: .oneInch, chain: .robinhood, to: oneInchV6))
     }
 
@@ -54,7 +54,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - Kyber routers
 
     func testKyberAcceptsItsRouterOnly() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber)))
+        try swapFor(payload(provider: .kyberSwap, to: kyber))
         assertRouterRejected(payload(provider: .kyberSwap, to: oneInchV6))
         assertRouterRejected(payload(provider: .kyberSwap, to: attacker))
     }
@@ -62,14 +62,14 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - LI.FI routers
 
     func testLiFiAcceptsDiamondOnStandardChain() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, to: lifi)))
+        try swapFor(payload(provider: .lifi, to: lifi))
         assertRouterRejected(payload(provider: .lifi, to: attacker))
     }
 
     func testLiFiChainExceptionsRequireTheirOwnDiamond() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .hyperliquid, to: lifiHyperliquid)))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .robinhood, to: lifiRobinhood)))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .zksync, to: lifiZkSync)))
+        try swapFor(payload(provider: .lifi, chain: .hyperliquid, to: lifiHyperliquid))
+        try swapFor(payload(provider: .lifi, chain: .robinhood, to: lifiRobinhood))
+        try swapFor(payload(provider: .lifi, chain: .zksync, to: lifiZkSync))
         assertRouterRejected(payload(provider: .lifi, chain: .hyperliquid, to: lifi))
         assertRouterRejected(payload(provider: .lifi, chain: .robinhood, to: lifi))
         assertRouterRejected(payload(provider: .lifi, chain: .zksync, to: lifi))
@@ -78,7 +78,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - SwapKit and providers
 
     func testSwapKitIsExemptFromRouterPin() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .swapkit, to: attacker)))
+        try swapFor(payload(provider: .swapkit, to: attacker))
     }
 
     func testUnrecognizedProviderIsRejected() {
@@ -93,9 +93,9 @@ final class EVMSwapTxGuardTests: XCTestCase {
     }
 
     func testEmptyProviderAcceptsKnownRoutersOnly() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: oneInchV6)))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: kyber)))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: lifi)))
+        try swapFor(payload(provider: .unknown(""), to: oneInchV6))
+        try swapFor(payload(provider: .unknown(""), to: kyber))
+        try swapFor(payload(provider: .unknown(""), to: lifi))
         assertRouterRejected(payload(provider: .unknown(""), to: attacker))
     }
 
@@ -111,8 +111,8 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - Value bounds
 
     func testNativeSourceMayNotSendMoreThanQuotedAmount() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000000")))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber, value: "999")))
+        try swapFor(payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000000"))
+        try swapFor(payload(provider: .kyberSwap, to: kyber, value: "999"))
         for swap in [
             payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000001"),
             payload(provider: .kyberSwap, to: kyber, value: "1000000000000000001")
@@ -127,8 +127,8 @@ final class EVMSwapTxGuardTests: XCTestCase {
     }
 
     func testTokenSourceMustSendZeroNativeValue() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6, native: false, value: "0")))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber, native: false, value: "0")))
+        try swapFor(payload(provider: .oneInch, to: oneInchV6, native: false, value: "0"))
+        try swapFor(payload(provider: .kyberSwap, to: kyber, native: false, value: "0"))
         for swap in [
             payload(provider: .oneInch, to: oneInchV6, native: false, value: "1"),
             payload(provider: .kyberSwap, to: kyber, native: false, value: "1")
@@ -140,8 +140,8 @@ final class EVMSwapTxGuardTests: XCTestCase {
     }
 
     func testLiFiAndSwapKitMayAttachBridgeFeeAboveQuotedAmount() throws {
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, to: lifi, value: "5000000000000000000")))
-        try EVMSwapTxGuard.check(swapFor(payload(provider: .swapkit, to: attacker, native: false, value: "5")))
+        try swapFor(payload(provider: .lifi, to: lifi, value: "5000000000000000000"))
+        try swapFor(payload(provider: .swapkit, to: attacker, native: false, value: "5"))
     }
 
     // MARK: - Malformed value
