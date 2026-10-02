@@ -8,6 +8,7 @@ import BigInt
 
 enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
     case malformedValue(String)
+    case coinMismatch
     case unrecognizedProvider(String)
     case unknownRouter(router: String, provider: String, chain: String)
     case valueExceedsQuotedAmount(value: String, quoted: String)
@@ -17,6 +18,8 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
         switch self {
         case .malformedValue(let value):
             return "EVM swap tx.value '\(value)' is not a non-negative integer"
+        case .coinMismatch:
+            return "EVM swap payload source coin does not match the coin being signed"
         case .unrecognizedProvider(let provider):
             return "EVM swap from unrecognized provider '\(provider)'"
         case .unknownRouter(let router, let provider, let chain):
@@ -45,12 +48,18 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
 /// Android `EvmSwapTxGuard`; the three platforms must refuse the same payloads.
 enum EVMSwapTxGuard {
 
-    static func check(_ payload: GenericSwapPayload) throws {
+    static func check(_ payload: GenericSwapPayload, signingCoin: Coin) throws {
         let chain = payload.fromCoin.chain
         guard chain.chainType == .EVM else { return }
         let tx = payload.quote.tx
 
-        guard let value = BigUInt(tx.value) else {
+        // The bounds below read the payload's coin, so it must be the coin the
+        // signed transaction is built for.
+        guard signingCoin.chain == chain, signingCoin.isNativeToken == payload.fromCoin.isNativeToken else {
+            throw EVMSwapTxGuardError.coinMismatch
+        }
+
+        guard let value = BigUInt(tx.value), value.bitWidth <= 256 else {
             throw EVMSwapTxGuardError.malformedValue(tx.value)
         }
 

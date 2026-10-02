@@ -44,7 +44,7 @@ struct OneInchSwaps {
 private extension OneInchSwaps {
 
     func getPreSignedInputData(payload: GenericSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> Data {
-        try EVMSwapTxGuard.check(payload)
+        try EVMSwapTxGuard.check(payload, signingCoin: keysignPayload.coin)
         let quote = payload.quote
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to

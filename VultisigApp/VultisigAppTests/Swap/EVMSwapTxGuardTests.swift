@@ -28,21 +28,21 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - 1inch routers
 
     func testOneInchAcceptsV6AndV5OnStandardChain() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, to: oneInchV6))
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, to: oneInchV5))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6)))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV5)))
     }
 
     func testOneInchRouterComparisonIsCaseInsensitive() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, to: oneInchV6.uppercased().replacingOccurrences(of: "0X", with: "0x")))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6.uppercased().replacingOccurrences(of: "0X", with: "0x"))))
     }
 
     func testOneInchZkSyncRequiresItsOwnRouter() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, chain: .zksync, to: oneInchZkSync))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, chain: .zksync, to: oneInchZkSync)))
         assertRouterRejected(payload(provider: .oneInch, chain: .zksync, to: oneInchV6))
     }
 
     func testOneInchRobinhoodRequiresItsOwnRouter() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, chain: .robinhood, to: oneInchRobinhood))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, chain: .robinhood, to: oneInchRobinhood)))
         assertRouterRejected(payload(provider: .oneInch, chain: .robinhood, to: oneInchV6))
     }
 
@@ -54,7 +54,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - Kyber routers
 
     func testKyberAcceptsItsRouterOnly() throws {
-        try EVMSwapTxGuard.check(payload(provider: .kyberSwap, to: kyber))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber)))
         assertRouterRejected(payload(provider: .kyberSwap, to: oneInchV6))
         assertRouterRejected(payload(provider: .kyberSwap, to: attacker))
     }
@@ -62,14 +62,14 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - LI.FI routers
 
     func testLiFiAcceptsDiamondOnStandardChain() throws {
-        try EVMSwapTxGuard.check(payload(provider: .lifi, to: lifi))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, to: lifi)))
         assertRouterRejected(payload(provider: .lifi, to: attacker))
     }
 
     func testLiFiChainExceptionsRequireTheirOwnDiamond() throws {
-        try EVMSwapTxGuard.check(payload(provider: .lifi, chain: .hyperliquid, to: lifiHyperliquid))
-        try EVMSwapTxGuard.check(payload(provider: .lifi, chain: .robinhood, to: lifiRobinhood))
-        try EVMSwapTxGuard.check(payload(provider: .lifi, chain: .zksync, to: lifiZkSync))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .hyperliquid, to: lifiHyperliquid)))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .robinhood, to: lifiRobinhood)))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, chain: .zksync, to: lifiZkSync)))
         assertRouterRejected(payload(provider: .lifi, chain: .hyperliquid, to: lifi))
         assertRouterRejected(payload(provider: .lifi, chain: .robinhood, to: lifi))
         assertRouterRejected(payload(provider: .lifi, chain: .zksync, to: lifi))
@@ -78,12 +78,12 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - SwapKit and providers
 
     func testSwapKitIsExemptFromRouterPin() throws {
-        try EVMSwapTxGuard.check(payload(provider: .swapkit, to: attacker))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .swapkit, to: attacker)))
     }
 
     func testUnrecognizedProviderIsRejected() {
         let swap = payload(provider: .unknown("shadyswap"), to: oneInchV6)
-        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap)) {
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)) {
             XCTAssertEqual($0 as? EVMSwapTxGuardError, .unrecognizedProvider("shadyswap"))
         }
     }
@@ -93,15 +93,15 @@ final class EVMSwapTxGuardTests: XCTestCase {
     }
 
     func testEmptyProviderAcceptsKnownRoutersOnly() throws {
-        try EVMSwapTxGuard.check(payload(provider: .unknown(""), to: oneInchV6))
-        try EVMSwapTxGuard.check(payload(provider: .unknown(""), to: kyber))
-        try EVMSwapTxGuard.check(payload(provider: .unknown(""), to: lifi))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: oneInchV6)))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: kyber)))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .unknown(""), to: lifi)))
         assertRouterRejected(payload(provider: .unknown(""), to: attacker))
     }
 
     func testEmptyProviderAimedAtExactValueRouterStillBoundsValue() {
         let swap = payload(provider: .unknown(""), to: oneInchV6, value: "2000000000000000000")
-        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap)) {
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)) {
             guard case .valueExceedsQuotedAmount = $0 as? EVMSwapTxGuardError else {
                 return XCTFail("Expected valueExceedsQuotedAmount, got \($0)")
             }
@@ -111,13 +111,13 @@ final class EVMSwapTxGuardTests: XCTestCase {
     // MARK: - Value bounds
 
     func testNativeSourceMayNotSendMoreThanQuotedAmount() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000000"))
-        try EVMSwapTxGuard.check(payload(provider: .kyberSwap, to: kyber, value: "999"))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000000")))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber, value: "999")))
         for swap in [
             payload(provider: .oneInch, to: oneInchV6, value: "1000000000000000001"),
             payload(provider: .kyberSwap, to: kyber, value: "1000000000000000001")
         ] {
-            XCTAssertThrowsError(try EVMSwapTxGuard.check(swap)) {
+            XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)) {
                 XCTAssertEqual(
                     $0 as? EVMSwapTxGuardError,
                     .valueExceedsQuotedAmount(value: "1000000000000000001", quoted: "1000000000000000000")
@@ -127,21 +127,21 @@ final class EVMSwapTxGuardTests: XCTestCase {
     }
 
     func testTokenSourceMustSendZeroNativeValue() throws {
-        try EVMSwapTxGuard.check(payload(provider: .oneInch, to: oneInchV6, native: false, value: "0"))
-        try EVMSwapTxGuard.check(payload(provider: .kyberSwap, to: kyber, native: false, value: "0"))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .oneInch, to: oneInchV6, native: false, value: "0")))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .kyberSwap, to: kyber, native: false, value: "0")))
         for swap in [
             payload(provider: .oneInch, to: oneInchV6, native: false, value: "1"),
             payload(provider: .kyberSwap, to: kyber, native: false, value: "1")
         ] {
-            XCTAssertThrowsError(try EVMSwapTxGuard.check(swap)) {
+            XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)) {
                 XCTAssertEqual($0 as? EVMSwapTxGuardError, .valueFromTokenSource(value: "1"))
             }
         }
     }
 
     func testLiFiAndSwapKitMayAttachBridgeFeeAboveQuotedAmount() throws {
-        try EVMSwapTxGuard.check(payload(provider: .lifi, to: lifi, value: "5000000000000000000"))
-        try EVMSwapTxGuard.check(payload(provider: .swapkit, to: attacker, native: false, value: "5"))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .lifi, to: lifi, value: "5000000000000000000")))
+        try EVMSwapTxGuard.check(swapFor(payload(provider: .swapkit, to: attacker, native: false, value: "5")))
     }
 
     // MARK: - Malformed value
@@ -150,9 +150,30 @@ final class EVMSwapTxGuardTests: XCTestCase {
         for raw in ["", "abc", "-1", "0x10", "1.5", " 1"] {
             for provider in [SwapProviderId.oneInch, .kyberSwap, .lifi, .swapkit] {
                 let swap = payload(provider: provider, to: oneInchV6, value: raw)
-                XCTAssertThrowsError(try EVMSwapTxGuard.check(swap), "\(provider.rawValue) value '\(raw)'") {
+                XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin), "\(provider.rawValue) value '\(raw)'") {
                     XCTAssertEqual($0 as? EVMSwapTxGuardError, .malformedValue(raw))
                 }
+            }
+        }
+    }
+
+    func testValueAboveUint256IsRejected() {
+        let tooBig = String(BigUInt(1) << 256)
+        let swap = payload(provider: .lifi, to: lifi, value: tooBig)
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)) {
+            XCTAssertEqual($0 as? EVMSwapTxGuardError, .malformedValue(tooBig))
+        }
+        let max = String((BigUInt(1) << 256) - 1)
+        XCTAssertNoThrow(try EVMSwapTxGuard.check(payload(provider: .lifi, to: lifi, value: max), signingCoin: payload(provider: .lifi, to: lifi).fromCoin))
+    }
+
+    func testSigningCoinMustMatchPayloadSourceCoin() {
+        let swap = payload(provider: .oneInch, to: oneInchV6)
+        let token = payload(provider: .oneInch, to: oneInchV6, native: false).fromCoin
+        let otherChain = payload(provider: .oneInch, chain: .base, to: oneInchV6).fromCoin
+        for coin in [token, otherChain] {
+            XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: coin)) {
+                XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
             }
         }
     }
@@ -191,8 +212,13 @@ final class EVMSwapTxGuardTests: XCTestCase {
 
     // MARK: - Fixtures
 
+    /// Checks `swap` against its own source coin as the signing coin.
+    private func swapFor(_ swap: GenericSwapPayload) throws {
+        try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin)
+    }
+
     private func assertRouterRejected(_ swap: GenericSwapPayload, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap), file: file, line: line) {
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: swap.fromCoin), file: file, line: line) {
             guard case .unknownRouter = $0 as? EVMSwapTxGuardError else {
                 return XCTFail("Expected unknownRouter, got \($0)", file: file, line: line)
             }
