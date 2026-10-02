@@ -438,6 +438,41 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         }
     }
 
+    /// A MayaChain deposit whose chain has no inbound entry must say MayaChain
+    /// does not support it, not borrow THORChain's wording.
+    func testAMayaErc20DepositWithNoInboundNamesMayaChain() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaEthRouter
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter,
+                    chain: "BTC"
+                ))
+            )
+            XCTFail("a chain without a Maya inbound must not be deposited")
+        } catch let error as HelperError {
+            let expected = String(format: "mayaInboundAddressNotFound".localized, "ETH")
+            XCTAssertEqual(error.localizedDescription, expected)
+        }
+    }
+
     /// Maya's pool list names its CACAO side `balance_cacao`; it must still
     /// decode into the shared pool model, status included.
     func testMayaPoolsDecodeIntoThePoolModel() throws {
@@ -464,10 +499,10 @@ private actor LPInboundStubClient: HTTPClientProtocol {
     private let path: String
     private let body: Data
 
-    init(path: String, address: String, router: String) {
+    init(path: String, address: String, router: String, chain: String = "ETH") {
         self.path = path
         self.body = Data("""
-        [{"chain":"ETH","address":"\(address)","router":"\(router)","halted":false,
+        [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":false,
           "gas_rate":"1","gas_rate_units":"gwei"}]
         """.utf8)
     }
