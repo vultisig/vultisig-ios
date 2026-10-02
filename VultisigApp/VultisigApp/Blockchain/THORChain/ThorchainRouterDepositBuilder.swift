@@ -44,12 +44,24 @@ enum ThorchainRouterDepositBuilder {
         // protocol whose pool is joined: a MayaChain deposit marks itself, and
         // reading THORChain's vault for it would strand the tokens.
         let isMayaDeposit = tx.memoFunctionDictionary["protocol"] == AddLPTransactionBuilder.mayaProtocolMarker
+        // A MayaChain deposit reads live and fails closed: the vault and the
+        // router must come from one current snapshot, and a stale cached vault
+        // paired with a fresh router would send the tokens to a retired vault.
         let inboundAddresses = isMayaDeposit
-            ? ((try? await mayachainService.fetchInboundAddressOrThrow()) ?? [])
+            ? try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
             : await thorchainService.fetchThorchainInboundAddress()
         let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
         guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
+        }
+
+        if isMayaDeposit {
+            guard !inbound.isLPActionsHalted else {
+                throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
+            }
+            guard let router = inbound.router, router.caseInsensitiveCompare(tx.toAddress) == .orderedSame else {
+                throw HelperError.runtimeError(String(format: "routerNotAvailable".localized, inbound.chain))
+            }
         }
 
         // ONE address for the deposit and the approval.
