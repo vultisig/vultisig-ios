@@ -52,7 +52,8 @@ enum ThorchainRouterDepositBuilder {
             : await thorchainService.fetchThorchainInboundAddress()
         let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
         guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-            throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
+            let key = isMayaDeposit ? "mayaInboundAddressNotFound" : "inboundAddressNotFound"
+            throw HelperError.runtimeError(String(format: key.localized, chainName))
         }
 
         if isMayaDeposit {

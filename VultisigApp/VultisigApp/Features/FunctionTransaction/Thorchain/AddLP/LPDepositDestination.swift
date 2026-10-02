@@ -137,6 +137,7 @@ enum ThorchainLPDestinationResolver {
         do {
             return try await MayachainService.shared.fetchInboundAddressOrThrow(bypassCache: bypassCache)
         } catch {
+            Log.chain.service.warning("MayaChain inbound address fetch failed: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }
