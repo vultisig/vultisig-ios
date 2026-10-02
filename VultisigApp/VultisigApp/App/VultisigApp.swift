@@ -19,6 +19,10 @@ struct VultisigApp: App {
     @NSApplicationDelegateAdaptor(MacAppDelegate.self) var appDelegate
     #endif
 
+    #if os(macOS)
+    private static let linkEvents: Set<String> = ["vultisig://", "https://vultisig.com"]
+    #endif
+
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
@@ -99,7 +103,7 @@ struct VultisigApp: App {
                 // event to the existing window's `onOpenURL` instead. Scoped to
                 // link URLs: a wildcard would also claim `file:` URLs and take
                 // `.vult` opens away from the document scene.
-                .handlesExternalEvents(preferring: ["vultisig://", "https://vultisig.com"], allowing: ["*"])
+                .handlesExternalEvents(preferring: Self.linkEvents, allowing: Self.linkEvents)
                 #endif
         }
         .modelContainer(sharedModelContainer)
