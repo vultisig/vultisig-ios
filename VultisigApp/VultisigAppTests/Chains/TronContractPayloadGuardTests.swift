@@ -258,6 +258,45 @@ final class TronContractPayloadGuardTests: XCTestCase {
         assertRefused(payload)
     }
 
+    func testTransferCalldataWithTrailingBytesDisplayedAsZeroTrxToContractIsRefused() {
+        let data = Self.trc20Transfer(to: attacker, amount: 10) + "deadbeef"
+        let payload = makePayload(coin: trx, toAddress: usdtContract, toAmount: 0, trigger: trigger(contract: usdtContract, data: data))
+
+        assertRefused(payload)
+    }
+
+    func testTransferCalldataWithDirtyAddressPadDisplayedAsZeroTrxToContractIsRefused() {
+        let dirty = "0xa9059cbb" + "ff" + Self.word(of: attacker).dropFirst(2) + Self.amountWord(10)
+        let payload = makePayload(coin: trx, toAddress: usdtContract, toAmount: 0, trigger: trigger(contract: usdtContract, data: dirty))
+
+        assertRefused(payload)
+    }
+
+    func testTruncatedTransferCalldataDisplayedAsZeroTrxToContractIsRefused() {
+        let truncated = "0xa9059cbb" + Self.word(of: attacker)
+        let payload = makePayload(coin: trx, toAddress: usdtContract, toAmount: 0, trigger: trigger(contract: usdtContract, data: truncated))
+
+        assertRefused(payload)
+    }
+
+    func testMalformedHexCalldataIsRefusedInsteadOfSignedAsEmpty() {
+        for data in ["0xzz", "0xabc", "0x12g4", "abc", "0x" + String(repeating: "a", count: 7)] {
+            let payload = makePayload(coin: trx, toAddress: usdtContract, toAmount: 0, trigger: trigger(contract: usdtContract, data: data))
+
+            assertRefused(payload)
+        }
+    }
+
+    func testContractDataThrowsOnMalformedHexAndPreservesWellFormedInputs() throws {
+        XCTAssertThrowsError(try TronContractPayloadGuard.contractData(from: "0xabc"))
+        XCTAssertThrowsError(try TronContractPayloadGuard.contractData(from: "0xzz"))
+        XCTAssertEqual(try TronContractPayloadGuard.contractData(from: nil), Data())
+        XCTAssertEqual(try TronContractPayloadGuard.contractData(from: "0x"), Data())
+        XCTAssertEqual(try TronContractPayloadGuard.contractData(from: "0xd0e30db0").hexString, "d0e30db0")
+        XCTAssertEqual(try TronContractPayloadGuard.contractData(from: "d0e30db0").hexString, "d0e30db0")
+        XCTAssertEqual(try TronContractPayloadGuard.contractData(from: "hello"), Data("hello".utf8))
+    }
+
     func testRefusalAlsoBlocksPreSignedImageHash() {
         let data = Self.trc20Transfer(to: attacker, amount: 10)
         let payload = makePayload(coin: usdt, toAddress: recipient, toAmount: 10, trigger: trigger(contract: usdtContract, data: data))

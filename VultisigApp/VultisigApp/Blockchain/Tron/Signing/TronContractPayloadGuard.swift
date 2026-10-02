@@ -48,8 +48,11 @@ enum TronContractPayloadGuard {
             throw failure("a contract call must not attach TRC-10 tokens")
         }
 
-        let calldata = contractData(from: contract.data)
+        let calldata = try contractData(from: contract.data)
         guard let transfer = decodeTrc20Transfer(calldata) else {
+            guard !calldata.starts(with: trc20TransferSelector) else {
+                throw failure("TRC-20 transfer calldata is not canonical")
+            }
             guard callValue == 0 || keysignPayload.coin.isNativeToken else {
                 throw failure("a contract call attaching TRX must be shown as TRX")
             }
@@ -78,23 +81,36 @@ enum TronContractPayloadGuard {
     }
 
     /// The exact bytes `TronHelper` places in `TriggerSmartContract.data`;
-    /// the guard decodes the same bytes the signer signs.
-    static func contractData(from data: String?) -> Data {
-        guard let data else { return Data() }
+    /// the guard decodes the same bytes the signer signs. `0x`-prefixed data and
+    /// bare hex must be well-formed: a malformed encoding is rejected rather than
+    /// signed as empty calldata.
+    static func contractData(from data: String?) throws -> Data {
+        guard let data, !data.isEmpty else { return Data() }
         if data.hasPrefix("0x") {
-            return Data(hexString: String(data.dropFirst(2))) ?? Data()
+            return try hexBytes(String(data.dropFirst(2)))
         }
         if data.allSatisfy({ $0.isHexDigit }) {
-            return Data(hexString: data) ?? Data()
+            return try hexBytes(data)
         }
         return Data(data.utf8)
     }
 
     /// The signed calldata as `0x` hex, for Verify to decode like EVM calldata;
-    /// nil when the call carries none.
+    /// nil when the call carries none or cannot be read (signing is refused then).
     static func calldataHex(from data: String?) -> String? {
-        let bytes = contractData(from: data)
+        guard let bytes = try? contractData(from: data) else { return nil }
         return bytes.isEmpty ? nil : "0x" + bytes.hexString
+    }
+
+    private static func hexBytes(_ hex: String) throws -> Data {
+        guard hex.count.isMultiple(of: 2), hex.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
+            throw failure("the contract call data is not valid hex")
+        }
+        guard !hex.isEmpty else { return Data() }
+        guard let bytes = Data(hexString: hex) else {
+            throw failure("the contract call data is not valid hex")
+        }
+        return bytes
     }
 
     // MARK: - Checks

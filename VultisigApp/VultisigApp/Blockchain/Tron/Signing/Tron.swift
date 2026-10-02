@@ -423,6 +423,7 @@ enum TronHelper {
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String,
         memo: String?
     ) throws -> Data {
+        let contractData = try TronContractPayloadGuard.contractData(from: payload.data)
         let contract = TronTriggerSmartContract.with {
             $0.ownerAddress = payload.ownerAddress
             $0.contractAddress = payload.contractAddress
@@ -435,7 +436,7 @@ enum TronHelper {
             if let tokenId = payload.tokenId {
                 $0.tokenID = Int64(tokenId)
             }
-            $0.data = TronContractPayloadGuard.contractData(from: payload.data)
+            $0.data = contractData
         }
 
         let input = try TronSigningInput.with {
