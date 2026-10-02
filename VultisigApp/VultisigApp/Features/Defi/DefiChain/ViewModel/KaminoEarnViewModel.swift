@@ -104,8 +104,8 @@ final class KaminoEarnViewModel: ObservableObject {
     /// - a failed per-vault state/metrics read keeps that row's cached values,
     ///   because without `tokensPerShare` the shares cannot be valued at all;
     /// - a failed `/pnl` read keeps the last figure read against the same share
-    ///   balance, and otherwise leaves the deposited and earned lines blank — the
-    ///   deposit is the value less the PnL, so it cannot be shown without one.
+    ///   balance; otherwise the earned line goes and Deposited shows the value,
+    ///   so a PnL outage never takes the holding off the card.
     ///
     /// An empty `/positions` response is a real "holds nothing" answer and is
     /// allowed to zero a row — the vault stays listed, since the user enabled it.
@@ -351,14 +351,15 @@ struct KaminoEarnRow: Identifiable, Equatable {
     let tokenAmount: Decimal
     /// 30-day APY as a fraction (`0.0391` = 3.91%), or `nil` to hide the row.
     let apy30d: Decimal?
-    /// Lifetime profit and loss in the underlying token, or `nil` to hide the
-    /// deposited and earned rows.
+    /// Lifetime profit and loss in the underlying token, or `nil` to hide the row.
     let pnlToken: Decimal?
 
-    /// What was deposited: the value less its lifetime PnL, truncated to the
-    /// token's precision; `nil` while the PnL is unknown.
-    var principalToken: Decimal? {
-        pnlToken.map { (tokenAmount - $0).truncated(toPlaces: descriptor.tokenDecimals) }
+    /// What the Deposited line shows: the value less its lifetime PnL, truncated
+    /// to the token's precision. Without a PnL it falls back to the value, so the
+    /// holding stays on the card while the earned line is hidden.
+    var depositedToken: Decimal {
+        guard let pnlToken else { return tokenAmount }
+        return (tokenAmount - pnlToken).truncated(toPlaces: descriptor.tokenDecimals)
     }
 
     /// Whether the user holds anything in this vault. What the card shows turns

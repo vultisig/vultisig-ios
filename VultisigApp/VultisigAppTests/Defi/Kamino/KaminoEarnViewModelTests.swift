@@ -173,7 +173,7 @@ final class KaminoEarnViewModelTests: XCTestCase {
         await viewModel.refresh(owner: owner)
 
         let row = try XCTUnwrap(viewModel.rows.first)
-        XCTAssertEqual(row.principalToken, Decimal(string: "1000"))
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1000"))
         XCTAssertEqual(
             row.tokenAmount,
             Decimal(string: "1053.604181"),
@@ -189,7 +189,7 @@ final class KaminoEarnViewModelTests: XCTestCase {
 
         await viewModel.refresh(owner: owner)
 
-        XCTAssertEqual(viewModel.rows.first?.principalToken, Decimal(string: "1057.104181"))
+        XCTAssertEqual(viewModel.rows.first?.depositedToken, Decimal(string: "1057.104181"))
     }
 
     /// Live PnL strings carry far more digits than the mint; the deposit is cut
@@ -202,12 +202,13 @@ final class KaminoEarnViewModelTests: XCTestCase {
 
         await viewModel.refresh(owner: owner)
 
-        XCTAssertEqual(viewModel.rows.first?.principalToken, Decimal(string: "999.999999"))
+        XCTAssertEqual(viewModel.rows.first?.depositedToken, Decimal(string: "999.999999"))
     }
 
     /// A deposit or withdrawal moves the PnL, so a figure read against another
     /// share balance cannot stand in for a failed read: subtracted from the new
-    /// value it would misstate the deposit, even push it below zero.
+    /// value it would misstate the deposit, even push it below zero. Deposited
+    /// falls back to the value instead.
     func testACachedPnlIsDroppedOnceTheShareBalanceHasMoved() async throws {
         try storage.setEnabled(true, descriptor: steakhouse, for: vault)
         service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
@@ -221,7 +222,7 @@ final class KaminoEarnViewModelTests: XCTestCase {
 
         let row = try XCTUnwrap(viewModel.rows.first)
         XCTAssertNil(row.pnlToken)
-        XCTAssertNil(row.principalToken)
+        XCTAssertEqual(row.depositedToken, row.tokenAmount)
     }
 
     /// With the share balance unchanged nothing was deposited, so value accrued
@@ -240,12 +241,12 @@ final class KaminoEarnViewModelTests: XCTestCase {
         let row = try XCTUnwrap(viewModel.rows.first)
         XCTAssertEqual(row.tokenAmount, Decimal(string: "1054.604181"))
         XCTAssertEqual(row.pnlToken, Decimal(string: "54.604181"))
-        XCTAssertEqual(row.principalToken, Decimal(string: "1000"))
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1000"))
     }
 
-    /// Without the PnL there is no telling how much of the value is interest,
-    /// and the value itself standing in for the deposit is the double count.
-    func testAnUnreadPnlLeavesTheDepositUnknownRatherThanTheValue() async throws {
+    /// A PnL outage must not take the holding off the card: Deposited shows the
+    /// value and only the earned line is hidden.
+    func testAnUnreadPnlFallsBackToTheValueRatherThanHidingTheHolding() async throws {
         try storage.setEnabled(true, descriptor: steakhouse, for: vault)
         service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
         let viewModel = makeViewModel()
@@ -253,7 +254,8 @@ final class KaminoEarnViewModelTests: XCTestCase {
         await viewModel.refresh(owner: owner)
 
         let row = try XCTUnwrap(viewModel.rows.first)
-        XCTAssertNil(row.principalToken)
+        XCTAssertNil(row.pnlToken)
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1053.604181"))
         XCTAssertTrue(row.hasPosition)
     }
 
