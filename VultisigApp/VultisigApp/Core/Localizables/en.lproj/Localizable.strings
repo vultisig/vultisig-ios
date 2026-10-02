@@ -648,7 +648,8 @@
 "inputPure" = "Pure";
 "inputs" = "Inputs";
 "insufficientBalance" = "Insufficient Balance";
-"insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
+"insufficientFundsAsset" = "Not enough %1$@: this send needs %2$@, you have %3$@";
+"insufficientFundsIncludingNetworkCosts" = "Not enough %1$@: this send needs %2$@ including network costs, you have %3$@";
 "invalidAddress" = "Invalid Address";
 "invalidAddressChain" = "This address is invalid for this chain.";
 "invalidAmount" = "Invalid amount";
