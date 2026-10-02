@@ -178,6 +178,25 @@ final class EVMSwapTxGuardTests: XCTestCase {
         }
     }
 
+    func testSigningCoinMustShareTokenContractWithPayloadSourceCoin() throws {
+        let swap = payload(provider: .oneInch, to: oneInchV6, native: false)
+        let otherToken = Coin(
+            asset: CoinMeta(chain: .ethereum, ticker: "USDT", logo: "logo", decimals: 6, priceProviderId: "guard-usdt", contractAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7", isNativeToken: false),
+            address: "0xFrom",
+            hexPublicKey: ""
+        )
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: otherToken)) {
+            XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
+        }
+
+        let sameTokenUppercased = Coin(
+            asset: CoinMeta(chain: .ethereum, ticker: "USDC", logo: "logo", decimals: 6, priceProviderId: "guard-false", contractAddress: swap.fromCoin.contractAddress.uppercased(), isNativeToken: false),
+            address: "0xFrom",
+            hexPublicKey: ""
+        )
+        XCTAssertNoThrow(try EVMSwapTxGuard.check(swap, signingCoin: sameTokenUppercased))
+    }
+
     // MARK: - Signing entry point
 
     func testSignerRefusesBeforeBuildingInputForBadRouter() {

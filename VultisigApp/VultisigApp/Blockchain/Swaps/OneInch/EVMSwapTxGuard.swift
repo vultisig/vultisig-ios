@@ -54,8 +54,11 @@ enum EVMSwapTxGuard {
         let tx = payload.quote.tx
 
         // The bounds below read the payload's coin, so it must be the coin the
-        // signed transaction is built for.
-        guard signingCoin.chain == chain, signingCoin.isNativeToken == payload.fromCoin.isNativeToken else {
+        // signed transaction is built for. The approval leg is built from the
+        // signing coin's contract, so the token must match, not just its kind.
+        guard signingCoin.chain == chain,
+              signingCoin.isNativeToken == payload.fromCoin.isNativeToken,
+              signingCoin.contractAddress.lowercased() == payload.fromCoin.contractAddress.lowercased() else {
             throw EVMSwapTxGuardError.coinMismatch
         }
 
