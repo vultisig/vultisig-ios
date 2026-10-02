@@ -48,17 +48,19 @@ enum SendCryptoLogic {
             return false
         }
 
-        return requiredAmount(coin: coin, amount: amount, sendMaxAmount: sendMaxAmount, fee: fee, gas: gas).raw
+        // UTXO and Cardano use the planned `fee` (sats / lovelaces);
+        // every other chain uses `gas` (per-unit cost).
+        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
+        return requiredAmount(coin: coin, amount: amount, sendMaxAmount: sendMaxAmount, networkFee: feeToUse).raw
             > coin.balanceRaw
     }
 
-    /// The raw amount of `coin` a send needs, and whether it includes the network fee.
+    /// The raw amount of `coin` a send needs with `networkFee` on top, and whether the fee counts.
     static func requiredAmount(
         coin: Coin,
         amount: String,
         sendMaxAmount: Bool,
-        fee: BigInt,
-        gas: BigInt
+        networkFee: BigInt
     ) -> (raw: BigInt, includesNetworkCosts: Bool) {
         let amountRaw = amountInRaw(coin: coin, amount: amount)
 
@@ -67,10 +69,7 @@ enum SendCryptoLogic {
             return (amountRaw, false)
         }
 
-        // UTXO and Cardano use the planned `fee` (sats / lovelaces);
-        // every other chain uses `gas` (per-unit cost).
-        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
-        return (amountRaw + feeToUse, true)
+        return (amountRaw + networkFee, true)
     }
 
     /// Existential deposit for the coin's chain, or `.zero` for chains that
