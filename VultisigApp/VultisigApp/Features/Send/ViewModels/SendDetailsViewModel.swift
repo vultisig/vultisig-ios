@@ -997,6 +997,8 @@ final class SendDetailsViewModel {
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
             guard isStillOn(requestedAsset) else { return }
+            gas = .zero
+            fee = .zero
             errorMessage = error.localizedDescription
         }
     }

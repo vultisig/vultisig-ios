@@ -48,6 +48,23 @@ enum SuiConstants {
     }
 }
 
+enum SuiSpendableCoinError: Error, LocalizedError, Equatable {
+    case nativeSelectionCannotCoverAmountAndGas
+    case tokenSelectionCannotCoverAmount
+    case tokenSelectionCannotCoverGas
+
+    var errorDescription: String? {
+        switch self {
+        case .nativeSelectionCannotCoverAmountAndGas:
+            return "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas".localized
+        case .tokenSelectionCannotCoverAmount:
+            return "suiSpendableCoinErrorTokenSelectionCannotCoverAmount".localized
+        case .tokenSelectionCannotCoverGas:
+            return "suiSpendableCoinErrorTokenSelectionCannotCoverGas".localized
+        }
+    }
+}
+
 /// Exact, normalization-aware matching for SUI coin-object types.
 ///
 /// SUI coin objects are identified by a fully-qualified `address::module::struct`
@@ -295,6 +312,42 @@ enum SuiCoinType {
                 .prefix(SuiConstants.gasCandidateObjectCount)
         )
         return selectedTokens + gasCandidates
+    }
+
+    /// Validates the bounded object set that will be embedded in a Sui payload.
+    ///
+    /// This is the form/preparation-time gate: portfolio totals are not enough
+    /// if the actual spendable objects selected for the transaction cannot pay
+    /// what WalletCore will sign. Native `PaySui` can merge its selected native
+    /// inputs, so those inputs must cover amount + signed gas. Token `Pay` can
+    /// merge token inputs for the amount, but gas must be paid by one native SUI
+    /// object, so both conditions are checked separately.
+    static func validateSpendablePayloadCoins(
+        _ coins: [[String: String]],
+        isNativeToken: Bool,
+        contractAddress: String,
+        amount: BigInt,
+        gasBudget: BigInt
+    ) throws {
+        if isNativeToken {
+            let nativeObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
+            guard covers(nativeObjects, target: amount + gasBudget) else {
+                throw SuiSpendableCoinError.nativeSelectionCannotCoverAmountAndGas
+            }
+            return
+        }
+
+        let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
+        let tokenObjects = coins.filter {
+            let coinType = $0["coinType"] ?? .empty
+            return matches(coinType, tokenType) && !isNative(coinType)
+        }
+        guard covers(tokenObjects, target: amount) else {
+            throw SuiSpendableCoinError.tokenSelectionCannotCoverAmount
+        }
+        guard selectGasObject(coins, gasBudget: gasBudget) != nil else {
+            throw SuiSpendableCoinError.tokenSelectionCannotCoverGas
+        }
     }
 
     /// Selects the native SUI coin object that pays gas for a token

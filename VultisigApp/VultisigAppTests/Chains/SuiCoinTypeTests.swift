@@ -335,4 +335,123 @@ final class SuiCoinTypeTests: XCTestCase {
             dryRunCoins.compactMap { $0["objectID"] }
         )
     }
+
+    // MARK: - Spendable payload gating
+
+    func testSpendableGateRejectsPositiveNativeSelectionThatCannotCoverAmountPlusGas() {
+        let selected = SuiCoinType.selectPayloadCoins(
+            [suiObject("0xsmall", balance: "1000")],
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(900),
+            gasBudget: BigInt(200)
+        )
+
+        XCTAssertThrowsError(
+            try SuiCoinType.validateSpendablePayloadCoins(
+                selected,
+                isNativeToken: true,
+                contractAddress: "",
+                amount: BigInt(900),
+                gasBudget: BigInt(200)
+            )
+        ) { error in
+            XCTAssertEqual(error as? SuiSpendableCoinError, .nativeSelectionCannotCoverAmountAndGas)
+        }
+    }
+
+    func testSpendableGateAllowsPositiveNativeSelectionCoveringAmountPlusGas() {
+        let selected = SuiCoinType.selectPayloadCoins(
+            [suiObject("0xcover", balance: "1200")],
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(900),
+            gasBudget: BigInt(200)
+        )
+
+        XCTAssertNoThrow(
+            try SuiCoinType.validateSpendablePayloadCoins(
+                selected,
+                isNativeToken: true,
+                contractAddress: "",
+                amount: BigInt(900),
+                gasBudget: BigInt(200)
+            )
+        )
+    }
+
+    func testSpendableGateRejectsTokenSelectionThatCannotCoverAmount() {
+        let selected = SuiCoinType.selectPayloadCoins(
+            [
+                suiObject("0xgas", balance: "3000000"),
+                ["coinType": bridgedCoin, "objectID": "0xtoken", "balance": "100"]
+            ],
+            isNativeToken: false,
+            contractAddress: bridgedCoin,
+            amount: BigInt(200),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        XCTAssertThrowsError(
+            try SuiCoinType.validateSpendablePayloadCoins(
+                selected,
+                isNativeToken: false,
+                contractAddress: bridgedCoin,
+                amount: BigInt(200),
+                gasBudget: BigInt(3_000_000)
+            )
+        ) { error in
+            XCTAssertEqual(error as? SuiSpendableCoinError, .tokenSelectionCannotCoverAmount)
+        }
+    }
+
+    func testSpendableGateRejectsTokenSelectionWhenNoSingleNativeObjectCanPayGas() {
+        let selected = SuiCoinType.selectPayloadCoins(
+            [
+                suiObject("0xgas1", balance: "2000000"),
+                suiObject("0xgas2", balance: "2000000"),
+                ["coinType": bridgedCoin, "objectID": "0xtoken", "balance": "1000"]
+            ],
+            isNativeToken: false,
+            contractAddress: bridgedCoin,
+            amount: BigInt(200),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        XCTAssertThrowsError(
+            try SuiCoinType.validateSpendablePayloadCoins(
+                selected,
+                isNativeToken: false,
+                contractAddress: bridgedCoin,
+                amount: BigInt(200),
+                gasBudget: BigInt(3_000_000)
+            )
+        ) { error in
+            XCTAssertEqual(error as? SuiSpendableCoinError, .tokenSelectionCannotCoverGas)
+        }
+    }
+
+    func testSpendableGateAllowsTokenSelectionWithCoveringTokenObjectsAndGasObject() {
+        let selected = SuiCoinType.selectPayloadCoins(
+            [
+                suiObject("0xgas", balance: "3000000"),
+                ["coinType": bridgedCoin, "objectID": "0xtoken1", "balance": "100"],
+                ["coinType": bridgedCoin, "objectID": "0xtoken2", "balance": "200"]
+            ],
+            isNativeToken: false,
+            contractAddress: bridgedCoin,
+            amount: BigInt(250),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        XCTAssertNoThrow(
+            try SuiCoinType.validateSpendablePayloadCoins(
+                selected,
+                isNativeToken: false,
+                contractAddress: bridgedCoin,
+                amount: BigInt(250),
+                gasBudget: BigInt(3_000_000)
+            )
+        )
+    }
 }
