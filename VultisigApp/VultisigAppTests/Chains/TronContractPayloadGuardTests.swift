@@ -80,33 +80,12 @@ final class TronContractPayloadGuardTests: XCTestCase {
 
     // MARK: - TransferAssetContract
 
-    func testMatchingAssetTransferIsAccepted() throws {
-        let asset = TronTransferAssetContractPayload(toAddress: recipient, ownerAddress: trx.address, amount: "7", assetName: "1002000")
-        let payload = makePayload(coin: usdt, toAddress: recipient, toAmount: 7, asset: asset)
-
-        let input = try signingInput(payload)
-
-        guard case .transferAsset(let contract) = input.transaction.contractOneof else {
-            return XCTFail("expected transferAsset contract")
-        }
-        XCTAssertEqual(contract.amount, 7)
-        XCTAssertEqual(contract.toAddress, recipient)
-    }
-
-    func testAssetTransferMismatchesAreRefused() {
-        let wrongRecipient = TronTransferAssetContractPayload(toAddress: attacker, ownerAddress: trx.address, amount: "7", assetName: "1002000")
-        let wrongAmount = TronTransferAssetContractPayload(toAddress: recipient, ownerAddress: trx.address, amount: "70", assetName: "1002000")
-        let wrongOwner = TronTransferAssetContractPayload(toAddress: recipient, ownerAddress: attacker, amount: "7", assetName: "1002000")
-
-        for asset in [wrongRecipient, wrongAmount, wrongOwner] {
-            assertRefused(makePayload(coin: usdt, toAddress: recipient, toAmount: 7, asset: asset))
-        }
-    }
-
-    func testAssetTransferShownAsTrxIsRefused() {
+    func testTrc10TransferIsRefusedWhateverIsDisplayed() {
         let asset = TronTransferAssetContractPayload(toAddress: recipient, ownerAddress: trx.address, amount: "7", assetName: "1002000")
 
-        assertRefused(makePayload(coin: trx, toAddress: recipient, toAmount: 7, asset: asset))
+        for coin in [usdt, trx] {
+            assertRefused(makePayload(coin: coin, toAddress: recipient, toAmount: 7, asset: asset))
+        }
     }
 
     // MARK: - TriggerSmartContract: TRC-20 transfer

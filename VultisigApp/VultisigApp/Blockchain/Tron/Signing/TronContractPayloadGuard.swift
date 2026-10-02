@@ -31,13 +31,10 @@ enum TronContractPayloadGuard {
         try requireAmount(keysignPayload, contract.amount)
     }
 
-    static func check(_ keysignPayload: KeysignPayload, contract: TronTransferAssetContractPayload) throws {
-        try requireOwner(keysignPayload, contract.ownerAddress)
-        guard !keysignPayload.coin.isNativeToken else {
-            throw failure("a TRC-10 transfer must not be shown as TRX")
-        }
-        try requireRecipient(keysignPayload, contract.toAddress)
-        try requireAmount(keysignPayload, contract.amount)
+    /// The initiator displays a TRC-10 transfer by ticker only, so `assetName`
+    /// cannot be bound to the displayed coin; refuse rather than co-sign it.
+    static func rejectTrc10Transfer() throws {
+        throw failure("TRC-10 transfers are not supported")
     }
 
     static func check(_ keysignPayload: KeysignPayload, contract: TronTriggerSmartContractPayload) throws {
