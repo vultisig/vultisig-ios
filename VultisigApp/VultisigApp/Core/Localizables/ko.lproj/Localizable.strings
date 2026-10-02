@@ -648,7 +648,8 @@
 "inputPure" = "순수값";
 "inputs" = "입력";
 "insufficientBalance" = "잔액 부족";
-"insufficientGasTokenError" = "%@ 전송을 위한 가스 수수료를 충당할 %@이(가) 부족합니다";
+"insufficientFundsAsset" = "%1$@ 부족: 이 전송에는 %2$@이(가) 필요하지만 보유량은 %3$@입니다";
+"insufficientFundsIncludingNetworkCosts" = "%1$@ 부족: 이 전송에는 네트워크 비용을 포함해 %2$@이(가) 필요하지만 보유량은 %3$@입니다";
 "invalidAddress" = "유효하지 않은 주소";
 "invalidAddressChain" = "이 주소는 이 체인에 유효하지 않습니다.";
 "invalidAmount" = "유효하지 않은 금액";

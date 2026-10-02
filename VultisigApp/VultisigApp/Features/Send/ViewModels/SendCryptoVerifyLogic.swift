@@ -160,15 +160,9 @@ struct SendCryptoVerifyLogic {
             return BalanceValidationResult(isValid: true, errorMessage: nil)
         }
         if tx.coin.isNativeToken {
-            if tx.sendMaxAmount {
-                if tx.fee > balance {
-                    return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
-                }
-            } else {
-                let totalAmount = amount + tx.fee
-                if totalAmount > balance {
-                    return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
-                }
+            let required = tx.sendMaxAmount ? tx.fee : amount + tx.fee
+            if required > balance {
+                return insufficientFunds(coin: tx.coin, required: required, available: balance, includesNetworkCosts: true)
             }
 
             // Existential-deposit guard for chains that reap the *sender*
@@ -202,11 +196,11 @@ struct SendCryptoVerifyLogic {
             // native LUNC, so they fall through to the generic non-native branch.
             let totalAmount = tx.sendMaxAmount ? tx.fee : amount + tx.fee
             if totalAmount > balance {
-                return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+                return insufficientFunds(coin: tx.coin, required: totalAmount, available: balance, includesNetworkCosts: true)
             }
         } else {
             if amount > balance {
-                return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+                return insufficientFunds(coin: tx.coin, required: amount, available: balance, includesNetworkCosts: false)
             }
 
             // Cardano native-token sends must fund both the recipient output
@@ -227,13 +221,29 @@ struct SendCryptoVerifyLogic {
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
                 let nativeBalance = nativeToken.balanceRaw
                 if tx.fee > nativeBalance {
-                    let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
-                    return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
+                    return insufficientFunds(coin: nativeToken, required: tx.fee, available: nativeBalance, includesNetworkCosts: true)
                 }
             }
         }
 
         return BalanceValidationResult(isValid: true, errorMessage: nil)
+    }
+
+    private func insufficientFunds(
+        coin: Coin,
+        required: BigInt,
+        available: BigInt,
+        includesNetworkCosts: Bool
+    ) -> BalanceValidationResult {
+        BalanceValidationResult(
+            isValid: false,
+            errorMessage: InsufficientFundsMessage.text(
+                coin: coin,
+                required: required,
+                available: available,
+                includesNetworkCosts: includesNetworkCosts
+            )
+        )
     }
 
     // MARK: - UTXO Validation

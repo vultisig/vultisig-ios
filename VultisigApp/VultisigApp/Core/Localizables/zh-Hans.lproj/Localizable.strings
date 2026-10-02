@@ -648,7 +648,8 @@
 "inputPure" = "纯值";
 "inputs" = "输入";
 "insufficientBalance" = "余额不足";
-"insufficientGasTokenError" = "没有足够的 %@ 来支付发送 %@ 的燃料费";
+"insufficientFundsAsset" = "%1$@ 不足：此次发送需要 %2$@，您有 %3$@";
+"insufficientFundsIncludingNetworkCosts" = "%1$@ 不足：此次发送需要 %2$@（含网络费用），您有 %3$@";
 "invalidAddress" = "无效地址";
 "invalidAddressChain" = "此地址对于此链无效";
 "invalidAmount" = "无效金额";

@@ -190,7 +190,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertTrue(vm.hasBalanceError)
         XCTAssertTrue(vm.showAlert)
         XCTAssertFalse(vm.isAmountCorrect)
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: eth, required: tx.amountInRaw + tx.fee, available: eth.balanceRaw, includesNetworkCosts: true
+        ))
     }
 
     /// Past `Int64` — about 9.223 on an 18-decimal asset — reading the balance
@@ -213,7 +215,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         vm.validateBalanceWithFee()
 
         XCTAssertTrue(vm.hasBalanceError)
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: eth, required: tx.amountInRaw + tx.fee, available: eth.balanceRaw, includesNetworkCosts: true
+        ))
     }
 
     func testValidateBalanceWithFeeSetsErrorForSendMaxWhenFeeExceedsBalance() throws {
@@ -237,7 +241,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         vm.validateBalanceWithFee()
 
         XCTAssertTrue(vm.hasBalanceError)
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: eth, required: tx.fee, available: eth.balanceRaw, includesNetworkCosts: true
+        ))
     }
 
     /// The exactness has to survive the FEE term too: it is `amount + fee`, not
@@ -276,7 +282,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         vm.validateBalanceWithFee()
 
         XCTAssertTrue(vm.hasBalanceError, "a send one wei past the real balance must not clear Verify")
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: eth, required: tx.amountInRaw + tx.fee, available: eth.balanceRaw, includesNetworkCosts: true
+        ))
     }
 
     // MARK: - validateBalanceWithFee — Terra Classic bank denom vs CW20/IBC
@@ -294,7 +302,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
 
         XCTAssertTrue(vm.hasBalanceError,
                       "USTC bank-denom must validate amount + fee against the token balance")
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: ustc, required: tx.amountInRaw + tx.fee, available: ustc.balanceRaw, includesNetworkCosts: true
+        ))
     }
 
     func testValidateBalanceCW20TerraClassicTokenIsNotTaxValidated() throws {
@@ -410,7 +420,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         vm.validateBalanceWithFee()
 
         XCTAssertTrue(vm.hasBalanceError, "regular sends keep the balance check")
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: usdc, required: tx.amountInRaw, available: .zero, includesNetworkCosts: false
+        ))
     }
 
     // MARK: - validateSecurityScanner
@@ -1361,7 +1373,12 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.transaction.amount, "2", "an unaffordable amount must not be rewritten")
         XCTAssertFalse(vm.transaction.amountWasAutoAdjusted)
         XCTAssertTrue(vm.hasBalanceError)
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: eth,
+            required: vm.transaction.amountInRaw + vm.transaction.fee,
+            available: eth.balanceRaw,
+            includesNetworkCosts: true
+        ))
         XCTAssertTrue(vm.signButtonDisabled)
     }
 
@@ -1406,8 +1423,12 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.transaction.amount, SendCryptoLogic.amountString(coin: ada, raw: BigInt(1_300_000)),
                        "precondition: the clamp ran and landed below the 1.4 ADA floor")
         XCTAssertTrue(vm.hasBalanceError, "the min-send floor must be re-checked against the clamped value")
-        XCTAssertNotEqual(vm.errorMessage, "walletBalanceExceededError",
-                          "the failure is the protocol floor, not the balance")
+        let minimum = try XCTUnwrap(Chain.cardano.minimumSendAmount)
+        XCTAssertEqual(
+            vm.errorMessage,
+            String(format: "cardanoMinimumSendAmountError".localized, ada.decimal(for: minimum).description),
+            "the failure is the protocol floor, not the balance"
+        )
         XCTAssertTrue(vm.signButtonDisabled)
     }
 

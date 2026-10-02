@@ -648,7 +648,8 @@
 "inputPure" = "Čisto";
 "inputs" = "Ulazi";
 "insufficientBalance" = "Nedovoljno sredstava";
-"insufficientGasTokenError" = "Nedovoljno %@ za pokrivanje naknada za plin za slanje %@";
+"insufficientFundsAsset" = "Nedovoljno %1$@: ovo slanje treba %2$@, imate %3$@";
+"insufficientFundsIncludingNetworkCosts" = "Nedovoljno %1$@: ovo slanje treba %2$@ uključujući mrežne troškove, imate %3$@";
 "invalidAddress" = "Nevažeća adresa";
 "invalidAddressChain" = "Ova adresa je nevažeća za ovu lance.";
 "invalidAmount" = "Nevažeći iznos";

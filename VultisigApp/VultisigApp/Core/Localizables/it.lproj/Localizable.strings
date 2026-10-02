@@ -648,7 +648,8 @@
 "inputPure" = "Puro";
 "inputs" = "Input";
 "insufficientBalance" = "Saldo insufficiente";
-"insufficientGasTokenError" = "Non c'è abbastanza %@ per coprire le commissioni gas per inviare %@";
+"insufficientFundsAsset" = "%1$@ insufficiente: questo invio richiede %2$@, hai %3$@";
+"insufficientFundsIncludingNetworkCosts" = "%1$@ insufficiente: questo invio richiede %2$@ inclusi i costi di rete, hai %3$@";
 "invalidAddress" = "Indirizzo non valido";
 "invalidAddressChain" = "Questo indirizzo è invalido per questa catena.";
 "invalidAmount" = "Importo non valido";
