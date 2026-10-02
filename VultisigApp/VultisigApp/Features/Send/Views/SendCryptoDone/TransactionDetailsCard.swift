@@ -14,11 +14,22 @@ import SwiftUI
 
 struct TransactionDetailsCard: View {
     @Environment(\.router) var router
+    @Environment(\.paidNetworkFeeCrypto) private var environmentPaidNetworkFeeCrypto
     @EnvironmentObject var appViewModel: AppViewModel
 
     @Query private var addressBookItems: [AddressBookItem]
 
     let input: TransactionDonePayload
+    let paidNetworkFeeCrypto: String?
+
+    init(input: TransactionDonePayload, paidNetworkFeeCrypto: String? = nil) {
+        self.input = input
+        self.paidNetworkFeeCrypto = paidNetworkFeeCrypto
+    }
+
+    private var effectivePaidNetworkFeeCrypto: String? {
+        paidNetworkFeeCrypto ?? environmentPaidNetworkFeeCrypto
+    }
 
     /// Show the "add to address book" button only for sends to a
     /// destination that isn't already a vault (`toAlias == nil`) and isn't
@@ -79,9 +90,9 @@ struct TransactionDetailsCard: View {
             separator
 
             SendCryptoTransactionDetailsRow(
-                title: "estNetworkFee",
-                description: input.fee.crypto,
-                secondaryDescription: input.fee.fiat
+                title: effectivePaidNetworkFeeCrypto == nil ? "estNetworkFee" : "fee",
+                description: effectivePaidNetworkFeeCrypto ?? input.fee.crypto,
+                secondaryDescription: effectivePaidNetworkFeeCrypto == nil ? input.fee.fiat : nil
             )
 
             Group {
@@ -120,5 +131,16 @@ struct TransactionDetailsCard: View {
             .overlay(Theme.radius.pill.shape.stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
             .fixedSize()
         }
+    }
+}
+
+private struct PaidNetworkFeeCryptoKey: EnvironmentKey {
+    static let defaultValue: String? = nil
+}
+
+extension EnvironmentValues {
+    var paidNetworkFeeCrypto: String? {
+        get { self[PaidNetworkFeeCryptoKey.self] }
+        set { self[PaidNetworkFeeCryptoKey.self] = newValue }
     }
 }

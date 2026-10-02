@@ -27,6 +27,10 @@ protocol DoneStatusPoller {
     /// avoids a flash of empty state before the first poll lands.
     var initialStatus: TransactionStatus { get }
 
+    /// Actual paid network fee surfaced by the poller, once known. `nil`
+    /// means callers should keep showing their estimate.
+    var paidNetworkFeeCrypto: String? { get }
+
     /// Begin the polling work. Idempotent — safe to call from
     /// `onAppear` on a view that may already be live.
     func start(onStatus: @escaping (TransactionStatus) -> Void)
@@ -36,19 +40,26 @@ protocol DoneStatusPoller {
     func stop()
 }
 
+extension DoneStatusPoller {
+    var paidNetworkFeeCrypto: String? { nil }
+}
+
 @MainActor
 final class DoneStatusService: ObservableObject {
     @Published private(set) var status: TransactionStatus
+    @Published private(set) var paidNetworkFeeCrypto: String?
 
     private let poller: any DoneStatusPoller
 
     init(poller: any DoneStatusPoller) {
         self.poller = poller
         self.status = poller.initialStatus
+        self.paidNetworkFeeCrypto = poller.paidNetworkFeeCrypto
     }
 
     func start() {
         poller.start { [weak self] newStatus in
+            self?.paidNetworkFeeCrypto = self?.poller.paidNetworkFeeCrypto
             self?.status = newStatus
         }
     }

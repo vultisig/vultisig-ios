@@ -79,6 +79,19 @@ struct TonTransactionStatusProvider: TransactionStatusProvider {
             )
         }
 
-        return TransactionStatusResult(status: .confirmed, blockNumber: nil, confirmations: nil)
+        return TransactionStatusResult(
+            status: .confirmed,
+            blockNumber: nil,
+            confirmations: nil,
+            paidNetworkFeeBaseUnits: plainNanotonFee(transaction.totalFees)
+        )
+    }
+
+    private func plainNanotonFee(_ fee: String?) -> String? {
+        guard let fee, !fee.isEmpty else { return nil }
+        let isPlainDecimal = fee.unicodeScalars.allSatisfy { scalar in
+            (48...57).contains(scalar.value)
+        }
+        return isPlainDecimal ? fee : nil
     }
 }

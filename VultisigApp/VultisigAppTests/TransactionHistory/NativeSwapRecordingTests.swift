@@ -9,6 +9,7 @@
 //  forever for a swap action Midgard never indexes.
 //
 
+import SwiftData
 import XCTest
 @testable import VultisigApp
 
@@ -110,5 +111,89 @@ final class NativeSwapRecordingTests: XCTestCase {
         for memo in ["=<:BTC.BTC:bc1q", "m=<:1RUNE:2BTC:0", "SECURE+:thor1", "+:BTC.BTC", "-:BTC.BTC:10000", "=", "", nil] {
             XCTAssertFalse(NativeSwapTrackingService.isMarketSwapMemo(memo), memo ?? "nil")
         }
+    }
+
+    func testTonPaidNetworkFeeReplacesEstimatedHistoryFee() throws {
+        let storage = try makeHistoryStorage()
+        let row = Self.tonRow(feeCrypto: "0.05 TON", feeFiat: "$0.15")
+        try storage.save(row)
+
+        try storage.updateStatus(
+            txHash: row.txHash,
+            pubKeyECDSA: row.pubKeyECDSA,
+            status: .successful,
+            feeCrypto: "0.012345678 TON"
+        )
+
+        let updated = try XCTUnwrap(storage.fetchTransaction(
+            txHash: row.txHash,
+            pubKeyECDSA: row.pubKeyECDSA
+        ))
+        XCTAssertEqual(updated.status, .successful)
+        XCTAssertEqual(updated.feeCrypto, "0.012345678 TON")
+        XCTAssertEqual(updated.feeFiat, "")
+    }
+
+    func testMissingTonPaidNetworkFeeKeepsEstimatedHistoryFee() throws {
+        let storage = try makeHistoryStorage()
+        let row = Self.tonRow(feeCrypto: "0.05 TON", feeFiat: "$0.15")
+        try storage.save(row)
+
+        try storage.updateStatus(
+            txHash: row.txHash,
+            pubKeyECDSA: row.pubKeyECDSA,
+            status: .successful
+        )
+
+        let updated = try XCTUnwrap(storage.fetchTransaction(
+            txHash: row.txHash,
+            pubKeyECDSA: row.pubKeyECDSA
+        ))
+        XCTAssertEqual(updated.status, .successful)
+        XCTAssertEqual(updated.feeCrypto, "0.05 TON")
+        XCTAssertEqual(updated.feeFiat, "$0.15")
+    }
+
+    private func makeHistoryStorage() throws -> TransactionHistoryStorage {
+        let schema = Schema([TransactionHistoryItem.self, SwapTrackingMetadata.self])
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: [configuration])
+        Self.retainedContainers.append(container)
+        return TransactionHistoryStorage(modelContext: container.mainContext)
+    }
+
+    private nonisolated(unsafe) static var retainedContainers: [ModelContainer] = []
+
+    private static func tonRow(feeCrypto: String, feeFiat: String) -> TransactionHistoryData {
+        TransactionHistoryData(
+            id: UUID(),
+            txHash: "ton-hash",
+            approveTxHash: nil,
+            pubKeyECDSA: "vault-pubkey",
+            type: .send,
+            status: .inProgress,
+            chainRawValue: Chain.ton.rawValue,
+            coinTicker: "TON",
+            coinLogo: "ton",
+            coinChainLogo: nil,
+            amountCrypto: "1 TON",
+            amountFiat: "$3.00",
+            fromAddress: "from",
+            toAddress: "to",
+            toCoinTicker: nil,
+            toCoinLogo: nil,
+            toCoinChainLogo: nil,
+            toAmountCrypto: nil,
+            toAmountFiat: nil,
+            swapProvider: nil,
+            feeCrypto: feeCrypto,
+            feeFiat: feeFiat,
+            network: Chain.ton.name,
+            explorerLink: "https://example.com/tx/ton-hash",
+            createdAt: Date(),
+            completedAt: nil,
+            estimatedTime: ChainStatusConfig.config(for: .ton).estimatedTime,
+            errorMessage: nil
+        )
     }
 }

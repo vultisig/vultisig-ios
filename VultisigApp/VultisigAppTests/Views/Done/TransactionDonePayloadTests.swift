@@ -182,4 +182,36 @@ final class TransactionDonePayloadTests: XCTestCase {
         XCTAssertEqual(a, b)
         XCTAssertEqual(a.hashValue, b.hashValue)
     }
+
+    @MainActor
+    func testDoneStatusServicePublishesPaidNetworkFeeWhenPollerConfirms() {
+        let poller = PaidFeePoller()
+        let service = DoneStatusService(poller: poller)
+
+        XCTAssertNil(service.paidNetworkFeeCrypto)
+
+        service.start()
+        poller.confirm(with: "0.05 TON")
+
+        XCTAssertEqual(service.status, .confirmed)
+        XCTAssertEqual(service.paidNetworkFeeCrypto, "0.05 TON")
+    }
+}
+
+@MainActor
+private final class PaidFeePoller: DoneStatusPoller {
+    let initialStatus: TransactionStatus = .pending
+    private(set) var paidNetworkFeeCrypto: String?
+    private var onStatus: ((TransactionStatus) -> Void)?
+
+    func start(onStatus: @escaping (TransactionStatus) -> Void) {
+        self.onStatus = onStatus
+    }
+
+    func stop() {}
+
+    func confirm(with fee: String) {
+        paidNetworkFeeCrypto = fee
+        onStatus?(.confirmed)
+    }
 }

@@ -13,6 +13,7 @@ import SwiftUI
 @MainActor
 final class ChainPoller: DoneStatusPoller {
     let initialStatus: TransactionStatus
+    var paidNetworkFeeCrypto: String? { viewModel.paidNetworkFeeCrypto }
 
     private let viewModel: TransactionStatusViewModel
     private var observationTask: Task<Void, Never>?

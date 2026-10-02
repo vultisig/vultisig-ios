@@ -520,9 +520,21 @@ final class TransactionHistoryRecorder {
 
     // MARK: - Update Status
 
-    func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus, errorMessage: String? = nil) {
+    func updateStatus(
+        txHash: String,
+        pubKeyECDSA: String,
+        status: TransactionHistoryStatus,
+        errorMessage: String? = nil,
+        feeCrypto: String? = nil
+    ) {
         do {
-            try storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status, errorMessage: errorMessage)
+            try storage.updateStatus(
+                txHash: txHash,
+                pubKeyECDSA: pubKeyECDSA,
+                status: status,
+                errorMessage: errorMessage,
+                feeCrypto: feeCrypto
+            )
         } catch {
             logger.error("Update status failed for txHash=\(txHash): \(error)")
         }
