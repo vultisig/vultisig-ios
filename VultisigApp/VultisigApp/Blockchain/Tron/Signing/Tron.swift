@@ -53,6 +53,7 @@ enum TronHelper {
 
         // Dispatch based on contract payload type (dApp integration)
         if let transferPayload = keysignPayload.tronTransferContractPayload {
+            try TronContractPayloadGuard.check(keysignPayload, contract: transferPayload)
             return try buildTronTransferContractInput(
                 payload: transferPayload,
                 timestamp: timestamp, expiration: expiration,
@@ -64,6 +65,7 @@ enum TronHelper {
         }
 
         if let smartContractPayload = keysignPayload.tronTriggerSmartContractPayload {
+            try TronContractPayloadGuard.check(keysignPayload, contract: smartContractPayload)
             return try buildTronSmartContractInput(
                 payload: smartContractPayload,
                 timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
@@ -75,6 +77,7 @@ enum TronHelper {
         }
 
         if let assetPayload = keysignPayload.tronTransferAssetContractPayload {
+            try TronContractPayloadGuard.check(keysignPayload, contract: assetPayload)
             return try buildTronTransferAssetInput(
                 payload: assetPayload,
                 timestamp: timestamp, expiration: expiration, gasEstimation: signedFeeLimit,
@@ -432,16 +435,7 @@ enum TronHelper {
             if let tokenId = payload.tokenId {
                 $0.tokenID = Int64(tokenId)
             }
-            if let data = payload.data {
-                // Handle hex or UTF-8 data
-                if data.hasPrefix("0x") {
-                    $0.data = Data(hexString: String(data.dropFirst(2))) ?? Data()
-                } else if data.allSatisfy({ $0.isHexDigit }) {
-                    $0.data = Data(hexString: data) ?? Data()
-                } else {
-                    $0.data = Data(data.utf8)
-                }
-            }
+            $0.data = TronContractPayloadGuard.contractData(from: payload.data)
         }
 
         let input = try TronSigningInput.with {

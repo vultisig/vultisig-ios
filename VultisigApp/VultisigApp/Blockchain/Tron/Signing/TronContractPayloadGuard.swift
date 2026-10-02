@@ -1,0 +1,169 @@
+//
+//  TronContractPayloadGuard.swift
+//  VultisigApp
+//
+
+import BigInt
+import Foundation
+import WalletCore
+
+/// Binds a dApp TRON contract payload to the payload's top-level fields before
+/// it is signed.
+///
+/// Verify shows `coin`, `toAddress` and `toAmount`, but `TronHelper` signs the
+/// typed contract verbatim. Initiator and co-signer both run this on the
+/// signing path, so a payload whose display fields disagree with the bytes it
+/// signs fails keysign instead of being co-signed. Mirrors the Android guard so
+/// every platform refuses the same payloads.
+enum TronContractPayloadGuard {
+
+    private static let trc20TransferSelector = Data([0xa9, 0x05, 0x9c, 0xbb])
+    private static let abiWordLength = 32
+    private static let addressLength = 21
+    private static let addressPrefix: UInt8 = 0x41
+
+    static func check(_ keysignPayload: KeysignPayload, contract: TronTransferContractPayload) throws {
+        try requireOwner(keysignPayload, contract.ownerAddress)
+        guard keysignPayload.coin.isNativeToken else {
+            throw failure("a TRX transfer must be signed as native TRX")
+        }
+        try requireRecipient(keysignPayload, contract.toAddress)
+        try requireAmount(keysignPayload, contract.amount)
+    }
+
+    static func check(_ keysignPayload: KeysignPayload, contract: TronTransferAssetContractPayload) throws {
+        try requireOwner(keysignPayload, contract.ownerAddress)
+        guard !keysignPayload.coin.isNativeToken else {
+            throw failure("a TRC-10 transfer must not be shown as TRX")
+        }
+        try requireRecipient(keysignPayload, contract.toAddress)
+        try requireAmount(keysignPayload, contract.amount)
+    }
+
+    static func check(_ keysignPayload: KeysignPayload, contract: TronTriggerSmartContractPayload) throws {
+        try requireOwner(keysignPayload, contract.ownerAddress)
+        let callValue = try optionalAmount(contract.callValue, field: "call value")
+        let callTokenValue = try optionalAmount(contract.callTokenValue, field: "TRC-10 call value")
+        guard callTokenValue == 0 else {
+            throw failure("a contract call must not attach TRC-10 tokens")
+        }
+
+        let calldata = contractData(from: contract.data)
+        guard let transfer = decodeTrc20Transfer(calldata) else {
+            guard callValue == 0 || keysignPayload.coin.isNativeToken else {
+                throw failure("a contract call attaching TRX must be shown as TRX")
+            }
+            try requireRecipient(keysignPayload, contract.contractAddress)
+            guard callValue == keysignPayload.toAmount else {
+                throw failure("the contract call value does not match the displayed amount")
+            }
+            return
+        }
+
+        guard callValue == 0 else {
+            throw failure("a TRC-20 transfer must not attach TRX")
+        }
+        guard !keysignPayload.coin.isNativeToken,
+              let tokenBytes = addressBytes(keysignPayload.coin.contractAddress),
+              tokenBytes == addressBytes(contract.contractAddress) else {
+            throw failure("the TRC-20 contract does not match the displayed token")
+        }
+        guard let displayedRecipient = addressBytes(keysignPayload.toAddress),
+              displayedRecipient == transfer.recipient else {
+            throw failure("the TRC-20 transfer recipient does not match the displayed recipient")
+        }
+        guard transfer.amount == keysignPayload.toAmount else {
+            throw failure("the TRC-20 transfer amount does not match the displayed amount")
+        }
+    }
+
+    /// The exact bytes `TronHelper` places in `TriggerSmartContract.data`;
+    /// the guard decodes the same bytes the signer signs.
+    static func contractData(from data: String?) -> Data {
+        guard let data else { return Data() }
+        if data.hasPrefix("0x") {
+            return Data(hexString: String(data.dropFirst(2))) ?? Data()
+        }
+        if data.allSatisfy({ $0.isHexDigit }) {
+            return Data(hexString: data) ?? Data()
+        }
+        return Data(data.utf8)
+    }
+
+    // MARK: - Checks
+
+    private static func requireOwner(_ keysignPayload: KeysignPayload, _ owner: String) throws {
+        guard let ownerBytes = addressBytes(owner),
+              ownerBytes == addressBytes(keysignPayload.coin.address) else {
+            throw failure("the contract owner is not the vault address")
+        }
+    }
+
+    private static func requireRecipient(_ keysignPayload: KeysignPayload, _ recipient: String) throws {
+        guard let signed = addressBytes(recipient),
+              signed == addressBytes(keysignPayload.toAddress) else {
+            throw failure("the contract recipient does not match the displayed recipient")
+        }
+    }
+
+    private static func requireAmount(_ keysignPayload: KeysignPayload, _ amount: String) throws {
+        guard let signed = parseAmount(amount), signed == keysignPayload.toAmount else {
+            throw failure("the contract amount does not match the displayed amount")
+        }
+    }
+
+    // MARK: - Decoding
+
+    private struct Trc20Transfer {
+        let recipient: Data
+        let amount: BigInt
+    }
+
+    private static func decodeTrc20Transfer(_ data: Data) -> Trc20Transfer? {
+        let bytes = Data(data)
+        guard bytes.count >= 4 + 2 * abiWordLength,
+              bytes.prefix(4) == trc20TransferSelector else {
+            return nil
+        }
+        let recipientWord = bytes.subdata(in: 4..<(4 + abiWordLength))
+        let amountWord = bytes.subdata(in: (4 + abiWordLength)..<(4 + 2 * abiWordLength))
+        return Trc20Transfer(
+            recipient: Data([addressPrefix]) + recipientWord.suffix(20),
+            amount: BigInt(BigUInt(amountWord))
+        )
+    }
+
+    /// 21-byte `0x41`-prefixed form of a Base58Check or hex TRON address.
+    private static func addressBytes(_ address: String) -> Data? {
+        let trimmed = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hex = trimmed.hasPrefix("0x") ? String(trimmed.dropFirst(2)) : trimmed
+        let bytes: Data?
+        if hex.count == addressLength * 2, hex.allSatisfy({ $0.isHexDigit }) {
+            bytes = Data(hexString: hex)
+        } else {
+            bytes = Base58.decode(string: trimmed)
+        }
+        guard let bytes, bytes.count == addressLength, bytes.first == addressPrefix else { return nil }
+        return bytes
+    }
+
+    private static func parseAmount(_ value: String) -> BigInt? {
+        guard value.allSatisfy({ $0.isASCII && $0.isNumber }), !value.isEmpty,
+              let amount = BigInt(value), amount <= BigInt(Int64.max) else {
+            return nil
+        }
+        return amount
+    }
+
+    private static func optionalAmount(_ value: String?, field: String) throws -> BigInt {
+        guard let value else { return 0 }
+        guard let amount = parseAmount(value) else {
+            throw failure("the contract \(field) is not a valid amount")
+        }
+        return amount
+    }
+
+    private static func failure(_ reason: String) -> HelperError {
+        HelperError.runtimeError("TRON contract payload rejected: \(reason)")
+    }
+}

@@ -128,7 +128,10 @@ enum SigningGoldenFactory {
         memo: String? = nil,
         swapPayload: SwapPayload? = nil,
         approvePayload: ERC20ApprovePayload? = nil,
-        signData: SignData? = nil
+        signData: SignData? = nil,
+        tronTransferContractPayload: TronTransferContractPayload? = nil,
+        tronTriggerSmartContractPayload: TronTriggerSmartContractPayload? = nil,
+        tronTransferAssetContractPayload: TronTransferAssetContractPayload? = nil
     ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
@@ -143,9 +146,9 @@ enum SigningGoldenFactory {
             vaultLocalPartyID: "localPartyID",
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
-            tronTransferContractPayload: nil,
-            tronTriggerSmartContractPayload: nil,
-            tronTransferAssetContractPayload: nil,
+            tronTransferContractPayload: tronTransferContractPayload,
+            tronTriggerSmartContractPayload: tronTriggerSmartContractPayload,
+            tronTransferAssetContractPayload: tronTransferAssetContractPayload,
             qbtcClaimPayload: nil,
             isQbtcClaim: false,
             skipBroadcast: false,
