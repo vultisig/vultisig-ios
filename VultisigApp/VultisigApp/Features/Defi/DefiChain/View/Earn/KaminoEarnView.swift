@@ -193,8 +193,8 @@ struct KaminoEarnView<EmptyState: View>: View {
     @ViewBuilder
     private func depositedRow(for row: KaminoEarnRow) -> some View {
         figureRow(
-            label: String(format: "kaminoEarnDeposited".localized, tokenString(row.tokenAmount, in: row)),
-            fiat: fiatString(fiatValue(for: row)),
+            label: String(format: "kaminoEarnDeposited".localized, tokenString(row.depositedToken, in: row)),
+            fiat: fiatString(fiatValue(row.depositedToken, in: row)),
             valueColor: Theme.colors.textPrimary
         )
     }

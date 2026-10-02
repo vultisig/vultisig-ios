@@ -160,6 +160,105 @@ final class KaminoEarnViewModelTests: XCTestCase {
         XCTAssertEqual(row.coin?.ticker, "USDC")
     }
 
+    // MARK: - Deposited vs earned
+
+    /// The value already contains the interest, so showing it as "Deposited"
+    /// beside "Earned" counted the interest twice.
+    func testDepositedIsTheValueLessTheInterestItAlreadyContains() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1000"))
+        XCTAssertEqual(
+            row.tokenAmount,
+            Decimal(string: "1053.604181"),
+            "What the position is worth, which the totals add up, still includes the interest."
+        )
+    }
+
+    func testALossIsAddedBackOntoTheValueToRecoverTheDeposit() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "-3.5")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        XCTAssertEqual(viewModel.rows.first?.depositedToken, Decimal(string: "1057.104181"))
+    }
+
+    /// Live PnL strings carry far more digits than the mint; the deposit is cut
+    /// to the token's precision, never rounded up past what was put in.
+    func testDepositedIsTruncatedToTheTokenPrecision() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.6041814")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        XCTAssertEqual(viewModel.rows.first?.depositedToken, Decimal(string: "999.999999"))
+    }
+
+    /// A deposit or withdrawal moves the PnL, so a figure read against another
+    /// share balance cannot stand in for a failed read: subtracted from the new
+    /// value it would misstate the deposit, even push it below zero. Deposited
+    /// falls back to the value instead.
+    func testACachedPnlIsDroppedOnceTheShareBalanceHasMoved() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+        await viewModel.refresh(owner: owner)
+
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "10")]
+        service.pnl = [:]
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertNil(row.pnlToken)
+        XCTAssertEqual(row.depositedToken, row.tokenAmount)
+    }
+
+    /// With the share balance unchanged nothing was deposited, so value accrued
+    /// since the cached read is interest: the deposit holds and Earned grows.
+    func testACachedPnlCarriesForwardInterestAccruedSinceItWasRead() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "53.604181")]
+        let viewModel = makeViewModel()
+        await viewModel.refresh(owner: owner)
+
+        service.infos[steakhouse.address] = KaminoFixtures.makeSteakhouseInfo(tokensPerShare: "1.0546041812651029025")
+        service.pnl = [:]
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertEqual(row.tokenAmount, Decimal(string: "1054.604181"))
+        XCTAssertEqual(row.pnlToken, Decimal(string: "54.604181"))
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1000"))
+    }
+
+    /// A PnL outage must not take the holding off the card: Deposited shows the
+    /// value and only the earned line is hidden.
+    func testAnUnreadPnlFallsBackToTheValueRatherThanHidingTheHolding() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertNil(row.pnlToken)
+        XCTAssertEqual(row.depositedToken, Decimal(string: "1053.604181"))
+        XCTAssertTrue(row.hasPosition)
+    }
+
     // MARK: - Failure discipline
 
     func testFailedPositionsReadKeepsTheLastKnownRows() async throws {
@@ -517,16 +616,20 @@ private enum KaminoFixtures {
         tokenPriceUsd: decimal("73.900426936257595")
     )
 
-    static let steakhouseInfo = KaminoVaultInfo(
-        descriptor: KaminoVaultRegistry.steakhouseUSDC,
-        name: "Steakhouse USDC",
-        minDeposit: KaminoTokenAmount(baseUnits: 100_000, decimals: 6),
-        minWithdraw: KaminoShareAmount(baseUnits: 1_000, decimals: 6),
-        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu",
-        apy30d: decimal("0.03994268764493801732"),
-        tokensPerShare: rate("1.0536041812651029025"),
-        tokenPriceUsd: decimal("0.99987")
-    )
+    static let steakhouseInfo = makeSteakhouseInfo(tokensPerShare: "1.0536041812651029025")
+
+    static func makeSteakhouseInfo(tokensPerShare: String) -> KaminoVaultInfo {
+        KaminoVaultInfo(
+            descriptor: KaminoVaultRegistry.steakhouseUSDC,
+            name: "Steakhouse USDC",
+            minDeposit: KaminoTokenAmount(baseUnits: 100_000, decimals: 6),
+            minWithdraw: KaminoShareAmount(baseUnits: 1_000, decimals: 6),
+            lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu",
+            apy30d: decimal("0.03994268764493801732"),
+            tokensPerShare: rate(tokensPerShare),
+            tokenPriceUsd: decimal("0.99987")
+        )
+    }
 
     /// Fixture parsers. Force-unwrapped on purpose: a fixture that stops parsing
     /// is a broken test, not a runtime condition to tolerate.
