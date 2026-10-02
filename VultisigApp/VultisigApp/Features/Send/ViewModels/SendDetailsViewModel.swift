@@ -1220,7 +1220,18 @@ final class SendDetailsViewModel {
             isStakingOperation: isStakingOperation
         )
         if exceeded {
-            setAmountError(message: "walletBalanceExceededError")
+            let required = SendCryptoLogic.requiredAmount(
+                coin: coin,
+                amount: amount,
+                sendMaxAmount: sendMaxAmount,
+                networkFee: SendCryptoLogic.displayFee(coin: coin, gas: gas, fee: fee)
+            )
+            setAmountError(message: InsufficientFundsMessage.text(
+                coin: coin,
+                required: required.raw,
+                available: coin.balanceRaw,
+                includesNetworkCosts: required.includesNetworkCosts
+            ))
             return false
         }
 
@@ -1310,7 +1321,12 @@ final class SendDetailsViewModel {
         let nativeBalance = nativeToken.balanceRaw
         guard fee > nativeBalance else { return true }
 
-        setGeneralError(message: String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker))
+        setGeneralError(message: InsufficientFundsMessage.text(
+            coin: nativeToken,
+            required: fee,
+            available: nativeBalance,
+            includesNetworkCosts: true
+        ))
         return false
     }
 

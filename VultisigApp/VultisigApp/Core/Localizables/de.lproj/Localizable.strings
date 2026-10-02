@@ -648,7 +648,8 @@
 "inputPure" = "Pur";
 "inputs" = "Eingaben";
 "insufficientBalance" = "Unzureichendes Guthaben";
-"insufficientGasTokenError" = "Nicht genug %@ um die Gasgebühren für das Senden von %@ zu decken";
+"insufficientFundsAsset" = "Nicht genug %1$@: Diese Überweisung benötigt %2$@, Sie haben %3$@";
+"insufficientFundsIncludingNetworkCosts" = "Nicht genug %1$@: Diese Überweisung benötigt %2$@ inklusive Netzwerkkosten, Sie haben %3$@";
 "invalidAddress" = "Ungültige Adresse";
 "invalidAddressChain" = "Diese Adresse ist für diese Kette ungültig.";
 "invalidAmount" = "Ungültiger Betrag";
