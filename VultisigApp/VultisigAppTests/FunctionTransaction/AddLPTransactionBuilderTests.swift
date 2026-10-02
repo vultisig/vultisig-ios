@@ -405,6 +405,39 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(payload.routerAddress, AddLPFixture.mayaEthRouter)
     }
 
+    /// The router the deposit was built against must still be Maya's router
+    /// when it is signed; a rotated one is refused rather than paired with the
+    /// current vault.
+    func testAMayaErc20DepositIsRefusedWhenTheRouterRotated() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: "0xretiredrouter"
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter
+                ))
+            )
+            XCTFail("a rotated router must not be signed")
+        } catch is HelperError {
+        }
+    }
+
     /// Maya's pool list names its CACAO side `balance_cacao`; it must still
     /// decode into the shared pool model, status included.
     func testMayaPoolsDecodeIntoThePoolModel() throws {
