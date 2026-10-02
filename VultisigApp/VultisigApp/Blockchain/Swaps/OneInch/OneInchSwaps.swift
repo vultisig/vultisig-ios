@@ -14,7 +14,7 @@ struct OneInchSwaps {
 
     func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> [String] {
         let inputData = try getPreSignedInputData(
-            quote: payload.quote,
+            payload: payload,
             keysignPayload: keysignPayload,
             nonceOffset: nonceOffset
         )
@@ -28,7 +28,7 @@ struct OneInchSwaps {
 
     func getSignedTransaction(payload: GenericSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], nonceOffset: Int64) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(
-            quote: payload.quote,
+            payload: payload,
             keysignPayload: keysignPayload,
             nonceOffset: nonceOffset
         )
@@ -43,7 +43,9 @@ struct OneInchSwaps {
 
 private extension OneInchSwaps {
 
-    func getPreSignedInputData(quote: EVMQuote, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> Data {
+    func getPreSignedInputData(payload: GenericSwapPayload, keysignPayload: KeysignPayload, nonceOffset: Int64) throws -> Data {
+        try EVMSwapTxGuard.check(payload, signingCoin: keysignPayload.coin)
+        let quote = payload.quote
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
