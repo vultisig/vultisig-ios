@@ -24,8 +24,10 @@ extension CoinAction {
     /// `MsgDeposit`.
     static var memoChains: [Chain] = [
         .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .gaiaChain, .osmosis,
-        // THORChain LP supported chains
-        .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
+        // THORChain LP supported chains (bitcoin and ethereum also pool on Maya)
+        .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple,
+        // MayaChain LP supported chains the app can sign a memo deposit for
+        .arbitrum, .dash, .zcash
     ]
 
     static var defiChains: [Chain] = [

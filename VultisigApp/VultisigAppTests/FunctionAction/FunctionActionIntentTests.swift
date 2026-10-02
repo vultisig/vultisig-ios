@@ -274,6 +274,64 @@ final class FunctionActionIntentTests: XCTestCase {
         }
     }
 
+    /// Add Maya LP maps to its own intent, carrying the entry asset.
+    func testAddMayaLPMapsToTheEntryAsset() {
+        let usdc = AddLPFixture.usdc()
+
+        guard case .addMayaLP(let mappedCoin) = FunctionAction.addMayaLP.transactionType(
+            coin: usdc,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Add Maya LP must map to its own intent")
+        }
+
+        XCTAssertEqual(mappedCoin, usdc.toCoinMeta())
+    }
+
+    /// A MayaChain pool credits a CACAO account the memo has to name, so CACAO
+    /// is part of what the operation needs.
+    func testAddMayaLPIntentResolvesTheAssetAndCacao() {
+        let bitcoin = AddLPFixture.bitcoin()
+        let coins = FunctionTransactionType.addMayaLP(coin: bitcoin.toCoinMeta()).coins
+
+        XCTAssertEqual(coins.first, bitcoin.toCoinMeta())
+        XCTAssertTrue(
+            coins.contains { $0.chain == .mayaChain && $0.isNativeToken },
+            "an LP deposit without a CACAO account signs a different memo entirely"
+        )
+        XCTAssertFalse(coins.contains { $0.chain == .thorChain })
+    }
+
+    /// Add Maya LP is offered exactly on the L1 chains MayaChain pools and the
+    /// app can sign a memo-bearing deposit for, and never on MayaChain itself.
+    func testAddMayaLPIsOfferedOnTheMayaPooledL1Chains() {
+        let mayaChains: [Chain] = [.bitcoin, .ethereum, .arbitrum, .dash, .zcash]
+        for chain in mayaChains {
+            let coin = FunctionActionFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertTrue(
+                FunctionAction.offered(on: coin).contains(.addMayaLP),
+                "\(chain.rawValue) no longer offers Add Maya LP"
+            )
+        }
+        let others: [Chain] = [.bitcoinCash, .litecoin, .dogecoin, .avalanche, .bscChain, .base, .ripple, .mayaChain, .thorChain]
+        for chain in others {
+            let coin = FunctionActionFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertFalse(
+                FunctionAction.offered(on: coin).contains(.addMayaLP),
+                "\(chain.rawValue) must not offer Add Maya LP"
+            )
+        }
+    }
+
+    /// The chains only MayaChain pools open Add Maya LP directly, with no
+    /// THORChain action beside it.
+    func testMayaOnlyChainsOfferNoThorchainLP() {
+        for chain in [Chain.arbitrum, .dash, .zcash] {
+            let coin = FunctionActionFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertEqual(FunctionAction.offered(on: coin), [.addMayaLP], "\(chain.rawValue)")
+        }
+    }
+
     func testWithdrawSecuredAssetMapsToItsIntent() {
         guard case .withdrawSecuredAsset(let mappedCoin) = FunctionAction.withdrawSecuredAsset
             .transactionType(coin: Self.makeRune(), nodeAddress: nil) else {

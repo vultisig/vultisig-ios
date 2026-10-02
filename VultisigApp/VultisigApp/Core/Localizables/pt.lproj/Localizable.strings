@@ -5,6 +5,7 @@
 "activeNodes" = "Nós Ativos";
 "activeVaults" = "Cofres ativos";
 "add" = "Adicionar";
+"Add Maya LP" = "Adicionar LP Maya";
 "Add THORChain LP" = "Adicionar LP THORChain";
 "addAddress" = "Adicionar endereço";
 "addAtLeastNMoreDevices" = "Adicione pelo menos mais %d dispositivos";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ não encontrado no vault )";
 "assets" = "Ativos";
 "assetsLoadFailed" = "Não foi possível carregar os ativos. Verifique sua conexão e tente novamente.";
-"asymmetricDeposit" = "Depósito Assimétrico";
-"asymmetricDepositInfo" = "Você pode depositar apenas CACAO ou apenas o ativo. A Maya equilibrará automaticamente sua posição.";
 "atLeastOneDevice" = "Pelo menos um dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Habilitar";
 "enableAll" = "Ativar todas";
 "enableBiometricsFastSigning" = "Ativar biometria assinatura rápida";
+"enableMayaChain" = "Ativar MayaChain";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "enablePushNotifications" = "Ativar notificações push";
 "enableThorchain" = "Ativar THORChain";
@@ -547,6 +547,7 @@
 "from" = "De";
 "fullyDilutedValuation" = "Avaliação totalmente diluída";
 "function" = "função";
+"functionActionAddMayaLpSubtitle" = "Adicione liquidez a um pool da MayaChain";
 "functionActionAddThorLpSubtitle" = "Adicione liquidez a um pool da THORChain";
 "functionActionCustomSubtitle" = "Envie uma transação com um memo personalizado";
 "functionActionIbcSubtitle" = "Transfira ativos para outra cadeia IBC";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "Taxa total máx.";
 "mayaCacaoStakingHaltedWarning" = "O staking de CACAO está temporariamente indisponível porque a MAYAChain está pausada. Tente novamente quando a rede for retomada.";
 "mayaCacaoStakingUnavailableWarning" = "Não foi possível verificar a disponibilidade do staking na MAYAChain. Tente novamente mais tarde.";
+"mayaChainNotEnabledForLP" = "MayaChain não está habilitado neste cofre ou falta o endereço do ativo pareado. Por favor, habilite MayaChain para usar este recurso.";
+"mayaInboundAddressNotFound" = "%@ não é atualmente suportado pela MayaChain.";
 "memo" = "Memorando";
 "memoLabel" = "Memo";
 "mergeCoins" = "Mesclar moedas";

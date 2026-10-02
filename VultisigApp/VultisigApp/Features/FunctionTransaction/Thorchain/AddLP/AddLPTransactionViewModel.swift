@@ -60,7 +60,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     let vault: Vault
     /// Whose pools this deposit joins — `.thorChain` or `.mayaChain`. Decides
     /// where the memo is signed and, for an L1-side deposit, whose inbound
-    /// vault receives the funds.
+    /// vault receives the funds and whose pool list is offered.
     let protocolChain: Chain
     let poolSource: PoolSource
 
@@ -71,8 +71,9 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// recomputed rather than remembered, which is the fix this migration
     /// exists for.
     @Published private(set) var coin: Coin
-    /// The address credited on the other side of the pool, or nil for a
-    /// MayaChain deposit, which takes no paired address.
+    /// The address credited on the other side of the pool: the vault's
+    /// protocol-chain address when an L1 asset is deposited, and its address on
+    /// the pool's chain when the protocol's own asset is.
     @Published private(set) var pairedAddress: String?
     @Published private(set) var pools: [THORChainAsset] = []
     @Published private(set) var poolsState: PoolsState = .idle
@@ -83,7 +84,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     @Published var amountField = FormField(label: "amount".localized)
     @Published var percentageSelected: Double?
     @Published var isLoading: Bool = false
-    @Published private(set) var isEnablingThorchain: Bool = false
+    @Published private(set) var isEnablingProtocolChain: Bool = false
 
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [amountField]
@@ -119,9 +120,8 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         poolSource: PoolSource,
         vault: Vault,
         prefillsFullBalance: Bool,
-        resolveInboundAddresses: @escaping ThorchainLPDestinationResolver.InboundAddressFetch
-            = ThorchainLPDestinationResolver.live,
-        fetchPools: @escaping PoolsFetch = { try await ThorchainService.shared.fetchLPPools() },
+        resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
+        fetchPools: PoolsFetch? = nil,
         approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver(),
         locale: Locale = .current
     ) {
@@ -129,13 +129,23 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         self.protocolChain = protocolChain
         self.poolSource = poolSource
         self.vault = vault
-        self.resolveInboundAddresses = resolveInboundAddresses
-        self.fetchPools = fetchPools
+        // Each protocol reads its OWN node: a deposit routed to the other
+        // protocol's vault is stranded, so the pairing is decided here once
+        // rather than left to each caller.
+        let defaultInbound: ThorchainLPDestinationResolver.InboundAddressFetch
+        let defaultPools: PoolsFetch
+        if protocolChain == .mayaChain {
+            defaultInbound = { bypassCache in await ThorchainLPDestinationResolver.liveMaya(bypassCache) }
+            defaultPools = { try await MayachainService.shared.fetchLPPools() }
+        } else {
+            defaultInbound = { bypassCache in await ThorchainLPDestinationResolver.live(bypassCache) }
+            defaultPools = { try await ThorchainService.shared.fetchLPPools() }
+        }
+        self.resolveInboundAddresses = resolveInboundAddresses ?? defaultInbound
+        self.fetchPools = fetchPools ?? defaultPools
         self.approvalResolver = approvalResolver
         self.locale = locale
-        // MayaChain credits the depositing address itself, so a paired address
-        // would name an account the memo has no slot for.
-        self.pairedAddress = protocolChain == .mayaChain ? nil : pairedCoin?.address
+        self.pairedAddress = pairedCoin?.address
         self.percentageSelected = prefillsFullBalance ? 100 : nil
         // NOT `prefillsFullBalance`. A pre-filled 100% is a convenience, not a
         // send-max: `sendMaxAmount` changes how a UTXO transaction is planned
@@ -178,11 +188,15 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     /// A deposit opened from a chain's action list, where no position exists
     /// yet and the pool is the first thing the user chooses.
-    static func chain(coin: Coin, vault: Vault) -> AddLPTransactionViewModel {
+    static func chain(
+        coin: Coin,
+        protocolChain: Chain = .thorChain,
+        vault: Vault
+    ) -> AddLPTransactionViewModel {
         AddLPTransactionViewModel(
             coin: coin,
-            pairedCoin: vault.nativeCoin(for: .thorChain),
-            protocolChain: .thorChain,
+            pairedCoin: vault.nativeCoin(for: protocolChain),
+            protocolChain: protocolChain,
             poolSource: .chosen,
             vault: vault,
             // Deliberately not seeded. The chain's own gas asset pays the fee
@@ -231,41 +245,48 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     // MARK: - Pools
 
-    /// A THORChain pool credits liquidity to a RUNE account, which the memo has
-    /// to name — so a vault that holds no RUNE cannot deposit into one at all.
-    var isThorchainEnabled: Bool {
-        protocolChain != .thorChain || vault.nativeCoin(for: .thorChain) != nil
+    /// A pool credits liquidity to an account on the protocol's chain — RUNE or
+    /// CACAO — which the memo has to name, so a vault that holds none cannot
+    /// deposit into one at all.
+    var isProtocolChainEnabled: Bool {
+        vault.nativeCoin(for: protocolChain) != nil
     }
 
-    /// A THORChain LP add must name the paired account. Without this, the same
-    /// `+:POOL` prefix becomes an asymmetric add, which staged pools must not
+    /// An LP add must name the paired account. Without this, the same `+:POOL`
+    /// prefix becomes an asymmetric add, which neither protocol's form may
     /// silently enable.
-    var hasThorchainPairedAddress: Bool {
-        protocolChain != .thorChain || pairedAddress?.nilIfEmpty != nil
+    var hasPairedAddress: Bool {
+        pairedAddress?.nilIfEmpty != nil
     }
 
-    /// Adds RUNE to the vault so a THORChain deposit can name a paired address.
+    /// Localization key of the button that offers RUNE or CACAO.
+    var enableProtocolChainTitleKey: String {
+        protocolChain == .mayaChain ? "enableMayaChain" : "enableThorchain"
+    }
+
+    /// Adds RUNE or CACAO to the vault so a deposit can name a paired address.
     ///
     /// Carried over from the form this replaces, where it was the only way out
     /// of an otherwise unsubmittable screen. The paired address is re-read
     /// afterwards because it is what the new coin supplies.
-    func enableThorchain() async {
-        guard !isEnablingThorchain, !isThorchainEnabled else { return }
-        guard let runeMeta = TokensStore.TokenSelectionAssets.first(where: {
-            $0.chain == .thorChain && $0.isNativeToken
+    func enableProtocolChain() async {
+        guard !isEnablingProtocolChain, !isProtocolChainEnabled else { return }
+        let chain = protocolChain
+        guard let nativeMeta = TokensStore.TokenSelectionAssets.first(where: {
+            $0.chain == chain && $0.isNativeToken
         }) else { return }
 
-        isEnablingThorchain = true
-        defer { isEnablingThorchain = false }
+        isEnablingProtocolChain = true
+        defer { isEnablingProtocolChain = false }
 
         do {
-            try await CoinService.addToChain(assets: [runeMeta], to: vault)
+            try await CoinService.addToChain(assets: [nativeMeta], to: vault)
         } catch {
-            logger.error("Failed to enable THORChain for LP: \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to enable \(chain.name, privacy: .public) for LP: \(error.localizedDescription, privacy: .public)")
             return
         }
 
-        pairedAddress = vault.nativeCoin(for: .thorChain)?.address
+        pairedAddress = vault.nativeCoin(for: chain)?.address
     }
 
     /// Whether the form shows a pool picker at all.
@@ -307,7 +328,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
                 }
             } catch {
                 guard !Task.isCancelled, let self else { return }
-                logger.error("Failed to load THORChain LP pools: \(error.localizedDescription, privacy: .public)")
+                logger.error("Failed to load LP pools: \(error.localizedDescription, privacy: .public)")
                 self.pools = []
                 self.poolsState = .failed
             }
@@ -409,7 +430,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// Resolves the live destination, then builds. This is the Continue path.
     ///
     /// The recipient is fetched here with the cache bypassed, so the address
-    /// the transaction carries is the one THORChain is observing at the moment
+    /// the transaction carries is the one the protocol is observing at the moment
     /// the transaction is made — not the one that happened to be cached when
     /// the form opened, and not one resolved for an asset the user has since
     /// replaced. It re-reads the LP-actions pause flag in the same breath,
@@ -463,11 +484,11 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         // would be wrong in both directions.
         validateErrors()
         guard form.allSatisfy({ $0.valid }) else { return nil }
-        // A THORChain pool without a paired RUNE account is a memo for a
-        // DIFFERENT operation — `+:POOL` alone is an asymmetric, asset-only
-        // deposit — so an absent RUNE coin blocks rather than silently changing
-        // what is signed.
-        guard isThorchainEnabled, hasThorchainPairedAddress else { return nil }
+        // A pool without a paired account is a memo for a DIFFERENT operation —
+        // `+:POOL` alone is an asymmetric, single-sided deposit — so an absent
+        // RUNE/CACAO or asset address blocks rather than silently changing what
+        // is signed.
+        guard isProtocolChainEnabled, hasPairedAddress else { return nil }
         guard let poolName else { return nil }
         guard let amount = HumanDecimalAmount.parse(
             amountField.rawValue,
@@ -486,7 +507,8 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             poolName: poolName,
             pairedAddress: pairedAddress,
             sendMaxAmount: isMaxAmount,
-            toAddress: toAddress
+            toAddress: toAddress,
+            protocolChain: protocolChain
         )
     }
 
@@ -494,14 +516,6 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     var title: String {
         String(format: "addCoinLP".localized, coin.chain.name)
-    }
-
-    var showAsymmetricDepositInfo: Bool {
-        protocolChain == .mayaChain
-    }
-
-    var asymmetricDepositMessage: String {
-        "asymmetricDepositInfo".localized
     }
 
     /// Whether the pool list is still arriving.
@@ -516,8 +530,10 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     /// Why the deposit cannot proceed, or nil when nothing is wrong.
     var blockingMessage: String? {
-        if !isThorchainEnabled || !hasThorchainPairedAddress {
-            return "thorChainNotEnabledForLP".localized
+        if !isProtocolChainEnabled || !hasPairedAddress {
+            return protocolChain == .mayaChain
+                ? "mayaChainNotEnabledForLP".localized
+                : "thorChainNotEnabledForLP".localized
         }
         if let approvalError {
             return approvalError

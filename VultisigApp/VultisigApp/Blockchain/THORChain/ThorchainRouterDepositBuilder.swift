@@ -33,13 +33,20 @@ enum ThorchainRouterDepositBuilder {
     static func synthesizeRouterDeposit(
         tx: SendTransaction,
         approvalDecision: ERC20ApprovalDecision?,
-        thorchainService: ThorchainService = .shared
+        thorchainService: ThorchainService = .shared,
+        mayachainService: MayachainService = .shared
     ) async throws -> (swapPayload: SwapPayload?, approvePayload: ERC20ApprovePayload?) {
         guard let approveSpend = approvalQuery(for: tx) else {
             return (nil, nil)
         }
 
-        let inboundAddresses = await thorchainService.fetchThorchainInboundAddress()
+        // The router call names the inbound VAULT, which belongs to the
+        // protocol whose pool is joined: a MayaChain deposit marks itself, and
+        // reading THORChain's vault for it would strand the tokens.
+        let isMayaDeposit = tx.memoFunctionDictionary["protocol"] == AddLPTransactionBuilder.mayaProtocolMarker
+        let inboundAddresses = isMayaDeposit
+            ? ((try? await mayachainService.fetchInboundAddressOrThrow()) ?? [])
+            : await thorchainService.fetchThorchainInboundAddress()
         let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
         guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
@@ -75,7 +82,7 @@ enum ThorchainRouterDepositBuilder {
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
             isAffiliate: false
         )
-        let swapPayload: SwapPayload = tx.coin.chain == .mayaChain
+        let swapPayload: SwapPayload = tx.coin.chain == .mayaChain || isMayaDeposit
             ? .mayachain(thorchainSwapPayload)
             : .thorchain(thorchainSwapPayload)
         let approvePayload = try ERC20ApprovalDecision.approvePayload(signing: approveSpend, decision: approvalDecision)

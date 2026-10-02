@@ -140,6 +140,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .addMayaLP(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    AddLPTransactionScreen(
+                        viewModel: AddLPTransactionViewModel.chain(coin: coin, protocolChain: .mayaChain, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             case .removeLP(let position):
                 resolvingCoin(coinMeta: position.coin1) { coin1 in
                     RemoveLPTransactionScreen(

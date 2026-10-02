@@ -5,6 +5,7 @@
 "activeNodes" = "Nodi Attivi";
 "activeVaults" = "Vault attivi";
 "add" = "Aggiungi";
+"Add Maya LP" = "Aggiungi Maya LP";
 "Add THORChain LP" = "Aggiungi THORChain LP";
 "addAddress" = "Aggiungi indirizzo";
 "addAtLeastNMoreDevices" = "Aggiungi almeno %d altri dispositivi";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ non trovato nel vault )";
 "assets" = "Asset";
 "assetsLoadFailed" = "Impossibile caricare gli asset. Controlla la connessione e riprova.";
-"asymmetricDeposit" = "Deposito asimmetrico";
-"asymmetricDepositInfo" = "Puoi depositare solo CACAO o solo l'asset. Maya bilancerà automaticamente la tua posizione.";
 "atLeastOneDevice" = "Almeno un dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Abilitare";
 "enableAll" = "Attiva tutte";
 "enableBiometricsFastSigning" = "Abilita Biometrics Firma rapida";
+"enableMayaChain" = "Attiva MayaChain";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
 "enablePushNotifications" = "Attiva notifiche push";
 "enableThorchain" = "Attiva THORChain";
@@ -547,6 +547,7 @@
 "from" = "Da";
 "fullyDilutedValuation" = "Valutazione completamente diluita";
 "function" = "funzione";
+"functionActionAddMayaLpSubtitle" = "Aggiungi liquidità a una pool MayaChain";
 "functionActionAddThorLpSubtitle" = "Aggiungi liquidità a una pool THORChain";
 "functionActionCustomSubtitle" = "Invia una transazione con un memo personalizzato";
 "functionActionIbcSubtitle" = "Trasferisci asset su un'altra chain IBC";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "Commissione totale max.";
 "mayaCacaoStakingHaltedWarning" = "Lo staking di CACAO non è temporaneamente disponibile perché MAYAChain è sospesa. Riprova quando la rete riprenderà.";
 "mayaCacaoStakingUnavailableWarning" = "Impossibile verificare la disponibilità dello staking su MAYAChain. Riprova più tardi.";
+"mayaChainNotEnabledForLP" = "MayaChain non è abilitato su questo caveau oppure manca l'indirizzo dell'asset abbinato. Abilita MayaChain per utilizzare questa funzione.";
+"mayaInboundAddressNotFound" = "%@ non è attualmente supportato da MayaChain.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Unisci monete";
