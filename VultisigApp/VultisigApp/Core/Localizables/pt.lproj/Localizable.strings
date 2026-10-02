@@ -542,6 +542,7 @@
 "formInvalid" = "Formulário inválido";
 "formInvalidDefaultMessage" = "O formulário não é válido. Por favor, corrija os campos marcados com uma estrela vermelha.";
 "forwardTonAmount" = "Quantia GRAM Encaminhada";
+"tonNetworkDisplayName" = "TON (GRAM)";
 "foundActiveChainsSubtitle" = "Cada chain adicional aumenta o tempo para gerar seu cofre e a possibilidade de um tempo limite.";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "from" = "De";

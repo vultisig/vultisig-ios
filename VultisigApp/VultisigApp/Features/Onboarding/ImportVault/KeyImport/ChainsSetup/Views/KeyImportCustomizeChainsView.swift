@@ -33,7 +33,7 @@ struct KeyImportCustomizeChainsView: View {
         .onLoad { items = Chain.keyImportEnabledChains }
         .onChange(of: searchText) { _, newValue in
             items = newValue.isEmpty ? Chain.keyImportEnabledChains : Chain.keyImportEnabledChains.filter {
-                $0.name.localizedCaseInsensitiveContains(newValue) || $0.ticker.localizedCaseInsensitiveContains(newValue)
+                $0.displayName.localizedCaseInsensitiveContains(newValue) || $0.ticker.localizedCaseInsensitiveContains(newValue)
             }
         }
         .crossPlatformSheet(isPresented: $showDerivationSheet) {

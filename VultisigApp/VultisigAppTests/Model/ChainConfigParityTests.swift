@@ -33,7 +33,7 @@ final class ChainConfigParityTests: XCTestCase {
         let chainType: ChainType
         let banxaBlockchainCode: String
         let minimumSendAmount: BigInt?
-        var displayName: String?
+        var displayNameKey: String?
     }
 
     // Hard-coded ledger — one row per `Chain`, transcribed from the
@@ -67,7 +67,7 @@ final class ChainConfigParityTests: XCTestCase {
         .polkadot: ExpectedConfig(name: "Polkadot", ticker: "DOT", feeUnit: "DOT", swapAsset: "DOT", logo: "dot", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "DOT", minimumSendAmount: nil),
         .zksync: ExpectedConfig(name: "Zksync", ticker: "ZK", feeUnit: "Gwei", swapAsset: "ZK", logo: "zsync_era", chainID: 324, coinType: .zksync, chainType: .EVM, banxaBlockchainCode: "ZKSYNC", minimumSendAmount: nil),
         .dydx: ExpectedConfig(name: "Dydx", ticker: "ADYDX", feeUnit: "adydx", swapAsset: "DYDX", logo: "dydx", chainID: nil, coinType: .dydx, chainType: .Cosmos, banxaBlockchainCode: "DYDX", minimumSendAmount: nil),
-        .ton: ExpectedConfig(name: "Ton", ticker: "TON", feeUnit: "TON", swapAsset: "TON", logo: "ton", chainID: nil, coinType: .ton, chainType: .Ton, banxaBlockchainCode: "TON", minimumSendAmount: nil, displayName: "TON (GRAM)"),
+        .ton: ExpectedConfig(name: "Ton", ticker: "TON", feeUnit: "TON", swapAsset: "TON", logo: "ton", chainID: nil, coinType: .ton, chainType: .Ton, banxaBlockchainCode: "TON", minimumSendAmount: nil, displayNameKey: "tonNetworkDisplayName"),
         .osmosis: ExpectedConfig(name: "Osmosis", ticker: "UOSMO", feeUnit: "uosmo", swapAsset: "OSMO", logo: "osmo", chainID: nil, coinType: .osmosis, chainType: .Cosmos, banxaBlockchainCode: "OSMOSIS", minimumSendAmount: nil),
         .terra: ExpectedConfig(name: "Terra", ticker: "ULUNA", feeUnit: "uluna", swapAsset: "LUNA", logo: "terra", chainID: nil, coinType: .terraV2, chainType: .Cosmos, banxaBlockchainCode: "LUNA", minimumSendAmount: nil),
         .terraClassic: ExpectedConfig(name: "TerraClassic", ticker: "ULUNC", feeUnit: "uluna", swapAsset: "LUNC", logo: "terraclassic", chainID: nil, coinType: .terra, chainType: .Cosmos, banxaBlockchainCode: "LUNC", minimumSendAmount: nil),
@@ -112,7 +112,7 @@ final class ChainConfigParityTests: XCTestCase {
 
     func testDisplayNameParity() {
         for (chain, expected) in Self.expected {
-            XCTAssertEqual(chain.displayName, expected.displayName ?? expected.name, "displayName mismatch for \(chain)")
+            XCTAssertEqual(chain.displayName, expected.displayNameKey?.localized ?? expected.name, "displayName mismatch for \(chain)")
         }
     }
 

@@ -542,6 +542,7 @@
 "formInvalid" = "Obrazac nije valjan";
 "formInvalidDefaultMessage" = "Obrazac nije valjan. Molimo ispravite polja označena crvenom zvjezdicom.";
 "forwardTonAmount" = "Iznos prosljeđenog GRAM-a";
+"tonNetworkDisplayName" = "TON (GRAM)";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "from" = "Od";

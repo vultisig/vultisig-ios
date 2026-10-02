@@ -542,6 +542,7 @@
 "formInvalid" = "Formulario no válido";
 "formInvalidDefaultMessage" = "El formulario no es válido. Por favor, corrija los campos marcados con una estrella roja.";
 "forwardTonAmount" = "Monto de GRAM Reenviado";
+"tonNetworkDisplayName" = "TON (GRAM)";
 "foundActiveChainsSubtitle" = "Cada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de un tiempo de espera agotado.";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
 "from" = "De";

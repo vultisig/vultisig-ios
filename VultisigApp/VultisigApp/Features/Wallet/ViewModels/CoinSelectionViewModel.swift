@@ -25,7 +25,7 @@ class CoinSelectionViewModel: ObservableObject {
         } else {
             let assets = groupedAssets
                 .filter { (chain, tokens) in
-                    chain.name.lowercased().contains(searchText.lowercased()) ||
+                    chain.displayName.lowercased().contains(searchText.lowercased()) ||
                     tokens.contains { $0.ticker.lowercased().contains(searchText.lowercased()) }
                 }
                 .map { $0.key }

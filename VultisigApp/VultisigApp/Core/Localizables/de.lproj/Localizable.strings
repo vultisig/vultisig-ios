@@ -542,6 +542,7 @@
 "formInvalid" = "Formular ungültig";
 "formInvalidDefaultMessage" = "Das Formular ist ungültig. Bitte korrigieren Sie die mit einem roten Stern markierten Felder.";
 "forwardTonAmount" = "Weitergeleiteter GRAM-Betrag";
+"tonNetworkDisplayName" = "TON (GRAM)";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain erhöht die Zeit zur Generierung Ihres Tresors und die Möglichkeit einer Zeitüberschreitung.";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
 "from" = "Von";
