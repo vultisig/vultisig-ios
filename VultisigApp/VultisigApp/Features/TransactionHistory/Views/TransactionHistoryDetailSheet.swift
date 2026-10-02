@@ -289,7 +289,7 @@ struct TransactionHistoryDetailSheet: View {
             }
 
             Separator().opacity(0.2)
-            detailRow(title: "network".localized, value: transaction.network)
+            detailRow(title: "network".localized, value: transaction.networkDisplayName)
         }
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)

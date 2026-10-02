@@ -41,7 +41,7 @@ struct LimitAssetRow: View {
         SwapAssetCard<LimitFocusField>(
             label: kind.labelKey.localized,
             chainLogo: asset.chainLogo,
-            chainName: asset.chain.name,
+            chainName: asset.chain.displayName,
             onTapChain: onPickAsset,
             coinLogo: asset.logo,
             // No chain badge on a native asset (its icon already is the chain) —

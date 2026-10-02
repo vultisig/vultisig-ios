@@ -55,7 +55,7 @@ struct SwapChainCell: View {
     }
 
     var title: some View {
-        Text(chain.name)
+        Text(chain.displayName)
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textPrimary)
     }

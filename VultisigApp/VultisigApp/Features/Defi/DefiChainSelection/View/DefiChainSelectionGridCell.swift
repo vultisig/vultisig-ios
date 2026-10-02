@@ -16,7 +16,7 @@ struct DefiChainSelectionGridCell: View {
 
     var body: some View {
         AssetSelectionGridCell(
-            name: chain.name,
+            name: chain.displayName,
             ticker: chain.ticker,
             logo: chain.logo,
             isSelected: $isSelected

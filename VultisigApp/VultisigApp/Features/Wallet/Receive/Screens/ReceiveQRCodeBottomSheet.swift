@@ -24,7 +24,7 @@ struct ReceiveQRCodeBottomSheet: View {
     }
 
     var coinName: String {
-        isNativeCoin ? coin.chain.name : coin.ticker
+        isNativeCoin ? coin.chain.displayName : coin.ticker
     }
 
     var body: some View {

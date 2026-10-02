@@ -126,7 +126,7 @@ struct ReceiveChainSelectionRowView: View {
     }
 
     var nameText: some View {
-        Text(chain.name)
+        Text(chain.displayName)
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textPrimary)
     }

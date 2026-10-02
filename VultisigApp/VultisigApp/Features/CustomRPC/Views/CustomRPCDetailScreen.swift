@@ -113,7 +113,7 @@ struct CustomRPCDetailScreen: View {
                     if await viewModel.save() {
                         bannerText = String(
                             format: "customRPCModifiedSuccess".localized,
-                            viewModel.chain.name
+                            viewModel.chain.displayName
                         )
                         try? await Task.sleep(for: .seconds(1.2))
                         router.navigateBack()

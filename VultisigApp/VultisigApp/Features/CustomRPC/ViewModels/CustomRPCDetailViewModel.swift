@@ -52,7 +52,7 @@ final class CustomRPCDetailViewModel: ObservableObject {
 
     /// Toolbar title, e.g. "Ethereum RPC".
     var screenTitle: String {
-        String(format: "customRPCScreenTitle".localized, chain.name)
+        String(format: "customRPCScreenTitle".localized, chain.displayName)
     }
 
     /// The hardcoded default endpoint for this chain, shown in the read-only

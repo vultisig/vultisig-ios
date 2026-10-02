@@ -50,7 +50,7 @@ struct CoinTokenInfoView: View {
         if let price {
             entries.append(.price(price))
         }
-        entries.append(.network(coin.chain.name))
+        entries.append(.network(coin.chain.displayName))
 
         // Native coins have no contract to show — their `contractAddress` is
         // either empty or a chain-internal identifier, not something to copy.

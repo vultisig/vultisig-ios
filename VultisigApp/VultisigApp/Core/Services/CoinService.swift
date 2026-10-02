@@ -17,7 +17,7 @@ enum CoinServiceError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .chainNotEnabledForKeyImport(let chain):
-            return String(format: "coinServiceChainNotEnabledForKeyImport".localized, chain.name)
+            return String(format: "coinServiceChainNotEnabledForKeyImport".localized, chain.displayName)
         }
     }
 }

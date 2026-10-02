@@ -60,7 +60,7 @@ struct GroupedChainCellView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(chain.name)
+                    Text(chain.displayName)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                     if let onCopy {

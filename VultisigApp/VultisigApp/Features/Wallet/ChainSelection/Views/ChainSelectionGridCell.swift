@@ -26,7 +26,7 @@ struct ChainSelectionGridCell: View {
 
     var body: some View {
         AssetSelectionGridCell(
-            name: nativeAsset.chain.name,
+            name: nativeAsset.chain.displayName,
             ticker: nativeAsset.ticker,
             logo: nativeAsset.chain.logo,
             isSelected: $isSelected

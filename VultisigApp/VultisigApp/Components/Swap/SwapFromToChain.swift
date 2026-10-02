@@ -26,7 +26,7 @@ struct SwapFromToChain: View {
     }
 
     var title: some View {
-        Text(chain?.name ?? "")
+        Text(chain?.displayName ?? "")
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textPrimary)
     }

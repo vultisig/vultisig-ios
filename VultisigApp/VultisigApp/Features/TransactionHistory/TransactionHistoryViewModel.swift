@@ -443,7 +443,7 @@ class TransactionHistoryViewModel: ObservableObject {
                     ticker: tx.coinTicker,
                     logo: tx.coinLogo,
                     chainLogo: tx.coinChainLogo,
-                    network: tx.network
+                    network: tx.networkDisplayName
                 ))
             }
         }

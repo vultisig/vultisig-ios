@@ -138,7 +138,7 @@ struct CustomTokenScreen: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodyMMedium)
 
-                        Text(token.chain.name)
+                        Text(token.chain.displayName)
                             .foregroundStyle(Theme.colors.textSecondary)
                             .font(Theme.fonts.caption10)
                             .padding(.vertical, 8)

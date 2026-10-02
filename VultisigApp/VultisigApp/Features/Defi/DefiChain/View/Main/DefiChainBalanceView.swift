@@ -20,7 +20,7 @@ struct DefiChainBalanceView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(chain.name)
+            Text(chain.displayName)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
 
