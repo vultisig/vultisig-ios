@@ -5,6 +5,7 @@
 "activeNodes" = "Active Nodes";
 "activeVaults" = "Active Vaults";
 "add" = "Add";
+"Add Maya LP" = "Add Maya LP";
 "Add THORChain LP" = "Add THORChain LP";
 "addAddress" = "Add Address";
 "addAtLeastNMoreDevices" = "Add at least %d more devices";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ not found in vault )";
 "assets" = "Assets";
 "assetsLoadFailed" = "Couldn't load assets. Check your connection and try again.";
-"asymmetricDeposit" = "Asymmetric Deposit";
-"asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "atLeastOneDevice" = "At least one device";
 "atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Enable";
 "enableAll" = "Enable all";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
+"enableMayaChain" = "Enable MayaChain";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "enablePushNotifications" = "Enable push notifications";
 "enableThorchain" = "Enable THORChain";
@@ -547,6 +547,7 @@
 "from" = "From";
 "fullyDilutedValuation" = "Fully Diluted Valuation";
 "function" = "Function";
+"functionActionAddMayaLpSubtitle" = "Add liquidity to a MayaChain pool";
 "functionActionAddThorLpSubtitle" = "Add liquidity to a THORChain pool";
 "functionActionCustomSubtitle" = "Send a transaction with a custom memo";
 "functionActionIbcSubtitle" = "Transfer assets to another IBC chain";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "Max. Total Fee";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking is temporarily unavailable because MAYAChain is halted. Please try again when the network resumes.";
 "mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
+"mayaChainNotEnabledForLP" = "MayaChain is not enabled on this vault, or the paired asset address is missing. Please enable MayaChain to use this feature.";
+"mayaInboundAddressNotFound" = "%@ is not currently supported by MayaChain.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";

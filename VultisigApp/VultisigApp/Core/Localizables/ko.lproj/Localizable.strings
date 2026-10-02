@@ -5,6 +5,7 @@
 "activeNodes" = "활성 노드";
 "activeVaults" = "활성 볼트";
 "add" = "추가";
+"Add Maya LP" = "Maya LP 추가";
 "Add THORChain LP" = "THORChain LP 추가";
 "addAddress" = "주소 추가";
 "addAtLeastNMoreDevices" = "기기 %d개 이상 추가하세요";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ 볼트에서 찾을 수 없음 )";
 "assets" = "자산";
 "assetsLoadFailed" = "자산을 불러올 수 없습니다. 연결을 확인한 후 다시 시도하세요.";
-"asymmetricDeposit" = "비대칭 입금";
-"asymmetricDepositInfo" = "CACAO 또는 자산만 입금할 수 있습니다. Maya가 자동으로 포지션을 조정합니다.";
 "atLeastOneDevice" = "기기 최소 1개";
 "atLeastOneDeviceSubtitle" = "Vultisig를 실행할 수 있는 기기라면 모두 가능합니다.";
 "auto" = "자동";
@@ -439,6 +438,7 @@
 "enable" = "활성화";
 "enableAll" = "모두 활성화";
 "enableBiometricsFastSigning" = "생체인식 빠른 서명 활성화";
+"enableMayaChain" = "MayaChain 활성화";
 "enableNotificationsForVault" = "이 볼트에 대한 알림 활성화";
 "enablePushNotifications" = "푸시 알림 활성화";
 "enableThorchain" = "THORChain 활성화";
@@ -547,6 +547,7 @@
 "from" = "출처";
 "fullyDilutedValuation" = "완전 희석 가치";
 "function" = "함수";
+"functionActionAddMayaLpSubtitle" = "MayaChain 풀에 유동성을 추가합니다";
 "functionActionAddThorLpSubtitle" = "THORChain 풀에 유동성을 추가합니다";
 "functionActionCustomSubtitle" = "직접 작성한 메모로 트랜잭션을 보냅니다";
 "functionActionIbcSubtitle" = "다른 IBC 체인으로 자산을 전송합니다";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "최대 총 수수료";
 "mayaCacaoStakingHaltedWarning" = "MAYAChain이 중단되어 CACAO 스테이킹을 일시적으로 사용할 수 없습니다. 네트워크가 재개되면 다시 시도해 주세요.";
 "mayaCacaoStakingUnavailableWarning" = "MAYAChain 스테이킹 가능 여부를 확인할 수 없습니다. 나중에 다시 시도해 주세요.";
+"mayaChainNotEnabledForLP" = "이 볼트에서 MayaChain이 활성화되어 있지 않거나 짝이 되는 자산의 주소가 없습니다. 이 기능을 사용하려면 MayaChain을 활성화하세요.";
+"mayaInboundAddressNotFound" = "%@은(는) 현재 MayaChain에서 지원되지 않습니다.";
 "memo" = "메모";
 "memoLabel" = "메모";
 "mergeCoins" = "코인 병합";

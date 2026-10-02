@@ -5,6 +5,7 @@
 "activeNodes" = "活跃节点";
 "activeVaults" = "活跃保险库";
 "add" = "添加";
+"Add Maya LP" = "添加 Maya 流动性";
 "Add THORChain LP" = "添加 THORChain 流动性";
 "addAddress" = "添加地址";
 "addAtLeastNMoreDevices" = "至少再添加 %d 台设备";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ 在保险库中未找到 )";
 "assets" = "资产";
 "assetsLoadFailed" = "无法加载资产。请检查网络连接后重试。";
-"asymmetricDeposit" = "非对称存款";
-"asymmetricDepositInfo" = "您可以只存入 CACAO 或仅存入该资产。Maya 将自动平衡您的仓位。";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
 "auto" = "自动";
@@ -439,6 +438,7 @@
 "enable" = "启用";
 "enableAll" = "全部启用";
 "enableBiometricsFastSigning" = "启用生物识别快速签名";
+"enableMayaChain" = "启用 MayaChain";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
 "enableThorchain" = "启用 THORChain";
@@ -547,6 +547,7 @@
 "from" = "从";
 "fullyDilutedValuation" = "完全稀释估值";
 "function" = "功能";
+"functionActionAddMayaLpSubtitle" = "向 MayaChain 资金池添加流动性";
 "functionActionAddThorLpSubtitle" = "向 THORChain 资金池添加流动性";
 "functionActionCustomSubtitle" = "发送带自定义备注的交易";
 "functionActionIbcSubtitle" = "将资产转账到其他 IBC 链";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "最大总费用";
 "mayaCacaoStakingHaltedWarning" = "由于 MAYAChain 已暂停，CACAO 质押暂时不可用。请在网络恢复后重试。";
 "mayaCacaoStakingUnavailableWarning" = "无法验证 MAYAChain 质押是否可用。请稍后重试。";
+"mayaChainNotEnabledForLP" = "此保险库未启用 MayaChain，或缺少配对资产的地址。请启用 MayaChain 以使用此功能。";
+"mayaInboundAddressNotFound" = "MayaChain 目前不支持 %@。";
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "mergeCoins" = "合并代币";

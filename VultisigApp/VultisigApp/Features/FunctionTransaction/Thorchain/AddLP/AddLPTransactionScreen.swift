@@ -37,9 +37,8 @@ struct AddLPTransactionScreen: View {
             percentageSelected: $viewModel.percentageSelected,
             percentageFieldType: .button,
             amountField: viewModel.amountField,
-            customViewPosition: .bottom,
             onVerify: onContinue,
-            customView: { asymmetricDepositInfo },
+            customView: { EmptyView() },
             topView: { poolSection }
         )
         .onLoad { viewModel.onLoad() }
@@ -81,9 +80,9 @@ struct AddLPTransactionScreen: View {
             if let message = viewModel.blockingMessage {
                 blockingNotice(message)
             }
-            if !viewModel.isThorchainEnabled {
-                PrimaryButton(title: "enableThorchain", isLoading: viewModel.isEnablingThorchain) {
-                    Task { await viewModel.enableThorchain() }
+            if !viewModel.isProtocolChainEnabled {
+                PrimaryButton(title: viewModel.enableProtocolChainTitleKey, isLoading: viewModel.isEnablingProtocolChain) {
+                    Task { await viewModel.enableProtocolChain() }
                 }
             }
         }
@@ -94,7 +93,7 @@ struct AddLPTransactionScreen: View {
         viewModel.showsPoolPicker
             || viewModel.canRetryPools
             || viewModel.blockingMessage != nil
-            || !viewModel.isThorchainEnabled
+            || !viewModel.isProtocolChainEnabled
     }
 
     var poolPicker: some View {
@@ -150,29 +149,6 @@ struct AddLPTransactionScreen: View {
         .padding(12)
         .background(Theme.colors.bgNeutral)
         .cornerRadius(Theme.radius.sm)
-    }
-
-    @ViewBuilder
-    var asymmetricDepositInfo: some View {
-        if viewModel.showAsymmetricDepositInfo {
-            HStack(spacing: 8) {
-                Image(systemName: "info.circle")
-                    .foregroundStyle(Theme.colors.alertInfo)
-                    .font(Theme.fonts.caption12)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("asymmetricDeposit".localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Text(viewModel.asymmetricDepositMessage)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-                Spacer()
-            }
-            .padding(12)
-            .background(Theme.colors.bgNeutral)
-            .cornerRadius(Theme.radius.sm)
-        }
     }
 }
 

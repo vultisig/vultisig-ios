@@ -532,8 +532,8 @@ final class AddLPTransactionViewModelTests: XCTestCase {
 
         let built = await viewModel.prepareTransactionBuilder()
 
-        XCTAssertTrue(viewModel.isThorchainEnabled, "RUNE is enabled, but the paired memo address is absent")
-        XCTAssertFalse(viewModel.hasThorchainPairedAddress)
+        XCTAssertTrue(viewModel.isProtocolChainEnabled, "RUNE is enabled, but the paired memo address is absent")
+        XCTAssertFalse(viewModel.hasPairedAddress)
         XCTAssertNil(built, "staged pool adds must not degrade into `+:POOL` asymmetric deposits")
         XCTAssertEqual(viewModel.blockingMessage, "thorChainNotEnabledForLP".localized)
     }
@@ -559,7 +559,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         try await awaitPools(viewModel)
         viewModel.amountField.value = "0.5"
 
-        XCTAssertFalse(viewModel.isThorchainEnabled)
+        XCTAssertFalse(viewModel.isProtocolChainEnabled)
         let built6 = await viewModel.prepareTransactionBuilder()
         XCTAssertNil(built6)
     }
@@ -714,17 +714,11 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionActionFixture.thorAddress)")
     }
 
-    /// ⚠️ Fail closed. Only THORChain's inbound vaults are read here, so an
-    /// L1-side deposit into a MayaChain pool must refuse rather than send funds
-    /// to a vault that has never heard of the memo.
-    func testAnL1SideMayachainDepositFailsClosed() async throws {
-        let cacao = FunctionActionFixture.makeCoin(
-            .mayaChain,
-            ticker: "CACAO",
-            decimals: 10,
-            isNative: true,
-            address: FunctionActionFixture.mayaAddress
-        )
+    /// ⚠️ An L1-side deposit into a MayaChain pool goes to MAYA's inbound vault
+    /// and names the vault's CACAO address; reading THORChain's inbound here
+    /// would strand the funds at a vault that has never heard of the memo.
+    func testAnL1SideMayachainDepositResolvesTheMayaInboundAndNamesCacao() async throws {
+        let cacao = AddLPFixture.cacao()
         let bitcoin = AddLPFixture.bitcoin()
         let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
 
@@ -735,29 +729,23 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             poolSource: .fixed(pool: AddLPFixture.btcPool),
             vault: vault,
             prefillsFullBalance: true,
-            resolveInboundAddresses: AddLPFixture.healthyFetch,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
         viewModel.amountField.value = "0.5"
 
-        let built8 = await viewModel.prepareTransactionBuilder()
-        XCTAssertNil(built8)
-        XCTAssertEqual(viewModel.destination, .unsupportedProtocol)
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+        XCTAssertEqual(builder.toAddress, AddLPFixture.mayaBtcVault)
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(AddLPFixture.mayaAddress)")
+        XCTAssertEqual(builder.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
     }
 
-    /// A MayaChain deposit credits the depositing address itself, so the memo
-    /// carries no paired address.
-    func testAMayachainPositionDepositTakesNoPairedAddress() async throws {
-        let cacao = FunctionActionFixture.makeCoin(
-            .mayaChain,
-            ticker: "CACAO",
-            decimals: 10,
-            isNative: true,
-            rawBalance: "100000000000",
-            address: FunctionActionFixture.mayaAddress
-        )
+    /// The CACAO side names the vault's asset address, mirroring the RUNE side.
+    func testAMayachainPositionDepositNamesThePairedAssetAddress() async throws {
+        let cacao = AddLPFixture.cacao()
         let bitcoin = AddLPFixture.bitcoin()
         let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
 
@@ -768,7 +756,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             poolSource: .fixed(pool: AddLPFixture.btcPool),
             vault: vault,
             prefillsFullBalance: true,
-            resolveInboundAddresses: AddLPFixture.healthyFetch,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
             locale: Locale(identifier: "en_US")
         )
@@ -777,9 +765,134 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         let built = await viewModel.prepareTransactionBuilder()
         let builder = try XCTUnwrap(built)
 
-        XCTAssertNil(viewModel.pairedAddress)
-        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool)")
+        XCTAssertEqual(viewModel.pairedAddress, FunctionActionFixture.btcAddress)
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionActionFixture.btcAddress)")
         XCTAssertEqual(builder.toAddress, .empty)
-        XCTAssertTrue(viewModel.showAsymmetricDepositInfo)
+    }
+
+    /// Without the paired address `+:POOL` is a different, asymmetric
+    /// operation, so a MayaChain deposit refuses to build instead.
+    func testAMayachainDepositWithoutAPairedAddressDoesNotBuild() async throws {
+        let cacao = AddLPFixture.cacao()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: cacao,
+            pairedCoin: nil,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: AddLPFixture.btcPool),
+            vault: vault,
+            prefillsFullBalance: true,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            fetchPools: { [] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertFalse(viewModel.hasPairedAddress)
+        XCTAssertEqual(viewModel.blockingMessage, "mayaChainNotEnabledForLP".localized)
+    }
+
+    /// The Maya route is halted: nothing is built and the user is told.
+    func testAHaltedMayaInboundBlocksTheDeposit() async throws {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: bitcoin,
+            pairedCoin: cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: AddLPFixture.btcPool),
+            vault: vault,
+            prefillsFullBalance: true,
+            resolveInboundAddresses: { _ in
+                [AddLPFixture.inbound(chain: "BTC", address: AddLPFixture.mayaBtcVault, router: nil, halted: true)]
+            },
+            fetchPools: { [] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        XCTAssertNil(built)
+        XCTAssertEqual(viewModel.destination, .lpActionsPaused(chain: "BTC"))
+    }
+
+    /// A Maya inbound that lists no vault for the chain gets Maya's own message,
+    /// not THORChain's.
+    func testAMissingMayaInboundNamesMaya() async throws {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: bitcoin,
+            pairedCoin: cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: AddLPFixture.btcPool),
+            vault: vault,
+            prefillsFullBalance: true,
+            resolveInboundAddresses: { _ in [] },
+            fetchPools: { [] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "0.5"
+
+        _ = await viewModel.prepareTransactionBuilder()
+        XCTAssertEqual(viewModel.destination, .mayaInboundNotFound(chain: "BTC"))
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaInboundAddressNotFound".localized, "BTC")
+        )
+    }
+
+    /// Opened from a chain's action list: the pools are MayaChain's, the memo
+    /// names the CACAO address, and an ERC-20 deposit goes to Maya's router.
+    func testAMayaChainActionListDepositUsesMayaPoolsAndTheMayaRouter() async throws {
+        let ether = AddLPFixture.ether()
+        let usdc = AddLPFixture.usdc()
+        let cacao = AddLPFixture.cacao()
+        let vault = FunctionActionFixture.makeVault(coins: [ether, usdc, cacao])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: ether,
+            pairedCoin: vault.nativeCoin(for: .mayaChain),
+            protocolChain: .mayaChain,
+            poolSource: .chosen,
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            fetchPools: { [AddLPFixture.pool(AddLPFixture.ethPool), AddLPFixture.pool(AddLPFixture.usdcPool)] },
+            approvalResolver: StubERC20ApprovalResolver(.approve),
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        try await awaitPools(viewModel)
+
+        viewModel.select(pool: try pool(AddLPFixture.usdcPool, in: viewModel))
+        viewModel.amountField.value = "10"
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.toAddress, AddLPFixture.mayaEthRouter)
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.mayaAddress)")
+        XCTAssertEqual(builder.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
+    }
+
+    /// A vault with no CACAO cannot name a paired address, so it is offered the
+    /// way out the THORChain form offers for RUNE.
+    func testAMayaChainDepositWithoutCacaoIsNotEnabled() {
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [bitcoin])
+        let viewModel = AddLPTransactionViewModel.chain(coin: bitcoin, protocolChain: .mayaChain, vault: vault)
+
+        XCTAssertFalse(viewModel.isProtocolChainEnabled)
+        XCTAssertEqual(viewModel.blockingMessage, "mayaChainNotEnabledForLP".localized)
     }
 }
