@@ -251,6 +251,38 @@ final class TronContractPayloadGuardTests: XCTestCase {
         XCTAssertThrowsError(try TronHelper.getPreSignedImageHash(keysignPayload: payload))
     }
 
+    // MARK: - Verify decoding input
+
+    func testVerifyDecodesTheSignedCalldataNotTheMemo() throws {
+        let maxUint = String(repeating: "f", count: 64)
+        let approve = "0x095ea7b3" + Self.word(of: attacker) + maxUint
+        let payload = makePayload(coin: trx, toAddress: usdtContract, toAmount: 0, trigger: trigger(contract: usdtContract, data: approve))
+        let input = try signingInput(payload)
+        guard case .triggerSmartContract(let contract) = input.transaction.contractOneof else {
+            return XCTFail("expected triggerSmartContract")
+        }
+
+        let shown = try XCTUnwrap(TronContractPayloadGuard.calldataHex(from: payload.tronTriggerSmartContractPayload?.data))
+
+        XCTAssertEqual(shown, "0x" + contract.data.hexString, "Verify must decode exactly the bytes that are signed")
+        XCTAssertEqual(String(shown.prefix(10)), "0x095ea7b3")
+    }
+
+    func testCalldataHexIsNilWithoutData() {
+        XCTAssertNil(TronContractPayloadGuard.calldataHex(from: nil))
+        XCTAssertNil(TronContractPayloadGuard.calldataHex(from: ""))
+    }
+
+    func testUnlimitedApproveOnATronContractIsFlaggedByTheExtractor() throws {
+        let args = "[\"0x\(Self.word(of: attacker).suffix(40))\",\"\(ContractCallExtractor.maxUInt256Decimal)\"]"
+
+        let pair = try XCTUnwrap(ContractCallExtractor.extract(signature: "approve(address,uint256)", argsJson: args, toAddress: usdtContract))
+
+        XCTAssertEqual(pair.tokenAddress, usdtContract)
+        XCTAssertEqual(pair.rawAmount, ContractCallExtractor.maxUInt256Decimal)
+        XCTAssertNotNil(ContractCallExtractor.sentinelLabelFor(funcName: "approve"))
+    }
+
     // MARK: - Helpers
 
     private func signingInput(_ payload: KeysignPayload) throws -> TronSigningInput {

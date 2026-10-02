@@ -90,6 +90,13 @@ enum TronContractPayloadGuard {
         return Data(data.utf8)
     }
 
+    /// The signed calldata as `0x` hex, for Verify to decode like EVM calldata;
+    /// nil when the call carries none.
+    static func calldataHex(from data: String?) -> String? {
+        let bytes = contractData(from: data)
+        return bytes.isEmpty ? nil : "0x" + bytes.hexString
+    }
+
     // MARK: - Checks
 
     private static func requireOwner(_ keysignPayload: KeysignPayload, _ owner: String) throws {

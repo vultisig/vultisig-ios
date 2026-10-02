@@ -575,15 +575,21 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
 
-        let candidates = [keysignPayload?.memo, customMessagePayload?.message]
+        // A TRON contract call is signed from its `data`, not its memo, so that
+        // is what must be decoded; otherwise an approve reads as a plain send.
+        let tronCalldata = keysignPayload?.tronTriggerSmartContractPayload.flatMap {
+            TronContractPayloadGuard.calldataHex(from: $0.data)
+        }
+        let candidates = [tronCalldata ?? keysignPayload?.memo, customMessagePayload?.message]
         guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
         }
 
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
-        let isEvm = resolvedContractCallChain()?.chainType == .EVM
-        if isEvm, memo.hasPrefix("0x") {
+        let decodesCalldata = resolvedContractCallChain()?.chainType == .EVM
+            || (tronCalldata != nil && memo == tronCalldata)
+        if decodesCalldata, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
 
@@ -665,6 +671,13 @@ class JoinKeysignViewModel: ObservableObject {
             ticker = builtIn.ticker
             decimals = builtIn.decimals
             logo = builtIn.logo
+        } else if chain == .tron {
+            // The metadata resolver issues EVM calls; an unknown TRON token
+            // still gets the unlimited-approval warning, just without a ticker.
+            guard pair.rawAmount == ContractCallExtractor.maxUInt256Decimal,
+                  let funcName = ContractCallExtractor.evmFunctionName(from: params.functionSignature),
+                  let label = ContractCallExtractor.sentinelLabelFor(funcName: funcName) else { return nil }
+            return (display: label, amountText: label, ticker: "", logo: "", isUnlimited: true)
         } else if let resolved = await TokenMetadataResolver.shared.resolve(
             contractAddress: pair.tokenAddress,
             on: chain
