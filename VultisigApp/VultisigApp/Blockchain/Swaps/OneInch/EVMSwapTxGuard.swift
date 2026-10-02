@@ -49,8 +49,11 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
 enum EVMSwapTxGuard {
 
     static func check(_ payload: GenericSwapPayload, signingCoin: Coin) throws {
+        // Routing into the EVM signer is decided by the signing coin, so either side
+        // being EVM puts the swap in scope; a payload coin on another chain must not
+        // let the signing coin skip the checks.
         let chain = payload.fromCoin.chain
-        guard chain.chainType == .EVM else { return }
+        guard chain.chainType == .EVM || signingCoin.chain.chainType == .EVM else { return }
         let tx = payload.quote.tx
 
         // The bounds below read the payload's coin, so it must be the coin the

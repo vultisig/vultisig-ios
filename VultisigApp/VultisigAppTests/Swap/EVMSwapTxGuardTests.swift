@@ -178,6 +178,14 @@ final class EVMSwapTxGuardTests: XCTestCase {
         }
     }
 
+    func testNonEvmPayloadCoinCannotSkipGuardForEvmSigningCoin() {
+        let swap = payload(provider: .oneInch, chain: .bitcoin, to: attacker)
+        let evmCoin = payload(provider: .oneInch, to: oneInchV6).fromCoin
+        XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: evmCoin)) {
+            XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
+        }
+    }
+
     func testSigningCoinMustShareTokenContractWithPayloadSourceCoin() throws {
         let swap = payload(provider: .oneInch, to: oneInchV6, native: false)
         let otherToken = Coin(
