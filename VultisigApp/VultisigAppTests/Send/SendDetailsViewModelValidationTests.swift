@@ -77,8 +77,14 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         // If the address format passed, we hit the balance branch. If not,
         // we at least confirmed validation rejected — the precise error label
         // depends on AddressService internals and isn't the test's contract.
+        let balanceError = InsufficientFundsMessage.text(
+            coin: eth,
+            required: BigInt(990_000_000_000_000_000) + vm.gas,
+            available: eth.balanceRaw,
+            includesNetworkCosts: true
+        )
         XCTAssertTrue(
-            vm.errorMessage == "walletBalanceExceededError" || vm.errorMessage == "invalidRecipientAddressError",
+            vm.errorMessage == balanceError || vm.errorMessage == "invalidRecipientAddressError",
             "Expected balance or address error, got \(vm.errorMessage ?? "nil")"
         )
     }
@@ -95,8 +101,8 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
 
         let isValid = await vm.validateForm()
         XCTAssertFalse(isValid)
-        // Either gas-balance branch fires (insufficientGasTokenError) or
-        // address-format check rejects first. Both are rejections.
+        // Either the gas-balance branch names ETH or the address-format
+        // check rejects first. Both are rejections.
         XCTAssertTrue(
             (vm.errorMessage?.contains("ETH") ?? false) || vm.errorMessage == "invalidRecipientAddressError",
             "Expected ETH-gas error or invalid-address rejection, got \(vm.errorMessage ?? "nil")"
@@ -134,7 +140,12 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         let isValid = await vm.validateForm()
 
         XCTAssertFalse(isValid)
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: vm.coin,
+            required: BigInt(100_000_000) + vm.gas,
+            available: .zero,
+            includesNetworkCosts: true
+        ))
         XCTAssertTrue(vm.showAmountAlert)
     }
 
@@ -304,7 +315,12 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(rawBalance: "100000000000000000")) // 0.1 ETH
         vm.amount = "1"  // 1 ETH (10x balance)
         XCTAssertFalse(vm.validateBalance())
-        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertEqual(vm.errorMessage, InsufficientFundsMessage.text(
+            coin: vm.coin,
+            required: BigInt(1_000_000_000_000_000_000) + vm.gas,
+            available: BigInt(100_000_000_000_000_000),
+            includesNetworkCosts: true
+        ))
         XCTAssertTrue(vm.showAmountAlert)
     }
 
