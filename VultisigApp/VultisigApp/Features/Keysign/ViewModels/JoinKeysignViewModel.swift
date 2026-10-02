@@ -577,9 +577,11 @@ class JoinKeysignViewModel: ObservableObject {
 
         // A TRON contract call is signed from its `data`, not its memo, so that
         // is what must be decoded; otherwise an approve reads as a plain send.
-        let tronCalldata = keysignPayload?.tronTriggerSmartContractPayload.flatMap {
-            TronContractPayloadGuard.calldataHex(from: $0.data)
-        }
+        let tronCalldata = resolvedContractCallChain() == .tron
+            ? keysignPayload?.tronTriggerSmartContractPayload.flatMap {
+                TronContractPayloadGuard.calldataHex(from: $0.data)
+            }
+            : nil
         let candidates = [tronCalldata ?? keysignPayload?.memo, customMessagePayload?.message]
         guard let memo = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else {
             return
