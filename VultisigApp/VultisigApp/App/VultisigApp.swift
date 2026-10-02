@@ -19,6 +19,10 @@ struct VultisigApp: App {
     @NSApplicationDelegateAdaptor(MacAppDelegate.self) var appDelegate
     #endif
 
+    #if os(macOS)
+    private static let linkEvents: Set<String> = ["vultisig://", "https://vultisig.com"]
+    #endif
+
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
@@ -92,6 +96,15 @@ struct VultisigApp: App {
     var body: some Scene {
         WindowGroup {
             content
+                #if os(macOS)
+                // Without this, every deeplink click while the app is running
+                // opens another window, because SwiftUI spawns a new scene
+                // instance per external event. Preferring this scene sends the
+                // event to the existing window's `onOpenURL` instead. Scoped to
+                // link URLs: a wildcard would also claim `file:` URLs and take
+                // `.vult` opens away from the document scene.
+                .handlesExternalEvents(preferring: Self.linkEvents, allowing: Self.linkEvents)
+                #endif
         }
         .modelContainer(sharedModelContainer)
 
