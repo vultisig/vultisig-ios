@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "Samo za čitanje";
 "suiResultOfCmd" = "Rezultat naredbe";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "SUI saldo u potrošivim coin objektima nije dovoljan za pokrivanje iznosa i gasa.";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Saldo odabranih objekata tokena nije dovoljan za pokrivanje iznosa tokena.";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Odabrani potrošivi coin objekti tokena nisu dovoljni za pokrivanje iznosa.";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "Nijedan pojedinačni potrošivi SUI coin objekt ne može pokriti naknadu za gas.";
 "suiSplitFrom" = "Podijeli od";
 "suiTransaction" = "Sui transakcija";

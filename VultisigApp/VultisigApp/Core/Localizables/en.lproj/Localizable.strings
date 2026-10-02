@@ -1521,7 +1521,7 @@
 "suiReadOnly" = "Read-only";
 "suiResultOfCmd" = "Result of cmd";
 "suiSpendableCoinErrorNativeSelectionCannotCoverAmountAndGas" = "Insufficient SUI balance in spendable coin objects to cover the amount plus gas.";
-"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Insufficient balance in selected token coin objects to cover the token amount.";
+"suiSpendableCoinErrorTokenSelectionCannotCoverAmount" = "Insufficient balance in the selected spendable token coin objects to cover the amount.";
 "suiSpendableCoinErrorTokenSelectionCannotCoverGas" = "No single spendable SUI coin object can cover the gas fee.";
 "suiSplitFrom" = "Split from";
 "suiTransaction" = "Sui Transaction";
