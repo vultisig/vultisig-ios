@@ -18,15 +18,18 @@ struct SendCryptoVerifyLogic {
     let interactor: SendInteractor
     private let rippleService: RippleService
     private let bittensorService: BittensorBalanceFetching
+    private let nearService: NearService
 
     init(
         interactor: SendInteractor = DefaultSendInteractor.live,
         rippleService: RippleService = .shared,
-        bittensorService: BittensorBalanceFetching = BittensorService.shared
+        bittensorService: BittensorBalanceFetching = BittensorService.shared,
+        nearService: NearService = .shared
     ) {
         self.interactor = interactor
         self.rippleService = rippleService
         self.bittensorService = bittensorService
+        self.nearService = nearService
     }
 
     // MARK: - Fee Calculation
@@ -268,11 +271,14 @@ struct SendCryptoVerifyLogic {
     /// storage usage may have moved since (a token transfer into the account
     /// costs it storage). Fails closed — the account has to exist to send from
     /// it at all.
-    func validateNearStorageReserveIfNeeded(tx: SendTransaction) async throws {
+    ///
+    /// `gasReservation` is the reservation the send will sign with: the
+    /// payload's own once it is built, the quoted fee before that.
+    func validateNearStorageReserveIfNeeded(tx: SendTransaction, gasReservation: BigInt) async throws {
         guard tx.coin.chain == .near, tx.coin.isNativeToken else { return }
 
-        async let accountRead = NearService.shared.fetchAccount(accountId: tx.coin.address)
-        async let feesRead = NearService.shared.fetchFeeConfig()
+        async let accountRead = nearService.fetchAccount(accountId: tx.coin.address)
+        async let feesRead = nearService.fetchFeeConfig()
         let (account, fees) = try await (accountRead, feesRead)
 
         guard let account else {
@@ -287,13 +293,13 @@ struct SendCryptoVerifyLogic {
         let requestedAmount = Self.needsNearBalanceRefit(tx: tx)
             ? Swift.min(tx.amountInRaw, NearFees.maxSendable(
                 amount: tx.coin.balanceRaw,
-                gasReservation: tx.fee,
+                gasReservation: gasReservation,
                 storageReserve: reserve
             ))
             : tx.amountInRaw
         let required = NearFees.requiredAmount(
             requestedAmount: requestedAmount,
-            gasReservation: tx.fee,
+            gasReservation: gasReservation,
             storageReserve: reserve
         )
 

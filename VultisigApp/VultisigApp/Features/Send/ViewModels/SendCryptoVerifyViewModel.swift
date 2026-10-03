@@ -92,11 +92,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
         transaction: SendTransaction,
         interactor: SendInteractor = DefaultSendInteractor.live,
         prebuiltKeysignPayload: KeysignPayload? = nil,
-        rippleService: RippleService = .shared
+        rippleService: RippleService = .shared,
+        nearService: NearService = .shared
     ) {
         self.transaction = transaction
         self.interactor = interactor
-        self.logic = SendCryptoVerifyLogic(interactor: interactor, rippleService: rippleService)
+        self.logic = SendCryptoVerifyLogic(interactor: interactor, rippleService: rippleService, nearService: nearService)
         self.prebuiltKeysignPayload = prebuiltKeysignPayload
     }
 
@@ -342,7 +343,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // NEAR counterpart: the account has to keep enough behind to back
             // its own storage, or nearcore rejects the transfer after the
             // ceremony has run.
-            try await logic.validateNearStorageReserveIfNeeded(tx: transaction)
+            try await logic.validateNearStorageReserveIfNeeded(tx: transaction, gasReservation: transaction.fee)
         } catch is CancellationError {
             // Propagate — a cancelled load must abort the whole load pass (its
             // caller returns without running post-load work), not be swallowed
@@ -434,10 +435,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
-        try await logic.validateNearStorageReserveIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         syncRefittedAmount(with: keysignPayload)
+        // After the build: the payload re-reads the gas price, and the balance
+        // has to cover the reservation it actually signs with.
+        try await logic.validateNearStorageReserveIfNeeded(
+            tx: transaction,
+            gasReservation: keysignPayload.chainSpecific.gas
+        )
         return keysignPayload
     }
 
