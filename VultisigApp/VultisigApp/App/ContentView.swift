@@ -449,9 +449,9 @@ struct ContentView: View {
                 return
             }
 
-           handleDeepLinkURL(url)
+           guard handleDeepLinkURL(url) else { return }
         } else {
-            handleDeepLinkURL(incomingURL)
+            guard handleDeepLinkURL(incomingURL) else { return }
         }
 
         guard deeplinkError == nil else { return }
@@ -467,12 +467,28 @@ struct ContentView: View {
         }
     }
 
-    private func handleDeepLinkURL(_ url: URL) {
+    @discardableResult
+    private func handleDeepLinkURL(_ url: URL) -> Bool {
         do {
             try deeplinkViewModel.extractParameters(url, vaults: modelContext.fetchAllVaults())
             deeplinkError = nil
+
+            if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+                deeplinkViewModel.resetData()
+                Task { @MainActor in
+                    do {
+                        try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
+                    } catch {
+                        deeplinkError = error
+                    }
+                }
+                return false
+            }
+
+            return true
         } catch {
             deeplinkError = error
+            return false
         }
     }
 }

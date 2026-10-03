@@ -1,0 +1,4 @@
+// Base WalletConnect/Reown configuration used by CI and fresh clones.
+// Local project IDs belong in the ignored WalletConnect.xcconfig override.
+WALLETCONNECT_PROJECT_ID =
+#include? "WalletConnect.xcconfig"

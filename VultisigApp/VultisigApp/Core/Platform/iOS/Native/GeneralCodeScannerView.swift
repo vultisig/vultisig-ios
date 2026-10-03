@@ -49,6 +49,12 @@ struct GeneralCodeScannerView: View {
         }
         do {
             let validDeeplink = try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+            if deeplinkViewModel.walletConnectURI != nil {
+                isPaused = true
+                showSheet = false
+                return
+            }
+
             if validDeeplink {
                 showSheet = false
             }

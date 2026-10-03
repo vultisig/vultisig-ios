@@ -316,6 +316,17 @@ struct HomeScreen: View {
                 }
             }
             .crossPlatformSheet(isPresented: $showScanner, onDismiss: {
+                if let walletConnectURI = deeplinkViewModel.walletConnectURI {
+                    deeplinkViewModel.resetData()
+                    Task { @MainActor in
+                        do {
+                            try await WalletConnectCoordinator.shared.pair(uri: walletConnectURI)
+                        } catch {
+                            deeplinkError = error
+                        }
+                    }
+                    return
+                }
                 guard scannerKeysignHandoff.scannerDismissed(isPresentingAgain: showScanner) else { return }
                 presentPendingReview()
             }, sheetContent: {

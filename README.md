@@ -18,6 +18,16 @@ After `make bootstrap`, open `VultisigApp/VultisigApp.xcodeproj` in Xcode. Do **
 
 ## Third party services
 
+### WalletConnect / Reown
+
+WalletConnect requires a Reown Cloud project ID for pairing and relay access. The real local config is intentionally git-ignored.
+
+```bash
+cp VultisigApp/Config/WalletConnect.example.xcconfig VultisigApp/Config/WalletConnect.xcconfig
+```
+
+Then edit `VultisigApp/Config/WalletConnect.xcconfig` and replace `YOUR_REOWN_PROJECT_ID` with your own Reown Cloud project ID.
+
 Vultisig use the following third party services to access price , blockchain node RPC
 - [coingecko](https://www.coingecko.com/) for price
 - [blockchair](https://blockchair.com/) for UTXO chains (BTC, BCH, LTC, DOGE)

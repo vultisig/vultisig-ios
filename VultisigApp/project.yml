@@ -49,6 +49,13 @@ packages:
   RiveRuntime:
     url: https://github.com/rive-app/rive-ios
     from: 6.5.11
+  ReownSwift:
+    url: https://github.com/reown-com/reown-swift
+    # Pin before the Yttrium binary artifact, which collides with vscore.xcframework's modulemap output.
+    exactVersion: 1.0.7
+  Starscream:
+    url: https://github.com/daltoniam/Starscream
+    from: 4.0.4
   SwiftLintPlugins:
     url: https://github.com/SimplyDanny/SwiftLintPlugins
     from: 0.63.1
@@ -143,6 +150,10 @@ targets:
       # below, not via XcodeGen's `info:` / `entitlements:` blocks (which
       # would regenerate and overwrite them).
 
+    configFiles:
+      Debug: Config/WalletConnect.base.xcconfig
+      Release: Config/WalletConnect.base.xcconfig
+
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vultisig.wallet
@@ -197,6 +208,7 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: Allow access to your local network to discover and connect to your other devices on the same Wi-Fi so they can pair and sign transactions together.
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Allow access to your photo library to save vault backup QR codes and select saved QR code images to import vaults or addresses.
+        INFOPLIST_KEY_WalletConnectProjectId: $(WALLETCONNECT_PROJECT_ID)
         "INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]": "Vultisig needs screen recording permission to scan QR codes displayed on your screen."
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": YES
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": YES
@@ -256,6 +268,9 @@ targets:
       - package: CodeScanner
       - package: CryptoSwift
       - package: RiveRuntime
+      - package: ReownSwift
+        product: WalletConnect
+      - package: Starscream
       - package: VultisigCommonData
       - package: WalletCore
         product: WalletCore
