@@ -445,7 +445,7 @@ extension SwapCryptoLogic {
             switch swapResponse.tx {
             case .evm, .solana:
                 if swapResponse.isErc20DepositTransfer(fromCoin: fromCoin) {
-                    try swapResponse.validateErc20DepositTransfer(amount: amountInCoin)
+                    try swapResponse.validateErc20DepositTransfer(fromCoin: fromCoin, amount: amountInCoin)
                 }
                 let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
                 let payload = buildSwapKitGenericPayload(

@@ -67,13 +67,13 @@ final class SwapKitErc20DepositTests: XCTestCase {
         let quote = SwapQuote.swapkit(response, fee: nil, subProvider: "NEAR")
 
         XCTAssertTrue(response.isErc20DepositTransfer(fromCoin: usdt()))
-        XCTAssertNoThrow(try response.validateErc20DepositTransfer(amount: Self.soldAmount))
+        XCTAssertNoThrow(try response.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
         XCTAssertFalse(SwapCryptoLogic.isApproveRequired(fromCoin: usdt(), quote: quote))
         XCTAssertNil(try SwapCryptoLogic.approveSpender(fromCoin: usdt(), quote: quote))
     }
 
     func testRefusesATransferOfAnotherAmount() throws {
-        XCTAssertThrowsError(try liveResponse().validateErc20DepositTransfer(amount: Self.soldAmount + 1))
+        XCTAssertThrowsError(try liveResponse().validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount + 1))
     }
 
     func testRefusesATransferToAnotherRecipient() throws {
@@ -81,18 +81,18 @@ final class SwapKitErc20DepositTests: XCTestCase {
         let data = "0xa9059cbb" + String(repeating: "0", count: 24) + other.dropFirst(2)
             + String(Self.soldAmount, radix: 16).leftPad(to: 64)
         let response = try liveResponse { self.replacingTx(&$0, "data", data) }
-        XCTAssertThrowsError(try response.validateErc20DepositTransfer(amount: Self.soldAmount))
+        XCTAssertThrowsError(try response.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
     }
 
     func testRefusesNativeValueAndNonTransferCalls() throws {
         let withValue = try liveResponse { self.replacingTx(&$0, "value", "0x1") }
-        XCTAssertThrowsError(try withValue.validateErc20DepositTransfer(amount: Self.soldAmount))
+        XCTAssertThrowsError(try withValue.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
 
         let approve = try liveResponse { json in
             let data = (json["tx"] as? [String: Any])?["data"] as? String ?? ""
             self.replacingTx(&json, "data", data.replacingOccurrences(of: "0xa9059cbb", with: "0x095ea7b3"))
         }
-        XCTAssertThrowsError(try approve.validateErc20DepositTransfer(amount: Self.soldAmount))
+        XCTAssertThrowsError(try approve.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
     }
 
     func testARouterCallFromATokenIsNotADepositTransfer() throws {
@@ -122,8 +122,71 @@ final class SwapKitErc20DepositTests: XCTestCase {
             )
             XCTFail("A deposit transferring 20 USDT must not sign as a 21 USDT swap")
         } catch {
-            guard case .contradictoryResponse = error as? SwapKitError else {
-                return XCTFail("Expected contradictoryResponse, got \(error)")
+            guard case .swapKitDepositRefused = error as? EVMSwapTxGuardError else {
+                return XCTFail("Expected swapKitDepositRefused, got \(error)")
+            }
+        }
+    }
+
+    /// The co-signer never sees the quote, only the relayed payload, and screens
+    /// nothing but `tx.to`, which for a deposit is the token. It must re-derive
+    /// the deposit from the calldata it signs.
+    func testCoSignerBindsTheDepositCalldataBeforeSigning() throws {
+        let live = try liveResponse()
+        guard case .evm(let tx) = live.tx else { return XCTFail("Expected an EVM tx") }
+        let usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        let approveToSameRecipient = tx.data.replacingOccurrences(of: "0xa9059cbb", with: "0x095ea7b3")
+
+        XCTAssertNoThrow(try coSignerMessages(to: tx.to, data: tx.data, value: "0", fromAmount: Self.soldAmount))
+        assertCoSignerRefuses(to: tx.to, data: tx.data, value: "0", fromAmount: Self.soldAmount + 1)
+        assertCoSignerRefuses(to: usdc, data: tx.data, value: "0", fromAmount: Self.soldAmount)
+        assertCoSignerRefuses(to: tx.to, data: tx.data, value: "1", fromAmount: Self.soldAmount)
+        assertCoSignerRefuses(to: tx.to, data: approveToSameRecipient, value: "0", fromAmount: Self.soldAmount)
+    }
+
+    /// Builds the joiner's messages the way `JoinKeysignViewModel` does, from a
+    /// relayed SwapKit payload selling 20 USDT.
+    private func coSignerMessages(to: String, data: String, value: String, fromAmount: BigInt) throws -> [String] {
+        let sol = Coin(asset: CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9, isNativeToken: true), address: "", hexPublicKey: "")
+        let swap = GenericSwapPayload(
+            fromCoin: usdt(),
+            toCoin: sol,
+            fromAmount: fromAmount,
+            toAmountDecimal: 0,
+            quote: EVMQuote(
+                dstAmount: "0",
+                tx: EVMQuote.Transaction(from: usdt().address, to: to, data: data, value: value, gasPrice: "1", gas: 76_837)
+            ),
+            provider: .swapkit
+        )
+        let keysign = KeysignPayload(
+            coin: usdt(),
+            toAddress: "0xCB2aC797EFf13Ee982453F5722B74aB5c56741Af",
+            toAmount: fromAmount,
+            chainSpecific: ethereumChainSpecific(),
+            utxos: [],
+            memo: nil,
+            swapPayload: .generic(swap),
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+        return try KeysignMessageFactory(payload: keysign, vaultPubKeyEdDSA: "").getKeysignMessages()
+    }
+
+    private func assertCoSignerRefuses(to: String, data: String, value: String, fromAmount: BigInt, line: UInt = #line) {
+        XCTAssertThrowsError(try coSignerMessages(to: to, data: data, value: value, fromAmount: fromAmount), line: line) {
+            guard case .swapKitDepositRefused = $0 as? EVMSwapTxGuardError else {
+                return XCTFail("Expected swapKitDepositRefused, got \($0)", line: line)
             }
         }
     }

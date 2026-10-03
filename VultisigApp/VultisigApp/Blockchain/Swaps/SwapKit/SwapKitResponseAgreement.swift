@@ -18,28 +18,22 @@ extension SwapKitSwapResponse {
         return evmTx.to.lowercased() == fromCoin.contractAddress.lowercased()
     }
 
-    /// Binds an ERC-20 deposit to exactly `transfer(targetAddress, amount)` with
-    /// no native value, mirroring the SDK's `isSwapKitErc20DepositTransfer`.
-    func validateErc20DepositTransfer(amount: BigInt) throws {
+    /// Binds an ERC-20 deposit to exactly `transfer(targetAddress, amount)` on
+    /// the sold token with no native value, mirroring the SDK's
+    /// `isSwapKitErc20DepositTransfer`.
+    func validateErc20DepositTransfer(fromCoin: Coin, amount: BigInt) throws {
         guard case .evm(let evmTx) = tx else { return }
-        let refuse = { (reason: String) in SwapKitError.contradictoryResponse(detail: "ERC-20 deposit \(reason)") }
-
-        let value = evmTx.value.stripHexPrefix()
-        let nativeValue = evmTx.value.hasPrefix("0x") ? BigInt(value, radix: 16) : BigInt(value)
-        guard nativeValue == 0 else { throw refuse("attaches native value \(evmTx.value)") }
-
-        let hex = evmTx.data.stripHexPrefix().lowercased()
-        let selector = "a9059cbb"
-        guard hex.count == selector.count + 128, hex.hasPrefix(selector), hex.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
-            throw refuse("is not exactly an ERC-20 transfer(address,uint256) call")
-        }
-        let recipientWord = hex.dropFirst(selector.count).prefix(64)
-        let recipient = "0x" + String(recipientWord.suffix(40))
-        guard recipientWord.prefix(24).allSatisfy({ $0 == "0" }), recipient == targetAddress.lowercased() else {
-            throw refuse("transfers to \(recipient), not targetAddress \(targetAddress)")
-        }
-        guard BigInt(String(hex.suffix(64)), radix: 16) == amount else {
-            throw refuse("transfers an amount other than the sold amount \(amount)")
+        let recipient = try EVMSwapTxGuard.swapKitErc20DepositRecipient(
+            to: evmTx.to,
+            data: evmTx.data,
+            value: SwapCryptoLogic.parseEvmAmount(evmTx.value),
+            sourceToken: fromCoin.contractAddress,
+            amount: amount
+        )
+        guard recipient == targetAddress.lowercased() else {
+            throw SwapKitError.contradictoryResponse(
+                detail: "ERC-20 deposit transfers to \(recipient ?? "no recipient"), not targetAddress \(targetAddress)"
+            )
         }
     }
 
