@@ -344,6 +344,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // its own storage, or nearcore rejects the transfer after the
             // ceremony has run.
             try await logic.validateNearStorageReserveIfNeeded(tx: transaction, gasReservation: transaction.fee)
+            // A transfer to a named NEAR account that does not exist burns its gas.
+            try await logic.validateNearReceiverIfNeeded(tx: transaction)
         } catch is CancellationError {
             // Propagate — a cancelled load must abort the whole load pass (its
             // caller returns without running post-load work), not be swallowed
@@ -435,6 +437,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
+        try await logic.validateNearReceiverIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         syncRefittedAmount(with: keysignPayload)

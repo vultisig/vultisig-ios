@@ -969,6 +969,7 @@
 "nearErrorUnknownAccessKey" = "A chave de acesso da NEAR não está na conta: %@";
 "nearErrorUnknownAccount" = "A conta NEAR %@ não existe";
 "nearErrorUnknownTransaction" = "O nó não conhece a transação NEAR %@";
+"nearUnknownReceiverError" = "A conta NEAR %@ não existe. Verifique o destinatário antes de enviar.";
 "needToRemoveTokens" = "Todos os tokens dentro desta cadeia precisam ser removidos antes de prosseguir.";
 "network" = "Rede";
 "networkFee" = "Taxa de rede";

@@ -969,6 +969,7 @@
 "nearErrorUnknownAccessKey" = "La chiave di accesso NEAR non è sull'account: %@";
 "nearErrorUnknownAccount" = "L'account NEAR %@ non esiste";
 "nearErrorUnknownTransaction" = "Il nodo non conosce la transazione NEAR %@";
+"nearUnknownReceiverError" = "L'account NEAR %@ non esiste. Controlla il destinatario prima di inviare.";
 "needToRemoveTokens" = "Tutti i token all'interno di questa catena devono essere rimossi prima di procedere.";
 "network" = "Rete";
 "networkFee" = "Commissione di rete";

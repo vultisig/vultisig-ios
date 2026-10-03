@@ -969,6 +969,7 @@
 "nearErrorUnknownAccessKey" = "NEAR pristupni ključ nije na računu: %@";
 "nearErrorUnknownAccount" = "NEAR račun %@ ne postoji";
 "nearErrorUnknownTransaction" = "Čvor ne poznaje NEAR transakciju %@";
+"nearUnknownReceiverError" = "NEAR račun %@ ne postoji. Provjerite primatelja prije slanja.";
 "needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";
 "network" = "Mreža";
 "networkFee" = "Mrežna naknada";

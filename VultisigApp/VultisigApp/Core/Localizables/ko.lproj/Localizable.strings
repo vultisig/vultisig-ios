@@ -969,6 +969,7 @@
 "nearErrorUnknownAccessKey" = "NEAR 액세스 키가 계정에 없습니다: %@";
 "nearErrorUnknownAccount" = "NEAR 계정 %@이(가) 존재하지 않습니다";
 "nearErrorUnknownTransaction" = "노드가 NEAR 트랜잭션 %@을(를) 알지 못합니다";
+"nearUnknownReceiverError" = "NEAR 계정 %@이(가) 존재하지 않습니다. 보내기 전에 수신자를 확인하세요.";
 "needToRemoveTokens" = "계속하기 전에 이 체인 내의 모든 토큰을 제거해야 합니다.";
 "network" = "네트워크";
 "networkFee" = "네트워크 수수료";

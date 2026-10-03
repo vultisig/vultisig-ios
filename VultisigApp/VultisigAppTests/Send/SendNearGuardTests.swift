@@ -59,6 +59,22 @@ final class SendNearGuardTests: XCTestCase {
         }
     }
 
+    func testANamedReceiverTheNodeDoesNotKnowIsRefusedBeforeSigning() async throws {
+        let balance = BigInt("1000000000000000000000000") // 1 NEAR
+        let node = ScriptedNearNode(accounts: [Self.sender: (amount: balance, storageUsage: 182)])
+        let vm = makeVerifyViewModel(node: node, signedGas: Self.quotedGas, balance: balance)
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("a send to a named account that does not exist must not reach signing")
+        } catch {
+            XCTAssertEqual(
+                error.localizedDescription,
+                String(format: "nearUnknownReceiverError".localized, Self.receiver)
+            )
+        }
+    }
+
     // MARK: - Builders
 
     private func makeVerifyViewModel(node: ScriptedNearNode, signedGas: BigInt, balance: BigInt) -> SendCryptoVerifyViewModel {

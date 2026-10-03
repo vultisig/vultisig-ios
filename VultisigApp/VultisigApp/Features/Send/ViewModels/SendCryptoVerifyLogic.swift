@@ -312,6 +312,29 @@ struct SendCryptoVerifyLogic {
         ))
     }
 
+    /// Pre-ceremony guard for a native NEAR send to a named account: nearcore
+    /// refunds a transfer to an account that does not exist but burns the gas.
+    /// Implicit (64-hex) receivers need no account and are not looked up.
+    ///
+    /// FAIL OPEN, matching `validateBittensorDestinationIfNeeded`: it blocks only
+    /// on the node answering UNKNOWN_ACCOUNT, never on a lookup that failed.
+    func validateNearReceiverIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .near, tx.coin.isNativeToken, !NearAccountId.isImplicit(tx.toAddress) else { return }
+
+        let receiver: NearAccountView?
+        do {
+            receiver = try await nearService.fetchAccount(accountId: tx.toAddress)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            return
+        }
+        try Task.checkCancellation()
+
+        guard receiver == nil else { return }
+        throw HelperError.runtimeError(String(format: "nearUnknownReceiverError".localized, tx.toAddress))
+    }
+
     // MARK: - Destination Validation
 
     /// XRPL rejects a Payment that would create the destination account with

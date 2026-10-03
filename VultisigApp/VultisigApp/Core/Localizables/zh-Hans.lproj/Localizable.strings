@@ -969,6 +969,7 @@
 "nearErrorUnknownAccessKey" = "NEAR 访问密钥不在该账户上：%@";
 "nearErrorUnknownAccount" = "NEAR 账户 %@ 不存在";
 "nearErrorUnknownTransaction" = "节点不知道 NEAR 交易 %@";
+"nearUnknownReceiverError" = "NEAR 账户 %@ 不存在。请在发送前检查收款方。";
 "needToRemoveTokens" = "在继续之前，需要删除此链中的所有代币";
 "network" = "网络";
 "networkFee" = "网络费用";
