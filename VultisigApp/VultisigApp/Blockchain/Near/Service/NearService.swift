@@ -64,13 +64,16 @@ final class NearService {
     /// `nil` when the account does not hold this key. The node reports a
     /// missing key as a `result.error` string rather than as a JSON-RPC error,
     /// so the answer is read rather than thrown.
+    ///
+    /// Read at `optimistic` finality: the nonce is the latest one, so a second
+    /// send inside the finality window does not reuse it (`InvalidNonce`).
     func fetchAccessKey(accountId: String, hexPublicKey: String) async throws -> NearAccessKeyView? {
         let method = "query"
         let envelope: NearRPCEnvelope<AccessKeyResult> = try await call(
             method: method,
             params: [
                 "request_type": "view_access_key",
-                "finality": "final",
+                "finality": "optimistic",
                 "account_id": accountId,
                 "public_key": try Self.publicKeyString(hexPublicKey: hexPublicKey)
             ]
