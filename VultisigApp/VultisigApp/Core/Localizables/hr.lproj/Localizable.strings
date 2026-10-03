@@ -5,6 +5,7 @@
 "activeNodes" = "Aktivni Čvorovi";
 "activeVaults" = "Aktivni trezori";
 "add" = "Dodaj";
+"Add Maya LP" = "Dodaj Maya LP";
 "Add THORChain LP" = "Dodaj THORChain LP";
 "addAddress" = "Dodaj adresu";
 "addAtLeastNMoreDevices" = "Dodajte barem još %d uređaja";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
 "assets" = "Imovine";
 "assetsLoadFailed" = "Nije moguće učitati sredstva. Provjerite vezu i pokušajte ponovo.";
-"asymmetricDeposit" = "Asimetrični polog";
-"asymmetricDepositInfo" = "Možete položiti samo CACAO ili samo imovinu. Maya će automatski uravnotežiti vašu poziciju.";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
 "enableBiometricsFastSigning" = "Omogući biometriju brzo potpisivanje";
+"enableMayaChain" = "Omogući MayaChain";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
 "enableThorchain" = "Omogući THORChain";
@@ -547,6 +547,7 @@
 "from" = "Od";
 "fullyDilutedValuation" = "Potpuno razrijeđena vrijednost";
 "function" = "funkcija";
+"functionActionAddMayaLpSubtitle" = "Dodaj likvidnost u MayaChain pool";
 "functionActionAddThorLpSubtitle" = "Dodaj likvidnost u THORChain pool";
 "functionActionCustomSubtitle" = "Pošalji transakciju s prilagođenim memom";
 "functionActionIbcSubtitle" = "Prenesi imovinu na drugi IBC lanac";
@@ -928,6 +929,8 @@
 "maxTotalFee" = "Maks. ukupna naknada";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking privremeno nije dostupan jer je MAYAChain zaustavljen. Pokušajte ponovno kada se mreža nastavi.";
 "mayaCacaoStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost MAYAChain stakinga. Pokušajte ponovno kasnije.";
+"mayaChainNotEnabledForLP" = "MayaChain nije omogućen na ovom vaultu ili nedostaje adresa uparene imovine. Molimo omogućite MayaChain da biste koristili ovu značajku.";
+"mayaInboundAddressNotFound" = "%@ trenutačno nije podržan na MayaChainu.";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "mergeCoins" = "Spoji novčiće";

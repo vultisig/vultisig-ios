@@ -46,6 +46,51 @@ struct ThorchainPool: Codable {
     }
 }
 
+/// A MayaChain pool as `/mayachain/pools` lists it. Maya names the protocol
+/// side `balance_cacao`, so the THORChain model cannot decode it directly; the
+/// LP flows only read the asset and status, and the rest maps across.
+struct MayaChainPool: Decodable {
+    let asset: String
+    let status: String
+    let balanceCacao: String
+    let balanceAsset: String
+    let poolUnits: String
+    let lpUnits: String
+    let synthUnits: String
+    let synthSupply: String
+    let pendingInboundCacao: String
+    let pendingInboundAsset: String
+
+    enum CodingKeys: String, CodingKey {
+        case asset
+        case status
+        case balanceCacao = "balance_cacao"
+        case balanceAsset = "balance_asset"
+        case poolUnits = "pool_units"
+        case lpUnits = "LP_units"
+        case synthUnits = "synth_units"
+        case synthSupply = "synth_supply"
+        case pendingInboundCacao = "pending_inbound_cacao"
+        case pendingInboundAsset = "pending_inbound_asset"
+    }
+
+    /// The shared pool model, with CACAO in the protocol-side fields.
+    var pool: ThorchainPool {
+        ThorchainPool(
+            asset: asset,
+            status: status,
+            balanceAsset: balanceAsset,
+            balanceRune: balanceCacao,
+            poolUnits: poolUnits,
+            lpUnits: lpUnits,
+            synthUnits: synthUnits,
+            synthSupply: synthSupply,
+            pendingInboundAsset: pendingInboundAsset,
+            pendingInboundRune: pendingInboundCacao
+        )
+    }
+}
+
 // Structure for Add LP memo data
 struct AddLPMemoData {
     let pool: String

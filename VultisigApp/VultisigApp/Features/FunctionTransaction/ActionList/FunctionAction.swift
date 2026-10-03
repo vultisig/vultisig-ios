@@ -26,6 +26,7 @@ enum FunctionAction: String, CaseIterable, Identifiable {
          vote,
          cosmosIBC,
          addThorLP,
+         addMayaLP,
          withdrawSecuredAsset
 
     var id: String { self.rawValue }
@@ -44,6 +45,8 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             return "IBC Transfer".localized
         case .addThorLP:
             return "Add THORChain LP".localized
+        case .addMayaLP:
+            return "Add Maya LP".localized
         case .withdrawSecuredAsset:
             return "withdrawSecuredAsset".localized
         }
@@ -65,8 +68,13 @@ enum FunctionAction: String, CaseIterable, Identifiable {
                 .withdrawSecuredAsset
             ]
 
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+        case .bitcoin, .ethereum:
+            return [.addThorLP, .addMayaLP]
+        case .bitcoinCash, .litecoin, .dogecoin, .avalanche, .bscChain, .base, .ripple:
             return [.addThorLP]
+        // Pooled by MayaChain and not by THORChain.
+        case .arbitrum, .dash, .zcash:
+            return [.addMayaLP]
         case .mayaChain:
             return [.leave,
                     .custom]
@@ -130,6 +138,10 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // chain's native asset: an LP add from a token screen is a deposit
             // of that token, and pinning would silently retarget it.
             return .addThorchainLP(coin: coin.toCoinMeta())
+        case .addMayaLP:
+            // Same shape as `.addThorLP`: the entry asset only, with the pool
+            // picker and the vault's own coins deciding what is deposited.
+            return .addMayaLP(coin: coin.toCoinMeta())
         case .withdrawSecuredAsset:
             // A `SECURE-` redemption is signed against the secured asset the
             // user picks inside the form, but the picker itself reads the

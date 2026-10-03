@@ -339,4 +339,183 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(fetched.first?.toAddress, AddLPFixture.ethRouter)
         XCTAssertEqual(fetched.first?.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.thorAddress)")
     }
+
+    // MARK: - MayaChain
+
+    /// Only a MayaChain deposit carries the protocol marker, so the THORChain
+    /// dictionary stays exactly what it was.
+    func testOnlyAMayaDepositMarksItsProtocol() {
+        var maya = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaBtcVault
+        )
+        maya.protocolChain = .mayaChain
+        let thor = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.thorAddress,
+            toAddress: AddLPFixture.btcVault
+        )
+
+        XCTAssertEqual(maya.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
+        XCTAssertNil(thor.memoFunctionDictionary.get("protocol"))
+    }
+
+    /// ⚠️ The router call carries the inbound VAULT as an argument. A MayaChain
+    /// ERC-20 deposit must name Maya's vault there — THORChain's would strand
+    /// the tokens — and must be signed as a Maya payload.
+    func testAMayaErc20DepositIsBuiltAgainstTheMayaInboundVault() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaEthRouter
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        let (swapPayload, _) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: decision,
+            thorchainService: ThorchainService(httpClient: LPInboundStubClient(
+                path: "/thorchain/inbound_addresses",
+                address: AddLPFixture.ethVault,
+                router: AddLPFixture.ethRouter
+            )),
+            mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                path: "/mayachain/inbound_addresses",
+                address: AddLPFixture.mayaEthVault,
+                router: AddLPFixture.mayaEthRouter
+            ))
+        )
+
+        guard case .mayachain(let payload) = try XCTUnwrap(swapPayload) else {
+            return XCTFail("a MayaChain deposit must be signed as a Maya payload")
+        }
+        XCTAssertEqual(payload.vaultAddress, AddLPFixture.mayaEthVault)
+        XCTAssertEqual(payload.routerAddress, AddLPFixture.mayaEthRouter)
+    }
+
+    /// The router the deposit was built against must still be Maya's router
+    /// when it is signed; a rotated one is refused rather than paired with the
+    /// current vault.
+    func testAMayaErc20DepositIsRefusedWhenTheRouterRotated() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: "0xretiredrouter"
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter
+                ))
+            )
+            XCTFail("a rotated router must not be signed")
+        } catch is HelperError {
+        }
+    }
+
+    /// A MayaChain deposit whose chain has no inbound entry must say MayaChain
+    /// does not support it, not borrow THORChain's wording.
+    func testAMayaErc20DepositWithNoInboundNamesMayaChain() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaEthRouter
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter,
+                    chain: "BTC"
+                ))
+            )
+            XCTFail("a chain without a Maya inbound must not be deposited")
+        } catch let error as HelperError {
+            let expected = String(format: "mayaInboundAddressNotFound".localized, "ETH")
+            XCTAssertEqual(error.localizedDescription, expected)
+        }
+    }
+
+    /// Maya's pool list names its CACAO side `balance_cacao`; it must still
+    /// decode into the shared pool model, status included.
+    func testMayaPoolsDecodeIntoThePoolModel() throws {
+        let json = """
+        [{"balance_cacao":"829279815415031","balance_asset":"3632195306916","asset":"BTC.BTC",
+          "LP_units":"1","pool_units":"1","status":"Available","decimals":8,
+          "synth_units":"0","synth_supply":"0","pending_inbound_cacao":"5","pending_inbound_asset":"0"},
+         {"asset":"ARB.ETH","status":"Staged","balance_cacao":"1","balance_asset":"2",
+          "LP_units":"1","pool_units":"1","synth_units":"0","synth_supply":"0",
+          "pending_inbound_cacao":"0","pending_inbound_asset":"0"}]
+        """
+        let pools = try JSONDecoder().decode([MayaChainPool].self, from: Data(json.utf8)).map(\.pool)
+
+        XCTAssertEqual(pools.map(\.asset), ["BTC.BTC", "ARB.ETH"])
+        XCTAssertEqual(pools.first?.balanceRune, "829279815415031")
+        XCTAssertEqual(pools.first?.pendingInboundRune, "5")
+        XCTAssertTrue(pools[0].supportsPairedLPAdd)
+        XCTAssertTrue(pools[1].isStaged)
+    }
+}
+
+/// Serves one inbound-address row on `path` and 501s anything else.
+private actor LPInboundStubClient: HTTPClientProtocol {
+    private let path: String
+    private let body: Data
+
+    init(path: String, address: String, router: String, chain: String = "ETH") {
+        self.path = path
+        self.body = Data("""
+        [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":false,
+          "gas_rate":"1","gas_rate_units":"gwei"}]
+        """.utf8)
+    }
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        await Task.yield()
+        guard target.path == path else {
+            throw HTTPError.statusCode(501, nil)
+        }
+        let url = target.baseURL.appendingPathComponent(target.path)
+        guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil) else {
+            throw HTTPError.invalidResponse
+        }
+        return HTTPResponse(data: body, response: response)
+    }
 }

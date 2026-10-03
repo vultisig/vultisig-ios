@@ -31,6 +31,9 @@ enum FunctionTransactionType: Hashable {
     /// no position exists yet: the user picks the pool, and the asset deposited
     /// follows that choice.
     case addThorchainLP(coin: CoinMeta)
+    /// The MayaChain counterpart of `addThorchainLP`: the pool is chosen first
+    /// and the memo names the vault's CACAO address.
+    case addMayaLP(coin: CoinMeta)
     case removeLP(position: LPPosition)
     case cosmosDelegate(coin: CoinMeta)
     case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
@@ -127,6 +130,11 @@ enum FunctionTransactionType: Hashable {
             // needs adding.
             let rune = TokensStore.TokenSelectionAssets.first { $0.chain == .thorChain && $0.isNativeToken }
             return [coin] + (rune.map { [$0] } ?? [])
+        case .addMayaLP(let coin):
+            // The entry asset plus CACAO, for the same reason `addThorchainLP`
+            // names RUNE: the memo has to name a CACAO account.
+            let cacao = TokensStore.TokenSelectionAssets.first { $0.chain == .mayaChain && $0.isNativeToken }
+            return [coin] + (cacao.map { [$0] } ?? [])
         case .removeLP(let position):
             return [position.coin1, position.coin2]
         case .cosmosDelegate(let coin):
