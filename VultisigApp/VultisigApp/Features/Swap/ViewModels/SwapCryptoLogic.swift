@@ -579,10 +579,11 @@ enum SwapCryptoLogic {
 
     /// On EVM every swap route shows the gas the vault signs for — the gas
     /// price ceiling × the gas limit — which the node reserves up front and the
-    /// receipt usually lands well under. Those rows, and the total built on
-    /// them, are labelled as a maximum. Other chains show the fee they pay.
+    /// receipt usually lands well under. NEAR likewise shows its upfront gas
+    /// reservation, refunded down to the gas burnt. Those rows, and the total
+    /// built on them, are labelled as a maximum. Other chains show the fee they pay.
     static func feeLabelKeys(feeChain: Chain) -> FeeLabelKeys {
-        feeChain.chainType == .EVM ? .maximum : .exact
+        [.EVM, .Near].contains(feeChain.chainType) ? .maximum : .exact
     }
 
     // MARK: - Display: misc
