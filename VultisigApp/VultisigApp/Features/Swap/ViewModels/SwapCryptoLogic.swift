@@ -299,7 +299,11 @@ enum SwapCryptoLogic {
     // MARK: - Branching predicates
 
     static func isApproveRequired(fromCoin: Coin, quote: SwapQuote?) -> Bool {
-        fromCoin.shouldApprove && router(quote: quote) != nil
+        // A direct ERC-20 `transfer` to a deposit address spends no allowance.
+        if case let .swapkit(response, _, _) = quote, response.isErc20DepositTransfer(fromCoin: fromCoin) {
+            return false
+        }
+        return fromCoin.shouldApprove && router(quote: quote) != nil
     }
 
     /// True iff this source swap settles via a Cosmos `MsgDeposit` on the swap
