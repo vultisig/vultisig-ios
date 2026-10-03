@@ -664,6 +664,14 @@ class BalanceService {
         case .polkadot:
             return .init(rawBalance: try await dot.getBalance(address: address))
 
+        case .near:
+            // The raw unlocked `amount`, which deliberately keeps the storage
+            // stake visible: a balance that hides it is indistinguishable from
+            // a lost one. `locked` is never added, and a missing account reads
+            // as zero while a broken read throws (`NearService.fetchAccount`).
+            let account = try await NearService.shared.fetchAccount(accountId: address)
+            return .init(rawBalance: (account?.amount ?? 0).description)
+
         case .bittensor:
             return .init(rawBalance: try await tao.getBalance(address: address))
 

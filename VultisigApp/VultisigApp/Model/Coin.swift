@@ -306,6 +306,13 @@ class Coin: ObservableObject, Codable, Hashable {
             return "250000000" // 0.025
         case .bittensor:
             return "100000" // 0.0001 TAO = 100_000 RAO
+        case .near:
+            // No static default exists: a NEAR fee is a gas RESERVATION priced
+            // from the node's runtime config at the current gas price, so any
+            // number written here would be a guess presented as a fee. Zero is
+            // the "not read yet" placeholder — every display path fetches the
+            // real reservation from `BlockChainService` before signing.
+            return "0"
         case .ton:
             return TonHelper.defaultFee.description
         case .ripple:

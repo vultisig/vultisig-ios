@@ -68,6 +68,7 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .sei: false,
         .qbtc: false,
         .bittensor: false,
+        .near: true,
         .kujira: false
     ]
 

@@ -126,13 +126,16 @@ struct SwapKitService {
         routeId: String,
         sourceAddress: String,
         destinationAddress: String,
-        overrideSlippage: Bool = false
+        overrideSlippage: Bool = false,
+        depositOnly: Bool = false
     ) async throws -> SwapKitSwapResponse {
         let request = SwapKitSwapRequest(
             routeId: routeId,
             sourceAddress: sourceAddress,
             destinationAddress: destinationAddress,
-            overrideSlippage: overrideSlippage ? true : nil
+            overrideSlippage: overrideSlippage ? true : nil,
+            disableBuildTx: depositOnly ? true : nil,
+            disableBalanceCheck: depositOnly ? true : nil
         )
         do {
             let response = try await httpClient.request(

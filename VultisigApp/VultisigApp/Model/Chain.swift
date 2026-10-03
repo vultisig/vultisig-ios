@@ -49,6 +49,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case robinhood
     case qbtc
     case bittensor
+    case near
 
     /// Chains the app can actively create, add, scan, or transact on.
     ///
@@ -102,7 +103,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO, .Ripple, .Tron:
             return .ECDSA
-        case .Solana, .Polkadot, .Sui, .Ton, .Cardano:
+        case .Solana, .Polkadot, .Sui, .Ton, .Cardano, .Near:
             return .EdDSA
         }
     }
@@ -130,6 +131,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .litecoin,
              .dash,
              .ripple,
+             .near,
              .avalanche,
              .base,
              .bscChain,
@@ -227,7 +229,12 @@ extension Chain {
     /// broadcast (this gates `BlockChainService.shouldUseCache` / `setCacheIfAllowed`).
     var supportsPendingTransactions: Bool {
         switch self {
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
+        // NEAR belongs here for the cache it disables rather than for pending-row
+        // tracking: a NEAR transaction nonce is the access-key nonce + 1, so a
+        // cached `NearSpecific` would be re-signed with the nonce of a
+        // transaction that already consumed it. `BlockChainService` reads this
+        // flag to skip its `BlockChainSpecific` cache.
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc, .near:
             return true
         case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor, .kujira:
             return false
@@ -244,11 +251,15 @@ extension Chain {
     ///   extrinsic (module/method + destination + amount + signed extra) —
     ///   there is no `system.remark`, no batch call, and no other field the
     ///   memo could ride on.
+    /// - NEAR: a `TransactionV0` carries signer, public key, nonce, receiver,
+    ///   block hash and a list of actions. `Action::Transfer` has a deposit and
+    ///   nothing else, and none of the other action variants is a place to
+    ///   attach free-form text — so a native transfer cannot carry one.
     /// Cardano DOES support memos: they are attached on-chain as CIP-20
     /// transaction metadata (label 674) via `CardanoSigningInput.auxiliaryData`.
     var supportsMemo: Bool {
         switch self {
-        case .sui, .polkadot, .bittensor:
+        case .sui, .polkadot, .bittensor, .near:
             return false
         default:
             return true
@@ -266,7 +277,7 @@ extension Chain {
     static var keyImportEnabledChains: [Chain] {
         supportedCases.filter {
             switch $0 {
-            case .cardano, .thorChainChainnet, .thorChainStagenet, .polygonV2, .qbtc:
+            case .cardano, .thorChainChainnet, .thorChainStagenet, .polygonV2, .qbtc, .near:
                 return false
             default:
                 return true

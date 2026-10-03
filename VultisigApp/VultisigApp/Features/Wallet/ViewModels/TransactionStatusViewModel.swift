@@ -21,6 +21,10 @@ class TransactionStatusViewModel: ObservableObject {
     private let storage = StoredPendingTransactionStorage.shared
     private let logger = Log.wallet.viewModel
 
+    /// Sender account id. Chains whose lookup needs it (NEAR) cannot resolve a
+    /// transaction from its hash alone; `nil` makes such a lookup fail closed.
+    private let senderAccountId: String?
+
     // Optional metadata for persistence
     private let coinTicker: String?
     private let amount: String?
@@ -37,7 +41,8 @@ class TransactionStatusViewModel: ObservableObject {
         coinTicker: String? = nil,
         amount: String? = nil,
         toAddress: String? = nil,
-        pubKeyECDSA: String? = nil
+        pubKeyECDSA: String? = nil,
+        senderAccountId: String? = nil
     ) {
         self.txHash = txHash
         self.chain = chain
@@ -46,6 +51,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.amount = amount
         self.toAddress = toAddress
         self.pubKeyECDSA = pubKeyECDSA
+        self.senderAccountId = senderAccountId
 
         // Set initial state
         self.status = .broadcasted(estimatedTime: config.estimatedTime)
@@ -60,6 +66,9 @@ class TransactionStatusViewModel: ObservableObject {
         self.amount = pendingTransaction.amount
         self.toAddress = pendingTransaction.toAddress
         self.pubKeyECDSA = pendingTransaction.pubKeyECDSA
+        // A resumed row carries no sender: the persisted record does not keep
+        // one, so a chain that needs it fails closed rather than guessing.
+        self.senderAccountId = nil
 
         // Restore status from persistence
         self.status = Self.statusFromString(
@@ -99,6 +108,7 @@ class TransactionStatusViewModel: ObservableObject {
                 do {
                     let result = try await service.checkTransactionStatus(
                         txHash: txHash,
+                        senderAccountId: senderAccountId,
                         chain: chain
                     )
 

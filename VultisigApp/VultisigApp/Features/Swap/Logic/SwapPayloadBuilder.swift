@@ -83,7 +83,7 @@ extension SwapCryptoLogic {
         case .Solana:
             return SolanaSwapNetworkFee.fee(chainSpecific: chainSpecific) ?? chainSpecific.gas
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron, .Near:
             return chainSpecific.gas
         }
     }
@@ -729,6 +729,29 @@ extension SwapCryptoLogic {
                     vault: vault
                 )
 
+            case .nearDepositOnly:
+                // NEAR source: NEAR Intents `simpleTransfer` deposit. A plain
+                // native transfer to the per-swap implicit account; the payload
+                // matches the SDK byte-for-byte (empty txType/txPayload, no
+                // memo) so either platform can initiate or co-sign.
+                let swapKitPayload = buildSwapKitNearPayload(
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    fromAmountInCoin: amountInCoin,
+                    toAmountDecimal: toDecimal,
+                    swapResponse: swapResponse
+                )
+                return try await keysignFactory.buildTransfer(
+                    coin: fromCoin,
+                    toAddress: swapResponse.targetAddress,
+                    amount: amountInCoin,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .swapkit(swapKitPayload),
+                    approvePayload: nil,
+                    vault: vault
+                )
+
             case .unsupported(let txType, _):
                 throw SwapKitError.unsupportedTxType(txType)
             }
@@ -1080,6 +1103,28 @@ extension SwapCryptoLogic {
         )
     }
 
+    static func buildSwapKitNearPayload(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmountInCoin: BigInt,
+        toAmountDecimal: Decimal,
+        swapResponse: SwapKitSwapResponse
+    ) -> SwapKitSwapPayload {
+        return SwapKitSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmountInCoin,
+            toAmountDecimal: toAmountDecimal,
+            txType: "",
+            txPayload: Data(),
+            targetAddress: swapResponse.targetAddress,
+            inboundAddress: swapResponse.inboundAddress,
+            memo: nil,
+            subProvider: swapResponse.subProvider,
+            swapID: swapResponse.swapId
+        )
+    }
+
     /// Translates a SwapKit `/v3/swap` response into the existing `EVMQuote`
     /// shape so the keysign dispatcher can reuse the OneInch / Solana paths
     /// unchanged. EVM and Solana are typed in Phase 1; other `txType` values
@@ -1173,6 +1218,9 @@ extension SwapCryptoLogic {
             // XRP deposit-only flow — no transaction body to mirror into
             // an EVMQuote. Same defence-in-depth as PSBT.
             throw SwapKitError.unsupportedTxType("XRP")
+
+        case .nearDepositOnly:
+            throw SwapKitError.unsupportedTxType("NEAR")
 
         case .dogecoinPsbt:
             throw SwapKitError.unsupportedTxType("PSBT_DOGE")

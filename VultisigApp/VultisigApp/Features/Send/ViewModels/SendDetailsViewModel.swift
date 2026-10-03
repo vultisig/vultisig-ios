@@ -919,7 +919,7 @@ final class SendDetailsViewModel {
         if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
             estimatedGasLimit = resolvedGasLimit
         }
-        let refined = SendCryptoLogic.computeMaxAmount(coin: coin, fee: result.fee)
+        let refined = SendCryptoLogic.computeMaxAmount(coin: coin, fee: result.fee, reserve: result.reserve)
         amount = refined
         convertToFiat(newValue: refined, setMaxValue: true)
     }

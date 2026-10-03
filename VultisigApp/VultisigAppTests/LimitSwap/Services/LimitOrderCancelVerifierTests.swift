@@ -184,14 +184,14 @@ private struct FailingHTTPClient: HTTPClientProtocol {
 
 private final class StubStatusChecker: TransactionStatusChecking, @unchecked Sendable {
     private let status: TransactionStatusResult.TransactionConfirmationStatus
-    private(set) var queries: [(txHash: String, chain: Chain)] = []
+    private(set) var queries: [(txHash: String, senderAccountId: String?, chain: Chain)] = []
 
     init(status: TransactionStatusResult.TransactionConfirmationStatus) {
         self.status = status
     }
 
-    func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
-        queries.append((txHash, chain))
+    func checkTransactionStatus(txHash: String, senderAccountId: String?, chain: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
+        queries.append((txHash, senderAccountId, chain))
         return TransactionStatusResult(status: status, blockNumber: nil, confirmations: nil)
     }
 }
@@ -199,7 +199,7 @@ private final class StubStatusChecker: TransactionStatusChecking, @unchecked Sen
 private struct ThrowingStatusChecker: TransactionStatusChecking {
     struct Failure: Error {}
 
-    func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
+    func checkTransactionStatus(txHash _: String, senderAccountId _: String?, chain _: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
         throw Failure()
     }
 }
@@ -210,7 +210,7 @@ private struct ThrowingStatusChecker: TransactionStatusChecking {
 private struct UnusedStatusChecker: TransactionStatusChecking {
     struct Unexpected: Error {}
 
-    func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
+    func checkTransactionStatus(txHash _: String, senderAccountId _: String?, chain _: Chain) async throws -> TransactionStatusResult { // swiftlint:disable:this async_without_await
         throw Unexpected()
     }
 }

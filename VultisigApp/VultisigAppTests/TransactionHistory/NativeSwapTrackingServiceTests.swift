@@ -831,7 +831,7 @@ private actor NativeSwapSourceChecker: TransactionStatusChecking {
         self.fails = fails
     }
 
-    func checkTransactionStatus(txHash: String, chain: Chain) throws -> TransactionStatusResult {
+    func checkTransactionStatus(txHash: String, senderAccountId _: String?, chain: Chain) throws -> TransactionStatusResult {
         requests.append((txHash, chain))
         if fails { throw URLError(.timedOut) }
         return TransactionStatusResult(status: status, blockNumber: nil, confirmations: nil)

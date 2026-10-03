@@ -292,7 +292,7 @@ extension BlockChainSpecific {
         case .Ripple(_, _, _, _, let transactionType):
             return VSTransactionType(rawValue: transactionType) ?? .unspecified
         case .UTXO, .Cardano, .Ethereum, .MayaChain, .Solana, .Sui,
-             .Polkadot, .Ton, .Tron:
+             .Polkadot, .Ton, .Tron, .Near:
             return .unspecified
         }
     }

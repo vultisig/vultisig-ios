@@ -641,6 +641,17 @@ extension BlockChainSpecific {
                 blockHeaderWitnessAddress: value.blockHeaderWitnessAddress,
                 gasFeeEstimation: value.gasEstimation
             )
+        case .nearSpecific(let value):
+            // The nonce and block hash are relayed verbatim: they are the values
+            // the initiator froze, and a co-signer that recomputed either would
+            // sign different bytes and break the ceremony. The storage reserve
+            // is deliberately NOT on the wire — this device re-reads it when it
+            // needs it.
+            self = .Near(
+                nonce: value.nonce,
+                blockHash: value.blockHash,
+                gasFee: value.gasFee
+            )
         }
 
     }
@@ -789,6 +800,14 @@ extension BlockChainSpecific {
                 // been the value signers write as `fee_limit`. The initiating
                 // device's post-stake display estimate is deliberately local.
                 $0.gasEstimation = feeLimit ?? gasEstimation
+            })
+
+        case .Near(let nonce, let blockHash, let gasFee, _):
+            // The local-only storage reserve is intentionally dropped here.
+            return .nearSpecific(.with {
+                $0.nonce = nonce
+                $0.blockHash = blockHash
+                $0.gasFee = gasFee
             })
         }
     }

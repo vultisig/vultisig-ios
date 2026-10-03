@@ -18,6 +18,7 @@ enum SwapKitCapability {
              .dash,
              .dogecoin,
              .litecoin,
+             .near,
              .ripple,
              .solana,
              .sui,
@@ -61,7 +62,8 @@ enum SwapKitCapability {
              (.cardano, .cardanoPrebuilt),
              (.sui, .sui),
              (.tron, .tron),
-             (.ripple, .rippleDepositOnly):
+             (.ripple, .rippleDepositOnly),
+             (.near, .nearDepositOnly):
             return true
         default:
             return false

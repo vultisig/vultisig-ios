@@ -16,6 +16,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
             checker: checker,
             txHash: "confirmed-after-deadline",
             chain: .ethereum,
+            senderAccountId: "from",
             deadlineReached: true
         )
         let callCount = await checker.callCount
@@ -31,6 +32,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
             checker: checker,
             txHash: "still-pending",
             chain: .ethereum,
+            senderAccountId: "from",
             deadlineReached: true
         )
 
@@ -44,6 +46,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
             checker: checker,
             txHash: "failed-after-deadline",
             chain: .ethereum,
+            senderAccountId: "from",
             deadlineReached: true
         )
 
@@ -57,6 +60,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
             checker: checker,
             txHash: "lookup-error",
             chain: .ethereum,
+            senderAccountId: "from",
             deadlineReached: true
         )
         let callCount = await checker.callCount
@@ -72,10 +76,29 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
             checker: checker,
             txHash: "not-found-yet",
             chain: .ethereum,
+            senderAccountId: "from",
             deadlineReached: false
         )
 
         XCTAssertEqual(action, .retry)
+    }
+
+    /// NEAR cannot resolve a transaction from its hash alone — the node is asked
+    /// by `(tx_hash, sender_account_id)` — so the poller has to hand the row's
+    /// sender to the checker rather than dropping it on the way through.
+    func testPollerPassesTheSenderAccountIdToTheChecker() async {
+        let checker = StubStatusChecker(outcome: .pending)
+
+        _ = await TransactionStatusPoller.nextAction(
+            checker: checker,
+            txHash: "near-hash",
+            chain: .near,
+            senderAccountId: "sender.near",
+            deadlineReached: false
+        )
+
+        let receivedSender = await checker.lastSenderAccountId
+        XCTAssertEqual(receivedSender, "sender.near")
     }
 
     func testLegacyTimeoutRecoveryClearsStaleTerminalFieldsAndPreservesRealErrors() throws {
@@ -206,15 +229,21 @@ private actor StubStatusChecker: TransactionStatusChecking {
     }
 
     private(set) var callCount = 0
+    private(set) var lastSenderAccountId: String?
     private let outcome: Outcome
 
     init(outcome: Outcome) {
         self.outcome = outcome
     }
 
-    func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
+    func checkTransactionStatus(
+        txHash _: String,
+        senderAccountId: String?,
+        chain _: Chain
+    ) async throws -> TransactionStatusResult {
         await Task.yield()
         callCount += 1
+        lastSenderAccountId = senderAccountId
         switch outcome {
         case .notFound:
             return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)

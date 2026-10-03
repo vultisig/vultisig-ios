@@ -72,6 +72,20 @@ enum BlockChainSpecific: Codable, Hashable {
         feeLimit: UInt64? = nil
     )
 
+    /// `nonce` and `blockHash` are the frozen signing inputs
+    /// (`NearSpecific.nonce` / `.block_hash`): every co-signer must sign the
+    /// exact same values or the ceremony fails, so neither is re-read at
+    /// signing time. `gasFee` is the initiator's upfront gas reservation in
+    /// yoctoNEAR — display metadata and a balance check, never a signed gas
+    /// limit or a cap, because NEAR charges the gas it actually burns.
+    ///
+    /// `storageReserve` is local-only, like `Tron.feeLimit`: the balance the
+    /// account must keep to back its own storage (zero at `<= 770` bytes,
+    /// NEP-448), which MAX and the balance checks have to leave behind. It does
+    /// not travel on the wire — a co-signer that needs it re-reads the chain —
+    /// so a relayed payload decodes with nil.
+    case Near(nonce: UInt64, blockHash: Data, gasFee: String, storageReserve: BigInt? = nil)
+
     /// Return a copy with the EVM gas limit replaced. No-op for non-EVM cases
     /// (gas-limit overrides only apply to Ethereum-family swaps). Used to honour
     /// a user-supplied custom gas limit from the swap advanced settings.
@@ -122,6 +136,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation, _):
             return gasFeeEstimation.description.toBigInt()
+        case .Near(_, _, let gasFee, _):
+            return gasFee.toBigInt()
         }
     }
 
@@ -153,7 +169,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas // For UTXO, gas represents the byteFee (sats/byte rate), not the total fee
         case .Sui(_, _, let gasBudget):
             return gasBudget // For Sui, return the actual gas budget (total fee estimate)
-        case .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Polkadot, .Ton, .Ripple, .Tron:
+        case .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Polkadot, .Ton, .Ripple, .Tron, .Near:
             return gas
         }
     }
@@ -162,7 +178,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):
             return gasLimit
-        case .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
+        case .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron, .Near:
             return nil
         }
     }
@@ -174,5 +190,16 @@ enum BlockChainSpecific: Codable, Hashable {
             return nil
         }
         return zcashBranchId
+    }
+
+    /// Balance the account must keep to back its own storage, for the chains
+    /// that require one beyond the quoted fee. `nil` — not `.zero` — when the
+    /// device has no reading, so a caller can tell "nothing is reserved" from
+    /// "reserve unknown".
+    var nearStorageReserve: BigInt? {
+        guard case .Near(_, _, _, let storageReserve) = self else {
+            return nil
+        }
+        return storageReserve
     }
 }

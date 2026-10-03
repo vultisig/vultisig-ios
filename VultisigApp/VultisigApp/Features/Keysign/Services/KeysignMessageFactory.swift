@@ -131,6 +131,9 @@ struct KeysignMessageFactory {
                     // numeric memos and attaches `destinationTag` on the
                     // `RippleOperationPayment` automatically.
                     break
+                case "" where payload.coin.chain == .near:
+                    // NEAR Intents deposit: a plain transfer, bound to the deposit by `NearHelper`.
+                    break
                 case "EVM", "SOLANA":
                     // EVM and Solana ride `SwapPayload.generic` — reaching
                     // this branch means a routing bug.
@@ -185,6 +188,8 @@ struct KeysignMessageFactory {
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .bittensor:
             return try BittensorHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .near:
+            return try NearHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ripple:

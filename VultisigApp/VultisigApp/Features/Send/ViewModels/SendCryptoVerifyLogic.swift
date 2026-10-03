@@ -48,6 +48,10 @@ struct SendCryptoVerifyLogic {
         /// Carrying the planned amount is what keeps the figure Verify confirms
         /// equal to the one that gets signed.
         var maxSendAmountRaw: BigInt? = nil
+        /// Balance the chain requires beyond the quoted fee without spending it
+        /// (NEAR's storage backing). MAX and the balance clamp subtract it.
+        /// `.zero` for every chain that reserves nothing.
+        var reserve: BigInt = .zero
     }
 
     @MainActor
@@ -119,7 +123,7 @@ struct SendCryptoVerifyLogic {
             fee = chainSpecific.gas
         }
 
-        return FeeResult(fee: fee, gas: fee)
+        return FeeResult(fee: fee, gas: fee, reserve: chainSpecific.nearStorageReserve ?? .zero)
     }
 
     // MARK: - Balance Validation
@@ -251,6 +255,53 @@ struct SendCryptoVerifyLogic {
     @MainActor
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
+    }
+
+    /// Native NEAR sends must leave the account able to back its own storage.
+    /// nearcore rejects a transaction whose balance would end up below
+    /// `storage_amount_per_byte × storage_usage` (NEP-448 exempts the first 770
+    /// bytes) with `LackBalanceForState` — after the ceremony has already run
+    /// and the gas is burnt.
+    ///
+    /// Read live rather than trusting the reserve carried on the payload's
+    /// chain-specific: that value was frozen when the fee was quoted, and the
+    /// storage usage may have moved since (a token transfer into the account
+    /// costs it storage). Fails closed — the account has to exist to send from
+    /// it at all.
+    func validateNearStorageReserveIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .near, tx.coin.isNativeToken else { return }
+
+        async let accountRead = NearService.shared.fetchAccount(accountId: tx.coin.address)
+        async let feesRead = NearService.shared.fetchFeeConfig()
+        let (account, fees) = try await (accountRead, feesRead)
+
+        guard let account else {
+            throw NearError.unknownAccount(tx.coin.address)
+        }
+
+        let reserve = NearFees.storageReserve(
+            storageUsage: account.storageUsage,
+            locked: account.locked,
+            storageAmountPerByte: fees.storageAmountPerByte
+        )
+        let requestedAmount = Self.needsNearBalanceRefit(tx: tx)
+            ? Swift.min(tx.amountInRaw, NearFees.maxSendable(
+                amount: tx.coin.balanceRaw,
+                gasReservation: tx.fee,
+                storageReserve: reserve
+            ))
+            : tx.amountInRaw
+        let required = NearFees.requiredAmount(
+            requestedAmount: requestedAmount,
+            gasReservation: tx.fee,
+            storageReserve: reserve
+        )
+
+        // The reuse is deliberate: what the account cannot afford here is the
+        // amount plus the balance it must keep, which is the same "more than
+        // the wallet holds" the generic error already tells the user.
+        guard required > account.amount else { return }
+        throw HelperError.runtimeError("walletBalanceExceededError".localized)
     }
 
     // MARK: - Destination Validation
@@ -522,6 +573,14 @@ struct SendCryptoVerifyLogic {
             && tx.coin.chainType == .EVM
     }
 
+    /// Same rule for native NEAR: a balance-derived amount is re-fitted to
+    /// `balance − gas reservation − storage reserve`, so it can never sign above it.
+    static func needsNearBalanceRefit(tx: SendTransaction) -> Bool {
+        (tx.sendMaxAmount || tx.amountWasAutoAdjusted)
+            && tx.coin.isNativeToken
+            && tx.coin.chain == .near
+    }
+
     /// Headroom a native send whose amount came from the balance has to leave on
     /// OP-stack rollups, where op-geth checks
     /// `value + gasLimit × maxFeePerGas + l1Cost + operatorCost` against the
@@ -703,6 +762,18 @@ struct SendCryptoVerifyLogic {
         tx: SendTransaction,
         chainSpecific: BlockChainSpecific
     ) async throws -> BigInt {
+        if Self.needsNearBalanceRefit(tx: tx) {
+            let amount = Swift.min(tx.amountInRaw, NearFees.maxSendable(
+                amount: tx.coin.balanceRaw,
+                gasReservation: chainSpecific.gas,
+                storageReserve: chainSpecific.nearStorageReserve ?? .zero
+            ))
+            guard amount > 0 else {
+                throw HelperError.runtimeError("walletBalanceExceededError")
+            }
+            return amount
+        }
+
         guard Self.needsEVMBalanceRefit(tx: tx) else { return tx.amountInRaw }
 
         let amount = SendCryptoLogic.evmMaxSendAmountRaw(

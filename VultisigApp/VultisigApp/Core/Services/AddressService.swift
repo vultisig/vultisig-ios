@@ -137,6 +137,16 @@ struct AddressService {
             }
         }
 
+        if chain == .near {
+            // Account ids are case-sensitive and lowercased by nobody: the
+            // `0x…` / `0s…` families and any uppercase spelling are rejected
+            // rather than normalized into a look-alike account.
+            guard NearAccountId.isValid(input) else {
+                throw Errors.invalidAddress
+            }
+            return input
+        }
+
         if validateRecipientAddress(address: input, chain: chain) {
             return input
         }
@@ -172,6 +182,10 @@ struct AddressService {
 
         if chain == .bittensor {
             return BittensorHelper.isValidAddress(address)
+        }
+
+        if chain == .near {
+            return NearAccountId.isValid(address)
         }
 
         return chain.coinType.validate(address: address)

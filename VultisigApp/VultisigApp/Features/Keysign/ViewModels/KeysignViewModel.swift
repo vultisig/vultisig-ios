@@ -874,6 +874,9 @@ class KeysignViewModel: ObservableObject {
                     // tag) at the deposit. `toAmount` is the user's own send
                     // amount, not a SwapKit-stated one.
                     break
+                case "" where keysignPayload.coin.chain == .near:
+                    // NEAR Intents deposit: a plain transfer, bound to the deposit by `NearHelper`.
+                    break
                 case "EVM", "SOLANA":
                     throw SwapKitError.unsupportedTxType(payload.txType)
                 default:
@@ -964,6 +967,12 @@ class KeysignViewModel: ObservableObject {
             let transaction = try TronHelper.getSignedTransaction(
                 keysignPayload: keysignPayload,
                 signatures: signatures            )
+            return .regular(transaction)
+        case .Near:
+            let transaction = try NearHelper.getSignedTransaction(
+                keysignPayload: keysignPayload,
+                signatures: signatures
+            )
             return .regular(transaction)
         }
 
@@ -1130,6 +1139,23 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         throw error
                     }
+
+                case .near:
+                    // The node's answer is bound to the hash derived locally
+                    // from the very bytes just submitted: an acknowledgement
+                    // for a different transaction must never be recorded as
+                    // this one, and the hash is what the status poll asks for.
+                    let returnedHash = try await NearService.shared.sendTransaction(
+                        signedTransactionBase64: tx.rawTransaction
+                    )
+
+                    if let returnedHash, returnedHash != tx.transactionHash {
+                        throw HelperError.runtimeError(
+                            "NEAR broadcast returned \(returnedHash) for a transaction whose local hash is \(tx.transactionHash)"
+                        )
+                    }
+
+                    self.txid = tx.transactionHash
                 }
 
             case .regularWithApprove(let approves, let transaction):
@@ -1362,6 +1388,10 @@ class KeysignViewModel: ObservableObject {
         let hash = transactionType.transactionHash
         guard !hash.isEmpty else { return false }
 
+        // NEAR's lookup is sharded by sender, so the node needs the account id
+        // as well as the hash. Captured with the other value-type inputs so the
+        // detached task below stays Sendable-clean.
+        let senderAccountId = keysignPayload?.coin.address
         let checker = transactionStatusChecker
         let log = logger
 
@@ -1371,7 +1401,11 @@ class KeysignViewModel: ObservableObject {
 
             for attempt in 1...maxAttempts {
                 do {
-                    let result = try await checker.checkTransactionStatus(txHash: hash, chain: chain)
+                    let result = try await checker.checkTransactionStatus(
+                        txHash: hash,
+                        senderAccountId: senderAccountId,
+                        chain: chain
+                    )
                     switch result.status {
                     case .confirmed, .pending:
                         return true

@@ -208,6 +208,9 @@ struct SendInteractorFeeResult: Equatable {
     /// The Send form stores this as `estimatedGasLimit` so the displayed fee and
     /// the editable gas-settings value reflect the estimate.
     var gasLimit: BigInt? = nil
+    /// Balance the chain requires beyond the quoted fee without spending it
+    /// (NEAR's storage backing). Zero for every chain that reserves nothing.
+    var reserve: BigInt = .zero
 }
 
 extension SendInteractor {
@@ -240,7 +243,11 @@ extension SendInteractor {
         case .UTXO, .Cardano:
             return SendInteractorFeeResult(fee: chainSpecific.fee, gas: chainSpecific.gas)
         default:
-            return SendInteractorFeeResult(fee: chainSpecific.gas, gas: chainSpecific.gas)
+            return SendInteractorFeeResult(
+                fee: chainSpecific.gas,
+                gas: chainSpecific.gas,
+                reserve: chainSpecific.nearStorageReserve ?? .zero
+            )
         }
     }
 
