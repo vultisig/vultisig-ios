@@ -157,7 +157,7 @@ final class JoinKeysignGasSwapFeeTests: XCTestCase {
 
         for (name, quote) in quotes {
             let initiatorFeeWei = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-                quote: quote, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
+                quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
             )
             let payload = makeEvmPayload(
                 chainSpecific: .Ethereum(
@@ -191,7 +191,7 @@ final class JoinKeysignGasSwapFeeTests: XCTestCase {
         let quote: SwapQuote = .swapkit(response, fee: nil, subProvider: "FLASHNET")
 
         let initiatorFeeWei = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGasWei, gasLimit: gasLimitFloor, fee: .zero
         )
 
         let evmQuote = try SwapCryptoLogic.buildEVMQuoteFromSwapKit(swapResponse: response)

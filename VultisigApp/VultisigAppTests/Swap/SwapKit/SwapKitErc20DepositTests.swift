@@ -191,7 +191,35 @@ final class SwapKitErc20DepositTests: XCTestCase {
         }
     }
 
-    private func transaction(fromAmount: Decimal, quote: SwapQuote) -> SwapTransaction {
+    /// SwapKit states 900k gas for this route; the deposit is a token send
+    /// simulated at 120k. The relayed payload must not carry SwapKit's figure,
+    /// since every platform signs max(quote gas, gasLimit), and the bond the
+    /// initiator shows and validates must be the one signed.
+    func testDepositGasIsNotRaisedBySwapKitsRouteFigure() async throws {
+        let quote = SwapQuote.swapkit(try liveResponse { self.replacingTx(&$0, "gas", "0xdbba0") }, fee: nil, subProvider: "NEAR")
+        let maxFeePerGas = BigInt(2_000_000_000)
+        let simulated = BigInt(120_000)
+        let transaction = transaction(fromAmount: 20, quote: quote, gas: maxFeePerGas, gasLimit: simulated)
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault()
+        )
+        guard case let .generic(generic) = payload.swapPayload else {
+            return XCTFail("Expected .generic swapPayload")
+        }
+        let signed = EVMSwapFee.effective(
+            quoteGasPriceWei: EVMSwapFee.quoteGasPriceWei(generic.quote.tx.gasPrice),
+            quoteGas: BigInt(generic.quote.tx.gas),
+            maxFeePerGasWei: maxFeePerGas,
+            gasLimit: simulated
+        )
+        XCTAssertEqual(signed.gasLimit, simulated)
+        XCTAssertEqual(transaction.displayedNetworkFeeWei, maxFeePerGas * simulated)
+    }
+
+    private func transaction(fromAmount: Decimal, quote: SwapQuote, gas: BigInt = 0, gasLimit: BigInt = 0) -> SwapTransaction {
         let eth = Coin(asset: CoinMeta.make(chain: .ethereum, ticker: "ETH", decimals: 18, isNativeToken: true), address: usdt().address, hexPublicKey: "")
         let sol = Coin(asset: CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9, isNativeToken: true), address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", hexPublicKey: "")
         return SwapTransaction(
@@ -199,8 +227,8 @@ final class SwapKitErc20DepositTests: XCTestCase {
             toCoin: sol,
             fromAmount: fromAmount,
             kind: .market(quote),
-            gas: 0,
-            gasLimit: 0,
+            gas: gas,
+            gasLimit: gasLimit,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,

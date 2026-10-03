@@ -444,10 +444,26 @@ extension SwapCryptoLogic {
             // their own `txType` branches here.
             switch swapResponse.tx {
             case .evm, .solana:
+                var evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
                 if swapResponse.isErc20DepositTransfer(fromCoin: fromCoin) {
                     try swapResponse.validateErc20DepositTransfer(fromCoin: fromCoin, amount: amountInCoin)
+                    // Every platform signs max(quote gas, gasLimit), so SwapKit's
+                    // figure must not ride the payload (see `evmRouteGas`).
+                    let tx = evmQuote.tx
+                    evmQuote = EVMQuote(
+                        dstAmount: evmQuote.dstAmount,
+                        tx: EVMQuote.Transaction(
+                            from: tx.from,
+                            to: tx.to,
+                            data: tx.data,
+                            value: tx.value,
+                            gasPrice: tx.gasPrice,
+                            gas: EVMHelper.defaultERC20TransferGasUnit,
+                            swapFee: tx.swapFee,
+                            swapFeeTokenContract: tx.swapFeeTokenContract
+                        )
+                    )
                 }
-                let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
                 let payload = buildSwapKitGenericPayload(
                     fromCoin: fromCoin,
                     toCoin: toCoin,

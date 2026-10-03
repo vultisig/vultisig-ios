@@ -181,8 +181,8 @@ enum SwapCryptoLogic {
     /// value: the bond is what an EVM node requires the account to cover, so
     /// validating against the smaller quote seed lets swaps through that the
     /// node then rejects with "insufficient funds for gas".
-    static func displayedSwapNetworkFeeWei(quote: SwapQuote?, feeCoin: Coin, gas: BigInt, gasLimit: BigInt, fee: BigInt) -> BigInt {
-        guard feeCoin.chain.chainType == .EVM, gas > 0, let routeGas = quote?.evmRouteGas else {
+    static func displayedSwapNetworkFeeWei(quote: SwapQuote?, fromCoin: Coin, feeCoin: Coin, gas: BigInt, gasLimit: BigInt, fee: BigInt) -> BigInt {
+        guard feeCoin.chain.chainType == .EVM, gas > 0, let routeGas = evmRouteGas(quote: quote, fromCoin: fromCoin) else {
             return fee
         }
         return EVMSwapFee.effective(
@@ -191,6 +191,18 @@ enum SwapCryptoLogic {
             maxFeePerGasWei: gas,
             gasLimit: gasLimit
         ).feeWei
+    }
+
+    /// The gas a route states for itself, which `EVMSwapFee` floors the signed
+    /// limit with. An ERC-20 deposit transfer is sized by its own simulation
+    /// (the oracle `gasLimit`), so it states only the ERC-20 transfer floor and
+    /// the provider's figure never raises it. The payload builder writes the
+    /// same value into the relayed quote, so every device signs it.
+    static func evmRouteGas(quote: SwapQuote?, fromCoin: Coin) -> BigInt? {
+        if case let .swapkit(response, _, _) = quote, response.isErc20DepositTransfer(fromCoin: fromCoin) {
+            return BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        }
+        return quote?.evmRouteGas
     }
 
     static func toAmountDecimal(quote: SwapQuote?, toCoin: Coin) -> Decimal {
