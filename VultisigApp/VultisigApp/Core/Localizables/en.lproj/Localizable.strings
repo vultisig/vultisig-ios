@@ -963,6 +963,12 @@
 "name" = "Name";
 "nameYourVault" = "Name your vault";
 "native" = "Native";
+"nearErrorMalformedResponse" = "NEAR response is not readable: %@";
+"nearErrorMalformedSignedTransaction" = "NEAR signed transaction is malformed: %@";
+"nearErrorRpc" = "NEAR %1$@ failed (%2$@): %3$@";
+"nearErrorUnknownAccessKey" = "NEAR access key is not on the account: %@";
+"nearErrorUnknownAccount" = "NEAR account %@ does not exist";
+"nearErrorUnknownTransaction" = "NEAR transaction %@ is not known to the node";
 "needToRemoveTokens" = "All the tokens within this chain needs to be removed before proceeding.";
 "network" = "Network";
 "networkFee" = "Network Fee";

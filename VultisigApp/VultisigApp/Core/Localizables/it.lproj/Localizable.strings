@@ -963,6 +963,12 @@
 "name" = "Nome";
 "nameYourVault" = "Dai un nome al tuo vault";
 "native" = "Nativo";
+"nearErrorMalformedResponse" = "La risposta NEAR non è leggibile: %@";
+"nearErrorMalformedSignedTransaction" = "La transazione NEAR firmata non è valida: %@";
+"nearErrorRpc" = "NEAR %1$@ non riuscito (%2$@): %3$@";
+"nearErrorUnknownAccessKey" = "La chiave di accesso NEAR non è sull'account: %@";
+"nearErrorUnknownAccount" = "L'account NEAR %@ non esiste";
+"nearErrorUnknownTransaction" = "Il nodo non conosce la transazione NEAR %@";
 "needToRemoveTokens" = "Tutti i token all'interno di questa catena devono essere rimossi prima di procedere.";
 "network" = "Rete";
 "networkFee" = "Commissione di rete";

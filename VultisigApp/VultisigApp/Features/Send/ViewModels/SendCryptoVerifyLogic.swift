@@ -303,11 +303,13 @@ struct SendCryptoVerifyLogic {
             storageReserve: reserve
         )
 
-        // The reuse is deliberate: what the account cannot afford here is the
-        // amount plus the balance it must keep, which is the same "more than
-        // the wallet holds" the generic error already tells the user.
         guard required > account.amount else { return }
-        throw HelperError.runtimeError("walletBalanceExceededError".localized)
+        throw HelperError.runtimeError(InsufficientFundsMessage.text(
+            coin: tx.coin,
+            required: required,
+            available: account.amount,
+            includesNetworkCosts: true
+        ))
     }
 
     // MARK: - Destination Validation

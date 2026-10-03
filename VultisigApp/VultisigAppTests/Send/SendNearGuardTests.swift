@@ -49,7 +49,13 @@ final class SendNearGuardTests: XCTestCase {
             _ = try await vm.validateForm()
             XCTFail("a balance short of the signed gas reservation must not reach signing")
         } catch {
-            XCTAssertEqual(error.localizedDescription, "walletBalanceExceededError".localized)
+            let expected = InsufficientFundsMessage.text(
+                coin: vm.transaction.coin,
+                required: Self.sendAmount + signedGas + Self.storageReserve,
+                available: balance,
+                includesNetworkCosts: true
+            )
+            XCTAssertEqual(error.localizedDescription, expected)
         }
     }
 

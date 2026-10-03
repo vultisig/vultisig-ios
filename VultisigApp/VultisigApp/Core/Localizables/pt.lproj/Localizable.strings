@@ -963,6 +963,12 @@
 "name" = "Nome";
 "nameYourVault" = "Nomeie seu cofre";
 "native" = "Nativo";
+"nearErrorMalformedResponse" = "A resposta da NEAR não pode ser lida: %@";
+"nearErrorMalformedSignedTransaction" = "A transação assinada da NEAR está malformada: %@";
+"nearErrorRpc" = "NEAR %1$@ falhou (%2$@): %3$@";
+"nearErrorUnknownAccessKey" = "A chave de acesso da NEAR não está na conta: %@";
+"nearErrorUnknownAccount" = "A conta NEAR %@ não existe";
+"nearErrorUnknownTransaction" = "O nó não conhece a transação NEAR %@";
 "needToRemoveTokens" = "Todos os tokens dentro desta cadeia precisam ser removidos antes de prosseguir.";
 "network" = "Rede";
 "networkFee" = "Taxa de rede";

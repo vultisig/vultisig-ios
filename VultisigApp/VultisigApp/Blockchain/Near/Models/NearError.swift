@@ -31,17 +31,17 @@ enum NearError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case let .rpc(method, name, message):
-            return "NEAR \(method) failed (\(name)): \(message)"
+            return String(format: "nearErrorRpc".localized, method, name, message)
         case let .unknownAccount(accountId):
-            return "NEAR account \(accountId) does not exist"
+            return String(format: "nearErrorUnknownAccount".localized, accountId)
         case let .unknownAccessKey(detail):
-            return "NEAR access key is not on the account: \(detail)"
+            return String(format: "nearErrorUnknownAccessKey".localized, detail)
         case let .unknownTransaction(hash):
-            return "NEAR transaction \(hash) is not known to the node"
+            return String(format: "nearErrorUnknownTransaction".localized, hash)
         case let .malformedResponse(detail):
-            return "NEAR response is not readable: \(detail)"
+            return String(format: "nearErrorMalformedResponse".localized, detail)
         case let .malformedSignedTransaction(detail):
-            return "NEAR signed transaction \(detail)"
+            return String(format: "nearErrorMalformedSignedTransaction".localized, detail)
         }
     }
 

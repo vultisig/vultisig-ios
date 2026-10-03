@@ -963,6 +963,12 @@
 "name" = "名称";
 "nameYourVault" = "命名您的保险库";
 "native" = "原生";
+"nearErrorMalformedResponse" = "无法读取 NEAR 响应：%@";
+"nearErrorMalformedSignedTransaction" = "NEAR 已签名交易格式错误：%@";
+"nearErrorRpc" = "NEAR %1$@ 失败（%2$@）：%3$@";
+"nearErrorUnknownAccessKey" = "NEAR 访问密钥不在该账户上：%@";
+"nearErrorUnknownAccount" = "NEAR 账户 %@ 不存在";
+"nearErrorUnknownTransaction" = "节点不知道 NEAR 交易 %@";
 "needToRemoveTokens" = "在继续之前，需要删除此链中的所有代币";
 "network" = "网络";
 "networkFee" = "网络费用";

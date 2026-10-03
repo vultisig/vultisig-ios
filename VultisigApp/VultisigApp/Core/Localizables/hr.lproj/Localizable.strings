@@ -963,6 +963,12 @@
 "name" = "Ime";
 "nameYourVault" = "Imenujte svoj trezor";
 "native" = "Izvorni";
+"nearErrorMalformedResponse" = "NEAR odgovor nije čitljiv: %@";
+"nearErrorMalformedSignedTransaction" = "Potpisana NEAR transakcija je neispravna: %@";
+"nearErrorRpc" = "NEAR %1$@ nije uspio (%2$@): %3$@";
+"nearErrorUnknownAccessKey" = "NEAR pristupni ključ nije na računu: %@";
+"nearErrorUnknownAccount" = "NEAR račun %@ ne postoji";
+"nearErrorUnknownTransaction" = "Čvor ne poznaje NEAR transakciju %@";
 "needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";
 "network" = "Mreža";
 "networkFee" = "Mrežna naknada";

@@ -963,6 +963,12 @@
 "name" = "Name";
 "nameYourVault" = "Benennen Sie Ihren Tresor";
 "native" = "Nativ";
+"nearErrorMalformedResponse" = "NEAR-Antwort ist nicht lesbar: %@";
+"nearErrorMalformedSignedTransaction" = "Die signierte NEAR-Transaktion ist fehlerhaft: %@";
+"nearErrorRpc" = "NEAR %1$@ fehlgeschlagen (%2$@): %3$@";
+"nearErrorUnknownAccessKey" = "Der NEAR-Zugriffsschlüssel ist nicht auf dem Konto: %@";
+"nearErrorUnknownAccount" = "Das NEAR-Konto %@ existiert nicht";
+"nearErrorUnknownTransaction" = "Die NEAR-Transaktion %@ ist dem Knoten nicht bekannt";
 "needToRemoveTokens" = "Alle Token innerhalb dieser Kette müssen entfernt werden, bevor du fortfahren kannst.";
 "network" = "Netzwerk";
 "networkFee" = "Netzwerkgebühr";
