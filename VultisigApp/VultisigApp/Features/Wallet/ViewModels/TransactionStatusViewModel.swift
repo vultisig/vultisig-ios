@@ -57,8 +57,9 @@ class TransactionStatusViewModel: ObservableObject {
         self.status = .broadcasted(estimatedTime: config.estimatedTime)
     }
 
-    /// Initialize from SwiftData (resume existing transaction)
-    init(pendingTransaction: StoredPendingTransaction) {
+    /// Initialize from SwiftData (resume existing transaction). The stored row
+    /// keeps no sender, so the caller resolves it from the row's vault.
+    init(pendingTransaction: StoredPendingTransaction, senderAccountId: String?) {
         self.txHash = pendingTransaction.txHash
         self.chain = pendingTransaction.chain
         self.config = ChainStatusConfig.config(for: pendingTransaction.chain)
@@ -66,9 +67,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.amount = pendingTransaction.amount
         self.toAddress = pendingTransaction.toAddress
         self.pubKeyECDSA = pendingTransaction.pubKeyECDSA
-        // A resumed row carries no sender: the persisted record does not keep
-        // one, so a chain that needs it fails closed rather than guessing.
-        self.senderAccountId = nil
+        self.senderAccountId = senderAccountId
 
         // Restore status from persistence
         self.status = Self.statusFromString(

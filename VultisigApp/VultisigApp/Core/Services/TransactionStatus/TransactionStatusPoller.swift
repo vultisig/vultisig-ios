@@ -182,20 +182,19 @@ final class TransactionStatusPoller: ObservableObject {
     }
 
     /// Start polling all pending transactions for a vault.
-    func pollPendingTransactions(pubKeyECDSA: String) {
+    func pollPendingTransactions(vault: Vault) {
+        let pubKeyECDSA = vault.pubKeyECDSA
         do {
             let pending = try StoredPendingTransactionStorage.shared.getAllPending()
             for tx in pending where tx.pubKeyECDSA == pubKeyECDSA {
-                // A resumed pending row carries no sender — the record keeps the
-                // recipient and the signer's vault, not the sending account — so
-                // a chain that needs it (NEAR) fails closed here rather than
-                // looking the transaction up against the wrong account.
+                // A pending row keeps no sender; the vault's own account on the
+                // row's chain sent it, and NEAR's status lookup needs it.
                 poll(
                     txHash: tx.txHash,
                     chain: tx.chain,
                     createdAt: tx.createdAt,
                     pubKeyECDSA: pubKeyECDSA,
-                    senderAccountId: nil
+                    senderAccountId: vault.nativeCoin(for: tx.chain)?.address
                 ) { _, _ in }
             }
         } catch {

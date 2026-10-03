@@ -133,7 +133,7 @@ struct HomeScreen: View {
             // Done button's `restart()` can only close it from here.
             if joinKeysignSession != nil { clearJoinSession() }
             if let vault = appViewModel.selectedVault {
-                transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
+                transactionPoller.pollPendingTransactions(vault: vault)
             }
             Task {
                 try? await Task.sleep(for: .seconds(3))
@@ -573,7 +573,7 @@ extension HomeScreen {
         Task { @MainActor in
              VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
         }
-        transactionPoller.pollPendingTransactions(pubKeyECDSA: vault.pubKeyECDSA)
+        transactionPoller.pollPendingTransactions(vault: vault)
     }
 
     private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {

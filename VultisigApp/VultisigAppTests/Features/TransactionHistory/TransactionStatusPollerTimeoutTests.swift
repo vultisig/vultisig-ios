@@ -185,7 +185,7 @@ final class TransactionStatusPollerTimeoutTests: XCTestCase {
 
         let resumable = try storage.getAllPending()
         let transaction = try XCTUnwrap(resumable.first { $0.txHash == "legacy-timeout" })
-        let viewModel = TransactionStatusViewModel(pendingTransaction: transaction)
+        let viewModel = TransactionStatusViewModel(pendingTransaction: transaction, senderAccountId: nil)
 
         XCTAssertEqual(resumable.map(\.txHash), ["legacy-timeout"])
         XCTAssertEqual(viewModel.status, .pending)
