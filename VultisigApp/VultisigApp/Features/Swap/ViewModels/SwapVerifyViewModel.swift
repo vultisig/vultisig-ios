@@ -175,6 +175,7 @@ final class SwapVerifyViewModel {
                 validationFee = SwapCryptoLogic.fundingNetworkFee(
                     displayedFee: updated.displayedNetworkFeeWei,
                     gasEstimate: chainSpecific.gas,
+                    storageReserve: chainSpecific.nearStorageReserve ?? .zero,
                     chain: updated.fromCoin.chain
                 )
             } catch {

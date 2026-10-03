@@ -452,7 +452,7 @@ extension SwapDetailsScreen {
         guard let amount = SwapCryptoLogic.percentageAmountText(
             percentage: percentage,
             fromCoin: detailsViewModel.fromCoin,
-            fee: detailsViewModel.fee
+            fee: detailsViewModel.fee + detailsViewModel.storageReserve
         ) else { return }
 
         detailsViewModel.fromAmount = amount

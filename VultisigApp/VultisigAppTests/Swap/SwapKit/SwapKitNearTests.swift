@@ -9,6 +9,7 @@
 //  built NEAR body is turned away.
 //
 
+import BigInt
 import Foundation
 import XCTest
 @testable import VultisigApp
@@ -56,6 +57,30 @@ final class SwapKitNearTests: XCTestCase {
         XCTAssertFalse(SwapKitCapability.canSign(.rippleDepositOnly, from: .near))
         XCTAssertEqual(SwapKitChainIDMapper.swapKitChainId(for: .near), "near")
         XCTAssertEqual(SwapKitChainIDMapper.chain(forSwapKitChain: "NEAR"), .near)
+    }
+
+    func testNearSourceGateCoversTheGasReservationAndTheStorageReserve() throws {
+        let response = try SwapKitFixtureLoader.decode(SwapKitSwapResponse.self, from: "v3-real-near-swap")
+        let near = Coin(
+            asset: CoinMeta.make(chain: .near, ticker: "NEAR", decimals: 24, isNativeToken: true),
+            address: "14397e36f7e4f15599c8ba31baac5fbfd79b415729428ba70d94aee794a4f27f",
+            hexPublicKey: ""
+        )
+        near.rawBalance = "1000000000000000000000000" // 1 NEAR
+        let vm = SwapDetailsViewModel()
+        vm.fromCoin = near
+        vm.fromCoins = [near]
+        // SwapKit's wire inbound fee: 0.0008 NEAR.
+        vm.quote = .swapkit(response, fee: BigInt("800000000000000000000"), subProvider: "NEAR")
+        // nearcore gas reservation for an implicit receiver at 1e8 yocto/gas (`Near.implicitGasFee`).
+        vm.thorchainFee = BigInt("7607442456250000000000")
+        vm.gas = vm.thorchainFee
+        // 1,000 bytes of storage at 1e19 yocto per byte: 0.01 NEAR.
+        vm.storageReserve = BigInt("10000000000000000000000")
+        // Balance − storage reserve − wire fee: affordable only if the wire fee were the cost.
+        vm.fromAmount = "0.9892"
+
+        XCTAssertEqual(vm.balanceError, .insufficientGas)
     }
 
     func testOnlyADepositOnlyRequestAsksSwapKitNotToBuild() throws {
