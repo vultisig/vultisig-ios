@@ -16,7 +16,9 @@ class AddressBookChainSelectionViewModel: ObservableObject {
         return chains.filter { chainType in
             switch chainType {
             case .evm:
-                return vaultChains.contains { $0.chain.displayName.localizedCaseInsensitiveContains(searchText) }
+                return vaultChains.contains {
+                    $0.chain.type == .EVM && $0.chain.displayName.localizedCaseInsensitiveContains(searchText)
+                }
             case .chain(let coin):
                 return coin.chain.displayName.localizedCaseInsensitiveContains(searchText)
             }
