@@ -53,7 +53,7 @@ struct KeyImportActiveChainsView: View {
                                     ticker: "",
                                     tokenChainLogo: nil
                                 )
-                                Text(chain.chain.name)
+                                Text(chain.chain.displayName)
                                     .foregroundStyle(Theme.colors.textPrimary)
                                     .font(Theme.fonts.bodySMedium)
                             }

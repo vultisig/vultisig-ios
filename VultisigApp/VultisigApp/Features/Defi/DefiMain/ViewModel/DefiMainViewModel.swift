@@ -48,7 +48,7 @@ final class DefiMainViewModel: ObservableObject {
             case .yield(let providerID):
                 return matchesSearch(providerName(providerID))
             case .chain(let chain):
-                let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
+                let nameMatches = chain.displayName.localizedCaseInsensitiveContains(searchText)
                 let tickerMatches = vault.nativeCoin(for: chain)?.ticker
                     .localizedCaseInsensitiveContains(searchText) ?? false
                 return searchText.isEmpty || nameMatches || tickerMatches

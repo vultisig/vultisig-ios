@@ -224,7 +224,7 @@ struct VaultDetailLogic {
             return chains
         }
         return chains.filter { chain in
-            let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
+            let nameMatches = chain.displayName.localizedCaseInsensitiveContains(searchText)
             let tickerMatches = vault.nativeCoin(for: chain)?.ticker
                 .localizedCaseInsensitiveContains(searchText) ?? false
             return nameMatches || tickerMatches
@@ -236,7 +236,7 @@ struct VaultDetailLogic {
             return rows
         }
         return rows.filter { row in
-            let nameMatches = row.chain.name.localizedCaseInsensitiveContains(searchText)
+            let nameMatches = row.chain.displayName.localizedCaseInsensitiveContains(searchText)
             let tickerMatches = row.nativeTicker.localizedCaseInsensitiveContains(searchText)
             return nameMatches || tickerMatches
         }

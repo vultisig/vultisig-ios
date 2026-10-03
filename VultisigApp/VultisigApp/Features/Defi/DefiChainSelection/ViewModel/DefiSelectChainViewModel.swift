@@ -28,7 +28,7 @@ class DefiSelectChainViewModel: ObservableObject {
             return chains.sorted(by: { $0.name < $1.name })
         } else {
             return chains
-                .filter { $0.name.lowercased().contains(searchText.lowercased()) }
+                .filter { $0.displayName.lowercased().contains(searchText.lowercased()) }
                 .sorted(by: { $0.name < $1.name })
         }
     }

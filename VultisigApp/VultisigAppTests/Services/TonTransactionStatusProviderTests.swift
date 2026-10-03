@@ -116,8 +116,8 @@ final class TonTransactionStatusProviderTests: XCTestCase {
     }
 
     func test_formatTonNetworkFee_scalesNanotonsForConsumerDisplay() {
-        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "50000000"), "0.05 TON")
-        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "1234567890"), "1.23456789 TON")
+        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "50000000"), "0.05 GRAM")
+        XCTAssertEqual(TransactionStatusResult.formatTonNetworkFee(nanotons: "1234567890"), "1.23456789 GRAM")
         XCTAssertNil(TransactionStatusResult.formatTonNetworkFee(nanotons: "0.05"))
         XCTAssertNil(TransactionStatusResult.formatTonNetworkFee(nanotons: "-1"))
     }

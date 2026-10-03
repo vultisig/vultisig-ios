@@ -30,7 +30,7 @@ struct SwapFromToField: View {
         SwapAssetCard<Never>(
             label: NSLocalizedString(title, comment: ""),
             chainLogo: selectedChain?.logo ?? "",
-            chainName: selectedChain?.name ?? "",
+            chainName: selectedChain?.displayName ?? "",
             onTapChain: { showNetworkSelectSheet = true },
             coinLogo: coin.logo,
             coinChainLogo: coin.tokenChainLogo,

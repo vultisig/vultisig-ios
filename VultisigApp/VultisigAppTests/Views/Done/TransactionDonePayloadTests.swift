@@ -191,10 +191,10 @@ final class TransactionDonePayloadTests: XCTestCase {
         XCTAssertNil(service.paidNetworkFeeCrypto)
 
         service.start()
-        poller.confirm(with: "0.05 TON")
+        poller.confirm(with: "0.05 GRAM")
 
         XCTAssertEqual(service.status, .confirmed)
-        XCTAssertEqual(service.paidNetworkFeeCrypto, "0.05 TON")
+        XCTAssertEqual(service.paidNetworkFeeCrypto, "0.05 GRAM")
     }
 }
 

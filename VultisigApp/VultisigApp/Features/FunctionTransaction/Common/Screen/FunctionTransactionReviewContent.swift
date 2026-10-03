@@ -135,7 +135,7 @@ struct FunctionTransactionReviewContent: View {
                 }
             }
         }
-        rows.append(.init(label: "network".localized, value: transaction.coin.chain.name, image: transaction.coin.chain.logo))
+        rows.append(.init(label: "network".localized, value: transaction.coin.chain.displayName, image: transaction.coin.chain.logo))
         return rows
     }
 

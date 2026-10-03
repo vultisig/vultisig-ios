@@ -164,7 +164,7 @@ struct SendReviewContent: View {
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             toAlias: toAlias,
-            network: tx.coin.chain.name,
+            network: tx.coin.chain.displayName,
             networkImage: tx.coin.chain.logo,
             memo: tx.memo,
             destinationTag: tx.destinationTag.map(String.init),

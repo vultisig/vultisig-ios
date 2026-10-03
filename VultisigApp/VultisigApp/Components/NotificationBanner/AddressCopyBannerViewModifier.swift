@@ -30,7 +30,7 @@ private struct AddressCopyBannerViewModifier: ViewModifier {
                 }
                 ClipboardManager.copyToClipboard(coin.address)
                 isVisible = true
-                text = String(format: "coinAddressCopied".localized, coin.chain.name)
+                text = String(format: "coinAddressCopied".localized, coin.chain.displayName)
             }
             .onChange(of: isVisible) { _, newValue in
                 guard !newValue else { return }

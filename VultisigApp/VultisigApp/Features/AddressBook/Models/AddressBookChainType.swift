@@ -27,7 +27,7 @@ enum AddressBookChainType: Identifiable, Equatable, Hashable {
         case .evm:
             "evmChains".localized
         case .chain(let coin):
-            coin.chain.name
+            coin.chain.displayName
         }
     }
 

@@ -159,6 +159,11 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
 }
 
 extension TransactionHistoryData {
+    /// User-facing network label for the stored `network` chain identifier.
+    var networkDisplayName: String {
+        Chain(name: network)?.displayName ?? network
+    }
+
     /// True when this row was routed through a swap aggregator with a
     /// registered tracking service. Provider-agnostic — the registry
     /// resolves the actual conformer from `swapTracking.providerKind`.

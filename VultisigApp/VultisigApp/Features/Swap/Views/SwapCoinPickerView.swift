@@ -295,7 +295,7 @@ struct SwapCoinPickerView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 28)
-                        Text(chain.name)
+                        Text(chain.displayName)
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
                             .fixedSize(horizontal: true, vertical: false)

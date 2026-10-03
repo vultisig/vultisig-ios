@@ -117,7 +117,7 @@ enum JoinKeysignReviewPresentation {
             fromName: viewModel.vault.name,
             fromAddress: payload?.coin.address ?? .empty,
             toAddress: payload?.toAddress ?? .empty,
-            network: payload?.coin.chain.name ?? .empty,
+            network: payload?.coin.chain.displayName ?? .empty,
             networkImage: payload?.coin.chain.logo ?? .empty,
             memo: isPlainRipplePayment
                 ? (payload.flatMap { RippleDestinationTag.displayMemo(for: $0) } ?? .empty)
@@ -238,7 +238,7 @@ enum JoinKeysignReviewPresentation {
         } else if let memo = payload.memo, memo.isNotEmpty {
             rows.append(.init(label: "memo".localized, value: memo, isMultiline: true))
         }
-        rows.append(.init(label: "network".localized, value: payload.coin.chain.name, image: payload.coin.chain.logo))
+        rows.append(.init(label: "network".localized, value: payload.coin.chain.displayName, image: payload.coin.chain.logo))
         let fees = viewModel.solanaAtaRentState == .loading
             ? (feeCrypto: "loading".localized, feeFiat: String.empty)
             : viewModel.getCalculatedNetworkFee()

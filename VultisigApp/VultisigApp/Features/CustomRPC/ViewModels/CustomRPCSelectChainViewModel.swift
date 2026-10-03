@@ -33,7 +33,7 @@ final class CustomRPCSelectChainViewModel: ObservableObject {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard query.isNotEmpty else { return CustomRPCSupportedChains.all }
         return CustomRPCSupportedChains.all.filter { chain in
-            chain.name.localizedCaseInsensitiveContains(query) ||
+            chain.displayName.localizedCaseInsensitiveContains(query) ||
             chain.ticker.localizedCaseInsensitiveContains(query)
         }
     }

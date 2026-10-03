@@ -83,7 +83,7 @@ struct TransactionDetailsCard: View {
 
             SendCryptoTransactionDetailsRow(
                 title: "network",
-                description: input.coin.chain.name,
+                description: input.coin.chain.displayName,
                 icon: input.coin.chain.logo
             )
 

@@ -94,7 +94,7 @@ struct SwapCoinCell: View {
                 securedBadge
             }
         } else {
-            chainPill(text: coin.chain.name)
+            chainPill(text: coin.chain.displayName)
         }
     }
 

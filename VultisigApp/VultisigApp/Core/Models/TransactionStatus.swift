@@ -87,20 +87,21 @@ extension TransactionStatusResult {
             return nil
         }
 
+        let ticker = TokensStore.ton.ticker
         let trimmed = String(nanotons.drop { $0 == "0" })
-        guard !trimmed.isEmpty else { return "0 TON" }
+        guard !trimmed.isEmpty else { return "0 \(ticker)" }
 
         let scale = 9
         if trimmed.count <= scale {
             let padding = String(repeating: "0", count: scale - trimmed.count)
             let fraction = trimmingTrailingZeros(from: padding + trimmed)
-            return "0.\(fraction) TON"
+            return "0.\(fraction) \(ticker)"
         }
 
         let splitIndex = trimmed.index(trimmed.endIndex, offsetBy: -scale)
         let whole = String(trimmed[..<splitIndex])
         let fraction = trimmingTrailingZeros(from: String(trimmed[splitIndex...]))
-        return fraction.isEmpty ? "\(whole) TON" : "\(whole).\(fraction) TON"
+        return fraction.isEmpty ? "\(whole) \(ticker)" : "\(whole).\(fraction) \(ticker)"
     }
 
     private static func trimmingTrailingZeros(from value: String) -> String {

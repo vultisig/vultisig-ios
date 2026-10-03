@@ -80,7 +80,7 @@ private struct CustomRPCChainGridCell: View {
         Button(action: onSelection) {
             VStack(spacing: 11) {
                 tile
-                Text(chain.name)
+                Text(chain.displayName)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)

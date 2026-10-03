@@ -32,7 +32,7 @@ struct ChainDetailHeaderView: View {
                 tokenChainLogo: nativeCoin.chain.logo
             )
 
-            Text(nativeCoin.chain.name)
+            Text(nativeCoin.chain.displayName)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
