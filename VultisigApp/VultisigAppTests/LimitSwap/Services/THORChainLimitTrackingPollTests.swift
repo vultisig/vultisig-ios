@@ -32,6 +32,208 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         }
     }
 
+    func testBackgroundObservationRequiresInactiveState() async {
+        let env = TestEnv(queueBody: .empty, scheduled: true)
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"))
+        XCTAssertEqual(env.http.requestCount, 0)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCadencePreservesTwoMissingPollsBeforeClosure() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertEqual(env.outcomes.resolveCount, 0)
+        now = now.addingTimeInterval(59)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        now = now.addingTimeInterval(1)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        now = now.addingTimeInterval(60)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2, "a stale snapshot must not restart a completed order")
+    }
+
+    func testBackgroundCadenceIncludesMostRecentForegroundObservation() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        env.service.start(tx: tx)
+        await env.service.pollOnceForTesting(sender: sender)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        now = now.addingTimeInterval(50)
+        var schedule = TransactionActivityPollingSchedule()
+        if let previous = env.service.lastPollDate(sender: sender) {
+            schedule.didObserve(tx, now: previous)
+        } else {
+            XCTFail("A foreground observation must supply the background cadence anchor")
+        }
+        XCTAssertFalse(schedule.shouldObserve(tx, now: now))
+        XCTAssertEqual(schedule.nextDelay(for: [tx], now: now), 10)
+        now = now.addingTimeInterval(10)
+        XCTAssertTrue(schedule.shouldObserve(tx, now: now))
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+    }
+
+    func testBackgroundObservationDoesNotOverlapAnotherObservationForSender() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123", "DEF456"]), clock: { now })
+        let first = env.makeRow(txHash: "ABC123")
+        let second = env.makeRow(txHash: "DEF456")
+        env.http.onRequest = {
+            now = now.addingTimeInterval(60)
+            await env.service.forceRefresh(tx: second)
+        }
+        await env.service.forceRefresh(tx: first)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertEqual(env.orders.observations.count, 2)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundQueueResponseDiscardsIneligibleObservationAndFailure() async {
+        for shouldThrow in [false, true] {
+            let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+            var eligible = true
+            env.http.shouldThrow = shouldThrow
+            env.http.onRequest = { eligible = false }
+            await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"), shouldApply: { eligible })
+            XCTAssertTrue(env.orders.observations.isEmpty)
+            XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+            env.service.stopAllTracking()
+        }
+    }
+
+    func testBackgroundQueueCancellationDiscardsLateResponse() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.http.onRequest = { withUnsafeCurrentTask { $0?.cancel() } }
+        let task = Task { await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123")) }
+        await task.value
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCancelVerificationChecksEligibilityBeforeWriting() async {
+        let env = TestEnv(
+            queueBody: .restingMany(hashes: ["ABC123"]), pendingCancelHash: "CANCEL", cancelOutcome: .succeeded
+        )
+        var eligible = true
+        env.cancelVerifier.onVerify = { eligible = false }
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"), shouldApply: { eligible })
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 1)
+        XCTAssertTrue(env.cancelIntents.confirmedHashes.isEmpty)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundOutcomeLookupChecksEligibilityBeforeWriting() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        var eligible = true
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        now = now.addingTimeInterval(60)
+        env.outcomes.onResolve = { eligible = false }
+        await env.service.forceRefresh(tx: tx, shouldApply: { eligible })
+        XCTAssertEqual(env.outcomes.resolveCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        env.service.stopAllTracking()
+    }
+
+    func testResetInvalidatesBackgroundQueueResponse() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.http.onRequest = { env.service.stopAllTracking() }
+        await env.service.forceRefresh(tx: env.makeRow(txHash: "ABC123"))
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        XCTAssertTrue(env.storage.observedUiStatuses.isEmpty)
+        XCTAssertTrue(env.service.uiStatusByTxHash.isEmpty)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+    }
+
+    func testRemovingAnOrderDuringCancelLookupDoesNotStopSiblingPolling() async {
+        let env = TestEnv(
+            queueBody: .restingMany(hashes: ["ABC123", "DEF456"]), pendingCancelHash: "CANCEL", cancelOutcome: .succeeded
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        env.cancelVerifier.onVerify = { env.service.stop(txHash: "ABC123") }
+        let shouldStop = await env.service.pollOnceForTesting(sender: sender)
+        XCTAssertFalse(shouldStop, "the sender loop must continue for the remaining sibling")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        XCTAssertEqual(env.orders.observations.map(\.inboundTxHash), ["DEF456"])
+        env.service.stopAllTracking()
+    }
+
+    func testRemovingAnOrderDuringOutcomeLookupDoesNotStopSiblingPolling() async {
+        let env = TestEnv(queueBody: .empty)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        await env.service.pollOnceForTesting(sender: sender)
+        env.outcomes.onResolve = { env.service.stop(txHash: "ABC123") }
+        let shouldStop = await env.service.pollOnceForTesting(sender: sender)
+        XCTAssertFalse(shouldStop, "the unresolved sibling still needs this sender's loop")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundRefreshDoesNotReplaceNewerCachedNonterminalStatus() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.orders.effectiveStatus = .cancelling
+        let tx = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.service.uiStatusByTxHash[tx.txHash], .cancelling)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.service.uiStatusByTxHash[tx.txHash], .cancelling)
+        XCTAssertEqual(env.http.requestCount, 1)
+        env.service.stopAllTracking()
+    }
+
+    func testBackgroundCadenceStartsAfterSlowQueueResponse() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        let tx = env.makeRow(txHash: "ABC123")
+        env.http.onRequest = { now = Date(timeIntervalSince1970: 150) }
+        await env.service.forceRefresh(tx: tx)
+        env.http.onRequest = nil
+        now = Date(timeIntervalSince1970: 160)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 1)
+        XCTAssertTrue(env.orders.observations.isEmpty)
+        now = Date(timeIntervalSince1970: 210)
+        await env.service.forceRefresh(tx: tx)
+        XCTAssertEqual(env.http.requestCount, 2)
+        XCTAssertEqual(env.orders.observations.last?.status, .filled)
+    }
+
+    func testNewForegroundOrderForIdleSenderIsPolledImmediately() async {
+        var now = Date(timeIntervalSince1970: 100)
+        let env = TestEnv(queueBody: .empty, outcome: .filled, clock: { now })
+        defer { env.service.stopAllTracking() }
+        let previous = env.makeRow(txHash: "ABC123")
+        await env.service.forceRefresh(tx: previous)
+        now = now.addingTimeInterval(60)
+        await env.service.forceRefresh(tx: previous)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+        let requested = expectation(description: "new foreground order requested without waiting a minute")
+        env.http.onRequest = { requested.fulfill() }
+        env.service.setActive(true)
+        env.service.start(tx: env.makeRow(txHash: "DEF456"))
+        await fulfillment(of: [requested], timeout: 2)
+        XCTAssertEqual(env.http.requestCount, 3)
+    }
+
     // MARK: - Resting
 
     func testAnOrderStillInTheQueueIsRecordedAsResting() async {
@@ -772,7 +974,8 @@ private struct TestEnv {
         outcome: LimitOrderOutcome = .unresolved,
         scheduled: Bool = false,
         pendingCancelHash: String? = nil,
-        cancelOutcome: LimitOrderCancelTxOutcome = .unresolved
+        cancelOutcome: LimitOrderCancelTxOutcome = .unresolved,
+        clock: @escaping () -> Date = Date.init
     ) {
         http = StubQueueHTTPClient(body: queueBody.json)
         storage = RecordingTrackingStorage()
@@ -786,7 +989,8 @@ private struct TestEnv {
             orders: orders,
             outcomes: outcomes,
             cancelIntents: cancelIntents,
-            cancelVerifier: cancelVerifier
+            cancelVerifier: cancelVerifier,
+            clock: clock
         )
         if !scheduled {
             service.setActive(false)
@@ -888,6 +1092,7 @@ private final class StubQueueHTTPClient: HTTPClientProtocol, @unchecked Sendable
     private var _body: String
     private var _shouldThrow = false
     private var _requestCount = 0
+    private var _onRequest: (@MainActor () async -> Void)?
 
     var body: String {
         get { lock.withLock { _body } }
@@ -898,6 +1103,10 @@ private final class StubQueueHTTPClient: HTTPClientProtocol, @unchecked Sendable
         set { lock.withLock { _shouldThrow = newValue } }
     }
     var requestCount: Int { lock.withLock { _requestCount } }
+    var onRequest: (@MainActor () async -> Void)? {
+        get { lock.withLock { _onRequest } }
+        set { lock.withLock { _onRequest = newValue } }
+    }
 
     struct StubError: Error {}
 
@@ -905,11 +1114,13 @@ private final class StubQueueHTTPClient: HTTPClientProtocol, @unchecked Sendable
         _body = body
     }
 
-    func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
-        let (fails, payload) = lock.withLock {
+    func request(_: TargetType) async throws -> HTTPResponse<Data> {
+        let callback = lock.withLock {
             _requestCount += 1
-            return (_shouldThrow, _body)
+            return _onRequest
         }
+        await callback?()
+        let (fails, payload) = lock.withLock { (_shouldThrow, _body) }
         if fails { throw StubError() }
         let url = URL(string: "https://example.invalid")!
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
@@ -1035,6 +1246,7 @@ private final class StubCancelVerifier: LimitOrderCancelVerifying {
 private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
     var outcome: LimitOrderOutcome
     private(set) var resolveCount = 0
+    var onResolve: (() -> Void)?
 
     init(outcome: LimitOrderOutcome) {
         self.outcome = outcome
@@ -1042,6 +1254,7 @@ private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
 
     func resolveOutcome(inboundTxHash _: String, sourceChain _: Chain) async -> LimitOrderOutcome { // swiftlint:disable:this async_without_await
         resolveCount += 1
+        onResolve?()
         return outcome
     }
 }

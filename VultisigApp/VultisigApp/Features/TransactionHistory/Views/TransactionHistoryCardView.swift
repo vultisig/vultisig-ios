@@ -94,7 +94,7 @@ struct TransactionHistoryCardView: View {
     /// opens a line and locks a reserve. Neither has an amount or a recipient to
     /// put in those slots.
     static func shouldExpand(status: TransactionHistoryStatus, type: TransactionHistoryType) -> Bool {
-        status == .inProgress && type != .approve && type != .trustLineActivation
+        status == .inProgress && type != .approve && type != .trustLineActivation && type != .transaction
     }
 
     // MARK: - Completed Swap/Limit Legs Routing
@@ -491,6 +491,10 @@ struct TransactionHistoryCardView: View {
 
             if transaction.type == .trustLineActivation {
                 trustLineColumn
+            } else if transaction.type == .transaction {
+                Text("transaction".localized)
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
             } else if showsSwapLegs {
                 swapLegsColumn
             } else {

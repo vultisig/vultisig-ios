@@ -136,6 +136,10 @@ struct TransactionHistoryDetailSheet: View {
 
                 if isTrustLineActivation {
                     trustLineHeadline
+                } else if transaction.type == .transaction || transaction.amountCrypto.isEmpty {
+                    Text("transaction".localized)
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
                 } else {
                     Text(transaction.amountCrypto)
                         .font(Theme.fonts.priceTitle1)
@@ -274,11 +278,13 @@ struct TransactionHistoryDetailSheet: View {
             // it has to be labelled as the issuer — under a "To" label it reads
             // as a recipient the transaction paid, which is the same false
             // framing the verify summary suppresses this row to avoid.
-            detailRow(
-                title: (isTrustLineActivation ? "rippleTrustLineIssuer" : "to").localized,
-                value: truncatedAddress(transaction.toAddress)
-            )
-            Separator().opacity(0.2)
+            if !transaction.toAddress.isEmpty {
+                detailRow(
+                    title: (isTrustLineActivation ? "rippleTrustLineIssuer" : "to").localized,
+                    value: truncatedAddress(transaction.toAddress)
+                )
+                Separator().opacity(0.2)
+            }
             detailRow(title: "date".localized, value: formattedDate)
             Separator().opacity(0.2)
             detailRow(title: "fee".localized, value: feeText)

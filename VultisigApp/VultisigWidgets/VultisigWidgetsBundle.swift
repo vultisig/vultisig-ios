@@ -14,6 +14,7 @@ struct VultisigWidgetsBundle: WidgetBundle {
     }
 
     var body: some Widget {
+        TransactionLiveActivityWidget()
         CryptoTickerWidget()
         TopCryptosWidget()
         CryptoWatchlistWidget()
