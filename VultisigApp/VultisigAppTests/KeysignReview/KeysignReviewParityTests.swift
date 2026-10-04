@@ -237,7 +237,8 @@ final class KeysignReviewParityTests: XCTestCase {
                 .init(label: "Max. Total Fee", value: "$6.18")
             ],
             limitNetworkFee: nil,
-            externalRecipient: nil
+            externalRecipient: nil,
+            depositRecipient: nil
         )
         let footer = SwapReviewFooter(
             isAmountCorrect: .constant(isChecked),

@@ -205,8 +205,14 @@ enum JoinKeysignReviewPresentation {
             totalFee: viewModel.getSwapTotalFee(),
             feeLines: feeLines,
             limitNetworkFee: nil,
-            externalRecipient: payload.swapExternalRecipient
+            externalRecipient: payload.swapExternalRecipient,
+            depositRecipient: depositRecipient(of: swap)
         )
+    }
+
+    private static func depositRecipient(of swap: SwapPayload) -> String? {
+        guard case .generic(let generic) = swap else { return nil }
+        return try? EVMSwapTxGuard.swapKitDepositRecipient(of: generic)
     }
 
     @MainActor

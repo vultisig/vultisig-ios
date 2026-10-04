@@ -49,6 +49,9 @@ struct SwapReviewSummary {
     /// A limit order's only fee: the source-chain network fee.
     let limitNetworkFee: (amount: String, fiat: String)?
     let externalRecipient: String?
+    /// Where a SwapKit ERC-20 deposit transfers the sold token, decoded from the
+    /// calldata that gets signed.
+    let depositRecipient: String?
 }
 
 extension SwapReviewSummary {
@@ -140,6 +143,7 @@ extension SwapReviewSummary {
         }
 
         externalRecipient = transaction.hasExternalRecipient ? transaction.recipientAddress : nil
+        depositRecipient = transaction.swapKitDepositRecipient
     }
 
     /// Prices `toAmountDecimal` directly rather than through
