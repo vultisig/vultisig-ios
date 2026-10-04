@@ -884,14 +884,14 @@ private extension BlockChainService {
             // this path, and the frozen signing input carries a single
             // `transfer` action.
             guard coin.isNativeToken else {
-                throw HelperError.runtimeError("NEAR tokens are not supported by the native send path")
+                throw HelperError.runtimeError("nearErrorTokensUnsupported".localized)
             }
             let recipient = toAddress ?? ""
             guard NearAccountId.isValid(recipient) else {
-                throw HelperError.runtimeError("Invalid NEAR recipient account id: \(recipient)")
+                throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, recipient))
             }
             guard NearAccountId.isImplicit(coin.address) else {
-                throw HelperError.runtimeError("NEAR sender \(coin.address) is not an implicit account")
+                throw HelperError.runtimeError(String(format: "nearErrorSenderNotImplicit".localized, coin.address))
             }
 
             async let accessKeyRead = NearService.shared.fetchAccessKey(
@@ -912,9 +912,7 @@ private extension BlockChainService {
                 )
             }
             guard accessKey.isFullAccess else {
-                throw HelperError.runtimeError(
-                    "NEAR signing key for \(coin.address) is a function-call key; a native transfer needs full access"
-                )
+                throw HelperError.runtimeError(String(format: "nearErrorFunctionCallKey".localized, coin.address))
             }
             // The transaction carries the successor of the access-key nonce
             // (nearcore's `verify_nonce` rejects `tx_nonce <= ak_nonce`). The

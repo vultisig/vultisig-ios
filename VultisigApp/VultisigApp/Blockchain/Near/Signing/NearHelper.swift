@@ -38,9 +38,7 @@ enum NearHelper {
     /// empty key — never what the user asked for).
     static func transactionNonce(accessKeyNonce: BigInt) throws -> UInt64 {
         guard let nonce = UInt64(exactly: accessKeyNonce + 1) else {
-            throw HelperError.runtimeError(
-                "NEAR access key nonce \(accessKeyNonce) has no successor in the uint64 field"
-            )
+            throw HelperError.runtimeError(String(format: "nearErrorNonceOverflow".localized, accessKeyNonce.description))
         }
         return nonce
     }
@@ -58,14 +56,14 @@ enum NearHelper {
 
         guard let publicKeyData = Data(hexString: keysignPayload.coin.hexPublicKey),
               let publicKey = PublicKey(data: publicKeyData, type: .ed25519) else {
-            throw HelperError.runtimeError("NEAR public key \(keysignPayload.coin.hexPublicKey) is invalid")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidPublicKey".localized, keysignPayload.coin.hexPublicKey))
         }
 
         // NEAR's Ed25519 message is `dataHash` (the sha256 digest), not `data`
         // (the Borsh body); every co-signer and the node sign and verify it.
         let signature = SignatureProvider(signatures: signatures).getSignature(preHash: preSigningOutput.dataHash)
         guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-            throw HelperError.runtimeError("fail to verify NEAR signature")
+            throw HelperError.runtimeError("nearErrorSignatureVerificationFailed".localized)
         }
 
         let allSignatures = DataVector()
@@ -116,30 +114,32 @@ enum NearHelper {
     private static func assertSwapKitDepositOnly(_ keysignPayload: KeysignPayload) throws {
         guard let swapPayload = keysignPayload.swapPayload else { return }
         guard case .swapkit(let swap) = swapPayload else {
-            throw HelperError.runtimeError("NEAR native transfers support SwapKit deposit swaps only")
+            throw HelperError.runtimeError("nearErrorSwapKitDepositOnly".localized)
         }
         guard swap.fromCoin.chain == .near, swap.fromCoin.isNativeToken else {
-            throw HelperError.runtimeError("NEAR SwapKit deposit must sell native NEAR")
+            throw HelperError.runtimeError("nearErrorSwapKitNotNativeNear".localized)
         }
         // NEAR Intents deposits go to a fresh per-swap implicit account; a named target is never one.
         guard NearAccountId.isImplicit(swap.targetAddress) else {
-            throw HelperError.runtimeError("NEAR SwapKit deposit address \(swap.targetAddress) is not an implicit account")
+            throw HelperError.runtimeError(String(format: "nearErrorSwapKitDepositNotImplicit".localized, swap.targetAddress))
         }
         guard swap.targetAddress == keysignPayload.toAddress else {
             throw HelperError.runtimeError(
-                "NEAR SwapKit deposit address \(swap.targetAddress) is not the transfer receiver \(keysignPayload.toAddress)"
+                String(format: "nearErrorSwapKitDepositReceiverMismatch".localized, swap.targetAddress, keysignPayload.toAddress)
             )
         }
         guard swap.fromAmount == keysignPayload.toAmount else {
-            throw HelperError.runtimeError(
-                "NEAR SwapKit deposit amount \(swap.fromAmount) is not the transfer amount \(keysignPayload.toAmount)"
-            )
+            throw HelperError.runtimeError(String(
+                format: "nearErrorSwapKitDepositAmountMismatch".localized,
+                swap.fromAmount.description,
+                keysignPayload.toAmount.description
+            ))
         }
         guard swap.txPayload.isEmpty, swap.txType.isEmpty else {
-            throw HelperError.runtimeError("NEAR SwapKit deposits are plain transfers and cannot carry a pre-built transaction")
+            throw HelperError.runtimeError("nearErrorSwapKitDepositPrebuilt".localized)
         }
         guard swap.memo?.isEmpty ?? true else {
-            throw HelperError.runtimeError("NEAR SwapKit deposits cannot carry a memo")
+            throw HelperError.runtimeError("nearErrorSwapKitDepositMemo".localized)
         }
     }
 
@@ -147,46 +147,44 @@ enum NearHelper {
         let coin = keysignPayload.coin
 
         guard coin.chain == .near, coin.isNativeToken else {
-            throw HelperError.runtimeError("NEAR frozen signing supports native NEAR transfers only, not token coins")
+            throw HelperError.runtimeError("nearErrorTokensUnsupported".localized)
         }
         // A payload decoded from the wire carries `""` for an unset memo.
         guard keysignPayload.memo?.isEmpty ?? true else {
-            throw HelperError.runtimeError("NEAR native transfers cannot carry a memo")
+            throw HelperError.runtimeError("nearErrorMemo".localized)
         }
         try assertSwapKitDepositOnly(keysignPayload)
         guard keysignPayload.wasmExecuteContractPayload == nil,
               keysignPayload.tronTransferContractPayload == nil,
               keysignPayload.tronTriggerSmartContractPayload == nil,
               keysignPayload.tronTransferAssetContractPayload == nil else {
-            throw HelperError.runtimeError("NEAR native transfers do not support contract payloads")
+            throw HelperError.runtimeError("nearErrorContractPayload".localized)
         }
         guard keysignPayload.signData == nil else {
-            throw HelperError.runtimeError("NEAR native transfers do not support custom sign payloads")
+            throw HelperError.runtimeError("nearErrorCustomSignPayload".localized)
         }
         guard NearAccountId.isValid(keysignPayload.toAddress) else {
-            throw HelperError.runtimeError("Invalid NEAR recipient account id: \(keysignPayload.toAddress)")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, keysignPayload.toAddress))
         }
         guard keysignPayload.toAmount > 0, keysignPayload.toAmount <= maxU128 else {
-            throw HelperError.runtimeError("Invalid NEAR transfer amount: \(keysignPayload.toAmount)")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, keysignPayload.toAmount.description))
         }
         guard case let .Near(nonce, blockHash, gasFee, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("NEAR payload carries no NEAR chain specific data")
+            throw HelperError.runtimeError("nearErrorMissingChainSpecific".localized)
         }
 
         // Display metadata, but a payload that cannot state its own reservation
         // is not a payload this signer should commit to.
-        _ = try unsignedInteger(gasFee, label: "gas fee", maximum: maxU128)
+        _ = try gasFeeInteger(gasFee, maximum: maxU128)
 
         guard blockHash.count == blockHashBytes else {
-            throw HelperError.runtimeError(
-                "Invalid NEAR block hash: expected \(blockHashBytes) bytes, received \(blockHash.count)"
-            )
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, blockHashBytes, blockHash.count))
         }
         guard nonce > 0 else {
-            throw HelperError.runtimeError("Invalid NEAR nonce: a signed transaction needs a positive nonce")
+            throw HelperError.runtimeError("nearErrorInvalidNonce".localized)
         }
         guard let hexPublicKey = Data(hexString: coin.hexPublicKey), hexPublicKey.count == ed25519PublicKeyBytes else {
-            throw HelperError.runtimeError("Invalid NEAR public key: \(coin.hexPublicKey) is not a 32-byte Ed25519 key")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidPublicKeyLength".localized, coin.hexPublicKey))
         }
 
         // The signer's own account is an implicit account: lowercase hex of the
@@ -195,15 +193,15 @@ enum NearHelper {
         // this device would sign a transaction funded by an account it does not
         // control.
         guard NearAccountId.isImplicit(coin.address) else {
-            throw HelperError.runtimeError("Invalid NEAR sender address: \(coin.address) is not an implicit account")
+            throw HelperError.runtimeError(String(format: "nearErrorSenderNotImplicit".localized, coin.address))
         }
         guard let publicKey = PublicKey(data: hexPublicKey, type: .ed25519) else {
-            throw HelperError.runtimeError("Invalid NEAR public key: \(coin.hexPublicKey)")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidPublicKey".localized, coin.hexPublicKey))
         }
         let derived = CoinType.near.deriveAddressFromPublicKey(publicKey: publicKey)
         guard derived == coin.address else {
             throw HelperError.runtimeError(
-                "NEAR sender address does not match the signing public key: \(coin.address) != \(derived)"
+                String(format: "nearErrorSenderKeyMismatch".localized, coin.address, derived)
             )
         }
 
@@ -233,12 +231,12 @@ enum NearHelper {
         return Data(bytes)
     }
 
-    private static func unsignedInteger(_ text: String, label: String, maximum: BigInt) throws -> BigInt {
+    private static func gasFeeInteger(_ text: String, maximum: BigInt) throws -> BigInt {
         guard !text.isEmpty, text.allSatisfy({ $0.isASCII && $0.isNumber }), let parsed = BigInt(text) else {
-            throw HelperError.runtimeError("Invalid NEAR \(label): \(text) is not an unsigned decimal integer")
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, text))
         }
         guard parsed <= maximum else {
-            throw HelperError.runtimeError("Invalid NEAR \(label): \(text) exceeds the chain's field width")
+            throw HelperError.runtimeError(String(format: "nearErrorGasFeeTooLarge".localized, text))
         }
         return parsed
     }
