@@ -27,10 +27,7 @@ final class ChainPendingTransactionSupportTests: XCTestCase {
     private let pendingTrueChains: [Chain] = [
         .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain,
         .gaiaChain, .osmosis, .dydx, .terra, .terraClassic,
-        .noble, .akash, .qbtc,
-        // Not a pending-row chain: the flag disables the `BlockChainSpecific`
-        // cache, which would otherwise re-sign a consumed access-key nonce.
-        .near
+        .noble, .akash, .qbtc
     ]
 
     func testPendingTransactionsTrueForNonceChains() {

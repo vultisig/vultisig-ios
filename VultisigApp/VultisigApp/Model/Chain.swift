@@ -229,14 +229,9 @@ extension Chain {
     /// broadcast (this gates `BlockChainService.shouldUseCache` / `setCacheIfAllowed`).
     var supportsPendingTransactions: Bool {
         switch self {
-        // NEAR belongs here for the cache it disables rather than for pending-row
-        // tracking: a NEAR transaction nonce is the access-key nonce + 1, so a
-        // cached `NearSpecific` would be re-signed with the nonce of a
-        // transaction that already consumed it. `BlockChainService` reads this
-        // flag to skip its `BlockChainSpecific` cache.
-        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc, .near:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
-        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor, .kujira:
+        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor, .kujira, .near:
             return false
         }
     }

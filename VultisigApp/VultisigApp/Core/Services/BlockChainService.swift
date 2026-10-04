@@ -228,7 +228,8 @@ final class BlockChainService {
         // Skip Sui because its chain-specific value embeds a bounded selection of
         // spendable coin objects for the requested amount; reusing it for a later
         // larger send can hand keysign an under-funded object set.
-        guard chain != .solana, chain != .sui else {
+        // Skip NEAR because a cached `NearSpecific` would re-sign a nonce an earlier send already consumed.
+        guard chain != .solana, chain != .sui, chain != .near else {
             return false
         }
 
