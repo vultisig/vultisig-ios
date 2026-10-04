@@ -919,9 +919,6 @@ private extension BlockChainService {
             // (nearcore's `verify_nonce` rejects `tx_nonce <= ak_nonce`). The
             // largest uint64 has no successor in the field and fails closed.
             let transactionNonce = try NearHelper.transactionNonce(accessKeyNonce: accessKey.nonce)
-            guard let blockHash = Base58.decodeNoCheck(string: block.hash) else {
-                throw NearError.malformedResponse("NEAR block hash \(block.hash) is not base58")
-            }
 
             let reservation = NearFees.gasReservation(
                 config: fees,
@@ -932,7 +929,7 @@ private extension BlockChainService {
 
             return .Near(
                 nonce: transactionNonce,
-                blockHash: blockHash,
+                blockHash: block.hash,
                 gasFee: reservation.reserved.description,
                 storageReserve: NearFees.storageReserve(
                     storageUsage: account.storageUsage,

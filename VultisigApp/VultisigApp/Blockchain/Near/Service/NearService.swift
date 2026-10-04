@@ -118,11 +118,7 @@ final class NearService {
             throw NearError.malformedResponse("\(method) hash is not \(Self.blockHashBytes) bytes: \(hash)")
         }
 
-        return NearFinalBlockView(
-            hash: hash,
-            gasPrice: header.gasPrice.value,
-            height: header.height.value
-        )
+        return NearFinalBlockView(hash: decoded, gasPrice: header.gasPrice.value)
     }
 
     func fetchFeeConfig() async throws -> NearFees.FeeConfig {
@@ -338,9 +334,9 @@ struct NearAccessKeyView {
 }
 
 struct NearFinalBlockView {
-    let hash: String
+    /// The 32-byte block hash the transaction is anchored to.
+    let hash: Data
     let gasPrice: BigInt
-    let height: BigInt
 }
 
 /// What the node knows about a transaction, before finality is interpreted.
@@ -424,12 +420,10 @@ private struct BlockResult: Decodable {
     struct Header: Decodable {
         let hash: String?
         let gasPrice: NearExactInteger
-        let height: NearExactInteger
 
         private enum CodingKeys: String, CodingKey {
             case hash
             case gasPrice = "gas_price"
-            case height
         }
     }
 }
