@@ -75,6 +75,25 @@ final class SendNearGuardTests: XCTestCase {
         }
     }
 
+    func testAReceiverLookupThatFailsRefusesTheSend() async throws {
+        let balance = BigInt("1000000000000000000000000") // 1 NEAR
+        let node = ScriptedNearNode(
+            accounts: [Self.sender: (amount: balance, storageUsage: 182)],
+            unreachableAccounts: [Self.receiver]
+        )
+        let vm = makeVerifyViewModel(node: node, signedGas: Self.quotedGas, balance: balance)
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("a receiver lookup that failed must not let the send reach signing")
+        } catch {
+            XCTAssertNotEqual(
+                error.localizedDescription,
+                String(format: "nearUnknownReceiverError".localized, Self.receiver)
+            )
+        }
+    }
+
     // MARK: - Builders
 
     private func makeVerifyViewModel(node: ScriptedNearNode, signedGas: BigInt, balance: BigInt) -> SendCryptoVerifyViewModel {
@@ -126,13 +145,16 @@ final class SendNearGuardTests: XCTestCase {
     }
 }
 
-/// Answers `view_account` from `accounts` (UNKNOWN_ACCOUNT otherwise) and
-/// `EXPERIMENTAL_protocol_config` with nearcore 2.13.4's costs.
+/// Answers `view_account` from `accounts` (UNKNOWN_ACCOUNT otherwise, a node
+/// timeout for `unreachableAccounts`) and `EXPERIMENTAL_protocol_config` with
+/// nearcore 2.13.4's costs.
 private final class ScriptedNearNode: HTTPClientProtocol, @unchecked Sendable {
     private let accounts: [String: (amount: BigInt, storageUsage: Int)]
+    private let unreachableAccounts: Set<String>
 
-    init(accounts: [String: (amount: BigInt, storageUsage: Int)]) {
+    init(accounts: [String: (amount: BigInt, storageUsage: Int)], unreachableAccounts: Set<String> = []) {
         self.accounts = accounts
+        self.unreachableAccounts = unreachableAccounts
     }
 
     // Protocol requires `async`; the body is synchronous.
@@ -149,7 +171,9 @@ private final class ScriptedNearNode: HTTPClientProtocol, @unchecked Sendable {
         switch (method, params["request_type"] as? String) {
         case ("query", "view_account"):
             let accountId = params["account_id"] as? String ?? ""
-            if let account = accounts[accountId] {
+            if unreachableAccounts.contains(accountId) {
+                json = #"{"jsonrpc":"2.0","id":"query","error":{"name":"HANDLER_ERROR","cause":{"name":"TIMEOUT_ERROR"},"message":"Server error","data":"Timeout"}}"#
+            } else if let account = accounts[accountId] {
                 json = #"{"jsonrpc":"2.0","id":"query","result":{"amount":"\#(account.amount)","locked":"0","storage_usage":\#(account.storageUsage)}}"#
             } else {
                 json = #"{"jsonrpc":"2.0","id":"query","error":{"name":"HANDLER_ERROR","cause":{"name":"UNKNOWN_ACCOUNT"},"message":"Server error","data":"account \#(accountId) does not exist while viewing"}}"#

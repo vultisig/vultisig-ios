@@ -315,20 +315,12 @@ struct SendCryptoVerifyLogic {
     /// Pre-ceremony guard for a native NEAR send to a named account: nearcore
     /// refunds a transfer to an account that does not exist but burns the gas.
     /// Implicit (64-hex) receivers need no account and are not looked up.
-    ///
-    /// FAIL OPEN, matching `validateBittensorDestinationIfNeeded`: it blocks only
-    /// on the node answering UNKNOWN_ACCOUNT, never on a lookup that failed.
+    /// Fails closed, like the SDK and Android: a lookup that failed blocks the
+    /// send rather than letting it reach the ceremony unchecked.
     func validateNearReceiverIfNeeded(tx: SendTransaction) async throws {
         guard tx.coin.chain == .near, tx.coin.isNativeToken, !NearAccountId.isImplicit(tx.toAddress) else { return }
 
-        let receiver: NearAccountView?
-        do {
-            receiver = try await nearService.fetchAccount(accountId: tx.toAddress)
-        } catch is CancellationError {
-            throw CancellationError()
-        } catch {
-            return
-        }
+        let receiver = try await nearService.fetchAccount(accountId: tx.toAddress)
         try Task.checkCancellation()
 
         guard receiver == nil else { return }
