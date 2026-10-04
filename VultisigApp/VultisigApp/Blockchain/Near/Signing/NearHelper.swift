@@ -121,6 +121,10 @@ enum NearHelper {
         guard swap.fromCoin.chain == .near, swap.fromCoin.isNativeToken else {
             throw HelperError.runtimeError("NEAR SwapKit deposit must sell native NEAR")
         }
+        // NEAR Intents deposits go to a fresh per-swap implicit account; a named target is never one.
+        guard NearAccountId.isImplicit(swap.targetAddress) else {
+            throw HelperError.runtimeError("NEAR SwapKit deposit address \(swap.targetAddress) is not an implicit account")
+        }
         guard swap.targetAddress == keysignPayload.toAddress else {
             throw HelperError.runtimeError(
                 "NEAR SwapKit deposit address \(swap.targetAddress) is not the transfer receiver \(keysignPayload.toAddress)"

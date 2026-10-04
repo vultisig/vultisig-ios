@@ -372,6 +372,17 @@ final class Near: XCTestCase {
         }
     }
 
+    func testRejectsANamedSwapKitDepositAddressEvenAsTheTransferReceiver() throws {
+        let payload = try makePayload(
+            toAddress: Self.namedReceiver,
+            toAmount: Self.goldenImplicitAmount,
+            swapPayload: swapKitDeposit(targetAddress: Self.namedReceiver)
+        )
+        XCTAssertThrowsError(try NearHelper.getPreSignedImageHash(keysignPayload: payload)) { error in
+            XCTAssertTrue(error.localizedDescription.contains("deposit address \(Self.namedReceiver) is not an implicit account"), error.localizedDescription)
+        }
+    }
+
     func testRefusesToDeriveAHashFromMalformedSignedBytes() {
         XCTAssertThrowsError(try NearSignedTransaction.transactionHash(signedTransaction: Data(repeating: 0, count: 10)))
         let body = Data(repeating: 0x22, count: 32)
