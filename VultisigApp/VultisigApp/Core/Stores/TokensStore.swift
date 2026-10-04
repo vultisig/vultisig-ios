@@ -2328,8 +2328,7 @@ class TokensStore {
         ),
         // NEAR is deliberately NOT in `VaultDefaultCoinService.baseDefaultChains`:
         // an entry here is what lets the user add it by hand, not what puts it in
-        // every new vault. There is no `near` logo asset in the shared catalog
-        // yet, so the image view falls back to the ticker initial.
+        // every new vault.
         CoinMeta(
             chain: .near,
             ticker: "NEAR",
