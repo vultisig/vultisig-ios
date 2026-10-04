@@ -173,6 +173,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
 
                     let keysignFactory = KeysignMessageFactory(payload: finalPayload, vaultPubKeyEdDSA: vault.pubKeyEdDSA)
                     let preSignedImageHash = try keysignFactory.getKeysignMessages()
+                    try await EVMSwapTxGuard.screenSwapKitDepositRecipient(finalPayload)
                     self.keysignMessages = preSignedImageHash.sorted()
                     coin = keysignPayload.coin
                 } catch {

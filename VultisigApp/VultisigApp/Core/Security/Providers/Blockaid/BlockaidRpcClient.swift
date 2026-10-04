@@ -118,6 +118,22 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         )
         return response.data
     }
+
+    func scanEVMAddress(chain: Chain, address: String) async throws -> BlockaidAddressScanResponseJson {
+        guard let blockaidChain = BlockaidChainIdentifier.name(for: chain) else {
+            throw BlockaidScannerError.scannerError("Chain \(chain) is not supported", payload: nil)
+        }
+        let request = EthereumScanAddressRequestJson(
+            address: address,
+            chain: blockaidChain,
+            metadata: .init(domain: BlockaidConstants.vultisigDomain)
+        )
+        let response = try await httpClient.request(
+            BlockaidAPI.scanEVMAddress(request),
+            responseType: BlockaidAddressScanResponseJson.self
+        )
+        return response.data
+    }
 }
 
 // MARK: - Private Helper Methods

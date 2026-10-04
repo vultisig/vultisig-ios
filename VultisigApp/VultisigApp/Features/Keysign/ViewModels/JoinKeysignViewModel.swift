@@ -332,12 +332,15 @@ class JoinKeysignViewModel: ObservableObject {
             }
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload, vaultPubKeyEdDSA: signingVault.pubKeyEdDSA)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
+            try await EVMSwapTxGuard.screenSwapKitDepositRecipient(keysignPayload)
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
                 self.errorMsg = "noMessagesToSign".localized
                 self.status = .FailedToStart
             }
+        } catch is CancellationError {
+            return
         } catch {
             self.errorMsg = String(format: "prepareKeysignMessagesFailed".localized, error.localizedDescription)
             self.status = .FailedToStart

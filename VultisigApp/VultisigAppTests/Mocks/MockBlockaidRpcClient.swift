@@ -77,6 +77,14 @@ final class MockBlockaidRpcClient: BlockaidRpcClientProtocol {
         return try scanEVMBulkResult.get()
     }
 
+    var scanEVMAddressResult: Result<BlockaidAddressScanResponseJson, Error> = .failure(StubError.notStubbed)
+    private(set) var scannedEVMAddresses: [String] = []
+
+    func scanEVMAddress(chain: Chain, address: String) async throws -> BlockaidAddressScanResponseJson {
+        scannedEVMAddresses.append(address)
+        return try scanEVMAddressResult.get()
+    }
+
     func scanBitcoinTransaction(
         address: String,
         serializedTransaction: String

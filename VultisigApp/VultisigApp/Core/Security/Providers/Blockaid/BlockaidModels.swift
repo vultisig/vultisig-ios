@@ -140,6 +140,24 @@ struct EthereumBulkScanTransactionRequestJson: Codable {
     let data: [EthereumScanTransactionRequestJson.DataJson]
 }
 
+// MARK: - Ethereum Address Scan
+
+struct EthereumScanAddressRequestJson: Codable {
+    let address: String
+    let chain: String
+    let metadata: EthereumScanTransactionRequestJson.MetadataJson
+}
+
+struct BlockaidAddressScanResponseJson: Codable {
+    let resultType: String
+    let features: [String]?
+
+    enum CodingKeys: String, CodingKey {
+        case resultType = "result_type"
+        case features
+    }
+}
+
 // MARK: - Blockaid Transaction Scan Response
 
 struct BlockaidTransactionScanResponseJson: Codable {

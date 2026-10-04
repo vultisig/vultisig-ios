@@ -14,6 +14,7 @@ enum BlockaidAPI {
     case simulateEVMTransaction(EthereumSimulateTransactionRequestJson)
     case scanSolanaTransaction(SolanaScanTransactionRequestJson)
     case scanSuiTransaction(SuiScanTransactionRequestJson)
+    case scanEVMAddress(EthereumScanAddressRequestJson)
 }
 
 extension BlockaidAPI: TargetType {
@@ -35,6 +36,8 @@ extension BlockaidAPI: TargetType {
             return "/solana/message/scan"
         case .scanSuiTransaction:
             return "/sui/transaction/scan"
+        case .scanEVMAddress:
+            return "/evm/address/scan"
         }
     }
 
@@ -55,6 +58,8 @@ extension BlockaidAPI: TargetType {
         case .scanSolanaTransaction(let request):
             return .requestCodable(request, .jsonEncoding)
         case .scanSuiTransaction(let request):
+            return .requestCodable(request, .jsonEncoding)
+        case .scanEVMAddress(let request):
             return .requestCodable(request, .jsonEncoding)
         }
     }

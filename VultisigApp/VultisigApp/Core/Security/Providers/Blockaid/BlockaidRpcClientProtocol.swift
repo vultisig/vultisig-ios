@@ -49,4 +49,7 @@ protocol BlockaidRpcClientProtocol {
         address: String,
         serializedTransaction: String
     ) async throws -> BlockaidTransactionScanResponseJson
+
+    /// Blockaid's reputation verdict for an EVM address on `chain`.
+    func scanEVMAddress(chain: Chain, address: String) async throws -> BlockaidAddressScanResponseJson
 }

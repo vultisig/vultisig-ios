@@ -144,9 +144,59 @@ final class SwapKitErc20DepositTests: XCTestCase {
         assertCoSignerRefuses(to: tx.to, data: approveToSameRecipient, value: "0", fromAmount: Self.soldAmount)
     }
 
+    /// The co-signer screens the recipient it decodes from the calldata, not one
+    /// the initiator names, and signs only on a Benign verdict, as the SDK does.
+    /// The Malicious and Benign bodies were captured 2026-10-04 from the app's
+    /// Blockaid proxy (the Ronin exploiter and the USDT contract); the Warning
+    /// body is that shape with Blockaid's third verdict:
+    ///
+    ///   curl -X POST https://api.vultisig.com/blockaid/v0/evm/address/scan \
+    ///     -H 'Content-Type: application/json' \
+    ///     -d '{"address":"0x098B716B8Aaf21512996dC57EB0615e2383E2f96","chain":"ethereum","metadata":{"domain":"vultisig.com"}}'
+    func testCoSignerScreensTheDepositRecipientBeforeSigning() async throws {
+        let live = try liveResponse()
+        guard case .evm(let tx) = live.tx else { return XCTFail("Expected an EVM tx") }
+        let payload = relayedPayload(to: tx.to, data: tx.data, value: "0", fromAmount: Self.soldAmount)
+        let malicious = #"{"result_type":"Malicious","features":["The address is an exploiter","This address has recorded malicious activity","This address is on the OFAC banned list","This is address is associated with a sanctioned entity","This address is an EOA"]}"#
+        let warning = #"{"result_type":"Warning","features":["This address is an EOA"]}"#
+        let benign = #"{"result_type":"Benign","features":["A trusted contract, safe to interact with","This contract is verified","This address is an ERC20 token","This address is a contract"]}"#
+        let blockaid = MockBlockaidRpcClient()
+
+        for refused: Result<BlockaidAddressScanResponseJson, Error> in [
+            .success(try verdict(malicious)),
+            .success(try verdict(warning)),
+            .failure(MockBlockaidRpcClient.StubError.simulated)
+        ] {
+            blockaid.scanEVMAddressResult = refused
+            do {
+                try await EVMSwapTxGuard.screenSwapKitDepositRecipient(payload, blockaid: blockaid)
+                XCTFail("Signed a deposit whose recipient got \(refused)")
+            } catch {
+                guard case .swapKitDepositRefused = error as? EVMSwapTxGuardError else {
+                    return XCTFail("Expected swapKitDepositRefused, got \(error)")
+                }
+            }
+        }
+
+        blockaid.scanEVMAddressResult = .success(try verdict(benign))
+        try await EVMSwapTxGuard.screenSwapKitDepositRecipient(payload, blockaid: blockaid)
+        XCTAssertEqual(blockaid.scannedEVMAddresses, Array(repeating: live.targetAddress.lowercased(), count: 4))
+    }
+
+    private func verdict(_ json: String) throws -> BlockaidAddressScanResponseJson {
+        try JSONDecoder().decode(BlockaidAddressScanResponseJson.self, from: Data(json.utf8))
+    }
+
     /// Builds the joiner's messages the way `JoinKeysignViewModel` does, from a
     /// relayed SwapKit payload selling 20 USDT.
     private func coSignerMessages(to: String, data: String, value: String, fromAmount: BigInt) throws -> [String] {
+        try KeysignMessageFactory(
+            payload: relayedPayload(to: to, data: data, value: value, fromAmount: fromAmount),
+            vaultPubKeyEdDSA: ""
+        ).getKeysignMessages()
+    }
+
+    private func relayedPayload(to: String, data: String, value: String, fromAmount: BigInt) -> KeysignPayload {
         let sol = Coin(asset: CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9, isNativeToken: true), address: "", hexPublicKey: "")
         let swap = GenericSwapPayload(
             fromCoin: usdt(),
@@ -159,7 +209,7 @@ final class SwapKitErc20DepositTests: XCTestCase {
             ),
             provider: .swapkit
         )
-        let keysign = KeysignPayload(
+        return KeysignPayload(
             coin: usdt(),
             toAddress: "0xCB2aC797EFf13Ee982453F5722B74aB5c56741Af",
             toAmount: fromAmount,
@@ -180,7 +230,6 @@ final class SwapKitErc20DepositTests: XCTestCase {
             skipBroadcast: false,
             signData: nil
         )
-        return try KeysignMessageFactory(payload: keysign, vaultPubKeyEdDSA: "").getKeysignMessages()
     }
 
     private func assertCoSignerRefuses(to: String, data: String, value: String, fromAmount: BigInt, line: UInt = #line) {

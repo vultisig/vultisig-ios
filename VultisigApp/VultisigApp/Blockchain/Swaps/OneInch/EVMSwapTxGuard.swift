@@ -82,13 +82,7 @@ enum EVMSwapTxGuard {
         let routers: Set<String>?
         switch provider {
         case .swapkit:
-            _ = try Self.swapKitErc20DepositRecipient(
-                to: tx.to,
-                data: tx.data,
-                value: BigInt(value),
-                sourceToken: payload.fromCoin.contractAddress,
-                amount: payload.fromAmount
-            )
+            _ = try Self.swapKitDepositRecipient(of: payload)
             routers = nil
         case .oneInch, .kyberSwap, .lifi, .jupiter:
             routers = Self.routers(for: provider, chain: chain)
@@ -128,6 +122,53 @@ enum EVMSwapTxGuard {
             }
         } else if value != 0 {
             throw EVMSwapTxGuardError.valueFromTokenSource(value: String(value))
+        }
+    }
+
+    /// The recipient of the SwapKit ERC-20 deposit `payload` signs, decoded from
+    /// its calldata by `swapKitErc20DepositRecipient`; nil when it is not one.
+    static func swapKitDepositRecipient(of payload: GenericSwapPayload) throws -> String? {
+        let rawProvider = payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard SwapProviderId.from(rawValue: rawProvider) == .swapkit,
+              payload.fromCoin.chain.chainType == .EVM else { return nil }
+        let tx = payload.quote.tx
+        guard let value = BigUInt(tx.value), value.bitWidth <= 256 else {
+            throw EVMSwapTxGuardError.malformedValue(tx.value)
+        }
+        return try swapKitErc20DepositRecipient(
+            to: tx.to,
+            data: tx.data,
+            value: BigInt(value),
+            sourceToken: payload.fromCoin.contractAddress,
+            amount: payload.fromAmount
+        )
+    }
+
+    /// Refuses a SwapKit ERC-20 deposit whose recipient lacks a Benign Blockaid
+    /// verdict. Warning, Malicious, an unsupported chain and a failed scan all
+    /// refuse, as vultisig-sdk's `assertSwapKitAddressReputation` does.
+    static func screenSwapKitDepositRecipient(
+        _ keysignPayload: KeysignPayload,
+        blockaid: BlockaidRpcClientProtocol = BlockaidRpcClient(httpClient: HTTPClient())
+    ) async throws {
+        guard case .generic(let swap) = keysignPayload.swapPayload,
+              let recipient = try swapKitDepositRecipient(of: swap) else { return }
+        let chain = swap.fromCoin.chain
+        let verdict: BlockaidAddressScanResponseJson
+        do {
+            verdict = try await blockaid.scanEVMAddress(chain: chain, address: recipient)
+        } catch {
+            try Task.checkCancellation()
+            throw EVMSwapTxGuardError.swapKitDepositRefused(
+                "recipient \(recipient) could not be screened on \(chain.name): \(error.localizedDescription)"
+            )
+        }
+        guard verdict.resultType == "Benign" else {
+            let features = verdict.features ?? []
+            let detail = features.isEmpty ? "" : " (\(features.joined(separator: ", ")))"
+            throw EVMSwapTxGuardError.swapKitDepositRefused(
+                "recipient \(recipient) received a \(verdict.resultType) Blockaid verdict on \(chain.name)\(detail)"
+            )
         }
     }
 
