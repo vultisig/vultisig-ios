@@ -19,14 +19,14 @@ enum NearAccountId {
 
     /// Lowest-common-denominator named form: alphanumeric groups joined by one
     /// separator, with `.` delimiting the domain-like segments.
-    private static let named = regex("^(([a-z0-9]+[-_])*[a-z0-9]+\\.)*([a-z0-9]+[-_])*[a-z0-9]+$")
+    private static let named = regex("^(([a-z0-9]+[-_])*[a-z0-9]+\\.)*([a-z0-9]+[-_])*[a-z0-9]+\\z")
 
     /// Implicit accounts ARE the lowercase hex form of an Ed25519 public key.
-    private static let implicit = regex("^[0-9a-f]{64}$")
+    private static let implicit = regex("^[0-9a-f]{64}\\z")
 
     /// `0x…` (NEP-518) and `0s…` (NEP-616) address families this transfer path
     /// cannot address.
-    private static let unsupportedHexPrefixed = regex("^(0x|0s)[0-9a-f]{40}$")
+    private static let unsupportedHexPrefixed = regex("^(0x|0s)[0-9a-f]{40}\\z")
 
     private static let minimumLength = 2
     private static let maximumLength = 64
