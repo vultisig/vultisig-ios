@@ -394,7 +394,8 @@ final class AddLPTransactionBuilderTests: XCTestCase {
             mayachainService: MayachainService(httpClient: LPInboundStubClient(
                 path: "/mayachain/inbound_addresses",
                 address: AddLPFixture.mayaEthVault,
-                router: AddLPFixture.mayaEthRouter
+                router: AddLPFixture.mayaEthRouter,
+                pool: AddLPFixture.usdcPool
             ))
         )
 
@@ -430,11 +431,50 @@ final class AddLPTransactionBuilderTests: XCTestCase {
                 mayachainService: MayachainService(httpClient: LPInboundStubClient(
                     path: "/mayachain/inbound_addresses",
                     address: AddLPFixture.mayaEthVault,
-                    router: AddLPFixture.mayaEthRouter
+                    router: AddLPFixture.mayaEthRouter,
+                    pool: AddLPFixture.usdcPool
                 ))
             )
             XCTFail("a rotated router must not be signed")
         } catch is HelperError {
+        }
+    }
+
+    /// The pool the memo names must still take adds when the router deposit is
+    /// built: a clear inbound halt flag says nothing about a pool that has left
+    /// the list or been suspended since the form opened.
+    func testAMayaErc20DepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        for (pool, status) in [(AddLPFixture.ethPool, "Available"), (AddLPFixture.usdcPool, "Suspended")] {
+            var deposit = builder(
+                coin: AddLPFixture.usdc(),
+                amount: "10",
+                pool: AddLPFixture.usdcPool,
+                pairedAddress: AddLPFixture.mayaAddress,
+                toAddress: AddLPFixture.mayaEthRouter
+            )
+            deposit.protocolChain = .mayaChain
+            let tx = deposit.buildSendTransaction(vault: .example)
+            let decision = ERC20ApprovalDecision(
+                query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+                requirement: .notRequired
+            )
+
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: decision,
+                    mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                        path: "/mayachain/inbound_addresses",
+                        address: AddLPFixture.mayaEthVault,
+                        router: AddLPFixture.mayaEthRouter,
+                        pool: pool,
+                        poolStatus: status
+                    ))
+                )
+                XCTFail("\(pool) \(status): an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
         }
     }
 
@@ -494,28 +534,50 @@ final class AddLPTransactionBuilderTests: XCTestCase {
     }
 }
 
-/// Serves one inbound-address row on `path` and 501s anything else.
+/// Serves one inbound-address row on `path`, optionally Maya's pool list, and
+/// 501s anything else.
 private actor LPInboundStubClient: HTTPClientProtocol {
     private let path: String
     private let body: Data
+    private let pools: Data?
 
-    init(path: String, address: String, router: String, chain: String = "ETH") {
+    /// `pool`/`poolStatus` serve a one-pool `/mayachain/pools` answer.
+    init(
+        path: String,
+        address: String,
+        router: String,
+        chain: String = "ETH",
+        pool: String? = nil,
+        poolStatus: String = "Available"
+    ) {
         self.path = path
         self.body = Data("""
         [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":false,
           "gas_rate":"1","gas_rate_units":"gwei"}]
         """.utf8)
+        self.pools = pool.map { pool in
+            Data("""
+            [{"asset":"\(pool)","status":"\(poolStatus)","balance_cacao":"1","balance_asset":"1","pool_units":"1",
+              "LP_units":"1","synth_units":"0","synth_supply":"0",
+              "pending_inbound_cacao":"0","pending_inbound_asset":"0"}]
+            """.utf8)
+        }
     }
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         await Task.yield()
-        guard target.path == path else {
+        let payload: Data
+        if target.path == path {
+            payload = body
+        } else if target.path == "/mayachain/pools", let pools {
+            payload = pools
+        } else {
             throw HTTPError.statusCode(501, nil)
         }
         let url = target.baseURL.appendingPathComponent(target.path)
         guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil) else {
             throw HTTPError.invalidResponse
         }
-        return HTTPResponse(data: body, response: response)
+        return HTTPResponse(data: payload, response: response)
     }
 }

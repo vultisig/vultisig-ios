@@ -57,6 +57,15 @@ enum ThorchainRouterDepositBuilder {
         }
 
         if isMayaDeposit {
+            // The inbound's halt flag can be clear for a pool that has since
+            // left the list or been suspended, so the pool the memo names is
+            // read again here rather than trusted from the form.
+            guard let pool = tx.memoFunctionDictionary["pool"],
+                  try await mayachainService.fetchLPPools().contains(where: {
+                      $0.asset.caseInsensitiveCompare(pool) == .orderedSame
+                  }) else {
+                throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
+            }
             guard !inbound.isLPActionsHalted else {
                 throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
             }
