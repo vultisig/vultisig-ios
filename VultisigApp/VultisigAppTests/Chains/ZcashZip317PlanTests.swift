@@ -24,6 +24,41 @@ final class ZcashZip317PlanTests: XCTestCase {
     private let zcashAddress = "t1PoLLLwEcVhqMBhk53tANtSepnPXAQJkPM"
     private let branchIdHex = "30f33754"
 
+    // MARK: - THORChain TEX inbound
+
+    func testTexVaultAddressMapsToAValidTransparentAddress() throws {
+        // Live THORChain ZEC inbound.
+        let tex = "tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yju"
+        let t = UTXOChainsHelper.zcashTransparentAddress(fromTex: tex)
+
+        XCTAssertTrue(t.hasPrefix("t1"))
+        XCTAssertTrue(AnyAddress.isValid(string: t, coin: .zcash))
+        XCTAssertEqual(BitcoinScript.lockScriptForAddress(address: t, coin: .zcash).data.count, 25)
+    }
+
+    func testTexAddressesConvertToTheExpectedTransparentAddress() {
+        let vectors = [
+            ("tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv", "t1KuEaP8Lb2pUGtpciBCT2ppomGvFi8sEPY"),
+            ("tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yju", "t1KWVyTZA6DPBDrHPERjuHSFWmAioomt5mE"),
+            ("tex1h55z0mdpnaxjxqs39sht9659ztnjk32reer52v", "t1b7mpgEQnHCbYd34qLVwCTHp4mEKnyennf")
+        ]
+        for (tex, expected) in vectors {
+            XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: tex), expected, tex)
+            XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: tex.uppercased()), expected, "uppercase \(tex)")
+        }
+    }
+
+    func testMixedCaseTexAddressIsLeftUntouched() {
+        let mixed = "Tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv"
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: mixed), mixed)
+    }
+
+    func testCorruptedOrNonTexAddressIsLeftUntouched() {
+        let bad = "tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yjq"
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: bad), bad)
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: zcashAddress), zcashAddress)
+    }
+
     // MARK: - Send path (getBitcoinPreSigningInputData / getBitcoinTransactionPlan)
 
     func testPlainSendKeepsTheZip0317PlanAtTheFloor() throws {

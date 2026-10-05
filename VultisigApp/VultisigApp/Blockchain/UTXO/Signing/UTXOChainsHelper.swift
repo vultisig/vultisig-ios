@@ -25,6 +25,45 @@ class UTXOChainsHelper {
         self.coin = coin
     }
 
+    /// THORChain's ZEC inbound is a ZIP-320 TEX address (`tex1…`, bech32m over
+    /// the 20-byte P2PKH hash). WalletCore only parses `t1…`, so pay the
+    /// equivalent transparent address — same hash, same output script. Returns
+    /// the input unchanged for anything that isn't a valid TEX address.
+    static func zcashTransparentAddress(fromTex address: String) -> String {
+        let charset = Array("qpzry9x8gf2tvdw0s3jn54khce6mua7l")
+        let lower = address.lowercased()
+        guard lower.hasPrefix("tex1"), lower == address || address.uppercased() == address else { return address }
+        let body = lower.dropFirst("tex1".count)
+        let values = body.compactMap { charset.firstIndex(of: $0) }
+        guard values.count == body.count, values.count > 6 else { return address }
+
+        // bech32m checksum (BIP-350) over hrp-expanded + data.
+        var chk: UInt32 = 1
+        for v in [3, 3, 3, 0, 20, 5, 24] + values {
+            let top = chk >> 25
+            chk = (chk & 0x1ffffff) << 5 ^ UInt32(v)
+            for (i, g) in [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3].enumerated() where (top >> UInt32(i)) & 1 == 1 {
+                chk ^= UInt32(g)
+            }
+        }
+        guard chk == 0x2bc830a3 else { return address }
+
+        // 5-bit groups -> bytes; must be exactly the 20-byte hash with clean padding.
+        var acc = 0, bits = 0
+        var hash = Data()
+        for v in values.dropLast(6) {
+            acc = (acc << 5) | v
+            bits += 5
+            if bits >= 8 {
+                bits -= 8
+                hash.append(UInt8((acc >> bits) & 0xff))
+                acc &= (1 << bits) - 1
+            }
+        }
+        guard hash.count == 20, bits < 5, acc == 0 else { return address }
+        return Base58.encode(data: Data([0x1c, 0xb8]) + hash)
+    }
+
     /// Live ZIP-243 branch id WalletCore reads off the plan during preimage
     /// construction. Resolved at send time and carried on the payload's UTXO
     /// specific — the initiator stamps it (BlockChainService), the co-signer
@@ -175,7 +214,9 @@ class UTXOChainsHelper {
             $0.useMaxAmount = false
             $0.amount = Int64(swapPayload.fromAmount)
             $0.coinType = self.coin.rawValue
-            $0.toAddress = thorChainSwapPayload.vaultAddress
+            $0.toAddress = coin == .zcash
+                ? Self.zcashTransparentAddress(fromTex: thorChainSwapPayload.vaultAddress)
+                : thorChainSwapPayload.vaultAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.outputOpReturn = memoData
             $0.fixedDustThreshold = coin.getFixedDustThreshold()

@@ -52,7 +52,7 @@ class THORChainSwaps {
         switch swapPayload.fromCoin.chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .zcash:
             let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType)
             let swapInput =  try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
             return try helper.getSigningInputData(keysignPayload: keysignPayload, signingInput: swapInput)
@@ -85,7 +85,7 @@ class THORChainSwaps {
                 throw HelperError.runtimeError(preSigningOutput.errorMessage)
             }
             return [preSigningOutput.dataHash.hexString]
-        case .bitcoin, .litecoin, .bitcoinCash, .dogecoin:
+        case .bitcoin, .litecoin, .bitcoinCash, .dogecoin, .zcash:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try BitcoinPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
@@ -176,6 +176,9 @@ class THORChainSwaps {
             return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .dogecoin:
             let utxoHelper = UTXOChainsHelper(coin: .dogecoin)
+            return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
+        case .zcash:
+            let utxoHelper = UTXOChainsHelper(coin: .zcash)
             return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .ethereum, .bscChain, .avalanche, .base, .arbitrum:
             let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
