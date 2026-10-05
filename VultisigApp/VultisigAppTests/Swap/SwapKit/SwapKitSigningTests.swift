@@ -72,12 +72,12 @@ final class SwapKitSigningTests: XCTestCase {
         XCTAssertEqual(hashes.count, 4)
         XCTAssertEqual(hashes, hashes.sorted(), "preSigningHashes returns sorted hex")
         // Pin the actual SHA256d sighash bytes for the NEAR-routed BTC swap.
-        // Computed against the fixture PSBT + the canonical BIP-143 preimage.
+        // Computed against the vault-owned fixture PSBT + the canonical BIP-143 preimage.
         XCTAssertEqual(hashes, [
-            "3725e1553bb43700c74d97edd361ed8538416b106e7f968e43023ac3f2e1e404",
-            "447a8a57d19fafa308c3ed817c76e4455b581c77d1b7eef03d85440100ba6b78",
-            "73935a24a8dd1df3fb5b6018d7f6d5ad95b3774ea55cbda87f62b6b28ee0f8ba",
-            "9a32077b87e4a99bf6942350eb88db33145a28cddb736fb3d2b736c89d7f92c7"
+            "14614cfa3488a36cc8a5e6fb63f26e9262cca88ae6942aeecf4cdc6f4bd141e7",
+            "32d2869268fd706fe0861acc94c419cbf189270f8930c77668a3eddd8ced5110",
+            "4742e1089c1e0da28ef4b53a2600a190742f20e9fdc6bad7c51ae2bebee43980",
+            "a81249d90ead7c8765e4e0bbdc7e7467c5e879057dd6e3fb769c118052f65205"
         ], "BIP-143 sighashes are pinnable — drift here is a regression")
     }
 
