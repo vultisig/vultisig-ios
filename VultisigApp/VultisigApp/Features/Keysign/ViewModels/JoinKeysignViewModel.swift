@@ -194,6 +194,11 @@ class JoinKeysignViewModel: ObservableObject {
         guard !isKaminoDecodeRefused else {
             return logger.error("Refusing to join: the Kamino transaction's bytes do not match what is displayed.")
         }
+        guard !keysignMessages.isEmpty else {
+            errorMsg = "noMessagesToSign".localized
+            status = .FailedToStart
+            return logger.error("Refusing to join: there are no messages to sign.")
+        }
 
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")

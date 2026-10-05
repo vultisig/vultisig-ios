@@ -40,6 +40,7 @@ struct KeysignDiscoverServiceView: View {
                         viewModel.serverAddress = self.serviceDelegate.serverURL
                     }.task {
                         await viewModel.ensureKeysignPayload()
+                        guard viewModel.status != .FailedToStart else { return }
                         viewModel.setStatus(status: .JoinKeysign)
                     }
             }
