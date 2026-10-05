@@ -72,7 +72,7 @@ final class RippleLastLedgerExpiryTests: XCTestCase {
 
         let result = try await provider.checkStatus(query: Self.query)
 
-        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(result.status, .confirmed)
     }
 
     func testExpiredReasonIsLocalizedForHistory() {
