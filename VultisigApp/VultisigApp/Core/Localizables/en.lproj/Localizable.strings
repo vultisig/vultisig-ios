@@ -1612,7 +1612,6 @@
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Secured-asset swap destination is not a valid %1$@ address (%2$@).";
 "swapSlippageToleranceTooTight" = "Price moved beyond your slippage tolerance. Increase the slippage setting in swap settings, or try a smaller amount.";
-"transactionExpiredNotIncluded" = "Expired before it was included. The network dropped this transaction before including it, so nothing was sent and no network fee was charged. You can try again.";
 "swapTrackingLink" = "Swap tracking link";
 "swapTradingHalted" = "Trading for this asset is temporarily halted. Please try again later.";
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
@@ -1659,6 +1658,7 @@
 "transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
+"transactionExpiredNotIncluded" = "Expired before it was included. The network dropped this transaction before including it, so nothing was sent and no network fee was charged. You can try again.";
 "transactionFailed" = "Transaction failed";
 "transactionFailedDescription" = "Something went wrong. Please try again.";
 "transactionFailedHighlight" = "failed";

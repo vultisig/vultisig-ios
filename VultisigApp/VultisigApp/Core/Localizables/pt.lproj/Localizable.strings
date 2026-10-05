@@ -1612,7 +1612,6 @@
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "O destino do swap de ativo protegido não é um endereço %1$@ válido (%2$@).";
 "swapSlippageToleranceTooTight" = "O preço ultrapassou a sua tolerância de slippage. Aumente a definição de slippage nas definições de troca ou tente um valor menor.";
-"transactionExpiredNotIncluded" = "Expirou antes de ser incluída. A rede descartou esta transação antes de incluí-la, portanto nada foi enviado e nenhuma taxa de rede foi cobrada. Pode tentar novamente.";
 "swapTrackingLink" = "Link de rastreamento da troca";
 "swapTradingHalted" = "A negociação deste ativo está temporariamente suspensa. Tente novamente mais tarde.";
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
@@ -1659,6 +1658,7 @@
 "transactionBytes" = "Bytes da transação";
 "transactionComplete" = "Feito";
 "transactionDetails" = "Detalhes da transação";
+"transactionExpiredNotIncluded" = "Expirou antes de ser incluída. A rede descartou esta transação antes de incluí-la, portanto nada foi enviado e nenhuma taxa de rede foi cobrada. Pode tentar novamente.";
 "transactionFailed" = "Transação falhou";
 "transactionFailedDescription" = "Algo deu errado. Tente novamente.";
 "transactionFailedHighlight" = "falhou";

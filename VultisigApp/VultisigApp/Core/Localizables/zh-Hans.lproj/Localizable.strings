@@ -1612,7 +1612,6 @@
 "swapSecuredAssetBadge" = "担保";
 "swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";
 "swapSlippageToleranceTooTight" = "价格波动超出了您的滑点容忍度。请在交换设置中调高滑点，或尝试更小的金额。";
-"transactionExpiredNotIncluded" = "在被打包前已过期。网络在打包此交易前已将其丢弃，因此没有发送任何资产，也未收取网络费用。您可以重试。";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";
 "swapVerifyCheckbox1Description" = "交换金额正确";
@@ -1659,6 +1658,7 @@
 "transactionBytes" = "交易字节";
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
+"transactionExpiredNotIncluded" = "在被打包前已过期。网络在打包此交易前已将其丢弃，因此没有发送任何资产，也未收取网络费用。您可以重试。";
 "transactionFailed" = "交易失败";
 "transactionFailedDescription" = "出了点问题，请重试。";
 "transactionFailedHighlight" = "失败";
