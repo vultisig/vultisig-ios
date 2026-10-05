@@ -82,6 +82,7 @@ struct LiFiService {
             let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
 
             let (swapFee, swapFeeTokenContract) = Self.extractSwapFee(from: quote, integratorFee: integratorFee)
+            let providerFee = Self.extractProtocolFee(from: quote.estimate.feeCosts)
 
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
@@ -93,7 +94,9 @@ struct LiFiService {
                     gasPrice: String(gasPrice),
                     gas: normalizedGas,
                     swapFee: swapFee,
-                    swapFeeTokenContract: swapFeeTokenContract
+                    swapFeeTokenContract: swapFeeTokenContract,
+                    protocolFee: providerFee?.fee,
+                    protocolFeeTokenContract: providerFee?.tokenContract ?? ""
                 )
             )
 
@@ -104,6 +107,7 @@ struct LiFiService {
                 gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
             }
             let swapFee = Self.solanaSwapFee(toAmount: quote.estimate.toAmount, integratorFee: integratorFee, toCoin: toCoin)
+            let providerFee = Self.extractProtocolFee(from: quote.estimate.feeCosts)
 
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
@@ -115,7 +119,9 @@ struct LiFiService {
                     gasPrice: .empty,
                     gas: gas,
                     swapFee: swapFee,
-                    swapFeeTokenContract: swapFee == nil ? "" : toCoin.contractAddress
+                    swapFeeTokenContract: swapFee == nil ? "" : toCoin.contractAddress,
+                    protocolFee: providerFee?.fee,
+                    protocolFeeTokenContract: providerFee?.tokenContract ?? ""
                 )
             )
 
@@ -175,24 +181,48 @@ extension LiFiService {
         from response: LifiQuoteResponse.EvmQuoteResponse,
         integratorFee: Decimal?
     ) -> (fee: String?, tokenContract: String) {
-        guard let feeCosts = response.estimate.feeCosts,
-              let swapFeeCost = feeCosts.first(where: { $0.name.lowercased() == "lifi fixed fee" }) else {
+        guard let swapFeeCost = fixedFeeEntry(in: response.estimate.feeCosts) else {
             // A missing entry is a stated zero only when the app asked for none.
             return (integratorFee == 0 ? "0" : nil, "")
         }
 
-        let feeAmount = swapFeeCost.amount
+        return (swapFeeCost.amount, Self.tokenContract(of: swapFeeCost))
+    }
 
-        // Extract token contract if present and non-empty
-        let tokenContract: String
-        if let address = swapFeeCost.token?.address,
-           !address.isEmpty,
-           address.lowercased() != "0x0000000000000000000000000000000000000000" {
-            tokenContract = address
-        } else {
-            tokenContract = ""
+    /// LI.FI states its own cut and the integrator's in one fixed-fee entry:
+    /// `amount` is the whole charge and `feeSplit.integratorFee` the
+    /// integrator's slice. The provider's share is the remainder, so the two
+    /// always add up to what the entry charges. An entry without a split cannot
+    /// be divided and yields none.
+    static func extractProtocolFee(
+        from feeCosts: [LifiQuoteResponse.Estimate.FeeCost]?
+    ) -> (fee: String, tokenContract: String)? {
+        guard let entry = fixedFeeEntry(in: feeCosts),
+              let total = BigInt(entry.amount),
+              let integrator = entry.feeSplit?.integratorFee.flatMap({ BigInt($0) }),
+              total > 0, integrator >= 0 else {
+            return nil
         }
+        let remainder = total - min(integrator, total)
+        guard remainder > 0 else { return nil }
+        return (remainder.description, tokenContract(of: entry))
+    }
 
-        return (feeAmount, tokenContract)
+    private static func fixedFeeEntry(
+        in feeCosts: [LifiQuoteResponse.Estimate.FeeCost]?
+    ) -> LifiQuoteResponse.Estimate.FeeCost? {
+        feeCosts?.first(where: { $0.name.lowercased() == "lifi fixed fee" })
+    }
+
+    private static let solanaNativeMint = "11111111111111111111111111111111"
+
+    private static func tokenContract(of fee: LifiQuoteResponse.Estimate.FeeCost) -> String {
+        guard let address = fee.token?.address,
+              !address.isEmpty,
+              address.lowercased() != "0x0000000000000000000000000000000000000000",
+              address != solanaNativeMint else {
+            return ""
+        }
+        return address
     }
 }

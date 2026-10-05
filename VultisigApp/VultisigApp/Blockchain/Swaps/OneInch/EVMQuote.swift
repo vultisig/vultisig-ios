@@ -17,8 +17,17 @@ struct EVMQuote: Codable, Hashable {
         let gas: Int64
         let swapFee: String?
         let swapFeeTokenContract: String
+        /// The provider's own charge, itemized apart from the affiliate fee. LI.FI
+        /// EVM quotes keep it inside `swapFee`; LI.FI Solana quotes state it in
+        /// addition to `swapFee`. Display only: never part of the signed payload.
+        let protocolFee: String?
+        let protocolFeeTokenContract: String
 
-        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64, swapFee: String? = nil, swapFeeTokenContract: String = "") {
+        init(
+            from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64,
+            swapFee: String? = nil, swapFeeTokenContract: String = "",
+            protocolFee: String? = nil, protocolFeeTokenContract: String = ""
+        ) {
             self.from = from
             self.to = to
             self.data = data
@@ -27,6 +36,8 @@ struct EVMQuote: Codable, Hashable {
             self.gas = gas
             self.swapFee = swapFee
             self.swapFeeTokenContract = swapFeeTokenContract
+            self.protocolFee = protocolFee
+            self.protocolFeeTokenContract = protocolFeeTokenContract
         }
 
         init(from decoder: any Decoder) throws {
@@ -43,6 +54,8 @@ struct EVMQuote: Codable, Hashable {
 
             self.swapFee = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.swapFee)
             self.swapFeeTokenContract = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.swapFeeTokenContract) ?? ""
+            self.protocolFee = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.protocolFee)
+            self.protocolFeeTokenContract = try container.decodeIfPresent(String.self, forKey: EVMQuote.Transaction.CodingKeys.protocolFeeTokenContract) ?? ""
         }
     }
     let dstAmount: String

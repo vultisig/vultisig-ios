@@ -37,10 +37,16 @@ enum LifiQuoteResponse: Codable {
             struct Token: Codable {
                 let address: String
             }
+            /// How LI.FI divides a fee entry between itself and the integrator.
+            struct FeeSplit: Codable {
+                let integratorFee: String?
+                let lifiFee: String?
+            }
             let name: String
             let amount: String
             let included: Bool
             let token: Token?
+            var feeSplit: FeeSplit?
         }
         let toAmount: String
         let toAmountMin: String
