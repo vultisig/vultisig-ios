@@ -143,4 +143,31 @@ enum AddLPFixture {
     static let healthyMayaFetch: ThorchainLPDestinationResolver.InboundAddressFetch = { _ in healthyMayaInbounds() }
 
     static let healthyFetch: ThorchainLPDestinationResolver.InboundAddressFetch = { _ in healthyInbounds() }
+
+    // MARK: - MayaChain LP record
+
+    static let btcAddress = FunctionActionFixture.btcAddress
+
+    static func record(
+        units: String = "0",
+        cacaoAddress: String? = mayaAddress,
+        assetAddress: String? = nil,
+        pendingTxId: String? = nil
+    ) -> MayaLiquidityProvider {
+        MayaLiquidityProvider(
+            asset: btcPool,
+            cacaoAddress: cacaoAddress,
+            assetAddress: assetAddress,
+            units: units,
+            pendingCacao: "0",
+            pendingAsset: "0",
+            pendingTxId: pendingTxId,
+            lastAddHeight: nil
+        )
+    }
+
+    struct RecordReadFailed: Error {}
+
+    /// No position on the pool.
+    static let noRecordChecks = MayaLPChecks(liquidityProvider: { _, _ in nil })
 }

@@ -931,7 +931,10 @@
 "mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
 "mayaChainNotEnabledForLP" = "MayaChain is not enabled on this vault, or the paired asset address is missing. Please enable MayaChain to use this feature.";
 "mayaInboundAddressNotFound" = "%@ is not currently supported by MayaChain.";
+"mayaLpAddressMismatch" = "Your %@ position is paired with a different address. MayaChain would refund this deposit.";
+"mayaLpSingleSidedPosition" = "You already have a CACAO-only position in %@. MayaChain only accepts CACAO into it, so this deposit would be refunded.";
 "mayaLpTargetPool" = "Target Pool: %@";
+"mayaLpUnverified" = "Could not reach MayaChain to check your position. Please try again.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";

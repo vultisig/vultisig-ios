@@ -10,6 +10,9 @@ import Foundation
 enum MayaChainLPsAPI: TargetType {
     case getPoolStats(period: String?)
     case getMemberDetails(address: String)
+    /// A vault's record on one pool, read from the node: Midgard has no view of
+    /// a half-open add.
+    case getLiquidityProvider(pool: String, address: String)
 
     var baseURL: URL {
         switch self {
@@ -17,6 +20,8 @@ enum MayaChainLPsAPI: TargetType {
             return URL(string: "https://midgard.mayachain.info")!
         case .getMemberDetails:
             return URL(string: "https://midgard.mayachain.info")!
+        case .getLiquidityProvider:
+            return URL(string: "https://mayanode.mayachain.info")!
         }
     }
 
@@ -26,12 +31,14 @@ enum MayaChainLPsAPI: TargetType {
             return "/v2/pools"
         case .getMemberDetails(let address):
             return "/v2/member/\(address)"
+        case .getLiquidityProvider(let pool, let address):
+            return "/mayachain/pool/\(pool)/liquidity_provider/\(address)"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getPoolStats, .getMemberDetails:
+        case .getPoolStats, .getMemberDetails, .getLiquidityProvider:
             return .get
         }
     }
@@ -48,7 +55,7 @@ enum MayaChainLPsAPI: TargetType {
             }
             return .requestParameters(params, .urlEncoding)
 
-        case .getMemberDetails:
+        case .getMemberDetails, .getLiquidityProvider:
             return .requestPlain
         }
     }

@@ -45,6 +45,21 @@ extension MayaChainAPIService {
         return response.data
     }
 
+    /// The vault's record on `pool`, or nil when mayanode has none. Any other
+    /// failure throws: a caller about to move funds must not read an outage as
+    /// an empty record.
+    func getLiquidityProvider(pool: String, address: String) async throws -> MayaLiquidityProvider? {
+        do {
+            let response = try await httpClient.request(
+                MayaChainLPsAPI.getLiquidityProvider(pool: pool, address: address),
+                responseType: MayaLiquidityProvider.self
+            )
+            return response.data
+        } catch HTTPError.statusCode(404, _) {
+            return nil
+        }
+    }
+
     /// Fetches complete LP positions for an address with calculated current values
     /// - Parameters:
     ///   - address: The MayaChain or asset address to lookup

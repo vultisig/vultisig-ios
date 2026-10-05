@@ -731,6 +731,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -758,6 +759,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -787,6 +789,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -813,6 +816,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -821,6 +825,132 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         let builder = try XCTUnwrap(built)
 
         XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):0xsender")
+    }
+
+    // MARK: - MayaChain LP record
+
+    private func makeMayaViewModel(
+        side: LPDepositSide,
+        pool: String = AddLPFixture.btcPool,
+        checks: MayaLPChecks
+    ) -> AddLPTransactionViewModel {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+        return AddLPTransactionViewModel(
+            coin: side == .coin1 ? cacao : bitcoin,
+            pairedCoin: side == .coin1 ? bitcoin : cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: pool),
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            fetchPools: { [] },
+            mayaChecks: checks,
+            locale: Locale(identifier: "en_US")
+        )
+    }
+
+    /// A live CACAO-only position has no asset address, so mayanode refunds any
+    /// add that names one. The CACAO side falls back to `+:POOL`.
+    func testTheCacaoSideDropsThePairedAddressOnALiveCacaoOnlyPosition() async throws {
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in AddLPFixture.record(units: "900") })
+        let viewModel = makeMayaViewModel(side: .coin1, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool)")
+        XCTAssertNil(viewModel.blockingMessage)
+    }
+
+    func testTheCacaoSideRefusesARecordKeyedToOtherAddresses() async {
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in
+            AddLPFixture.record(cacaoAddress: AddLPFixture.mayaAddress, assetAddress: "bc1qsomeoneelse", pendingTxId: "TX")
+        })
+        let viewModel = makeMayaViewModel(side: .coin1, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaLpAddressMismatch".localized, AddLPFixture.btcPool)
+        )
+    }
+
+    /// The CACAO side stays on the chain, but an unreadable record still stops
+    /// it: a paired memo built on a guess is the refund this exists to prevent.
+    func testTheCacaoSideRefusesWhenTheRecordCannotBeRead() async {
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in throw AddLPFixture.RecordReadFailed() })
+        let viewModel = makeMayaViewModel(side: .coin1, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(viewModel.blockingMessage, "mayaLpUnverified".localized)
+    }
+
+    func testTheAssetSideIsRefusedOnALiveCacaoOnlyPosition() async {
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in AddLPFixture.record(units: "900") })
+        let viewModel = makeMayaViewModel(side: .coin2, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaLpSingleSidedPosition".localized, AddLPFixture.btcPool)
+        )
+    }
+
+    func testTheAssetSideIsRefusedWhenTheRecordCannotBeRead() async {
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in throw AddLPFixture.RecordReadFailed() })
+        let viewModel = makeMayaViewModel(side: .coin2, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(viewModel.blockingMessage, "mayaLpUnverified".localized)
+    }
+
+    func testTheAssetSideBuildsWhenThePositionIsPairable() async throws {
+        let viewModel = makeMayaViewModel(side: .coin2, checks: AddLPFixture.noRecordChecks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "0.5"
+
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(AddLPFixture.mayaAddress)")
+    }
+
+    /// A pool the app never pairs is single-sided whatever the record says, so
+    /// the record is not even read.
+    func testASingleSidedPoolReadsNoRecord() async throws {
+        var reads = 0
+        let checks = MayaLPChecks(liquidityProvider: { _, _ in
+            reads += 1
+            return nil
+        })
+        let viewModel = makeMayaViewModel(side: .coin1, pool: "ADA.ADA", checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNotNil(built)
+        XCTAssertEqual(reads, 0)
     }
 
     /// Without the paired address `+:POOL` is a different, asymmetric
@@ -838,6 +968,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -866,6 +997,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
                 [AddLPFixture.inbound(chain: "BTC", address: AddLPFixture.mayaBtcVault, router: nil, halted: true)]
             },
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -892,6 +1024,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             prefillsFullBalance: true,
             resolveInboundAddresses: { _ in [] },
             fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
@@ -951,6 +1084,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
             fetchPools: { [] },
             approvalResolver: StubERC20ApprovalResolver(.approve),
+            mayaChecks: AddLPFixture.noRecordChecks,
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()

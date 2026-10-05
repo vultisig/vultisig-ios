@@ -931,7 +931,10 @@
 "mayaCacaoStakingUnavailableWarning" = "无法验证 MAYAChain 质押是否可用。请稍后重试。";
 "mayaChainNotEnabledForLP" = "此保险库未启用 MayaChain，或缺少配对资产的地址。请启用 MayaChain 以使用此功能。";
 "mayaInboundAddressNotFound" = "MayaChain 目前不支持 %@。";
+"mayaLpAddressMismatch" = "您在 %@ 中的仓位已与其他地址配对。MayaChain 将退回此笔存入。";
+"mayaLpSingleSidedPosition" = "您在 %@ 中已有仅 CACAO 的仓位。MayaChain 只接受向其中添加 CACAO，因此此笔存入将被退回。";
 "mayaLpTargetPool" = "目标池：%@";
+"mayaLpUnverified" = "无法连接到 MayaChain 以检查您的仓位。请重试。";
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "mergeCoins" = "合并代币";

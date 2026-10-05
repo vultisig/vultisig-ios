@@ -93,11 +93,17 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     private let resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch
     private let fetchPools: PoolsFetch
+    private let mayaChecks: MayaLPChecks
     /// Reads the ERC-20 approval an ERC20 deposit needs, once, on Continue.
     private let approvalResolver: ERC20ApprovalResolving
     /// Why the last Continue could not read that approval, or nil. Surfaces
     /// through `blockingMessage`; the next Continue or asset change clears it.
     @Published private(set) var approvalError: String?
+    /// Why the MayaChain record check refused the last Continue, or nil.
+    @Published private(set) var mayaCheckError: String?
+    /// Set when the vault already holds a live CACAO-only position: mayanode
+    /// would refund a paired add there, so the CACAO side is built `+:POOL`.
+    private var singleSidedFallback = false
     /// Locale the amount is read in. Injected so a test pins the separators
     /// rather than inheriting the machine's — the parse deliberately refuses an
     /// amount written in another locale's convention, so which locale is in
@@ -123,6 +129,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
         fetchPools: PoolsFetch? = nil,
         approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver(),
+        mayaChecks: MayaLPChecks? = nil,
         locale: Locale = .current
     ) {
         self.coin = coin
@@ -144,6 +151,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         self.resolveInboundAddresses = resolveInboundAddresses ?? defaultInbound
         self.fetchPools = fetchPools ?? defaultPools
         self.approvalResolver = approvalResolver
+        self.mayaChecks = mayaChecks ?? .live
         self.locale = locale
         self.pairedAddress = pairedCoin?.address
         self.percentageSelected = prefillsFullBalance ? 100 : nil
@@ -210,6 +218,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         coin: Coin,
         vault: Vault,
         resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
+        mayaChecks: MayaLPChecks? = nil,
         locale: Locale = .current
     ) -> AddLPTransactionViewModel {
         AddLPTransactionViewModel(
@@ -220,6 +229,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             vault: vault,
             prefillsFullBalance: false,
             resolveInboundAddresses: resolveInboundAddresses,
+            mayaChecks: mayaChecks,
             locale: locale
         )
     }
@@ -283,6 +293,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// asset side always names the CACAO address.
     var requiresPairedAddress: Bool {
         guard protocolChain == .mayaChain, coin.chain == .mayaChain else { return true }
+        guard !singleSidedFallback else { return false }
         return poolName.map(MayaLPPools.isPairable(pool:)) ?? false
     }
 
@@ -486,13 +497,61 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         isLoading = true
         defer { isLoading = false }
         approvalError = nil
+        mayaCheckError = nil
+        singleSidedFallback = false
 
         destinationTask?.cancel()
         destinationTask = nil
         await resolveDestination(bypassCache: true, generation: nextDestinationGeneration())
 
+        guard await verifyMayaPairing() else { return nil }
+
         guard let builder = addLPBuilder else { return nil }
         return await withApprovalDecision(builder)
+    }
+
+    /// Reads the vault's record on the pool before either side is signed.
+    ///
+    /// mayanode records an asset address only on a zero-unit record, so a live
+    /// CACAO-only position refunds any add naming one. The CACAO side then falls
+    /// back to `+:POOL`; the asset side, which has no single-sided form, is
+    /// refused. An unreadable record refuses both rather than guess.
+    /// Returns false, with `mayaCheckError` set, when the form must not proceed.
+    private func verifyMayaPairing() async -> Bool {
+        guard protocolChain == .mayaChain, let pool = poolName,
+              let cacaoAddress = vault.nativeCoin(for: .mayaChain)?.address.nilIfEmpty else { return true }
+
+        let assetAddress: String
+        if coin.chain == .mayaChain {
+            guard requiresPairedAddress, let paired = pairedAddress?.nilIfEmpty else { return true }
+            assetAddress = paired
+        } else {
+            assetAddress = coin.address
+        }
+
+        let record: MayaLiquidityProvider?
+        do {
+            record = try await mayaChecks.liquidityProvider(pool, cacaoAddress)
+        } catch {
+            logger.warning("Failed to read the MayaChain LP record for \(pool, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            mayaCheckError = "mayaLpUnverified".localized
+            return false
+        }
+
+        switch record?.pairing(cacaoAddress: cacaoAddress, assetAddress: assetAddress) ?? .pairable {
+        case .pairable:
+            return true
+        case .singleSidedPosition:
+            guard coin.chain == .mayaChain else {
+                mayaCheckError = String(format: "mayaLpSingleSidedPosition".localized, pool)
+                return false
+            }
+            singleSidedFallback = true
+            return true
+        case .addressMismatch:
+            mayaCheckError = String(format: "mayaLpAddressMismatch".localized, pool)
+            return false
+        }
     }
 
     /// The builder with its ERC-20 approval read once here, for the exact
@@ -578,6 +637,9 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         }
         if let approvalError {
             return approvalError
+        }
+        if let mayaCheckError {
+            return mayaCheckError
         }
         if case .chosen = poolSource, poolsState == .loaded, pools.isEmpty {
             return "addLpNoDepositablePools".localized
