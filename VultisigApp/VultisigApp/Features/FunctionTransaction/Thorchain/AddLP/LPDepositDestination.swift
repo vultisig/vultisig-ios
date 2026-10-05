@@ -110,15 +110,16 @@ extension LPDepositDestination {
 /// router); at build time with the cache bypassed, because the protocols churn
 /// their inbound vaults and a five-minute-old address can already be retired.
 ///
-/// **What this does not do.** It is a build-time check, not a sign-time one:
-/// the route can still halt between Continue and the last co-signer. Swaps have
-/// `assertSourceChainNotHalted` on the signing path and function calls have no
-/// equivalent, so closing this belongs in a gate shared by the whole
-/// FunctionCall tail rather than here. It also reads only the per-chain flags
-/// the inbound endpoint publishes; THORChain can additionally pause a SINGLE
-/// pool's deposits by mimir, which those flags do not express and which would
-/// need a separate read. MayaChain's endpoint publishes only `halted`, so that
-/// is the one flag honoured for it.
+/// **What this does not do.** A MayaChain add is read again when its keysign
+/// payload is built (`ThorchainRouterDepositBuilder.synthesizeRouterDeposit`),
+/// but a THORChain add is not: swaps have `assertSourceChainNotHalted` on the
+/// signing path and function calls have no equivalent, so closing this for
+/// THORChain belongs in a gate shared by the whole FunctionCall tail rather
+/// than here. Nor does either read cover the window between that build and the
+/// last co-signer. THORChain can additionally pause a SINGLE pool's deposits by
+/// mimir, which the per-chain flags do not express and which would need a
+/// separate read. MayaChain's endpoint publishes only `halted`, so that is the
+/// one flag honoured for it.
 enum ThorchainLPDestinationResolver {
 
     /// The inbound-address read this resolution depends on. A closure rather

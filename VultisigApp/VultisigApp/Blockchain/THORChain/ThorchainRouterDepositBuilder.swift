@@ -36,42 +36,42 @@ enum ThorchainRouterDepositBuilder {
         thorchainService: ThorchainService = .shared,
         mayachainService: MayachainService = .shared
     ) async throws -> (swapPayload: SwapPayload?, approvePayload: ERC20ApprovePayload?) {
-        guard let approveSpend = approvalQuery(for: tx) else {
-            return (nil, nil)
-        }
-
         // The router call names the inbound VAULT, which belongs to the
         // protocol whose pool is joined: a MayaChain deposit marks itself, and
         // reading THORChain's vault for it would strand the tokens.
         let isMayaDeposit = tx.memoFunctionDictionary["protocol"] == AddLPTransactionBuilder.mayaProtocolMarker
-        // A MayaChain deposit reads live and fails closed: the vault and the
-        // router must come from one current snapshot, and a stale cached vault
-        // paired with a fresh router would send the tokens to a retired vault.
-        let inboundAddresses = isMayaDeposit
-            ? try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
-            : await thorchainService.fetchThorchainInboundAddress()
-        let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
-        guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-            let key = isMayaDeposit ? "mayaInboundAddressNotFound" : "inboundAddressNotFound"
-            throw HelperError.runtimeError(String(format: key.localized, chainName))
+
+        guard let approveSpend = approvalQuery(for: tx) else {
+            // A native MayaChain L1 deposit is a plain transfer to the inbound
+            // vault, built from the form's earlier read. It is checked again
+            // here, where the payload is built, because a vault can rotate or
+            // halt in between.
+            if isMayaDeposit, tx.coin.chain != .mayaChain {
+                let inbound = try await currentMayaInbound(for: tx, mayachainService: mayachainService)
+                // Base58 destinations are case-sensitive; only EVM hex is not.
+                let sameVault = tx.coin.chain.chainType == .EVM
+                    ? inbound.address.caseInsensitiveCompare(tx.toAddress) == .orderedSame
+                    : inbound.address == tx.toAddress
+                guard sameVault else {
+                    throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
+                }
+            }
+            return (nil, nil)
         }
 
+        let inbound: InboundAddress
         if isMayaDeposit {
-            // The inbound's halt flag can be clear for a pool that has since
-            // left the list or been suspended, so the pool the memo names is
-            // read again here rather than trusted from the form.
-            guard let pool = tx.memoFunctionDictionary["pool"],
-                  try await mayachainService.fetchLPPools().contains(where: {
-                      $0.asset.caseInsensitiveCompare(pool) == .orderedSame
-                  }) else {
-                throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
-            }
-            guard !inbound.isLPActionsHalted else {
-                throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
-            }
+            inbound = try await currentMayaInbound(for: tx, mayachainService: mayachainService)
             guard let router = inbound.router, router.caseInsensitiveCompare(tx.toAddress) == .orderedSame else {
                 throw HelperError.runtimeError(String(format: "routerNotAvailable".localized, inbound.chain))
             }
+        } else {
+            let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+            let inboundAddresses = await thorchainService.fetchThorchainInboundAddress()
+            guard let found = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
+            }
+            inbound = found
         }
 
         // ONE address for the deposit and the approval.
@@ -109,6 +109,35 @@ enum ThorchainRouterDepositBuilder {
             : .thorchain(thorchainSwapPayload)
         let approvePayload = try ERC20ApprovalDecision.approvePayload(signing: approveSpend, decision: approvalDecision)
         return (swapPayload, approvePayload)
+    }
+
+    /// The live MayaChain inbound for `tx`'s deposit, refused unless its pool
+    /// is still offered and its chain is not LP-paused. Read with the cache
+    /// bypassed and failing closed: the vault and the router must come from one
+    /// current snapshot, and a stale cached vault paired with a fresh router
+    /// would send the tokens to a retired vault. The inbound's halt flag can be
+    /// clear for a pool that has since left the list or been suspended, so the
+    /// pool the memo names is read again rather than trusted from the form.
+    @MainActor
+    private static func currentMayaInbound(
+        for tx: SendTransaction,
+        mayachainService: MayachainService
+    ) async throws -> InboundAddress {
+        let inboundAddresses = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+        let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
+        guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+            throw HelperError.runtimeError(String(format: "mayaInboundAddressNotFound".localized, chainName))
+        }
+        guard let pool = tx.memoFunctionDictionary["pool"],
+              try await mayachainService.fetchLPPools().contains(where: {
+                  $0.asset.caseInsensitiveCompare(pool) == .orderedSame
+              }) else {
+            throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
+        }
+        guard !inbound.isLPActionsHalted else {
+            throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
+        }
+        return inbound
     }
 
     /// The spend a router deposit's approve is decided for: an ERC20 LP add or

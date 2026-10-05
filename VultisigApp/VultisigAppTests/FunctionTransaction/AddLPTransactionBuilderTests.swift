@@ -513,6 +513,115 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         }
     }
 
+    private func mayaNativeDeposit(toAddress: String) -> SendTransaction {
+        var deposit = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: toAddress
+        )
+        deposit.protocolChain = .mayaChain
+        return deposit.buildSendTransaction(vault: .example)
+    }
+
+    private func mayaBtcService(
+        halted: Bool = false,
+        pool: String = AddLPFixture.btcPool,
+        poolStatus: String = "Available"
+    ) -> MayachainService {
+        MayachainService(httpClient: LPInboundStubClient(
+            path: "/mayachain/inbound_addresses",
+            address: AddLPFixture.mayaBtcVault,
+            router: "",
+            chain: "BTC",
+            pool: pool,
+            poolStatus: poolStatus,
+            halted: halted
+        ))
+    }
+
+    /// A native Maya deposit is a plain transfer to the inbound vault and has
+    /// no router shim, but the vault, halt flag and pool are still re-read
+    /// when it is signed.
+    func testAMayaNativeDepositStillSignsWhenTheInboundIsCurrent() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: nil,
+            mayachainService: mayaBtcService()
+        )
+
+        XCTAssertNil(swapPayload)
+        XCTAssertNil(approvePayload)
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenTheVaultRotated() async throws {
+        let tx = mayaNativeDeposit(toAddress: "bc1qretiredvault")
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService()
+            )
+            XCTFail("a retired vault must not be sent funds")
+        } catch is HelperError {
+        }
+    }
+
+    /// Base58 addresses are case-sensitive, so a vault that differs only by
+    /// case is a different destination.
+    func testAMayaNativeDepositVaultMatchIsCaseSensitive() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault.uppercased())
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService()
+            )
+            XCTFail("a case-variant vault must not be treated as the inbound")
+        } catch is HelperError {
+        }
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenTheInboundHalted() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService(halted: true)
+            )
+            XCTFail("a halted inbound must not be sent funds")
+        } catch let error as HelperError {
+            XCTAssertEqual(error.localizedDescription, String(format: "inboundPaused".localized, "BTC"))
+        }
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        for service in [
+            mayaBtcService(pool: AddLPFixture.ethPool),
+            mayaBtcService(poolStatus: "Suspended")
+        ] {
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: nil,
+                    mayachainService: service
+                )
+                XCTFail("an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
+        }
+    }
+
     /// Maya's pool list names its CACAO side `balance_cacao`; it must still
     /// decode into the shared pool model, status included.
     func testMayaPoolsDecodeIntoThePoolModel() throws {
@@ -548,11 +657,12 @@ private actor LPInboundStubClient: HTTPClientProtocol {
         router: String,
         chain: String = "ETH",
         pool: String? = nil,
-        poolStatus: String = "Available"
+        poolStatus: String = "Available",
+        halted: Bool = false
     ) {
         self.path = path
         self.body = Data("""
-        [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":false,
+        [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":\(halted),
           "gas_rate":"1","gas_rate_units":"gwei"}]
         """.utf8)
         self.pools = pool.map { pool in
