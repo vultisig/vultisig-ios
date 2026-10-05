@@ -187,7 +187,7 @@ enum EVMSwapTxGuard {
         sourceToken: String,
         amount: BigInt
     ) throws -> String? {
-        let calldata = data.stripHexPrefix().lowercased()
+        let calldata = data.lowercased().stripHexPrefix()
         let isTokenAddressed = !sourceToken.isEmpty && to.lowercased() == sourceToken.lowercased()
         guard isTokenAddressed || calldata.hasPrefix(erc20TransferSelector) else { return nil }
 
