@@ -214,7 +214,9 @@ class UTXOChainsHelper {
             $0.useMaxAmount = false
             $0.amount = Int64(swapPayload.fromAmount)
             $0.coinType = self.coin.rawValue
-            $0.toAddress = Self.zcashTransparentAddress(fromTex: thorChainSwapPayload.vaultAddress)
+            $0.toAddress = coin == .zcash
+                ? Self.zcashTransparentAddress(fromTex: thorChainSwapPayload.vaultAddress)
+                : thorChainSwapPayload.vaultAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.outputOpReturn = memoData
             $0.fixedDustThreshold = coin.getFixedDustThreshold()
