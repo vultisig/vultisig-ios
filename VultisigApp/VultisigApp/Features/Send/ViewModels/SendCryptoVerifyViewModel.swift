@@ -33,6 +33,27 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var hasBalanceError = false
 
+    /// The amount the user set, when Verify lowered it to cover the network fee.
+    /// Kept as the first figure across repeated adjusts so the warning always
+    /// compares against what the form held, not an earlier clamp.
+    @Published private(set) var requestedAmountBeforeAdjust: String?
+
+    /// Says why the amount on screen is lower than the one the user set. Nil
+    /// until an adjust has actually lowered it.
+    var amountReductionMessage: String? {
+        guard let requested = requestedAmountBeforeAdjust,
+              transaction.amountWasAutoAdjusted,
+              requested != transaction.amount else {
+            return nil
+        }
+        let ticker = transaction.coin.ticker
+        return String(
+            format: "sendAmountReducedAtReview".localized,
+            "\(requested) \(ticker)",
+            "\(transaction.amount) \(ticker)"
+        )
+    }
+
     /// Whether the last fee/amount load failed.
     ///
     /// Kept separate from `hasBalanceError`, which means "the amount doesn't fit
@@ -281,6 +302,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         // the user asked for rather than the one that was signed. With no rate
         // the conversion yields "0", which is what a priceless coin showed all
         // along; what matters is that it never keeps the pre-clamp figure.
+        requestedAmountBeforeAdjust = requestedAmountBeforeAdjust ?? pending.amount
         transaction = pending.copy(
             amount: amount,
             amountInFiat: SendCryptoLogic.coinAmountToFiat(amount: amount, coin: pending.coin),

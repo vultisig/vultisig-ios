@@ -1406,6 +1406,7 @@
 "self" = "Self";
 "sell" = "Sell";
 "send" = "Send";
+"sendAmountReducedAtReview" = "The network fee or your balance changed after you set the amount, so the amount was lowered from %1$@ to %2$@.";
 "sender" = "Sender";
 "sendingRightAddressCheck" = "I’m sending to the correct address";
 "sendOverview" = "Send overview";

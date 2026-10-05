@@ -1406,6 +1406,7 @@
 "self" = "Selbst";
 "sell" = "Verkaufen";
 "send" = "Senden";
+"sendAmountReducedAtReview" = "Die Netzwerkgebühr bzw. Ihr Guthaben hat sich nach der Festlegung des Betrags geändert, daher wurde der Betrag von %1$@ auf %2$@ reduziert.";
 "sender" = "Absender";
 "sendingRightAddressCheck" = "Ich sende an die richtige Adresse";
 "sendOverview" = "Übersicht senden";

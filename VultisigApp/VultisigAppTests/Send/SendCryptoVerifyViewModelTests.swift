@@ -1342,6 +1342,44 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
                                  "the value the displayed string parses back to has to be affordable")
     }
 
+    func testAmountReductionMessageNamesBothAmountsAfterAFeeClamp() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let fee = BigInt(stringLiteral: "12345000000000000")
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: fee, gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let vm = SendCryptoVerifyViewModel(transaction: try makeTransaction(coin: eth, amount: "1", fee: .zero),
+                                           interactor: interactor)
+
+        XCTAssertNil(vm.amountReductionMessage)
+
+        await vm.loadGasInfoForSending()
+
+        let clamped = SendCryptoLogic.amountString(coin: eth, raw: balanceRaw - fee)
+        let message = try XCTUnwrap(vm.amountReductionMessage)
+        XCTAssertTrue(message.contains("1 ETH"), message)
+        XCTAssertTrue(message.contains("\(clamped) ETH"), message)
+    }
+
+    func testAmountReductionMessageStaysSilentWhenNothingWasClamped() async throws {
+        let interactor = MockSendInteractor()
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(stringLiteral: "12345000000000000"),
+                                    gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let vm = SendCryptoVerifyViewModel(transaction: try makeTransaction(coin: eth, amount: "0.5", fee: .zero),
+                                           interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertNil(vm.amountReductionMessage)
+    }
+
     /// Only the fee-caused shortfall is rescued. Asking to send more than the
     /// wallet holds still stops, because clamping there would swap the user's
     /// send for one they never asked for.

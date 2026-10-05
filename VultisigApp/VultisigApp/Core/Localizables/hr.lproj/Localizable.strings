@@ -1406,6 +1406,7 @@
 "self" = "Sam";
 "sell" = "Prodaj";
 "send" = "Pošalji";
+"sendAmountReducedAtReview" = "Mrežna naknada ili vaš saldo promijenili su se nakon što ste postavili iznos, pa je iznos smanjen s %1$@ na %2$@.";
 "sender" = "Pošiljatelj";
 "sendingRightAddressCheck" = "Šaljem na pravu adresu";
 "sendOverview" = "Pošaljite pregled";

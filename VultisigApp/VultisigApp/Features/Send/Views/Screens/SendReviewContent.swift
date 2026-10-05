@@ -56,7 +56,12 @@ struct SendReviewContent: View {
             onClose: reviewPresenter.dismiss,
             onTapScanMark: revealScanStatus
         ) {
-            KeysignReviewSummaryContentView(summary: .send(summary))
+            VStack(spacing: 20) {
+                if let message = viewModel.amountReductionMessage {
+                    InfoBannerView(description: message, type: .warning, leadingIcon: .triangleWarning)
+                }
+                KeysignReviewSummaryContentView(summary: .send(summary))
+            }
         } footer: {
             SendReviewFooter(
                 isAmountCorrect: $viewModel.isAmountCorrect,

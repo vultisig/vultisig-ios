@@ -1406,6 +1406,7 @@
 "self" = "自己";
 "sell" = "出售";
 "send" = "发送";
+"sendAmountReducedAtReview" = "设置金额后，网络费用或余额发生了变化，因此金额从%1$@减少到%2$@。";
 "sender" = "发送方";
 "sendingRightAddressCheck" = "我正在发送到正确的地址";
 "sendOverview" = "发送概览";

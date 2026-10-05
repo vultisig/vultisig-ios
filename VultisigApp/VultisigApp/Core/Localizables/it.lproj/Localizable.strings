@@ -1406,6 +1406,7 @@
 "self" = "Proprio";
 "sell" = "Vendi";
 "send" = "Invia";
+"sendAmountReducedAtReview" = "La commissione di rete o il tuo saldo sono cambiati dopo che hai impostato l'importo, quindi l'importo è stato ridotto da %1$@ a %2$@.";
 "sender" = "Mittente";
 "sendingRightAddressCheck" = "Sto inviando all'indirizzo corretto";
 "sendOverview" = "Invia panoramica";
