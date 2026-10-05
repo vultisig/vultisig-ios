@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";
 "enterYourPassword" = "Ingrese su contraseña";
 "enterYourSeedphrase" = "Ingresa tu frase semilla";
-"enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";
-"enterYourSeedphraseSubtitleHighlight" = "12 o 24";
+"enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12, 15, 18, 21 o 24 palabras.";
+"enterYourSeedphraseSubtitleHighlight" = "12, 15, 18, 21 o 24";
 "enterYourVaultsPassword" = "Ingrese la contraseña de su bóveda";
 "error" = "Error";
 "errorCopy" = "Copiar";
@@ -945,7 +945,7 @@
 "mintCoin" = "Acuñar %@";
 "missingEncryptionKey" = "Falta la clave de cifrado. Inténtalo de nuevo.";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
+"mnemonicPlaceholder" = "Ingresa las 12, 15, 18, 21 o 24 palabras de tu frase semilla";
 "modules" = "Módulos";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
 "moreComingSoon" = "Próximamente más";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "Por favor importa otra frase semilla";
 "seedPhraseImportTip" = "Consejo: Puedes usar un navegador como dispositivo";
 "seedPhraseInvalidError" = "La frase semilla no es correcta, por favor verifica todas las palabras.";
-"seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12 o 24 palabras.";
+"seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12, 15, 18, 21 o 24 palabras.";
 "selectAsset" = "Seleccionar activo";
 "selectAssetToSeeBalance" = "Select asset to see balance";
 "selectAtleastOneVault" = "Seleccione al menos un Vault e inténtelo de nuevo.";

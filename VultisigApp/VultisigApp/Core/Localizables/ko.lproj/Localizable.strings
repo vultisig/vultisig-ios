@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "이 이메일은 서버 백업 전송에만 사용됩니다.";
 "enterYourPassword" = "비밀번호 입력";
 "enterYourSeedphrase" = "시드 문구 입력";
-"enterYourSeedphraseSubtitle" = "각 단어 사이에 공백을 넣으세요. 12개 또는 24개 단어의 시드 문구가 지원됩니다.";
-"enterYourSeedphraseSubtitleHighlight" = "12개 또는 24개";
+"enterYourSeedphraseSubtitle" = "각 단어 사이에 공백을 넣으세요. 12개, 15개, 18개, 21개 또는 24개 단어의 시드 문구가 지원됩니다.";
+"enterYourSeedphraseSubtitleHighlight" = "12개, 15개, 18개, 21개 또는 24개";
 "enterYourVaultsPassword" = "볼트 비밀번호 입력";
 "error" = "오류";
 "errorCopy" = "복사";
@@ -945,7 +945,7 @@
 "mintCoin" = "%@ 민트";
 "missingEncryptionKey" = "암호화 키가 없습니다. 다시 시도해 주세요.";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "시드 문구의 12개 또는 24개 단어를 입력하세요";
+"mnemonicPlaceholder" = "시드 문구의 12개, 15개, 18개, 21개 또는 24개 단어를 입력하세요";
 "modules" = "모듈";
 "monthlyBackupTitle" = "볼트 공유를 백업하고\n완전성을 확인하는 것을 잊지 마세요.";
 "moreComingSoon" = "곧 더 추가됩니다";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "다른 시드 문구를 가져오세요";
 "seedPhraseImportTip" = "팁: 브라우저를 기기로 사용할 수 있습니다";
 "seedPhraseInvalidError" = "시드 문구가 올바르지 않습니다. 모든 단어를 확인하세요.";
-"seedPhraseWordCountError" = "%d개의 단어를 입력했습니다. 시드 문구는 12개 또는 24개 단어여야 합니다.";
+"seedPhraseWordCountError" = "%d개의 단어를 입력했습니다. 시드 문구는 12개, 15개, 18개, 21개 또는 24개 단어여야 합니다.";
 "selectAsset" = "자산 선택";
 "selectAssetToSeeBalance" = "잔액을 보려면 자산 선택";
 "selectAtleastOneVault" = "하나 이상의 볼트를 선택하고 다시 시도하세요.";

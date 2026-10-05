@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "Diese E-Mail wird nur zum Senden des Server-Backups verwendet.";
 "enterYourPassword" = "Geben Sie Ihr Passwort ein";
 "enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
-"enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
-"enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
+"enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12, 15, 18, 21 oder 24 Wörtern werden unterstützt.";
+"enterYourSeedphraseSubtitleHighlight" = "12, 15, 18, 21 oder 24";
 "enterYourVaultsPassword" = "Geben Sie das Passwort Ihres Tresors ein";
 "error" = "Fehler";
 "errorCopy" = "Kopieren";
@@ -945,7 +945,7 @@
 "mintCoin" = "%@ prägen";
 "missingEncryptionKey" = "Verschlüsselungsschlüssel fehlt. Bitte versuche es erneut.";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
+"mnemonicPlaceholder" = "Geben Sie die 12, 15, 18, 21 oder 24 Wörter Ihrer Seed-Phrase ein";
 "modules" = "Module";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
 "moreComingSoon" = "Demnächst mehr";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "Bitte importieren Sie eine andere Seed-Phrase";
 "seedPhraseImportTip" = "Tipp: Sie können einen Browser als Gerät verwenden";
 "seedPhraseInvalidError" = "Die Seed-Phrase ist nicht korrekt, bitte überprüfen Sie alle Wörter.";
-"seedPhraseWordCountError" = "Sie haben %d Wörter eingegeben. Die Seed-Phrase muss 12 oder 24 Wörter enthalten.";
+"seedPhraseWordCountError" = "Sie haben %d Wörter eingegeben. Die Seed-Phrase muss 12, 15, 18, 21 oder 24 Wörter enthalten.";
 "selectAsset" = "Asset auswählen";
 "selectAssetToSeeBalance" = "Select asset to see balance";
 "selectAtleastOneVault" = "Bitte wähle mindestens einen Tresor aus und versuche es erneut.";
