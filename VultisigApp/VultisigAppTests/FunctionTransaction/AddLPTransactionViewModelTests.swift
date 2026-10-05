@@ -1099,6 +1099,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             asset: bitcoin,
             side: .coin1,
             pool: AddLPFixture.btcPool,
+            pendingTxId: nil,
             vault: vault
         )
 
@@ -1116,6 +1117,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
             asset: bitcoin,
             side: .coin2,
             pool: AddLPFixture.btcPool,
+            pendingTxId: nil,
             vault: vault
         )
 
@@ -1124,8 +1126,53 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.showsPoolPicker)
     }
 
+    private func makeCompletion(record: MayaLiquidityProvider?, pendingTxId: String?) -> AddLPTransactionViewModel {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+        let viewModel = AddLPTransactionViewModel.completion(
+            cacao: cacao,
+            asset: bitcoin,
+            side: .coin1,
+            pool: AddLPFixture.btcPool,
+            pendingTxId: pendingTxId,
+            vault: vault,
+            mayaChecks: MayaLPChecks(liquidityProvider: { _, _ in record })
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+        return viewModel
+    }
+
+    private func pendingRecord(txId: String?) -> MayaLiquidityProvider {
+        AddLPFixture.record(
+            cacaoAddress: AddLPFixture.mayaAddress,
+            assetAddress: FunctionActionFixture.btcAddress,
+            pendingTxId: txId
+        )
+    }
+
+    /// Completing is bound to the half MayaChain was holding when the card was
+    /// shown: once it is completed or refunded, a new deposit would only sit
+    /// pending again.
+    func testACompletionProceedsWhileTheSameHalfIsStillPending() async {
+        let viewModel = makeCompletion(record: pendingRecord(txId: "TX"), pendingTxId: "tx")
+        let built = await viewModel.prepareTransactionBuilder()
+        XCTAssertNotNil(built)
+    }
+
+    func testACompletionIsRefusedOnceTheHalfIsGone() async {
+        for record in [nil, pendingRecord(txId: nil), pendingRecord(txId: "OTHER")] {
+            let viewModel = makeCompletion(record: record, pendingTxId: "TX")
+            let built = await viewModel.prepareTransactionBuilder()
+
+            XCTAssertNil(built)
+            XCTAssertEqual(viewModel.blockingMessage, "mayaLpPendingGone".localized)
+        }
+    }
+
     func testTheCompletionTypeResolvesThePoolAssetAndCacao() {
-        let coins = FunctionTransactionType.completeMayaLP(pool: AddLPFixture.btcPool, side: .coin1).coins
+        let coins = FunctionTransactionType.completeMayaLP(pool: AddLPFixture.btcPool, side: .coin1, pendingTxId: nil).coins
 
         XCTAssertTrue(coins.contains { $0.chain == .bitcoin && $0.isNativeToken })
         XCTAssertTrue(coins.contains { $0.chain == .mayaChain && $0.isNativeToken })

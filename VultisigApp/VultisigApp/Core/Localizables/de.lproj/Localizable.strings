@@ -944,6 +944,7 @@
 "mayaLpBelowInboundDust" = "Der Mindestsendebetrag beträgt %@ %@. %@ erfordert dies, um Spam zu verhindern.";
 "mayaLpHaltedChain" = "Liquiditätsaktionen auf %@ sind derzeit angehalten. MayaChain würde diese Transaktion erstatten.";
 "mayaLpPaused" = "Liquidität hinzufügen ist für %@ pausiert. MayaChain würde diese Transaktion erstatten.";
+"mayaLpPendingGone" = "Diese Einzahlung wartet nicht mehr auf MayaChain. Sie wurde möglicherweise abgeschlossen oder erstattet.";
 "mayaLpPoolNotAvailable" = "Pool %@ ist derzeit nicht für Einzahlungen verfügbar.";
 "mayaLpSingleSidedPosition" = "Sie haben bereits eine reine CACAO-Position in %@. MayaChain nimmt dort nur CACAO an, daher würde diese Einzahlung erstattet.";
 "mayaLpStagedUnpaired" = "Pool %@ ist im Status „Staged“ und akzeptiert nur gepaarte Einzahlungen beider Seiten. MayaChain würde diese Transaktion erstatten.";

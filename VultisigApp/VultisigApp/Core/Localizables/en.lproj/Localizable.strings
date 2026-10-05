@@ -944,6 +944,7 @@
 "mayaLpBelowInboundDust" = "Minimum send amount is %@ %@. %@ requires this to prevent spam.";
 "mayaLpHaltedChain" = "Liquidity actions on %@ are currently halted. MayaChain would refund this transaction.";
 "mayaLpPaused" = "Add liquidity is paused for %@. MayaChain would refund this transaction.";
+"mayaLpPendingGone" = "This deposit is no longer waiting on MayaChain. It may have been completed or refunded.";
 "mayaLpPoolNotAvailable" = "Pool %@ is not currently available for deposits.";
 "mayaLpSingleSidedPosition" = "You already have a CACAO-only position in %@. MayaChain only accepts CACAO into it, so this deposit would be refunded.";
 "mayaLpStagedUnpaired" = "Pool %@ is staged and only accepts adds paired with the other side. MayaChain would refund this transaction.";

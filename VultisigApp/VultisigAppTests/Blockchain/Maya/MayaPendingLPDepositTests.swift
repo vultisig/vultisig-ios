@@ -109,7 +109,7 @@ final class MayaPendingLPDepositTests: XCTestCase {
         ])
         let service = MayaChainAPIService(httpClient: stub)
 
-        let deposits = try await service.getPendingLPDeposits(cacaoAddress: cacao)
+        let deposits = try await service.getPendingLPDeposits(cacaoAddress: cacao).deposits
 
         XCTAssertEqual(deposits.map(\.pool), ["ETH.ETH"])
         XCTAssertEqual(deposits.first?.blocksUntilRefund, 1500)
@@ -126,7 +126,8 @@ final class MayaPendingLPDepositTests: XCTestCase {
             "/mayachain/mimir": "{}",
             "/mayachain/lastblock": #"[{"mayachain": 1100}]"#
         ])
-        let deposits = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let scan = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let deposits = scan.deposits
 
         XCTAssertEqual(deposits.first?.blocksUntilRefund, 100_700)
     }
@@ -140,7 +141,8 @@ final class MayaPendingLPDepositTests: XCTestCase {
             """,
             "/mayachain/mimir": "{}"
         ])
-        let deposits = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let scan = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let deposits = scan.deposits
 
         XCTAssertEqual(deposits.count, 1)
         XCTAssertNil(deposits.first?.blocksUntilRefund)
@@ -164,9 +166,19 @@ final class MayaPendingLPDepositTests: XCTestCase {
             "/mayachain/mimir": "{}",
             "/mayachain/lastblock": #"[{"mayachain": 20}]"#
         ])
-        let deposits = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let scan = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        let deposits = scan.deposits
 
         XCTAssertEqual(deposits.map(\.pool), ["BTC.BTC"])
+        XCTAssertFalse(scan.isComplete, "a pool that could not be read may hide a deposit")
+    }
+
+    func testAScanThatReadEveryPoolIsComplete() async throws {
+        let stub = RoutingLPHTTPClient(routes: [
+            "/mayachain/pools": poolsJSON(pending: [:])
+        ])
+        let scan = try await MayaChainAPIService(httpClient: stub).getPendingLPDeposits(cacaoAddress: cacao)
+        XCTAssertEqual(scan, MayaPendingLPScan(deposits: [], isComplete: true))
     }
 }
 

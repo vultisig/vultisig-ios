@@ -16,5 +16,5 @@ protocol LPsInteractor {
 /// `LPsInteractor` because only MayaChain surfaces them.
 protocol PendingLPDepositsProviding {
     /// Throws when the scan fails, so an outage is not read as "no deposits".
-    func fetchPendingLPDeposits(vault: Vault) async throws -> [MayaPendingLPDeposit]
+    func fetchPendingLPDeposits(vault: Vault) async throws -> MayaPendingLPScan
 }

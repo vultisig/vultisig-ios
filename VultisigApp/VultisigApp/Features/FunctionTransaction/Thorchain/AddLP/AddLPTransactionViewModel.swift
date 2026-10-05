@@ -104,6 +104,11 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// Set when the vault already holds a live CACAO-only position: mayanode
     /// would refund a paired add there, so the CACAO side is built `+:POOL`.
     private var singleSidedFallback = false
+    /// The half MayaChain was holding when a completion was opened. The form
+    /// refuses to proceed once the record no longer carries it: a completed or
+    /// refunded deposit leaves nothing to complete, and a new deposit would just
+    /// sit pending again.
+    private var expectedPendingTxId: String?
     private var lastInbounds: [InboundAddress] = []
     /// Locale the amount is read in. Injected so a test pins the separators
     /// rather than inheriting the machine's — the parse deliberately refuses an
@@ -219,16 +224,21 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         asset: Coin,
         side: LPDepositSide,
         pool: String,
-        vault: Vault
+        pendingTxId: String?,
+        vault: Vault,
+        mayaChecks: MayaLPChecks? = nil
     ) -> AddLPTransactionViewModel {
-        AddLPTransactionViewModel(
+        let viewModel = AddLPTransactionViewModel(
             coin: side == .coin1 ? cacao : asset,
             pairedCoin: side == .coin1 ? asset : cacao,
             protocolChain: .mayaChain,
             poolSource: .fixed(pool: pool),
             vault: vault,
-            prefillsFullBalance: false
+            prefillsFullBalance: false,
+            mayaChecks: mayaChecks
         )
+        viewModel.expectedPendingTxId = pendingTxId
+        return viewModel
     }
 
     /// The asset side of a MayaChain add, opened from a chain's action list.
@@ -562,6 +572,12 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         } catch {
             logger.warning("Failed to read the MayaChain LP record for \(pool, privacy: .public): \(error.localizedDescription, privacy: .public)")
             mayaCheckError = "mayaLpUnverified".localized
+            return false
+        }
+
+        if let expected = expectedPendingTxId,
+           record?.pendingTxId?.caseInsensitiveCompare(expected) != .orderedSame {
+            mayaCheckError = "mayaLpPendingGone".localized
             return false
         }
 

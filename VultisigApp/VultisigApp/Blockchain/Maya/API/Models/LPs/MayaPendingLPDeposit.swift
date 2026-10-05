@@ -69,3 +69,11 @@ struct MayaPendingLPDeposit: Equatable, Identifiable {
         return max(0, lastAddHeight + ageLimit - currentHeight)
     }
 }
+
+/// What one scan for pending deposits found.
+struct MayaPendingLPScan: Equatable {
+    var deposits: [MayaPendingLPDeposit]
+    /// False when a pool's record could not be read: a deposit in it may be
+    /// missing, so the result cannot stand in for "nothing is pending".
+    var isComplete: Bool
+}

@@ -46,7 +46,7 @@ final class DefiChainPendingLPDepositsTests: XCTestCase {
     }
 
     func testRefreshPublishesThePendingDeposits() async {
-        let interactor = StubPendingInteractor(result: .success([pending()]))
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
         let viewModel = makeViewModel(interactor)
 
         await viewModel.refresh()
@@ -56,7 +56,7 @@ final class DefiChainPendingLPDepositsTests: XCTestCase {
     }
 
     func testAFailedRescanKeepsTheCardsButWithdrawsComplete() async {
-        let interactor = StubPendingInteractor(result: .success([pending()]))
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
         let viewModel = makeViewModel(interactor)
         await viewModel.refresh()
 
@@ -68,12 +68,36 @@ final class DefiChainPendingLPDepositsTests: XCTestCase {
     }
 
     func testARescanThatFindsNothingClearsTheCards() async {
-        let interactor = StubPendingInteractor(result: .success([pending()]))
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
         let viewModel = makeViewModel(interactor)
         await viewModel.refresh()
 
-        interactor.result = .success([])
+        interactor.result = .success(MayaPendingLPScan(deposits: [], isComplete: true))
         await viewModel.refresh()
+
+        XCTAssertTrue(viewModel.pendingDeposits.isEmpty)
+    }
+
+    /// A scan that could not read every pool cannot say nothing is pending.
+    func testAnIncompleteScanThatFindsNothingKeepsTheEarlierCards() async {
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
+        let viewModel = makeViewModel(interactor)
+        await viewModel.refresh()
+
+        interactor.result = .success(MayaPendingLPScan(deposits: [], isComplete: false))
+        await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.pendingDeposits.count, 1)
+        XCTAssertFalse(viewModel.canCompletePendingDeposits)
+    }
+
+    func testAnotherVaultDoesNotInheritThePendingCards() async {
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
+        let viewModel = makeViewModel(interactor)
+        await viewModel.refresh()
+
+        let other = TestStore.makeVault(pubKey: "another-vault")
+        viewModel.update(vault: other)
 
         XCTAssertTrue(viewModel.pendingDeposits.isEmpty)
     }
@@ -88,15 +112,15 @@ final class DefiChainPendingLPDepositsTests: XCTestCase {
 final class StubPendingInteractor: LPsInteractor, PendingLPDepositsProviding, @unchecked Sendable {
     struct Outage: Error {}
 
-    var result: Result<[MayaPendingLPDeposit], Error>
+    var result: Result<MayaPendingLPScan, Error>
 
-    init(result: Result<[MayaPendingLPDeposit], Error>) {
+    init(result: Result<MayaPendingLPScan, Error>) {
         self.result = result
     }
 
     func fetchLPPositions(vault _: Vault) async -> [LPPositionData] { [] } // swiftlint:disable:this async_without_await
 
-    func fetchPendingLPDeposits(vault _: Vault) async throws -> [MayaPendingLPDeposit] { // swiftlint:disable:this async_without_await
+    func fetchPendingLPDeposits(vault _: Vault) async throws -> MayaPendingLPScan { // swiftlint:disable:this async_without_await
         try result.get()
     }
 }

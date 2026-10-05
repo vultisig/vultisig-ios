@@ -37,8 +37,8 @@ struct MayaChainLPsInteractor: LPsInteractor, PendingLPDepositsProviding {
 }
 
 extension MayaChainLPsInteractor {
-    func fetchPendingLPDeposits(vault: Vault) async throws -> [MayaPendingLPDeposit] {
-        guard let cacao = await cacaoSnapshot(in: vault) else { return [] }
+    func fetchPendingLPDeposits(vault: Vault) async throws -> MayaPendingLPScan {
+        guard let cacao = await cacaoSnapshot(in: vault) else { return MayaPendingLPScan(deposits: [], isComplete: true) }
         return try await mayaAPIService.getPendingLPDeposits(cacaoAddress: cacao.address)
     }
 }

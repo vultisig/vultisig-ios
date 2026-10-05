@@ -66,28 +66,35 @@ extension MayaChainAPIService {
     /// which pools hold anyone's pending liquidity; only those are then read for
     /// `cacaoAddress`, the address mayanode keys every paired add by. Throws
     /// when the pool scan fails, so an outage is not read as "no deposits"; a
-    /// failed read on one pool drops only that pool.
-    func getPendingLPDeposits(cacaoAddress: String) async throws -> [MayaPendingLPDeposit] {
+    /// failed read on one pool leaves the others and marks the scan incomplete.
+    func getPendingLPDeposits(cacaoAddress: String) async throws -> MayaPendingLPScan {
         let candidates = try await getNodePools().filter { pool in
             (Decimal(string: pool.pendingInboundCacao) ?? 0) > 0 || (Decimal(string: pool.pendingInboundAsset) ?? 0) > 0
         }
-        guard !candidates.isEmpty else { return [] }
+        guard !candidates.isEmpty else { return MayaPendingLPScan(deposits: [], isComplete: true) }
 
-        let found = await withTaskGroup(of: (Int, MayaPendingLPDeposit, Int64?)?.self) { group in
+        let reads = await withTaskGroup(of: PendingRead.self) { group in
             for (index, pool) in candidates.enumerated() {
                 group.addTask {
-                    guard let record = try? await getLiquidityProvider(pool: pool.asset, address: cacaoAddress),
-                          let deposit = MayaPendingLPDeposit(pool: pool.asset, record: record) else { return nil }
-                    return (index, deposit, record.lastAddHeight.flatMap { $0 > 0 ? $0 : nil })
+                    do {
+                        let record = try await getLiquidityProvider(pool: pool.asset, address: cacaoAddress)
+                        guard let record, let deposit = MayaPendingLPDeposit(pool: pool.asset, record: record) else {
+                            return PendingRead(index: index, found: nil, failed: false)
+                        }
+                        let height = record.lastAddHeight.flatMap { $0 > 0 ? $0 : nil }
+                        return PendingRead(index: index, found: (deposit, height), failed: false)
+                    } catch {
+                        return PendingRead(index: index, found: nil, failed: true)
+                    }
                 }
             }
-            var results: [(Int, MayaPendingLPDeposit, Int64?)] = []
-            for await result in group {
-                if let result { results.append(result) }
-            }
-            return results.sorted { $0.0 < $1.0 }
+            var results: [PendingRead] = []
+            for await result in group { results.append(result) }
+            return results.sorted { $0.index < $1.index }
         }
-        guard !found.isEmpty else { return [] }
+        let isComplete = !reads.contains { $0.failed }
+        let found = reads.compactMap(\.found)
+        guard !found.isEmpty else { return MayaPendingLPScan(deposits: [], isComplete: isComplete) }
 
         async let mimir = try? getMimirValues()
         async let height = try? getLastBlock()
@@ -98,7 +105,7 @@ extension MayaChainAPIService {
         }
         let currentHeight = await height.flatMap { $0 > 0 ? $0 : nil }
 
-        return found.map { _, deposit, lastAddHeight in
+        let deposits = found.map { deposit, lastAddHeight in
             var deposit = deposit
             deposit.blocksUntilRefund = MayaPendingLPDeposit.blocksUntilRefund(
                 lastAddHeight: lastAddHeight,
@@ -107,6 +114,13 @@ extension MayaChainAPIService {
             )
             return deposit
         }
+        return MayaPendingLPScan(deposits: deposits, isComplete: isComplete)
+    }
+
+    private struct PendingRead {
+        let index: Int
+        let found: (MayaPendingLPDeposit, Int64?)?
+        let failed: Bool
     }
 
     /// Mimir override for the blocks MayaChain holds a half-deposit.

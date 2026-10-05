@@ -944,6 +944,7 @@
 "mayaLpBelowInboundDust" = "Minimalni iznos za slanje je %@ %@. %@ zahtijeva ovo kako bi se spriječila neželjena pošta.";
 "mayaLpHaltedChain" = "Akcije likvidnosti na %@ su trenutno zaustavljene. MayaChain bi vratio ovu transakciju.";
 "mayaLpPaused" = "Dodavanje likvidnosti je pauzirano za %@. MayaChain bi vratio ovu transakciju.";
+"mayaLpPendingGone" = "Ovaj depozit više ne čeka na MayaChainu. Možda je dovršen ili vraćen.";
 "mayaLpPoolNotAvailable" = "Pool %@ trenutno nije dostupan za depozite.";
 "mayaLpSingleSidedPosition" = "Već imate poziciju samo u CACAO-u u %@. MayaChain u nju prihvaća samo CACAO, pa bi ovaj polog bio vraćen.";
 "mayaLpStagedUnpaired" = "Pool %@ je u stanju „staged“ i prihvaća samo uparene depozite s drugom stranom. MayaChain bi vratio ovu transakciju.";

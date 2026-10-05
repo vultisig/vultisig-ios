@@ -58,6 +58,11 @@ final class DefiChainLPsViewModel: ObservableObject {
     func update(vault: Vault) {
         let previousVaultKey = self.vault.pubKeyECDSA
         self.vault = vault
+        if previousVaultKey != vault.pubKeyECDSA {
+            // Another vault's pending deposits are not this one's to complete.
+            pendingDeposits = []
+            canCompletePendingDeposits = true
+        }
         if isRefreshing, previousVaultKey != vault.pubKeyECDSA {
             refreshQueued = true
         }
@@ -104,10 +109,14 @@ final class DefiChainLPsViewModel: ObservableObject {
     private func refreshPendingDeposits(for refreshingVault: Vault) async {
         guard let provider = interactor as? PendingLPDepositsProviding else { return }
         do {
-            let deposits = try await provider.fetchPendingLPDeposits(vault: refreshingVault)
+            let scan = try await provider.fetchPendingLPDeposits(vault: refreshingVault)
             guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
-            pendingDeposits = deposits
-            canCompletePendingDeposits = true
+            // A scan that missed a pool cannot say nothing is pending, so it
+            // never clears what an earlier one found.
+            if scan.isComplete || !scan.deposits.isEmpty {
+                pendingDeposits = scan.deposits
+            }
+            canCompletePendingDeposits = scan.isComplete
         } catch {
             logger.warning("Failed to load pending Maya LP deposits: \(error.localizedDescription, privacy: .private)")
             guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
