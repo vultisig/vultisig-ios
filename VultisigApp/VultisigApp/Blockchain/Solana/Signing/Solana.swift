@@ -13,6 +13,11 @@ enum SolanaHelper {
     static let defaultFeeInLamports: BigInt = 1000000 // 0.001
     static let defaultPriorityFeePrice: UInt64 = 1_000_000 // Fallback priority fee price in microlamports
     static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
+    /// Ceilings on the relayed priority fee. A co-signer rebuilds the input from the
+    /// payload while the Verify screen shows a fresh estimate, so an unbounded value
+    /// could burn the balance as a priority fee. Same bounds as the Android signer.
+    static let maxPriorityFeePrice: BigInt = 100_000_000 // microlamports per compute unit
+    static let maxComputeUnitLimit: BigInt = 1_400_000 // Solana's per-transaction compute-unit maximum
     /// Rent-exempt reserve for a new SPL Associated Token Account (~0.00203928 SOL).
     /// Required when the recipient has no ATA and we create one alongside the transfer.
     static let ataRentLamports: BigInt = 2_039_280
@@ -26,6 +31,15 @@ enum SolanaHelper {
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
             throw HelperError.runtimeError("fail to get to address")
+        }
+
+        // Refuse rather than clamp: a clamped value would diverge from the initiator's
+        // transaction and fail the MPC ceremony opaquely.
+        guard priorityFee <= maxPriorityFeePrice else {
+            throw HelperError.runtimeError("Solana priority fee price \(priorityFee) exceeds the \(maxPriorityFeePrice) ceiling")
+        }
+        guard priorityLimit <= maxComputeUnitLimit else {
+            throw HelperError.runtimeError("Solana compute unit limit \(priorityLimit) exceeds the \(maxComputeUnitLimit) ceiling")
         }
 
         // Use dynamic priority fee if provided, otherwise fall back to default
