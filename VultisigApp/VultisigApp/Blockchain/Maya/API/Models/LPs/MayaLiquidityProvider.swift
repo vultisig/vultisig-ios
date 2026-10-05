@@ -59,7 +59,14 @@ struct MayaLiquidityProvider: Decodable, Equatable {
         asset = try container.decode(String.self, forKey: .asset)
         cacaoAddress = try container.decodeIfPresent(String.self, forKey: .cacaoAddress)
         assetAddress = try container.decodeIfPresent(String.self, forKey: .assetAddress)
-        units = try container.decodeIfPresent(String.self, forKey: .units) ?? "0"
+        // Required and numeric: the pairing rules branch on whether the position
+        // holds units, so a missing or garbled value must fail the read rather
+        // than pass for an empty record.
+        let rawUnits = try container.decode(String.self, forKey: .units)
+        guard Decimal(string: rawUnits) != nil else {
+            throw DecodingError.dataCorruptedError(forKey: .units, in: container, debugDescription: "units is not a number")
+        }
+        units = rawUnits
         pendingCacao = try container.decodeIfPresent(String.self, forKey: .pendingCacao) ?? "0"
         pendingAsset = try container.decodeIfPresent(String.self, forKey: .pendingAsset) ?? "0"
         pendingTxId = try container.decodeIfPresent(String.self, forKey: .pendingTxId)

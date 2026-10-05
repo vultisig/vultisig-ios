@@ -71,6 +71,12 @@ final class MayaLiquidityProviderTests: XCTestCase {
         XCTAssertEqual(decoded.lastAddHeight, 123)
     }
 
+    func testARecordWithoutAUsableUnitsFieldFailsTheRead() {
+        for json in [#"{"asset":"ETH.ETH"}"#, #"{"asset":"ETH.ETH","units":"abc"}"#] {
+            XCTAssertThrowsError(try JSONDecoder().decode(MayaLiquidityProvider.self, from: Data(json.utf8)), json)
+        }
+    }
+
     func testAMissingRecordReadsAsNil() async throws {
         let service = MayaChainAPIService(httpClient: StubLPHTTPClient(status: 404, body: "{}"))
         let found = try await service.getLiquidityProvider(pool: "ETH.ETH", address: cacao)

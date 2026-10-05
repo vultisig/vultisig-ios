@@ -1067,6 +1067,21 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertNotNil(built)
     }
 
+    /// A UTXO max send pays its fee from the output, so the typed amount is not
+    /// what arrives; twice the threshold is asked for there.
+    func testAMaxSendNeedsTwiceTheDustThresholdOnAUtxoChain() async {
+        let viewModel = makeDustViewModel(dust: "10000", amount: "0.00015")
+        viewModel.onPercentage(100)
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaLpBelowInboundDust".localized, "0.0002", "BTC", "Bitcoin")
+        )
+    }
+
     func testAnInboundWithNoDustThresholdBuilds() async {
         let viewModel = makeDustViewModel(dust: nil, amount: "0.00000001")
         let built = await viewModel.prepareTransactionBuilder()

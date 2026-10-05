@@ -604,8 +604,12 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             .dust_threshold.flatMap({ Decimal(string: $0) }), dust > 0 else { return true }
 
         let fixedPoint = Decimal(sign: .plus, exponent: 8, significand: 1)
-        guard amount * fixedPoint < dust else { return true }
-        let minimum = (dust / fixedPoint).formatToDecimal(digits: 8)
+        // A UTXO max send pays its fee out of the output, so what arrives is
+        // less than the typed amount by a fee only known at planning time. Ask
+        // for twice the threshold there rather than let it land under dust.
+        let required = isMaxAmount && coin.chainType == .UTXO ? dust * 2 : dust
+        guard amount * fixedPoint < required else { return true }
+        let minimum = (required / fixedPoint).formatToDecimal(digits: 8)
         mayaCheckError = String(format: "mayaLpBelowInboundDust".localized, minimum, coin.ticker, coin.chain.name)
         return false
     }
