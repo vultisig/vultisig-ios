@@ -11,7 +11,9 @@
 //  Scope: P2WPKH + P2SH-P2WPKH inputs (matches what `BitcoinPsbtSigner`
 //  supports). The Phase 0 SwapKit BTC fixtures (NEAR, GARDEN, FLASHNET) all
 //  return single-script-type PSBTs whose inputs are owned by the user's
-//  source address — every input is `is_ours = true`.
+//  source address — every input is `is_ours = true`. Signing additionally
+//  requires every input to pay to the vault's own P2WPKH script
+//  (`verifyInputsOwnership`).
 //
 //  PSBT framing primitives (`PSBTCursor`, `readMap`, byte-cursor helpers)
 //  live in `SwapKitPSBTParser` so DOGE / BCH / DASH / ZEC signers share the
@@ -22,6 +24,7 @@
 import Foundation
 import OSLog
 import Tss
+import WalletCore
 
 private let logger = Log.chain.other
 
@@ -33,6 +36,8 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
     case malformedPSBT(reason: String)
     case unsupportedScript(String)
     case missingWitnessUtxo(inputIndex: Int)
+    case invalidPublicKey(String)
+    case inputNotOwnedByVault(inputIndex: Int)
     case underlying(BitcoinPsbtSignerError)
 
     var errorDescription: String? {
@@ -51,6 +56,10 @@ enum SwapKitBTCSignerError: Error, LocalizedError {
             return "SwapKit BTC PSBT script not supported: \(detail)"
         case .missingWitnessUtxo(let i):
             return "SwapKit BTC PSBT input #\(i) is missing PSBT_IN_WITNESS_UTXO"
+        case .invalidPublicKey(let key):
+            return "Invalid public key: \(key)"
+        case .inputNotOwnedByVault(let i):
+            return "SwapKit BTC PSBT input #\(i) does not pay to this vault's address, so this vault cannot sign it"
         case .underlying(let err):
             return err.errorDescription
         }
@@ -62,8 +71,9 @@ enum SwapKitBTCSigner {
     // MARK: - Public dispatcher entrypoints
 
     /// Compute BIP-143 sighashes for every signable input in the SwapKit PSBT.
-    static func preSigningHashes(payload: SwapKitSwapPayload) throws -> [String] {
+    static func preSigningHashes(payload: SwapKitSwapPayload, pubKeyHex: String) throws -> [String] {
         let signBitcoin = try decodeToSignBitcoin(psbtBytes: payload.txPayload)
+        try verifyInputsOwnership(signBitcoin, pubKeyHex: pubKeyHex)
         do {
             return try BitcoinPsbtSigner.preSigningHashes(signBitcoin)
                 .map { $0.hexString }
@@ -81,6 +91,7 @@ enum SwapKitBTCSigner {
         pubKeyHex: String
     ) throws -> SignedTransactionResult {
         let signBitcoin = try decodeToSignBitcoin(psbtBytes: payload.txPayload)
+        try verifyInputsOwnership(signBitcoin, pubKeyHex: pubKeyHex)
         do {
             return try BitcoinPsbtSigner.compileSignedTransaction(
                 signBitcoin: signBitcoin,
@@ -92,12 +103,33 @@ enum SwapKitBTCSigner {
         }
     }
 
+    // MARK: - Input ownership
+
+    /// Refuses a PSBT carrying any input that does not pay to this vault's
+    /// P2WPKH script. `decodeToSignBitcoin` marks every input `isOurs`, and
+    /// `BitcoinPsbtSigner` only rejects a PSBT with no ours-input, so a foreign
+    /// input would otherwise be MPC-signed with a key that cannot unlock it and
+    /// the broadcast rejected after the user approved. Vultisig holds a single
+    /// native-segwit address per UTXO chain, so every input of a well-formed
+    /// route pays to that one script.
+    static func verifyInputsOwnership(_ signBitcoin: SignBitcoin, pubKeyHex: String) throws {
+        guard let pubkeyData = Data(hexString: pubKeyHex),
+              PublicKey(data: pubkeyData, type: .secp256k1) != nil else {
+            throw SwapKitBTCSignerError.invalidPublicKey(pubKeyHex)
+        }
+        let keyHash = Hash.ripemd(data: Hash.sha256(data: pubkeyData))
+        let expectedScript = (Data([0x00, 0x14]) + keyHash).hexString
+        for (index, input) in signBitcoin.inputs.enumerated()
+        where input.scriptPubKey.lowercased() != expectedScript {
+            throw SwapKitBTCSignerError.inputNotOwnedByVault(inputIndex: index)
+        }
+    }
+
     // MARK: - PSBT → SignBitcoin
 
     /// Decode a BIP-174 PSBT byte blob into the structured `SignBitcoin`
-    /// representation. Every input is marked `is_ours = true` — SwapKit only
-    /// puts the user's UTXOs in the PSBT inputs, so the assumption holds for
-    /// every observed provider (NEAR Intents, Garden, Flashnet).
+    /// representation. Every input is marked `is_ours = true`; ownership is
+    /// enforced separately by `verifyInputsOwnership` before signing.
     static func decodeToSignBitcoin(psbtBytes: Data) throws -> SignBitcoin {
         let (framing, parsedTx) = try parseEnvelope(psbtBytes: psbtBytes)
 

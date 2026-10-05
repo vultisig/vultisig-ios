@@ -60,12 +60,11 @@ final class SwapKitSigningTests: XCTestCase {
     }
 
     func testBTCPSBTPreSigningHashesAreDeterministic() throws {
-        let payload = try makeSwapKitPayload(
-            fixture: "v3-real-btc-all-swap",
-            txType: "PSBT",
-            txPayloadBytes: { Data(base64Encoded: try $0.psbtBase64()) ?? Data() }
+        let payload = try makeVaultOwnedBTCPayload()
+        let hashes = try SwapKitBTCSigner.preSigningHashes(
+            payload: payload,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
         )
-        let hashes = try SwapKitBTCSigner.preSigningHashes(payload: payload)
         // 4 inputs × 1 sighash each. BIP-143 sighashes are deterministic per
         // PSBT + scriptPubKey + sighash_type. We pin the sorted hex set so
         // any change to the SignBitcoin transcoding (off-by-one varint,
@@ -97,13 +96,72 @@ final class SwapKitSigningTests: XCTestCase {
             subProvider: "NEAR",
             swapID: "test"
         )
-        XCTAssertThrowsError(try SwapKitBTCSigner.preSigningHashes(payload: bad)) { err in
+        XCTAssertThrowsError(try SwapKitBTCSigner.preSigningHashes(
+            payload: bad,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
             guard let typed = err as? SwapKitBTCSignerError else {
                 return XCTFail("expected SwapKitBTCSignerError, got \(err)")
             }
             switch typed {
             case .invalidMagic: break
             default: XCTFail("expected .invalidMagic, got \(typed)")
+            }
+        }
+    }
+
+    func testBTCPreSigningHashesRefuseInputsThisVaultDoesNotOwn() throws {
+        let payload = try makeSwapKitPayload(
+            fixture: "v3-real-btc-all-swap",
+            txType: "PSBT",
+            txPayloadBytes: { Data(base64Encoded: try $0.psbtBase64()) ?? Data() }
+        )
+        XCTAssertThrowsError(try SwapKitBTCSigner.preSigningHashes(
+            payload: payload,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
+            guard case SwapKitBTCSignerError.inputNotOwnedByVault(let index) = err else {
+                return XCTFail("expected .inputNotOwnedByVault, got \(err)")
+            }
+            XCTAssertEqual(index, 0)
+        }
+    }
+
+    func testBTCPreSigningHashesRefuseWhenOnlySomeInputsAreOwned() throws {
+        let owned = try makeVaultOwnedBTCPayload(onlyFirstInput: true)
+        XCTAssertThrowsError(try SwapKitBTCSigner.preSigningHashes(
+            payload: owned,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
+            guard case SwapKitBTCSignerError.inputNotOwnedByVault(let index) = err else {
+                return XCTFail("expected .inputNotOwnedByVault, got \(err)")
+            }
+            XCTAssertEqual(index, 1, "input #0 is ours; the first foreign input is #1")
+        }
+    }
+
+    func testBTCCompileRefusesInputsThisVaultDoesNotOwn() throws {
+        let payload = try makeSwapKitPayload(
+            fixture: "v3-real-btc-all-swap",
+            txType: "PSBT",
+            txPayloadBytes: { Data(base64Encoded: try $0.psbtBase64()) ?? Data() }
+        )
+        XCTAssertThrowsError(try SwapKitBTCSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: [:],
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
+            guard case SwapKitBTCSignerError.inputNotOwnedByVault = err else {
+                return XCTFail("expected .inputNotOwnedByVault, got \(err)")
+            }
+        }
+    }
+
+    func testBTCPreSigningHashesRejectInvalidPublicKey() throws {
+        let payload = try makeVaultOwnedBTCPayload()
+        XCTAssertThrowsError(try SwapKitBTCSigner.preSigningHashes(payload: payload, pubKeyHex: "zz")) { err in
+            guard case SwapKitBTCSignerError.invalidPublicKey = err else {
+                return XCTFail("expected .invalidPublicKey, got \(err)")
             }
         }
     }
@@ -277,6 +335,37 @@ final class SwapKitSigningTests: XCTestCase {
 
     private func fixture(name: String) throws -> SwapKitSwapResponse {
         try SwapKitFixtureLoader.decode(SwapKitSwapResponse.self, from: name)
+    }
+
+    /// The captured BTC PSBT with its input script rebound to the golden key.
+    /// Every input shares one script, so `onlyFirstInput` leaves #1...#3 foreign.
+    private func makeVaultOwnedBTCPayload(onlyFirstInput: Bool = false) throws -> SwapKitSwapPayload {
+        let base = try makeSwapKitPayload(
+            fixture: "v3-real-btc-all-swap",
+            txType: "PSBT",
+            txPayloadBytes: { Data(base64Encoded: try $0.psbtBase64()) ?? Data() }
+        )
+        let signBitcoin = try SwapKitBTCSigner.decodeToSignBitcoin(psbtBytes: base.txPayload)
+        let original = try XCTUnwrap(Data(hexString: try XCTUnwrap(signBitcoin.inputs.first).scriptPubKey))
+        let rebound = SwapKitVaultOwnedPSBT.replacing(
+            script: original,
+            with: SwapKitVaultOwnedPSBT.goldenP2WPKHScript,
+            in: base.txPayload,
+            firstOnly: onlyFirstInput
+        )
+        return SwapKitSwapPayload(
+            fromCoin: base.fromCoin,
+            toCoin: base.toCoin,
+            fromAmount: base.fromAmount,
+            toAmountDecimal: base.toAmountDecimal,
+            txType: base.txType,
+            txPayload: rebound,
+            targetAddress: base.targetAddress,
+            inboundAddress: base.inboundAddress,
+            memo: base.memo,
+            subProvider: base.subProvider,
+            swapID: base.swapID
+        )
     }
 
     private func makeSwapKitPayload(
