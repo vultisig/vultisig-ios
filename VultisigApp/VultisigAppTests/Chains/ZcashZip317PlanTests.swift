@@ -38,7 +38,9 @@ final class ZcashZip317PlanTests: XCTestCase {
 
     func testTexAddressesConvertToTheExpectedTransparentAddress() {
         let vectors = [
-            ("tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv", "t1KuEaP8Lb2pUGtpciBCT2ppomGvFi8sEPY")
+            ("tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv", "t1KuEaP8Lb2pUGtpciBCT2ppomGvFi8sEPY"),
+            ("tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yju", "t1KWVyTZA6DPBDrHPERjuHSFWmAioomt5mE"),
+            ("tex1h55z0mdpnaxjxqs39sht9659ztnjk32reer52v", "t1b7mpgEQnHCbYd34qLVwCTHp4mEKnyennf")
         ]
         for (tex, expected) in vectors {
             XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: tex), expected, tex)
