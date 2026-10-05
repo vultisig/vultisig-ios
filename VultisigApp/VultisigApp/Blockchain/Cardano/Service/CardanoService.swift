@@ -148,7 +148,7 @@ class CardanoService {
         if error.code == 3117 { return true }
         guard error.code == 3997, let justification = error.justification else { return false }
         return justification.range(
-            of: "already been included|^\\s*all inputs are spent",
+            of: "^\\s*all inputs are spent",
             options: [.regularExpression, .caseInsensitive]
         ) != nil
     }

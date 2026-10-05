@@ -74,6 +74,19 @@ final class CardanoBroadcastTests: XCTestCase {
         }
     }
 
+    func testNegatedIncludedJustificationStillThrows() async {
+        let body = Self.alreadyIncludedBody.replacingOccurrences(
+            of: "All inputs are spent. Transaction has probably already been included",
+            with: "Transaction has not already been included"
+        )
+        do {
+            _ = try await broadcast(body, status: 400)
+            XCTFail("Expected the broadcast to throw")
+        } catch {
+            XCTAssertEqual(error.localizedDescription, "RPC Error: Transaction has not already been included")
+        }
+    }
+
     func testAcceptedReplyReturnsNodeHash() async throws {
         let txId = try await broadcast(Self.successBody, status: 200)
         XCTAssertEqual(txId, "node-tx-id")
