@@ -14,6 +14,14 @@ private let logger = Log.defi.viewModel
 final class DefiChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var initialLoadingDone: Bool
+    /// Half-finished paired adds MayaChain is holding, separate from the
+    /// positions: a deposit stuck in a pool the user never enabled is exactly
+    /// the one that would otherwise be refunded unseen.
+    @Published private(set) var pendingDeposits: [MayaPendingLPDeposit] = []
+    /// False once a rescan has failed. The cards stay, their refund timer is
+    /// still running, but Complete is withdrawn: nothing confirms MayaChain has
+    /// not refunded them since.
+    @Published private(set) var canCompletePendingDeposits = true
 
     private let chain: Chain
     private let interactor: LPsInteractor?
@@ -90,5 +98,24 @@ final class DefiChainLPsViewModel: ObservableObject {
             logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
         initialLoadingDone = true
+        await refreshPendingDeposits(for: refreshingVault)
+    }
+
+    private func refreshPendingDeposits(for refreshingVault: Vault) async {
+        guard let provider = interactor as? PendingLPDepositsProviding else { return }
+        do {
+            let deposits = try await provider.fetchPendingLPDeposits(vault: refreshingVault)
+            guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+            pendingDeposits = deposits
+            canCompletePendingDeposits = true
+        } catch {
+            logger.warning("Failed to load pending Maya LP deposits: \(error.localizedDescription, privacy: .private)")
+            guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+            canCompletePendingDeposits = false
+        }
+    }
+
+    func canComplete(_ deposit: MayaPendingLPDeposit) -> Bool {
+        canCompletePendingDeposits && MayaPendingLPPresentation.canComplete(deposit, in: vault)
     }
 }

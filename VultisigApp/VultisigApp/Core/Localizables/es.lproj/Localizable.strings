@@ -911,6 +911,15 @@
 "lookingForDevices" = "Buscando dispositivos... ";
 "looksGood" = "Se ve bien";
 "low24h" = "Mínimo 24h";
+"lpPendingCompleteDeposit" = "Completar depósito";
+"lpPendingDeposited" = "Depositado";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "Desde";
+"lpPendingRefundsIn" = "Se reembolsa en";
+"lpPendingRefundTimeUnknown" = "Desconocido";
+"lpPendingSubtitle" = "%@ retiene este depósito hasta que llegue la parte correspondiente y lo reembolsa si no llega.";
+"lpPendingTitle" = "Esperando el depósito correspondiente de %@";
 "lps" = "LPs";
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "Las unidades LP no pueden ser cero";

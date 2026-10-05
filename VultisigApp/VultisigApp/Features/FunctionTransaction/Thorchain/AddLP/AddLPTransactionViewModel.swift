@@ -212,6 +212,25 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         )
     }
 
+    /// The missing side of a half-finished MayaChain add: the pool is the
+    /// pending deposit's, and the memo names the other side's address.
+    static func completion(
+        cacao: Coin,
+        asset: Coin,
+        side: LPDepositSide,
+        pool: String,
+        vault: Vault
+    ) -> AddLPTransactionViewModel {
+        AddLPTransactionViewModel(
+            coin: side == .coin1 ? cacao : asset,
+            pairedCoin: side == .coin1 ? asset : cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: pool),
+            vault: vault,
+            prefillsFullBalance: false
+        )
+    }
+
     /// The asset side of a MayaChain add, opened from a chain's action list.
     /// The chain's native coin goes into the pool that chain is fixed to, so
     /// there is nothing to choose.

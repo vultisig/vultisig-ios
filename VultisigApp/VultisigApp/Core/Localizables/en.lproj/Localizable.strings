@@ -911,6 +911,15 @@
 "lookingForDevices" = "Looking for devices... ";
 "looksGood" = "Looks good";
 "low24h" = "24h Low";
+"lpPendingCompleteDeposit" = "Complete deposit";
+"lpPendingDeposited" = "Deposited";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "From";
+"lpPendingRefundsIn" = "Refunds in";
+"lpPendingRefundTimeUnknown" = "Unknown";
+"lpPendingSubtitle" = "%@ holds this deposit until the matching side arrives, then refunds it if it doesn't.";
+"lpPendingTitle" = "Waiting for matching %@ deposit";
 "lps" = "LPs";
 "lpUnits" = "LP Units";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";

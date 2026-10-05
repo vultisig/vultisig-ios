@@ -34,6 +34,9 @@ enum FunctionTransactionType: Hashable {
     /// The asset side of a MayaChain add: the chain's native coin into the pool
     /// that chain is fixed to, with the memo naming the vault's CACAO address.
     case addMayaLP(coin: CoinMeta)
+    /// The missing side of a half-finished MayaChain paired add, with the pool
+    /// fixed by the pending deposit. `side` is the side to deposit now.
+    case completeMayaLP(pool: String, side: LPDepositSide)
     case removeLP(position: LPPosition)
     case cosmosDelegate(coin: CoinMeta)
     case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
@@ -135,6 +138,12 @@ enum FunctionTransactionType: Hashable {
             // names RUNE: the memo has to name a CACAO account.
             let cacao = TokensStore.TokenSelectionAssets.first { $0.chain == .mayaChain && $0.isNativeToken }
             return [coin] + (cacao.map { [$0] } ?? [])
+        case .completeMayaLP(let pool, _):
+            // The pool's asset and CACAO: the memo names one side's address, so
+            // both accounts have to exist.
+            let asset = THORChainAssetFactory.createCoin(from: pool)
+            let cacao = TokensStore.TokenSelectionAssets.first { $0.chain == .mayaChain && $0.isNativeToken }
+            return [asset, cacao].compactMap { $0 }
         case .removeLP(let position):
             return [position.coin1, position.coin2]
         case .cosmosDelegate(let coin):

@@ -911,6 +911,15 @@
 "lookingForDevices" = "Traženje uređaja... ";
 "looksGood" = "Izgleda dobro";
 "low24h" = "Najniža 24h";
+"lpPendingCompleteDeposit" = "Dovrši polog";
+"lpPendingDeposited" = "Položeno";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "Od";
+"lpPendingRefundsIn" = "Povrat za";
+"lpPendingRefundTimeUnknown" = "Nepoznato";
+"lpPendingSubtitle" = "%@ zadržava ovaj polog dok ne stigne odgovarajuća strana, a inače ga vraća.";
+"lpPendingTitle" = "Čeka se odgovarajući %@ polog";
 "lps" = "LPs";
 "lpUnits" = "LP jedinice";
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";

@@ -227,6 +227,12 @@ struct DefiChainMainScreen: View {
                     onAdd: {
                         onTransactionToPresent(.addLP(position: $0))
                     },
+                    onCompletePending: {
+                        onTransactionToPresent(.completeMayaLP(
+                            pool: $0.pool,
+                            side: MayaPendingLPPresentation.awaitedSide(of: $0)
+                        ))
+                    },
                     emptyStateView: { emptyStateView }
                 )
             case .earn:

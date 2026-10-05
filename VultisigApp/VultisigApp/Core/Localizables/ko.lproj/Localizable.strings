@@ -911,6 +911,15 @@
 "lookingForDevices" = "기기 검색 중... ";
 "looksGood" = "좋아 보입니다";
 "low24h" = "24시간 최저";
+"lpPendingCompleteDeposit" = "입금 완료하기";
+"lpPendingDeposited" = "입금됨";
+"lpPendingDurationDaysHours" = "%d일 %d시간";
+"lpPendingDurationHoursMinutes" = "%d시간 %d분";
+"lpPendingFrom" = "보낼 주소";
+"lpPendingRefundsIn" = "환불까지";
+"lpPendingRefundTimeUnknown" = "알 수 없음";
+"lpPendingSubtitle" = "%@은 반대편 입금이 도착할 때까지 이 입금을 보관하며, 도착하지 않으면 환불합니다.";
+"lpPendingTitle" = "%@ 입금 대기 중";
 "lps" = "LP";
 "lpUnits" = "LP 단위";
 "lpUnitsCannotBeZero" = "LP 단위는 0이 될 수 없습니다";

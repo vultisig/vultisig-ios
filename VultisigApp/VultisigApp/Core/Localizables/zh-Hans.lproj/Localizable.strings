@@ -911,6 +911,15 @@
 "lookingForDevices" = "正在寻找设备...";
 "looksGood" = "看起来不错";
 "low24h" = "24小时最低";
+"lpPendingCompleteDeposit" = "完成存入";
+"lpPendingDeposited" = "已存入";
+"lpPendingDurationDaysHours" = "%d天 %d小时";
+"lpPendingDurationHoursMinutes" = "%d小时 %d分钟";
+"lpPendingFrom" = "来自";
+"lpPendingRefundsIn" = "退款倒计时";
+"lpPendingRefundTimeUnknown" = "未知";
+"lpPendingSubtitle" = "%@ 会保留此笔存入，直到配对的另一侧到达；否则将予以退款。";
+"lpPendingTitle" = "等待配对的 %@ 存入";
 "lps" = "流动性池";
 "lpUnits" = "LP 单位";
 "lpUnitsCannotBeZero" = "LP 单位不能为零";

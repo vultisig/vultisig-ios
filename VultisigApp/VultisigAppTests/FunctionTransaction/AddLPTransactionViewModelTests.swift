@@ -1073,6 +1073,49 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertNotNil(built)
     }
 
+    // MARK: - Completing a pending deposit
+
+    func testCompletingAPendingAssetDepositSendsCacaoNamingTheAssetAddress() {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+        let viewModel = AddLPTransactionViewModel.completion(
+            cacao: cacao,
+            asset: bitcoin,
+            side: .coin1,
+            pool: AddLPFixture.btcPool,
+            vault: vault
+        )
+
+        XCTAssertEqual(viewModel.coin.chain, .mayaChain)
+        XCTAssertEqual(viewModel.poolName, AddLPFixture.btcPool)
+        XCTAssertEqual(viewModel.pairedAddress, FunctionActionFixture.btcAddress)
+    }
+
+    func testCompletingAPendingCacaoDepositSendsTheAssetNamingCacao() {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+        let viewModel = AddLPTransactionViewModel.completion(
+            cacao: cacao,
+            asset: bitcoin,
+            side: .coin2,
+            pool: AddLPFixture.btcPool,
+            vault: vault
+        )
+
+        XCTAssertEqual(viewModel.coin.chain, .bitcoin)
+        XCTAssertEqual(viewModel.pairedAddress, AddLPFixture.mayaAddress)
+        XCTAssertFalse(viewModel.showsPoolPicker)
+    }
+
+    func testTheCompletionTypeResolvesThePoolAssetAndCacao() {
+        let coins = FunctionTransactionType.completeMayaLP(pool: AddLPFixture.btcPool, side: .coin1).coins
+
+        XCTAssertTrue(coins.contains { $0.chain == .bitcoin && $0.isNativeToken })
+        XCTAssertTrue(coins.contains { $0.chain == .mayaChain && $0.isNativeToken })
+    }
+
     /// Without the paired address `+:POOL` is a different, asymmetric
     /// operation, so a MayaChain deposit refuses to build instead.
     func testAMayachainDepositWithoutAPairedAddressDoesNotBuild() async throws {
