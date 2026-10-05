@@ -293,9 +293,9 @@ struct SwapDoneSummaryCard: View {
                 // unknown-key localization intentionally echoes it unchanged.
                 getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
             }
-            // Protocol Fee (native THOR/Maya outbound).
+            // Protocol Fee (native THOR/Maya outbound or the aggregator's own charge).
             if transaction.showProtocolFeeRow {
-                getCell(title: "swap.protocol_fee", value: transaction.outboundFeeString)
+                getCell(title: "swap.protocol_fee", value: transaction.protocolFeeString)
             }
             if transaction.hasAppliedDiscounts {
                 appliedDiscounts(transaction)

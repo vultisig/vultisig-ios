@@ -260,7 +260,7 @@ struct SwapDetailsSummary: View {
         case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
             outboundFeeString = q.fees.outbound
         default:
-            return .empty
+            return vm.protocolFeeString
         }
 
         guard let outboundFeeString = outboundFeeString else {

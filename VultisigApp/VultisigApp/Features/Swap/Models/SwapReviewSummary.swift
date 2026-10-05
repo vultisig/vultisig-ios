@@ -110,7 +110,7 @@ extension SwapReviewSummary {
             lines.append(FeeLine(label: transaction.swapFeeLabel, value: transaction.baseAffiliateFee))
         }
         if transaction.showProtocolFeeRow {
-            lines.append(FeeLine(label: "swap.protocol_fee".localized, value: transaction.outboundFeeString))
+            lines.append(FeeLine(label: "swap.protocol_fee".localized, value: transaction.protocolFeeString))
         }
         if !transaction.vultDiscount.isEmpty {
             lines.append(FeeLine(

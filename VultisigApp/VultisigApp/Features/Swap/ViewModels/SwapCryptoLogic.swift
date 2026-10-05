@@ -507,7 +507,7 @@ enum SwapCryptoLogic {
         fee == .zero
     }
 
-    /// Reconciled total fee = Network + Vultisig(affiliate) + Protocol(outbound),
+    /// Reconciled total fee = Network + Vultisig(affiliate) + Protocol(outbound or provider),
     /// matching the itemized rows shown on the Verify/Details/Done screens.
     /// Deliberately NOT `fees.total`: that composite also carries the
     /// `asset`/liquidity slippage, which is already reflected in the quoted
@@ -517,8 +517,8 @@ enum SwapCryptoLogic {
         guard quote != nil else { return .empty }
         let networkFee = feeCoin.fiat(gas: fee)
         let affiliateFee = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
-        let outboundFee = outboundFeeFiat(quote: quote, toCoin: toCoin)
-        return (networkFee + affiliateFee + outboundFee).formatToFiatForFee(includeCurrencySymbol: true)
+        let protocolFee = protocolFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        return (networkFee + affiliateFee + protocolFee).formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: limit-order network fee
@@ -671,7 +671,7 @@ enum SwapCryptoLogic {
             // fraction of the output the payload now carries.
             if let evmFee = quote.evmSwapFeeBigInt {
                 let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
-                return coin.fiat(decimal: coin.decimal(for: evmFee))
+                return coin.fiat(decimal: coin.decimal(for: lifiAffiliateFee(evmFee, quote: evmQuote, fromCoin: fromCoin)))
             }
             let outAmount = toCoin.decimal(for: BigInt(evmQuote.dstAmount) ?? .zero)
             return toCoin.fiat(decimal: outAmount * (integratorFee ?? 0))
@@ -706,6 +706,17 @@ enum SwapCryptoLogic {
         return String(format: "vultisigFeePercentage".localized, Double(affiliateListFeeBps) / 100.0)
     }
 
+    /// LI.FI states the whole fixed fee on EVM routes, provider share included;
+    /// the affiliate is what remains once that share is taken out. Solana routes
+    /// state the integrator fraction on its own.
+    private static func lifiAffiliateFee(_ fee: BigInt, quote: EVMQuote, fromCoin: Coin) -> BigInt {
+        guard fromCoin.chain != .solana,
+              let raw = quote.tx.protocolFee, let provider = BigInt(raw), provider > 0 else {
+            return fee
+        }
+        return max(fee - provider, .zero)
+    }
+
     /// Protocol outbound-fee component in fiat (denominated in the output asset),
     /// native THOR/Maya only. `.zero` for every other route. The `asset`/liquidity
     /// slippage component of `fees.total` is deliberately excluded — it is already
@@ -723,23 +734,105 @@ enum SwapCryptoLogic {
         }
     }
 
-    static func outboundFeeString(quote: SwapQuote?, toCoin: Coin) -> String {
+    /// The aggregator's own charge on LI.FI and SwapKit routes, in the coin it is
+    /// stated in. `nil` when the route states none or names a coin this swap does
+    /// not involve — the amount is then left out rather than priced as a guess.
+    static func providerFee(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin
+    ) -> (coin: Coin, amount: Decimal)? {
+        switch quote {
+        case let .lifi(evmQuote, _, _):
+            guard let raw = evmQuote.tx.protocolFee, let amount = BigInt(raw), amount > 0 else { return nil }
+            let contract = evmQuote.tx.protocolFeeTokenContract
+            let coin: Coin
+            if contract.isEmpty {
+                coin = feeCoin
+            } else if contract.caseInsensitiveCompare(fromCoin.contractAddress) == .orderedSame {
+                coin = fromCoin
+            } else if contract.caseInsensitiveCompare(toCoin.contractAddress) == .orderedSame {
+                coin = toCoin
+            } else {
+                return nil
+            }
+            return (coin, coin.decimal(for: amount))
+        case let .swapkit(response, _, _):
+            return swapKitServiceFee(response: response, fromCoin: fromCoin, toCoin: toCoin)
+        default:
+            return nil
+        }
+    }
+
+    /// SwapKit's own `service` fee, summed across its entries. The affiliate
+    /// entry is not part of it: that cut stays embedded in the quoted rate.
+    static func swapKitServiceFee(
+        response: SwapKitSwapResponse,
+        fromCoin: Coin,
+        toCoin: Coin
+    ) -> (coin: Coin, amount: Decimal)? {
+        let services = response.fees.filter { $0.type.lowercased() == "service" }
+        guard let asset = services.first?.asset.lowercased(),
+              services.allSatisfy({ $0.asset.lowercased() == asset }) else { return nil }
+
+        let coin: Coin
+        if asset == response.sellAsset.lowercased() {
+            coin = fromCoin
+        } else if asset == response.buyAsset.lowercased() {
+            coin = toCoin
+        } else {
+            return nil
+        }
+
+        var total = Decimal.zero
+        for fee in services {
+            guard let amount = Decimal(string: fee.amount), amount >= 0 else { return nil }
+            total += amount
+        }
+        return total > 0 ? (coin, total) : nil
+    }
+
+    /// Protocol Fee in fiat: the native outbound fee on THOR/Maya routes, the
+    /// aggregator's own charge on LI.FI and SwapKit.
+    static func protocolFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
+        let outbound = outboundFeeFiat(quote: quote, toCoin: toCoin)
+        guard let fee = providerFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) else {
+            return outbound
+        }
+        return outbound + fee.coin.fiat(decimal: fee.amount)
+    }
+
+    static func protocolFeeString(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> String {
         guard let quote else { return .empty }
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiatForFee(includeCurrencySymbol: true)
+        case .lifi, .swapkit:
+            guard providerFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) != nil else {
+                return .empty
+            }
+            return protocolFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+                .formatToFiatForFee(includeCurrencySymbol: true)
         default:
             return .empty
         }
     }
 
-    /// Whether the "Protocol Fee" (native outbound) row should render: a native
-    /// THOR/Maya route carrying an outbound fee. Suppressed for a secured mint —
-    /// its synthetic ~1:1 quote reports a zero outbound that is not a real
-    /// protocol fee, so the row would otherwise show a spurious `$0.00`.
-    static func showProtocolFeeRow(quote: SwapQuote?, toCoin: Coin, mode: SwapMode) -> Bool {
+    /// Whether the "Protocol Fee" row should render: a native THOR/Maya route
+    /// carrying an outbound fee, or an aggregator route that states its own
+    /// charge. Suppressed for a secured mint — its synthetic ~1:1 quote reports a
+    /// zero outbound that is not a real protocol fee, so the row would otherwise
+    /// show a spurious `$0.00`.
+    static func showProtocolFeeRow(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        mode: SwapMode
+    ) -> Bool {
         guard mode != .securedMint else { return false }
-        return !outboundFeeString(quote: quote, toCoin: toCoin).isEmpty
+        return !protocolFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin).isEmpty
     }
 
     // MARK: - Discounts

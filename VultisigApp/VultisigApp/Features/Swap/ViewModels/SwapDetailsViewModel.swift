@@ -762,9 +762,12 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: isSecuredMint ? .securedMint : .standard)
     }
 
-    /// Whether the "Protocol Fee" (native outbound) row should render.
+    /// Whether the "Protocol Fee" row (native outbound or aggregator charge) should render.
     var showProtocolFeeRow: Bool {
-        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: isSecuredMint ? .securedMint : .standard)
+        SwapCryptoLogic.showProtocolFeeRow(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            mode: isSecuredMint ? .securedMint : .standard
+        )
     }
 
     var swapFeeString: String {
@@ -810,8 +813,8 @@ extension SwapDetailsViewModel {
         )
     }
 
-    var outboundFeeString: String {
-        SwapCryptoLogic.outboundFeeString(quote: quote, toCoin: toCoin)
+    var protocolFeeString: String {
+        SwapCryptoLogic.protocolFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }
 
     var vultDiscountLabel: String {
