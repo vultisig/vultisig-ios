@@ -111,7 +111,8 @@ enum SwapKitBTCSigner {
     /// input would otherwise be MPC-signed with a key that cannot unlock it and
     /// the broadcast rejected after the user approved. Vultisig holds a single
     /// native-segwit address per UTXO chain, so every input of a well-formed
-    /// route pays to that one script.
+    /// route pays to that one script. A P2SH-P2WPKH input, which
+    /// `classifyScript` still accepts, is therefore never ours and is refused here.
     static func verifyInputsOwnership(_ signBitcoin: SignBitcoin, pubKeyHex: String) throws {
         guard let pubkeyData = Data(hexString: pubKeyHex),
               PublicKey(data: pubkeyData, type: .secp256k1) != nil else {
