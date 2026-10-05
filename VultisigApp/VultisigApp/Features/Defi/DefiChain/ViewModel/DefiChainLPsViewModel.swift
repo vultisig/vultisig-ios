@@ -111,10 +111,14 @@ final class DefiChainLPsViewModel: ObservableObject {
         do {
             let scan = try await provider.fetchPendingLPDeposits(vault: refreshingVault)
             guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
-            // A scan that missed a pool cannot say nothing is pending, so it
-            // never clears what an earlier one found.
-            if scan.isComplete || !scan.deposits.isEmpty {
+            if scan.isComplete {
                 pendingDeposits = scan.deposits
+            } else {
+                // A scan that missed a pool cannot say nothing is pending there,
+                // so cards an earlier scan found stay unless this one re-read
+                // their pool.
+                let rescanned = Set(scan.deposits.map(\.pool))
+                pendingDeposits = scan.deposits + pendingDeposits.filter { !rescanned.contains($0.pool) }
             }
             canCompletePendingDeposits = scan.isComplete
         } catch {

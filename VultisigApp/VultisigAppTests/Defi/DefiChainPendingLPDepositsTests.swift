@@ -91,6 +91,26 @@ final class DefiChainPendingLPDepositsTests: XCTestCase {
         XCTAssertFalse(viewModel.canCompletePendingDeposits)
     }
 
+    func testAnIncompleteScanKeepsCardsForPoolsItDidNotRereadAndRefreshesTheRest() async {
+        var other = pending()
+        other = MayaPendingLPDeposit(
+            pool: "BTC.BTC", pendingCacao: 5, pendingAsset: 0, pendingTxId: "T2",
+            pairedAddress: "bc1q", blocksUntilRefund: 10
+        )
+        let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending(), other], isComplete: true)))
+        let viewModel = makeViewModel(interactor)
+        await viewModel.refresh()
+
+        var refreshed = pending()
+        refreshed.blocksUntilRefund = 5
+        interactor.result = .success(MayaPendingLPScan(deposits: [refreshed], isComplete: false))
+        await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.pendingDeposits.map(\.pool), ["ETH.ETH", "BTC.BTC"])
+        XCTAssertEqual(viewModel.pendingDeposits.first?.blocksUntilRefund, 5)
+        XCTAssertFalse(viewModel.canCompletePendingDeposits)
+    }
+
     func testAnotherVaultDoesNotInheritThePendingCards() async {
         let interactor = StubPendingInteractor(result: .success(MayaPendingLPScan(deposits: [pending()], isComplete: true)))
         let viewModel = makeViewModel(interactor)
