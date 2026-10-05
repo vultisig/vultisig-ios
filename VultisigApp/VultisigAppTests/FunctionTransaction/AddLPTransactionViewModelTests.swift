@@ -770,6 +770,59 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertEqual(builder.toAddress, .empty)
     }
 
+    /// A pool the app cannot send the asset half of would leave a paired CACAO
+    /// add pending until it is refunded, so the CACAO side stays single-sided
+    /// there even when an asset address is on hand.
+    func testACacaoSideDepositIntoAPoolTheAppCannotCompleteStaysSingleSided() async throws {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: cacao,
+            pairedCoin: bitcoin,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: "ADA.ADA"),
+            vault: vault,
+            prefillsFullBalance: true,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            fetchPools: { [] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.memo, "+:ADA.ADA")
+        XCTAssertNil(viewModel.blockingMessage)
+    }
+
+    /// iOS signs the ERC-20 asset half through the router, so those pools pair.
+    func testACacaoSideDepositIntoAnERC20PoolNamesTheAssetAddress() async throws {
+        let cacao = AddLPFixture.cacao()
+        let usdc = AddLPFixture.usdc()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, usdc])
+
+        let viewModel = AddLPTransactionViewModel(
+            coin: cacao,
+            pairedCoin: usdc,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: AddLPFixture.usdcPool),
+            vault: vault,
+            prefillsFullBalance: true,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            fetchPools: { [] },
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):0xsender")
+    }
+
     /// Without the paired address `+:POOL` is a different, asymmetric
     /// operation, so a MayaChain deposit refuses to build instead.
     func testAMayachainDepositWithoutAPairedAddressDoesNotBuild() async throws {

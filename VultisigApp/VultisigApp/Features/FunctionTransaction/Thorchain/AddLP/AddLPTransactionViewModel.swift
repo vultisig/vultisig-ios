@@ -259,6 +259,21 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         pairedAddress?.nilIfEmpty != nil
     }
 
+    /// Whether this deposit's memo must name the other side's address.
+    ///
+    /// MayaChain's CACAO side names one only for pools whose asset half the app
+    /// can send; elsewhere a paired add would sit pending until refunded. The
+    /// asset side always names the CACAO address.
+    var requiresPairedAddress: Bool {
+        guard protocolChain == .mayaChain, coin.chain == .mayaChain else { return true }
+        return poolName.map(MayaLPPools.isPairable(pool:)) ?? false
+    }
+
+    /// The paired address the memo carries, or nil for a single-sided add.
+    private var memoPairedAddress: String? {
+        requiresPairedAddress ? pairedAddress : nil
+    }
+
     /// Localization key of the button that offers RUNE or CACAO.
     var enableProtocolChainTitleKey: String {
         protocolChain == .mayaChain ? "enableMayaChain" : "enableThorchain"
@@ -488,7 +503,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         // `+:POOL` alone is an asymmetric, single-sided deposit — so an absent
         // RUNE/CACAO or asset address blocks rather than silently changing what
         // is signed.
-        guard isProtocolChainEnabled, hasPairedAddress else { return nil }
+        guard isProtocolChainEnabled, hasPairedAddress || !requiresPairedAddress else { return nil }
         guard let poolName else { return nil }
         guard let amount = HumanDecimalAmount.parse(
             amountField.rawValue,
@@ -505,7 +520,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             coin: coin,
             amount: amount.formatToDecimal(digits: coin.decimals),
             poolName: poolName,
-            pairedAddress: pairedAddress,
+            pairedAddress: memoPairedAddress,
             sendMaxAmount: isMaxAmount,
             toAddress: toAddress,
             protocolChain: protocolChain
@@ -530,7 +545,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     /// Why the deposit cannot proceed, or nil when nothing is wrong.
     var blockingMessage: String? {
-        if !isProtocolChainEnabled || !hasPairedAddress {
+        if !isProtocolChainEnabled || (requiresPairedAddress && !hasPairedAddress) {
             return protocolChain == .mayaChain
                 ? "mayaChainNotEnabledForLP".localized
                 : "thorChainNotEnabledForLP".localized
