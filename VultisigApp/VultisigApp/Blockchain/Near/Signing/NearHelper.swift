@@ -145,44 +145,9 @@ enum NearHelper {
 
     private static func signingInput(keysignPayload: KeysignPayload) throws -> NEARSigningInput {
         let coin = keysignPayload.coin
+        try assertNativeTransferPayload(keysignPayload)
+        let (nonce, blockHash) = try nearSigningFields(keysignPayload)
 
-        guard coin.chain == .near, coin.isNativeToken else {
-            throw HelperError.runtimeError("nearErrorTokensUnsupported".localized)
-        }
-        // A payload decoded from the wire carries `""` for an unset memo.
-        guard keysignPayload.memo?.isEmpty ?? true else {
-            throw HelperError.runtimeError("nearErrorMemo".localized)
-        }
-        try assertSwapKitDepositOnly(keysignPayload)
-        guard keysignPayload.wasmExecuteContractPayload == nil,
-              keysignPayload.tronTransferContractPayload == nil,
-              keysignPayload.tronTriggerSmartContractPayload == nil,
-              keysignPayload.tronTransferAssetContractPayload == nil else {
-            throw HelperError.runtimeError("nearErrorContractPayload".localized)
-        }
-        guard keysignPayload.signData == nil else {
-            throw HelperError.runtimeError("nearErrorCustomSignPayload".localized)
-        }
-        guard NearAccountId.isValid(keysignPayload.toAddress) else {
-            throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, keysignPayload.toAddress))
-        }
-        guard keysignPayload.toAmount > 0, keysignPayload.toAmount <= maxU128 else {
-            throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, keysignPayload.toAmount.description))
-        }
-        guard case let .Near(nonce, blockHash, gasFee, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("nearErrorMissingChainSpecific".localized)
-        }
-
-        // Display metadata, but a payload that cannot state its own reservation
-        // is not a payload this signer should commit to.
-        _ = try gasFeeInteger(gasFee, maximum: maxU128)
-
-        guard blockHash.count == blockHashBytes else {
-            throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, blockHashBytes, blockHash.count))
-        }
-        guard nonce > 0 else {
-            throw HelperError.runtimeError("nearErrorInvalidNonce".localized)
-        }
         guard let hexPublicKey = Data(hexString: coin.hexPublicKey), hexPublicKey.count == ed25519PublicKeyBytes else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidPublicKeyLength".localized, coin.hexPublicKey))
         }
@@ -219,6 +184,53 @@ enum NearHelper {
                 }
             ]
         }
+    }
+
+    /// The payload describes one native NEAR transfer and nothing else.
+    private static func assertNativeTransferPayload(_ keysignPayload: KeysignPayload) throws {
+        let coin = keysignPayload.coin
+        guard coin.chain == .near, coin.isNativeToken else {
+            throw HelperError.runtimeError("nearErrorTokensUnsupported".localized)
+        }
+        // A payload decoded from the wire carries `""` for an unset memo.
+        guard keysignPayload.memo?.isEmpty ?? true else {
+            throw HelperError.runtimeError("nearErrorMemo".localized)
+        }
+        try assertSwapKitDepositOnly(keysignPayload)
+        guard keysignPayload.wasmExecuteContractPayload == nil,
+              keysignPayload.tronTransferContractPayload == nil,
+              keysignPayload.tronTriggerSmartContractPayload == nil,
+              keysignPayload.tronTransferAssetContractPayload == nil else {
+            throw HelperError.runtimeError("nearErrorContractPayload".localized)
+        }
+        guard keysignPayload.signData == nil else {
+            throw HelperError.runtimeError("nearErrorCustomSignPayload".localized)
+        }
+        guard NearAccountId.isValid(keysignPayload.toAddress) else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, keysignPayload.toAddress))
+        }
+        guard keysignPayload.toAmount > 0, keysignPayload.toAmount <= maxU128 else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, keysignPayload.toAmount.description))
+        }
+    }
+
+    /// The frozen nonce and block hash, validated, from the payload's NEAR chain specific.
+    private static func nearSigningFields(_ keysignPayload: KeysignPayload) throws -> (nonce: UInt64, blockHash: Data) {
+        guard case let .Near(nonce, blockHash, gasFee, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("nearErrorMissingChainSpecific".localized)
+        }
+
+        // Display metadata, but a payload that cannot state its own reservation
+        // is not a payload this signer should commit to.
+        _ = try gasFeeInteger(gasFee, maximum: maxU128)
+
+        guard blockHash.count == blockHashBytes else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, blockHashBytes, blockHash.count))
+        }
+        guard nonce > 0 else {
+            throw HelperError.runtimeError("nearErrorInvalidNonce".localized)
+        }
+        return (nonce, blockHash)
     }
 
     private static func depositBytes(for amount: BigInt) -> Data {
