@@ -51,6 +51,29 @@ final class CardanoBroadcastTests: XCTestCase {
         }
     }
 
+    func testAlreadyIncludedTextUnderAnotherCodeStillThrows() async {
+        let body = Self.alreadyIncludedBody.replacingOccurrences(of: "3997", with: "3000")
+        do {
+            _ = try await broadcast(body, status: 400)
+            XCTFail("Expected the broadcast to throw")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.hasPrefix("RPC Error:"))
+        }
+    }
+
+    func testPartialSpendJustificationStillThrows() async {
+        let body = Self.alreadyIncludedBody.replacingOccurrences(
+            of: "All inputs are spent. Transaction has probably already been included",
+            with: "Not all inputs are spent"
+        )
+        do {
+            _ = try await broadcast(body, status: 400)
+            XCTFail("Expected the broadcast to throw")
+        } catch {
+            XCTAssertEqual(error.localizedDescription, "RPC Error: Not all inputs are spent")
+        }
+    }
+
     func testAcceptedReplyReturnsNodeHash() async throws {
         let txId = try await broadcast(Self.successBody, status: 200)
         XCTAssertEqual(txId, "node-tx-id")

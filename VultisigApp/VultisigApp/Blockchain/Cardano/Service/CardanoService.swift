@@ -146,9 +146,9 @@ class CardanoService {
     /// (3997) whose justification says every input is spent.
     static func isAlreadyBroadcast(_ error: CardanoSubmitTransactionResponse.ErrorBody) -> Bool {
         if error.code == 3117 { return true }
-        guard let justification = error.justification else { return false }
+        guard error.code == 3997, let justification = error.justification else { return false }
         return justification.range(
-            of: "already been included|inputs are spent",
+            of: "already been included|^\\s*all inputs are spent",
             options: [.regularExpression, .caseInsensitive]
         ) != nil
     }
