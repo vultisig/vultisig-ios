@@ -36,6 +36,21 @@ final class ZcashZip317PlanTests: XCTestCase {
         XCTAssertEqual(BitcoinScript.lockScriptForAddress(address: t, coin: .zcash).data.count, 25)
     }
 
+    func testTexAddressesConvertToTheExpectedTransparentAddress() {
+        let vectors = [
+            ("tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv", "t1KuEaP8Lb2pUGtpciBCT2ppomGvFi8sEPY")
+        ]
+        for (tex, expected) in vectors {
+            XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: tex), expected, tex)
+            XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: tex.uppercased()), expected, "uppercase \(tex)")
+        }
+    }
+
+    func testMixedCaseTexAddressIsLeftUntouched() {
+        let mixed = "Tex1zclnr35llscdedzrwdmemm70es05ngg9m2d3lv"
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: mixed), mixed)
+    }
+
     func testCorruptedOrNonTexAddressIsLeftUntouched() {
         let bad = "tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yjq"
         XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: bad), bad)
