@@ -1151,7 +1151,7 @@ class KeysignViewModel: ObservableObject {
 
                     if let returnedHash, returnedHash != tx.transactionHash {
                         throw HelperError.runtimeError(
-                            "NEAR broadcast returned \(returnedHash) for a transaction whose local hash is \(tx.transactionHash)"
+                            String(format: "nearErrorBroadcastHashMismatch".localized, returnedHash, tx.transactionHash)
                         )
                     }
 

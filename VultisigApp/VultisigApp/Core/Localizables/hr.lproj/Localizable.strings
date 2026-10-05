@@ -963,6 +963,7 @@
 "name" = "Ime";
 "nameYourVault" = "Imenujte svoj trezor";
 "native" = "Izvorni";
+"nearErrorBroadcastHashMismatch" = "NEAR emitiranje vratilo je %1$@ za transakciju čiji je lokalni hash %2$@";
 "nearErrorContractPayload" = "Izvorni NEAR prijenosi ne podržavaju podatke ugovora";
 "nearErrorCustomSignPayload" = "Izvorni NEAR prijenosi ne podržavaju prilagođene podatke za potpis";
 "nearErrorFunctionCallKey" = "NEAR ključ za potpisivanje za %@ je ključ za poziv funkcije; izvorni prijenos zahtijeva puni pristup";

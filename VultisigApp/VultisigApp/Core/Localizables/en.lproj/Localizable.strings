@@ -963,6 +963,7 @@
 "name" = "Name";
 "nameYourVault" = "Name your vault";
 "native" = "Native";
+"nearErrorBroadcastHashMismatch" = "NEAR broadcast returned %1$@ for a transaction whose local hash is %2$@";
 "nearErrorContractPayload" = "NEAR native transfers do not support contract payloads";
 "nearErrorCustomSignPayload" = "NEAR native transfers do not support custom sign payloads";
 "nearErrorFunctionCallKey" = "NEAR signing key for %@ is a function-call key; a native transfer needs full access";

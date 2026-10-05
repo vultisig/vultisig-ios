@@ -963,6 +963,7 @@
 "name" = "Nombre";
 "nameYourVault" = "Nombra tu bóveda";
 "native" = "Nativo";
+"nearErrorBroadcastHashMismatch" = "La difusión de NEAR devolvió %1$@ para una transacción cuyo hash local es %2$@";
 "nearErrorContractPayload" = "Las transferencias nativas de NEAR no admiten payloads de contrato";
 "nearErrorCustomSignPayload" = "Las transferencias nativas de NEAR no admiten payloads de firma personalizados";
 "nearErrorFunctionCallKey" = "La clave de firma de NEAR para %@ es una clave de llamada a función; una transferencia nativa necesita acceso completo";
