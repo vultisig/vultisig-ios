@@ -24,6 +24,24 @@ final class ZcashZip317PlanTests: XCTestCase {
     private let zcashAddress = "t1PoLLLwEcVhqMBhk53tANtSepnPXAQJkPM"
     private let branchIdHex = "30f33754"
 
+    // MARK: - THORChain TEX inbound
+
+    func testTexVaultAddressMapsToAValidTransparentAddress() throws {
+        // Live THORChain ZEC inbound.
+        let tex = "tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yju"
+        let t = UTXOChainsHelper.zcashTransparentAddress(fromTex: tex)
+
+        XCTAssertTrue(t.hasPrefix("t1"))
+        XCTAssertTrue(AnyAddress.isValid(string: t, coin: .zcash))
+        XCTAssertEqual(BitcoinScript.lockScriptForAddress(address: t, coin: .zcash).data.count, 25)
+    }
+
+    func testCorruptedOrNonTexAddressIsLeftUntouched() {
+        let bad = "tex1z8e8k9jg5xh28ny8ctek2dwpnc6qd9qd037yjq"
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: bad), bad)
+        XCTAssertEqual(UTXOChainsHelper.zcashTransparentAddress(fromTex: zcashAddress), zcashAddress)
+    }
+
     // MARK: - Send path (getBitcoinPreSigningInputData / getBitcoinTransactionPlan)
 
     func testPlainSendKeepsTheZip0317PlanAtTheFloor() throws {
