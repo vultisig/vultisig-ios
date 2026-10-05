@@ -278,7 +278,9 @@ struct KeysignDiscoveryView: View {
             onFastKeysign: { startKeysign() }
         )
 
-        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
+        // A payload this device refused to sign must not be offered to co-signers.
+        guard viewModel.status != .FailToStart,
+              let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
             return
         }
 
