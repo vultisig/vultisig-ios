@@ -25,7 +25,7 @@ final class SanitizeAddressEIP681Tests: XCTestCase {
 
     func testTransferLinkWithoutPayeeDoesNotFallBackToTokenContract() {
         let link = "ethereum:\(token)/transfer?uint256=8000"
-        XCTAssertNotEqual(Utils.sanitizeAddress(address: link), token)
+        XCTAssertEqual(Utils.sanitizeAddress(address: link), "")
     }
 
     func testPlainEthereumLinkStillStripsPrefix() {

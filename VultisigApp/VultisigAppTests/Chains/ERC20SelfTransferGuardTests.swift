@@ -69,6 +69,12 @@ final class ERC20SelfTransferGuardTests: XCTestCase {
         }
     }
 
+    func testTransferToOwnContractWithoutHexPrefixIsRefused() throws {
+        let contract = TokensStore.Token.ethereumUsdc.contractAddress
+        let payload = try makePayload(toAddress: String(contract.dropFirst(2)))
+        XCTAssertThrowsError(try ERC20Helper(coinType: .ethereum).getPreSignedInputData(keysignPayload: payload))
+    }
+
     func testTransferToOrdinaryRecipientIsAccepted() throws {
         let payload = try makePayload(toAddress: recipient)
         let data = try ERC20Helper(coinType: .ethereum).getPreSignedInputData(keysignPayload: payload)
