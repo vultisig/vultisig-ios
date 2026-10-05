@@ -509,6 +509,7 @@ enum SolanaHelper {
         }
 
         let parsed = try extractSolanaMessageBytes(from: txData)
+        _ = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
         // Re-checked at the splice: the pre-image may have been recovered from the
         // relay, so this device cannot assume its own pre-sign check ran.
         try requireRawComputeBudgetWithinCeiling(message: parsed.message)
