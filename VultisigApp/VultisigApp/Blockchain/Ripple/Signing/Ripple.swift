@@ -16,6 +16,32 @@ private let logger = Log.chain.other
 
 enum RippleHelper {
 
+    /// The `LastLedgerSequence` the signed transaction carries, or nil when it
+    /// has none. A dApp transaction is signed verbatim from its raw JSON, so
+    /// that JSON, not `chainSpecific` (which the extension fills independently),
+    /// is what lands on-chain.
+    static func lastLedgerSequence(keysignPayload: KeysignPayload) -> Int? {
+        let value: Int?
+        if let signRipple = keysignPayload.signRipple {
+            guard let data = signRipple.rawJson.data(using: .utf8),
+                  let tx = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
+                return nil
+            }
+            if let number = tx["LastLedgerSequence"] as? NSNumber {
+                value = number.intValue
+            } else if let string = tx["LastLedgerSequence"] as? String {
+                value = Int(string)
+            } else {
+                value = nil
+            }
+        } else if case .Ripple(_, _, let lastLedgerSequence, _, _) = keysignPayload.chainSpecific {
+            value = Int(exactly: lastLedgerSequence)
+        } else {
+            value = nil
+        }
+        return value.flatMap { $0 > 0 ? $0 : nil }
+    }
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // For XRP swaps, we use the same logic as regular transactions but with swap memo
         return try getPreSignedInputData(keysignPayload: keysignPayload)

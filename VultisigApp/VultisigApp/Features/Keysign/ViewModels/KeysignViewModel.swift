@@ -1196,7 +1196,10 @@ class KeysignViewModel: ObservableObject {
                 // this vault's own unconfirmed change is indistinguishable
                 // from a stranger's zero-conf payment and stays unspendable
                 // until it confirms.
-                pubKeyECDSA: keysignPayload.vaultPubKeyECDSA
+                pubKeyECDSA: keysignPayload.vaultPubKeyECDSA,
+                lastLedgerSequence: keysignPayload.coin.chain == .ripple
+                    ? RippleHelper.lastLedgerSequence(keysignPayload: keysignPayload)
+                    : nil
             )
         }
     }

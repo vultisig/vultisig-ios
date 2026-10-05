@@ -1612,6 +1612,7 @@
 "swapSecuredAssetBadge" = "Garantito";
 "swapSecuredAssetInvalidDestination" = "La destinazione dello swap dell'asset protetto non è un indirizzo %1$@ valido (%2$@).";
 "swapSlippageToleranceTooTight" = "Il prezzo ha superato la tua tolleranza di slippage. Aumenta l'impostazione dello slippage nelle impostazioni di scambio oppure prova con un importo inferiore.";
+"transactionExpiredNotIncluded" = "Scaduta prima di essere inclusa. La rete ha scartato questa transazione prima di includerla, quindi non è stato inviato nulla e non è stata addebitata alcuna commissione di rete. Puoi riprovare.";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
 "swapTradingHalted" = "La negoziazione di questo asset è temporaneamente sospesa. Riprova più tardi.";
 "swapVerifyCheckbox1Description" = "L'importo dello scambio è corretto";

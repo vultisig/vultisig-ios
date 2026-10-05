@@ -1612,6 +1612,7 @@
 "swapSecuredAssetBadge" = "보안";
 "swapSecuredAssetInvalidDestination" = "보안 자산 스왑 대상이 유효한 %1$@ 주소가 아닙니다 (%2$@).";
 "swapSlippageToleranceTooTight" = "가격이 허용 슬리피지를 초과했습니다. 스왑 설정에서 슬리피지를 높이거나 더 적은 금액으로 시도해 주세요.";
+"transactionExpiredNotIncluded" = "포함되기 전에 만료됨. 네트워크가 이 거래를 포함하기 전에 폐기했으므로 아무것도 전송되지 않았고 네트워크 수수료도 부과되지 않았습니다. 다시 시도할 수 있습니다.";
 "swapTrackingLink" = "스왑 추적 링크";
 "swapTradingHalted" = "이 자산의 거래가 일시적으로 중단되었습니다. 나중에 다시 시도해 주세요.";
 "swapVerifyCheckbox1Description" = "스왑 금액이 올바릅니다";
