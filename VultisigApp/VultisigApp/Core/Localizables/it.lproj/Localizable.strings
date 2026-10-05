@@ -1658,6 +1658,7 @@
 "transactionBytes" = "Byte della transazione";
 "transactionComplete" = "Fatto";
 "transactionDetails" = "Dettagli transazione";
+"transactionExpiredNotIncluded" = "Scaduta prima di essere inclusa. La rete ha scartato questa transazione prima di includerla, quindi non è stato inviato nulla e non è stata addebitata alcuna commissione di rete. Puoi riprovare.";
 "transactionFailed" = "Transazione non riuscita";
 "transactionFailedDescription" = "Qualcosa è andato storto. Riprova.";
 "transactionFailedHighlight" = "non riuscita";

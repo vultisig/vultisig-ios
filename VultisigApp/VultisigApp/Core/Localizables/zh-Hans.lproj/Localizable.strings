@@ -1658,6 +1658,7 @@
 "transactionBytes" = "交易字节";
 "transactionComplete" = "完成";
 "transactionDetails" = "交易详情";
+"transactionExpiredNotIncluded" = "在被打包前已过期。网络在打包此交易前已将其丢弃，因此没有发送任何资产，也未收取网络费用。您可以重试。";
 "transactionFailed" = "交易失败";
 "transactionFailedDescription" = "出了点问题，请重试。";
 "transactionFailedHighlight" = "失败";

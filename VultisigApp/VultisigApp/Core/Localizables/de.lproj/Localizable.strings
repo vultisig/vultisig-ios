@@ -1658,6 +1658,7 @@
 "transactionBytes" = "Transaktions-Bytes";
 "transactionComplete" = "Erledigt";
 "transactionDetails" = "Transaktionsdetails";
+"transactionExpiredNotIncluded" = "Abgelaufen, bevor sie aufgenommen wurde. Das Netzwerk hat diese Transaktion verworfen, bevor sie aufgenommen wurde. Es wurde nichts gesendet und keine Netzwerkgebühr berechnet. Du kannst es erneut versuchen.";
 "transactionFailed" = "Transaktion fehlgeschlagen";
 "transactionFailedDescription" = "Etwas ist schiefgelaufen. Bitte versuche es erneut.";
 "transactionFailedHighlight" = "fehlgeschlagen";

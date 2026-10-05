@@ -1658,6 +1658,7 @@
 "transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
+"transactionExpiredNotIncluded" = "Istekla prije uključivanja. Mreža je odbacila ovu transakciju prije nego što ju je uključila, pa ništa nije poslano i nije naplaćena mrežna naknada. Možeš pokušati ponovno.";
 "transactionFailed" = "Transakcija nije uspjela";
 "transactionFailedDescription" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "transactionFailedHighlight" = "nije uspjela";

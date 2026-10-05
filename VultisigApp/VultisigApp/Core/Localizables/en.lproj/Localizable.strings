@@ -1658,6 +1658,7 @@
 "transactionBytes" = "Transaction Bytes";
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
+"transactionExpiredNotIncluded" = "Expired before it was included. The network dropped this transaction before including it, so nothing was sent and no network fee was charged. You can try again.";
 "transactionFailed" = "Transaction failed";
 "transactionFailedDescription" = "Something went wrong. Please try again.";
 "transactionFailedHighlight" = "failed";

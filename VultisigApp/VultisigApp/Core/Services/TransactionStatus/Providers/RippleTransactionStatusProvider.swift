@@ -16,14 +16,27 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
     /// Resolves the Ripple custom RPC override so the status lookup targets the
     /// same host as broadcast/reads (`RippleService`).
     private let resolver: RPCEndpointResolving
+    /// The `LastLedgerSequence` persisted with the pending record, nil when
+    /// unknown (a row from before it was stored, or a tx that set none).
+    private let lastLedgerSequenceLookup: @Sendable (String) async -> Int?
+
+    /// Reason stored on a transaction that outlived its validity window.
+    static let expiredReason = "Transaction expired: not validated by its LastLedgerSequence"
+
+    /// `searched_all` is only reported for a bounded range, capped at 1000 ledgers.
+    private static let maxLedgerRange = 1000
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         sleep: @escaping RippleRequestRetrier.Sleeper = RippleRequestRetrier.defaultSleep,
-        resolver: RPCEndpointResolving = CustomRPCStore.shared
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        lastLedgerSequenceLookup: @escaping @Sendable (String) async -> Int? = { txHash in
+            await MainActor.run { StoredPendingTransactionStorage.shared.lastLedgerSequence(txHash: txHash) }
+        }
     ) {
         self.retrier = RippleRequestRetrier(httpClient: httpClient, sleep: sleep)
         self.resolver = resolver
+        self.lastLedgerSequenceLookup = lastLedgerSequenceLookup
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
@@ -33,15 +46,32 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
                 RippleTransactionStatusAPI.getTx(txHash: query.txHash, host: host),
                 responseType: RippleTransactionStatusResponse.self
             )
+            return try await interpret(response, txHash: query.txHash, host: host, boundedRetry: true)
+        } catch let error as HTTPError {
+            if case .statusCode(let code, _) = error, code == 404 {
+                return TransactionStatusResult(
+                    status: .notFound,
+                    blockNumber: nil,
+                    confirmations: nil
+                )
+            }
+            throw error
+        }
+    }
 
+    /// `boundedRetry` is false for the ledger-bounded follow-up so a second
+    /// `txnNotFound` cannot trigger another lookup.
+    private func interpret(
+        _ response: RippleTransactionStatusResponse,
+        txHash: String,
+        host: URL,
+        boundedRetry: Bool
+    ) async throws -> TransactionStatusResult {
+        do {
             // Check for error response
             if let error = response.error {
                 if error == "txnNotFound" {
-                    return TransactionStatusResult(
-                        status: .notFound,
-                        blockNumber: nil,
-                        confirmations: nil
-                    )
+                    return try await notFoundResult(txHash: txHash, host: host, boundedRetry: boundedRetry)
                 }
                 // Other errors
                 let message = response.error_message ?? error
@@ -64,11 +94,7 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
             // Check if result contains an error
             if result.status == "error" {
                 if result.error == "txnNotFound" {
-                    return TransactionStatusResult(
-                        status: .notFound,
-                        blockNumber: nil,
-                        confirmations: nil
-                    )
+                    return try await notFoundResult(txHash: txHash, host: host, boundedRetry: boundedRetry)
                 }
                 // Other errors (e.g., "notImpl", invalid params)
                 // Use transaction field from request if available (contains error description)
@@ -131,5 +157,35 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
             }
             throw error
         }
+    }
+
+    /// Not found stays `.notFound` until the validated ledger passes the
+    /// transaction's `LastLedgerSequence`, after which XRPL can never include it.
+    private func notFoundResult(txHash: String, host: URL, boundedRetry: Bool) async throws -> TransactionStatusResult {
+        let notFound = TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
+        guard boundedRetry,
+              let lastLedgerSequence = await lastLedgerSequenceLookup(txHash),
+              lastLedgerSequence > 0 else {
+            return notFound
+        }
+
+        let lowerBound = max(1, lastLedgerSequence - Self.maxLedgerRange + 1)
+        let response = try await retrier.request(
+            RippleTransactionStatusAPI.getTx(
+                txHash: txHash,
+                host: host,
+                ledgerRange: lowerBound...lastLedgerSequence
+            ),
+            responseType: RippleTransactionStatusResponse.self
+        )
+
+        let error = response.error ?? response.result?.error
+        if error == "txnNotFound" {
+            return response.result?.searched_all == true
+                ? TransactionStatusResult(status: .failed(reason: Self.expiredReason), blockNumber: nil, confirmations: nil)
+                : notFound
+        }
+        // A bounded lookup still returns a transaction found anywhere in range.
+        return try await interpret(response, txHash: txHash, host: host, boundedRetry: false)
     }
 }

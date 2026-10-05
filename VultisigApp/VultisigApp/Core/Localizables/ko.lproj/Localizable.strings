@@ -1658,6 +1658,7 @@
 "transactionBytes" = "트랜잭션 바이트";
 "transactionComplete" = "완료";
 "transactionDetails" = "트랜잭션 세부 정보";
+"transactionExpiredNotIncluded" = "포함되기 전에 만료됨. 네트워크가 이 거래를 포함하기 전에 폐기했으므로 아무것도 전송되지 않았고 네트워크 수수료도 부과되지 않았습니다. 다시 시도할 수 있습니다.";
 "transactionFailed" = "트랜잭션 실패";
 "transactionFailedDescription" = "문제가 발생했습니다. 다시 시도해 주세요.";
 "transactionFailedHighlight" = "실패";
