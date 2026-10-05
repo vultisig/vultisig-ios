@@ -126,11 +126,44 @@ final class SwapKitZcashTests: XCTestCase {
     // MARK: - Signer structural coverage
 
     func testZcashSignerProducesOneHashPerInput() throws {
-        let payload = try makePayload()
-        let hashes = try SwapKitZcashSigner.preSigningHashes(payload: payload, zcashBranchId: testBranchID)
+        let payload = try makeVaultOwnedPayload()
+        let hashes = try SwapKitZcashSigner.preSigningHashes(
+            payload: payload,
+            zcashBranchId: testBranchID,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )
         XCTAssertEqual(hashes.count, 1, "Fixture has 1 input → 1 preimage hash")
         for hash in hashes {
             XCTAssertEqual(hash.count, 64)
+        }
+    }
+
+    func testZcashPreSigningHashesRefuseInputsThisVaultDoesNotOwn() throws {
+        let payload = try makePayload()
+        XCTAssertThrowsError(try SwapKitZcashSigner.preSigningHashes(
+            payload: payload,
+            zcashBranchId: testBranchID,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
+            guard case SwapKitZcashSignerError.underlying(let inner) = err,
+                  case SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(let index) = inner else {
+                return XCTFail("expected .pubkeyDoesNotMatchInput, got \(err)")
+            }
+            XCTAssertEqual(index, 0)
+        }
+    }
+
+    func testZcashCompileRefusesInputsThisVaultDoesNotOwn() throws {
+        let payload = try makePayload()
+        XCTAssertThrowsError(try SwapKitZcashSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: [:],
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex,
+            zcashBranchId: testBranchID
+        )) { err in
+            guard case SwapKitZcashSignerError.underlying(.pubkeyDoesNotMatchInput) = err else {
+                return XCTFail("expected .pubkeyDoesNotMatchInput, got \(err)")
+            }
         }
     }
 
@@ -219,6 +252,30 @@ final class SwapKitZcashTests: XCTestCase {
             memo: nil,
             subProvider: response.subProvider,
             swapID: response.swapId
+        )
+    }
+
+    /// The captured ZEC PSBT with its P2PKH input rebound to the golden key.
+    private func makeVaultOwnedPayload() throws -> SwapKitSwapPayload {
+        let base = try makePayload()
+        let input = try SwapKitZcashSigner.buildSigningInput(payload: base, zcashBranchId: testBranchID)
+        let original = try XCTUnwrap(input.utxo.first?.script)
+        return SwapKitSwapPayload(
+            fromCoin: base.fromCoin,
+            toCoin: base.toCoin,
+            fromAmount: base.fromAmount,
+            toAmountDecimal: base.toAmountDecimal,
+            txType: base.txType,
+            txPayload: SwapKitVaultOwnedPSBT.replacing(
+                script: original,
+                with: SwapKitVaultOwnedPSBT.goldenP2PKHScript,
+                in: base.txPayload
+            ),
+            targetAddress: base.targetAddress,
+            inboundAddress: base.inboundAddress,
+            memo: base.memo,
+            subProvider: base.subProvider,
+            swapID: base.swapID
         )
     }
 
