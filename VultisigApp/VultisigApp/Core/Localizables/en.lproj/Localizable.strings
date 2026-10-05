@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
 "enterYourPassword" = "Enter your password";
 "enterYourSeedphrase" = "Enter your seedphrase";
-"enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";
-"enterYourSeedphraseSubtitleHighlight" = "12 or 24";
+"enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12, 15, 18, 21 or 24 words are supported.";
+"enterYourSeedphraseSubtitleHighlight" = "12, 15, 18, 21 or 24";
 "enterYourVaultsPassword" = "Enter your vault's password";
 "error" = "Error";
 "errorCopy" = "Copy";
@@ -945,7 +945,7 @@
 "mintCoin" = "Mint %@";
 "missingEncryptionKey" = "Encryption key is missing. Please try again.";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
+"mnemonicPlaceholder" = "Enter the 12, 15, 18, 21 or 24 words of your seedphrase";
 "modules" = "Modules";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
 "moreComingSoon" = "More coming soon";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "Please import another seed phrase";
 "seedPhraseImportTip" = "Tip: You can use a browser as a device";
 "seedPhraseInvalidError" = "Seed phrase is not correct, please verify all words.";
-"seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12 or 24 words.";
+"seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12, 15, 18, 21 or 24 words.";
 "selectAsset" = "Select asset";
 "selectAssetToSeeBalance" = "Select asset to see balance";
 "selectAtleastOneVault" = "Please select at least one vault and try again.";

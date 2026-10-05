@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "此电子邮件仅用于发送服务器备份";
 "enterYourPassword" = "输入您的密码";
 "enterYourSeedphrase" = "输入您的助记词";
-"enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
-"enterYourSeedphraseSubtitleHighlight" = "12或24";
+"enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12、15、18、21或24个单词的助记词。";
+"enterYourSeedphraseSubtitleHighlight" = "12、15、18、21或24";
 "enterYourVaultsPassword" = "输入您的金库密码";
 "error" = "错误";
 "errorCopy" = "复制";
@@ -945,7 +945,7 @@
 "mintCoin" = "铸造 %@";
 "missingEncryptionKey" = "缺少加密密钥。请重试。";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
+"mnemonicPlaceholder" = "输入您的助记词的12、15、18、21或24个单词";
 "modules" = "模块";
 "monthlyBackupTitle" = "不要忘记备份您的\n保险库份额并验证完整性";
 "moreComingSoon" = "更多即将推出";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "请导入另一个助记词";
 "seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";
 "seedPhraseInvalidError" = "助记词不正确，请验证所有单词。";
-"seedPhraseWordCountError" = "您输入了%d个单词。助记词必须是12个或24个单词。";
+"seedPhraseWordCountError" = "您输入了%d个单词。助记词必须是12、15、18、21或24个单词。";
 "selectAsset" = "选择资产";
 "selectAssetToSeeBalance" = "选择资产以查看余额";
 "selectAtleastOneVault" = "请至少选择一个保险库并重试";
