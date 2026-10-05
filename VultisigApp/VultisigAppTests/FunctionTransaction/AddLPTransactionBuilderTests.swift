@@ -587,6 +587,41 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         }
     }
 
+    /// CACAO has no inbound vault to compare, but its pool must still take adds
+    /// when the payload is built.
+    func testACacaoDepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.cacao(),
+            amount: "10",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.btcAddress,
+            toAddress: .empty
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+
+        for (pool, status) in [(AddLPFixture.ethPool, "Available"), (AddLPFixture.btcPool, "Suspended")] {
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: nil,
+                    mayachainService: mayaBtcService(pool: pool, poolStatus: status)
+                )
+                XCTFail("\(pool) \(status): an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
+        }
+
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: nil,
+            mayachainService: mayaBtcService()
+        )
+        XCTAssertNil(swapPayload)
+        XCTAssertNil(approvePayload)
+    }
+
     func testAMayaNativeDepositIsRefusedWhenTheInboundHalted() async throws {
         let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
 

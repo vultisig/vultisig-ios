@@ -42,18 +42,23 @@ enum ThorchainRouterDepositBuilder {
         let isMayaDeposit = tx.memoFunctionDictionary["protocol"] == AddLPTransactionBuilder.mayaProtocolMarker
 
         guard let approveSpend = approvalQuery(for: tx) else {
-            // A native MayaChain L1 deposit is a plain transfer to the inbound
-            // vault, built from the form's earlier read. It is checked again
-            // here, where the payload is built, because a vault can rotate or
-            // halt in between.
-            if isMayaDeposit, tx.coin.chain != .mayaChain {
-                let inbound = try await currentMayaInbound(for: tx, mayachainService: mayachainService)
-                // Base58 destinations are case-sensitive; only EVM hex is not.
-                let sameVault = tx.coin.chain.chainType == .EVM
-                    ? inbound.address.caseInsensitiveCompare(tx.toAddress) == .orderedSame
-                    : inbound.address == tx.toAddress
-                guard sameVault else {
-                    throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
+            // A native MayaChain deposit is a plain transfer to the inbound
+            // vault (or a CACAO `MsgDeposit`), built from the form's earlier
+            // read. It is checked again here, where the payload is built,
+            // because a vault can rotate and a pool or chain can halt in
+            // between.
+            if isMayaDeposit {
+                if tx.coin.chain == .mayaChain {
+                    try await requireMayaPoolOffered(for: tx, mayachainService: mayachainService)
+                } else {
+                    let inbound = try await currentMayaInbound(for: tx, mayachainService: mayachainService)
+                    // Base58 destinations are case-sensitive; only EVM hex is not.
+                    let sameVault = tx.coin.chain.chainType == .EVM
+                        ? inbound.address.caseInsensitiveCompare(tx.toAddress) == .orderedSame
+                        : inbound.address == tx.toAddress
+                    guard sameVault else {
+                        throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
+                    }
                 }
             }
             return (nil, nil)
@@ -128,16 +133,24 @@ enum ThorchainRouterDepositBuilder {
         guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             throw HelperError.runtimeError(String(format: "mayaInboundAddressNotFound".localized, chainName))
         }
+        try await requireMayaPoolOffered(for: tx, mayachainService: mayachainService)
+        guard !inbound.isLPActionsHalted else {
+            throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
+        }
+        return inbound
+    }
+
+    @MainActor
+    private static func requireMayaPoolOffered(
+        for tx: SendTransaction,
+        mayachainService: MayachainService
+    ) async throws {
         guard let pool = tx.memoFunctionDictionary["pool"],
               try await mayachainService.fetchLPPools().contains(where: {
                   $0.asset.caseInsensitiveCompare(pool) == .orderedSame
               }) else {
             throw HelperError.runtimeError("addLpDestinationUnavailable".localized)
         }
-        guard !inbound.isLPActionsHalted else {
-            throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
-        }
-        return inbound
     }
 
     /// The spend a router deposit's approve is decided for: an ERC20 LP add or
