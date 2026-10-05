@@ -164,8 +164,9 @@ extension Coin {
             // via NEAR Intents. Transparent-only by hard MPC constraint
             // (Vultisig can't manage shielded keys). Sapling-v4 PSBT signed
             // through `SwapKitZcashSigner` with ZIP-243 sighash via
-            // WalletCore `CoinType.zcash`.
-            return [.mayachain]
+            // WalletCore `CoinType.zcash`. THORChain routes ZEC natively
+            // (OP_RETURN memo to the inbound vault) via `UTXOChainsHelper`.
+            return [.thorchain, .mayachain]
         case .ripple:
             // Tier 1 L1 source — `.swapkit` enables XRP↔EVM / XRP↔SOL routes
             // via NEAR Intents. Deposit-only flow: SwapKit returns a per-route
