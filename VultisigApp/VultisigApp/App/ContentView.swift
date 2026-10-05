@@ -37,6 +37,9 @@ struct ContentView: View {
     @State private var deeplinkError: Error?
     @State private var pendingDeeplinks: [URL] = []
     @State private var pendingJoinConfirmation: URL?
+    /// Confirmations that arrived while the alert was already up. The alert's
+    /// link is never replaced, so what the user approves is what gets joined.
+    @State private var queuedJoinConfirmations: [URL] = []
     @State private var dismissSplashTask: Task<Void, Never>?
 
     init(navigationRouter: NavigationRouter) {
@@ -97,7 +100,10 @@ struct ContentView: View {
         // then lands the user somewhere other than the import flow the moment
         // that screen comes down.
         .onChange(of: appViewModel.isCoveredByAppLock) { _, isCovered in
-            guard !isCovered else { return }
+            guard !isCovered else {
+                holdJoinConfirmationsForUnlock()
+                return
+            }
             drainPendingDeeplinks()
         }
         // The document scene's hand-off is owned here rather than by `HomeScreen`,
@@ -229,15 +235,20 @@ struct ContentView: View {
             "joinKeygenLinkTitle".localized,
             isPresented: Binding(
                 get: { pendingJoinConfirmation != nil },
-                set: { if !$0 { pendingJoinConfirmation = nil } }
+                // Only the buttons resolve it, so a dismissal can't wipe a link
+                // that was promoted after the one the user just answered.
+                set: { _ in }
             )
         ) {
             Button("cancel".localized, role: .cancel) {
-                pendingJoinConfirmation = nil
+                advanceJoinConfirmation()
             }
             Button("joinKeygenLinkConfirm".localized) {
-                guard let url = pendingJoinConfirmation else { return }
-                pendingJoinConfirmation = nil
+                guard let url = advanceJoinConfirmation() else { return }
+                guard !appViewModel.isCoveredByAppLock else {
+                    pendingDeeplinks.append(url)
+                    return
+                }
                 routeDeeplink(url)
             }
         } message: {
@@ -459,10 +470,36 @@ struct ContentView: View {
 
     private func processDeeplink(_ incomingURL: URL) {
         if !incomingURL.isFileURL, DeeplinkRoutingPolicy.requiresJoinConfirmation(incomingURL) {
-            pendingJoinConfirmation = incomingURL
+            if pendingJoinConfirmation == nil {
+                pendingJoinConfirmation = incomingURL
+            } else {
+                queuedJoinConfirmations.append(incomingURL)
+            }
             return
         }
         routeDeeplink(incomingURL)
+    }
+
+    /// Clears the answered confirmation and returns it, promoting the next
+    /// queued one after a hop so the dismissing alert isn't re-presented mid-flight.
+    @discardableResult
+    private func advanceJoinConfirmation() -> URL? {
+        let answered = pendingJoinConfirmation
+        pendingJoinConfirmation = nil
+        if !queuedJoinConfirmations.isEmpty {
+            let next = queuedJoinConfirmations.removeFirst()
+            Task { @MainActor in pendingJoinConfirmation = next }
+        }
+        return answered
+    }
+
+    /// The lock cover must not sit over a live confirmation: take it down and
+    /// keep its links, in arrival order, to be confirmed again after unlock.
+    private func holdJoinConfirmationsForUnlock() {
+        let held = (pendingJoinConfirmation.map { [$0] } ?? []) + queuedJoinConfirmations
+        pendingJoinConfirmation = nil
+        queuedJoinConfirmations = []
+        pendingDeeplinks.insert(contentsOf: held, at: 0)
     }
 
     private func routeDeeplink(_ incomingURL: URL) {
