@@ -665,6 +665,9 @@
 "joiningKeygen" = "Joining key generation / share process, please wait...";
 "joinKeygen" = "Join Keygen";
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
+"joinKeygenLinkConfirm" = "Join";
+"joinKeygenLinkMessage" = "This link wants to join a vault keygen or reshare session. Only continue if you started it on another device.";
+"joinKeygenLinkTitle" = "Join Keygen Session?";
 "joinKeygenViewDescription" = "Your vault will start generating from the moment you finalize setting up your vault on your main device";
 "joinKeygenViewTitle" = "Waiting for other devices to join";
 "joinKeysign" = "Join Keysign";

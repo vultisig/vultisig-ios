@@ -665,6 +665,9 @@
 "joiningKeygen" = "Pridruživanje keygenu";
 "joinKeygen" = "Pridružite se Keygen-u";
 "joinKeygenConnectionDisclaimer" = "Imate problema s povezivanjem?\nKoristite osobnu hotspot vezu.\nIli pokušajte s drugom mrežom.";
+"joinKeygenLinkConfirm" = "Pridruži se";
+"joinKeygenLinkMessage" = "Ova poveznica želi se pridružiti sesiji keygen ili reshare za sef. Nastavite samo ako ste je pokrenuli na drugom uređaju.";
+"joinKeygenLinkTitle" = "Pridružiti se keygen sesiji?";
 "joinKeygenViewDescription" = "Vaš trezor će se početi generirati čim dovršite postavljanje na svom glavnom uređaju.";
 "joinKeygenViewTitle" = "Čekanje na pridruživanje drugih uređaja";
 "joinKeysign" = "Pridružite se Keysign-u";

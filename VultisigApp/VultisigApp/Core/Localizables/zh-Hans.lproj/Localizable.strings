@@ -665,6 +665,9 @@
 "joiningKeygen" = "正在加入密钥生成/份额过程，请稍候...";
 "joinKeygen" = "加入密钥生成";
 "joinKeygenConnectionDisclaimer" = "连接有问题？\n请改用个人热点连接。\n或尝试不同的网络";
+"joinKeygenLinkConfirm" = "加入";
+"joinKeygenLinkMessage" = "此链接想要加入金库的密钥生成或重新共享会话。仅当你在另一台设备上发起时才继续。";
+"joinKeygenLinkTitle" = "加入密钥生成会话？";
 "joinKeygenViewDescription" = "从您在主设备上完成设置保险库的那一刻起，您的保险库将开始生成";
 "joinKeygenViewTitle" = "等待其他设备加入";
 "joinKeysign" = "加入密钥签名";

@@ -36,6 +36,7 @@ struct ContentView: View {
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
     @State private var pendingDeeplinks: [URL] = []
+    @State private var pendingJoinConfirmation: URL?
     @State private var dismissSplashTask: Task<Void, Never>?
 
     init(navigationRouter: NavigationRouter) {
@@ -120,6 +121,10 @@ struct ContentView: View {
             )
         ) { notification in
             guard let url = notification.object as? URL else { return }
+            guard DeeplinkRoutingPolicy.allowsPushNotificationRoute(url) else {
+                logger.warning("Ignoring a push notification that is not a keysign request")
+                return
+            }
             handleDeeplink(url)
         }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
@@ -219,6 +224,24 @@ struct ContentView: View {
         .withError(error: $deeplinkError, errorType: .warning) {
             // Retry action - clear error to allow user to try again
             deeplinkError = nil
+        }
+        .alert(
+            "joinKeygenLinkTitle".localized,
+            isPresented: Binding(
+                get: { pendingJoinConfirmation != nil },
+                set: { if !$0 { pendingJoinConfirmation = nil } }
+            )
+        ) {
+            Button("cancel".localized, role: .cancel) {
+                pendingJoinConfirmation = nil
+            }
+            Button("joinKeygenLinkConfirm".localized) {
+                guard let url = pendingJoinConfirmation else { return }
+                pendingJoinConfirmation = nil
+                routeDeeplink(url)
+            }
+        } message: {
+            Text("joinKeygenLinkMessage".localized)
         }
     }
 
@@ -435,6 +458,14 @@ struct ContentView: View {
     }
 
     private func processDeeplink(_ incomingURL: URL) {
+        if !incomingURL.isFileURL, DeeplinkRoutingPolicy.requiresJoinConfirmation(incomingURL) {
+            pendingJoinConfirmation = incomingURL
+            return
+        }
+        routeDeeplink(incomingURL)
+    }
+
+    private func routeDeeplink(_ incomingURL: URL) {
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }

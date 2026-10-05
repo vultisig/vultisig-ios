@@ -665,6 +665,9 @@
 "joiningKeygen" = "Uniéndose al keygen";
 "joinKeygen" = "Unirse a Keygen";
 "joinKeygenConnectionDisclaimer" = "¿Tienes problemas para conectar?\nUsa una conexión de punto de acceso personal.\nO prueba con otra red.";
+"joinKeygenLinkConfirm" = "Unirse";
+"joinKeygenLinkMessage" = "Este enlace quiere unirse a una sesión de keygen o reshare de una bóveda. Continúa solo si la iniciaste en otro dispositivo.";
+"joinKeygenLinkTitle" = "¿Unirse a la sesión de keygen?";
 "joinKeygenViewDescription" = "Tu vault comenzará a generarse en cuanto completes la configuración en tu dispositivo principal.";
 "joinKeygenViewTitle" = "Esperando que otros dispositivos se unan";
 "joinKeysign" = "Unirse a Keysign";
