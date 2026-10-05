@@ -931,6 +931,7 @@
 "mayaCacaoStakingUnavailableWarning" = "Die Verfügbarkeit von MAYAChain-Staking konnte nicht überprüft werden. Bitte versuche es später erneut.";
 "mayaChainNotEnabledForLP" = "MayaChain ist in diesem Tresor nicht aktiviert oder die Adresse des gepaarten Assets fehlt. Bitte aktiviere MayaChain, um diese Funktion zu nutzen.";
 "mayaInboundAddressNotFound" = "%@ wird derzeit von MayaChain nicht unterstützt.";
+"mayaLpTargetPool" = "Ziel-Pool: %@";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Coins zusammenführen";

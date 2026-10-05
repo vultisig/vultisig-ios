@@ -31,8 +31,8 @@ enum FunctionTransactionType: Hashable {
     /// no position exists yet: the user picks the pool, and the asset deposited
     /// follows that choice.
     case addThorchainLP(coin: CoinMeta)
-    /// The MayaChain counterpart of `addThorchainLP`: the pool is chosen first
-    /// and the memo names the vault's CACAO address.
+    /// The asset side of a MayaChain add: the chain's native coin into the pool
+    /// that chain is fixed to, with the memo naming the vault's CACAO address.
     case addMayaLP(coin: CoinMeta)
     case removeLP(position: LPPosition)
     case cosmosDelegate(coin: CoinMeta)

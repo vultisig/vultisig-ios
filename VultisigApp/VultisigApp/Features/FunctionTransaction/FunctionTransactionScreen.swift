@@ -143,7 +143,7 @@ struct FunctionTransactionScreen: View {
             case .addMayaLP(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
                     AddLPTransactionScreen(
-                        viewModel: AddLPTransactionViewModel.chain(coin: coin, protocolChain: .mayaChain, vault: vault),
+                        viewModel: AddLPTransactionViewModel.mayaChain(coin: coin, vault: vault),
                         onVerify: onVerify
                     )
                 }

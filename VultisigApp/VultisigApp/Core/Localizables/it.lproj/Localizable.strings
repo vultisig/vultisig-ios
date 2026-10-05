@@ -931,6 +931,7 @@
 "mayaCacaoStakingUnavailableWarning" = "Impossibile verificare la disponibilità dello staking su MAYAChain. Riprova più tardi.";
 "mayaChainNotEnabledForLP" = "MayaChain non è abilitato su questo caveau oppure manca l'indirizzo dell'asset abbinato. Abilita MayaChain per utilizzare questa funzione.";
 "mayaInboundAddressNotFound" = "%@ non è attualmente supportato da MayaChain.";
+"mayaLpTargetPool" = "Pool di destinazione: %@";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Unisci monete";

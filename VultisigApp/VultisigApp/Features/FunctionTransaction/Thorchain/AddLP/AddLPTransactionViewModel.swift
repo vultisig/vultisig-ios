@@ -186,17 +186,13 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         )
     }
 
-    /// A deposit opened from a chain's action list, where no position exists
-    /// yet and the pool is the first thing the user chooses.
-    static func chain(
-        coin: Coin,
-        protocolChain: Chain = .thorChain,
-        vault: Vault
-    ) -> AddLPTransactionViewModel {
+    /// A THORChain deposit opened from a chain's action list, where no position
+    /// exists yet and the pool is the first thing the user chooses.
+    static func chain(coin: Coin, vault: Vault) -> AddLPTransactionViewModel {
         AddLPTransactionViewModel(
             coin: coin,
-            pairedCoin: vault.nativeCoin(for: protocolChain),
-            protocolChain: protocolChain,
+            pairedCoin: vault.nativeCoin(for: .thorChain),
+            protocolChain: .thorChain,
             poolSource: .chosen,
             vault: vault,
             // Deliberately not seeded. The chain's own gas asset pays the fee
@@ -204,6 +200,27 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             // can never be signed — and unlike a position deposit, the asset
             // here is not chosen yet when the form opens.
             prefillsFullBalance: false
+        )
+    }
+
+    /// The asset side of a MayaChain add, opened from a chain's action list.
+    /// The chain's native coin goes into the pool that chain is fixed to, so
+    /// there is nothing to choose.
+    static func mayaChain(
+        coin: Coin,
+        vault: Vault,
+        resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
+        locale: Locale = .current
+    ) -> AddLPTransactionViewModel {
+        AddLPTransactionViewModel(
+            coin: coin,
+            pairedCoin: vault.nativeCoin(for: .mayaChain),
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: MayaLPPools.nativePool(for: coin.chain)),
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: resolveInboundAddresses,
+            locale: locale
         )
     }
 
@@ -302,6 +319,15 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         }
 
         pairedAddress = vault.nativeCoin(for: chain)?.address
+    }
+
+    /// The fixed pool an asset-side MayaChain deposit names, shown in place of a
+    /// picker. Nil whenever the user chooses the pool or the pool is not Maya's
+    /// asset side.
+    var fixedPoolTitle: String? {
+        guard protocolChain == .mayaChain, coin.chain != .mayaChain,
+              case .fixed = poolSource, let poolName else { return nil }
+        return String(format: "mayaLpTargetPool".localized, poolName)
     }
 
     /// Whether the form shows a pool picker at all.

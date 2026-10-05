@@ -931,6 +931,7 @@
 "mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
 "mayaChainNotEnabledForLP" = "MayaChain is not enabled on this vault, or the paired asset address is missing. Please enable MayaChain to use this feature.";
 "mayaInboundAddressNotFound" = "%@ is not currently supported by MayaChain.";
+"mayaLpTargetPool" = "Target Pool: %@";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";

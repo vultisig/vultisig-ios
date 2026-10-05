@@ -72,6 +72,11 @@ struct AddLPTransactionScreen: View {
             if viewModel.showsPoolPicker {
                 poolPicker
             }
+            if let title = viewModel.fixedPoolTitle {
+                Text(title)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
             if viewModel.canRetryPools {
                 PrimaryButton(title: "retry", type: .secondary) {
                     viewModel.loadPools()
@@ -91,6 +96,7 @@ struct AddLPTransactionScreen: View {
 
     var showsPoolSection: Bool {
         viewModel.showsPoolPicker
+            || viewModel.fixedPoolTitle != nil
             || viewModel.canRetryPools
             || viewModel.blockingMessage != nil
             || !viewModel.isProtocolChainEnabled

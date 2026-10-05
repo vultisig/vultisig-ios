@@ -905,37 +905,61 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         )
     }
 
-    /// Opened from a chain's action list: the pools are MayaChain's, the memo
-    /// names the CACAO address, and an ERC-20 deposit goes to Maya's router.
-    func testAMayaChainActionListDepositUsesMayaPoolsAndTheMayaRouter() async throws {
+    /// Opened from a chain's action list the pool is fixed by the chain and
+    /// there is nothing to pick: the native coin goes to Maya's inbound vault
+    /// naming the CACAO address.
+    func testAMayaChainActionListDepositUsesTheChainsFixedPool() async throws {
         let ether = AddLPFixture.ether()
+        let cacao = AddLPFixture.cacao()
+        let vault = FunctionActionFixture.makeVault(coins: [ether, cacao])
+
+        let viewModel = AddLPTransactionViewModel.mayaChain(
+            coin: ether,
+            vault: vault,
+            resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+
+        XCTAssertFalse(viewModel.showsPoolPicker)
+        XCTAssertEqual(viewModel.poolName, AddLPFixture.ethPool)
+        XCTAssertEqual(viewModel.fixedPoolTitle, String(format: "mayaLpTargetPool".localized, AddLPFixture.ethPool))
+
+        viewModel.amountField.value = "1"
+        let built = await viewModel.prepareTransactionBuilder()
+        let builder = try XCTUnwrap(built)
+
+        XCTAssertEqual(builder.toAddress, AddLPFixture.mayaEthVault)
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.ethPool):\(AddLPFixture.mayaAddress)")
+        XCTAssertEqual(builder.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
+    }
+
+    /// The ERC-20 asset side stays reachable from a position: it goes to Maya's
+    /// router, not THORChain's.
+    func testAMayaChainPositionDepositOfAnERC20GoesToTheMayaRouter() async throws {
         let usdc = AddLPFixture.usdc()
         let cacao = AddLPFixture.cacao()
-        let vault = FunctionActionFixture.makeVault(coins: [ether, usdc, cacao])
+        let vault = FunctionActionFixture.makeVault(coins: [usdc, cacao])
 
         let viewModel = AddLPTransactionViewModel(
-            coin: ether,
-            pairedCoin: vault.nativeCoin(for: .mayaChain),
+            coin: usdc,
+            pairedCoin: cacao,
             protocolChain: .mayaChain,
-            poolSource: .chosen,
+            poolSource: .fixed(pool: AddLPFixture.usdcPool),
             vault: vault,
             prefillsFullBalance: false,
             resolveInboundAddresses: AddLPFixture.healthyMayaFetch,
-            fetchPools: { [AddLPFixture.pool(AddLPFixture.ethPool), AddLPFixture.pool(AddLPFixture.usdcPool)] },
+            fetchPools: { [] },
             approvalResolver: StubERC20ApprovalResolver(.approve),
             locale: Locale(identifier: "en_US")
         )
         viewModel.onLoad()
-        try await awaitPools(viewModel)
-
-        viewModel.select(pool: try pool(AddLPFixture.usdcPool, in: viewModel))
         viewModel.amountField.value = "10"
         let built = await viewModel.prepareTransactionBuilder()
         let builder = try XCTUnwrap(built)
 
         XCTAssertEqual(builder.toAddress, AddLPFixture.mayaEthRouter)
         XCTAssertEqual(builder.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.mayaAddress)")
-        XCTAssertEqual(builder.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
     }
 
     /// A vault with no CACAO cannot name a paired address, so it is offered the
@@ -943,7 +967,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     func testAMayaChainDepositWithoutCacaoIsNotEnabled() {
         let bitcoin = AddLPFixture.bitcoin()
         let vault = FunctionActionFixture.makeVault(coins: [bitcoin])
-        let viewModel = AddLPTransactionViewModel.chain(coin: bitcoin, protocolChain: .mayaChain, vault: vault)
+        let viewModel = AddLPTransactionViewModel.mayaChain(coin: bitcoin, vault: vault)
 
         XCTAssertFalse(viewModel.isProtocolChainEnabled)
         XCTAssertEqual(viewModel.blockingMessage, "mayaChainNotEnabledForLP".localized)

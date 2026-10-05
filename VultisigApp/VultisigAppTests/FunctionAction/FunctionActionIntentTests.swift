@@ -274,8 +274,9 @@ final class FunctionActionIntentTests: XCTestCase {
         }
     }
 
-    /// Add Maya LP maps to its own intent, carrying the entry asset.
-    func testAddMayaLPMapsToTheEntryAsset() {
+    /// Add Maya LP is the chain's native coin into a fixed pool, so a token
+    /// screen still opens the native asset's form.
+    func testAddMayaLPMapsToTheChainsNativeAsset() {
         let usdc = AddLPFixture.usdc()
 
         guard case .addMayaLP(let mappedCoin) = FunctionAction.addMayaLP.transactionType(
@@ -285,7 +286,8 @@ final class FunctionActionIntentTests: XCTestCase {
             return XCTFail("Add Maya LP must map to its own intent")
         }
 
-        XCTAssertEqual(mappedCoin, usdc.toCoinMeta())
+        XCTAssertEqual(mappedCoin.chain, .ethereum)
+        XCTAssertTrue(mappedCoin.isNativeToken)
     }
 
     /// A MayaChain pool credits a CACAO account the memo has to name, so CACAO

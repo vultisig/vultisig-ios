@@ -931,6 +931,7 @@
 "mayaCacaoStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost MAYAChain stakinga. Pokušajte ponovno kasnije.";
 "mayaChainNotEnabledForLP" = "MayaChain nije omogućen na ovom vaultu ili nedostaje adresa uparene imovine. Molimo omogućite MayaChain da biste koristili ovu značajku.";
 "mayaInboundAddressNotFound" = "%@ trenutačno nije podržan na MayaChainu.";
+"mayaLpTargetPool" = "Ciljani pool: %@";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "mergeCoins" = "Spoji novčiće";

@@ -139,9 +139,9 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // of that token, and pinning would silently retarget it.
             return .addThorchainLP(coin: coin.toCoinMeta())
         case .addMayaLP:
-            // Same shape as `.addThorLP`: the entry asset only, with the pool
-            // picker and the vault's own coins deciding what is deposited.
-            return .addMayaLP(coin: coin.toCoinMeta())
+            // The pool is fixed by the chain and only its native coin deposits
+            // into it, so a token screen still opens the native asset's form.
+            return .addMayaLP(coin: nativeAsset(for: coin))
         case .withdrawSecuredAsset:
             // A `SECURE-` redemption is signed against the secured asset the
             // user picks inside the form, but the picker itself reads the
