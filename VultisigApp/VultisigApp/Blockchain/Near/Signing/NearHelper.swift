@@ -243,8 +243,13 @@ enum NearHelper {
         return Data(bytes)
     }
 
+    /// `^[0-9]+$`, the only amount spelling every NEAR co-signer accepts.
+    static func isUnsignedDecimal(_ text: String) -> Bool {
+        !text.isEmpty && text.allSatisfy { $0.isASCII && $0.isNumber }
+    }
+
     private static func gasFeeInteger(_ text: String, maximum: BigInt) throws -> BigInt {
-        guard !text.isEmpty, text.allSatisfy({ $0.isASCII && $0.isNumber }), let parsed = BigInt(text) else {
+        guard isUnsignedDecimal(text), let parsed = BigInt(text) else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, text))
         }
         guard parsed <= maximum else {

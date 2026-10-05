@@ -124,6 +124,9 @@ extension KeysignPayload: ProtoMappable {
         if coin.chain.chainType == .EVM {
             try proto.requireSwapKitWireFromAmount()
         }
+        if coin.chain == .near {
+            try proto.requireNearWireAmounts()
+        }
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
@@ -241,6 +244,20 @@ private extension VSKeysignPayload {
         else { return }
         guard swap.fromAmount.isUnsignedDecimal else {
             throw EVMSwapTxGuardError.malformedAmount(swap.fromAmount)
+        }
+    }
+
+    /// Refuses the NEAR amount spellings `BigInt` parsing would normalise into a
+    /// signable payload. Mirrors the SDK resolver's `NEAR_UNSIGNED_DECIMAL` and
+    /// deposit-amount checks and Android's `requireNearWireAmounts`.
+    func requireNearWireAmounts() throws {
+        guard NearHelper.isUnsignedDecimal(toAmount) else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, toAmount))
+        }
+        if case .swapkitSwapPayload(let swap) = swapPayload, swap.fromAmount != toAmount {
+            throw HelperError.runtimeError(
+                String(format: "nearErrorSwapKitDepositAmountMismatch".localized, swap.fromAmount, toAmount)
+            )
         }
     }
 }
