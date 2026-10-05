@@ -489,6 +489,7 @@ enum SolanaHelper {
         // Every device derives the pre-image before the ceremony, so a transaction
         // the vault can never sign is refused here rather than after a full TSS round.
         _ = try signerSlotIndex(of: pubkeyData, in: txData, parsed: parsed)
+        try requireRawComputeBudgetWithinCeiling(message: parsed.message)
         return [parsed.message.hexString]
     }
 
@@ -508,6 +509,9 @@ enum SolanaHelper {
         }
 
         let parsed = try extractSolanaMessageBytes(from: txData)
+        // Re-checked at the splice: the pre-image may have been recovered from the
+        // relay, so this device cannot assume its own pre-sign check ran.
+        try requireRawComputeBudgetWithinCeiling(message: parsed.message)
 
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignature(preHash: parsed.message)
