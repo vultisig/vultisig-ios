@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "此保险库未启用 MayaChain，或缺少配对资产的地址。请启用 MayaChain 以使用此功能。";
 "mayaInboundAddressNotFound" = "MayaChain 目前不支持 %@。";
 "mayaLpAddressMismatch" = "您在 %@ 中的仓位已与其他地址配对。MayaChain 将退回此笔存入。";
+"mayaLpBelowInboundDust" = "最小发送金额为 %@ %@。%@ 要求此限制以防止垃圾交易。";
+"mayaLpHaltedChain" = "%@ 上的流动性操作目前已停止。MayaChain 将退回此交易。";
+"mayaLpPaused" = "已暂停 %@ 的添加流动性。MayaChain 将退回此交易。";
+"mayaLpPoolNotAvailable" = "池 %@ 目前不可用于存款。";
 "mayaLpSingleSidedPosition" = "您在 %@ 中已有仅 CACAO 的仓位。MayaChain 只接受向其中添加 CACAO，因此此笔存入将被退回。";
+"mayaLpStagedUnpaired" = "池 %@ 处于预备（staged）状态，仅接受与另一侧配对的添加。MayaChain 将退回此交易。";
 "mayaLpTargetPool" = "目标池：%@";
 "mayaLpUnverified" = "无法连接到 MayaChain 以检查您的仓位。请重试。";
 "memo" = "备忘录";

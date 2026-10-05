@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "이 볼트에서 MayaChain이 활성화되어 있지 않거나 짝이 되는 자산의 주소가 없습니다. 이 기능을 사용하려면 MayaChain을 활성화하세요.";
 "mayaInboundAddressNotFound" = "%@은(는) 현재 MayaChain에서 지원되지 않습니다.";
 "mayaLpAddressMismatch" = "%@ 포지션이 다른 주소와 연결되어 있습니다. MayaChain이 이 입금을 환불합니다.";
+"mayaLpBelowInboundDust" = "최소 전송 금액은 %@ %@입니다. %@에서 스팸 방지를 위해 필요합니다.";
+"mayaLpHaltedChain" = "%@의 유동성 작업이 현재 중단되었습니다. MayaChain이 이 거래를 환불합니다.";
+"mayaLpPaused" = "%@에 대한 유동성 추가가 일시 중지되었습니다. MayaChain이 이 거래를 환불합니다.";
+"mayaLpPoolNotAvailable" = "풀 %@은(는) 현재 입금에 사용할 수 없습니다.";
 "mayaLpSingleSidedPosition" = "%@에 이미 CACAO 단독 포지션이 있습니다. MayaChain은 여기에 CACAO만 받으므로 이 입금은 환불됩니다.";
+"mayaLpStagedUnpaired" = "풀 %@은(는) 준비(staged) 상태이며 반대쪽과 짝을 이룬 추가만 허용합니다. MayaChain이 이 거래를 환불합니다.";
 "mayaLpTargetPool" = "대상 풀: %@";
 "mayaLpUnverified" = "포지션을 확인하기 위해 MayaChain에 연결할 수 없습니다. 다시 시도해 주세요.";
 "memo" = "메모";

@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "MayaChain nije omogućen na ovom vaultu ili nedostaje adresa uparene imovine. Molimo omogućite MayaChain da biste koristili ovu značajku.";
 "mayaInboundAddressNotFound" = "%@ trenutačno nije podržan na MayaChainu.";
 "mayaLpAddressMismatch" = "Vaša pozicija u %@ uparena je s drugom adresom. MayaChain bi vratio ovaj polog.";
+"mayaLpBelowInboundDust" = "Minimalni iznos za slanje je %@ %@. %@ zahtijeva ovo kako bi se spriječila neželjena pošta.";
+"mayaLpHaltedChain" = "Akcije likvidnosti na %@ su trenutno zaustavljene. MayaChain bi vratio ovu transakciju.";
+"mayaLpPaused" = "Dodavanje likvidnosti je pauzirano za %@. MayaChain bi vratio ovu transakciju.";
+"mayaLpPoolNotAvailable" = "Pool %@ trenutno nije dostupan za depozite.";
 "mayaLpSingleSidedPosition" = "Već imate poziciju samo u CACAO-u u %@. MayaChain u nju prihvaća samo CACAO, pa bi ovaj polog bio vraćen.";
+"mayaLpStagedUnpaired" = "Pool %@ je u stanju „staged“ i prihvaća samo uparene depozite s drugom stranom. MayaChain bi vratio ovu transakciju.";
 "mayaLpTargetPool" = "Ciljani pool: %@";
 "mayaLpUnverified" = "Nije moguće dohvatiti MayaChain radi provjere vaše pozicije. Pokušajte ponovno.";
 "memo" = "Bilješka";

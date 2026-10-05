@@ -13,9 +13,16 @@ struct MayaLPChecks {
     /// the record cannot be read.
     var liquidityProvider: (_ pool: String, _ cacaoAddress: String) async throws -> MayaLiquidityProvider?
 
+    /// The first reason the add would be refunded, or nil. `isPairedAdd` is
+    /// whether the memo names the other side's address.
+    var preflight: (_ pool: String, _ isPairedAdd: Bool) async -> MayaLPPreflightBlock? = { _, _ in nil }
+
     static let live = MayaLPChecks(
         liquidityProvider: { pool, cacaoAddress in
             try await MayaChainAPIService().getLiquidityProvider(pool: pool, address: cacaoAddress)
+        },
+        preflight: { pool, isPairedAdd in
+            await MayaLPPreflight.live(pool: pool, isPairedAdd: isPairedAdd)
         }
     )
 }

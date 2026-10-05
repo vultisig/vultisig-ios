@@ -953,6 +953,126 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         XCTAssertEqual(reads, 0)
     }
 
+    // MARK: - MayaChain preflight
+
+    func testABlockedPreflightStopsTheCacaoSide() async {
+        let checks = MayaLPChecks(
+            liquidityProvider: { _, _ in nil },
+            preflight: { pool, _ in .lpPaused(pool: pool) }
+        )
+        let viewModel = makeMayaViewModel(side: .coin1, checks: checks)
+        viewModel.onLoad()
+        viewModel.amountField.value = "1"
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaLpPaused".localized, AddLPFixture.btcPool)
+        )
+    }
+
+    func testEachBlockHasItsOwnMessage() {
+        XCTAssertEqual(
+            MayaLPPreflightBlock.chainHalted(chainPrefix: "BTC").message,
+            String(format: "mayaLpHaltedChain".localized, "BTC")
+        )
+        XCTAssertEqual(
+            MayaLPPreflightBlock.poolNotAvailable(pool: "BTC.BTC").message,
+            String(format: "mayaLpPoolNotAvailable".localized, "BTC.BTC")
+        )
+        XCTAssertEqual(
+            MayaLPPreflightBlock.stagedPoolRequiresPairedAdd(pool: "BTC.BTC").message,
+            String(format: "mayaLpStagedUnpaired".localized, "BTC.BTC")
+        )
+    }
+
+    /// A paired add is the only kind a Staged pool accepts, so what the memo
+    /// will carry is what the preflight is asked about.
+    func testThePreflightIsToldWhetherTheAddIsPaired() async {
+        var asked: [Bool] = []
+        let record = AddLPFixture.record(units: "900")
+        let checks = MayaLPChecks(
+            liquidityProvider: { _, _ in record },
+            preflight: { _, paired in
+                asked.append(paired)
+                return nil
+            }
+        )
+
+        let cacaoSide = makeMayaViewModel(side: .coin1, checks: checks)
+        cacaoSide.onLoad()
+        cacaoSide.amountField.value = "1"
+        _ = await cacaoSide.prepareTransactionBuilder()
+
+        let freshChecks = MayaLPChecks(
+            liquidityProvider: { _, _ in nil },
+            preflight: { _, paired in
+                asked.append(paired)
+                return nil
+            }
+        )
+        let assetSide = makeMayaViewModel(side: .coin2, checks: freshChecks)
+        assetSide.onLoad()
+        assetSide.amountField.value = "0.5"
+        _ = await assetSide.prepareTransactionBuilder()
+
+        // The first CACAO side fell back to single-sided; the asset side pairs.
+        XCTAssertEqual(asked, [false, true])
+    }
+
+    // MARK: - Inbound dust
+
+    private func makeDustViewModel(dust: String?, amount: String) -> AddLPTransactionViewModel {
+        let cacao = AddLPFixture.cacao()
+        let bitcoin = AddLPFixture.bitcoin()
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
+        let viewModel = AddLPTransactionViewModel(
+            coin: bitcoin,
+            pairedCoin: cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: AddLPFixture.btcPool),
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: { _ in
+                [AddLPFixture.inbound(chain: "BTC", address: AddLPFixture.mayaBtcVault, router: nil, dustThreshold: dust)]
+            },
+            fetchPools: { [] },
+            mayaChecks: AddLPFixture.noRecordChecks,
+            locale: Locale(identifier: "en_US")
+        )
+        viewModel.onLoad()
+        viewModel.amountField.value = amount
+        return viewModel
+    }
+
+    /// Bifrost ignores an inbound below the chain's dust threshold, published
+    /// in 1e8 fixed point: the deposit confirms and is never credited.
+    func testAnAssetDepositBelowTheInboundDustThresholdIsRefused() async {
+        let viewModel = makeDustViewModel(dust: "10000", amount: "0.00005")
+
+        let built = await viewModel.prepareTransactionBuilder()
+
+        XCTAssertNil(built)
+        XCTAssertEqual(
+            viewModel.blockingMessage,
+            String(format: "mayaLpBelowInboundDust".localized, "0.0001", "BTC", "Bitcoin")
+        )
+    }
+
+    func testAnAssetDepositAtTheDustThresholdBuilds() async {
+        let viewModel = makeDustViewModel(dust: "10000", amount: "0.0001")
+        let built = await viewModel.prepareTransactionBuilder()
+        XCTAssertNotNil(built)
+    }
+
+    func testAnInboundWithNoDustThresholdBuilds() async {
+        let viewModel = makeDustViewModel(dust: nil, amount: "0.00000001")
+        let built = await viewModel.prepareTransactionBuilder()
+        XCTAssertNotNil(built)
+    }
+
     /// Without the paired address `+:POOL` is a different, asymmetric
     /// operation, so a MayaChain deposit refuses to build instead.
     func testAMayachainDepositWithoutAPairedAddressDoesNotBuild() async throws {

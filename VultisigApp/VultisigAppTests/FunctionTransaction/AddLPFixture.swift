@@ -105,7 +105,8 @@ enum AddLPFixture {
         address: String,
         router: String?,
         halted: Bool = false,
-        lpActionsPaused: Bool = false
+        lpActionsPaused: Bool = false,
+        dustThreshold: String? = nil
     ) -> InboundAddress {
         InboundAddress(
             chain: chain,
@@ -117,7 +118,7 @@ enum AddLPFixture {
             chain_lp_actions_paused: lpActionsPaused,
             gas_rate: "10",
             gas_rate_units: "gwei",
-            dust_threshold: nil,
+            dust_threshold: dustThreshold,
             outbound_fee: nil,
             outbound_tx_size: nil
         )

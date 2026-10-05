@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "MayaChain ist in diesem Tresor nicht aktiviert oder die Adresse des gepaarten Assets fehlt. Bitte aktiviere MayaChain, um diese Funktion zu nutzen.";
 "mayaInboundAddressNotFound" = "%@ wird derzeit von MayaChain nicht unterstützt.";
 "mayaLpAddressMismatch" = "Ihre Position in %@ ist mit einer anderen Adresse gekoppelt. MayaChain würde diese Einzahlung erstatten.";
+"mayaLpBelowInboundDust" = "Der Mindestsendebetrag beträgt %@ %@. %@ erfordert dies, um Spam zu verhindern.";
+"mayaLpHaltedChain" = "Liquiditätsaktionen auf %@ sind derzeit angehalten. MayaChain würde diese Transaktion erstatten.";
+"mayaLpPaused" = "Liquidität hinzufügen ist für %@ pausiert. MayaChain würde diese Transaktion erstatten.";
+"mayaLpPoolNotAvailable" = "Pool %@ ist derzeit nicht für Einzahlungen verfügbar.";
 "mayaLpSingleSidedPosition" = "Sie haben bereits eine reine CACAO-Position in %@. MayaChain nimmt dort nur CACAO an, daher würde diese Einzahlung erstattet.";
+"mayaLpStagedUnpaired" = "Pool %@ ist im Status „Staged“ und akzeptiert nur gepaarte Einzahlungen beider Seiten. MayaChain würde diese Transaktion erstatten.";
 "mayaLpTargetPool" = "Ziel-Pool: %@";
 "mayaLpUnverified" = "MayaChain konnte nicht erreicht werden, um Ihre Position zu prüfen. Bitte erneut versuchen.";
 "memo" = "Memo";

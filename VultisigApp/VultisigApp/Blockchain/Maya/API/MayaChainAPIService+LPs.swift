@@ -60,6 +60,19 @@ extension MayaChainAPIService {
         }
     }
 
+    /// The node's pools with their status and pending inbound liquidity.
+    func getNodePools() async throws -> [MayaChainPool] {
+        try await httpClient.request(MayaChainLPsAPI.getNodePools, responseType: [MayaChainPool].self).data
+    }
+
+    /// Every mimir key as a number. Read raw because the LP rules look keys up by
+    /// name (`PAUSELP<CHAIN>`) and a value that is not a number must not fail the
+    /// whole read.
+    func getMimirValues() async throws -> [String: Int64] {
+        let response = try await httpClient.request(MayaChainBondsAPI.getMimir, responseType: [String: LossyInt64].self)
+        return response.data.compactMapValues(\.value)
+    }
+
     /// Fetches complete LP positions for an address with calculated current values
     /// - Parameters:
     ///   - address: The MayaChain or asset address to lookup
@@ -134,5 +147,14 @@ extension MayaChainAPICache {
 
     func cachePoolStats(_ data: [MayaPoolStats]) {
         MayaChainAPICache.poolStatsCache = (data, Date())
+    }
+}
+
+/// An integer that reads as nil rather than failing its container.
+struct LossyInt64: Decodable {
+    let value: Int64?
+
+    init(from decoder: Decoder) throws {
+        value = try? decoder.singleValueContainer().decode(Int64.self)
     }
 }

@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "MayaChain non è abilitato su questo caveau oppure manca l'indirizzo dell'asset abbinato. Abilita MayaChain per utilizzare questa funzione.";
 "mayaInboundAddressNotFound" = "%@ non è attualmente supportato da MayaChain.";
 "mayaLpAddressMismatch" = "La tua posizione in %@ è abbinata a un altro indirizzo. MayaChain rimborserebbe questo deposito.";
+"mayaLpBelowInboundDust" = "L'importo minimo di invio è %@ %@. %@ lo richiede per prevenire lo spam.";
+"mayaLpHaltedChain" = "Le azioni di liquidità su %@ sono attualmente sospese. MayaChain rimborserebbe questa transazione.";
+"mayaLpPaused" = "Aggiungere liquidità è in pausa per %@. MayaChain rimborserebbe questa transazione.";
+"mayaLpPoolNotAvailable" = "Il pool %@ non è attualmente disponibile per i depositi.";
 "mayaLpSingleSidedPosition" = "Hai già una posizione solo CACAO in %@. MayaChain vi accetta solo CACAO, quindi questo deposito verrebbe rimborsato.";
+"mayaLpStagedUnpaired" = "Il pool %@ è in stato «staged» e accetta solo depositi abbinati all'altro lato. MayaChain rimborserebbe questa transazione.";
 "mayaLpTargetPool" = "Pool di destinazione: %@";
 "mayaLpUnverified" = "Impossibile contattare MayaChain per verificare la tua posizione. Riprova.";
 "memo" = "Memo";

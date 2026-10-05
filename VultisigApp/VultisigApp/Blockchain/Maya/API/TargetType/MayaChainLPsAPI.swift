@@ -13,6 +13,8 @@ enum MayaChainLPsAPI: TargetType {
     /// A vault's record on one pool, read from the node: Midgard has no view of
     /// a half-open add.
     case getLiquidityProvider(pool: String, address: String)
+    /// The node's pool list, with status and pending inbound liquidity.
+    case getNodePools
 
     var baseURL: URL {
         switch self {
@@ -20,7 +22,7 @@ enum MayaChainLPsAPI: TargetType {
             return URL(string: "https://midgard.mayachain.info")!
         case .getMemberDetails:
             return URL(string: "https://midgard.mayachain.info")!
-        case .getLiquidityProvider:
+        case .getLiquidityProvider, .getNodePools:
             return URL(string: "https://mayanode.mayachain.info")!
         }
     }
@@ -33,12 +35,14 @@ enum MayaChainLPsAPI: TargetType {
             return "/v2/member/\(address)"
         case .getLiquidityProvider(let pool, let address):
             return "/mayachain/pool/\(pool)/liquidity_provider/\(address)"
+        case .getNodePools:
+            return "/mayachain/pools"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getPoolStats, .getMemberDetails, .getLiquidityProvider:
+        case .getPoolStats, .getMemberDetails, .getLiquidityProvider, .getNodePools:
             return .get
         }
     }
@@ -55,7 +59,7 @@ enum MayaChainLPsAPI: TargetType {
             }
             return .requestParameters(params, .urlEncoding)
 
-        case .getMemberDetails, .getLiquidityProvider:
+        case .getMemberDetails, .getLiquidityProvider, .getNodePools:
             return .requestPlain
         }
     }

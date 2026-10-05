@@ -932,7 +932,12 @@
 "mayaChainNotEnabledForLP" = "MayaChain is not enabled on this vault, or the paired asset address is missing. Please enable MayaChain to use this feature.";
 "mayaInboundAddressNotFound" = "%@ is not currently supported by MayaChain.";
 "mayaLpAddressMismatch" = "Your %@ position is paired with a different address. MayaChain would refund this deposit.";
+"mayaLpBelowInboundDust" = "Minimum send amount is %@ %@. %@ requires this to prevent spam.";
+"mayaLpHaltedChain" = "Liquidity actions on %@ are currently halted. MayaChain would refund this transaction.";
+"mayaLpPaused" = "Add liquidity is paused for %@. MayaChain would refund this transaction.";
+"mayaLpPoolNotAvailable" = "Pool %@ is not currently available for deposits.";
 "mayaLpSingleSidedPosition" = "You already have a CACAO-only position in %@. MayaChain only accepts CACAO into it, so this deposit would be refunded.";
+"mayaLpStagedUnpaired" = "Pool %@ is staged and only accepts adds paired with the other side. MayaChain would refund this transaction.";
 "mayaLpTargetPool" = "Target Pool: %@";
 "mayaLpUnverified" = "Could not reach MayaChain to check your position. Please try again.";
 "memo" = "Memo";

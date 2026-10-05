@@ -104,6 +104,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// Set when the vault already holds a live CACAO-only position: mayanode
     /// would refund a paired add there, so the CACAO side is built `+:POOL`.
     private var singleSidedFallback = false
+    private var lastInbounds: [InboundAddress] = []
     /// Locale the amount is read in. Injected so a test pins the separators
     /// rather than inheriting the machine's — the parse deliberately refuses an
     /// amount written in another locale's convention, so which locale is in
@@ -468,11 +469,18 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     private func resolveDestination(bypassCache: Bool, generation: UInt64) async {
         let asset = coin
+        let fetch = resolveInboundAddresses
+        // Remembers the list the answer was read from, so the dust check judges
+        // the same vault the transaction will pay.
         let resolved = await ThorchainLPDestinationResolver.resolve(
             depositing: asset,
             into: protocolChain,
             bypassCache: bypassCache,
-            fetch: resolveInboundAddresses
+            fetch: { [weak self] bypass in
+                let inbounds = await fetch(bypass)
+                self?.lastInbounds = inbounds
+                return inbounds
+            }
         )
         publish(resolved, resolvedFor: asset, generation: generation)
     }
@@ -504,7 +512,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         destinationTask = nil
         await resolveDestination(bypassCache: true, generation: nextDestinationGeneration())
 
-        guard await verifyMayaPairing() else { return nil }
+        guard await verifyMayaPairing(), await verifyMayaPreflight(), verifyInboundDust() else { return nil }
 
         guard let builder = addLPBuilder else { return nil }
         return await withApprovalDecision(builder)
@@ -552,6 +560,35 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             mayaCheckError = String(format: "mayaLpAddressMismatch".localized, pool)
             return false
         }
+    }
+
+    /// Asks the node whether MayaChain would refund this add: LP adds paused,
+    /// the asset chain halted, or a pool that takes no such add.
+    private func verifyMayaPreflight() async -> Bool {
+        guard protocolChain == .mayaChain, let pool = poolName else { return true }
+        let isPairedAdd = coin.chain != .mayaChain || (requiresPairedAddress && hasPairedAddress)
+        guard let block = await mayaChecks.preflight(pool, isPairedAdd) else { return true }
+        mayaCheckError = block.message
+        return false
+    }
+
+    /// Bifrost ignores an inbound below the chain's dust threshold, published
+    /// in MayaChain's 1e8 fixed point whatever the coin's own decimals: such a
+    /// deposit confirms on the source chain and is never credited.
+    private func verifyInboundDust() -> Bool {
+        guard protocolChain == .mayaChain, coin.chain != .mayaChain,
+              let amount = HumanDecimalAmount.parse(amountField.rawValue, decimals: coin.decimals, locale: locale) else {
+            return true
+        }
+        let chainName = ThorchainService.getInboundChainName(for: coin.chain).uppercased()
+        guard let dust = lastInbounds.first(where: { $0.chain.uppercased() == chainName })?
+            .dust_threshold.flatMap({ Decimal(string: $0) }), dust > 0 else { return true }
+
+        let fixedPoint = Decimal(sign: .plus, exponent: 8, significand: 1)
+        guard amount * fixedPoint < dust else { return true }
+        let minimum = (dust / fixedPoint).formatToDecimal(digits: 8)
+        mayaCheckError = String(format: "mayaLpBelowInboundDust".localized, minimum, coin.ticker, coin.chain.name)
+        return false
     }
 
     /// The builder with its ERC-20 approval read once here, for the exact
