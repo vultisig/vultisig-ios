@@ -671,7 +671,7 @@ enum SwapCryptoLogic {
             // fraction of the output the payload now carries.
             if let evmFee = quote.evmSwapFeeBigInt {
                 let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
-                return coin.fiat(decimal: coin.decimal(for: lifiAffiliateFee(evmFee, quote: evmQuote, fromCoin: fromCoin)))
+                return coin.fiat(decimal: coin.decimal(for: lifiAffiliateFee(evmFee, quote: quote, evmQuote: evmQuote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)))
             }
             let outAmount = toCoin.decimal(for: BigInt(evmQuote.dstAmount) ?? .zero)
             return toCoin.fiat(decimal: outAmount * (integratorFee ?? 0))
@@ -708,10 +708,20 @@ enum SwapCryptoLogic {
 
     /// LI.FI states the whole fixed fee on EVM routes, provider share included;
     /// the affiliate is what remains once that share is taken out. Solana routes
-    /// state the integrator fraction on its own.
-    private static func lifiAffiliateFee(_ fee: BigInt, quote: EVMQuote, fromCoin: Coin) -> BigInt {
+    /// state the integrator fraction on its own. A share that cannot be priced is
+    /// not shown on the Protocol Fee row, so it stays in the affiliate amount
+    /// rather than vanishing from the total.
+    private static func lifiAffiliateFee(
+        _ fee: BigInt,
+        quote: SwapQuote,
+        evmQuote: EVMQuote,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin
+    ) -> BigInt {
         guard fromCoin.chain != .solana,
-              let raw = quote.tx.protocolFee, let provider = BigInt(raw), provider > 0 else {
+              let raw = evmQuote.tx.protocolFee, let provider = BigInt(raw), provider > 0,
+              providerFee(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) != nil else {
             return fee
         }
         return max(fee - provider, .zero)

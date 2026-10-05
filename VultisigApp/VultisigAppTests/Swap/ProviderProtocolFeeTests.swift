@@ -118,6 +118,17 @@ final class ProviderProtocolFeeTests: XCTestCase {
         XCTAssertNil(SwapCryptoLogic.providerFee(quote: quote, fromCoin: eth, toCoin: usdc, feeCoin: eth))
     }
 
+    func testLiFiAffiliateKeepsTheWholeFeeWhenTheProviderShareCannotBePriced() {
+        let eth = makeCoin(.ethereum, ticker: "ETHPFE6", decimals: 18, isNative: true)
+        let usdc = makeCoin(.ethereum, ticker: "USDCPFE6", decimals: 6, isNative: false)
+        setPrice(2000, for: eth)
+        setPrice(1, for: usdc)
+        let quote = makeLiFiQuote(swapFee: "550000000000000", protocolFee: "250000000000000", protocolContract: "0xdeadbeef")
+
+        let affiliate = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: eth, toCoin: usdc, feeCoin: eth)
+        XCTAssertEqual(affiliate, Decimal(string: "1.1"))
+    }
+
     // MARK: - LI.FI display (Solana: swapFee is the integrator's cut alone)
 
     func testLiFiSolanaAffiliateIsUntouchedAndProtocolIsAdditional() {
