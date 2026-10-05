@@ -1360,8 +1360,9 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
 
         let clamped = SendCryptoLogic.amountString(coin: eth, raw: balanceRaw - fee)
         let message = try XCTUnwrap(vm.amountReductionMessage)
-        XCTAssertTrue(message.contains("1 ETH"), message)
-        XCTAssertTrue(message.contains("\(clamped) ETH"), message)
+        XCTAssertEqual(message, String(format: "sendAmountReducedAtReview".localized, "1 ETH", "\(clamped) ETH"),
+                       "requested amount first, lowered amount second")
+        XCTAssertTrue(message.range(of: "1 ETH")!.lowerBound < message.range(of: "\(clamped) ETH")!.lowerBound)
     }
 
     func testAmountReductionMessageStaysSilentWhenNothingWasClamped() async throws {
