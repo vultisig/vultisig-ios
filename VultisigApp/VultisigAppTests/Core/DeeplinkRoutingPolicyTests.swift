@@ -39,6 +39,9 @@ final class DeeplinkRoutingPolicyTests: XCTestCase {
         XCTAssertFalse(DeeplinkRoutingPolicy.allowsPushNotificationRoute(
             url("vultisig://vultisig.com/send?type=SignTransaction")
         ))
+        XCTAssertFalse(DeeplinkRoutingPolicy.allowsPushNotificationRoute(
+            url("vultisig://resend?type=SignTransaction&toAddress=bc1qabc")
+        ))
     }
 
     func testPushRejectsMissingOrUnknownType() {
