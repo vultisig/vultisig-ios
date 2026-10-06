@@ -93,7 +93,7 @@ final class NearService {
             return nil
         }
 
-        return NearAccessKeyView(nonce: nonce.value, isFullAccess: permission == "FullAccess")
+        return NearAccessKeyView(nonce: nonce.value, isFullAccess: permission.isFullAccess)
     }
 
     /// The final block supplies both frozen signing inputs: its hash and the gas
@@ -411,7 +411,18 @@ private struct AccountResult: Decodable {
 private struct AccessKeyResult: Decodable {
     let error: String?
     let nonce: NearExactInteger?
-    let permission: String?
+    let permission: Permission?
+
+    /// The string `"FullAccess"`, or an object such as `{"FunctionCall": {…}}`
+    /// for a key restricted to contract calls.
+    struct Permission: Decodable {
+        let isFullAccess: Bool
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            isFullAccess = (try? container.decode(String.self)) == "FullAccess"
+        }
+    }
 }
 
 private struct BlockResult: Decodable {
