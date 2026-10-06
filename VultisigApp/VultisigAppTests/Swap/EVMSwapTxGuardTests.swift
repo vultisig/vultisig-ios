@@ -173,7 +173,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
         let otherChain = payload(provider: .oneInch, chain: .base, to: oneInchV6).fromCoin
         for coin in [token, otherChain] {
             XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: coin)) {
-                XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
+                XCTAssertEqual($0 as? SwapPayloadError, .coinMismatch)
             }
         }
     }
@@ -182,7 +182,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
         let swap = payload(provider: .oneInch, chain: .bitcoin, to: attacker)
         let evmCoin = payload(provider: .oneInch, to: oneInchV6).fromCoin
         XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: evmCoin)) {
-            XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
+            XCTAssertEqual($0 as? SwapPayloadError, .coinMismatch)
         }
     }
 
@@ -194,7 +194,7 @@ final class EVMSwapTxGuardTests: XCTestCase {
             hexPublicKey: ""
         )
         XCTAssertThrowsError(try EVMSwapTxGuard.check(swap, signingCoin: otherToken)) {
-            XCTAssertEqual($0 as? EVMSwapTxGuardError, .coinMismatch)
+            XCTAssertEqual($0 as? SwapPayloadError, .coinMismatch)
         }
 
         let sameTokenUppercased = Coin(
