@@ -1,3 +1,8 @@
+//
+//  InsufficientFundsMessage.swift
+//  VultisigApp
+//
+
 import BigInt
 import Foundation
 
@@ -9,14 +14,10 @@ enum InsufficientFundsMessage {
         return String(format: key.localized, coin.ticker, format(required, of: coin), format(available, of: coin))
     }
 
-    // Exact digits: NumberFormatter goes through Double and would round an
-    // 18-decimal shortfall up to the balance it is short of.
+    // Exact digits, never rounded: a shortfall rounded up reads as the balance it is short of.
     private static func format(_ raw: BigInt, of coin: Coin) -> String {
-        guard coin.decimals > 0 else { return "\(raw) \(coin.ticker)" }
-        let (whole, fraction) = raw.quotientAndRemainder(dividingBy: BigInt(10).power(coin.decimals))
-        let padded = String(repeating: "0", count: coin.decimals - fraction.description.count) + fraction.description
-        let trimmed = padded.replacingOccurrences(of: "0+$", with: "", options: .regularExpression)
-        let amount = trimmed.isEmpty ? "\(whole)" : "\(whole)\(Locale.current.decimalSeparator ?? ".")\(trimmed)"
+        let amount = SendCryptoLogic.amountString(coin: coin, raw: raw)
+            .replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
         return "\(amount) \(coin.ticker)"
     }
 }
