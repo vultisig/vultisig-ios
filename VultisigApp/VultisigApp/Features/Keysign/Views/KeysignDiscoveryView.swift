@@ -281,6 +281,9 @@ struct KeysignDiscoveryView: View {
         // A payload this device refused to sign must not be offered to co-signers.
         guard viewModel.status != .FailToStart,
               let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
+            self.qrCodeString = nil
+            self.qrCodeImage = nil
+            shareSheetViewModel.clear()
             return
         }
 
