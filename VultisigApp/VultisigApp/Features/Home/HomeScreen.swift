@@ -705,13 +705,27 @@ extension HomeScreen {
     }
 
     fileprivate func navigateToJoinKeysign() {
-        guard let vault = appViewModel.selectedVault else { return }
+        guard let vault = appViewModel.selectedVault,
+              !router.containsRoute(where: Self.ownsLiveCeremony) else { return }
         // The join flow is an overlay on Home, so any route pushed above Home would hide it.
         router.navigateToRoot()
         scannerKeysignHandoff.requestJoin()
         pendingReviewKind = nil
         presentedReview = nil
         joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)
+    }
+
+    /// Routes whose screen owns a running keysign, keygen or new-vault backup.
+    /// Popping one would abandon that work, so an incoming join is dropped instead.
+    private static func ownsLiveCeremony(_ route: any NavPath) -> Bool {
+        if route is SigningRoute { return true }
+        if case .joinKeygen? = route as? OnboardingRoute { return true }
+        switch route as? KeygenRoute {
+        case .peerDiscovery?, .backupNow?, .reviewYourVaults?:
+            return true
+        default:
+            return false
+        }
     }
 
     fileprivate func handleJoinStatus(
