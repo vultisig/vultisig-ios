@@ -470,7 +470,7 @@ struct ContentView: View {
 
     private func processDeeplink(_ incomingURL: URL) {
         if !incomingURL.isFileURL, DeeplinkRoutingPolicy.requiresJoinConfirmation(incomingURL) {
-            if pendingJoinConfirmation == nil {
+            if pendingJoinConfirmation == nil, queuedJoinConfirmations.isEmpty {
                 pendingJoinConfirmation = incomingURL
             } else {
                 queuedJoinConfirmations.append(incomingURL)
@@ -486,9 +486,13 @@ struct ContentView: View {
     private func advanceJoinConfirmation() -> URL? {
         let answered = pendingJoinConfirmation
         pendingJoinConfirmation = nil
-        if !queuedJoinConfirmations.isEmpty {
-            let next = queuedJoinConfirmations.removeFirst()
-            Task { @MainActor in pendingJoinConfirmation = next }
+        // The next link stays in the queue until the hop runs, so a lock raised
+        // in between still holds it and a new arrival queues behind it.
+        Task { @MainActor in
+            guard pendingJoinConfirmation == nil,
+                  !appViewModel.isCoveredByAppLock,
+                  !queuedJoinConfirmations.isEmpty else { return }
+            pendingJoinConfirmation = queuedJoinConfirmations.removeFirst()
         }
         return answered
     }
