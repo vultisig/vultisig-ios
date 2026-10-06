@@ -16,6 +16,12 @@ private let logger = Log.chain.other
 
 enum RippleHelper {
 
+    /// Client-side XRP fee ceiling (2 XRP in drops), the `maxFeeXRP` default xrpl.js
+    /// refuses above. Real fees are tens to hundreds of drops; this only stops a
+    /// payload that would burn the account as a fee. Matches the Android signer so
+    /// co-signers on every platform refuse the same transaction.
+    static let maxFeeDrops: UInt64 = 2_000_000
+
     /// The `LastLedgerSequence` the signed transaction carries, or nil when it
     /// has none. A dApp transaction is signed verbatim from its raw JSON, so
     /// that JSON, not `chainSpecific` (which the extension fills independently),
@@ -67,6 +73,13 @@ enum RippleHelper {
             throw HelperError.runtimeError(
                 "getPreSignedInputData: fail to get account number and sequence"
             )
+        }
+
+        // `gas` is the signed `Fee` and arrives from the relayed payload, while the
+        // Verify screen shows a fresh estimate. Bound it before any branch builds an
+        // input so a co-signer never signs a fee set to drain the account.
+        guard gas <= maxFeeDrops else {
+            throw HelperError.runtimeError("XRP fee \(gas) drops exceeds the \(maxFeeDrops) drop ceiling")
         }
 
         // dApp-supplied XRPL transactions (OfferCreate / cross-currency Payment
@@ -638,6 +651,8 @@ enum RippleHelper {
             throw HelperError.runtimeError("invalid public key data")
         }
 
+        try assertRawJsonFeeIsBounded(tx: tx)
+
         // Narrow the proto-relayed envelope values with `exactly:` so a hostile
         // out-of-range fee / sequence / ledger sequence throws (fail closed)
         // rather than trapping the signer. Real XRPL values always fit.
@@ -663,6 +678,30 @@ enum RippleHelper {
         logger.info("Creating XRP dApp rawJson transaction, lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
+    }
+
+    /// The rawJson is signed verbatim, so its own `Fee` (not just the relayed `gas`)
+    /// is what lands on-chain. XRPL encodes `Fee` as a string of drops; a `Fee`
+    /// that is present but not a positive integer within the ceiling is malformed
+    /// and refused rather than left to produce a zero-fee input or a late failure.
+    private static func assertRawJsonFeeIsBounded(tx: [String: Any]) throws {
+        guard let feeValue = tx["Fee"] else { return }
+        guard let feeString = feeValue as? String else {
+            throw HelperError.runtimeError("signRipple Fee must be a string of drops")
+        }
+        guard !feeString.isEmpty, feeString.utf8.allSatisfy({ (0x30...0x39).contains($0) }) else {
+            throw HelperError.runtimeError("signRipple Fee is not an integer number of drops")
+        }
+        // A digits-only string that overflows UInt64 is necessarily above the ceiling.
+        guard let fee = UInt64(feeString) else {
+            throw HelperError.runtimeError("signRipple Fee exceeds the \(maxFeeDrops) drop ceiling")
+        }
+        guard fee > 0 else {
+            throw HelperError.runtimeError("signRipple Fee is not positive")
+        }
+        guard fee <= maxFeeDrops else {
+            throw HelperError.runtimeError("signRipple Fee \(fee) drops exceeds the \(maxFeeDrops) drop ceiling")
+        }
     }
 
     /// Refuses a rawJson that repeats a key inside one JSON object.
