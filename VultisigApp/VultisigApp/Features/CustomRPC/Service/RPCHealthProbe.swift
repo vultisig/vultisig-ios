@@ -13,7 +13,7 @@ enum RPCHealthResult: Equatable {
     /// `networkVerified` is `true` when the probe can also confirm the endpoint
     /// is serving the *expected network* (EVM `eth_chainId` match, THORChain LCD
     /// `node_info`). It is `false` for liveness-only probes — chains with no
-    /// chainId equivalent (Ripple, Sui, Bittensor, Polkadot, Ton, Tron) where we
+    /// chainId equivalent (Ripple, Sui, Bittensor, Polkadot, Ton, Tron, NEAR) where we
     /// can confirm reachability but not network identity. The UI surfaces this
     /// distinction so the user isn't given a false sense of network safety.
     case ok(latencyMs: Int, networkVerified: Bool)
@@ -111,11 +111,13 @@ struct RPCHealthProbe {
             return await probeSui(url: url)
         case .Polkadot:
             // Covers polkadot + bittensor (both substrate JSON-RPC).
-            return await probeSubstrate(url: url)
+            return await probeJSONRPCResult(url: url, method: "system_health")
         case .Tron:
             return await probeTron(url: url)
         case .Ton:
             return await probeTon(url: url)
+        case .Near:
+            return await probeJSONRPCResult(url: url, method: "status")
         default:
             return await probeReachability(url: url)
         }
@@ -255,14 +257,14 @@ struct RPCHealthProbe {
         }
     }
 
-    // MARK: - Substrate / Polkadot + Bittensor (liveness-only: system_health)
+    // MARK: - Substrate `system_health` / NEAR `status` (liveness-only)
 
-    private func probeSubstrate(url: URL) async -> RPCHealthResult {
+    private func probeJSONRPCResult(url: URL, method: String) async -> RPCHealthResult {
         let target = RPCProbeTarget(
             url: url,
             method: .post,
             task: .requestParameters(
-                ["jsonrpc": "2.0", "id": 1, "method": "system_health", "params": [] as [Any]],
+                ["jsonrpc": "2.0", "id": 1, "method": method, "params": [] as [Any]],
                 .jsonEncoding
             )
         )
