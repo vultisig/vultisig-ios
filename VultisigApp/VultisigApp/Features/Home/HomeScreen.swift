@@ -447,6 +447,13 @@ extension HomeScreen {
             return
         }
 
+        // Checked before the switch: a join dropped for a live ceremony must not
+        // leave the selection on a different vault than the one being worked in.
+        guard !router.containsRoute(where: Self.ownsLiveCeremony) else {
+            deeplinkViewModel.resetData()
+            return
+        }
+
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
         navigateToJoinKeysign()
