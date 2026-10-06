@@ -124,10 +124,13 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     private static func nearDepositCase(
         txType: String,
         container: KeyedDecodingContainer<CodingKeys>
-    ) -> SwapKitTx {
+    ) throws -> SwapKitTx {
         let hasBody = container.contains(.tx) && !((try? container.decodeNil(forKey: .tx)) ?? false)
         guard txType.isEmpty, !hasBody else {
-            return .unsupported(txType: "NEAR/\(txType.isEmpty ? "prebuilt" : txType)", raw: SwapKitRawJSON(jsonValue: .string("")))
+            let raw = hasBody
+                ? try container.decode(SwapKitRawJSON.self, forKey: .tx)
+                : SwapKitRawJSON(jsonValue: .string(""))
+            return .unsupported(txType: "NEAR/\(txType.isEmpty ? "prebuilt" : txType)", raw: raw)
         }
         return .nearDepositOnly
     }
@@ -219,7 +222,7 @@ struct SwapKitSwapResponse: Decodable, Hashable {
     ) throws -> SwapKitTx {
         let txType = meta.txType.uppercased()
         if sellAsset.uppercased() == "NEAR.NEAR" {
-            return nearDepositCase(txType: txType, container: container)
+            return try nearDepositCase(txType: txType, container: container)
         }
         switch txType {
         case "EVM":
