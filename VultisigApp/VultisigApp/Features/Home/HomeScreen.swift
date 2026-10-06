@@ -644,8 +644,7 @@ extension HomeScreen {
                     break
                 }
             } else if chain == .near {
-                // A bare lowercase word passes the named-account grammar; only a dotted name or a 64-hex key reads as NEAR.
-                if NearAccountId.isImplicit(address) || (address.contains(".") && NearAccountId.isValid(address)) {
+                if NearAccountId.isUnambiguousScan(address) {
                     chainToUse = chain
                     break
                 }

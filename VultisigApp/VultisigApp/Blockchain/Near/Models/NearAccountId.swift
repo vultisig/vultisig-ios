@@ -48,6 +48,12 @@ enum NearAccountId {
         return matches(named, accountId)
     }
 
+    /// Whether a scanned string reads as NEAR: a bare lowercase word passes the
+    /// named grammar, so only a 64-hex key or a dotted name does.
+    static func isUnambiguousScan(_ value: String) -> Bool {
+        isImplicit(value) || (value.contains(".") && isValid(value))
+    }
+
     private static func regex(_ pattern: String) -> NSRegularExpression {
         // Both patterns are literals in this file; a compile failure is a
         // programmer error, not a runtime condition to recover from.
