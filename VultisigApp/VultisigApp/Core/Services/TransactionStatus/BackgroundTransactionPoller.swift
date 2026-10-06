@@ -33,10 +33,11 @@ class BackgroundTransactionPoller: ObservableObject {
                 }
 
                 // Create view model and start polling
-                // The row keeps no sender; its vault's account on that chain sent it.
-                let sender = vaults.first { $0.pubKeyECDSA == transaction.pubKeyECDSA }?
-                    .nativeCoin(for: transaction.chain)?.address
-                let viewModel = TransactionStatusViewModel(pendingTransaction: transaction, senderAccountId: sender)
+                let vault = vaults.first { $0.pubKeyECDSA == transaction.pubKeyECDSA }
+                let viewModel = TransactionStatusViewModel(
+                    pendingTransaction: transaction,
+                    senderAccountId: vault.flatMap(transaction.senderAccountId(in:))
+                )
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()
 

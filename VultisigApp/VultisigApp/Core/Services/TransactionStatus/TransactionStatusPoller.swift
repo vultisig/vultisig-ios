@@ -187,14 +187,12 @@ final class TransactionStatusPoller: ObservableObject {
         do {
             let pending = try StoredPendingTransactionStorage.shared.getAllPending()
             for tx in pending where tx.pubKeyECDSA == pubKeyECDSA {
-                // A pending row keeps no sender; the vault's own account on the
-                // row's chain sent it, and NEAR's status lookup needs it.
                 poll(
                     txHash: tx.txHash,
                     chain: tx.chain,
                     createdAt: tx.createdAt,
                     pubKeyECDSA: pubKeyECDSA,
-                    senderAccountId: vault.nativeCoin(for: tx.chain)?.address
+                    senderAccountId: tx.senderAccountId(in: vault)
                 ) { _, _ in }
             }
         } catch {
