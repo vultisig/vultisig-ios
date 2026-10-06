@@ -644,7 +644,7 @@ extension HomeScreen {
                     break
                 }
             } else if chain == .near {
-                if NearAccountId.isUnambiguousScan(address) {
+                if NearAccountId.isImplicit(address) {
                     chainToUse = chain
                     break
                 }
