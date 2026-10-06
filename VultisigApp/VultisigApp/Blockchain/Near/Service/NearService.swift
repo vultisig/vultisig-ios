@@ -268,8 +268,6 @@ private struct NearRPCRequest: TargetType {
 struct NearExactInteger: Decodable {
     let value: BigInt
 
-    private static let unsignedDecimal = "^[0-9]+$"
-
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 
@@ -282,8 +280,7 @@ struct NearExactInteger: Decodable {
         }
 
         let text = try container.decode(String.self)
-        guard text.range(of: Self.unsignedDecimal, options: .regularExpression) != nil,
-              let parsed = BigInt(text) else {
+        guard text.isUnsignedDecimal, let parsed = BigInt(text) else {
             throw NearError.malformedResponse("expected an unsigned decimal integer, read \(text)")
         }
         value = parsed
