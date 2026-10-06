@@ -239,9 +239,8 @@ private extension VSKeysignPayload {
         guard case .oneinchSwapPayload(let swap) = swapPayload,
               SwapProviderId.from(rawValue: swap.provider) == .swapkit
         else { return }
-        let amount = swap.fromAmount
-        guard !amount.isEmpty, amount.allSatisfy({ $0.isASCII && $0.isNumber }) else {
-            throw EVMSwapTxGuardError.malformedAmount(amount)
+        guard swap.fromAmount.isUnsignedDecimal else {
+            throw EVMSwapTxGuardError.malformedAmount(swap.fromAmount)
         }
     }
 }
