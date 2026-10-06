@@ -139,16 +139,13 @@ struct SwapTransaction: Hashable {
     }
 
     /// The address a SwapKit ERC-20 deposit transfers the sold token to, decoded
-    /// from the quote calldata the payload signs; nil for any other swap.
+    /// from the payload it signs by the decoder the co-signer's review uses;
+    /// nil for any other swap.
     var swapKitDepositRecipient: String? {
-        guard case let .swapkit(response, _, _) = quote, case .evm(let tx) = response.tx else { return nil }
-        return try? EVMSwapTxGuard.swapKitErc20DepositRecipient(
-            to: tx.to,
-            data: tx.data,
-            value: SwapCryptoLogic.parseEvmAmount(tx.value),
-            sourceToken: fromCoin.contractAddress,
-            amount: amountInCoinDecimal
-        )
+        guard case let .swapkit(response, _, _) = quote,
+              let payload = try? SwapCryptoLogic.buildSwapKitGenericPayload(transaction: self, swapResponse: response)
+        else { return nil }
+        return try? EVMSwapTxGuard.swapKitDepositRecipient(of: payload)
     }
 
     /// Provider label for the verify/summary screens. Secured mints aren't a
