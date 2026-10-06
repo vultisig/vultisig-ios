@@ -371,9 +371,10 @@ final class BlockChainService {
         // NEAR's upfront gas depends on the receiver (a new implicit deposit
         // account costs account-creation gas), so its SwapKit deposit address
         // is the recipient. Other chains keep reading no destination here.
-        var swapRecipient: String?
-        if fromCoin.chain == .near, case let .swapkit(response, _, _) = quote {
-            swapRecipient = response.targetAddress
+        let swapRecipient: String? = if fromCoin.chain == .near, case let .swapkit(response, _, _) = quote {
+            response.targetAddress
+        } else {
+            nil
         }
 
         let specific = try await fetchSpecific(
