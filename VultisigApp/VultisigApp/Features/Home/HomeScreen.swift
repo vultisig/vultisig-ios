@@ -715,17 +715,14 @@ extension HomeScreen {
         joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)
     }
 
-    /// Routes whose screen owns a running keysign, keygen or new-vault backup.
-    /// Popping one would abandon that work, so an incoming join is dropped instead.
+    /// Routes whose screen owns a running keysign or keygen. A new vault's backup
+    /// is pushed above its keygen route, so it is covered too. Popping one would
+    /// abandon that work, so an incoming join is dropped instead.
     private static func ownsLiveCeremony(_ route: any NavPath) -> Bool {
         if route is SigningRoute { return true }
         if case .joinKeygen? = route as? OnboardingRoute { return true }
-        switch route as? KeygenRoute {
-        case .peerDiscovery?, .backupNow?, .reviewYourVaults?:
-            return true
-        default:
-            return false
-        }
+        if case .peerDiscovery? = route as? KeygenRoute { return true }
+        return false
     }
 
     fileprivate func handleJoinStatus(
