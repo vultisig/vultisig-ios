@@ -72,17 +72,10 @@ enum BlockChainSpecific: Codable, Hashable {
         feeLimit: UInt64? = nil
     )
 
-    /// `nonce` and `blockHash` are the frozen signing inputs
-    /// (`NearSpecific.nonce` / `.block_hash`): every co-signer must sign the
-    /// exact same values or the ceremony fails, so neither is re-read at
-    /// signing time. `gasFee` is the initiator's upfront gas reservation in
-    /// yoctoNEAR — display metadata and a balance check, never a signed gas
-    /// limit or a cap, because NEAR charges the gas it actually burns.
-    ///
-    /// `storageReserve` is local-only, like `Tron.feeLimit`: the balance the
-    /// account must keep to back its own storage, which MAX and the balance
-    /// checks leave behind. It is not on the wire, so a relayed payload decodes
-    /// with zero and a co-signer that needs it re-reads the chain.
+    /// `nonce` and `blockHash` are frozen signing inputs relayed verbatim, never re-read.
+    /// `gasFee` is the upfront gas reservation in yoctoNEAR: display and balance
+    /// checks only, since NEAR charges the gas it burns. `storageReserve` is
+    /// local-only, like `Tron.feeLimit`, so a relayed payload decodes with zero.
     case Near(nonce: UInt64, blockHash: Data, gasFee: String, storageReserve: BigInt = .zero)
 
     /// Return a copy with the EVM gas limit replaced. No-op for non-EVM cases

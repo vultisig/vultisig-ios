@@ -25,15 +25,8 @@ enum NearHelper {
         try signingInput(keysignPayload: keysignPayload).serializedData()
     }
 
-    /// The transaction nonce an access-key nonce admits.
-    ///
-    /// nearcore's `verify_nonce` (mode `Monotonic`) rejects `tx_nonce <=
-    /// ak_nonce` (`runtime/runtime/src/verifier.rs`), so the successor is the
-    /// only valid choice — signing the access-key nonce itself produces a
-    /// transaction every node refuses. The largest uint64 has no successor in
-    /// the field, so that case fails closed instead of wrapping to zero (which
-    /// would be accepted as a *stale* nonce by nothing and as a fresh one by an
-    /// empty key — never what the user asked for).
+    /// The access-key nonce's successor: nearcore's `verify_nonce` rejects `tx_nonce <= ak_nonce`,
+    /// and the largest uint64 fails closed instead of wrapping to zero.
     static func transactionNonce(accessKeyNonce: BigInt) throws -> UInt64 {
         guard let nonce = UInt64(exactly: accessKeyNonce + 1) else {
             throw HelperError.runtimeError(String(format: "nearErrorNonceOverflow".localized, accessKeyNonce.description))

@@ -6,15 +6,9 @@
 import Foundation
 
 /// NEAR account-ID grammar (docs.near.org/protocol/accounts-contracts/account-id):
-/// 2–64 characters of lowercase letters, digits and `.`, `-`, `_`, with no
-/// leading, trailing or doubled separator.
-///
-/// Why this is not `AnyAddress.isValidString(_:coin: .near)`: WalletCore's NEAR
-/// address check covers the implicit-account form, so it rejects every named
-/// account (`wrap.near`) while accepting the `0x…` / `0s…` spellings that are
-/// *different* account families, not spellings of an implicit one. Signing a
-/// transfer to either of those would move funds to an account the user did not
-/// name, so those two families are rejected here rather than normalized.
+/// 2–64 lowercase letters, digits and `.`, `-`, `_`, no leading, trailing or doubled separator.
+/// Not WalletCore's check: it rejects named accounts and accepts the `0x…` / `0s…`
+/// families, which are other accounts than the implicit one they resemble.
 enum NearAccountId {
 
     /// Lowest-common-denominator named form: alphanumeric groups joined by one
@@ -55,7 +49,7 @@ enum NearAccountId {
     }
 
     private static func regex(_ pattern: String) -> NSRegularExpression {
-        // Both patterns are literals in this file; a compile failure is a
+        // The patterns are literals in this file; a compile failure is a
         // programmer error, not a runtime condition to recover from.
         guard let regex = try? NSRegularExpression(pattern: pattern) else {
             preconditionFailure("Invalid NEAR account-id pattern: \(pattern)")

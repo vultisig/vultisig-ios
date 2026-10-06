@@ -662,11 +662,6 @@ extension BlockChainSpecific {
                 gasFeeEstimation: value.gasEstimation
             )
         case .nearSpecific(let value):
-            // The nonce and block hash are relayed verbatim: they are the values
-            // the initiator froze, and a co-signer that recomputed either would
-            // sign different bytes and break the ceremony. The storage reserve
-            // is deliberately NOT on the wire — this device re-reads it when it
-            // needs it.
             self = .Near(
                 nonce: value.nonce,
                 blockHash: value.blockHash,
@@ -823,7 +818,6 @@ extension BlockChainSpecific {
             })
 
         case .Near(let nonce, let blockHash, let gasFee, _):
-            // The local-only storage reserve is intentionally dropped here.
             return .nearSpecific(.with {
                 $0.nonce = nonce
                 $0.blockHash = blockHash

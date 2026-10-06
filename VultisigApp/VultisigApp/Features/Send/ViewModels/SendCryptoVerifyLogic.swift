@@ -260,20 +260,10 @@ struct SendCryptoVerifyLogic {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
     }
 
-    /// Native NEAR sends must leave the account able to back its own storage.
-    /// nearcore rejects a transaction whose balance would end up below
-    /// `storage_amount_per_byte × storage_usage` (NEP-448 exempts the first 770
-    /// bytes) with `LackBalanceForState` — after the ceremony has already run
-    /// and the gas is burnt.
-    ///
-    /// Read live rather than trusting the reserve carried on the payload's
-    /// chain-specific: that value was frozen when the fee was quoted, and the
-    /// storage usage may have moved since (a token transfer into the account
-    /// costs it storage). Fails closed — the account has to exist to send from
-    /// it at all.
-    ///
-    /// `gasReservation` is the reservation the send will sign with: the
-    /// payload's own once it is built, the quoted fee before that.
+    /// Refuses a native NEAR send that would leave the account unable to back its
+    /// storage, which nearcore rejects with `LackBalanceForState` after the gas is
+    /// burnt. Read live, since storage usage moves after the fee was quoted.
+    /// `gasReservation` is the one the send signs: the payload's once built.
     func validateNearStorageReserveIfNeeded(tx: SendTransaction, gasReservation: BigInt) async throws {
         guard tx.coin.chain == .near, tx.coin.isNativeToken else { return }
 

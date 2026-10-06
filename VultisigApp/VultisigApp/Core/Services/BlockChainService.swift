@@ -914,9 +914,6 @@ private extension BlockChainService {
             guard accessKey.isFullAccess else {
                 throw HelperError.runtimeError(String(format: "nearErrorFunctionCallKey".localized, coin.address))
             }
-            // The transaction carries the successor of the access-key nonce
-            // (nearcore's `verify_nonce` rejects `tx_nonce <= ak_nonce`). The
-            // largest uint64 has no successor in the field and fails closed.
             let transactionNonce = try NearHelper.transactionNonce(accessKeyNonce: accessKey.nonce)
 
             let reservation = NearFees.gasReservation(
