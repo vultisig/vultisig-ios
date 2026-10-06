@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "Nevažeći iznos NEAR prijenosa: %@";
 "nearErrorInvalidBlockHash" = "Nevažeći NEAR hash bloka: očekivano %1$ld bajtova, primljeno %2$ld";
 "nearErrorInvalidGasFee" = "Nevažeća NEAR naknada za gas: %@ nije nepredznačeni decimalni cijeli broj";
+"nearErrorInvalidInput" = "Neispravan unos za NEAR zahtjev: %@";
 "nearErrorInvalidNonce" = "Nevažeći NEAR nonce: potpisana transakcija zahtijeva pozitivan nonce";
 "nearErrorInvalidPublicKey" = "Nevažeći NEAR javni ključ: %@";
 "nearErrorInvalidPublicKeyLength" = "Nevažeći NEAR javni ključ: %@ nije 32-bajtni Ed25519 ključ";

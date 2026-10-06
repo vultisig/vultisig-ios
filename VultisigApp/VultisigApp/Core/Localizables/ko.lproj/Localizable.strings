@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "잘못된 NEAR 전송 금액: %@";
 "nearErrorInvalidBlockHash" = "잘못된 NEAR 블록 해시: %1$ld바이트가 필요하지만 %2$ld바이트를 받았습니다";
 "nearErrorInvalidGasFee" = "잘못된 NEAR 가스 수수료: %@은(는) 부호 없는 10진수 정수가 아닙니다";
+"nearErrorInvalidInput" = "NEAR 요청 입력이 올바르지 않습니다: %@";
 "nearErrorInvalidNonce" = "잘못된 NEAR 논스: 서명된 트랜잭션에는 양수 논스가 필요합니다";
 "nearErrorInvalidPublicKey" = "잘못된 NEAR 공개 키: %@";
 "nearErrorInvalidPublicKeyLength" = "잘못된 NEAR 공개 키: %@은(는) 32바이트 Ed25519 키가 아닙니다";

@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "Importo del trasferimento NEAR non valido: %@";
 "nearErrorInvalidBlockHash" = "Hash del blocco NEAR non valido: previsti %1$ld byte, ricevuti %2$ld";
 "nearErrorInvalidGasFee" = "Commissione gas NEAR non valida: %@ non è un intero decimale senza segno";
+"nearErrorInvalidInput" = "Input non valido per la richiesta NEAR: %@";
 "nearErrorInvalidNonce" = "Nonce NEAR non valido: una transazione firmata richiede un nonce positivo";
 "nearErrorInvalidPublicKey" = "Chiave pubblica NEAR non valida: %@";
 "nearErrorInvalidPublicKeyLength" = "Chiave pubblica NEAR non valida: %@ non è una chiave Ed25519 da 32 byte";

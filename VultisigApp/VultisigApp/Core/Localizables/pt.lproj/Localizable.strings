@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "Valor de transferência da NEAR inválido: %@";
 "nearErrorInvalidBlockHash" = "Hash de bloco da NEAR inválido: esperados %1$ld bytes, recebidos %2$ld";
 "nearErrorInvalidGasFee" = "Taxa de gás da NEAR inválida: %@ não é um inteiro decimal sem sinal";
+"nearErrorInvalidInput" = "Entrada inválida para a solicitação da NEAR: %@";
 "nearErrorInvalidNonce" = "Nonce da NEAR inválido: uma transação assinada precisa de um nonce positivo";
 "nearErrorInvalidPublicKey" = "Chave pública da NEAR inválida: %@";
 "nearErrorInvalidPublicKeyLength" = "Chave pública da NEAR inválida: %@ não é uma chave Ed25519 de 32 bytes";

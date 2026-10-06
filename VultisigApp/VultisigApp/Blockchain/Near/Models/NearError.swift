@@ -24,6 +24,9 @@ enum NearError: LocalizedError, Equatable {
     /// A 2xx body that is not the JSON-RPC envelope this code can read.
     case malformedResponse(String)
 
+    /// A request this device cannot send: a malformed key, a missing sender.
+    case invalidInput(String)
+
     /// Signed bytes that do not carry a NEAR `TransactionV0` body plus an
     /// Ed25519 signature.
     case malformedSignedTransaction(String)
@@ -40,6 +43,8 @@ enum NearError: LocalizedError, Equatable {
             return String(format: "nearErrorUnknownTransaction".localized, hash)
         case let .malformedResponse(detail):
             return String(format: "nearErrorMalformedResponse".localized, detail)
+        case let .invalidInput(detail):
+            return String(format: "nearErrorInvalidInput".localized, detail)
         case let .malformedSignedTransaction(detail):
             return String(format: "nearErrorMalformedSignedTransaction".localized, detail)
         }

@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "Ungültiger NEAR-Überweisungsbetrag: %@";
 "nearErrorInvalidBlockHash" = "Ungültiger NEAR-Block-Hash: %1$ld Bytes erwartet, %2$ld erhalten";
 "nearErrorInvalidGasFee" = "Ungültige NEAR-Gasgebühr: %@ ist keine vorzeichenlose Dezimalzahl";
+"nearErrorInvalidInput" = "Ungültige Eingabe für die NEAR-Anfrage: %@";
 "nearErrorInvalidNonce" = "Ungültige NEAR-Nonce: Eine signierte Transaktion benötigt eine positive Nonce";
 "nearErrorInvalidPublicKey" = "Ungültiger öffentlicher NEAR-Schlüssel: %@";
 "nearErrorInvalidPublicKeyLength" = "Ungültiger öffentlicher NEAR-Schlüssel: %@ ist kein 32-Byte-Ed25519-Schlüssel";

@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "无效的 NEAR 转账金额：%@";
 "nearErrorInvalidBlockHash" = "无效的 NEAR 区块哈希：应为 %1$ld 字节，实际收到 %2$ld 字节";
 "nearErrorInvalidGasFee" = "无效的 NEAR Gas 费用：%@ 不是无符号十进制整数";
+"nearErrorInvalidInput" = "NEAR 请求输入无效：%@";
 "nearErrorInvalidNonce" = "无效的 NEAR nonce：已签名交易需要正数 nonce";
 "nearErrorInvalidPublicKey" = "无效的 NEAR 公钥：%@";
 "nearErrorInvalidPublicKeyLength" = "无效的 NEAR 公钥：%@ 不是 32 字节的 Ed25519 密钥";

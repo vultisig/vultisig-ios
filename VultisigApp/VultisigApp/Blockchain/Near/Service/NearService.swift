@@ -163,7 +163,7 @@ final class NearService {
 
     private static func publicKeyString(hexPublicKey: String) throws -> String {
         guard let key = Data(hexString: hexPublicKey), key.count == NearSignedTransaction.ed25519PublicKeyBytes else {
-            throw NearError.malformedResponse("\(hexPublicKey) is not a 32-byte Ed25519 public key")
+            throw NearError.invalidInput("\(hexPublicKey) is not a 32-byte Ed25519 public key")
         }
         return "ed25519:\(Base58.encodeNoCheck(data: key))"
     }

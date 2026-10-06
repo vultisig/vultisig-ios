@@ -971,6 +971,7 @@
 "nearErrorInvalidAmount" = "Invalid NEAR transfer amount: %@";
 "nearErrorInvalidBlockHash" = "Invalid NEAR block hash: expected %1$ld bytes, received %2$ld";
 "nearErrorInvalidGasFee" = "Invalid NEAR gas fee: %@ is not an unsigned decimal integer";
+"nearErrorInvalidInput" = "Invalid NEAR request input: %@";
 "nearErrorInvalidNonce" = "Invalid NEAR nonce: a signed transaction needs a positive nonce";
 "nearErrorInvalidPublicKey" = "Invalid NEAR public key: %@";
 "nearErrorInvalidPublicKeyLength" = "Invalid NEAR public key: %@ is not a 32-byte Ed25519 key";

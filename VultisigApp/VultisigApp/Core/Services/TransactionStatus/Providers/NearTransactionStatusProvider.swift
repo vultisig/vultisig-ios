@@ -27,7 +27,7 @@ struct NearTransactionStatusProvider: TransactionStatusProvider {
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         guard let senderAccountId = query.senderAccountId, !senderAccountId.isEmpty else {
-            throw NearError.malformedResponse("NEAR status needs the sender account id for \(query.txHash)")
+            throw NearError.invalidInput("NEAR status needs the sender account id for \(query.txHash)")
         }
 
         let outcome: NearTransactionOutcome
