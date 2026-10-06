@@ -31,25 +31,18 @@ final class NearService {
     /// an unfunded account. A transport failure or an unreadable body throws,
     /// so a broken RPC can never read as zero.
     func fetchAccount(accountId: String) async throws -> NearAccountView? {
-        let method = "query"
-        let envelope: NearRPCEnvelope<AccountResult> = try await call(
-            method: method,
-            params: [
-                "request_type": "view_account",
-                "finality": "final",
-                "account_id": accountId
-            ]
-        )
-
-        if let error = envelope.resolvedError(method: method) {
-            if case .unknownAccount = error {
-                return nil
-            }
-            throw error
-        }
-
-        guard let result = envelope.result else {
-            throw NearError.malformedResponse("\(method) returned neither a result nor an error")
+        let result: AccountResult
+        do {
+            result = try await call(
+                method: "query",
+                params: [
+                    "request_type": "view_account",
+                    "finality": "final",
+                    "account_id": accountId
+                ]
+            )
+        } catch NearError.unknownAccount {
+            return nil
         }
 
         return NearAccountView(
@@ -66,27 +59,21 @@ final class NearService {
     /// Read at `optimistic` finality: the nonce is the latest one, so a second
     /// send inside the finality window does not reuse it (`InvalidNonce`).
     func fetchAccessKey(accountId: String, hexPublicKey: String) async throws -> NearAccessKeyView? {
-        let method = "query"
-        let envelope: NearRPCEnvelope<AccessKeyResult> = try await call(
-            method: method,
-            params: [
-                "request_type": "view_access_key",
-                "finality": "optimistic",
-                "account_id": accountId,
-                "public_key": try Self.publicKeyString(hexPublicKey: hexPublicKey)
-            ]
-        )
-
-        if let error = envelope.resolvedError(method: method) {
-            if case .unknownAccessKey = error {
-                return nil
-            }
-            throw error
+        let result: AccessKeyResult
+        do {
+            result = try await call(
+                method: "query",
+                params: [
+                    "request_type": "view_access_key",
+                    "finality": "optimistic",
+                    "account_id": accountId,
+                    "public_key": try Self.publicKeyString(hexPublicKey: hexPublicKey)
+                ]
+            )
+        } catch NearError.unknownAccessKey {
+            return nil
         }
 
-        guard let result = envelope.result else {
-            throw NearError.malformedResponse("\(method) returned neither a result nor an error")
-        }
         guard result.error == nil, let nonce = result.nonce, let permission = result.permission else {
             return nil
         }
@@ -100,13 +87,9 @@ final class NearService {
     /// cap on what the transaction may cost.
     func fetchFinalBlock() async throws -> NearFinalBlockView {
         let method = "block"
-        let envelope: NearRPCEnvelope<BlockResult> = try await call(method: method, params: ["finality": "final"])
+        let result: BlockResult = try await call(method: method, params: ["finality": "final"])
 
-        if let error = envelope.resolvedError(method: method) {
-            throw error
-        }
-
-        guard let header = envelope.result?.header else {
+        guard let header = result.header else {
             throw NearError.malformedResponse("\(method) response is missing its header")
         }
         guard let hash = header.hash else {
@@ -122,16 +105,9 @@ final class NearService {
 
     func fetchFeeConfig() async throws -> NearFees.FeeConfig {
         let method = "EXPERIMENTAL_protocol_config"
-        let envelope: NearRPCEnvelope<ProtocolConfigResult> = try await call(
-            method: method,
-            params: ["finality": "final"]
-        )
+        let result: ProtocolConfigResult = try await call(method: method, params: ["finality": "final"])
 
-        if let error = envelope.resolvedError(method: method) {
-            throw error
-        }
-
-        guard let runtime = envelope.result?.runtimeConfig, let costs = runtime.transactionCosts else {
+        guard let runtime = result.runtimeConfig, let costs = runtime.transactionCosts else {
             throw NearError.malformedResponse("\(method) response is missing its runtime_config")
         }
 
@@ -155,42 +131,27 @@ final class NearService {
     /// locally from the same bytes, so an acknowledgement for another
     /// transaction cannot be read as this one.
     func sendTransaction(signedTransactionBase64: String) async throws -> String? {
-        let method = "send_tx"
-        let envelope: NearRPCEnvelope<TransactionResultBody> = try await call(
-            method: method,
+        let result: TransactionResultBody? = try await optionalCall(
+            method: "send_tx",
             params: [
                 "signed_tx_base64": signedTransactionBase64,
                 "wait_until": "INCLUDED"
             ]
         )
-
-        if let error = envelope.resolvedError(method: method) {
-            throw error
-        }
-
-        return envelope.result?.outcomeHash
+        return result?.outcomeHash
     }
 
     /// NEAR has no hash-only lookup: the node is asked by
     /// `(tx_hash, sender_account_id)` because the lookup is sharded by sender.
     func fetchTransactionOutcome(hash: String, senderAccountId: String) async throws -> NearTransactionOutcome {
-        let method = "tx"
-        let envelope: NearRPCEnvelope<TransactionResultBody> = try await call(
-            method: method,
+        let result: TransactionResultBody = try await call(
+            method: "tx",
             params: [
                 "tx_hash": hash,
                 "sender_account_id": senderAccountId,
                 "wait_until": "FINAL"
             ]
         )
-
-        if let error = envelope.resolvedError(method: method) {
-            throw error
-        }
-
-        guard let result = envelope.result else {
-            throw NearError.malformedResponse("\(method) returned neither a result nor an error")
-        }
 
         return NearTransactionOutcome(
             returnedHash: result.outcomeHash,
@@ -226,10 +187,17 @@ final class NearService {
         return url
     }()
 
-    private func call<Result: Decodable>(
-        method: String,
-        params: [String: Any]
-    ) async throws -> NearRPCEnvelope<Result> {
+    /// The method's `result`. A JSON-RPC error throws as its typed `NearError`,
+    /// and so does a body carrying neither.
+    private func call<Result: Decodable>(method: String, params: [String: Any]) async throws -> Result {
+        guard let result: Result = try await optionalCall(method: method, params: params) else {
+            throw NearError.malformedResponse("\(method) returned neither a result nor an error")
+        }
+        return result
+    }
+
+    /// `call` for `send_tx`, which may acknowledge without a result.
+    private func optionalCall<Result: Decodable>(method: String, params: [String: Any]) async throws -> Result? {
         let body = try JSONSerialization.data(withJSONObject: [
             "jsonrpc": "2.0",
             "id": method,
@@ -239,11 +207,16 @@ final class NearService {
 
         let response = try await client.request(NearRPCRequest(baseURL: Self.endpoint, body: body))
 
+        let envelope: NearRPCEnvelope<Result>
         do {
-            return try JSONDecoder().decode(NearRPCEnvelope<Result>.self, from: response.data)
+            envelope = try JSONDecoder().decode(NearRPCEnvelope<Result>.self, from: response.data)
         } catch {
             throw NearError.malformedResponse("\(method) response could not be read: \(error)")
         }
+        if let error = envelope.resolvedError(method: method) {
+            throw error
+        }
+        return envelope.result
     }
 }
 
