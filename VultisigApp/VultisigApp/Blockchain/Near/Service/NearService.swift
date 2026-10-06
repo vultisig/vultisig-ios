@@ -19,8 +19,6 @@ final class NearService {
     static let rpcEndpoint = Endpoint.nearServiceRpc
     static let shared = NearService()
 
-    private static let blockHashBytes = 32
-
     private let client: HTTPClientProtocol
 
     init(client: HTTPClientProtocol = HTTPClient()) {
@@ -114,8 +112,9 @@ final class NearService {
         guard let hash = header.hash else {
             throw NearError.malformedResponse("\(method) response is missing its header hash")
         }
-        guard let decoded = Base58.decodeNoCheck(string: hash), decoded.count == Self.blockHashBytes else {
-            throw NearError.malformedResponse("\(method) hash is not \(Self.blockHashBytes) bytes: \(hash)")
+        let width = NearSignedTransaction.blockHashBytes
+        guard let decoded = Base58.decodeNoCheck(string: hash), decoded.count == width else {
+            throw NearError.malformedResponse("\(method) hash is not \(width) bytes: \(hash)")
         }
 
         return NearFinalBlockView(hash: decoded, gasPrice: header.gasPrice.value)
@@ -203,7 +202,7 @@ final class NearService {
     // MARK: - Transport
 
     private static func publicKeyString(hexPublicKey: String) throws -> String {
-        guard let key = Data(hexString: hexPublicKey), key.count == 32 else {
+        guard let key = Data(hexString: hexPublicKey), key.count == NearSignedTransaction.ed25519PublicKeyBytes else {
             throw NearError.malformedResponse("\(hexPublicKey) is not a 32-byte Ed25519 public key")
         }
         return "ed25519:\(Base58.encodeNoCheck(data: key))"

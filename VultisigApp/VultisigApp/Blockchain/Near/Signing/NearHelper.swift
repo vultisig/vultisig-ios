@@ -19,8 +19,6 @@ import WalletCore
 enum NearHelper {
 
     private static let depositBytes = 16
-    private static let blockHashBytes = 32
-    private static let ed25519PublicKeyBytes = 32
     private static let maxU128 = (BigInt(1) << 128) - 1
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
@@ -148,7 +146,7 @@ enum NearHelper {
         try assertNativeTransferPayload(keysignPayload)
         let (nonce, blockHash) = try nearSigningFields(keysignPayload)
 
-        guard let hexPublicKey = Data(hexString: coin.hexPublicKey), hexPublicKey.count == ed25519PublicKeyBytes else {
+        guard let hexPublicKey = Data(hexString: coin.hexPublicKey), hexPublicKey.count == NearSignedTransaction.ed25519PublicKeyBytes else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidPublicKeyLength".localized, coin.hexPublicKey))
         }
 
@@ -224,8 +222,9 @@ enum NearHelper {
         // is not a payload this signer should commit to.
         try assertGasFee(gasFee)
 
-        guard blockHash.count == blockHashBytes else {
-            throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, blockHashBytes, blockHash.count))
+        let width = NearSignedTransaction.blockHashBytes
+        guard blockHash.count == width else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, width, blockHash.count))
         }
         guard nonce > 0 else {
             throw HelperError.runtimeError("nearErrorInvalidNonce".localized)

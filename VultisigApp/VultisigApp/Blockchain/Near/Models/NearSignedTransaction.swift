@@ -12,6 +12,9 @@ import WalletCore
 /// nearcore lays them out in `core/primitives/src/transaction.rs`.
 enum NearSignedTransaction {
 
+    static let blockHashBytes = 32
+    static let ed25519PublicKeyBytes = 32
+
     private static let ed25519KeyType: UInt8 = 0x00
     private static let ed25519SignatureBytes = 64
     private static let accountIdLengthBytes = 4
