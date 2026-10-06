@@ -665,6 +665,9 @@
 "joiningKeygen" = "키 생성/공유 프로세스에 참여 중입니다. 잠시 기다려 주세요...";
 "joinKeygen" = "키젠 참여";
 "joinKeygenConnectionDisclaimer" = "연결에 문제가 있으신가요?\n개인 핫스팟 연결을 대신 사용하세요.\n또는 다른 네트워크를 시도하세요.";
+"joinKeygenLinkConfirm" = "참여";
+"joinKeygenLinkMessage" = "이 링크는 볼트 키젠 또는 리셰어 세션에 참여하려고 합니다. 다른 기기에서 직접 시작한 경우에만 계속하세요.";
+"joinKeygenLinkTitle" = "키젠 세션에 참여할까요?";
 "joinKeygenViewDescription" = "메인 기기에서 볼트 설정을 완료하는 순간부터 볼트 생성이 시작됩니다";
 "joinKeygenViewTitle" = "다른 기기가 참여하기를 기다리는 중";
 "joinKeysign" = "키사인 참여";

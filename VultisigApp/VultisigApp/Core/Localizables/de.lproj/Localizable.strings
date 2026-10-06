@@ -665,6 +665,9 @@
 "joiningKeygen" = "Beitritt zum Keygen";
 "joinKeygen" = "Keygen beitreten";
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
+"joinKeygenLinkConfirm" = "Beitreten";
+"joinKeygenLinkMessage" = "Dieser Link möchte einer Vault-Keygen- oder Reshare-Sitzung beitreten. Fahre nur fort, wenn du sie auf einem anderen Gerät gestartet hast.";
+"joinKeygenLinkTitle" = "Keygen-Sitzung beitreten?";
 "joinKeygenViewDescription" = "Dein Vault wird ab dem Moment generiert, in dem du die Einrichtung deines Vaults auf deinem Hauptgerät abschließt.";
 "joinKeygenViewTitle" = "Warten auf den Beitritt weiterer Geräte";
 "joinKeysign" = "Keysign beitreten";

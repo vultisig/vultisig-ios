@@ -125,17 +125,7 @@ struct DeeplinkLogic {
         }
 
         let queryItems = urlComponents.queryItems
-        let path = urlComponents.path.lowercased()
-        let host = urlComponents.host?.lowercased() ?? ""
-        let urlString = url.absoluteString.lowercased()
-        let pathComponents = path.split(separator: "/").map { String($0) }
-
-        let isSendPath = path.contains("send") ||
-            pathComponents.contains("send") ||
-            host == "send" ||
-            host.contains("send") ||
-            urlString.contains("://send") ||
-            urlString.hasPrefix("vultisig://send")
+        let isSendPath = Self.isSendPath(urlComponents, urlString: url.absoluteString)
 
         if isSendPath {
             return processSendDeeplink(queryItems: queryItems, vaults: vaults)
@@ -148,6 +138,20 @@ struct DeeplinkLogic {
             }
             return result
         }
+    }
+
+    static func isSendPath(_ urlComponents: URLComponents, urlString: String) -> Bool {
+        let path = urlComponents.path.lowercased()
+        let host = urlComponents.host?.lowercased() ?? ""
+        let urlString = urlString.lowercased()
+        let pathComponents = path.split(separator: "/").map { String($0) }
+
+        return path.contains("send") ||
+            pathComponents.contains("send") ||
+            host == "send" ||
+            host.contains("send") ||
+            urlString.contains("://send") ||
+            urlString.hasPrefix("vultisig://send")
     }
 
     func findCoin(in vault: Vault, assetChain: String?, assetTicker: String?) -> Coin? {
