@@ -706,6 +706,8 @@ extension HomeScreen {
 
     fileprivate func navigateToJoinKeysign() {
         guard let vault = appViewModel.selectedVault else { return }
+        // The join flow is an overlay on Home, so any route pushed above Home would hide it.
+        router.navigateToRoot()
         scannerKeysignHandoff.requestJoin()
         pendingReviewKind = nil
         presentedReview = nil
