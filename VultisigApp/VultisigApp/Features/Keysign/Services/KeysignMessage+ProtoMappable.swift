@@ -254,6 +254,9 @@ private extension VSKeysignPayload {
         guard toAmount.isUnsignedDecimal else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, toAmount))
         }
+        if case .nearSpecific(let specific) = blockchainSpecific, !specific.gasFee.isUnsignedDecimal {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, specific.gasFee))
+        }
         if case .swapkitSwapPayload(let swap) = swapPayload, swap.fromAmount != toAmount {
             throw HelperError.runtimeError(
                 String(format: "nearErrorSwapKitDepositAmountMismatch".localized, swap.fromAmount, toAmount)

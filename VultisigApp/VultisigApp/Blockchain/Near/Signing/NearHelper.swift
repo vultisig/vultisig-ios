@@ -222,7 +222,7 @@ enum NearHelper {
 
         // Display metadata, but a payload that cannot state its own reservation
         // is not a payload this signer should commit to.
-        _ = try gasFeeInteger(gasFee, maximum: maxU128)
+        try assertGasFee(gasFee)
 
         guard blockHash.count == blockHashBytes else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidBlockHash".localized, blockHashBytes, blockHash.count))
@@ -243,13 +243,12 @@ enum NearHelper {
         return Data(bytes)
     }
 
-    private static func gasFeeInteger(_ text: String, maximum: BigInt) throws -> BigInt {
+    private static func assertGasFee(_ text: String) throws {
         guard text.isUnsignedDecimal, let parsed = BigInt(text) else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, text))
         }
-        guard parsed <= maximum else {
+        guard parsed <= maxU128 else {
             throw HelperError.runtimeError(String(format: "nearErrorGasFeeTooLarge".localized, text))
         }
-        return parsed
     }
 }
