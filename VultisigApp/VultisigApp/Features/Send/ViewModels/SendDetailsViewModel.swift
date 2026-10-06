@@ -1211,21 +1211,14 @@ final class SendDetailsViewModel {
         let isTronStaking = coin.chain == .tron && isStakingOperation
         guard !isTronStaking else { return true }
 
-        let exceeded = SendCryptoLogic.isAmountExceeded(
+        if let required = SendCryptoLogic.amountShortfall(
             coin: coin,
             amount: amount,
             sendMaxAmount: sendMaxAmount,
             fee: fee,
             gas: gas,
             isStakingOperation: isStakingOperation
-        )
-        if exceeded {
-            let required = SendCryptoLogic.requiredAmount(
-                coin: coin,
-                amount: amount,
-                sendMaxAmount: sendMaxAmount,
-                networkFee: SendCryptoLogic.displayFee(coin: coin, gas: gas, fee: fee)
-            )
+        ) {
             setAmountError(message: InsufficientFundsMessage.text(
                 coin: coin,
                 required: required.raw,

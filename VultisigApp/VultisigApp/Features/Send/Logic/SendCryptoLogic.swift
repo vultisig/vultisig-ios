@@ -55,6 +55,33 @@ enum SendCryptoLogic {
             > coin.balanceRaw
     }
 
+    /// What a send `isAmountExceeded` refuses needs, priced at the fee the user is
+    /// shown; nil when the balance covers it.
+    static func amountShortfall(
+        coin: Coin,
+        amount: String,
+        sendMaxAmount: Bool,
+        fee: BigInt,
+        gas: BigInt,
+        isStakingOperation: Bool
+    ) -> (raw: BigInt, includesNetworkCosts: Bool)? {
+        let exceeded = isAmountExceeded(
+            coin: coin,
+            amount: amount,
+            sendMaxAmount: sendMaxAmount,
+            fee: fee,
+            gas: gas,
+            isStakingOperation: isStakingOperation
+        )
+        guard exceeded else { return nil }
+        return requiredAmount(
+            coin: coin,
+            amount: amount,
+            sendMaxAmount: sendMaxAmount,
+            networkFee: displayFee(coin: coin, gas: gas, fee: fee)
+        )
+    }
+
     /// The raw amount of `coin` a send needs with `networkFee` on top, and whether the fee counts.
     static func requiredAmount(
         coin: Coin,
