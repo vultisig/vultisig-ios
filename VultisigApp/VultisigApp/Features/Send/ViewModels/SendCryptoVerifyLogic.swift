@@ -786,13 +786,24 @@ struct SendCryptoVerifyLogic {
         chainSpecific: BlockChainSpecific
     ) async throws -> BigInt {
         if Self.needsNearBalanceRefit(tx: tx) {
+            let gasReservation = chainSpecific.gas
+            let storageReserve = chainSpecific.nearStorageReserve
             let amount = Swift.min(tx.amountInRaw, NearFees.maxSendable(
                 amount: tx.coin.balanceRaw,
-                gasReservation: chainSpecific.gas,
-                storageReserve: chainSpecific.nearStorageReserve
+                gasReservation: gasReservation,
+                storageReserve: storageReserve
             ))
             guard amount > 0 else {
-                throw HelperError.runtimeError("walletBalanceExceededError")
+                throw HelperError.runtimeError(InsufficientFundsMessage.text(
+                    coin: tx.coin,
+                    required: NearFees.requiredAmount(
+                        requestedAmount: amount,
+                        gasReservation: gasReservation,
+                        storageReserve: storageReserve
+                    ),
+                    available: tx.coin.balanceRaw,
+                    includesNetworkCosts: true
+                ))
             }
             return amount
         }
