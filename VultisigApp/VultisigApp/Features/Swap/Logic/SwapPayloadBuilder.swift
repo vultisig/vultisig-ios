@@ -444,34 +444,7 @@ extension SwapCryptoLogic {
             // their own `txType` branches here.
             switch swapResponse.tx {
             case .evm, .solana:
-                var evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
-                if swapResponse.isErc20DepositTransfer(fromCoin: fromCoin) {
-                    try swapResponse.validateErc20DepositTransfer(fromCoin: fromCoin, amount: amountInCoin)
-                    // Every platform signs max(quote gas, gasLimit), so SwapKit's
-                    // figure must not ride the payload (see `evmRouteGas`).
-                    let tx = evmQuote.tx
-                    evmQuote = EVMQuote(
-                        dstAmount: evmQuote.dstAmount,
-                        tx: EVMQuote.Transaction(
-                            from: tx.from,
-                            to: tx.to,
-                            data: tx.data,
-                            value: tx.value,
-                            gasPrice: tx.gasPrice,
-                            gas: EVMHelper.defaultERC20TransferGasUnit,
-                            swapFee: tx.swapFee,
-                            swapFeeTokenContract: tx.swapFeeTokenContract
-                        )
-                    )
-                }
-                let payload = buildSwapKitGenericPayload(
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    fromAmountInCoin: amountInCoin,
-                    toAmountDecimal: toDecimal,
-                    quote: evmQuote,
-                    swapResponse: swapResponse
-                )
+                let payload = try buildSwapKitGenericPayload(transaction: transaction, swapResponse: swapResponse)
                 return try await keysignFactory.buildTransfer(
                     coin: fromCoin,
                     toAddress: swapResponse.targetAddress,
@@ -806,6 +779,33 @@ extension SwapCryptoLogic {
         }
     }
 
+    /// The aggregator payload `transaction`'s SwapKit EVM or Solana route signs.
+    /// An ERC-20 deposit is bound to the sold amount, and every platform signs
+    /// max(quote gas, gasLimit), so it relays the ERC-20 transfer floor instead
+    /// of SwapKit's figure (see `evmRouteGas`).
+    static func buildSwapKitGenericPayload(
+        transaction: SwapTransaction,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> GenericSwapPayload {
+        let fromCoin = transaction.fromCoin
+        let amount = transaction.amountInCoinDecimal
+        let isDeposit = swapResponse.isErc20DepositTransfer(fromCoin: fromCoin)
+        if isDeposit {
+            try swapResponse.validateErc20DepositTransfer(fromCoin: fromCoin, amount: amount)
+        }
+        return buildSwapKitGenericPayload(
+            fromCoin: fromCoin,
+            toCoin: transaction.toCoin,
+            fromAmountInCoin: amount,
+            toAmountDecimal: transaction.toAmountDecimal,
+            quote: try buildEVMQuoteFromSwapKit(
+                swapResponse: swapResponse,
+                gas: isDeposit ? EVMHelper.defaultERC20TransferGasUnit : nil
+            ),
+            swapResponse: swapResponse
+        )
+    }
+
     /// SwapKit's EVM and Solana routes: their wire shape matches
     /// `OneInchSwapPayload` 1:1, so they ride the shared aggregator payload and
     /// carry the same route tag the non-EVM SwapKit payload does.
@@ -1084,8 +1084,10 @@ extension SwapCryptoLogic {
     /// shape so the keysign dispatcher can reuse the OneInch / Solana paths
     /// unchanged. EVM and Solana are typed in Phase 1; other `txType` values
     /// throw a descriptive error so callers can surface "not yet supported".
+    /// `gas` replaces SwapKit's `tx.gas` on an EVM route.
     static func buildEVMQuoteFromSwapKit(
-        swapResponse: SwapKitSwapResponse
+        swapResponse: SwapKitSwapResponse,
+        gas gasOverride: Int64? = nil
     ) throws -> EVMQuote {
         switch swapResponse.tx {
         case .evm(let tx):
@@ -1111,7 +1113,7 @@ extension SwapCryptoLogic {
                     data: tx.data,
                     value: String(value),
                     gasPrice: String(gasPrice),
-                    gas: normalizedGas
+                    gas: gasOverride ?? normalizedGas
                 )
             )
 

@@ -22,7 +22,9 @@ extension SwapKitSwapResponse {
     /// the sold token with no native value, mirroring the SDK's
     /// `isSwapKitErc20DepositTransfer`.
     func validateErc20DepositTransfer(fromCoin: Coin, amount: BigInt) throws {
-        guard case .evm(let evmTx) = tx else { return }
+        guard case .evm(let evmTx) = tx else {
+            throw SwapKitError.contradictoryResponse(detail: "ERC-20 deposit carries no EVM transaction")
+        }
         let recipient = try EVMSwapTxGuard.swapKitErc20DepositRecipient(
             to: evmTx.to,
             data: evmTx.data,
