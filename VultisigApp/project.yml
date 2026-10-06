@@ -96,9 +96,13 @@ packages:
     # append fields as well (`SolanaSpecific.last_valid_block_height`, the
     # Polkadot allow-death flag, `Erc20ApprovePayload.reset_allowance_first`).
     #
-    # This revision is the commit that merged commondata#115
-    # (`CustomMessagePayload.dapp_metadata`) into upstream `main`.
-    revision: ef5b9f0fa1c480666f651efbbf71298a922d3a9b
+    # Advanced for `KeysignPayload.near_specific` (`NearSpecific`: nonce, block
+    # hash, gas fee), the wire fields a NEAR co-signer needs to sign the same
+    # bytes. The pins in between only append fields (`TonGasless`).
+    #
+    # This revision is the head of the commondata NEAR PR, not yet on `main`:
+    # re-pin to the commit that merges that PR before this merges.
+    revision: a4d787c6766fa4a0f3e1816b42a6639870694dcf
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
