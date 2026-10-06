@@ -79,7 +79,10 @@ struct KeysignMessageFactory {
                 // the signing input directly.
                 switch swapKitPayload.txType {
                 case "PSBT":
-                    messages += try SwapKitBTCSigner.preSigningHashes(payload: swapKitPayload)
+                    messages += try SwapKitBTCSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        pubKeyHex: payload.coin.hexPublicKey
+                    )
                 case "PSBT_DOGE":
                     messages += try SwapKitDogeSigner.preSigningHashes(
                         payload: swapKitPayload,
@@ -96,7 +99,11 @@ struct KeysignMessageFactory {
                         pubKeyHex: payload.coin.hexPublicKey
                     )
                 case "PSBT_ZEC":
-                    messages += try SwapKitZcashSigner.preSigningHashes(payload: swapKitPayload, zcashBranchId: payload.chainSpecific.zcashBranchId)
+                    messages += try SwapKitZcashSigner.preSigningHashes(
+                        payload: swapKitPayload,
+                        zcashBranchId: payload.chainSpecific.zcashBranchId,
+                        pubKeyHex: payload.coin.hexPublicKey
+                    )
                 case "SUI":
                     messages += try SwapKitSuiSigner.preSigningHashes(payload: swapKitPayload)
                 case "TRON":

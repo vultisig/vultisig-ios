@@ -465,8 +465,8 @@
 "enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";
 "enterYourPassword" = "Unesite svoju lozinku";
 "enterYourSeedphrase" = "Unesite svoju seed frazu";
-"enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
-"enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
+"enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12, 15, 18, 21 ili 24 riječi.";
+"enterYourSeedphraseSubtitleHighlight" = "12, 15, 18, 21 ili 24";
 "enterYourVaultsPassword" = "Unesite lozinku svog trezora";
 "error" = "Greška";
 "errorCopy" = "Kopiraj";
@@ -945,7 +945,7 @@
 "mintCoin" = "Kovaj %@";
 "missingEncryptionKey" = "Nedostaje ključ za šifriranje. Pokušajte ponovno.";
 "MLDSA" = "MLDSA";
-"mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
+"mnemonicPlaceholder" = "Unesite 12, 15, 18, 21 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
 "moreComingSoon" = "Uskoro više";
@@ -1382,7 +1382,7 @@
 "seedPhraseAlreadyImportedDescription" = "Molimo uvezite drugu seed frazu";
 "seedPhraseImportTip" = "Savjet: Možete koristiti preglednik kao uređaj";
 "seedPhraseInvalidError" = "Seed fraza nije točna, molimo provjerite sve riječi.";
-"seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
+"seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12, 15, 18, 21 ili 24 riječi.";
 "selectAsset" = "Odaberi imovinu";
 "selectAssetToSeeBalance" = "Odaberite imovinu za prikaz stanja";
 "selectAtleastOneVault" = "Odaberite barem jedan trezor i pokušajte ponovno.";
@@ -1658,6 +1658,7 @@
 "transactionBytes" = "Bajtovi transakcije";
 "transactionComplete" = "Gotovo";
 "transactionDetails" = "Detalji transakcije";
+"transactionExpiredNotIncluded" = "Istekla prije uključivanja. Mreža je odbacila ovu transakciju prije nego što ju je uključila, pa ništa nije poslano i nije naplaćena mrežna naknada. Možeš pokušati ponovno.";
 "transactionFailed" = "Transakcija nije uspjela";
 "transactionFailedDescription" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "transactionFailedHighlight" = "nije uspjela";

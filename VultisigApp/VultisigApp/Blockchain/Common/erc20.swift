@@ -91,6 +91,14 @@ class ERC20Helper {
                 }
             }
         } else {
+            // Runs on co-signers too, from the relayed payload. A recipient equal to the
+            // token contract burns the tokens (e.g. an EIP-681 link misresolved to the contract).
+            // Compared without the 0x prefix: the same 20 bytes may arrive in either spelling.
+            let recipient = keysignPayload.toAddress.trimmingCharacters(in: .whitespaces).stripHexPrefix()
+            let contract = keysignPayload.coin.contractAddress.stripHexPrefix()
+            guard recipient.caseInsensitiveCompare(contract) != .orderedSame else {
+                throw HelperError.runtimeError("ERC-20 transfer recipient is the token's own contract")
+            }
             input.toAddress = keysignPayload.coin.contractAddress
             input.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
