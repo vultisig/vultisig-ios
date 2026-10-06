@@ -15,6 +15,9 @@ enum WidgetTheme {
     static let separator = Theme.colors.border
     static let positive = Theme.colors.alertSuccess
     static let negative = Theme.colors.alertError
+    static let warning = Theme.colors.alertWarning
+    static let activityAccent = Theme.colors.primaryAccent4
+    static let activitySurface = Theme.colors.bgSurface1
     static let iconFallbackBackground = primaryText
 
     static func labelFont(size: CGFloat) -> Font {

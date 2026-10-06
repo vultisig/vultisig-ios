@@ -21,6 +21,7 @@
 //  to hand the row to the tracker.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 
@@ -55,14 +56,23 @@ final class LimitOrderPoller: DoneStatusPoller {
         startTrackerIfQueued()
 
         observationTask = Task { [tracker, txHash, estimatedTime] in
-            // Seed from the current cache snapshot.
-            onStatus(Self.mapLimitStatus(tracker.uiStatusByTxHash[txHash], estimatedTime: estimatedTime))
-            for await _ in tracker.objectWillChange.values {
-                // `objectWillChange` fires before the underlying map updates —
-                // hop the main runloop so the read sees the post-publish value.
-                await MainActor.run {
-                    onStatus(Self.mapLimitStatus(tracker.uiStatusByTxHash[txHash], estimatedTime: estimatedTime))
-                }
+            guard !Task.isCancelled else { return }
+            // Observe the emitted value: objectWillChange is a pre-write signal
+            // and does not support AsyncPublisher's one-at-a-time demand.
+            // Keep the latest status when a burst arrives while the UI is busy.
+            let (updates, continuation) = AsyncStream<SwapTrackingUiStatus?>.makeStream(
+                bufferingPolicy: .bufferingNewest(1)
+            )
+            let subscription = tracker.$uiStatusByTxHash.sink { statuses in
+                continuation.yield(statuses[txHash])
+            }
+            defer {
+                subscription.cancel()
+                continuation.finish()
+            }
+            for await status in updates {
+                guard !Task.isCancelled else { return }
+                onStatus(Self.mapLimitStatus(status, estimatedTime: estimatedTime))
             }
         }
     }
