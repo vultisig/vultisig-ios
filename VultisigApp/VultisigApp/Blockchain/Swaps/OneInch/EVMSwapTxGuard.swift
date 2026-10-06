@@ -8,6 +8,7 @@ import BigInt
 
 enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
     case malformedValue(String)
+    case malformedAmount(String)
     case coinMismatch
     case unrecognizedProvider(String)
     case unknownRouter(router: String, provider: String, chain: String)
@@ -19,6 +20,8 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
         switch self {
         case .malformedValue(let value):
             return "EVM swap tx.value '\(value)' is not a non-negative integer"
+        case .malformedAmount(let amount):
+            return "EVM swap fromAmount '\(amount)' is not a non-negative integer"
         case .coinMismatch:
             return "EVM swap payload source coin does not match the coin being signed"
         case .unrecognizedProvider(let provider):
