@@ -80,6 +80,10 @@ enum EVMSwapTxGuard {
 
         let rawProvider = payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let provider = SwapProviderId.from(rawValue: rawProvider)
+        // SwapKit skips the router pin, so only its exact wire id earns that, as on the SDK.
+        if provider == .swapkit, payload.provider != .swapkit {
+            throw EVMSwapTxGuardError.unrecognizedProvider(payload.provider.rawValue)
+        }
         let to = tx.to.lowercased()
 
         let routers: Set<String>?
@@ -131,9 +135,7 @@ enum EVMSwapTxGuard {
     /// The recipient of the SwapKit ERC-20 deposit `payload` signs, decoded from
     /// its calldata by `swapKitErc20DepositRecipient`; nil when it is not one.
     static func swapKitDepositRecipient(of payload: GenericSwapPayload) throws -> String? {
-        let rawProvider = payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard SwapProviderId.from(rawValue: rawProvider) == .swapkit,
-              payload.fromCoin.chain.chainType == .EVM else { return nil }
+        guard payload.provider == .swapkit, payload.fromCoin.chain.chainType == .EVM else { return nil }
         let tx = payload.quote.tx
         guard let value = BigUInt(tx.value), value.bitWidth <= 256 else {
             throw EVMSwapTxGuardError.malformedValue(tx.value)

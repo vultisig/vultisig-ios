@@ -237,7 +237,7 @@ private extension VSKeysignPayload {
     /// `BigInt(stringLiteral:)` drops a sign, so '+100' would sign as 100.
     func requireSwapKitWireFromAmount() throws {
         guard case .oneinchSwapPayload(let swap) = swapPayload,
-              SwapProviderId.from(rawValue: swap.provider.trimmingCharacters(in: .whitespacesAndNewlines)) == .swapkit
+              SwapProviderId.from(rawValue: swap.provider) == .swapkit
         else { return }
         let amount = swap.fromAmount
         guard !amount.isEmpty, amount.allSatisfy({ $0.isASCII && $0.isNumber }) else {
