@@ -1132,7 +1132,7 @@ private extension SwapDetailsViewModel {
             gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
             solanaAtaRent = resolvedAtaRent
-            storageReserve = chainSpecific.nearStorageReserve ?? .zero
+            storageReserve = chainSpecific.nearStorageReserve
             return true
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

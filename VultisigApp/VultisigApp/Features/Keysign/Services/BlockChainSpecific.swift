@@ -80,11 +80,10 @@ enum BlockChainSpecific: Codable, Hashable {
     /// limit or a cap, because NEAR charges the gas it actually burns.
     ///
     /// `storageReserve` is local-only, like `Tron.feeLimit`: the balance the
-    /// account must keep to back its own storage (zero at `<= 770` bytes,
-    /// NEP-448), which MAX and the balance checks have to leave behind. It does
-    /// not travel on the wire — a co-signer that needs it re-reads the chain —
-    /// so a relayed payload decodes with nil.
-    case Near(nonce: UInt64, blockHash: Data, gasFee: String, storageReserve: BigInt? = nil)
+    /// account must keep to back its own storage, which MAX and the balance
+    /// checks leave behind. It is not on the wire, so a relayed payload decodes
+    /// with zero and a co-signer that needs it re-reads the chain.
+    case Near(nonce: UInt64, blockHash: Data, gasFee: String, storageReserve: BigInt = .zero)
 
     /// Return a copy with the EVM gas limit replaced. No-op for non-EVM cases
     /// (gas-limit overrides only apply to Ethereum-family swaps). Used to honour
@@ -192,13 +191,10 @@ enum BlockChainSpecific: Codable, Hashable {
         return zcashBranchId
     }
 
-    /// Balance the account must keep to back its own storage, for the chains
-    /// that require one beyond the quoted fee. `nil` — not `.zero` — when the
-    /// device has no reading, so a caller can tell "nothing is reserved" from
-    /// "reserve unknown".
-    var nearStorageReserve: BigInt? {
+    /// Balance a NEAR account must keep to back its own storage; zero for every other chain.
+    var nearStorageReserve: BigInt {
         guard case .Near(_, _, _, let storageReserve) = self else {
-            return nil
+            return .zero
         }
         return storageReserve
     }

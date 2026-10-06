@@ -429,7 +429,7 @@ final class Near: XCTestCase {
         XCTAssertEqual(gasFee, Self.namedGasFee.description)
 
         // The local-only storage reserve never travels; a co-signer re-reads it.
-        XCTAssertNil(decoded.chainSpecific.nearStorageReserve)
+        XCTAssertEqual(decoded.chainSpecific.nearStorageReserve, .zero)
     }
 
     // MARK: - Native-only rejections

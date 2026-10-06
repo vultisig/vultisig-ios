@@ -126,7 +126,7 @@ struct SendCryptoVerifyLogic {
             fee = chainSpecific.gas
         }
 
-        return FeeResult(fee: fee, gas: fee, reserve: chainSpecific.nearStorageReserve ?? .zero)
+        return FeeResult(fee: fee, gas: fee, reserve: chainSpecific.nearStorageReserve)
     }
 
     // MARK: - Balance Validation
@@ -789,7 +789,7 @@ struct SendCryptoVerifyLogic {
             let amount = Swift.min(tx.amountInRaw, NearFees.maxSendable(
                 amount: tx.coin.balanceRaw,
                 gasReservation: chainSpecific.gas,
-                storageReserve: chainSpecific.nearStorageReserve ?? .zero
+                storageReserve: chainSpecific.nearStorageReserve
             ))
             guard amount > 0 else {
                 throw HelperError.runtimeError("walletBalanceExceededError")

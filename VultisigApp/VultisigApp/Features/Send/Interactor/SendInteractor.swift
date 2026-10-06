@@ -246,7 +246,7 @@ extension SendInteractor {
             return SendInteractorFeeResult(
                 fee: chainSpecific.gas,
                 gas: chainSpecific.gas,
-                reserve: chainSpecific.nearStorageReserve ?? .zero
+                reserve: chainSpecific.nearStorageReserve
             )
         }
     }
