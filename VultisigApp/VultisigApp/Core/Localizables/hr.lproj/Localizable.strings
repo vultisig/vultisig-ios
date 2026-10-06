@@ -1533,7 +1533,6 @@
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
-"swap.deposit_address" = "Adresa za uplatu";
 "swap.duration.instant" = "Trenutno";
 "swap.included_in_rate" = "uključeno u ponuđeni tečaj";
 "swap.outbound_fee" = "Izlazna naknada";
@@ -1551,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Primijenjeni popusti:";
+"swapDepositAddress" = "Adresa za uplatu";
 "swapEnterAmountIn" = "Unesite iznos u %@";
 "swapErrorAddressScreeningTitle" = "Provjera Adrese Nije Uspjela";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";

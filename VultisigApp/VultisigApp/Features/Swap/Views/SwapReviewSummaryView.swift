@@ -34,7 +34,7 @@ struct SwapReviewSummaryView: View {
             }
 
             if let deposit = summary.depositRecipient {
-                KeysignReviewRow(label: "swap.deposit_address".localized, value: deposit)
+                KeysignReviewRow(label: "swapDepositAddress".localized, value: deposit)
             }
 
             KeysignReviewHairline()

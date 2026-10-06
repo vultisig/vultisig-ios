@@ -1533,7 +1533,6 @@
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
 "swap" = "스왑";
-"swap.deposit_address" = "입금 주소";
 "swap.duration.instant" = "즉시";
 "swap.included_in_rate" = "제시된 환율에 포함됨";
 "swap.outbound_fee" = "아웃바운드 수수료";
@@ -1551,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "스왑 금액이 너무 작습니다. 권장 금액 %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "적용된 할인:";
+"swapDepositAddress" = "입금 주소";
 "swapEnterAmountIn" = "%@ 단위로 금액 입력";
 "swapErrorAddressScreeningTitle" = "주소 확인 실패";
 "swapErrorAmountTooSmallDescription" = "스왑 금액이 너무 작습니다. 금액을 늘려주세요.";

@@ -1533,7 +1533,6 @@
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";
-"swap.deposit_address" = "Deposit Address";
 "swap.duration.instant" = "Instant";
 "swap.included_in_rate" = "included in quoted rate";
 "swap.outbound_fee" = "Outbound Fee";
@@ -1551,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Applied Discounts:";
+"swapDepositAddress" = "Deposit Address";
 "swapEnterAmountIn" = "Enter amount in %@";
 "swapErrorAddressScreeningTitle" = "Address Check Failed";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";

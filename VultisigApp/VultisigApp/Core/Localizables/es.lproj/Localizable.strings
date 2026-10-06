@@ -1533,7 +1533,6 @@
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
 "swap" = "Intercambio";
-"swap.deposit_address" = "Dirección de depósito";
 "swap.duration.instant" = "Instantáneo";
 "swap.included_in_rate" = "incluido en la tarifa cotizada";
 "swap.outbound_fee" = "Tarifa de Salida";
@@ -1551,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Descuentos aplicados:";
+"swapDepositAddress" = "Dirección de depósito";
 "swapEnterAmountIn" = "Introducir importe en %@";
 "swapErrorAddressScreeningTitle" = "Verificación de Dirección Fallida";
 "swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";
