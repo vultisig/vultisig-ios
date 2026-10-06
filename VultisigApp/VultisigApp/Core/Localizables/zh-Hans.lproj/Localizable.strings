@@ -964,6 +964,7 @@
 "nameYourVault" = "命名您的保险库";
 "native" = "原生";
 "nearErrorBroadcastHashMismatch" = "NEAR 广播为本地哈希为 %2$@ 的交易返回了 %1$@";
+"nearErrorBurnRecipient" = "NEAR 收款方是全零账户，没有任何密钥控制该账户；发送到该账户的资金永远无法找回";
 "nearErrorContractPayload" = "NEAR 原生转账不支持合约负载";
 "nearErrorCustomSignPayload" = "NEAR 原生转账不支持自定义签名负载";
 "nearErrorFunctionCallKey" = "%@ 的 NEAR 签名密钥是函数调用密钥；原生转账需要完全访问权限";

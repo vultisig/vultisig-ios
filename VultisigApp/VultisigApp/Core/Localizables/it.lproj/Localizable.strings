@@ -964,6 +964,7 @@
 "nameYourVault" = "Dai un nome al tuo vault";
 "native" = "Nativo";
 "nearErrorBroadcastHashMismatch" = "La trasmissione NEAR ha restituito %1$@ per una transazione con hash locale %2$@";
+"nearErrorBurnRecipient" = "Il destinatario NEAR è l'account di soli zeri, che nessuna chiave controlla; i fondi inviati lì non possono mai essere recuperati";
 "nearErrorContractPayload" = "I trasferimenti NEAR nativi non supportano payload di contratto";
 "nearErrorCustomSignPayload" = "I trasferimenti NEAR nativi non supportano payload di firma personalizzati";
 "nearErrorFunctionCallKey" = "La chiave di firma NEAR per %@ è una chiave function-call; un trasferimento nativo richiede l'accesso completo";

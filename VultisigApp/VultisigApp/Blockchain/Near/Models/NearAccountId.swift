@@ -22,11 +22,19 @@ enum NearAccountId {
     /// cannot address.
     private static let unsupportedHexPrefixed = regex("^(0x|0s)[0-9a-f]{40}\\z")
 
+    /// The implicit account of the all-zero key: valid, with no known private key.
+    private static let burnAccount = String(repeating: "0", count: 64)
+
     private static let minimumLength = 2
     private static let maximumLength = 64
 
     static func isImplicit(_ accountId: String) -> Bool {
         matches(implicit, accountId)
+    }
+
+    /// Whether funds sent to `accountId` are unspendable.
+    static func isBurnAccount(_ accountId: String) -> Bool {
+        accountId == burnAccount
     }
 
     static func isValid(_ accountId: String) -> Bool {

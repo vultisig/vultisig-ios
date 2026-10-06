@@ -200,6 +200,9 @@ enum NearHelper {
         guard NearAccountId.isValid(keysignPayload.toAddress) else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, keysignPayload.toAddress))
         }
+        guard !NearAccountId.isBurnAccount(keysignPayload.toAddress) else {
+            throw HelperError.runtimeError("nearErrorBurnRecipient".localized)
+        }
         guard keysignPayload.toAmount > 0, keysignPayload.toAmount <= maxU128 else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, keysignPayload.toAmount.description))
         }

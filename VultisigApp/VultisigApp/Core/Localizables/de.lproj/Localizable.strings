@@ -964,6 +964,7 @@
 "nameYourVault" = "Benennen Sie Ihren Tresor";
 "native" = "Nativ";
 "nearErrorBroadcastHashMismatch" = "Die NEAR-Übertragung meldete %1$@ für eine Transaktion mit dem lokalen Hash %2$@";
+"nearErrorBurnRecipient" = "Der NEAR-Empfänger ist das Null-Konto, das von keinem Schlüssel kontrolliert wird; dorthin gesendete Gelder können nie wiederhergestellt werden";
 "nearErrorContractPayload" = "Native NEAR-Überweisungen unterstützen keine Vertrags-Payloads";
 "nearErrorCustomSignPayload" = "Native NEAR-Überweisungen unterstützen keine benutzerdefinierten Signatur-Payloads";
 "nearErrorFunctionCallKey" = "Der NEAR-Signaturschlüssel für %@ ist ein Function-Call-Schlüssel; eine native Überweisung benötigt vollen Zugriff";

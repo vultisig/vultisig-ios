@@ -964,6 +964,7 @@
 "nameYourVault" = "볼트 이름 짓기";
 "native" = "네이티브";
 "nearErrorBroadcastHashMismatch" = "NEAR 브로드캐스트가 로컬 해시가 %2$@인 트랜잭션에 대해 %1$@을(를) 반환했습니다";
+"nearErrorBurnRecipient" = "NEAR 수신자가 어떤 키도 제어하지 않는 전부 0인 계정입니다. 이 계정으로 보낸 자금은 절대 복구할 수 없습니다";
 "nearErrorContractPayload" = "NEAR 네이티브 전송은 컨트랙트 페이로드를 지원하지 않습니다";
 "nearErrorCustomSignPayload" = "NEAR 네이티브 전송은 사용자 지정 서명 페이로드를 지원하지 않습니다";
 "nearErrorFunctionCallKey" = "%@의 NEAR 서명 키는 함수 호출 키입니다. 네이티브 전송에는 전체 액세스 권한이 필요합니다";
