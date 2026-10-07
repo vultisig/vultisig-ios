@@ -447,6 +447,13 @@ extension HomeScreen {
             return
         }
 
+        // Checked before the switch: a join dropped for a live ceremony must not
+        // leave the selection on a different vault than the one being worked in.
+        guard !router.containsRoute(where: Self.ownsLiveCeremony) else {
+            deeplinkViewModel.resetData()
+            return
+        }
+
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
         navigateToJoinKeysign()
@@ -705,11 +712,24 @@ extension HomeScreen {
     }
 
     fileprivate func navigateToJoinKeysign() {
-        guard let vault = appViewModel.selectedVault else { return }
+        guard let vault = appViewModel.selectedVault,
+              !router.containsRoute(where: Self.ownsLiveCeremony) else { return }
+        // The join flow is an overlay on Home, so any route pushed above Home would hide it.
+        router.navigateToRoot()
         scannerKeysignHandoff.requestJoin()
         pendingReviewKind = nil
         presentedReview = nil
         joinKeysignSession = JoinSession(vault: vault, receivedURL: deeplinkViewModel.receivedUrl)
+    }
+
+    /// Routes whose screen owns a running keysign or keygen. A new vault's backup
+    /// is pushed above its keygen route, so it is covered too. Popping one would
+    /// abandon that work, so an incoming join is dropped instead.
+    private static func ownsLiveCeremony(_ route: any NavPath) -> Bool {
+        if route is SigningRoute { return true }
+        if case .joinKeygen? = route as? OnboardingRoute { return true }
+        if case .peerDiscovery? = route as? KeygenRoute { return true }
+        return false
     }
 
     fileprivate func handleJoinStatus(
