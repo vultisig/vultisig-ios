@@ -444,15 +444,7 @@ extension SwapCryptoLogic {
             // their own `txType` branches here.
             switch swapResponse.tx {
             case .evm, .solana:
-                let evmQuote = try buildEVMQuoteFromSwapKit(swapResponse: swapResponse)
-                let payload = buildSwapKitGenericPayload(
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    fromAmountInCoin: amountInCoin,
-                    toAmountDecimal: toDecimal,
-                    quote: evmQuote,
-                    swapResponse: swapResponse
-                )
+                let payload = try buildSwapKitGenericPayload(transaction: transaction, swapResponse: swapResponse)
                 return try await keysignFactory.buildTransfer(
                     coin: fromCoin,
                     toAddress: swapResponse.targetAddress,
@@ -785,6 +777,27 @@ extension SwapCryptoLogic {
                 vault: vault
             )
         }
+    }
+
+    /// The aggregator payload `transaction`'s SwapKit EVM or Solana route signs.
+    /// An ERC-20 deposit is bound to the sold amount and `targetAddress`.
+    static func buildSwapKitGenericPayload(
+        transaction: SwapTransaction,
+        swapResponse: SwapKitSwapResponse
+    ) throws -> GenericSwapPayload {
+        let fromCoin = transaction.fromCoin
+        let amount = transaction.amountInCoinDecimal
+        if swapResponse.isErc20DepositTransfer(fromCoin: fromCoin) {
+            try swapResponse.validateErc20DepositTransfer(fromCoin: fromCoin, amount: amount)
+        }
+        return buildSwapKitGenericPayload(
+            fromCoin: fromCoin,
+            toCoin: transaction.toCoin,
+            fromAmountInCoin: amount,
+            toAmountDecimal: transaction.toAmountDecimal,
+            quote: try buildEVMQuoteFromSwapKit(swapResponse: swapResponse),
+            swapResponse: swapResponse
+        )
     }
 
     /// SwapKit's EVM and Solana routes: their wire shape matches
