@@ -985,7 +985,13 @@
 "nearErrorSenderKeyMismatch" = "NEAR sender address does not match the signing public key: %1$@ != %2$@";
 "nearErrorSenderNotImplicit" = "NEAR sender %@ is not an implicit account";
 "nearErrorSignatureVerificationFailed" = "NEAR signature verification failed";
-"nearErrorSwapPayload" = "NEAR native transfers do not support swap payloads";
+"nearErrorSwapKitDepositAmountMismatch" = "NEAR SwapKit deposit amount %1$@ is not the transfer amount %2$@";
+"nearErrorSwapKitDepositMemo" = "NEAR SwapKit deposits cannot carry a memo";
+"nearErrorSwapKitDepositNotImplicit" = "NEAR SwapKit deposit address %@ is not an implicit account";
+"nearErrorSwapKitDepositOnly" = "NEAR native transfers support SwapKit deposit swaps only";
+"nearErrorSwapKitDepositPrebuilt" = "NEAR SwapKit deposits are plain transfers and cannot carry a pre-built transaction";
+"nearErrorSwapKitDepositReceiverMismatch" = "NEAR SwapKit deposit address %1$@ is not the transfer receiver %2$@";
+"nearErrorSwapKitNotNativeNear" = "NEAR SwapKit deposit must sell native NEAR";
 "nearErrorTokensUnsupported" = "NEAR tokens are not supported by the native send path";
 "nearErrorUnknownAccessKey" = "NEAR access key is not on the account: %@";
 "nearErrorUnknownAccount" = "NEAR account %@ does not exist";

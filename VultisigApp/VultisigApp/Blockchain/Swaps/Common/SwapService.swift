@@ -784,7 +784,8 @@ private extension SwapService {
         let response = try await service.buildSwapTx(
             routeId: route.routeId,
             sourceAddress: fromCoin.address,
-            destinationAddress: destination
+            destinationAddress: destination,
+            depositOnly: fromCoin.chain == .near
         )
         try SwapKitService.validateSigningCapability(
             response: response,
