@@ -121,6 +121,9 @@ extension KeysignPayload: ProtoMappable {
         }
 
         self.coin = try ProtoCoinResolver.resolve(coin: proto.coin)
+        if coin.chain.chainType == .EVM {
+            try proto.requireSwapKitWireFromAmount()
+        }
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
@@ -224,6 +227,20 @@ extension KeysignPayload: ProtoMappable {
             if let dappMetadata = dappMetadata?.normalized {
                 $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
+        }
+    }
+}
+
+private extension VSKeysignPayload {
+    /// Refuses a SwapKit EVM `fromAmount` that is not plain decimal digits, the
+    /// spelling vultisig-sdk's `getKeysignSwapKitDepositRecipient` requires.
+    /// `BigInt(stringLiteral:)` drops a sign, so '+100' would sign as 100.
+    func requireSwapKitWireFromAmount() throws {
+        guard case .oneinchSwapPayload(let swap) = swapPayload,
+              SwapProviderId.from(rawValue: swap.provider) == .swapkit
+        else { return }
+        guard swap.fromAmount.isUnsignedDecimal else {
+            throw EVMSwapTxGuardError.malformedAmount(swap.fromAmount)
         }
     }
 }

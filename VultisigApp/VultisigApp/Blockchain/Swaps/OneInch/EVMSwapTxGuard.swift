@@ -13,6 +13,7 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
     case unknownRouter(router: String, provider: String, chain: String)
     case valueExceedsQuotedAmount(value: String, quoted: String)
     case valueFromTokenSource(value: String)
+    case malformedAmount(String)
 
     var errorDescription: String? {
         switch self {
@@ -28,6 +29,8 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
             return "EVM swap sends \(value) native units, more than the quoted \(quoted)"
         case .valueFromTokenSource(let value):
             return "EVM swap from an ERC-20 source must not send native value, got \(value)"
+        case .malformedAmount(let amount):
+            return "EVM swap fromAmount '\(amount)' is not a non-negative integer"
         }
     }
 }
@@ -71,11 +74,20 @@ enum EVMSwapTxGuard {
 
         let rawProvider = payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let provider = SwapProviderId.from(rawValue: rawProvider)
+        // SwapKit skips the router pin, so only its exact wire id earns that, as on the SDK.
+        if provider == .swapkit, payload.provider != .swapkit {
+            throw EVMSwapTxGuardError.unrecognizedProvider(payload.provider.rawValue)
+        }
         let to = tx.to.lowercased()
 
         let routers: Set<String>?
         switch provider {
         case .swapkit:
+            // `BigUInt` reads a leading '+', which vultisig-sdk's
+            // `getKeysignSwapKitDepositRecipient` refuses.
+            guard tx.value.isUnsignedDecimal else {
+                throw EVMSwapTxGuardError.malformedValue(tx.value)
+            }
             routers = nil
         case .oneInch, .kyberSwap, .lifi, .jupiter:
             routers = Self.routers(for: provider, chain: chain)
