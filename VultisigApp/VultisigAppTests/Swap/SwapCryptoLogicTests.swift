@@ -288,7 +288,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .oneinch(makeEVMQuote(gas: routeGas, gasPrice: "500000000"), fee: quoteFee)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: quoteFee
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: quoteFee
         )
 
         XCTAssertEqual(result, maxFeePerGas * BigInt(routeGas))
@@ -305,7 +305,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .oneinch(makeEVMQuote(gas: routeGas, gasPrice: "3000000000"), fee: nil)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
         )
 
         XCTAssertEqual(result, quoteGasPrice * BigInt(routeGas))
@@ -319,7 +319,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .lifi(makeEVMQuote(gas: 359_942, gasPrice: "500000000"), fee: nil, integratorFee: nil)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(900_000), fee: .zero
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(900_000), fee: .zero
         )
 
         XCTAssertEqual(result, maxFeePerGas * BigInt(900_000))
@@ -337,7 +337,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote = makeSwapKitQuote(fee: staleSeed, gasHex: "0x33450", gasPriceHex: "0x3b9aca00")
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: staleSeed
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: staleSeed
         )
 
         XCTAssertEqual(result, maxFeePerGas * routeGas)
@@ -353,7 +353,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote = makeSwapKitQuote(fee: nil, gasHex: "0x0", gasPriceHex: "0x3b9aca00")
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: maxFeePerGas, gasLimit: BigInt(40_000), fee: .zero
         )
 
         XCTAssertEqual(result, maxFeePerGas * BigInt(EVMHelper.defaultETHSwapGasUnit))
@@ -370,7 +370,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .thorchain(makeThorQuote())
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: rune, gas: BigInt(1_000), gasLimit: .zero, fee: BigInt(7_777)
+            quote: quote, fromCoin: rune, feeCoin: rune, gas: BigInt(1_000), gasLimit: .zero, fee: BigInt(7_777)
         )
 
         XCTAssertEqual(result, BigInt(7_777), "Native-protocol swaps have no route gas and keep the quote fee")
@@ -384,7 +384,7 @@ final class SwapCryptoLogicTests: XCTestCase {
         let quote: SwapQuote = .oneinch(makeEVMQuote(gas: 359_942, gasPrice: "500000000"), fee: quoteFee)
 
         let result = SwapCryptoLogic.displayedSwapNetworkFeeWei(
-            quote: quote, feeCoin: eth, gas: .zero, gasLimit: .zero, fee: quoteFee
+            quote: quote, fromCoin: eth, feeCoin: eth, gas: .zero, gasLimit: .zero, fee: quoteFee
         )
 
         XCTAssertEqual(result, quoteFee)
