@@ -88,6 +88,9 @@ struct ChainHelperTestCase: Decodable {
 /// - `evm-chain-matrix` and `tcy` were added by running the Swift signer and
 ///   the TypeScript core signer over the identical payload and requiring the
 ///   two to produce byte-identical hashes.
+/// - `near` was pinned from an independent Borsh encoding of the NEAR
+///   transaction and reproduced by both the Swift and the TypeScript core
+///   signers; vultisig-android does not carry NEAR yet.
 /// - Every other case here is also carried by vultisig-android (and, for the
 ///   `cosmos-sdk-sign-*` cases, by the TypeScript core), so those hashes too
 ///   carry agreement from at least two signers — **with one known exception**:
@@ -119,6 +122,7 @@ enum ChainHelperFixture: String, CaseIterable {
     case lifiswap
     case maya
     case mayaswap
+    case near
     case pol
     case qbtc
     case sei
@@ -159,6 +163,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .lifiswap: return 2
         case .maya: return 3
         case .mayaswap: return 2
+        case .near: return 2
         case .pol: return 1
         case .qbtc: return 1
         case .sei: return 2
@@ -216,6 +221,7 @@ final class ChainHelperTests: XCTestCase {
     func testLifiswapFixture() throws { try runFixture(.lifiswap) }
     func testMayaFixture() throws { try runFixture(.maya) }
     func testMayaswapFixture() throws { try runFixture(.mayaswap) }
+    func testNearFixture() throws { try runFixture(.near) }
     func testPolFixture() throws { try runFixture(.pol) }
     func testQbtcFixture() throws { try runFixture(.qbtc) }
     func testSeiFixture() throws { try runFixture(.sei) }
@@ -508,6 +514,8 @@ final class ChainHelperTests: XCTestCase {
             result += try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .kujira:
             throw HelperError.runtimeError("Unsupported Cosmos chain: \(chain)")
+        case .near:
+            result += try NearHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ton:
             result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:

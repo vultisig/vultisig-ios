@@ -184,7 +184,7 @@ extension Coin {
             // 1inch live-confirmed on 4663: /quote and /swap return executable
             // calldata to its deployed router (0x5a70…89c7).
             return [.oneinch(chain), .lifi, .kyberswap(chain)]
-        case .polkadot, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
+        case .polkadot, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor, .near:
             return []
         }
     }

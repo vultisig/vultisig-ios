@@ -92,11 +92,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
         transaction: SendTransaction,
         interactor: SendInteractor = DefaultSendInteractor.live,
         prebuiltKeysignPayload: KeysignPayload? = nil,
-        rippleService: RippleService = .shared
+        rippleService: RippleService = .shared,
+        nearService: NearService = .shared
     ) {
         self.transaction = transaction
         self.interactor = interactor
-        self.logic = SendCryptoVerifyLogic(interactor: interactor, rippleService: rippleService)
+        self.logic = SendCryptoVerifyLogic(interactor: interactor, rippleService: rippleService, nearService: nearService)
         self.prebuiltKeysignPayload = prebuiltKeysignPayload
     }
 
@@ -154,14 +155,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 // before executing the transaction, so the amount has to leave
                 // room for those on top of the L2 gas. Zero on every other
                 // chain, which leaves the arithmetic exactly as it was.
+                let opStackReserve = await logic.opStackFeeReserve(
+                    tx: transaction,
+                    gasLimit: feeResult.gasLimit
+                )
                 let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
                     coin: transaction.coin,
                     fee: feeResult.fee,
                     previousAmountRaw: transaction.amountInRaw,
-                    extraReserve: await logic.opStackFeeReserve(
-                        tx: transaction,
-                        gasLimit: feeResult.gasLimit
-                    )
+                    extraReserve: feeResult.reserve + opStackReserve
                 )
                 if candidate > 0 {
                     newAmount = SendCryptoLogic.amountString(coin: transaction.coin, raw: candidate)
@@ -185,7 +187,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 transaction = transaction.copy(amount: newAmount)
             }
 
-            try await adjustAmountForFeeShortfallIfNeeded(gasLimit: feeResult.gasLimit)
+            try await adjustAmountForFeeShortfallIfNeeded(gasLimit: feeResult.gasLimit, reserve: feeResult.reserve)
 
             isCalculatingFee = false
 
@@ -244,7 +246,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     ///   clamp fails any of those, the error surfaces and Sign stays disabled.
     ///
     /// Nothing is ever signed that the screen did not show.
-    private func adjustAmountForFeeShortfallIfNeeded(gasLimit: BigInt?) async throws {
+    private func adjustAmountForFeeShortfallIfNeeded(gasLimit: BigInt?, reserve: BigInt) async throws {
         // Same skip as `validateBalanceWithFee`: a pre-built payload's
         // `transaction` is display-only and its balance is not the real source.
         guard prebuiltKeysignPayload == nil,
@@ -254,8 +256,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
         // Read the OP-stack surcharges only now. It is a network call, and it is
         // owed only by a send that is actually being clamped to the balance.
+        // Chains that reserve balance beyond the fee quote it into the same
+        // term, so the clamp lands where the MAX path does.
         let pending = transaction
-        let extraReserve = await logic.opStackFeeReserve(tx: pending, gasLimit: gasLimit)
+        let extraReserve = reserve + (await logic.opStackFeeReserve(tx: pending, gasLimit: gasLimit))
         // The reserve lookup fails open and never throws, so cancellation has to
         // be asked for explicitly — otherwise a superseded load pass carries on
         // and rewrites the amount a newer one just published.
@@ -336,6 +340,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // TAO counterpart: a `transfer_keep_alive` that would leave the
             // destination below the existential deposit fails on-chain.
             try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
+            // NEAR counterpart: the account has to keep enough behind to back
+            // its own storage, or nearcore rejects the transfer after the
+            // ceremony has run.
+            try await logic.validateNearStorageReserveIfNeeded(tx: transaction, gasReservation: transaction.fee)
+            // A transfer to a named NEAR account that does not exist burns its gas.
+            try await logic.validateNearReceiverIfNeeded(tx: transaction)
         } catch is CancellationError {
             // Propagate — a cancelled load must abort the whole load pass (its
             // caller returns without running post-load work), not be swallowed
@@ -427,9 +437,16 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateBittensorDestinationIfNeeded(tx: transaction)
+        try await logic.validateNearReceiverIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         syncRefittedAmount(with: keysignPayload)
+        // After the build: the payload re-reads the gas price, and the balance
+        // has to cover the reservation it actually signs with.
+        try await logic.validateNearStorageReserveIfNeeded(
+            tx: transaction,
+            gasReservation: keysignPayload.chainSpecific.gas
+        )
         return keysignPayload
     }
 
@@ -444,7 +461,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// is shown a number that isn't the one being signed. No-op for every other
     /// send, whose amount the payload build leaves untouched.
     private func syncRefittedAmount(with payload: KeysignPayload) {
-        guard SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: transaction),
+        guard SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: transaction)
+                || SendCryptoVerifyLogic.needsNearBalanceRefit(tx: transaction),
               payload.toAmount != transaction.amountInRaw else {
             return
         }

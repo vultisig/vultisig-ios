@@ -11,7 +11,15 @@ import Foundation
 /// fake that returns `.confirmed` / `.notFound` / throws without touching the
 /// network. `TransactionStatusService.shared` is the production conformer.
 protocol TransactionStatusChecking: Sendable {
-    func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult
+    /// `senderAccountId` is the sender's account id for chains whose lookup
+    /// needs it (NEAR: `(tx_hash, sender_account_id)`). Pass `nil` when the
+    /// caller does not know it — such a chain then fails closed instead of
+    /// reporting an unknown hash as pending forever.
+    func checkTransactionStatus(
+        txHash: String,
+        senderAccountId: String?,
+        chain: Chain
+    ) async throws -> TransactionStatusResult
 }
 
 final class TransactionStatusService: TransactionStatusChecking, @unchecked Sendable {
@@ -29,15 +37,20 @@ final class TransactionStatusService: TransactionStatusChecking, @unchecked Send
     private let tonProvider = TonTransactionStatusProvider()
     private let rippleProvider = RippleTransactionStatusProvider()
     private let tronProvider = TronTransactionStatusProvider()
+    private let nearProvider = NearTransactionStatusProvider()
 
     private init() {}
 
     /// Check transaction status for any chain
-    func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkTransactionStatus(
+        txHash: String,
+        senderAccountId: String?,
+        chain: Chain
+    ) async throws -> TransactionStatusResult {
         guard chain.isSupported else {
             throw CosmosServiceError.unsupportedChain
         }
-        let query = TransactionStatusQuery(txHash: txHash, chain: chain)
+        let query = TransactionStatusQuery(txHash: txHash, chain: chain, senderAccountId: senderAccountId)
         let provider = getProvider(for: chain)
         return try await provider.checkStatus(query: query)
     }
@@ -71,6 +84,8 @@ final class TransactionStatusService: TransactionStatusChecking, @unchecked Send
             return rippleProvider
         case .Tron:
             return tronProvider
+        case .Near:
+            return nearProvider
         }
     }
 }

@@ -18,15 +18,18 @@ struct SendCryptoVerifyLogic {
     let interactor: SendInteractor
     private let rippleService: RippleService
     private let bittensorService: BittensorBalanceFetching
+    private let nearService: NearService
 
     init(
         interactor: SendInteractor = DefaultSendInteractor.live,
         rippleService: RippleService = .shared,
-        bittensorService: BittensorBalanceFetching = BittensorService.shared
+        bittensorService: BittensorBalanceFetching = BittensorService.shared,
+        nearService: NearService = .shared
     ) {
         self.interactor = interactor
         self.rippleService = rippleService
         self.bittensorService = bittensorService
+        self.nearService = nearService
     }
 
     // MARK: - Fee Calculation
@@ -48,6 +51,10 @@ struct SendCryptoVerifyLogic {
         /// Carrying the planned amount is what keeps the figure Verify confirms
         /// equal to the one that gets signed.
         var maxSendAmountRaw: BigInt? = nil
+        /// Balance the chain requires beyond the quoted fee without spending it
+        /// (NEAR's storage backing). MAX and the balance clamp subtract it.
+        /// `.zero` for every chain that reserves nothing.
+        var reserve: BigInt = .zero
     }
 
     @MainActor
@@ -119,7 +126,7 @@ struct SendCryptoVerifyLogic {
             fee = chainSpecific.gas
         }
 
-        return FeeResult(fee: fee, gas: fee)
+        return FeeResult(fee: fee, gas: fee, reserve: chainSpecific.nearStorageReserve)
     }
 
     // MARK: - Balance Validation
@@ -241,6 +248,58 @@ struct SendCryptoVerifyLogic {
     @MainActor
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
+    }
+
+    /// Refuses a native NEAR send that would leave the account unable to back its
+    /// storage, which nearcore rejects with `LackBalanceForState` after the gas is
+    /// burnt. Read live, since storage usage moves after the fee was quoted.
+    /// `gasReservation` is the one the send signs: the payload's once built.
+    func validateNearStorageReserveIfNeeded(tx: SendTransaction, gasReservation: BigInt) async throws {
+        guard tx.coin.chain == .near, tx.coin.isNativeToken else { return }
+
+        async let accountRead = nearService.fetchAccount(accountId: tx.coin.address)
+        async let feesRead = nearService.fetchFeeConfig()
+        let (account, fees) = try await (accountRead, feesRead)
+
+        guard let account else {
+            throw NearError.unknownAccount(tx.coin.address)
+        }
+
+        let reserve = NearFees.storageReserve(
+            storageUsage: account.storageUsage,
+            locked: account.locked,
+            storageAmountPerByte: fees.storageAmountPerByte
+        )
+        let requestedAmount = Self.needsNearBalanceRefit(tx: tx)
+            ? Swift.min(tx.amountInRaw, NearFees.maxSendable(
+                amount: tx.coin.balanceRaw,
+                gasReservation: gasReservation,
+                storageReserve: reserve
+            ))
+            : tx.amountInRaw
+        let required = NearFees.requiredAmount(
+            requestedAmount: requestedAmount,
+            gasReservation: gasReservation,
+            storageReserve: reserve
+        )
+
+        guard required > account.amount else { return }
+        throw HelperError.runtimeError("walletBalanceExceededError")
+    }
+
+    /// Pre-ceremony guard for a native NEAR send to a named account: nearcore
+    /// refunds a transfer to an account that does not exist but burns the gas.
+    /// Implicit (64-hex) receivers need no account and are not looked up.
+    /// Fails closed, like the SDK and Android: a lookup that failed blocks the
+    /// send rather than letting it reach the ceremony unchecked.
+    func validateNearReceiverIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .near, tx.coin.isNativeToken, !NearAccountId.isImplicit(tx.toAddress) else { return }
+
+        let receiver = try await nearService.fetchAccount(accountId: tx.toAddress)
+        try Task.checkCancellation()
+
+        guard receiver == nil else { return }
+        throw HelperError.runtimeError(String(format: "nearUnknownReceiverError".localized, tx.toAddress))
     }
 
     // MARK: - Destination Validation
@@ -512,6 +571,14 @@ struct SendCryptoVerifyLogic {
             && tx.coin.chainType == .EVM
     }
 
+    /// Same rule for native NEAR: a balance-derived amount is re-fitted to
+    /// `balance − gas reservation − storage reserve`, so it can never sign above it.
+    static func needsNearBalanceRefit(tx: SendTransaction) -> Bool {
+        (tx.sendMaxAmount || tx.amountWasAutoAdjusted)
+            && tx.coin.isNativeToken
+            && tx.coin.chain == .near
+    }
+
     /// Headroom a native send whose amount came from the balance has to leave on
     /// OP-stack rollups, where op-geth checks
     /// `value + gasLimit × maxFeePerGas + l1Cost + operatorCost` against the
@@ -693,6 +760,20 @@ struct SendCryptoVerifyLogic {
         tx: SendTransaction,
         chainSpecific: BlockChainSpecific
     ) async throws -> BigInt {
+        if Self.needsNearBalanceRefit(tx: tx) {
+            let gasReservation = chainSpecific.gas
+            let storageReserve = chainSpecific.nearStorageReserve
+            let amount = Swift.min(tx.amountInRaw, NearFees.maxSendable(
+                amount: tx.coin.balanceRaw,
+                gasReservation: gasReservation,
+                storageReserve: storageReserve
+            ))
+            guard amount > 0 else {
+                throw HelperError.runtimeError("walletBalanceExceededError")
+            }
+            return amount
+        }
+
         guard Self.needsEVMBalanceRefit(tx: tx) else { return tx.amountInRaw }
 
         let amount = SendCryptoLogic.evmMaxSendAmountRaw(

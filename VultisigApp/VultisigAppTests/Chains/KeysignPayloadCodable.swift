@@ -472,6 +472,29 @@ extension VSTonSpecific: @retroactive Codable {
     }
 }
 
+extension VSNearSpecific: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case nonce = "nonce"
+        case blockHash = "block_hash"
+        case gasFee = "gas_fee"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(nonce, forKey: .nonce)
+        try container.encode(blockHash, forKey: .blockHash)
+        try container.encode(gasFee, forKey: .gasFee)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        nonce = try container.decodeFlexibleUInt64(forKey: .nonce) ?? 0
+        blockHash = try container.decode(Data.self, forKey: .blockHash)
+        gasFee = try container.decode(String.self, forKey: .gasFee)
+    }
+}
+
 extension VSRippleSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case sequence = "sequence"
@@ -1163,6 +1186,8 @@ extension VSKeysignPayload: @retroactive Codable {
             try blockchainSpecificContainer.encode(specific, forKey: DynamicCodingKey("RippleSpecific"))
         case .tronSpecific(let specific):
             try blockchainSpecificContainer.encode(specific, forKey: DynamicCodingKey("TronSpecific"))
+        case .nearSpecific(let specific):
+            try blockchainSpecificContainer.encode(specific, forKey: DynamicCodingKey("NearSpecific"))
         case .none:
             print("No blockchain specific info to encode")
         }
@@ -1239,6 +1264,8 @@ extension VSKeysignPayload: @retroactive Codable {
             blockchainSpecific = .rippleSpecific(rippleSpecific)
         } else if let tronSpecific = try? blockchainSpecificContainer.decode(VSTronSpecific.self, forKey: DynamicCodingKey("TronSpecific")) {
             blockchainSpecific = .tronSpecific(tronSpecific)
+        } else if let nearSpecific = try? blockchainSpecificContainer.decode(VSNearSpecific.self, forKey: DynamicCodingKey("NearSpecific")) {
+            blockchainSpecific = .nearSpecific(nearSpecific)
         } else {
             blockchainSpecific = .none
         }
