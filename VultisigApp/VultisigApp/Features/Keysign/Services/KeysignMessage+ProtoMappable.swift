@@ -121,9 +121,7 @@ extension KeysignPayload: ProtoMappable {
         }
 
         self.coin = try ProtoCoinResolver.resolve(coin: proto.coin)
-        if coin.chain.chainType == .EVM {
-            try proto.requireSwapKitWireFromAmount()
-        }
+        try proto.requireSwapKitWireFromAmount()
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
@@ -232,15 +230,23 @@ extension KeysignPayload: ProtoMappable {
 }
 
 private extension VSKeysignPayload {
-    /// Refuses a SwapKit EVM `fromAmount` that is not plain decimal digits, the
-    /// spelling vultisig-sdk's `getKeysignSwapKitDepositRecipient` requires.
-    /// `BigInt(stringLiteral:)` drops a sign, so '+100' would sign as 100.
+    /// Refuses a SwapKit `fromAmount` on any source chain (the aggregator payload
+    /// with the `swapkit` provider and every native SwapKit payload) that is not
+    /// plain decimal digits within uint256, as vultisig-sdk's
+    /// `assertKeysignSwapKitAmounts` does. `BigInt(stringLiteral:)` drops a sign,
+    /// so '+100' would sign as 100.
     func requireSwapKitWireFromAmount() throws {
-        guard case .oneinchSwapPayload(let swap) = swapPayload,
-              SwapProviderId.from(rawValue: swap.provider) == .swapkit
-        else { return }
-        guard swap.fromAmount.isUnsignedDecimal else {
-            throw EVMSwapTxGuardError.malformedAmount(swap.fromAmount)
+        let fromAmount: String
+        switch swapPayload {
+        case .oneinchSwapPayload(let swap) where SwapProviderId.from(rawValue: swap.provider) == .swapkit:
+            fromAmount = swap.fromAmount
+        case .swapkitSwapPayload(let swap):
+            fromAmount = swap.fromAmount
+        default:
+            return
+        }
+        guard fromAmount.isUnsignedDecimal, let amount = BigUInt(fromAmount), amount.bitWidth <= 256 else {
+            throw EVMSwapTxGuardError.malformedAmount(fromAmount)
         }
     }
 }

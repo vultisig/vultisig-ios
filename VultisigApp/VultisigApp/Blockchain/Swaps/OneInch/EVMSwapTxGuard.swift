@@ -30,7 +30,7 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
         case .valueFromTokenSource(let value):
             return "EVM swap from an ERC-20 source must not send native value, got \(value)"
         case .malformedAmount(let amount):
-            return "EVM swap fromAmount '\(amount)' is not a non-negative integer"
+            return "SwapKit fromAmount '\(amount)' is not a decimal integer within uint256"
         }
     }
 }
