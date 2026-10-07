@@ -11,17 +11,20 @@ import WalletCore
 /// hash and gas price, and the runtime config the gas reservation is priced
 /// from.
 ///
-/// The node is the SDK's mainnet endpoint, so a payload prepared here and one
-/// prepared by the extension/SDK resolve the same block and the same config.
+/// The default node is the SDK's mainnet endpoint, so a payload prepared here
+/// and one prepared by the extension/SDK resolve the same block and the same
+/// config. A user's custom NEAR RPC replaces it, resolved per request.
 final class NearService {
 
     static let rpcEndpoint = Endpoint.nearServiceRpc
     static let shared = NearService()
 
     private let client: HTTPClientProtocol
+    private let resolver: RPCEndpointResolving
 
-    init(client: HTTPClientProtocol = HTTPClient()) {
+    init(client: HTTPClientProtocol = HTTPClient(), resolver: RPCEndpointResolving = CustomRPCStore.shared) {
         self.client = client
+        self.resolver = resolver
     }
 
     // MARK: - Reads
@@ -179,7 +182,7 @@ final class NearService {
         )
     }
 
-    private static let endpoint: URL = {
+    private static let defaultEndpoint: URL = {
         guard let url = URL(string: rpcEndpoint) else {
             preconditionFailure("Invalid NEAR RPC endpoint URL: \(rpcEndpoint)")
         }
@@ -204,7 +207,8 @@ final class NearService {
             "params": params
         ])
 
-        let response = try await client.request(NearAPI(baseURL: Self.endpoint, body: body))
+        let endpoint = resolver.resolvedURL(for: .near, default: Self.defaultEndpoint)
+        let response = try await client.request(NearAPI(baseURL: endpoint, body: body))
 
         let envelope: NearRPCEnvelope<Result>
         do {
