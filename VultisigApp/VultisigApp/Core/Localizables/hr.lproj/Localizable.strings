@@ -986,7 +986,13 @@
 "nearErrorSenderKeyMismatch" = "Adresa NEAR pošiljatelja ne odgovara javnom ključu za potpisivanje: %1$@ != %2$@";
 "nearErrorSenderNotImplicit" = "NEAR pošiljatelj %@ nije implicitni račun";
 "nearErrorSignatureVerificationFailed" = "Provjera NEAR potpisa nije uspjela";
-"nearErrorSwapPayload" = "Izvorni NEAR prijenosi ne podržavaju podatke zamjene";
+"nearErrorSwapKitDepositAmountMismatch" = "Iznos NEAR SwapKit depozita %1$@ nije iznos prijenosa %2$@";
+"nearErrorSwapKitDepositMemo" = "NEAR SwapKit depoziti ne mogu sadržavati memo";
+"nearErrorSwapKitDepositNotImplicit" = "Adresa NEAR SwapKit depozita %@ nije implicitni račun";
+"nearErrorSwapKitDepositOnly" = "Izvorni NEAR prijenosi podržavaju samo SwapKit depozitne zamjene";
+"nearErrorSwapKitDepositPrebuilt" = "NEAR SwapKit depoziti su obični prijenosi i ne mogu sadržavati unaprijed izrađenu transakciju";
+"nearErrorSwapKitDepositReceiverMismatch" = "Adresa NEAR SwapKit depozita %1$@ nije primatelj prijenosa %2$@";
+"nearErrorSwapKitNotNativeNear" = "NEAR SwapKit depozit mora prodavati izvorni NEAR";
 "nearErrorTokensUnsupported" = "NEAR tokeni nisu podržani na izvornom putu slanja";
 "nearErrorUnknownAccessKey" = "NEAR pristupni ključ nije na računu: %@";
 "nearErrorUnknownAccount" = "NEAR račun %@ ne postoji";

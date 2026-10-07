@@ -986,7 +986,13 @@
 "nearErrorSenderKeyMismatch" = "NEAR 발신자 주소가 서명 공개 키와 일치하지 않습니다: %1$@ != %2$@";
 "nearErrorSenderNotImplicit" = "NEAR 발신자 %@은(는) 암시적 계정이 아닙니다";
 "nearErrorSignatureVerificationFailed" = "NEAR 서명을 확인하지 못했습니다";
-"nearErrorSwapPayload" = "NEAR 네이티브 전송은 스왑 페이로드를 지원하지 않습니다";
+"nearErrorSwapKitDepositAmountMismatch" = "NEAR SwapKit 입금 금액 %1$@이(가) 전송 금액 %2$@과(와) 다릅니다";
+"nearErrorSwapKitDepositMemo" = "NEAR SwapKit 입금에는 메모를 포함할 수 없습니다";
+"nearErrorSwapKitDepositNotImplicit" = "NEAR SwapKit 입금 주소 %@은(는) 암시적 계정이 아닙니다";
+"nearErrorSwapKitDepositOnly" = "NEAR 네이티브 전송은 SwapKit 입금 스왑만 지원합니다";
+"nearErrorSwapKitDepositPrebuilt" = "NEAR SwapKit 입금은 단순 전송이므로 미리 빌드된 트랜잭션을 포함할 수 없습니다";
+"nearErrorSwapKitDepositReceiverMismatch" = "NEAR SwapKit 입금 주소 %1$@이(가) 전송 수신자 %2$@과(와) 다릅니다";
+"nearErrorSwapKitNotNativeNear" = "NEAR SwapKit 입금은 네이티브 NEAR를 판매해야 합니다";
 "nearErrorTokensUnsupported" = "NEAR 토큰은 네이티브 전송 경로에서 지원되지 않습니다";
 "nearErrorUnknownAccessKey" = "NEAR 액세스 키가 계정에 없습니다: %@";
 "nearErrorUnknownAccount" = "NEAR 계정 %@이(가) 존재하지 않습니다";

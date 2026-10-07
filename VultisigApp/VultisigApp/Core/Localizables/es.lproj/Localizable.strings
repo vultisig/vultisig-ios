@@ -986,7 +986,13 @@
 "nearErrorSenderKeyMismatch" = "La dirección del remitente de NEAR no coincide con la clave pública de firma: %1$@ != %2$@";
 "nearErrorSenderNotImplicit" = "El remitente de NEAR %@ no es una cuenta implícita";
 "nearErrorSignatureVerificationFailed" = "No se pudo verificar la firma de NEAR";
-"nearErrorSwapPayload" = "Las transferencias nativas de NEAR no admiten payloads de swap";
+"nearErrorSwapKitDepositAmountMismatch" = "El monto del depósito de SwapKit en NEAR %1$@ no es el monto de la transferencia %2$@";
+"nearErrorSwapKitDepositMemo" = "Los depósitos de SwapKit en NEAR no pueden llevar un memo";
+"nearErrorSwapKitDepositNotImplicit" = "La dirección de depósito de SwapKit en NEAR %@ no es una cuenta implícita";
+"nearErrorSwapKitDepositOnly" = "Las transferencias nativas de NEAR solo admiten swaps de depósito de SwapKit";
+"nearErrorSwapKitDepositPrebuilt" = "Los depósitos de SwapKit en NEAR son transferencias simples y no pueden llevar una transacción precompilada";
+"nearErrorSwapKitDepositReceiverMismatch" = "La dirección de depósito de SwapKit en NEAR %1$@ no es el destinatario de la transferencia %2$@";
+"nearErrorSwapKitNotNativeNear" = "Un depósito de SwapKit en NEAR debe vender NEAR nativo";
 "nearErrorTokensUnsupported" = "Los tokens de NEAR no son compatibles con la ruta de envío nativa";
 "nearErrorUnknownAccessKey" = "La clave de acceso de NEAR no está en la cuenta: %@";
 "nearErrorUnknownAccount" = "La cuenta de NEAR %@ no existe";

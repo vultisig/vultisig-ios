@@ -309,6 +309,80 @@ final class Near: XCTestCase {
         XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: Data(SHA256.hash(data: body))))
     }
 
+    // MARK: - SwapKit deposit swaps
+
+    /// Golden `near.json` "Send NEAR to an implicit account": pinned from an
+    /// independent Borsh encoding and reproduced by the TypeScript signer.
+    private static let goldenImplicitTransferHash = "37c02cebc5c9db73a0a6d7740d5b15a563f1b6b0d43aa513f42574c3d79cbe86"
+    private static let goldenImplicitAmount = BigInt("1000000000000000000000")
+
+    private func swapKitDeposit(
+        targetAddress: String = Near.implicitReceiver,
+        fromAmount: BigInt = Near.goldenImplicitAmount,
+        txType: String = "",
+        txPayload: Data = Data(),
+        memo: String? = nil
+    ) -> SwapPayload {
+        let near = Coin(asset: CoinMeta.make(chain: .near, ticker: "NEAR", decimals: 24), address: Self.sender, hexPublicKey: Self.sender)
+        let eth = Coin(asset: CoinMeta.make(chain: .ethereum, ticker: "ETH", decimals: 18), address: "0x15E9eBd862E8d7cd571062D0fBd41D695A9575AF", hexPublicKey: "")
+        return .swapkit(SwapKitSwapPayload(
+            fromCoin: near,
+            toCoin: eth,
+            fromAmount: fromAmount,
+            toAmountDecimal: 0.0088,
+            txType: txType,
+            txPayload: txPayload,
+            targetAddress: targetAddress,
+            inboundAddress: targetAddress,
+            memo: memo,
+            subProvider: "NEAR",
+            swapID: "3e4605fe-e640-4524-ba6a-a2541101b7f1"
+        ))
+    }
+
+    private func implicitDepositPayload(swapPayload: SwapPayload) throws -> KeysignPayload {
+        try makePayload(
+            toAddress: Self.implicitReceiver,
+            gasFee: Self.implicitGasFee.description,
+            toAmount: Self.goldenImplicitAmount,
+            swapPayload: swapPayload
+        )
+    }
+
+    /// A deposit swap signs the plain transfer to the deposit address, so it
+    /// hashes to the cross-platform golden vector for that transfer.
+    func testSwapKitDepositSignsTheGoldenPlainTransfer() throws {
+        let payload = try implicitDepositPayload(swapPayload: swapKitDeposit())
+        XCTAssertEqual(try NearHelper.getPreSignedImageHash(keysignPayload: payload), [Self.goldenImplicitTransferHash])
+    }
+
+    func testRejectsASwapKitDepositThatDoesNotNameTheTransfer() throws {
+        let cases: [(String, SwapPayload)] = [
+            ("deposit address", swapKitDeposit(targetAddress: Self.namedReceiver)),
+            ("amount", swapKitDeposit(fromAmount: 1)),
+            ("pre-built", swapKitDeposit(txType: "NEAR")),
+            ("pre-built", swapKitDeposit(txPayload: Data([1]))),
+            ("memo", swapKitDeposit(memo: "deposit-tag"))
+        ]
+        for (expected, swap) in cases {
+            let payload = try implicitDepositPayload(swapPayload: swap)
+            XCTAssertThrowsError(try NearHelper.getPreSignedImageHash(keysignPayload: payload)) { error in
+                XCTAssertTrue(error.localizedDescription.contains(expected), "\(expected): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func testRejectsANamedSwapKitDepositAddressEvenAsTheTransferReceiver() throws {
+        let payload = try makePayload(
+            toAddress: Self.namedReceiver,
+            toAmount: Self.goldenImplicitAmount,
+            swapPayload: swapKitDeposit(targetAddress: Self.namedReceiver)
+        )
+        XCTAssertThrowsError(try NearHelper.getPreSignedImageHash(keysignPayload: payload)) { error in
+            XCTAssertTrue(error.localizedDescription.contains("deposit address \(Self.namedReceiver) is not an implicit account"), error.localizedDescription)
+        }
+    }
+
     func testRefusesToDeriveAHashFromMalformedSignedBytes() {
         XCTAssertThrowsError(try NearSignedTransaction.transactionHash(signedTransaction: Data(repeating: 0, count: 10)))
         let body = Data(repeating: 0x22, count: 32)
@@ -440,7 +514,8 @@ final class Near: XCTestCase {
         nonce: UInt64? = nil,
         blockHash: Data? = nil,
         gasFee: String? = nil,
-        toAmount: BigInt = 1000
+        toAmount: BigInt = 1000,
+        swapPayload: SwapPayload? = nil
     ) throws -> KeysignPayload {
         let native = Coin(
             asset: CoinMeta.make(chain: .near, ticker: "NEAR", decimals: 24),
@@ -458,7 +533,7 @@ final class Near: XCTestCase {
             ),
             utxos: [],
             memo: memo,
-            swapPayload: nil,
+            swapPayload: swapPayload,
             approvePayload: nil,
             vaultPubKeyECDSA: "",
             vaultLocalPartyID: "",
