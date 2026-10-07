@@ -1550,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Primijenjeni popusti:";
+"swapDepositAddress" = "Adresa za uplatu";
 "swapEnterAmountIn" = "Unesite iznos u %@";
 "swapErrorAddressScreeningTitle" = "Provjera Adrese Nije Uspjela";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";

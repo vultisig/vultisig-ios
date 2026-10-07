@@ -21,7 +21,11 @@ final class SwapVerifyViewModel {
     @ObservationIgnored private let securityScanViewModel = SecurityScannerViewModel()
     @ObservationIgnored private var securityScannerCancellable: AnyCancellable?
 
-    var transaction: SwapTransaction
+    var transaction: SwapTransaction {
+        didSet { depositRecipient = Result { try transaction.swapKitDepositRecipient() } }
+    }
+    /// Decoded once per quote rather than on every render of the review.
+    private(set) var depositRecipient: Result<String?, Error>
 
     var isAmountCorrect = false
     var isFeeCorrect = false
@@ -44,6 +48,7 @@ final class SwapVerifyViewModel {
         interactor: SwapInteractor? = nil
     ) {
         self.transaction = transaction
+        self.depositRecipient = Result { try transaction.swapKitDepositRecipient() }
         // Resolved here rather than as a default argument, which is evaluated
         // outside the main actor that `DefaultSwapInteractor` is isolated to.
         self.interactor = interactor ?? DefaultSwapInteractor.live

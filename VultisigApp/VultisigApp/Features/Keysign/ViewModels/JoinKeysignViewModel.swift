@@ -116,6 +116,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var decodedTokenFiat: String?
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
+    /// Where a SwapKit ERC-20 deposit pays, decoded once from the payload this
+    /// device signs; nil for any other payload.
+    @Published private(set) var swapKitDepositRecipient: String?
     @Published var didLoadSimulation: Bool = false
     private var reviewScanGeneration = 0
     /// The hero for a transaction that only resolves after an on-chain read — a
@@ -330,6 +333,7 @@ class JoinKeysignViewModel: ObservableObject {
                 ?? (vault.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA ? vault : nil) else {
                 return
             }
+            swapKitDepositRecipient = try Self.swapKitDepositRecipient(of: keysignPayload)
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload, vaultPubKeyEdDSA: signingVault.pubKeyEdDSA)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
@@ -342,6 +346,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.errorMsg = String(format: "prepareKeysignMessagesFailed".localized, error.localizedDescription)
             self.status = .FailedToStart
         }
+    }
+
+    private static func swapKitDepositRecipient(of payload: KeysignPayload) throws -> String? {
+        guard case .generic(let swap) = payload.swapPayload else { return nil }
+        return try EVMSwapTxGuard.swapKitDepositRecipient(of: swap)
     }
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
