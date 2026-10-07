@@ -53,3 +53,11 @@ final class StoredPendingTransaction {
         self.lastLedgerSequence = lastLedgerSequence
     }
 }
+
+extension StoredPendingTransaction {
+    /// The account that sent this row: rows keep no sender, so it is `vault`'s
+    /// own account on the row's chain, which NEAR's status lookup needs.
+    func senderAccountId(in vault: Vault) -> String? {
+        vault.nativeCoin(for: chain)?.address
+    }
+}

@@ -16,4 +16,8 @@ final class BlockChainServiceSuiCacheTests: XCTestCase {
     func testSolanaBlockSpecificRemainsNotCacheableBecauseBlockhashExpires() {
         XCTAssertFalse(BlockChainService.allowsBlockSpecificCache(for: .solana))
     }
+
+    func testNearBlockSpecificIsNotCacheableBecauseItEmbedsTheNextNonce() {
+        XCTAssertFalse(BlockChainService.allowsBlockSpecificCache(for: .near))
+    }
 }

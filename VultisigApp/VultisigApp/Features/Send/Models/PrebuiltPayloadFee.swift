@@ -54,7 +54,7 @@ enum PrebuiltPayloadFee {
             return base + rounded
 
         case .Ethereum, .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos,
-             .Sui, .Polkadot, .Ton, .Ripple, .Tron:
+             .Sui, .Polkadot, .Ton, .Ripple, .Tron, .Near:
             // Every other pre-built flow's `chainSpecific.fee` is already the
             // total the signer pays, so it is used as-is. A zero means the
             // payload was built without a fee estimate, and the caller's own

@@ -24,6 +24,7 @@ class BackgroundTransactionPoller: ObservableObject {
             let pendingTransactions = try storage.getAllPending()
 
             Log.chain.service.debug("Found \(pendingTransactions.count) pending transactions")
+            let vaults = Storage.shared.modelContext?.fetchAllVaults() ?? []
 
             for transaction in pendingTransactions {
                 // Check if already being polled
@@ -32,7 +33,11 @@ class BackgroundTransactionPoller: ObservableObject {
                 }
 
                 // Create view model and start polling
-                let viewModel = TransactionStatusViewModel(pendingTransaction: transaction)
+                let vault = vaults.first { $0.pubKeyECDSA == transaction.pubKeyECDSA }
+                let viewModel = TransactionStatusViewModel(
+                    pendingTransaction: transaction,
+                    senderAccountId: vault.flatMap(transaction.senderAccountId(in:))
+                )
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()
 

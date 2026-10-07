@@ -21,6 +21,10 @@ class TransactionStatusViewModel: ObservableObject {
     private let storage = StoredPendingTransactionStorage.shared
     private let logger = Log.wallet.viewModel
 
+    /// Sender account id. Chains whose lookup needs it (NEAR) cannot resolve a
+    /// transaction from its hash alone; `nil` makes such a lookup fail closed.
+    private let senderAccountId: String?
+
     // Optional metadata for persistence
     private let coinTicker: String?
     private let amount: String?
@@ -37,7 +41,8 @@ class TransactionStatusViewModel: ObservableObject {
         coinTicker: String? = nil,
         amount: String? = nil,
         toAddress: String? = nil,
-        pubKeyECDSA: String? = nil
+        pubKeyECDSA: String? = nil,
+        senderAccountId: String? = nil
     ) {
         self.txHash = txHash
         self.chain = chain
@@ -46,13 +51,15 @@ class TransactionStatusViewModel: ObservableObject {
         self.amount = amount
         self.toAddress = toAddress
         self.pubKeyECDSA = pubKeyECDSA
+        self.senderAccountId = senderAccountId
 
         // Set initial state
         self.status = .broadcasted(estimatedTime: config.estimatedTime)
     }
 
-    /// Initialize from SwiftData (resume existing transaction)
-    init(pendingTransaction: StoredPendingTransaction) {
+    /// Initialize from SwiftData (resume existing transaction). The stored row
+    /// keeps no sender, so the caller resolves it from the row's vault.
+    init(pendingTransaction: StoredPendingTransaction, senderAccountId: String?) {
         self.txHash = pendingTransaction.txHash
         self.chain = pendingTransaction.chain
         self.config = ChainStatusConfig.config(for: pendingTransaction.chain)
@@ -60,6 +67,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.amount = pendingTransaction.amount
         self.toAddress = pendingTransaction.toAddress
         self.pubKeyECDSA = pendingTransaction.pubKeyECDSA
+        self.senderAccountId = senderAccountId
 
         // Restore status from persistence
         self.status = Self.statusFromString(
@@ -99,6 +107,7 @@ class TransactionStatusViewModel: ObservableObject {
                 do {
                     let result = try await service.checkTransactionStatus(
                         txHash: txHash,
+                        senderAccountId: senderAccountId,
                         chain: chain
                     )
 

@@ -136,6 +136,8 @@ final class SigningGoldenRoutingTests: XCTestCase {
             return "RippleHelper"
         case .Tron:
             return "TronHelper"
+        case .Near:
+            return "NearHelper"
         }
     }
 }
