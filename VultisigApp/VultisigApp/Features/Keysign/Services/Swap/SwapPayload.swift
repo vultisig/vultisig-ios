@@ -158,4 +158,39 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return providerName
         }
     }
+
+    /// Throws `SwapPayloadError.coinMismatch` unless an aggregator swap (generic
+    /// or SwapKit, every chain) sells exactly `signingCoin`: same chain, native
+    /// flag and contract. Each signer builds for the signing coin while
+    /// co-signers display the payload's coin. EVM contracts are hex and compare
+    /// case-insensitively; every other chain's token id (Solana base58, ...)
+    /// compares exactly. Mirrors vultisig-sdk's
+    /// `assertKeysignSwapSellsSigningCoin` and Android's `requireSellsSigningCoin`.
+    func requireSellsSigningCoin(_ signingCoin: Coin) throws {
+        switch self {
+        case .generic, .swapkit:
+            guard fromCoin.chain == signingCoin.chain,
+                  fromCoin.isNativeToken == signingCoin.isNativeToken,
+                  Self.isSameContract(fromCoin.contractAddress, signingCoin.contractAddress, on: signingCoin.chain) else {
+                throw SwapPayloadError.coinMismatch
+            }
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return
+        }
+    }
+
+    private static func isSameContract(_ lhs: String, _ rhs: String, on chain: Chain) -> Bool {
+        chain.chainType == .EVM ? lhs.lowercased() == rhs.lowercased() : lhs == rhs
+    }
+}
+
+enum SwapPayloadError: Error, LocalizedError, Equatable {
+    case coinMismatch
+
+    var errorDescription: String? {
+        switch self {
+        case .coinMismatch:
+            return "Swap payload source coin does not match the coin being signed"
+        }
+    }
 }
