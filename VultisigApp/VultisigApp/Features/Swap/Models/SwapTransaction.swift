@@ -229,7 +229,7 @@ extension SwapTransaction {
     /// since the bond is the node's real admission requirement.
     /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
     var displayedNetworkFeeWei: BigInt {
-        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, fromCoin: fromCoin, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var amountInCoinDecimal: BigInt {

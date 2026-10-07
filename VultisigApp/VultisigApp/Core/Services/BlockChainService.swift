@@ -360,6 +360,9 @@ final class BlockChainService {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             action = .transfer
+        case let .swapkit(response, _, _) where response.isErc20DepositTransfer(fromCoin: fromCoin):
+            // An ERC-20 deposit is a token transfer: priced without swap inflation.
+            action = .transfer
         default:
             action = .swap
         }
@@ -1170,6 +1173,23 @@ private extension BlockChainService {
                 return nil
             }
         case .swapkit(let response, _, _):
+            if response.isErc20DepositTransfer(fromCoin: fromCoin), case let .evm(tx) = response.tx {
+                // A deposit transfer spends no allowance, so it simulates as sent.
+                let estimated: BigInt?
+                do {
+                    estimated = try await service.estimateGasLimitForSwap(
+                        senderAddress: fromCoin.address,
+                        toAddress: tx.to,
+                        value: .zero,
+                        data: tx.data
+                    )
+                } catch {
+                    try Task.checkCancellation()
+                    logger.warning("SwapKit ERC-20 deposit gas simulation failed on \(fromCoin.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public); using the ERC-20 transfer floor")
+                    estimated = nil
+                }
+                return Self.erc20DepositTransferGasLimit(estimated: estimated)
+            }
             guard fromCoin.isNativeToken, case let .evm(tx) = response.tx else { return nil }
             do {
                 let amountInCoin = fromCoin.raw(for: fromAmount)
@@ -1190,5 +1210,14 @@ private extension BlockChainService {
             return nil
         }
 
+    }
+}
+
+extension BlockChainService {
+    /// Gas for an ERC-20 deposit transfer: its simulation, never below the
+    /// ERC-20 transfer floor, and the floor when it cannot be simulated.
+    static func erc20DepositTransferGasLimit(estimated: BigInt?) -> BigInt {
+        let floor = BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        return max(estimated ?? floor, floor)
     }
 }

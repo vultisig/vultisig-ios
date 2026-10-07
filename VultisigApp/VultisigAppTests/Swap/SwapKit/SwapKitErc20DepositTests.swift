@@ -4,8 +4,9 @@
 //
 //  ERC-20 source via SwapKit NEAR-Intents (`txHint: simpleTransfer`): the
 //  `/v3/swap` tx calls the sold token with `transfer(targetAddress, amount)`.
-//  It must transfer exactly the sold amount to `targetAddress` with no native
-//  value.
+//  It needs no approve (a transfer spends no allowance, and an approve to the
+//  deposit address would outlive the swap), and it must transfer exactly the
+//  sold amount to `targetAddress` with no native value.
 //
 //  `v3-real-usdt-sol-swap.json` is the live `/v3/swap` response captured
 //  2026-10-03T14:59Z through the app's proxy (20 USDT -> SOL, NEAR provider):
@@ -61,11 +62,14 @@ final class SwapKitErc20DepositTests: XCTestCase {
         json["tx"] = tx
     }
 
-    func testLiveUsdtDepositIsABoundErc20DepositTransfer() throws {
+    func testLiveUsdtDepositIsAnErc20DepositTransferThatNeedsNoApprove() throws {
         let response = try liveResponse()
+        let quote = SwapQuote.swapkit(response, fee: nil, subProvider: "NEAR")
 
         XCTAssertTrue(response.isErc20DepositTransfer(fromCoin: usdt()))
         XCTAssertNoThrow(try response.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
+        XCTAssertFalse(SwapCryptoLogic.isApproveRequired(fromCoin: usdt(), quote: quote))
+        XCTAssertNil(try SwapCryptoLogic.approveSpender(fromCoin: usdt(), quote: quote))
     }
 
     func testRefusesATransferOfAnotherAmount() throws {
@@ -94,6 +98,34 @@ final class SwapKitErc20DepositTests: XCTestCase {
     func testARouterCallFromATokenIsNotADepositTransfer() throws {
         let routed = try liveResponse { self.replacingTx(&$0, "to", "0x111111125421ca6dc452d289314280a0f8842a65") }
         XCTAssertFalse(routed.isErc20DepositTransfer(fromCoin: usdt()))
+    }
+
+    func testPayloadBuilderBindsTheDepositToTheSoldAmount() async throws {
+        let quote = SwapQuote.swapkit(try liveResponse(), fee: nil, subProvider: "NEAR")
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction(fromAmount: 20, quote: quote),
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault()
+        )
+        XCTAssertNil(payload.approvePayload)
+        guard case let .generic(generic) = payload.swapPayload else {
+            return XCTFail("Expected .generic swapPayload")
+        }
+        XCTAssertEqual(generic.quote.tx.to, Self.usdtContract)
+
+        do {
+            _ = try await SwapCryptoLogic.buildSwapKeysignPayload(
+                transaction: transaction(fromAmount: 21, quote: quote),
+                chainSpecific: ethereumChainSpecific(),
+                vault: vault()
+            )
+            XCTFail("A deposit transferring 20 USDT must not sign as a 21 USDT swap")
+        } catch {
+            guard case .swapKitDepositRefused = error as? EVMSwapTxGuardError else {
+                return XCTFail("Expected swapKitDepositRefused, got \(error)")
+            }
+        }
     }
 
     /// The co-signer never sees the quote, only the relayed payload, and screens
@@ -165,6 +197,66 @@ final class SwapKitErc20DepositTests: XCTestCase {
         }
     }
 
+    /// SwapKit states 900k gas for this route; the deposit is a token send
+    /// simulated at 120k. The relayed payload must not carry SwapKit's figure,
+    /// since every platform signs max(quote gas, gasLimit), and the bond the
+    /// initiator shows and validates must be the one signed.
+    func testDepositGasIsNotRaisedBySwapKitsRouteFigure() async throws {
+        let quote = SwapQuote.swapkit(try liveResponse { self.replacingTx(&$0, "gas", "0xdbba0") }, fee: nil, subProvider: "NEAR")
+        let maxFeePerGas = BigInt(2_000_000_000)
+        let simulated = BigInt(120_000)
+        let transaction = transaction(fromAmount: 20, quote: quote, gas: maxFeePerGas, gasLimit: simulated)
+
+        let payload = try await SwapCryptoLogic.buildSwapKeysignPayload(
+            transaction: transaction,
+            chainSpecific: ethereumChainSpecific(),
+            vault: vault()
+        )
+        guard case let .generic(generic) = payload.swapPayload else {
+            return XCTFail("Expected .generic swapPayload")
+        }
+        let signed = EVMSwapFee.effective(
+            quoteGasPriceWei: EVMSwapFee.quoteGasPriceWei(generic.quote.tx.gasPrice),
+            quoteGas: BigInt(generic.quote.tx.gas),
+            maxFeePerGasWei: maxFeePerGas,
+            gasLimit: simulated
+        )
+        XCTAssertEqual(signed.gasLimit, simulated)
+        XCTAssertEqual(transaction.displayedNetworkFeeWei, maxFeePerGas * simulated)
+    }
+
+    private func transaction(fromAmount: Decimal, quote: SwapQuote, gas: BigInt = 0, gasLimit: BigInt = 0) -> SwapTransaction {
+        let eth = Coin(asset: CoinMeta.make(chain: .ethereum, ticker: "ETH", decimals: 18, isNativeToken: true), address: usdt().address, hexPublicKey: "")
+        let sol = Coin(asset: CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9, isNativeToken: true), address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", hexPublicKey: "")
+        return SwapTransaction(
+            fromCoin: usdt(),
+            toCoin: sol,
+            fromAmount: fromAmount,
+            kind: .market(quote),
+            gas: gas,
+            gasLimit: gasLimit,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: eth,
+            advancedSettings: .default
+        )
+    }
+
+    private func vault() -> Vault {
+        Vault(
+            name: "Test Vault",
+            signers: [],
+            pubKeyECDSA: "test-pub-ecdsa",
+            pubKeyEdDSA: "test-pub-eddsa",
+            keyshares: [],
+            localPartyID: "party",
+            hexChainCode: "hex",
+            resharePrefix: nil,
+            libType: .DKLS
+        )
+    }
+
     private func ethereumChainSpecific() -> BlockChainSpecific {
         .Ethereum(maxFeePerGasWei: BigInt(2_000_000_000), priorityFeeWei: BigInt(1_000_000_000), nonce: 1, gasLimit: BigInt(120_000))
     }
@@ -173,5 +265,16 @@ final class SwapKitErc20DepositTests: XCTestCase {
 private extension String {
     func leftPad(to length: Int) -> String {
         String(repeating: "0", count: max(0, length - count)) + self
+    }
+}
+
+@MainActor
+final class SwapKitErc20DepositGasTests: XCTestCase {
+    /// An ERC-20 deposit is sized like a token send (live simulation ~48k), not
+    /// like a router swap (600k, then +50% swap inflation = 900k).
+    func testDepositTransferGasIsTheSimulationRaisedToTheErc20Floor() {
+        XCTAssertEqual(BlockChainService.erc20DepositTransferGasLimit(estimated: 48_000), 120_000)
+        XCTAssertEqual(BlockChainService.erc20DepositTransferGasLimit(estimated: 150_000), 150_000)
+        XCTAssertEqual(BlockChainService.erc20DepositTransferGasLimit(estimated: nil), 120_000)
     }
 }
