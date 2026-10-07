@@ -1550,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "交换金额太小。推荐金额 %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "已应用的折扣：";
+"swapDepositAddress" = "充值地址";
 "swapEnterAmountIn" = "输入以 %@ 计价的金额";
 "swapErrorAddressScreeningTitle" = "地址筛查失败";
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
