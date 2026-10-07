@@ -132,6 +132,24 @@ enum EVMSwapTxGuard {
         )
     }
 
+    /// Refuses a SwapKit ERC-20 deposit whose transfer Blockaid's transaction
+    /// scan calls Malicious. A Warning, an unsupported chain and a failed or
+    /// skipped scan do not refuse: the review runs the same scan and shows its
+    /// warning or "not scanned", with the usual risk acknowledgement.
+    static func screenSwapKitDepositRecipient(
+        _ keysignPayload: KeysignPayload,
+        scanner: BlockaidSimulationService = .shared
+    ) async throws {
+        guard case .generic(let swap) = keysignPayload.swapPayload,
+              let recipient = try swapKitDepositRecipient(of: swap) else { return }
+        let verdict = await scanner.scan(keysignPayload: keysignPayload).scannerResult
+        guard verdict?.riskLevel != .critical else {
+            throw EVMSwapTxGuardError.swapKitDepositRefused(
+                "recipient \(recipient) is flagged Malicious by Blockaid on \(swap.fromCoin.chain.name)"
+            )
+        }
+    }
+
     /// A SwapKit deposit route (NEAR Intents `simpleTransfer`) that sells an
     /// ERC-20 calls the token itself with `transfer(recipient, amount)`. Returns
     /// the lowercase recipient when the call is exactly that: addressed to the
