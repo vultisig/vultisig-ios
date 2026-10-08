@@ -164,13 +164,14 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     /// flag, contract, ticker and decimals. Each signer builds for the signing coin while
     /// co-signers display the payload's coin, with its ticker and decimals. EVM contracts are hex and compare
     /// case-insensitively; every other chain's token id (Solana base58, ...)
-    /// compares exactly. Mirrors vultisig-sdk's
+    /// compares exactly. Tickers are display metadata that each client fills in
+    /// independently, so they compare case-insensitively. Mirrors vultisig-sdk's
     /// `assertKeysignSwapSellsSigningCoin` and Android's `requireSellsSigningCoin`.
     func requireSellsSigningCoin(_ signingCoin: Coin) throws {
         guard fromCoin.chain == signingCoin.chain,
               fromCoin.isNativeToken == signingCoin.isNativeToken,
               Self.isSameContract(fromCoin.contractAddress, signingCoin.contractAddress, on: signingCoin.chain),
-              fromCoin.ticker == signingCoin.ticker,
+              fromCoin.ticker.caseInsensitiveCompare(signingCoin.ticker) == .orderedSame,
               fromCoin.decimals == signingCoin.decimals else {
             throw SwapPayloadError.coinMismatch
         }
