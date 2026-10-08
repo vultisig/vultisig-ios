@@ -99,7 +99,8 @@ enum SwapCryptoLogic {
     /// Amount string for a "25 / 50 / 75 / 100%" preset on the swap source
     /// coin, or `nil` for a percentage the buttons don't offer.
     ///
-    /// A native 100% has to leave the network fee behind; every other preset is
+    /// A native 100% has to leave `fee` behind (the network fee plus any balance
+    /// the chain makes the account keep); every other preset is
     /// a straight fraction of the balance. Lives here rather than in the view
     /// so the math is testable on its own.
     static func percentageAmountText(percentage: Int, fromCoin: Coin, fee: BigInt) -> String? {
@@ -135,9 +136,11 @@ enum SwapCryptoLogic {
             // showing 0.0000008 BTC). For these chains compute the fee the same
             // way Send does: from the WalletCore transaction plan, carried in
             // `thorchainFee` (populated in `SwapDetailsViewModel.updateFees`).
+            // NEAR's deposit reserves its upfront gas (account creation for the
+            // implicit deposit address), also carried in `thorchainFee`.
             // EVM/other SwapKit sources keep the wire-reported inbound fee.
             switch fromCoin.chain.chainType {
-            case .UTXO, .Cardano:
+            case .UTXO, .Cardano, .Near:
                 return thorchainFee
             case .Solana:
                 if case let .solana(transactionData) = response.tx {
@@ -160,10 +163,14 @@ enum SwapCryptoLogic {
         }
     }
 
-    /// Solana keeps its existing flat estimate as funding headroom even while
-    /// the swap screens display the smaller fee described by the transaction.
-    static func fundingNetworkFee(displayedFee: BigInt, gasEstimate: BigInt, chain: Chain) -> BigInt {
-        chain == .solana ? max(displayedFee, gasEstimate) : displayedFee
+    /// What the source account must hold beyond the swap amount: the network
+    /// fee plus the balance the chain makes it keep (`storageReserve`, NEAR's
+    /// storage backing; zero elsewhere). Solana keeps its existing flat
+    /// estimate as funding headroom even while the swap screens display the
+    /// smaller fee described by the transaction.
+    static func fundingNetworkFee(displayedFee: BigInt, gasEstimate: BigInt, storageReserve: BigInt, chain: Chain) -> BigInt {
+        let fee = chain == .solana ? max(displayedFee, gasEstimate) : displayedFee
+        return fee + storageReserve
     }
 
     // MARK: - EVM signed network fee (shared with the co-signer)
@@ -556,10 +563,11 @@ enum SwapCryptoLogic {
 
     /// On EVM every swap route shows the gas the vault signs for — the gas
     /// price ceiling × the gas limit — which the node reserves up front and the
-    /// receipt usually lands well under. Those rows, and the total built on
-    /// them, are labelled as a maximum. Other chains show the fee they pay.
+    /// receipt usually lands well under. NEAR likewise shows its upfront gas
+    /// reservation, refunded down to the gas burnt. Those rows, and the total
+    /// built on them, are labelled as a maximum. Other chains show the fee they pay.
     static func feeLabelKeys(feeChain: Chain) -> FeeLabelKeys {
-        feeChain.chainType == .EVM ? .maximum : .exact
+        [.EVM, .Near].contains(feeChain.chainType) ? .maximum : .exact
     }
 
     // MARK: - Display: misc

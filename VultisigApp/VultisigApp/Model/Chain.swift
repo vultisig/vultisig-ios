@@ -131,6 +131,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .litecoin,
              .dash,
              .ripple,
+             .near,
              .avalanche,
              .base,
              .bscChain,
@@ -163,7 +164,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .sei,
              .qbtc,
              .bittensor,
-             .near,
              .kujira:
             return false
         }
