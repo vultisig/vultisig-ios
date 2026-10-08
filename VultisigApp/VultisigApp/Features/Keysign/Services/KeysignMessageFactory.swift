@@ -24,6 +24,8 @@ struct KeysignMessageFactory {
     }
 
     func getKeysignMessages() throws -> [String] {
+        try payload.swapPayload?.requireSellsSigningCoin(payload.coin)
+
         var approveMessages: [String] = []
         var messages: [String] = []
 

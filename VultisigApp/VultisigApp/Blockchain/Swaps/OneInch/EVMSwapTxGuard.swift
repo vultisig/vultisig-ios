@@ -8,7 +8,6 @@ import BigInt
 
 enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
     case malformedValue(String)
-    case coinMismatch
     case unrecognizedProvider(String)
     case unknownRouter(router: String, provider: String, chain: String)
     case valueExceedsQuotedAmount(value: String, quoted: String)
@@ -18,8 +17,6 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
         switch self {
         case .malformedValue(let value):
             return "EVM swap tx.value '\(value)' is not a non-negative integer"
-        case .coinMismatch:
-            return "EVM swap payload source coin does not match the coin being signed"
         case .unrecognizedProvider(let provider):
             return "EVM swap from unrecognized provider '\(provider)'"
         case .unknownRouter(let router, let provider, let chain):
@@ -48,22 +45,13 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
 /// Android `EvmSwapTxGuard`; the three platforms must refuse the same payloads.
 enum EVMSwapTxGuard {
 
-    static func check(_ payload: GenericSwapPayload, signingCoin: Coin) throws {
-        // Routing into the EVM signer is decided by the signing coin, so either side
-        // being EVM puts the swap in scope; a payload coin on another chain must not
-        // let the signing coin skip the checks.
+    static func check(_ payload: GenericSwapPayload) throws {
+        // The bounds below read the payload's coin. `KeysignMessageFactory`
+        // refuses a payload whose coin is not the signing coin before any signer
+        // runs (`SwapPayload.requireSellsSigningCoin`).
         let chain = payload.fromCoin.chain
-        guard chain.chainType == .EVM || signingCoin.chain.chainType == .EVM else { return }
+        guard chain.chainType == .EVM else { return }
         let tx = payload.quote.tx
-
-        // The bounds below read the payload's coin, so it must be the coin the
-        // signed transaction is built for. The approval leg is built from the
-        // signing coin's contract, so the token must match, not just its kind.
-        guard signingCoin.chain == chain,
-              signingCoin.isNativeToken == payload.fromCoin.isNativeToken,
-              signingCoin.contractAddress.lowercased() == payload.fromCoin.contractAddress.lowercased() else {
-            throw EVMSwapTxGuardError.coinMismatch
-        }
 
         guard let value = BigUInt(tx.value), value.bitWidth <= 256 else {
             throw EVMSwapTxGuardError.malformedValue(tx.value)
