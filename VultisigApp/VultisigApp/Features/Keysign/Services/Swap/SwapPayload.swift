@@ -161,17 +161,25 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     /// Throws `SwapPayloadError.coinMismatch` unless a swap (every provider and
     /// chain, THORChain and Maya included) sells exactly `signingCoin`: same chain, native
-    /// flag and contract. Each signer builds for the signing coin while
-    /// co-signers display the payload's coin. EVM contracts are hex and compare
+    /// flag, contract, ticker and decimals. Each signer builds for the signing coin while
+    /// co-signers display the payload's coin, rendering the amount with its ticker and
+    /// decimals. EVM contracts are hex and compare
     /// case-insensitively; every other chain's token id (Solana base58, ...)
     /// compares exactly. Mirrors vultisig-sdk's
     /// `assertKeysignSwapSellsSigningCoin` and Android's `requireSellsSigningCoin`.
     func requireSellsSigningCoin(_ signingCoin: Coin) throws {
-        guard fromCoin.chain == signingCoin.chain,
-              fromCoin.isNativeToken == signingCoin.isNativeToken,
-              Self.isSameContract(fromCoin.contractAddress, signingCoin.contractAddress, on: signingCoin.chain) else {
-            throw SwapPayloadError.coinMismatch
+        if let field = Self.mismatchedField(fromCoin, signingCoin) {
+            throw SwapPayloadError.coinMismatch(field: field)
         }
+    }
+
+    private static func mismatchedField(_ sold: Coin, _ signing: Coin) -> String? {
+        if sold.chain != signing.chain { return "chain differs" }
+        if sold.isNativeToken != signing.isNativeToken { return "native flag differs" }
+        if !isSameContract(sold.contractAddress, signing.contractAddress, on: signing.chain) { return "contract differs" }
+        if sold.ticker != signing.ticker { return "ticker differs" }
+        if sold.decimals != signing.decimals { return "decimals differ" }
+        return nil
     }
 
     private static func isSameContract(_ lhs: String, _ rhs: String, on chain: Chain) -> Bool {
@@ -180,12 +188,12 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 }
 
 enum SwapPayloadError: Error, LocalizedError, Equatable {
-    case coinMismatch
+    case coinMismatch(field: String)
 
     var errorDescription: String? {
         switch self {
-        case .coinMismatch:
-            return "Swap payload source coin does not match the coin being signed"
+        case .coinMismatch(let field):
+            return "Swap payload source coin does not match the coin being signed: \(field)"
         }
     }
 }
