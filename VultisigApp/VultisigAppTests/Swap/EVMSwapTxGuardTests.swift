@@ -207,6 +207,25 @@ final class EVMSwapTxGuardTests: XCTestCase {
         XCTAssertNoThrow(try SwapPayload.generic(swap).requireSellsSigningCoin(sameTokenUppercased))
     }
 
+    func testNativeThorchainAndMayaSwapsMustSellSigningCoin() {
+        let eth = payload(provider: .oneInch, to: oneInchV6).fromCoin
+        let usdc = payload(provider: .oneInch, to: oneInchV6, native: false).fromCoin
+        let base = payload(provider: .oneInch, chain: .base, to: oneInchV6).fromCoin
+        let native = THORChainSwapPayload(
+            fromAddress: eth.address, fromCoin: eth, toCoin: usdc, vaultAddress: "vault", routerAddress: nil,
+            fromAmount: 1, toAmountDecimal: 1, toAmountLimit: "0", streamingInterval: "0",
+            streamingQuantity: "0", expirationTime: 0, isAffiliate: false
+        )
+        for swap in [SwapPayload.thorchain(native), .thorchainChainnet(native), .thorchainStagenet(native), .mayachain(native)] {
+            XCTAssertNoThrow(try swap.requireSellsSigningCoin(eth))
+            for other in [usdc, base] {
+                XCTAssertThrowsError(try swap.requireSellsSigningCoin(other)) {
+                    XCTAssertEqual($0 as? SwapPayloadError, .coinMismatch)
+                }
+            }
+        }
+    }
+
     func testSignerRefusesBeforeBuildingInputForBadRouter() {
         let swap = payload(provider: .oneInch, to: attacker)
         XCTAssertThrowsError(try OneInchSwaps().getPreSignedImageHash(payload: swap, keysignPayload: keysign(swap, coin: swap.fromCoin), nonceOffset: 0)) {
