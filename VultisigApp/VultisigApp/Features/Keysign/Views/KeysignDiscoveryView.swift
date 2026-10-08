@@ -279,11 +279,12 @@ struct KeysignDiscoveryView: View {
         )
 
         // A payload this device refused to sign must not be offered to co-signers.
-        guard viewModel.status != .FailToStart,
-              let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
-            self.qrCodeString = nil
-            self.qrCodeImage = nil
-            shareSheetViewModel.clear()
+        guard viewModel.status != .FailToStart else {
+            clearQrCode()
+            return
+        }
+
+        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
             return
         }
 
@@ -306,6 +307,12 @@ struct KeysignDiscoveryView: View {
             fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )
+    }
+
+    private func clearQrCode() {
+        qrCodeString = nil
+        qrCodeImage = nil
+        shareSheetViewModel.clear()
     }
 
     func notifyVaultDevices() {

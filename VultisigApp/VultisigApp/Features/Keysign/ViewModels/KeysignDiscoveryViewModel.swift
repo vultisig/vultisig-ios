@@ -193,6 +193,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         if keysignMessages.isEmpty {
             logger.error("no meessage need to be signed")
             status = .FailToStart
+            return
         }
 
         if let fastVaultPassword, let coin {
@@ -246,6 +247,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     }
 
     func startDiscovery() {
+        guard status != .FailToStart else { return }
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
@@ -315,6 +317,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
 
     func restartParticipantDiscovery() {
         self.participantDiscovery?.stop()
+        guard status != .FailToStart else { return }
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
         } else {
