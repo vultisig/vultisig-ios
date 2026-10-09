@@ -253,8 +253,12 @@ struct SendCryptoVerifyLogic {
     /// Refuses a native NEAR send that would leave the account unable to back its
     /// storage, which nearcore rejects with `LackBalanceForState` after the gas is
     /// burnt. Read live, since storage usage moves after the fee was quoted.
-    /// `gasReservation` is the one the send signs: the payload's once built.
-    func validateNearStorageReserveIfNeeded(tx: SendTransaction, gasReservation: BigInt) async throws {
+    /// `gasReservation` and `signedAmount` are the ones the send signs: the payload's once built.
+    func validateNearStorageReserveIfNeeded(
+        tx: SendTransaction,
+        gasReservation: BigInt,
+        signedAmount: BigInt? = nil
+    ) async throws {
         guard tx.coin.chain == .near, tx.coin.isNativeToken else { return }
 
         async let accountRead = nearService.fetchAccount(accountId: tx.coin.address)
@@ -270,13 +274,13 @@ struct SendCryptoVerifyLogic {
             locked: account.locked,
             storageAmountPerByte: fees.storageAmountPerByte
         )
-        let requestedAmount = Self.needsNearBalanceRefit(tx: tx)
+        let requestedAmount = signedAmount ?? (Self.needsNearBalanceRefit(tx: tx)
             ? Swift.min(tx.amountInRaw, NearFees.maxSendable(
                 amount: tx.coin.balanceRaw,
                 gasReservation: gasReservation,
                 storageReserve: reserve
             ))
-            : tx.amountInRaw
+            : tx.amountInRaw)
         let required = NearFees.requiredAmount(
             requestedAmount: requestedAmount,
             gasReservation: gasReservation,

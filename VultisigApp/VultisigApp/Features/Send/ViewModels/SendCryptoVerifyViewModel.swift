@@ -442,10 +442,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         syncRefittedAmount(with: keysignPayload)
         // After the build: the payload re-reads the gas price, and the balance
-        // has to cover the reservation it actually signs with.
+        // has to cover the amount and reservation it actually signs with.
         try await logic.validateNearStorageReserveIfNeeded(
             tx: transaction,
-            gasReservation: keysignPayload.chainSpecific.gas
+            gasReservation: keysignPayload.chainSpecific.gas,
+            signedAmount: keysignPayload.toAmount
         )
         return keysignPayload
     }
