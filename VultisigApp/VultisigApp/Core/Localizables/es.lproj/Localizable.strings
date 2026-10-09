@@ -1550,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Descuentos aplicados:";
+"swapDepositAddress" = "Dirección de depósito";
 "swapEnterAmountIn" = "Introducir importe en %@";
 "swapErrorAddressScreeningTitle" = "Verificación de Dirección Fallida";
 "swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";

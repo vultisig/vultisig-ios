@@ -205,7 +205,8 @@ enum JoinKeysignReviewPresentation {
             totalFee: viewModel.getSwapTotalFee(),
             feeLines: feeLines,
             limitNetworkFee: nil,
-            externalRecipient: payload.swapExternalRecipient
+            externalRecipient: payload.swapExternalRecipient,
+            depositRecipient: .success(viewModel.swapKitDepositRecipient)
         )
     }
 

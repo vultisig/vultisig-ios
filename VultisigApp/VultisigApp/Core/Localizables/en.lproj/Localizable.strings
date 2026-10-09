@@ -1550,6 +1550,7 @@
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
 "swapAmountUnit" = "%@ (%@)";
 "swapAppliedDiscounts" = "Applied Discounts:";
+"swapDepositAddress" = "Deposit Address";
 "swapEnterAmountIn" = "Enter amount in %@";
 "swapErrorAddressScreeningTitle" = "Address Check Failed";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";

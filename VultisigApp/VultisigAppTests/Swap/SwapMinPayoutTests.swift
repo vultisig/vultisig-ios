@@ -41,7 +41,7 @@ final class SwapMinPayoutTests: XCTestCase {
         ])
         let fiat = transaction.toCoin.fiat(decimal: transaction.toAmountDecimal)
         XCTAssertEqual(fiat, Decimal(1_250_000))
-        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault()).to.fiat, fiat.formatToFiat())
+        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault(), depositRecipient: .success(nil)).to.fiat, fiat.formatToFiat())
     }
 
     /// The market-swap sibling of the limit case above: `destinationFiat` must
@@ -63,7 +63,7 @@ final class SwapMinPayoutTests: XCTestCase {
         ])
         let fiat = transaction.toCoin.fiat(decimal: transaction.toAmountDecimal)
         XCTAssertEqual(fiat, Decimal(1_250_000))
-        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault()).to.fiat, fiat.formatToFiat())
+        XCTAssertEqual(SwapReviewSummary(transaction: transaction, vault: makeVault(), depositRecipient: .success(nil)).to.fiat, fiat.formatToFiat())
     }
 
     // MARK: - Displayed minimum == LIM in the signed memo
