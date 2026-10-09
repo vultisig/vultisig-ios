@@ -115,6 +115,7 @@ struct FastVaultKeysignBootstrap {
             keysignMessages = try KeysignMessageFactory(payload: workingPayload, vaultPubKeyEdDSA: vault.pubKeyEdDSA)
                 .getKeysignMessages()
                 .sorted()
+            try await EVMSwapTxGuard.screenSwapKitDepositRecipient(workingPayload)
             coin = workingPayload.coin
         } else if let customMessagePayload {
             keysignMessages = customMessagePayload.keysignMessages

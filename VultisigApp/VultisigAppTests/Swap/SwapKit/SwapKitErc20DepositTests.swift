@@ -144,6 +144,53 @@ final class SwapKitErc20DepositTests: XCTestCase {
         assertCoSignerRefuses(to: tx.to, data: approveToSameRecipient, value: "0", fromAmount: Self.soldAmount)
     }
 
+    /// The co-signer refuses a deposit only when Blockaid's scan of the transfer
+    /// it signs says Malicious. A Warning, a Benign verdict and a failed scan
+    /// sign, leaving the review's scan to warn or say "not scanned". The
+    /// Malicious validation is Blockaid's verdict on this transfer sent to the
+    /// Ronin exploiter (0x098B716B8Aaf21512996dC57EB0615e2383E2f96) and the Benign
+    /// one on this transfer as quoted, both captured 2026-10-07 from the app's
+    /// Blockaid proxy; the Warning body is that shape with Blockaid's third verdict:
+    ///
+    ///   curl -X POST https://api.vultisig.com/blockaid/v0/evm/json-rpc/scan \
+    ///     -H 'Content-Type: application/json' \
+    ///     -d '{"data":{"method":"eth_sendTransaction","params":[{"from":"0x28c6c06298d514db089934071355e5743bf21d60",
+    ///          "to":"0xdac17f958d2ee523a2206206994597c13d831ec7","value":"0x0","data":"<transfer calldata>"}]},
+    ///          "chain":"ethereum","metadata":{"domain":"vultisig.com"},"options":["simulation","validation"]}'
+    func testCoSignerRefusesOnlyAMaliciousDepositRecipient() async throws {
+        let live = try liveResponse()
+        guard case .evm(let tx) = live.tx else { return XCTFail("Expected an EVM tx") }
+        let payload = relayedPayload(to: tx.to, data: tx.data, value: "0", fromAmount: Self.soldAmount)
+        let malicious = #"{"validation":{"status":"Success","result_type":"Malicious","classification":"known_malicious","reason":"transfer_farming","description":"The transaction transfers tokens to a known malicious address","features":[]}}"#
+        let warning = #"{"validation":{"status":"Success","result_type":"Warning","features":[]}}"#
+        let benign = #"{"validation":{"status":"Success","result_type":"Benign","classification":"","features":[]}}"#
+        let blockaid = MockBlockaidRpcClient()
+
+        blockaid.simulateResult = .success(try simulation(malicious))
+        do {
+            try await EVMSwapTxGuard.screenSwapKitDepositRecipient(payload, scanner: BlockaidSimulationService(rpcClient: blockaid))
+            XCTFail("Signed a deposit whose transfer Blockaid calls Malicious")
+        } catch {
+            guard case .swapKitDepositRefused = error as? EVMSwapTxGuardError else {
+                return XCTFail("Expected swapKitDepositRefused, got \(error)")
+            }
+        }
+
+        for signed: Result<BlockaidEvmSimulationResponseJson, Error> in [
+            .success(try simulation(warning)),
+            .success(try simulation(benign)),
+            .failure(MockBlockaidRpcClient.StubError.simulated)
+        ] {
+            blockaid.simulateResult = signed
+            try await EVMSwapTxGuard.screenSwapKitDepositRecipient(payload, scanner: BlockaidSimulationService(rpcClient: blockaid))
+        }
+        XCTAssertEqual(blockaid.simulatedMemos, Array(repeating: tx.data.lowercased(), count: 4))
+    }
+
+    private func simulation(_ json: String) throws -> BlockaidEvmSimulationResponseJson {
+        try JSONDecoder().decode(BlockaidEvmSimulationResponseJson.self, from: Data(json.utf8))
+    }
+
     /// Builds the joiner's messages the way `JoinKeysignViewModel` does, from a
     /// relayed SwapKit payload selling 20 USDT.
     private func coSignerMessages(to: String, data: String, value: String, fromAmount: BigInt) throws -> [String] {
