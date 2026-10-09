@@ -3,9 +3,41 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
 
 extension SwapKitSwapResponse {
+
+    /// A NEAR-Intents ERC-20 deposit (`txHint: simpleTransfer`) calls the sold
+    /// token itself, so `tx.to` is the token and the deposit address sits in
+    /// `transfer(address,uint256)` calldata. It spends no allowance.
+    func isErc20DepositTransfer(fromCoin: Coin) -> Bool {
+        guard case .evm(let evmTx) = tx, !fromCoin.isNativeToken, !fromCoin.contractAddress.isEmpty else {
+            return false
+        }
+        return evmTx.to.lowercased() == fromCoin.contractAddress.lowercased()
+    }
+
+    /// Binds an ERC-20 deposit to exactly `transfer(targetAddress, amount)` on
+    /// the sold token with no native value, mirroring the SDK's
+    /// `isSwapKitErc20DepositTransfer`.
+    func validateErc20DepositTransfer(fromCoin: Coin, amount: BigInt) throws {
+        guard case .evm(let evmTx) = tx else {
+            throw SwapKitError.contradictoryResponse(detail: "ERC-20 deposit carries no EVM transaction")
+        }
+        let recipient = try EVMSwapTxGuard.swapKitErc20DepositRecipient(
+            to: evmTx.to,
+            data: evmTx.data,
+            value: SwapCryptoLogic.parseEvmAmount(evmTx.value),
+            sourceToken: fromCoin.contractAddress,
+            amount: amount
+        )
+        guard recipient == targetAddress.lowercased() else {
+            throw SwapKitError.contradictoryResponse(
+                detail: "ERC-20 deposit transfers to \(recipient ?? "no recipient"), not targetAddress \(targetAddress)"
+            )
+        }
+    }
 
     /// Refuse a response that disagrees with itself about where the deposit goes.
     ///
