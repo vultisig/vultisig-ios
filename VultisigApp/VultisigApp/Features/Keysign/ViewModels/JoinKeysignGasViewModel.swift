@@ -94,12 +94,11 @@ struct JoinKeysignGasViewModel {
             return ResolvedNetworkFee(amount: total, nativeToken: nativeToken)
         }
 
-        // Other pre-built Solana flows retain their flat estimate and add the
-        // ComputeBudget term without changing Send, staking or Kamino display.
+        // The co-signer must show the fee it signs, built from the relayed
+        // price and limit (or the signer's defaults when unset), not a fresh
+        // estimate.
         if payload.coin.chainType == .Solana,
-           case .Solana(_, let priorityFee, let priorityLimit, _, _, _) = payload.chainSpecific,
-           priorityFee > 0, priorityLimit > 0,
-           let total = PrebuiltPayloadFee.fee(for: payload) {
+           let total = PrebuiltPayloadFee.signedSolanaFee(for: payload) {
             return ResolvedNetworkFee(amount: total, nativeToken: nativeToken)
         }
 
