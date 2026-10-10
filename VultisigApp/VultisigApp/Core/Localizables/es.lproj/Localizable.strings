@@ -1438,6 +1438,7 @@
 "self" = "Propio";
 "sell" = "Vender";
 "send" = "Enviar";
+"sendAmountReducedAtReview" = "La tarifa de red o su saldo cambiaron después de que usted estableció el monto, por lo que el monto se redujo de %1$@ a %2$@.";
 "sender" = "Remitente";
 "sendingRightAddressCheck" = "Estoy enviando a la dirección correcta";
 "sendOverview" = "Enviar visión general";

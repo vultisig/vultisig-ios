@@ -1438,6 +1438,7 @@
 "self" = "Próprio";
 "sell" = "Vender";
 "send" = "Enviar";
+"sendAmountReducedAtReview" = "A taxa de rede ou seu saldo mudou depois que você definiu o valor, então o valor foi reduzido de %1$@ para %2$@.";
 "sender" = "Remetente";
 "sendingRightAddressCheck" = "Estou enviando para o endereço correto";
 "sendOverview" = "Enviar visão geral";
