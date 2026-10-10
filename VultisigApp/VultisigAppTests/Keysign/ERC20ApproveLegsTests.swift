@@ -403,7 +403,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
     }
 
     private struct ConfirmedStatusChecker: TransactionStatusChecking {
-        func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
+        func checkTransactionStatus(txHash _: String, senderAccountId _: String?, chain _: Chain) async throws -> TransactionStatusResult {
             await Task.yield()
             return TransactionStatusResult(status: .confirmed, blockNumber: 1, confirmations: 1)
         }

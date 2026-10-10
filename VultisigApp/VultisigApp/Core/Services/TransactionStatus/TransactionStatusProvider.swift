@@ -11,6 +11,11 @@ import Foundation
 struct TransactionStatusQuery {
     let txHash: String
     let chain: Chain
+    /// Sender account id, where the chain's lookup needs it (NEAR looks the
+    /// transaction up by `(tx_hash, sender_account_id)` because the lookup is
+    /// sharded by sender). `nil` — the sender is unknown on this path — makes
+    /// such a chain fail closed rather than guess.
+    var senderAccountId: String?
 }
 
 protocol TransactionStatusProvider {

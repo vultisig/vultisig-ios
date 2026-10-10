@@ -338,7 +338,7 @@ final class NativeSwapTrackingService: ObservableObject, SwapTrackingService {
     /// there and never reaches Maya's Midgard.
     private func observeSource(txHash: String, chain: Chain) async throws -> SourceObservation {
         guard chain.chainType == .THORChain else {
-            switch try await sourceStatus.checkTransactionStatus(txHash: txHash, chain: chain).status {
+            switch try await sourceStatus.checkTransactionStatus(txHash: txHash, senderAccountId: nil, chain: chain).status {
             case .confirmed: return .confirmed
             case let .failed(reason): return .ended(status: Self.failedStatus, failureReason: reason.trimmedNonEmpty)
             case .pending, .notFound: return .waiting

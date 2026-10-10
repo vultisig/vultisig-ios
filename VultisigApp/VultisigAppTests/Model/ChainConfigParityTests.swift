@@ -82,7 +82,8 @@ final class ChainConfigParityTests: XCTestCase {
         .sei: ExpectedConfig(name: "Sei", ticker: "SEI", feeUnit: "Gwei", swapAsset: "SEI", logo: "sei", chainID: 1329, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "SEI", minimumSendAmount: nil),
         .robinhood: ExpectedConfig(name: "Robinhood", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ROBINHOOD", logo: "robinhood", chainID: 4663, coinType: .robinhoodChain, chainType: .EVM, banxaBlockchainCode: "ROBINHOOD", minimumSendAmount: nil),
         .qbtc: ExpectedConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil),
-        .bittensor: ExpectedConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil)
+        .bittensor: ExpectedConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil),
+        .near: ExpectedConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil)
     ]
 
     // MARK: - Coverage guard
@@ -99,7 +100,7 @@ final class ChainConfigParityTests: XCTestCase {
         )
         XCTAssertTrue(extra.isEmpty, "Parity ledger references unknown Chain case(s): \(extra).")
         XCTAssertEqual(Chain.allCases.count, Self.expected.count, "Parity ledger drifted from Chain.allCases.count.")
-        XCTAssertEqual(Chain.allCases.count, 43, "Expected 43 chains; update this test if the roster changed intentionally.")
+        XCTAssertEqual(Chain.allCases.count, 44, "Expected 44 chains; update this test if the roster changed intentionally.")
     }
 
     // MARK: - Per-accessor parity (all 42 chains)
