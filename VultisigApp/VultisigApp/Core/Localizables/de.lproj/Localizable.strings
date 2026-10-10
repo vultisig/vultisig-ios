@@ -5,6 +5,7 @@
 "activeNodes" = "Aktive Knoten";
 "activeVaults" = "Aktive Tresore";
 "add" = "Hinzufügen";
+"Add Maya LP" = "Maya LP hinzufügen";
 "Add THORChain LP" = "THORChain LP hinzufügen";
 "addAddress" = "Adresse hinzufügen";
 "addAtLeastNMoreDevices" = "Mindestens %d weitere Geräte hinzufügen";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
 "assets" = "Vermögenswerte";
 "assetsLoadFailed" = "Assets konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
-"asymmetricDeposit" = "Asymmetrische Einzahlung";
-"asymmetricDepositInfo" = "Du kannst nur CACAO oder nur den Vermögenswert einzahlen. Maya gleicht deine Position automatisch aus.";
 "atLeastOneDevice" = "Mindestens ein Gerät";
 "atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Aktivieren";
 "enableAll" = "Alle aktivieren";
 "enableBiometricsFastSigning" = "Aktivieren Sie die Biometrie schnelles Signieren";
+"enableMayaChain" = "MayaChain aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
 "enableThorchain" = "THORChain aktivieren";
@@ -547,6 +547,7 @@
 "from" = "Von";
 "fullyDilutedValuation" = "Voll verwässerte Bewertung";
 "function" = "Funktion";
+"functionActionAddMayaLpSubtitle" = "Füge Liquidität zu einem MayaChain-Pool hinzu";
 "functionActionAddThorLpSubtitle" = "Füge Liquidität zu einem THORChain-Pool hinzu";
 "functionActionCustomSubtitle" = "Sende eine Transaktion mit eigenem Memo";
 "functionActionIbcSubtitle" = "Übertrage Assets auf eine andere IBC-Chain";
@@ -913,6 +914,15 @@
 "lookingForDevices" = "Suche nach Geräten...";
 "looksGood" = "Sieht gut aus";
 "low24h" = "24h Tief";
+"lpPendingCompleteDeposit" = "Einzahlung abschließen";
+"lpPendingDeposited" = "Eingezahlt";
+"lpPendingDurationDaysHours" = "%dT %dStd";
+"lpPendingDurationHoursMinutes" = "%dStd %dMin";
+"lpPendingFrom" = "Von";
+"lpPendingRefundsIn" = "Rückerstattung in";
+"lpPendingRefundTimeUnknown" = "Unbekannt";
+"lpPendingSubtitle" = "%@ hält diese Einzahlung, bis die passende Seite eintrifft, und erstattet sie andernfalls zurück.";
+"lpPendingTitle" = "Warte auf passende %@-Einzahlung";
 "lps" = "LPs";
 "lpUnits" = "LP-Einheiten";
 "lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
@@ -931,6 +941,18 @@
 "maxTotalFee" = "Max. Gesamtgebühr";
 "mayaCacaoStakingHaltedWarning" = "CACAO-Staking ist vorübergehend nicht verfügbar, da MAYAChain angehalten wurde. Bitte versuche es erneut, sobald das Netzwerk wieder aktiv ist.";
 "mayaCacaoStakingUnavailableWarning" = "Die Verfügbarkeit von MAYAChain-Staking konnte nicht überprüft werden. Bitte versuche es später erneut.";
+"mayaChainNotEnabledForLP" = "MayaChain ist in diesem Tresor nicht aktiviert oder die Adresse des gepaarten Assets fehlt. Bitte aktiviere MayaChain, um diese Funktion zu nutzen.";
+"mayaInboundAddressNotFound" = "%@ wird derzeit von MayaChain nicht unterstützt.";
+"mayaLpAddressMismatch" = "Ihre Position in %@ ist mit einer anderen Adresse gekoppelt. MayaChain würde diese Einzahlung erstatten.";
+"mayaLpBelowInboundDust" = "Der Mindestsendebetrag beträgt %@ %@. %@ erfordert dies, um Spam zu verhindern.";
+"mayaLpHaltedChain" = "Liquiditätsaktionen auf %@ sind derzeit angehalten. MayaChain würde diese Transaktion erstatten.";
+"mayaLpPaused" = "Liquidität hinzufügen ist für %@ pausiert. MayaChain würde diese Transaktion erstatten.";
+"mayaLpPendingGone" = "Diese Einzahlung wartet nicht mehr auf MayaChain. Sie wurde möglicherweise abgeschlossen oder erstattet.";
+"mayaLpPoolNotAvailable" = "Pool %@ ist derzeit nicht für Einzahlungen verfügbar.";
+"mayaLpSingleSidedPosition" = "Sie haben bereits eine reine CACAO-Position in %@. MayaChain nimmt dort nur CACAO an, daher würde diese Einzahlung erstattet.";
+"mayaLpStagedUnpaired" = "Pool %@ ist im Status „Staged“ und akzeptiert nur gepaarte Einzahlungen beider Seiten. MayaChain würde diese Transaktion erstatten.";
+"mayaLpTargetPool" = "Ziel-Pool: %@";
+"mayaLpUnverified" = "MayaChain konnte nicht erreicht werden, um Ihre Position zu prüfen. Bitte erneut versuchen.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Coins zusammenführen";

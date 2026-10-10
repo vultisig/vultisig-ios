@@ -24,6 +24,13 @@ enum AddLPFixture {
     /// The address the RUNE fixture carries — the same one a paired-address
     /// memo is expected to name.
     static let thorAddress = FunctionActionFixture.thorAddress
+    static let mayaAddress = FunctionActionFixture.mayaAddress
+    /// Deliberately different from the THORChain vaults above: a MayaChain
+    /// deposit sent to a THORChain vault is stranded, so every Maya assertion
+    /// must be able to tell the two apart.
+    static let mayaEthVault = "0xmayaethinboundvault"
+    static let mayaEthRouter = "0xmayaethrouter000000000000000000000000000"
+    static let mayaBtcVault = "bc1qmayainboundvaultbtc00000000000"
 
     // MARK: - Coins
 
@@ -53,6 +60,17 @@ enum AddLPFixture {
 
     static func bitcoin(rawBalance: String = "100000000") -> Coin {
         FunctionActionFixture.makeBTC(rawBalance: rawBalance)
+    }
+
+    static func cacao(rawBalance: String = "100000000000") -> Coin {
+        FunctionActionFixture.makeCoin(
+            .mayaChain,
+            ticker: "CACAO",
+            decimals: 10,
+            isNative: true,
+            rawBalance: rawBalance,
+            address: mayaAddress
+        )
     }
 
     static func rune(rawBalance: String = "100000000000") -> Coin {
@@ -87,7 +105,8 @@ enum AddLPFixture {
         address: String,
         router: String?,
         halted: Bool = false,
-        lpActionsPaused: Bool = false
+        lpActionsPaused: Bool = false,
+        dustThreshold: String? = nil
     ) -> InboundAddress {
         InboundAddress(
             chain: chain,
@@ -99,7 +118,7 @@ enum AddLPFixture {
             chain_lp_actions_paused: lpActionsPaused,
             gas_rate: "10",
             gas_rate_units: "gwei",
-            dust_threshold: nil,
+            dust_threshold: dustThreshold,
             outbound_fee: nil,
             outbound_tx_size: nil
         )
@@ -113,5 +132,43 @@ enum AddLPFixture {
         ]
     }
 
+    /// Healthy ETH and BTC routes as MayaChain publishes them: no LP-pause
+    /// flags, because mayanode's `inbound_addresses` does not carry them.
+    static func healthyMayaInbounds() -> [InboundAddress] {
+        [
+            inbound(chain: "ETH", address: mayaEthVault, router: mayaEthRouter),
+            inbound(chain: "BTC", address: mayaBtcVault, router: nil)
+        ]
+    }
+
+    static let healthyMayaFetch: ThorchainLPDestinationResolver.InboundAddressFetch = { _ in healthyMayaInbounds() }
+
     static let healthyFetch: ThorchainLPDestinationResolver.InboundAddressFetch = { _ in healthyInbounds() }
+
+    // MARK: - MayaChain LP record
+
+    static let btcAddress = FunctionActionFixture.btcAddress
+
+    static func record(
+        units: String = "0",
+        cacaoAddress: String? = mayaAddress,
+        assetAddress: String? = nil,
+        pendingTxId: String? = nil
+    ) -> MayaLiquidityProvider {
+        MayaLiquidityProvider(
+            asset: btcPool,
+            cacaoAddress: cacaoAddress,
+            assetAddress: assetAddress,
+            units: units,
+            pendingCacao: "0",
+            pendingAsset: "0",
+            pendingTxId: pendingTxId,
+            lastAddHeight: nil
+        )
+    }
+
+    struct RecordReadFailed: Error {}
+
+    /// No position on the pool.
+    static let noRecordChecks = MayaLPChecks(liquidityProvider: { _, _ in nil })
 }

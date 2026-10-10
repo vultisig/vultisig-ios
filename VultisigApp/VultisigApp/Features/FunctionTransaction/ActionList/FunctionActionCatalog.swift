@@ -99,6 +99,8 @@ extension FunctionAction {
             return "functionActionIbcSubtitle".localized
         case .addThorLP:
             return "functionActionAddThorLpSubtitle".localized
+        case .addMayaLP:
+            return "functionActionAddMayaLpSubtitle".localized
         case .withdrawSecuredAsset:
             return "functionActionWithdrawSecuredAssetSubtitle".localized
         }
@@ -116,7 +118,7 @@ extension FunctionAction {
             return .megaphone
         case .cosmosIBC:
             return .connectedDots3
-        case .addThorLP:
+        case .addThorLP, .addMayaLP:
             return .gridPlus
         case .withdrawSecuredAsset:
             return .circleOpenArrowDown

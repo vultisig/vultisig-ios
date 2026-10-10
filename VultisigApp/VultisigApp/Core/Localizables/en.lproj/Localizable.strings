@@ -5,6 +5,7 @@
 "activeNodes" = "Active Nodes";
 "activeVaults" = "Active Vaults";
 "add" = "Add";
+"Add Maya LP" = "Add Maya LP";
 "Add THORChain LP" = "Add THORChain LP";
 "addAddress" = "Add Address";
 "addAtLeastNMoreDevices" = "Add at least %d more devices";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ not found in vault )";
 "assets" = "Assets";
 "assetsLoadFailed" = "Couldn't load assets. Check your connection and try again.";
-"asymmetricDeposit" = "Asymmetric Deposit";
-"asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "atLeastOneDevice" = "At least one device";
 "atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Enable";
 "enableAll" = "Enable all";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
+"enableMayaChain" = "Enable MayaChain";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "enablePushNotifications" = "Enable push notifications";
 "enableThorchain" = "Enable THORChain";
@@ -547,6 +547,7 @@
 "from" = "From";
 "fullyDilutedValuation" = "Fully Diluted Valuation";
 "function" = "Function";
+"functionActionAddMayaLpSubtitle" = "Add liquidity to a MayaChain pool";
 "functionActionAddThorLpSubtitle" = "Add liquidity to a THORChain pool";
 "functionActionCustomSubtitle" = "Send a transaction with a custom memo";
 "functionActionIbcSubtitle" = "Transfer assets to another IBC chain";
@@ -913,6 +914,15 @@
 "lookingForDevices" = "Looking for devices... ";
 "looksGood" = "Looks good";
 "low24h" = "24h Low";
+"lpPendingCompleteDeposit" = "Complete deposit";
+"lpPendingDeposited" = "Deposited";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "From";
+"lpPendingRefundsIn" = "Refunds in";
+"lpPendingRefundTimeUnknown" = "Unknown";
+"lpPendingSubtitle" = "%@ holds this deposit until the matching side arrives, then refunds it if it doesn't.";
+"lpPendingTitle" = "Waiting for matching %@ deposit";
 "lps" = "LPs";
 "lpUnits" = "LP Units";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
@@ -931,6 +941,18 @@
 "maxTotalFee" = "Max. Total Fee";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking is temporarily unavailable because MAYAChain is halted. Please try again when the network resumes.";
 "mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
+"mayaChainNotEnabledForLP" = "MayaChain is not enabled on this vault, or the paired asset address is missing. Please enable MayaChain to use this feature.";
+"mayaInboundAddressNotFound" = "%@ is not currently supported by MayaChain.";
+"mayaLpAddressMismatch" = "Your %@ position is paired with a different address. MayaChain would refund this deposit.";
+"mayaLpBelowInboundDust" = "Minimum send amount is %@ %@. %@ requires this to prevent spam.";
+"mayaLpHaltedChain" = "Liquidity actions on %@ are currently halted. MayaChain would refund this transaction.";
+"mayaLpPaused" = "Add liquidity is paused for %@. MayaChain would refund this transaction.";
+"mayaLpPendingGone" = "This deposit is no longer waiting on MayaChain. It may have been completed or refunded.";
+"mayaLpPoolNotAvailable" = "Pool %@ is not currently available for deposits.";
+"mayaLpSingleSidedPosition" = "You already have a CACAO-only position in %@. MayaChain only accepts CACAO into it, so this deposit would be refunded.";
+"mayaLpStagedUnpaired" = "Pool %@ is staged and only accepts adds paired with the other side. MayaChain would refund this transaction.";
+"mayaLpTargetPool" = "Target Pool: %@";
+"mayaLpUnverified" = "Could not reach MayaChain to check your position. Please try again.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";

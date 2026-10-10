@@ -95,6 +95,9 @@ struct DefiChainMainScreen: View {
                 return
             }
             Task {
+                // The refund clock keeps running while the user is away, and
+                // a deposit they just completed should leave the pending list.
+                if chain == .mayaChain { await lpsViewModel.refresh() }
                 await invalidateSolanaStakeIfNeeded()
                 // A returning user may have just signed a deposit. The vault is
                 // already enabled — its card is what opened the form — so this
@@ -226,6 +229,13 @@ struct DefiChainMainScreen: View {
                     },
                     onAdd: {
                         onTransactionToPresent(.addLP(position: $0))
+                    },
+                    onCompletePending: {
+                        onTransactionToPresent(.completeMayaLP(
+                            pool: $0.pool,
+                            side: MayaPendingLPPresentation.awaitedSide(of: $0),
+                            pendingTxId: $0.pendingTxId
+                        ))
                     },
                     emptyStateView: { emptyStateView }
                 )

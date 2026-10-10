@@ -140,6 +140,29 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .addMayaLP(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    AddLPTransactionScreen(
+                        viewModel: AddLPTransactionViewModel.mayaChain(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .completeMayaLP(let pool, let side, let pendingTxId):
+                resolvingCoin(coin: ThorchainLPPoolCatalog.depositCoin(forPool: pool, in: vault.coins)) { assetCoin in
+                    resolvingCoin(coin: vault.nativeCoin(for: .mayaChain)) { cacao in
+                        AddLPTransactionScreen(
+                            viewModel: AddLPTransactionViewModel.completion(
+                                cacao: cacao,
+                                asset: assetCoin,
+                                side: side,
+                                pool: pool,
+                                pendingTxId: pendingTxId,
+                                vault: vault
+                            ),
+                            onVerify: onVerify
+                        )
+                    }
+                }
             case .removeLP(let position):
                 resolvingCoin(coinMeta: position.coin1) { coin1 in
                     RemoveLPTransactionScreen(

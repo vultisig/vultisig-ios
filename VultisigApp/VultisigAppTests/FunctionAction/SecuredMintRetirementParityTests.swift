@@ -95,15 +95,17 @@ final class SecuredMintRetirementParityTests: XCTestCase {
 
     // MARK: - What the Function screen keeps on those chains
 
-    /// The nine L1 chains are down to a single function. That is the
-    /// precondition for routing the button straight through to the operation
-    /// instead of via the action list, so it is worth pinning.
-    func testRetiredChainsOfferAddThorLPOnly() {
+    /// The nine L1 chains offer THORChain Add-LP and nothing else — plus Add
+    /// Maya LP on the two that MayaChain also pools. No secured mint, and no
+    /// other function crept in beside them.
+    func testRetiredChainsOfferTheLiquidityFunctionsOnly() {
+        let mayaPooled: Set<Chain> = [.bitcoin, .ethereum]
         for entry in Self.retiredChains {
             let coin = nativeCoin(chain: entry.chain, ticker: entry.ticker)
             XCTAssertEqual(
-                FunctionAction.offered(on: coin), [.addThorLP],
-                "\(entry.chain) should offer exactly one function"
+                FunctionAction.offered(on: coin),
+                mayaPooled.contains(entry.chain) ? [.addThorLP, .addMayaLP] : [.addThorLP],
+                "\(entry.chain) offers an unexpected set of functions"
             )
         }
     }

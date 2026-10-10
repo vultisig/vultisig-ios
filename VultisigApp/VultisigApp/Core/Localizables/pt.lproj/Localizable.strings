@@ -5,6 +5,7 @@
 "activeNodes" = "Nós Ativos";
 "activeVaults" = "Cofres ativos";
 "add" = "Adicionar";
+"Add Maya LP" = "Adicionar LP Maya";
 "Add THORChain LP" = "Adicionar LP THORChain";
 "addAddress" = "Adicionar endereço";
 "addAtLeastNMoreDevices" = "Adicione pelo menos mais %d dispositivos";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ não encontrado no vault )";
 "assets" = "Ativos";
 "assetsLoadFailed" = "Não foi possível carregar os ativos. Verifique sua conexão e tente novamente.";
-"asymmetricDeposit" = "Depósito Assimétrico";
-"asymmetricDepositInfo" = "Você pode depositar apenas CACAO ou apenas o ativo. A Maya equilibrará automaticamente sua posição.";
 "atLeastOneDevice" = "Pelo menos um dispositivo";
 "atLeastOneDeviceSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Habilitar";
 "enableAll" = "Ativar todas";
 "enableBiometricsFastSigning" = "Ativar biometria assinatura rápida";
+"enableMayaChain" = "Ativar MayaChain";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "enablePushNotifications" = "Ativar notificações push";
 "enableThorchain" = "Ativar THORChain";
@@ -547,6 +547,7 @@
 "from" = "De";
 "fullyDilutedValuation" = "Avaliação totalmente diluída";
 "function" = "função";
+"functionActionAddMayaLpSubtitle" = "Adicione liquidez a um pool da MayaChain";
 "functionActionAddThorLpSubtitle" = "Adicione liquidez a um pool da THORChain";
 "functionActionCustomSubtitle" = "Envie uma transação com um memo personalizado";
 "functionActionIbcSubtitle" = "Transfira ativos para outra cadeia IBC";
@@ -913,6 +914,15 @@
 "lookingForDevices" = "Procurando dispositivos... ";
 "looksGood" = "Parece bom";
 "low24h" = "Mínima 24h";
+"lpPendingCompleteDeposit" = "Concluir depósito";
+"lpPendingDeposited" = "Depositado";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "De";
+"lpPendingRefundsIn" = "Reembolso em";
+"lpPendingRefundTimeUnknown" = "Desconhecido";
+"lpPendingSubtitle" = "A %@ retém este depósito até chegar a parte correspondente e reembolsa-o caso não chegue.";
+"lpPendingTitle" = "A aguardar o depósito %@ correspondente";
 "lps" = "LPs";
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
@@ -931,6 +941,18 @@
 "maxTotalFee" = "Taxa total máx.";
 "mayaCacaoStakingHaltedWarning" = "O staking de CACAO está temporariamente indisponível porque a MAYAChain está pausada. Tente novamente quando a rede for retomada.";
 "mayaCacaoStakingUnavailableWarning" = "Não foi possível verificar a disponibilidade do staking na MAYAChain. Tente novamente mais tarde.";
+"mayaChainNotEnabledForLP" = "MayaChain não está habilitado neste cofre ou falta o endereço do ativo pareado. Por favor, habilite MayaChain para usar este recurso.";
+"mayaInboundAddressNotFound" = "%@ não é atualmente suportado pela MayaChain.";
+"mayaLpAddressMismatch" = "Sua posição em %@ está pareada com outro endereço. MayaChain reembolsaria este depósito.";
+"mayaLpBelowInboundDust" = "O valor mínimo para envio é de %@ %@. %@ exige isso para evitar spam.";
+"mayaLpHaltedChain" = "As ações de liquidez em %@ estão atualmente interrompidas. MayaChain reembolsaria esta transação.";
+"mayaLpPaused" = "Adicionar liquidez está pausado para %@. MayaChain reembolsaria esta transação.";
+"mayaLpPendingGone" = "Este depósito já não está à espera na MayaChain. Pode ter sido concluído ou reembolsado.";
+"mayaLpPoolNotAvailable" = "O pool %@ não está disponível para depósitos no momento.";
+"mayaLpSingleSidedPosition" = "Você já tem uma posição só de CACAO em %@. MayaChain só aceita CACAO nela, então este depósito seria reembolsado.";
+"mayaLpStagedUnpaired" = "O pool %@ está em estado \"staged\" e só aceita depósitos pareados com o outro lado. MayaChain reembolsaria esta transação.";
+"mayaLpTargetPool" = "Pool alvo: %@";
+"mayaLpUnverified" = "Não foi possível conectar ao MayaChain para verificar sua posição. Tente novamente.";
 "memo" = "Memorando";
 "memoLabel" = "Memo";
 "mergeCoins" = "Mesclar moedas";

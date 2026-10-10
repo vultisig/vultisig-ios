@@ -5,6 +5,7 @@
 "activeNodes" = "Aktivni Čvorovi";
 "activeVaults" = "Aktivni trezori";
 "add" = "Dodaj";
+"Add Maya LP" = "Dodaj Maya LP";
 "Add THORChain LP" = "Dodaj THORChain LP";
 "addAddress" = "Dodaj adresu";
 "addAtLeastNMoreDevices" = "Dodajte barem još %d uređaja";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
 "assets" = "Imovine";
 "assetsLoadFailed" = "Nije moguće učitati sredstva. Provjerite vezu i pokušajte ponovo.";
-"asymmetricDeposit" = "Asimetrični polog";
-"asymmetricDepositInfo" = "Možete položiti samo CACAO ili samo imovinu. Maya će automatski uravnotežiti vašu poziciju.";
 "atLeastOneDevice" = "Barem jedan uređaj";
 "atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
 "auto" = "Auto";
@@ -439,6 +438,7 @@
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
 "enableBiometricsFastSigning" = "Omogući biometriju brzo potpisivanje";
+"enableMayaChain" = "Omogući MayaChain";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
 "enableThorchain" = "Omogući THORChain";
@@ -547,6 +547,7 @@
 "from" = "Od";
 "fullyDilutedValuation" = "Potpuno razrijeđena vrijednost";
 "function" = "funkcija";
+"functionActionAddMayaLpSubtitle" = "Dodaj likvidnost u MayaChain pool";
 "functionActionAddThorLpSubtitle" = "Dodaj likvidnost u THORChain pool";
 "functionActionCustomSubtitle" = "Pošalji transakciju s prilagođenim memom";
 "functionActionIbcSubtitle" = "Prenesi imovinu na drugi IBC lanac";
@@ -913,6 +914,15 @@
 "lookingForDevices" = "Traženje uređaja... ";
 "looksGood" = "Izgleda dobro";
 "low24h" = "Najniža 24h";
+"lpPendingCompleteDeposit" = "Dovrši polog";
+"lpPendingDeposited" = "Položeno";
+"lpPendingDurationDaysHours" = "%dd %dh";
+"lpPendingDurationHoursMinutes" = "%dh %dm";
+"lpPendingFrom" = "Od";
+"lpPendingRefundsIn" = "Povrat za";
+"lpPendingRefundTimeUnknown" = "Nepoznato";
+"lpPendingSubtitle" = "%@ zadržava ovaj polog dok ne stigne odgovarajuća strana, a inače ga vraća.";
+"lpPendingTitle" = "Čeka se odgovarajući %@ polog";
 "lps" = "LPs";
 "lpUnits" = "LP jedinice";
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
@@ -931,6 +941,18 @@
 "maxTotalFee" = "Maks. ukupna naknada";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking privremeno nije dostupan jer je MAYAChain zaustavljen. Pokušajte ponovno kada se mreža nastavi.";
 "mayaCacaoStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost MAYAChain stakinga. Pokušajte ponovno kasnije.";
+"mayaChainNotEnabledForLP" = "MayaChain nije omogućen na ovom vaultu ili nedostaje adresa uparene imovine. Molimo omogućite MayaChain da biste koristili ovu značajku.";
+"mayaInboundAddressNotFound" = "%@ trenutačno nije podržan na MayaChainu.";
+"mayaLpAddressMismatch" = "Vaša pozicija u %@ uparena je s drugom adresom. MayaChain bi vratio ovaj polog.";
+"mayaLpBelowInboundDust" = "Minimalni iznos za slanje je %@ %@. %@ zahtijeva ovo kako bi se spriječila neželjena pošta.";
+"mayaLpHaltedChain" = "Akcije likvidnosti na %@ su trenutno zaustavljene. MayaChain bi vratio ovu transakciju.";
+"mayaLpPaused" = "Dodavanje likvidnosti je pauzirano za %@. MayaChain bi vratio ovu transakciju.";
+"mayaLpPendingGone" = "Ovaj depozit više ne čeka na MayaChainu. Možda je dovršen ili vraćen.";
+"mayaLpPoolNotAvailable" = "Pool %@ trenutno nije dostupan za depozite.";
+"mayaLpSingleSidedPosition" = "Već imate poziciju samo u CACAO-u u %@. MayaChain u nju prihvaća samo CACAO, pa bi ovaj polog bio vraćen.";
+"mayaLpStagedUnpaired" = "Pool %@ je u stanju „staged“ i prihvaća samo uparene depozite s drugom stranom. MayaChain bi vratio ovu transakciju.";
+"mayaLpTargetPool" = "Ciljani pool: %@";
+"mayaLpUnverified" = "Nije moguće dohvatiti MayaChain radi provjere vaše pozicije. Pokušajte ponovno.";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "mergeCoins" = "Spoji novčiće";

@@ -274,13 +274,17 @@ enum JoinKeysignReviewPresentation {
         return "\(fee.feeCrypto) (\(fee.feeFiat))"
     }
 
-    private static func liquidityDetails(for payload: KeysignPayload?) -> [String: String]? {
-        guard let memo = payload?.memo, !memo.isEmpty else { return nil }
+    static func liquidityDetails(for payload: KeysignPayload?) -> [String: String]? {
+        // A dApp request keeps the review built for it: a site can put any memo
+        // on a transfer, and presenting that as a liquidity add is a claim the
+        // signer cannot check.
+        guard let payload, payload.dappMetadata == nil,
+              let memo = payload.memo, !memo.isEmpty else { return nil }
         let parts = memo.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
         guard let prefix = parts.first else { return nil }
-        switch prefix {
-        case "+":
-            guard parts.count >= 2, !parts[1].isEmpty else { return nil }
+        switch prefix.uppercased() {
+        case "+", "ADD":
+            guard parts.count >= 2, isPoolName(parts[1]) else { return nil }
             var details = ["pool": parts[1], "memo": memo]
             if parts.count >= 3, !parts[2].isEmpty { details["pairedAddress"] = parts[2] }
             return details
@@ -294,6 +298,12 @@ enum JoinKeysignReviewPresentation {
         default:
             return nil
         }
+    }
+
+    /// A pool is named `CHAIN.ASSET`; anything else after `+:` is not a pool.
+    private static func isPoolName(_ field: String) -> Bool {
+        let parts = field.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        return parts.count == 2 && !parts[0].isEmpty && !parts[1].isEmpty
     }
 
     private static func liquidityAmount(for payload: KeysignPayload?, details: [String: String]?) -> String {

@@ -14,6 +14,14 @@ private let logger = Log.defi.viewModel
 final class DefiChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var initialLoadingDone: Bool
+    /// Half-finished paired adds MayaChain is holding, separate from the
+    /// positions: a deposit stuck in a pool the user never enabled is exactly
+    /// the one that would otherwise be refunded unseen.
+    @Published private(set) var pendingDeposits: [MayaPendingLPDeposit] = []
+    /// False once a rescan has failed. The cards stay, their refund timer is
+    /// still running, but Complete is withdrawn: nothing confirms MayaChain has
+    /// not refunded them since.
+    @Published private(set) var canCompletePendingDeposits = true
 
     private let chain: Chain
     private let interactor: LPsInteractor?
@@ -50,6 +58,11 @@ final class DefiChainLPsViewModel: ObservableObject {
     func update(vault: Vault) {
         let previousVaultKey = self.vault.pubKeyECDSA
         self.vault = vault
+        if previousVaultKey != vault.pubKeyECDSA {
+            // Another vault's pending deposits are not this one's to complete.
+            pendingDeposits = []
+            canCompletePendingDeposits = true
+        }
         if isRefreshing, previousVaultKey != vault.pubKeyECDSA {
             refreshQueued = true
         }
@@ -90,5 +103,32 @@ final class DefiChainLPsViewModel: ObservableObject {
             logger.error("Failed to persist LP positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
         initialLoadingDone = true
+        await refreshPendingDeposits(for: refreshingVault)
+    }
+
+    private func refreshPendingDeposits(for refreshingVault: Vault) async {
+        guard let provider = interactor as? PendingLPDepositsProviding else { return }
+        do {
+            let scan = try await provider.fetchPendingLPDeposits(vault: refreshingVault)
+            guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+            if scan.isComplete {
+                pendingDeposits = scan.deposits
+            } else {
+                // A scan that missed a pool cannot say nothing is pending there,
+                // so cards an earlier scan found stay unless this one re-read
+                // their pool.
+                let rescanned = Set(scan.deposits.map(\.pool))
+                pendingDeposits = scan.deposits + pendingDeposits.filter { !rescanned.contains($0.pool) }
+            }
+            canCompletePendingDeposits = scan.isComplete
+        } catch {
+            logger.warning("Failed to load pending Maya LP deposits: \(error.localizedDescription, privacy: .private)")
+            guard vault.pubKeyECDSA == refreshingVault.pubKeyECDSA else { return }
+            canCompletePendingDeposits = false
+        }
+    }
+
+    func canComplete(_ deposit: MayaPendingLPDeposit) -> Bool {
+        canCompletePendingDeposits && MayaPendingLPPresentation.canComplete(deposit, in: vault)
     }
 }

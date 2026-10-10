@@ -5,6 +5,7 @@
 "activeNodes" = "活跃节点";
 "activeVaults" = "活跃保险库";
 "add" = "添加";
+"Add Maya LP" = "添加 Maya 流动性";
 "Add THORChain LP" = "添加 THORChain 流动性";
 "addAddress" = "添加地址";
 "addAtLeastNMoreDevices" = "至少再添加 %d 台设备";
@@ -70,8 +71,6 @@
 "assetNotFoundInVault" = "( %@ 在保险库中未找到 )";
 "assets" = "资产";
 "assetsLoadFailed" = "无法加载资产。请检查网络连接后重试。";
-"asymmetricDeposit" = "非对称存款";
-"asymmetricDepositInfo" = "您可以只存入 CACAO 或仅存入该资产。Maya 将自动平衡您的仓位。";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
 "atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
 "auto" = "自动";
@@ -439,6 +438,7 @@
 "enable" = "启用";
 "enableAll" = "全部启用";
 "enableBiometricsFastSigning" = "启用生物识别快速签名";
+"enableMayaChain" = "启用 MayaChain";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
 "enableThorchain" = "启用 THORChain";
@@ -547,6 +547,7 @@
 "from" = "从";
 "fullyDilutedValuation" = "完全稀释估值";
 "function" = "功能";
+"functionActionAddMayaLpSubtitle" = "向 MayaChain 资金池添加流动性";
 "functionActionAddThorLpSubtitle" = "向 THORChain 资金池添加流动性";
 "functionActionCustomSubtitle" = "发送带自定义备注的交易";
 "functionActionIbcSubtitle" = "将资产转账到其他 IBC 链";
@@ -913,6 +914,15 @@
 "lookingForDevices" = "正在寻找设备...";
 "looksGood" = "看起来不错";
 "low24h" = "24小时最低";
+"lpPendingCompleteDeposit" = "完成存入";
+"lpPendingDeposited" = "已存入";
+"lpPendingDurationDaysHours" = "%d天 %d小时";
+"lpPendingDurationHoursMinutes" = "%d小时 %d分钟";
+"lpPendingFrom" = "来自";
+"lpPendingRefundsIn" = "退款倒计时";
+"lpPendingRefundTimeUnknown" = "未知";
+"lpPendingSubtitle" = "%@ 会保留此笔存入，直到配对的另一侧到达；否则将予以退款。";
+"lpPendingTitle" = "等待配对的 %@ 存入";
 "lps" = "流动性池";
 "lpUnits" = "LP 单位";
 "lpUnitsCannotBeZero" = "LP 单位不能为零";
@@ -931,6 +941,18 @@
 "maxTotalFee" = "最大总费用";
 "mayaCacaoStakingHaltedWarning" = "由于 MAYAChain 已暂停，CACAO 质押暂时不可用。请在网络恢复后重试。";
 "mayaCacaoStakingUnavailableWarning" = "无法验证 MAYAChain 质押是否可用。请稍后重试。";
+"mayaChainNotEnabledForLP" = "此保险库未启用 MayaChain，或缺少配对资产的地址。请启用 MayaChain 以使用此功能。";
+"mayaInboundAddressNotFound" = "MayaChain 目前不支持 %@。";
+"mayaLpAddressMismatch" = "您在 %@ 中的仓位已与其他地址配对。MayaChain 将退回此笔存入。";
+"mayaLpBelowInboundDust" = "最小发送金额为 %@ %@。%@ 要求此限制以防止垃圾交易。";
+"mayaLpHaltedChain" = "%@ 上的流动性操作目前已停止。MayaChain 将退回此交易。";
+"mayaLpPaused" = "已暂停 %@ 的添加流动性。MayaChain 将退回此交易。";
+"mayaLpPendingGone" = "此存款已不再等待 MayaChain 处理，可能已完成或已退款。";
+"mayaLpPoolNotAvailable" = "池 %@ 目前不可用于存款。";
+"mayaLpSingleSidedPosition" = "您在 %@ 中已有仅 CACAO 的仓位。MayaChain 只接受向其中添加 CACAO，因此此笔存入将被退回。";
+"mayaLpStagedUnpaired" = "池 %@ 处于预备（staged）状态，仅接受与另一侧配对的添加。MayaChain 将退回此交易。";
+"mayaLpTargetPool" = "目标池：%@";
+"mayaLpUnverified" = "无法连接到 MayaChain 以检查您的仓位。请重试。";
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "mergeCoins" = "合并代币";
