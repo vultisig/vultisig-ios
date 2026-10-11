@@ -300,6 +300,9 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(keysignPayload: KeysignPayload) async {
+        // Cleared first so an early return below never leaves the previous
+        // payload's deposit address on the review of this one.
+        swapKitDepositRecipient = nil
         // QBTC claim payloads are flagged with `isQbtcClaim` and don't have
         // a standard tx body; the QBTCClaimJoinDriver computes the round-1
         // message hash itself. Skip the standard factory so it doesn't
