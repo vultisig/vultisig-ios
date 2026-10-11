@@ -61,11 +61,14 @@ final class SwapKitErc20DepositTests: XCTestCase {
         json["tx"] = tx
     }
 
-    func testLiveUsdtDepositIsABoundErc20DepositTransfer() throws {
+    func testLiveUsdtDepositIsAnErc20DepositTransferThatNeedsNoApprove() throws {
         let response = try liveResponse()
+        let quote = SwapQuote.swapkit(response, fee: nil, subProvider: "NEAR")
 
         XCTAssertTrue(response.isErc20DepositTransfer(fromCoin: usdt()))
         XCTAssertNoThrow(try response.validateErc20DepositTransfer(fromCoin: usdt(), amount: Self.soldAmount))
+        XCTAssertFalse(SwapCryptoLogic.isApproveRequired(fromCoin: usdt(), quote: quote))
+        XCTAssertNil(try SwapCryptoLogic.approveSpender(fromCoin: usdt(), quote: quote))
     }
 
     func testRefusesATransferOfAnotherAmount() throws {
