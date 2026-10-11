@@ -2326,6 +2326,18 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        // NEAR is deliberately NOT in `VaultDefaultCoinService.baseDefaultChains`:
+        // an entry here is what lets the user add it by hand, not what puts it in
+        // every new vault.
+        CoinMeta(
+            chain: .near,
+            ticker: "NEAR",
+            logo: "near",
+            decimals: 24,
+            priceProviderId: "near",
+            contractAddress: "",
+            isNativeToken: true
+        ),
         CoinMeta(
             chain: .polygon,
             ticker: "AVAX",

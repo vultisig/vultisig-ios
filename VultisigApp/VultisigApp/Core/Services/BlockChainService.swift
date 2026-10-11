@@ -228,7 +228,8 @@ final class BlockChainService {
         // Skip Sui because its chain-specific value embeds a bounded selection of
         // spendable coin objects for the requested amount; reusing it for a later
         // larger send can hand keysign an under-funded object set.
-        guard chain != .solana, chain != .sui else {
+        // Skip NEAR because a cached `NearSpecific` would re-sign a nonce an earlier send already consumed.
+        guard chain != .solana, chain != .sui, chain != .near else {
             return false
         }
 
@@ -865,6 +866,61 @@ private extension BlockChainService {
                 genesisHash: gasInfo.genesisHash,
                 gas: fee,
                 allowDeath: false
+            )
+
+        case .near:
+            // Native transfers only: NEP-141 token balances have no resolver on
+            // this path, and the frozen signing input carries a single
+            // `transfer` action.
+            guard coin.isNativeToken else {
+                throw HelperError.runtimeError("nearErrorTokensUnsupported".localized)
+            }
+            let recipient = toAddress ?? ""
+            guard NearAccountId.isValid(recipient) else {
+                throw HelperError.runtimeError(String(format: "nearErrorInvalidRecipient".localized, recipient))
+            }
+            guard NearAccountId.isImplicit(coin.address) else {
+                throw HelperError.runtimeError(String(format: "nearErrorSenderNotImplicit".localized, coin.address))
+            }
+
+            async let accessKeyRead = NearService.shared.fetchAccessKey(
+                accountId: coin.address,
+                hexPublicKey: coin.hexPublicKey
+            )
+            async let blockRead = NearService.shared.fetchFinalBlock()
+            async let feesRead = NearService.shared.fetchFeeConfig()
+            async let accountRead = NearService.shared.fetchAccount(accountId: coin.address)
+            let (accessKey, block, fees, account) = try await (accessKeyRead, blockRead, feesRead, accountRead)
+
+            guard let account else {
+                throw NearError.unknownAccount(coin.address)
+            }
+            guard let accessKey else {
+                throw NearError.unknownAccessKey(
+                    "NEAR account \(coin.address) does not hold the signing key \(coin.hexPublicKey)"
+                )
+            }
+            guard accessKey.isFullAccess else {
+                throw HelperError.runtimeError(String(format: "nearErrorFunctionCallKey".localized, coin.address))
+            }
+            let transactionNonce = try NearHelper.transactionNonce(accessKeyNonce: accessKey.nonce)
+
+            let reservation = NearFees.gasReservation(
+                config: fees,
+                gasPrice: block.gasPrice,
+                senderIsReceiver: coin.address == recipient,
+                receiverIsImplicit: NearAccountId.isImplicit(recipient)
+            )
+
+            return .Near(
+                nonce: transactionNonce,
+                blockHash: block.hash,
+                gasFee: reservation.reserved.description,
+                storageReserve: NearFees.storageReserve(
+                    storageUsage: account.storageUsage,
+                    locked: account.locked,
+                    storageAmountPerByte: fees.storageAmountPerByte
+                )
             )
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:

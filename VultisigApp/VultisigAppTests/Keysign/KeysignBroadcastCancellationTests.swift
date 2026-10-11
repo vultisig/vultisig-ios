@@ -47,7 +47,11 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
             self.firstCall = firstCall
         }
 
-        func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
+        func checkTransactionStatus(
+            txHash _: String,
+            senderAccountId _: String?,
+            chain _: Chain
+        ) async throws -> TransactionStatusResult {
             await Task.yield()
             let isFirst = callCountLock.withLock { count in
                 count += 1

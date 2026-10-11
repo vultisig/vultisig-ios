@@ -411,6 +411,10 @@ enum ExplorerLinkBuilder {
         .qbtc: ExplorerConfig(
             tx: { "https://explorer.qbtc.net/qbtc/tx/\($0)" },
             address: { "https://explorer.qbtc.net/qbtc/account/\($0)" }
+        ),
+        .near: ExplorerConfig(
+            tx: { "https://nearblocks.io/txns/\($0)" },
+            address: { "https://nearblocks.io/address/\($0)" }
         )
     ]
 

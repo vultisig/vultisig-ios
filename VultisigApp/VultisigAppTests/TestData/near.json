@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Send NEAR to a named account",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Near",
+        "ticker": "NEAR",
+        "address": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+        "decimals": 24,
+        "price_provider_id": "near",
+        "is_native_token": true,
+        "hex_public_key": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+        "contract_address": "",
+        "logo": "near"
+      },
+      "to_address": "wrap.near",
+      "to_amount": "1250000000000000000000000",
+      "BlockchainSpecific": {
+        "NearSpecific": {
+          "nonce": "78000000000000002",
+          "block_hash": "HP8gLMArsewIDD4t6WT9vxO9CXmPfPLXvq4TJ6lLg9w=",
+          "gas_fee": "245500818750000000000"
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "d45fa0dc52354ab21e512a36c6d027862e8896eee7228d2fb7f6fb49f00c0b09"
+    ]
+  },
+  {
+    "name": "Send NEAR to an implicit account",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Near",
+        "ticker": "NEAR",
+        "address": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+        "decimals": 24,
+        "price_provider_id": "near",
+        "is_native_token": true,
+        "hex_public_key": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+        "contract_address": "",
+        "logo": "near"
+      },
+      "to_address": "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c",
+      "to_amount": "1000000000000000000000",
+      "BlockchainSpecific": {
+        "NearSpecific": {
+          "nonce": "78000000000000002",
+          "block_hash": "HP8gLMArsewIDD4t6WT9vxO9CXmPfPLXvq4TJ6lLg9w=",
+          "gas_fee": "7607442456250000000000"
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "37c02cebc5c9db73a0a6d7740d5b15a563f1b6b0d43aa513f42574c3d79cbe86"
+    ]
+  }
+]
