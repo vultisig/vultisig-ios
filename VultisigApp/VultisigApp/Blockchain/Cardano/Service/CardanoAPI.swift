@@ -221,5 +221,21 @@ struct CardanoSubmitTransactionResponse: Decodable {
     struct ErrorBody: Decodable {
         let code: Int
         let message: String?
+        let data: ErrorData?
+
+        /// The node's justification (`data.error`); some rejections carry
+        /// nothing else of use in `message`.
+        var justification: String? { data?.error }
+
+        struct ErrorData: Decodable {
+            let error: String?
+
+            enum CodingKeys: String, CodingKey { case error }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                error = try? container.decode(String.self, forKey: .error)
+            }
+        }
     }
 }

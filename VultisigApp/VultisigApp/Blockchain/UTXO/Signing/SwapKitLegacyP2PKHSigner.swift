@@ -306,7 +306,7 @@ enum SwapKitLegacyP2PKHSigner {
     /// broadcast for a mismatched input — or, called from
     /// `preSigningHashes`, would ask the MPC network to sign an input this
     /// vault does not own at all.
-    private static func verifyOwnership(inputs: [LegacyP2PKHInput], pubkeyData: Data) throws {
+    static func verifyOwnership(inputs: [LegacyP2PKHInput], pubkeyData: Data) throws {
         let ourKeyHash = Hash.ripemd(data: Hash.sha256(data: pubkeyData))
         for (index, input) in inputs.enumerated() where input.keyHash != ourKeyHash {
             throw SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(inputIndex: index)

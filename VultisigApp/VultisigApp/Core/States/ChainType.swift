@@ -19,6 +19,7 @@ enum ChainType: Codable, CustomStringConvertible {
     case Ton
     case Ripple
     case Tron
+    case Near
 
     var description: String {
         switch self {
@@ -44,6 +45,8 @@ enum ChainType: Codable, CustomStringConvertible {
             return "Ripple"
         case .Tron:
             return "Tron"
+        case .Near:
+            return "NEAR"
         }
     }
 }

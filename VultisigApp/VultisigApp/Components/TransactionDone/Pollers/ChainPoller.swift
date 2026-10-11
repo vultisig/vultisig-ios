@@ -24,7 +24,8 @@ final class ChainPoller: DoneStatusPoller {
         coinTicker: String?,
         amount: String?,
         toAddress: String?,
-        pubKeyECDSA: String?
+        pubKeyECDSA: String?,
+        senderAccountId: String? = nil
     ) {
         let viewModel = TransactionStatusViewModel(
             txHash: txHash,
@@ -32,7 +33,8 @@ final class ChainPoller: DoneStatusPoller {
             coinTicker: coinTicker,
             amount: amount,
             toAddress: toAddress,
-            pubKeyECDSA: pubKeyECDSA
+            pubKeyECDSA: pubKeyECDSA,
+            senderAccountId: senderAccountId
         )
         self.viewModel = viewModel
         self.initialStatus = viewModel.status

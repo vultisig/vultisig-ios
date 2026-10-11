@@ -25,6 +25,11 @@ final class StoredPendingTransaction {
     var toAddress: String?
     var pubKeyECDSA: String?
 
+    /// XRP only: the last ledger the signed transaction can be included in.
+    /// Once the validated ledger passes it, a never-found transaction has
+    /// expired. Optional so rows written before it existed migrate unchanged.
+    var lastLedgerSequence: Int?
+
     init(
         txHash: String,
         chain: Chain,
@@ -33,7 +38,8 @@ final class StoredPendingTransaction {
         coinTicker: String? = nil,
         amount: String? = nil,
         toAddress: String? = nil,
-        pubKeyECDSA: String? = nil
+        pubKeyECDSA: String? = nil,
+        lastLedgerSequence: Int? = nil
     ) {
         self.txHash = txHash
         self.chain = chain
@@ -44,5 +50,14 @@ final class StoredPendingTransaction {
         self.amount = amount
         self.toAddress = toAddress
         self.pubKeyECDSA = pubKeyECDSA
+        self.lastLedgerSequence = lastLedgerSequence
+    }
+}
+
+extension StoredPendingTransaction {
+    /// The account that sent this row: rows keep no sender, so it is `vault`'s
+    /// own account on the row's chain, which NEAR's status lookup needs.
+    func senderAccountId(in vault: Vault) -> String? {
+        vault.nativeCoin(for: chain)?.address
     }
 }

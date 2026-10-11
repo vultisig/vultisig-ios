@@ -543,7 +543,17 @@ enum Utils {
     static func sanitizeAddress(address: String) -> String {
         let sanitizedAddress = address
         if sanitizedAddress.hasPrefix("ethereum:") {
-            return String(sanitizedAddress.dropFirst(9))
+            let body = String(sanitizedAddress.dropFirst(9))
+            // The leading address of an ERC-20 transfer link is the token contract; the payee
+            // is the `address` parameter. Never fall back to the contract.
+            let pathEnd = body.firstIndex(of: "?") ?? body.endIndex
+            if body[..<pathEnd].lowercased().hasSuffix("/transfer") {
+                let query = pathEnd < body.endIndex ? String(body[body.index(after: pathEnd)...]) : ""
+                let payee = URLComponents(string: "?" + query)?.queryItems?
+                    .first(where: { $0.name == "address" })?.value
+                return payee ?? ""
+            }
+            return body
         }
 
         return sanitizedAddress

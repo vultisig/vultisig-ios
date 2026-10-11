@@ -40,6 +40,7 @@ final class JoinKeysignDoubleTapGuardTests: XCTestCase {
         viewModel.serverAddress = "https://\(Self.stubHost)"
         viewModel.sessionID = "session-1"
         viewModel.localPartyID = "party-A"
+        viewModel.keysignMessages = ["message-hash"]
 
         // First tap: starts the request, sets the in-flight flag.
         viewModel.joinKeysignCommittee()

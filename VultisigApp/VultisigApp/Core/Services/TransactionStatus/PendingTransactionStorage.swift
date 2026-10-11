@@ -35,7 +35,8 @@ final class StoredPendingTransactionStorage {
         coinTicker: String? = nil,
         amount: String? = nil,
         toAddress: String? = nil,
-        pubKeyECDSA: String? = nil
+        pubKeyECDSA: String? = nil,
+        lastLedgerSequence: Int? = nil
     ) throws {
         let config = ChainStatusConfig.config(for: chain)
 
@@ -62,6 +63,10 @@ final class StoredPendingTransactionStorage {
                 existing.pubKeyECDSA = pubKeyECDSA
             }
 
+            if existing.lastLedgerSequence == nil {
+                existing.lastLedgerSequence = lastLedgerSequence
+            }
+
             if case .confirmed = status {
                 existing.confirmedAt = Date()
             }
@@ -79,7 +84,8 @@ final class StoredPendingTransactionStorage {
                 coinTicker: coinTicker,
                 amount: amount,
                 toAddress: toAddress,
-                pubKeyECDSA: pubKeyECDSA
+                pubKeyECDSA: pubKeyECDSA,
+                lastLedgerSequence: lastLedgerSequence
             )
             modelContext.insert(transaction)
         }
@@ -94,6 +100,12 @@ final class StoredPendingTransactionStorage {
         }
         let descriptor = FetchDescriptor(predicate: predicate)
         return try modelContext.fetch(descriptor).first
+    }
+
+    /// The persisted `LastLedgerSequence` for an XRP transaction, nil when the
+    /// row is absent or predates the field.
+    func lastLedgerSequence(txHash: String) -> Int? {
+        try? get(txHash: txHash)?.lastLedgerSequence
     }
 
     /// Get all resumable transactions for background polling. `timeout` is a

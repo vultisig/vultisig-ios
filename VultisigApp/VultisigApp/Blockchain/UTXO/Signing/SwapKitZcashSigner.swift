@@ -62,8 +62,11 @@ enum SwapKitZcashSigner {
     /// branchID injected on the frozen plan. `zcashBranchId` is the live branch
     /// id resolved at send time (carried on the source-chain payload's UTXO
     /// specific); refuses when absent (no compiled-in fallback).
-    static func preSigningHashes(payload: SwapKitSwapPayload, zcashBranchId: String?) throws -> [String] {
-        let input = try Self.buildSigningInput(payload: payload, zcashBranchId: zcashBranchId)
+    static func preSigningHashes(payload: SwapKitSwapPayload, zcashBranchId: String?, pubKeyHex: String) throws -> [String] {
+        guard let pubkeyData = Data(hexString: pubKeyHex) else {
+            throw SwapKitZcashSignerError.underlying(.invalidPublicKey(pubKeyHex))
+        }
+        let input = try Self.ownedSigningInput(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
         let serialized = try input.serializedData()
         let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
@@ -88,7 +91,7 @@ enum SwapKitZcashSigner {
         else {
             throw SwapKitZcashSignerError.underlying(.invalidPublicKey(pubKeyHex))
         }
-        let input = try Self.buildSigningInput(payload: payload, zcashBranchId: zcashBranchId)
+        let input = try Self.ownedSigningInput(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
         let serialized = try input.serializedData()
         let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
@@ -121,6 +124,27 @@ enum SwapKitZcashSigner {
             rawTransaction: output.encoded.hexString,
             transactionHash: output.transactionID
         )
+    }
+
+    /// Builds the signing input only after every PSBT input is confirmed to be
+    /// locked to `pubkeyData`; the MPC network must never be asked to sign an
+    /// input this vault does not own.
+    private static func ownedSigningInput(
+        payload: SwapKitSwapPayload,
+        zcashBranchId: String?,
+        pubkeyData: Data
+    ) throws -> BitcoinSigningInput {
+        let parsed = try parseSaplingPSBT(
+            payload.txPayload,
+            targetAddress: payload.targetAddress,
+            zcashBranchId: zcashBranchId
+        )
+        do {
+            try SwapKitLegacyP2PKHSigner.verifyOwnership(inputs: parsed.inputs, pubkeyData: pubkeyData)
+        } catch let err as SwapKitLegacyP2PKHSignerError {
+            throw SwapKitZcashSignerError.underlying(err)
+        }
+        return parsed.input
     }
 
     /// Exposed for unit tests: build the WalletCore signing input with the
@@ -215,6 +239,7 @@ enum SwapKitZcashSigner {
 
     private struct ParsedSaplingPSBT {
         let input: BitcoinSigningInput
+        let inputs: [LegacyP2PKHInput]
     }
 
     private static func parseSaplingPSBT(_ psbtBytes: Data, targetAddress: String, zcashBranchId: String?) throws -> ParsedSaplingPSBT {
@@ -278,7 +303,7 @@ enum SwapKitZcashSigner {
             targetAddress: targetAddress,
             zcashBranchId: zcashBranchId
         )
-        return ParsedSaplingPSBT(input: input)
+        return ParsedSaplingPSBT(input: input, inputs: legacyInputs)
     }
 
     private static func resolvePrevUtxo(

@@ -14,7 +14,7 @@ class CardanoService {
     private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol
 
-    private init(httpClient: HTTPClientProtocol = HTTPClient()) {
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
     }
 
@@ -96,7 +96,8 @@ class CardanoService {
     ///   - signedTransaction: signed CBOR in hex.
     ///   - precomputedTxId: txId derived from the pre-image body during signing.
     ///     Used as the canonical hash and as the fallback on Ogmios "already in
-    ///     mempool" (code 3117), where another peer beat us to the punch.
+    ///     mempool" (code 3117) or "already included" (code 3997 with an
+    ///     all-inputs-spent justification), where another peer beat us to the punch.
     func broadcastTransaction(signedTransaction: String, precomputedTxId: String) async throws -> String {
         // The endpoint returns 200 on success and 400 with a JSON-RPC error
         // envelope on Ogmios-level errors (e.g. code 3117 "already in mempool").
@@ -117,15 +118,15 @@ class CardanoService {
         }
 
         if let error = body.error {
-            if error.code == 3117 {
-                logger.info("Transaction already in mempool (3117). Returning precomputed hash: \(precomputedTxId)")
+            if Self.isAlreadyBroadcast(error) {
+                logger.info("Transaction already broadcast (\(error.code)). Returning precomputed hash: \(precomputedTxId)")
                 return precomputedTxId
             }
 
             throw NSError(
                 domain: "CardanoServiceError",
                 code: 9,
-                userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(error.message ?? "code \(error.code)")"]
+                userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(error.justification ?? error.message ?? "code \(error.code)")"]
             )
         }
 
@@ -138,5 +139,17 @@ class CardanoService {
         }
 
         return txId
+    }
+
+    /// Every signing device broadcasts the same bytes, so all but the first are
+    /// told the transaction exists already: code 3117, or a mempool rejection
+    /// (3997) whose justification says every input is spent.
+    static func isAlreadyBroadcast(_ error: CardanoSubmitTransactionResponse.ErrorBody) -> Bool {
+        if error.code == 3117 { return true }
+        guard error.code == 3997, let justification = error.justification else { return false }
+        return justification.range(
+            of: "^\\s*all inputs are spent",
+            options: [.regularExpression, .caseInsensitive]
+        ) != nil
     }
 }

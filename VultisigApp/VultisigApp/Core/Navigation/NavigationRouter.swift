@@ -30,6 +30,11 @@ final class NavigationRouter: ObservableObject {
         history.last
     }
 
+    /// Whether any route on the stack matches `predicate`.
+    func containsRoute(where predicate: (any NavPath) -> Bool) -> Bool {
+        history.contains(where: predicate)
+    }
+
     func replace(to destination: any NavPath) {
         navPath = NavigationPath()
         history.removeAll()

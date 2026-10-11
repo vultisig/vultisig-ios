@@ -110,7 +110,7 @@ struct TransactionStatusHeaderView: View {
     var statusDescription: some View {
         Group {
             if case let .failed(reason) = status {
-                Text(reason)
+                Text(TransactionHistoryFailureReasonPresentation.displayText(for: reason) ?? reason)
             } else if let detailKey = verb.detailKey(for: status) {
                 Text(detailKey.localized)
             }

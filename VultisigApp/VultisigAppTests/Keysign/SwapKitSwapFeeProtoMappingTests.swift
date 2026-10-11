@@ -188,7 +188,13 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
         guard case let .psbt(base64) = response.tx else {
             XCTFail("Expected a PSBT fixture"); return
         }
-        let psbt = try XCTUnwrap(Data(base64Encoded: base64))
+        let original = try XCTUnwrap(Data(base64Encoded: base64))
+        let signBitcoin = try SwapKitBTCSigner.decodeToSignBitcoin(psbtBytes: original)
+        let psbt = SwapKitVaultOwnedPSBT.replacing(
+            script: try XCTUnwrap(Data(hexString: try XCTUnwrap(signBitcoin.inputs.first).scriptPubKey)),
+            with: SwapKitVaultOwnedPSBT.goldenP2WPKHScript,
+            in: original
+        )
 
         let withFee = makeSwapKitPayload(
             swapFee: "250000",
@@ -202,11 +208,11 @@ final class SwapKitSwapFeeProtoMappingTests: XCTestCase {
             txPayload: psbt
         )
 
-        let signedWithFee = try SwapKitBTCSigner.preSigningHashes(payload: withFee)
+        let signedWithFee = try SwapKitBTCSigner.preSigningHashes(payload: withFee, pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex)
         XCTAssertFalse(signedWithFee.isEmpty, "…or the comparison below is vacuous")
         XCTAssertEqual(
             signedWithFee,
-            try SwapKitBTCSigner.preSigningHashes(payload: withoutFee),
+            try SwapKitBTCSigner.preSigningHashes(payload: withoutFee, pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex),
             "A display field must never reach what the vault signs"
         )
     }

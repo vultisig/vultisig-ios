@@ -61,6 +61,7 @@ final class TransactionStatusPoller: ObservableObject {
             chain: chain,
             createdAt: tx.createdAt,
             pubKeyECDSA: tx.pubKeyECDSA,
+            senderAccountId: tx.fromAddress,
             onUpdate: onUpdate
         )
         return true
@@ -77,6 +78,7 @@ final class TransactionStatusPoller: ObservableObject {
         chain: Chain,
         createdAt: Date,
         pubKeyECDSA: String,
+        senderAccountId: String?,
         onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) {
         guard activeTasks[txHash] == nil else { return }
@@ -109,6 +111,7 @@ final class TransactionStatusPoller: ObservableObject {
                         checker: self.service,
                         txHash: txHash,
                         chain: chain,
+                        senderAccountId: senderAccountId,
                         deadlineReached: elapsed >= config.maxWaitTime
                     )
 
@@ -179,11 +182,18 @@ final class TransactionStatusPoller: ObservableObject {
     }
 
     /// Start polling all pending transactions for a vault.
-    func pollPendingTransactions(pubKeyECDSA: String) {
+    func pollPendingTransactions(vault: Vault) {
+        let pubKeyECDSA = vault.pubKeyECDSA
         do {
             let pending = try StoredPendingTransactionStorage.shared.getAllPending()
             for tx in pending where tx.pubKeyECDSA == pubKeyECDSA {
-                poll(txHash: tx.txHash, chain: tx.chain, createdAt: tx.createdAt, pubKeyECDSA: pubKeyECDSA) { _, _ in }
+                poll(
+                    txHash: tx.txHash,
+                    chain: tx.chain,
+                    createdAt: tx.createdAt,
+                    pubKeyECDSA: pubKeyECDSA,
+                    senderAccountId: tx.senderAccountId(in: vault)
+                ) { _, _ in }
             }
         } catch {
             logger.error("Failed to fetch pending transactions: \(error)")
@@ -234,10 +244,15 @@ final class TransactionStatusPoller: ObservableObject {
         checker: TransactionStatusChecking,
         txHash: String,
         chain: Chain,
+        senderAccountId: String?,
         deadlineReached: Bool
     ) async -> PollAction {
         do {
-            let result = try await checker.checkTransactionStatus(txHash: txHash, chain: chain)
+            let result = try await checker.checkTransactionStatus(
+                txHash: txHash,
+                senderAccountId: senderAccountId,
+                chain: chain
+            )
             switch result.status {
             case .confirmed:
                 return .complete(.successful, nil)

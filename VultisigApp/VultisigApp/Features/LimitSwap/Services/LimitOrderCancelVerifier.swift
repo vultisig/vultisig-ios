@@ -128,7 +128,7 @@ struct LimitOrderCancelVerifier: LimitOrderCancelVerifying {
     /// remains the only evidence the cancel did anything.
     private func verifyL1Transaction(txHash: String, chain: Chain) async -> LimitOrderCancelTxOutcome {
         do {
-            let result = try await statusChecker.checkTransactionStatus(txHash: txHash, chain: chain)
+            let result = try await statusChecker.checkTransactionStatus(txHash: txHash, senderAccountId: nil, chain: chain)
             switch result.status {
             case .confirmed:
                 return .delivered

@@ -36,6 +36,9 @@ struct RippleTransactionStatusResponse: Codable, RippleRPCResponse {
         let error: String?  // "notImpl", "txnNotFound", etc.
         let error_code: Int?
         let error_message: String?
+        /// Only on a `txnNotFound` answer to a ledger-bounded request: true when
+        /// the server holds every validated ledger in the range.
+        let searched_all: Bool?
         let request: RippleRequest?  // Request object containing transaction field
     }
 

@@ -165,6 +165,10 @@ extension Chain {
             return ChainConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil)
         case .bittensor:
             return ChainConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil)
+        case .near:
+            // `banxaBlockchainCode` is inert: `canBuy` is false for NEAR, so no
+            // on-ramp ever reads it.
+            return ChainConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil)
         }
     }
 }

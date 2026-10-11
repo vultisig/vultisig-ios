@@ -85,6 +85,11 @@ extension String {
         !isEmpty
     }
 
+    /// One or more ASCII digits and nothing else: the only amount spelling every co-signer accepts on the wire.
+    var isUnsignedDecimal: Bool {
+        !isEmpty && allSatisfy { $0.isASCII && $0.isNumber }
+    }
+
     static let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
 
     /// Rendered in place of fiat when a balance is known but its rate has not yet

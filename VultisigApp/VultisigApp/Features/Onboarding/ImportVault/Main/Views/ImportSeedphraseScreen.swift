@@ -10,8 +10,6 @@ import SwiftData
 import WalletCore
 
 struct ImportSeedphraseScreen: View {
-    let wordsCountType = [12, 24]
-
     @State private var validationTask: Task<Void, Never>?
     @State private var duplicateSeedError: Error?
     @State private var isImporting = false
@@ -34,7 +32,7 @@ struct ImportSeedphraseScreen: View {
     }
 
     var wordsCountAccessory: String {
-        let maxWords = wordsCount > 12 ? 24 : 12
+        let maxWords = SeedphraseWordCount.targetLength(for: wordsCount)
         return "\(wordsCount)/\(maxWords)"
     }
 
@@ -120,7 +118,7 @@ struct ImportSeedphraseScreen: View {
 
             let words = cleaned.split(separator: " ")
 
-            if oldValue.isEmpty, words.isEmpty, wordsCountType.contains(words.count) {
+            if oldValue.isEmpty, words.isEmpty, SeedphraseWordCount.isSupported(words.count) {
                 mnemonicInput = cleaned
                 validateMnemonic(cleaned)
                 return
@@ -189,8 +187,8 @@ struct ImportSeedphraseScreen: View {
         let words = cleaned.split(separator: " ")
         let wordCount = words.count
 
-        // Check if word count is valid (12 or 24)
-        guard wordsCountType.contains(wordCount) else {
+        // Check if word count is a valid BIP39 length
+        guard SeedphraseWordCount.isSupported(wordCount) else {
             if wordCount > 0 {
                 errorMessage = String(format: "seedPhraseWordCountError".localized, wordCount)
             }

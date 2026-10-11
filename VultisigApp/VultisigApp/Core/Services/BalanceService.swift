@@ -664,6 +664,13 @@ class BalanceService {
         case .polkadot:
             return .init(rawBalance: try await dot.getBalance(address: address))
 
+        case .near:
+            // The unlocked `amount` with its storage stake visible, never plus `locked`; nil is UNKNOWN_ACCOUNT.
+            guard let account = try await NearService.shared.fetchAccount(accountId: address) else {
+                return .init(rawBalance: "0")
+            }
+            return .init(rawBalance: account.amount.description)
+
         case .bittensor:
             return .init(rawBalance: try await tao.getBalance(address: address))
 
