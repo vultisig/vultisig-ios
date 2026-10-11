@@ -138,6 +138,15 @@ struct SwapTransaction: Hashable {
         advancedSettings.externalRecipient != nil
     }
 
+    /// The address a SwapKit ERC-20 deposit transfers the sold token to, decoded
+    /// from the payload it signs by the decoder the co-signer's review uses;
+    /// nil for any other swap. Throws the refusal signing this quote would hit.
+    func swapKitDepositRecipient() throws -> String? {
+        guard case let .swapkit(response, _, _) = quote, case .evm = response.tx else { return nil }
+        let payload = try SwapCryptoLogic.buildSwapKitGenericPayload(transaction: self, swapResponse: response)
+        return try EVMSwapTxGuard.swapKitDepositRecipient(of: payload)
+    }
+
     /// Provider label for the verify/summary screens. Secured mints aren't a
     /// third-party route, so they read "Mint (SECURE+)" rather than the synthetic
     /// quote's "THORChain". Non-localized, matching the other brand display names.

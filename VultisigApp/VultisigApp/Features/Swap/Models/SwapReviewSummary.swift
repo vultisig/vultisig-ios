@@ -49,10 +49,14 @@ struct SwapReviewSummary {
     /// A limit order's only fee: the source-chain network fee.
     let limitNetworkFee: (amount: String, fiat: String)?
     let externalRecipient: String?
+    /// Where a SwapKit ERC-20 deposit transfers the sold token, decoded from the
+    /// calldata that gets signed; nil for any other swap. A failure is the
+    /// refusal the review shows in the row.
+    let depositRecipient: Result<String?, Error>
 }
 
 extension SwapReviewSummary {
-    init(transaction: SwapTransaction, vault: Vault) {
+    init(transaction: SwapTransaction, vault: Vault, depositRecipient: Result<String?, Error>) {
         from = Side(
             logo: transaction.fromCoin.logo,
             ticker: transaction.fromCoin.ticker,
@@ -140,6 +144,7 @@ extension SwapReviewSummary {
         }
 
         externalRecipient = transaction.hasExternalRecipient ? transaction.recipientAddress : nil
+        self.depositRecipient = depositRecipient
     }
 
     /// Prices `toAmountDecimal` directly rather than through

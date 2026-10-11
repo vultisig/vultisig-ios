@@ -33,6 +33,15 @@ struct SwapReviewSummaryView: View {
                 KeysignReviewRow(label: "recipient".localized, value: recipient, color: Theme.colors.alertWarning)
             }
 
+            switch summary.depositRecipient {
+            case .success(let deposit?):
+                KeysignReviewRow(label: "swapDepositAddress".localized, value: deposit)
+            case .success(nil):
+                EmptyView()
+            case .failure(let refusal):
+                KeysignReviewRow(label: "swapDepositAddress".localized, value: refusal.localizedDescription, color: Theme.colors.alertError)
+            }
+
             KeysignReviewHairline()
 
             if let terms = summary.limitTerms {
