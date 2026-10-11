@@ -72,6 +72,48 @@ final class PrebuiltPayloadFeeTests: XCTestCase {
         XCTAssertEqual(fee, SolanaHelper.defaultFeeInLamports)
     }
 
+    /// The signer substitutes its defaults for an unset price or limit, so a
+    /// co-signer's fee row must price those same effective values rather than
+    /// the bare base.
+    func testSignedSolanaFeePricesTheDefaultsTheSignerSubstitutes() throws {
+        let fee = try XCTUnwrap(
+            PrebuiltPayloadFee.signedSolanaFee(for: solanaPayload(priorityFee: .zero, priorityLimit: .zero))
+        )
+
+        // 100,000 CU x 1,000,000 microlamports/CU = 100,000 lamports on top of the base.
+        XCTAssertEqual(fee, SolanaHelper.defaultFeeInLamports + BigInt(100_000))
+    }
+
+    func testSignedSolanaFeeUsesTheRelayedPriceAndLimit() throws {
+        let fee = try XCTUnwrap(
+            PrebuiltPayloadFee.signedSolanaFee(
+                for: solanaPayload(priorityFee: BigInt(20_000), priorityLimit: BigInt(320_000))
+            )
+        )
+
+        XCTAssertEqual(fee, SolanaHelper.defaultFeeInLamports + BigInt(6_400))
+    }
+
+    func testSignedSolanaFeeFallsBackPerFieldWhenOnlyOneIsUnset() throws {
+        let fee = try XCTUnwrap(
+            PrebuiltPayloadFee.signedSolanaFee(for: solanaPayload(priorityFee: BigInt(2_000_000), priorityLimit: .zero))
+        )
+
+        // 100,000 default CU x 2,000,000 microlamports/CU = 200,000 lamports.
+        XCTAssertEqual(fee, SolanaHelper.defaultFeeInLamports + BigInt(200_000))
+    }
+
+    func testSignedSolanaFeeIsNilForNonSolanaPayloads() {
+        XCTAssertNil(
+            PrebuiltPayloadFee.signedSolanaFee(
+                for: payload(
+                    chain: .ethereum,
+                    chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(30), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000))
+                )
+            )
+        )
+    }
+
     /// Other chains' pre-built payloads carry their own total, so it is used
     /// verbatim — an EVM payload's is `maxFeePerGas × gasLimit`.
     func testAnEvmPayloadReportsItsOwnRecordedTotal() throws {
