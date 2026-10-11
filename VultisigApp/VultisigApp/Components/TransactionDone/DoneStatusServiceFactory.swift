@@ -49,7 +49,8 @@ enum DoneStatusServiceFactory {
             coinTicker: tx?.coin.ticker,
             amount: tx.map { "\($0.amount) \($0.coin.ticker)" },
             toAddress: tx?.toAddress,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            senderAccountId: tx?.coin.address
         ))
     }
 
@@ -91,7 +92,8 @@ enum DoneStatusServiceFactory {
             coinTicker: transaction.fromCoin.ticker,
             amount: "\(transaction.fromAmount) \(transaction.fromCoin.ticker)",
             toAddress: transaction.toCoin.address,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            senderAccountId: transaction.fromCoin.address
         ))
     }
 
@@ -107,7 +109,8 @@ enum DoneStatusServiceFactory {
             coinTicker: qbtcCoin.ticker,
             amount: QBTCClaimAmountFormatter.formatQbtc(sats: result.totalSatsClaimed),
             toAddress: qbtcCoin.address,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            senderAccountId: qbtcCoin.address
         ))
     }
 
@@ -165,7 +168,8 @@ enum DoneStatusServiceFactory {
             coinTicker: keysignPayload.coin.ticker,
             amount: keysignPayload.toAmountWithTickerString,
             toAddress: keysignPayload.toAddress,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            senderAccountId: keysignPayload.coin.address
         ))
     }
 

@@ -38,6 +38,24 @@ enum PrebuiltPayloadFee {
     /// these and a lamport is a million of them.
     private static let microLamportsPerLamport = BigInt(1_000_000)
 
+    /// The Solana fee a co-signer signs: the flat base plus the compute-budget
+    /// cost of the price and limit the signer will actually apply. An unset
+    /// field is priced at the signer's default, because `SolanaHelper` builds
+    /// the transaction with that default, so the fee row cannot show less than
+    /// what is signed. `nil` for any non-Solana payload.
+    static func signedSolanaFee(for payload: KeysignPayload) -> BigInt? {
+        guard case .Solana(_, let priorityFee, let priorityLimit, _, _, _) = payload.chainSpecific else {
+            return nil
+        }
+        let price = priorityFee > 0 ? priorityFee : BigInt(SolanaHelper.defaultPriorityFeePrice)
+        let limit = priorityLimit > 0 ? priorityLimit : SolanaHelper.priorityFeeLimit
+        return payload.chainSpecific.fee + ceilingLamports(price * limit)
+    }
+
+    private static func ceilingLamports(_ microLamports: BigInt) -> BigInt {
+        (microLamports + microLamportsPerLamport - 1) / microLamportsPerLamport
+    }
+
     /// The fee `payload` describes, or `nil` when its `chainSpecific` carries
     /// nothing better than the generic estimate — in which case the caller keeps
     /// the estimate rather than substituting a worse number.
@@ -54,7 +72,7 @@ enum PrebuiltPayloadFee {
             return base + rounded
 
         case .Ethereum, .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos,
-             .Sui, .Polkadot, .Ton, .Ripple, .Tron:
+             .Sui, .Polkadot, .Ton, .Ripple, .Tron, .Near:
             // Every other pre-built flow's `chainSpecific.fee` is already the
             // total the signer pays, so it is used as-is. A zero means the
             // payload was built without a fee estimate, and the caller's own

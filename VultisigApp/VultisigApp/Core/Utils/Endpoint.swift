@@ -117,6 +117,11 @@ class Endpoint {
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
+    /// NEAR mainnet JSON-RPC (access-key nonce, final block, runtime config,
+    /// broadcast, tx status). The same host the SDK and the browser extension
+    /// use, so a payload prepared here resolves the same block and config.
+    static let nearServiceRpc = "https://rpc.mainnet.fastnear.com"
+
     static func blockchairStats(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/stats".asUrl
     }

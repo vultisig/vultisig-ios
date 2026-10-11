@@ -146,7 +146,7 @@ enum TokenDiscovererRegistry {
             return RippleTrustLineTokenDiscoverer()
         case .Ton:
             return TonJettonTokenDiscoverer()
-        case .UTXO, .Cardano, .Polkadot, .Tron:
+        case .UTXO, .Cardano, .Polkadot, .Tron, .Near:
             return NoTokenDiscoverer()
         }
     }

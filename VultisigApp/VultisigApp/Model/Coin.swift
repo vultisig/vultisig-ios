@@ -306,6 +306,9 @@ class Coin: ObservableObject, Codable, Hashable {
             return "250000000" // 0.025
         case .bittensor:
             return "100000" // 0.0001 TAO = 100_000 RAO
+        case .near:
+            // Not read yet: the gas reservation is priced live by `BlockChainService`.
+            return "0"
         case .ton:
             return TonHelper.defaultFee.description
         case .ripple:

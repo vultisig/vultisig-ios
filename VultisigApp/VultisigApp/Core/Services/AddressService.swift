@@ -69,6 +69,9 @@ struct AddressService {
         for coinType in CoinType.allCases {
             // Map CoinType to Vultisig Chain
             guard let chain = Chain.supportedCases.first(where: { $0.coinType == coinType }) else { continue }
+            // A NEAR named account is any lowercase word or dotted name (an ENS
+            // or THORName too), so only a 64-hex implicit account may claim NEAR.
+            guard chain != .near || NearAccountId.isImplicit(address) else { continue }
             guard validateRecipientAddress(address: address, chain: chain) else { continue }
             // Only return if chain exists in vault with native token
             if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {
@@ -137,6 +140,16 @@ struct AddressService {
             }
         }
 
+        if chain == .near {
+            // Account ids are case-sensitive and lowercased by nobody: the
+            // `0x…` / `0s…` families and any uppercase spelling are rejected
+            // rather than normalized into a look-alike account.
+            guard NearAccountId.isValid(input) else {
+                throw Errors.invalidAddress
+            }
+            return input
+        }
+
         if validateRecipientAddress(address: input, chain: chain) {
             return input
         }
@@ -172,6 +185,10 @@ struct AddressService {
 
         if chain == .bittensor {
             return BittensorHelper.isValidAddress(address)
+        }
+
+        if chain == .near {
+            return NearAccountId.isValid(address)
         }
 
         return chain.coinType.validate(address: address)

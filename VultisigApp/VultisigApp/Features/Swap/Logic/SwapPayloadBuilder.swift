@@ -83,7 +83,7 @@ extension SwapCryptoLogic {
         case .Solana:
             return SolanaSwapNetworkFee.fee(chainSpecific: chainSpecific) ?? chainSpecific.gas
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Sui, .Ton, .Ripple, .Tron, .Near:
             return chainSpecific.gas
         }
     }

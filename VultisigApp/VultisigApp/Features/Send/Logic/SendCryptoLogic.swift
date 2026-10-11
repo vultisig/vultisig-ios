@@ -169,7 +169,13 @@ enum SendCryptoLogic {
     /// per-chain fee (UTXO byte-fee × planned bytes, EVM gasPrice × gasLimit,
     /// chain-specific gas, etc.) and feeds the BigInt in here. Pure math; the
     /// async fetches live in the interactor.
-    static func computeMaxAmount(coin: Coin, fee: BigInt) -> String {
+    ///
+    /// `reserve` is balance the chain requires on top of the quoted fee but
+    /// does not spend — NEAR's storage backing, which `getNearSendLimits`
+    /// subtracts as `max(0, storage_amount_per_byte × usage − locked)` and
+    /// exempts entirely at or below 770 bytes of storage. `.zero` everywhere
+    /// else, which leaves the arithmetic exactly as it was.
+    static func computeMaxAmount(coin: Coin, fee: BigInt, reserve: BigInt = .zero) -> String {
         let maxValue: Decimal
         if coin.chain == .terraClassic {
             // Terra Classic charges a proportional burn tax on the send amount,
@@ -186,7 +192,7 @@ enum SendCryptoLogic {
             // top of the fee so max-send settles at `balance − fee − ED`. Zero
             // for every other chain: XRP's rawBalance is already reserve-net, so
             // it settles at `balance − fee`.
-            maxValue = coin.getMaxValue(fee + existentialDeposit(for: coin))
+            maxValue = coin.getMaxValue(fee + existentialDeposit(for: coin) + reserve)
         }
         let digits = coin.decimals > 8 ? 8 : coin.decimals
         return formatAmountInput(maxValue, digits: digits)

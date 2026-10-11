@@ -226,6 +226,14 @@ struct ChainStatusConfig {
                 pollInterval: 2,
                 maxWaitTime: 300  // 5 min
             )
+        case .near:
+            // One block per ~1s, and `FINAL` execution is available in the same
+            // block for a native transfer (a transfer has a single receipt).
+            return ChainStatusConfig(
+                estimatedTime: "~2-3 sec",
+                pollInterval: 2,
+                maxWaitTime: 120  // 2 min
+            )
         }
     }
 }

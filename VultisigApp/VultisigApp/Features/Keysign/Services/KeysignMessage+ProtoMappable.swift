@@ -121,6 +121,9 @@ extension KeysignPayload: ProtoMappable {
         }
 
         self.coin = try ProtoCoinResolver.resolve(coin: proto.coin)
+        if coin.chain == .near {
+            try proto.requireNearWireAmounts()
+        }
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
@@ -224,6 +227,20 @@ extension KeysignPayload: ProtoMappable {
             if let dappMetadata = dappMetadata?.normalized {
                 $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
+        }
+    }
+}
+
+private extension VSKeysignPayload {
+    /// Refuses the NEAR amount spellings `BigInt` parsing would normalise into a
+    /// signable payload. Mirrors the SDK resolver's `NEAR_UNSIGNED_DECIMAL`
+    /// check and Android's `requireNearWireAmounts`.
+    func requireNearWireAmounts() throws {
+        guard toAmount.isUnsignedDecimal else {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, toAmount))
+        }
+        if case .nearSpecific(let specific) = blockchainSpecific, !specific.gasFee.isUnsignedDecimal {
+            throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, specific.gasFee))
         }
     }
 }
@@ -624,6 +641,12 @@ extension BlockChainSpecific {
                 blockHeaderWitnessAddress: value.blockHeaderWitnessAddress,
                 gasFeeEstimation: value.gasEstimation
             )
+        case .nearSpecific(let value):
+            self = .Near(
+                nonce: value.nonce,
+                blockHash: value.blockHash,
+                gasFee: value.gasFee
+            )
         }
 
     }
@@ -772,6 +795,13 @@ extension BlockChainSpecific {
                 // been the value signers write as `fee_limit`. The initiating
                 // device's post-stake display estimate is deliberately local.
                 $0.gasEstimation = feeLimit ?? gasEstimation
+            })
+
+        case .Near(let nonce, let blockHash, let gasFee, _):
+            return .nearSpecific(.with {
+                $0.nonce = nonce
+                $0.blockHash = blockHash
+                $0.gasFee = gasFee
             })
         }
     }
