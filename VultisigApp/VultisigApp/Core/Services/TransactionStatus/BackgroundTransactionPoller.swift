@@ -24,7 +24,9 @@ class BackgroundTransactionPoller: ObservableObject {
             let pendingTransactions = try storage.getAllPending()
 
             Log.chain.service.debug("Found \(pendingTransactions.count) pending transactions")
-            let vaults = Storage.shared.modelContext?.fetchAllVaults() ?? []
+            // Rows keep no sender; only NEAR's status lookup needs one, so the
+            // vaults are read on the first NEAR row and not at all otherwise.
+            var vaults: [Vault]?
 
             for transaction in pendingTransactions {
                 // Check if already being polled
@@ -33,10 +35,17 @@ class BackgroundTransactionPoller: ObservableObject {
                 }
 
                 // Create view model and start polling
-                let vault = vaults.first { $0.pubKeyECDSA == transaction.pubKeyECDSA }
+                var senderAccountId: String?
+                if transaction.chain == .near {
+                    let allVaults = vaults ?? Storage.shared.modelContext?.fetchAllVaults() ?? []
+                    vaults = allVaults
+                    senderAccountId = allVaults
+                        .first { $0.pubKeyECDSA == transaction.pubKeyECDSA }
+                        .flatMap(transaction.senderAccountId(in:))
+                }
                 let viewModel = TransactionStatusViewModel(
                     pendingTransaction: transaction,
-                    senderAccountId: vault.flatMap(transaction.senderAccountId(in:))
+                    senderAccountId: senderAccountId
                 )
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()

@@ -205,6 +205,24 @@ final class EVMSwapTxGuardTests: XCTestCase {
             hexPublicKey: ""
         )
         XCTAssertNoThrow(try SwapPayload.generic(swap).requireSellsSigningCoin(sameTokenUppercased))
+
+        let sameTokenLowercasedTicker = Coin(
+            asset: CoinMeta(chain: .ethereum, ticker: "usdc", logo: "logo", decimals: 6, priceProviderId: "guard-false", contractAddress: swap.fromCoin.contractAddress, isNativeToken: false),
+            address: "0xFrom",
+            hexPublicKey: ""
+        )
+        XCTAssertNoThrow(try SwapPayload.generic(swap).requireSellsSigningCoin(sameTokenLowercasedTicker))
+
+        for (ticker, decimals) in [("USDC", 18), ("USDT", 6)] {
+            let sameContractOtherMeta = Coin(
+                asset: CoinMeta(chain: .ethereum, ticker: ticker, logo: "logo", decimals: decimals, priceProviderId: "guard-meta", contractAddress: swap.fromCoin.contractAddress, isNativeToken: false),
+                address: "0xFrom",
+                hexPublicKey: ""
+            )
+            XCTAssertThrowsError(try SwapPayload.generic(swap).requireSellsSigningCoin(sameContractOtherMeta)) {
+                XCTAssertEqual($0 as? SwapPayloadError, .coinMismatch)
+            }
+        }
     }
 
     func testNativeThorchainAndMayaSwapsMustSellSigningCoin() {

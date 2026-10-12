@@ -164,6 +164,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .sei,
              .qbtc,
              .bittensor,
+             .near,
              .kujira:
             return false
         }
