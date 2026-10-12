@@ -120,7 +120,7 @@ class Endpoint {
     /// NEAR mainnet JSON-RPC (access-key nonce, final block, runtime config,
     /// broadcast, tx status). The same host the SDK and the browser extension
     /// use, so a payload prepared here resolves the same block and config.
-    static let nearServiceRpc = "https://rpc.mainnet.fastnear.com"
+    static let nearServiceRpc = "https://api.vultisig.com/near/"
 
     static func blockchairStats(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/stats".asUrl
