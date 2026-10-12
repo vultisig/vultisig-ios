@@ -113,6 +113,10 @@ struct SwapKitSwapRequest: Encodable {
     let sourceAddress: String
     let destinationAddress: String
     let overrideSlippage: Bool?
+    /// Deposit-only sources (NEAR) sign their own frozen transfer, so SwapKit
+    /// must not build one; `nil` omits both flags from the body.
+    var disableBuildTx: Bool?
+    var disableBalanceCheck: Bool?
 }
 
 struct SwapKitTrackRequest: Encodable {

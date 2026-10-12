@@ -125,6 +125,9 @@ final class SwapDetailsViewModel {
 
     var thorchainFee: BigInt = .zero
     var solanaAtaRent: BigInt = .zero
+    /// Balance the source account must keep behind (NEAR storage backing);
+    /// zero for every chain that reserves nothing.
+    var storageReserve: BigInt = .zero
     var gas: BigInt = .zero
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
     /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
@@ -711,10 +714,11 @@ extension SwapDetailsViewModel {
     /// the reconciled signed bond for EVM aggregator/SwapKit routes (an EVM
     /// node rejects any transaction whose account can't cover
     /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
-    /// until the oracle data loads.
+    /// until the oracle data loads — plus the balance the account must keep.
     var balanceError: SwapCryptoLogic.Errors? {
         let fundingFee = SwapCryptoLogic.fundingNetworkFee(
-            displayedFee: displayedNetworkFeeWei, gasEstimate: gas, chain: fromCoin.chain
+            displayedFee: displayedNetworkFeeWei, gasEstimate: gas,
+            storageReserve: storageReserve, chain: fromCoin.chain
         )
         return SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmountDecimal, fee: fundingFee)
     }
@@ -912,6 +916,7 @@ private extension SwapDetailsViewModel {
             gas = .zero
             gasLimit = .zero
             thorchainFee = .zero
+            storageReserve = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
             error = nil
@@ -938,6 +943,7 @@ private extension SwapDetailsViewModel {
             gas = .zero
             gasLimit = .zero
             thorchainFee = .zero
+            storageReserve = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
         }
@@ -975,7 +981,8 @@ private extension SwapDetailsViewModel {
                     thorchainFee: self.thorchainFee, solanaAtaRent: .zero
                 )
                 let fundingFee = SwapCryptoLogic.fundingNetworkFee(
-                    displayedFee: feeWithoutRent, gasEstimate: self.gas, chain: .solana
+                    displayedFee: feeWithoutRent, gasEstimate: self.gas,
+                    storageReserve: self.storageReserve, chain: .solana
                 )
                 canPayPreliminaryFee = SwapCryptoLogic.balanceError(
                     fromCoin: self.fromCoin, feeCoin: self.feeCoin,
@@ -1125,6 +1132,7 @@ private extension SwapDetailsViewModel {
             gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
             solanaAtaRent = resolvedAtaRent
+            storageReserve = chainSpecific.nearStorageReserve
             return true
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

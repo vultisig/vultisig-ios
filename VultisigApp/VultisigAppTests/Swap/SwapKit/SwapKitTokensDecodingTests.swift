@@ -91,9 +91,10 @@ final class SwapKitTokensDecodingTests: XCTestCase {
         XCTAssertNil(tronToken.toCoinMeta())
     }
 
-    func testNearChainTokensAreDropped() throws {
-        // NEAR chain itself isn't supported as a Vultisig wallet — even
-        // gas-token NEAR.NEAR must not adapt.
+    func testNearNativeAdaptsButNep141TokensAreDropped() throws {
+        // NEAR is a native-only wallet chain: NEAR.NEAR becomes the gas slot,
+        // while NEP-141 tokens (account-id contracts the wallet cannot hold or
+        // send) never reach the picker.
         let nearGas = SwapKitToken(
             chain: "NEAR",
             chainId: "near",
@@ -105,7 +106,23 @@ final class SwapKitTokensDecodingTests: XCTestCase {
             logoURI: nil,
             coingeckoId: "near"
         )
-        XCTAssertNil(nearGas.toCoinMeta())
+        let meta = try XCTUnwrap(nearGas.toCoinMeta())
+        XCTAssertEqual(meta.chain, .near)
+        XCTAssertTrue(meta.isNativeToken)
+        XCTAssertEqual(meta.contractAddress, "")
+
+        let wrappedNear = SwapKitToken(
+            chain: "NEAR",
+            chainId: "near",
+            address: "wrap.near",
+            ticker: "wNEAR",
+            identifier: "NEAR.wNEAR-wrap.near",
+            name: "Wrapped NEAR",
+            decimals: 24,
+            logoURI: nil,
+            coingeckoId: "wrapped-near"
+        )
+        XCTAssertNil(wrappedNear.toCoinMeta())
     }
 
     func testRobinhoodAndHyperEvmTokensUseNumericChainIds() throws {

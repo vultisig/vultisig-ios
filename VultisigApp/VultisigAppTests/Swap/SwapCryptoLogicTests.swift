@@ -435,7 +435,7 @@ final class SwapCryptoLogicTests: XCTestCase {
 
     func testFeeLabelKeysMatchChainTypeForEveryChain() {
         for chain in Chain.allCases {
-            let expected: SwapCryptoLogic.FeeLabelKeys = chain.chainType == .EVM ? .maximum : .exact
+            let expected: SwapCryptoLogic.FeeLabelKeys = chain.chainType == .EVM || chain == .near ? .maximum : .exact
             XCTAssertEqual(SwapCryptoLogic.feeLabelKeys(feeChain: chain), expected, "\(chain)")
         }
     }

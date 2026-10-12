@@ -233,14 +233,19 @@ extension KeysignPayload: ProtoMappable {
 
 private extension VSKeysignPayload {
     /// Refuses the NEAR amount spellings `BigInt` parsing would normalise into a
-    /// signable payload. Mirrors the SDK resolver's `NEAR_UNSIGNED_DECIMAL`
-    /// check and Android's `requireNearWireAmounts`.
+    /// signable payload. Mirrors the SDK resolver's `NEAR_UNSIGNED_DECIMAL` and
+    /// deposit-amount checks and Android's `requireNearWireAmounts`.
     func requireNearWireAmounts() throws {
         guard toAmount.isUnsignedDecimal else {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidAmount".localized, toAmount))
         }
         if case .nearSpecific(let specific) = blockchainSpecific, !specific.gasFee.isUnsignedDecimal {
             throw HelperError.runtimeError(String(format: "nearErrorInvalidGasFee".localized, specific.gasFee))
+        }
+        if case .swapkitSwapPayload(let swap) = swapPayload, swap.fromAmount != toAmount {
+            throw HelperError.runtimeError(
+                String(format: "nearErrorSwapKitDepositAmountMismatch".localized, swap.fromAmount, toAmount)
+            )
         }
     }
 }

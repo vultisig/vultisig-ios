@@ -117,6 +117,24 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         tx = try Self.decodeTx(meta: meta, sellAsset: sellAsset, container: container)
     }
 
+    /// NEAR source, requested with `disableBuildTx`: a NEAR Intents
+    /// `simpleTransfer` deposit to the per-swap implicit account at
+    /// `targetAddress`. Vultisig signs its own frozen transfer, so a response
+    /// that still carries a built body is turned away rather than half-used.
+    private static func nearDepositCase(
+        txType: String,
+        container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> SwapKitTx {
+        let hasBody = container.contains(.tx) && !((try? container.decodeNil(forKey: .tx)) ?? false)
+        guard txType.isEmpty, !hasBody else {
+            let raw = hasBody
+                ? try container.decode(SwapKitRawJSON.self, forKey: .tx)
+                : SwapKitRawJSON(jsonValue: .string(""))
+            return .unsupported(txType: "NEAR/\(txType.isEmpty ? "prebuilt" : txType)", raw: raw)
+        }
+        return .nearDepositOnly
+    }
+
     /// Discriminate the PSBT shape by source chain. SwapKit's wire surface
     /// is the same uniform base64 PSBT for every UTXO chain, but the inner
     /// unsigned-tx body differs (segwit BIP-144 for BTC/LTC, legacy
@@ -203,6 +221,9 @@ struct SwapKitSwapResponse: Decodable, Hashable {
         container: KeyedDecodingContainer<CodingKeys>
     ) throws -> SwapKitTx {
         let txType = meta.txType.uppercased()
+        if sellAsset.uppercased() == "NEAR.NEAR" {
+            return try nearDepositCase(txType: txType, container: container)
+        }
         switch txType {
         case "EVM":
             let evm = try container.decode(SwapKitEvmTx.self, forKey: .tx)
@@ -360,6 +381,9 @@ enum SwapKitTx: Hashable {
     /// existing `RippleHelper`. No transaction body to sign — same model as
     /// `.cardano`.
     case rippleDepositOnly
+    /// NEAR source — deposit-only flow. No body; Vultisig builds a plain
+    /// native transfer to `targetAddress` for `sellAmount` via `NearHelper`.
+    case nearDepositOnly
     /// DOGE source — legacy P2PKH PSBT. Same `meta.txType: "PSBT"` wire as
     /// BTC, but inputs are P2PKH (DOGE has no segwit). Signed via WalletCore
     /// `CoinType.dogecoin` + frozen `BitcoinTransactionPlan` (no replanner
@@ -464,7 +488,8 @@ struct SwapKitSwapResponseMeta: Decodable, Hashable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        txType = try container.decode(String.self, forKey: .txType)
+        // Absent on deposit-only routes requested with `disableBuildTx` (NEAR).
+        txType = try container.decodeIfPresent(String.self, forKey: .txType) ?? ""
         approvalAddress = try container.decodeIfPresent(String.self, forKey: .approvalAddress)
         isFastQuote = try container.decodeIfPresent(Bool.self, forKey: .isFastQuote)
         isRefreshed = try container.decodeIfPresent(Bool.self, forKey: .isRefreshed)

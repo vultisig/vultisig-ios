@@ -99,6 +99,41 @@ enum NearHelper {
         try preSigningOutput(inputData: try getPreSignedInputData(keysignPayload: keysignPayload))
     }
 
+    /// A SwapKit deposit (NEAR Intents `simpleTransfer`) is signed as the plain
+    /// transfer it describes, so the swap metadata must name exactly that
+    /// transfer. Mirrors the SDK resolver's `assertSwapKitDepositOnly`.
+    private static func assertSwapKitDepositOnly(_ keysignPayload: KeysignPayload) throws {
+        guard let swapPayload = keysignPayload.swapPayload else { return }
+        guard case .swapkit(let swap) = swapPayload else {
+            throw HelperError.runtimeError("nearErrorSwapKitDepositOnly".localized)
+        }
+        guard swap.fromCoin.chain == .near, swap.fromCoin.isNativeToken else {
+            throw HelperError.runtimeError("nearErrorSwapKitNotNativeNear".localized)
+        }
+        // NEAR Intents deposits go to a fresh per-swap implicit account; a named target is never one.
+        guard NearAccountId.isImplicit(swap.targetAddress) else {
+            throw HelperError.runtimeError(String(format: "nearErrorSwapKitDepositNotImplicit".localized, swap.targetAddress))
+        }
+        guard swap.targetAddress == keysignPayload.toAddress else {
+            throw HelperError.runtimeError(
+                String(format: "nearErrorSwapKitDepositReceiverMismatch".localized, swap.targetAddress, keysignPayload.toAddress)
+            )
+        }
+        guard swap.fromAmount == keysignPayload.toAmount else {
+            throw HelperError.runtimeError(String(
+                format: "nearErrorSwapKitDepositAmountMismatch".localized,
+                swap.fromAmount.description,
+                keysignPayload.toAmount.description
+            ))
+        }
+        guard swap.txPayload.isEmpty, swap.txType.isEmpty else {
+            throw HelperError.runtimeError("nearErrorSwapKitDepositPrebuilt".localized)
+        }
+        guard swap.memo?.isEmpty ?? true else {
+            throw HelperError.runtimeError("nearErrorSwapKitDepositMemo".localized)
+        }
+    }
+
     private static func signingInput(keysignPayload: KeysignPayload) throws -> NEARSigningInput {
         let coin = keysignPayload.coin
         try assertNativeTransferPayload(keysignPayload)
@@ -152,9 +187,7 @@ enum NearHelper {
         guard keysignPayload.memo?.isEmpty ?? true else {
             throw HelperError.runtimeError("nearErrorMemo".localized)
         }
-        guard keysignPayload.swapPayload == nil else {
-            throw HelperError.runtimeError("nearErrorSwapPayload".localized)
-        }
+        try assertSwapKitDepositOnly(keysignPayload)
         guard keysignPayload.wasmExecuteContractPayload == nil,
               keysignPayload.tronTransferContractPayload == nil,
               keysignPayload.tronTriggerSmartContractPayload == nil,

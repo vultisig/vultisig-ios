@@ -176,6 +176,7 @@ enum SwapKitChainIDMapper {
         case .zcash: return "zcash"
         case .tron: return "728126428"
         case .ton: return "ton"
+        case .near: return "near"
         case .cardano: return "cardano"
         case .sui: return "sui"
         case .ripple: return "ripple"
@@ -230,6 +231,7 @@ enum SwapKitChainIDMapper {
         case "ADA": return .cardano
         case "SUI": return .sui
         case "XRP": return .ripple
+        case "NEAR": return .near
         case "ATOM": return .gaiaChain
         case "HOOD": return .robinhood
         case "HYPEREVM": return .hyperliquid
@@ -239,7 +241,7 @@ enum SwapKitChainIDMapper {
         // Chains SwapKit lists tokens on but Vultisig doesn't hold wallets
         // for — caller drops the token. Enumerated for grep-discoverability
         // rather than relying on the default arm.
-        case "BERA", "MONAD", "GNO", "STRK", "XLAYER", "OKB", "DOT", "NEAR":
+        case "BERA", "MONAD", "GNO", "STRK", "XLAYER", "OKB", "DOT":
             return nil
         default:
             return nil

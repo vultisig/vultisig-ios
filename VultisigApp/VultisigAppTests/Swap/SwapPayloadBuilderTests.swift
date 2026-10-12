@@ -378,7 +378,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(cosignerFee.feeCrypto, "\(expectedSol) SOL")
         XCTAssertEqual(
             SwapCryptoLogic.fundingNetworkFee(
-                displayedFee: initiatorFee, gasEstimate: specific.gas, chain: .solana
+                displayedFee: initiatorFee, gasEstimate: specific.gas, storageReserve: .zero, chain: .solana
             ),
             SolanaHelper.defaultFeeInLamports
         )

@@ -365,6 +365,15 @@ final class BlockChainService {
             action = .swap
         }
 
+        // NEAR's upfront gas depends on the receiver (a new implicit deposit
+        // account costs account-creation gas), so its SwapKit deposit address
+        // is the recipient. Other chains keep reading no destination here.
+        let swapRecipient: String? = if fromCoin.chain == .near, case let .swapkit(response, _, _) = quote {
+            response.targetAddress
+        } else {
+            nil
+        }
+
         let specific = try await fetchSpecific(
             for: fromCoin,
             action: action,
@@ -373,7 +382,7 @@ final class BlockChainService {
             transactionType: .unspecified,
             gasLimit: gasLimit,
             fromAddress: fromCoin.address,
-            toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+            toAddress: swapRecipient,
             memo: nil,  // Swaps don't have memos
             feeMode: .fast,
             amount: nil
