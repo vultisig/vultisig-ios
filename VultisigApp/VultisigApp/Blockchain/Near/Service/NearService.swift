@@ -11,9 +11,9 @@ import WalletCore
 /// hash and gas price, and the runtime config the gas reservation is priced
 /// from.
 ///
-/// The default node is the SDK's mainnet endpoint, so a payload prepared here
-/// and one prepared by the extension/SDK resolve the same block and the same
-/// config. A user's custom NEAR RPC replaces it, resolved per request.
+/// The default node is the Vultisig proxy of the SDK's mainnet endpoint, so a
+/// payload prepared here and one prepared by the extension/SDK resolve the same
+/// block and the same config. A user's custom NEAR RPC replaces it, resolved per request.
 final class NearService {
 
     static let rpcEndpoint = Endpoint.nearServiceRpc
