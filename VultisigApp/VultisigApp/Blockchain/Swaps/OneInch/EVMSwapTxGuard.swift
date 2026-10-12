@@ -12,6 +12,7 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
     case unknownRouter(router: String, provider: String, chain: String)
     case valueExceedsQuotedAmount(value: String, quoted: String)
     case valueFromTokenSource(value: String)
+    case swapKitDepositRefused(String)
 
     var errorDescription: String? {
         switch self {
@@ -25,6 +26,8 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
             return "EVM swap sends \(value) native units, more than the quoted \(quoted)"
         case .valueFromTokenSource(let value):
             return "EVM swap from an ERC-20 source must not send native value, got \(value)"
+        case .swapKitDepositRefused(let reason):
+            return "SwapKit ERC-20 deposit \(reason)"
         }
     }
 }
@@ -36,6 +39,9 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
 ///
 /// - `tx.to` must be the provider's router on that chain. SwapKit is exempt: its
 ///   entry contract is chosen per route, so there is no fixed address to pin.
+///   A SwapKit `transfer` call or a SwapKit tx addressed to the sold token (an
+///   ERC-20 deposit) must instead be exactly `transfer(recipient, fromAmount)`
+///   on the sold token with no native value.
 /// - A 1inch / Kyber swap (or a provider-less one aimed at their routers) cannot
 ///   send more native value than the quoted amount and sends none from an ERC-20
 ///   source. LI.FI and SwapKit are exempt: bridge routes add native messaging fees
@@ -57,13 +63,14 @@ enum EVMSwapTxGuard {
             throw EVMSwapTxGuardError.malformedValue(tx.value)
         }
 
-        let rawProvider = payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawProvider = wireProvider(of: payload)
         let provider = SwapProviderId.from(rawValue: rawProvider)
         let to = tx.to.lowercased()
 
         let routers: Set<String>?
         switch provider {
         case .swapkit:
+            _ = try Self.swapKitDepositRecipient(of: payload)
             routers = nil
         case .oneInch, .kyberSwap, .lifi, .jupiter:
             routers = Self.routers(for: provider, chain: chain)
@@ -104,6 +111,69 @@ enum EVMSwapTxGuard {
         } else if value != 0 {
             throw EVMSwapTxGuardError.valueFromTokenSource(value: String(value))
         }
+    }
+
+    /// The recipient of the SwapKit ERC-20 deposit `payload` signs, decoded from
+    /// its calldata by `swapKitErc20DepositRecipient`; nil when it is not one.
+    static func swapKitDepositRecipient(of payload: GenericSwapPayload) throws -> String? {
+        // Read like the router pin, so an id that skips the pin cannot skip this check.
+        guard SwapProviderId.from(rawValue: wireProvider(of: payload)) == .swapkit,
+              payload.fromCoin.chain.chainType == .EVM else { return nil }
+        let tx = payload.quote.tx
+        guard let value = BigUInt(tx.value), value.bitWidth <= 256 else {
+            throw EVMSwapTxGuardError.malformedValue(tx.value)
+        }
+        return try swapKitErc20DepositRecipient(
+            to: tx.to,
+            data: tx.data,
+            value: BigInt(value),
+            sourceToken: payload.fromCoin.contractAddress,
+            amount: payload.fromAmount
+        )
+    }
+
+    /// A SwapKit deposit route (NEAR Intents `simpleTransfer`) that sells an
+    /// ERC-20 calls the token itself with `transfer(recipient, amount)`. Returns
+    /// the lowercase recipient when the call is exactly that: addressed to the
+    /// sold token, no native value, exactly `transfer(address,uint256)`, the sold
+    /// amount. Returns nil when it is neither addressed to the sold token nor a
+    /// `transfer` call. Anything else that is (another token, native value, other
+    /// calldata, another amount) throws. Mirrors vultisig-sdk's
+    /// `getSwapKitErc20DepositRecipient`.
+    static func swapKitErc20DepositRecipient(
+        to: String,
+        data: String,
+        value: BigInt,
+        sourceToken: String,
+        amount: BigInt
+    ) throws -> String? {
+        let calldata = data.lowercased().stripHexPrefix()
+        let isTokenAddressed = !sourceToken.isEmpty && to.lowercased() == sourceToken.lowercased()
+        guard isTokenAddressed || calldata.hasPrefix(erc20TransferSelector) else { return nil }
+
+        let refuse = { (reason: String) in EVMSwapTxGuardError.swapKitDepositRefused(reason) }
+        guard isTokenAddressed else {
+            throw refuse(sourceToken.isEmpty
+                ? "calls transfer on \(to) while selling the chain's native coin"
+                : "calls transfer on \(to), not the sold token \(sourceToken)")
+        }
+        guard value == 0 else { throw refuse("attaches native value \(value)") }
+        guard calldata.count == erc20TransferSelector.count + 128,
+              calldata.hasPrefix(erc20TransferSelector + String(repeating: "0", count: 24)),
+              calldata.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
+            throw refuse("is not exactly an ERC-20 transfer(address,uint256) call")
+        }
+        let words = calldata.dropFirst(erc20TransferSelector.count)
+        guard BigInt(String(words.suffix(64)), radix: 16) == amount else {
+            throw refuse("transfers an amount other than the sold amount \(amount)")
+        }
+        return "0x" + String(words.prefix(64).suffix(40))
+    }
+
+    private static let erc20TransferSelector = "a9059cbb"
+
+    private static func wireProvider(of payload: GenericSwapPayload) -> String {
+        payload.provider.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static let enforcedProviders: [SwapProviderId] = [.oneInch, .kyberSwap, .lifi]
