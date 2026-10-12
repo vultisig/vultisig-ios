@@ -37,6 +37,8 @@ enum CustomRPCDefaultEndpoint {
             return SuiService.defaultRPCURL.absoluteString
         case .bittensor:
             return Endpoint.bittensorServiceRpc
+        case .near:
+            return Endpoint.nearServiceRpc
         case .polkadot:
             return Endpoint.polkadotServiceRpc
         case .ton:

@@ -186,6 +186,33 @@ final class RPCHealthProbeTests: XCTestCase {
         XCTAssertFalse(verified)
     }
 
+    // MARK: - NEAR (`status`, network-verified)
+
+    func test_near_okWhenMainnet() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": ["chain_id": "mainnet"]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://near.example", chain: .near)
+        guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
+        XCTAssertTrue(verified)
+    }
+
+    func test_near_invalidWhenOtherNetwork() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["result": ["chain_id": "testnet"]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://near.example", chain: .near)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    func test_near_invalidWhenResultMissing() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["jsonrpc": "2.0"])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://near.example", chain: .near)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
     // MARK: - Tron (liveness-only)
 
     func test_tron_okButLivenessOnly() async {

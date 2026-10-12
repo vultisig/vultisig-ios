@@ -53,6 +53,7 @@ enum CustomRPCSupportedChains {
         .ripple,
         .sui,
         .bittensor,
+        .near,
         // Proxy-default chains: an override swaps only the host; the proxy
         // request paths stay unchanged, so default users are byte-identical.
         .tron,

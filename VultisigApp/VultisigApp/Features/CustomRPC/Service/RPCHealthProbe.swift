@@ -12,7 +12,7 @@ enum RPCHealthResult: Equatable {
     ///
     /// `networkVerified` is `true` when the probe can also confirm the endpoint
     /// is serving the *expected network* (EVM `eth_chainId` match, THORChain LCD
-    /// `node_info`). It is `false` for liveness-only probes — chains with no
+    /// `node_info`, NEAR `status` chain_id). It is `false` for liveness-only probes — chains with no
     /// chainId equivalent (Ripple, Sui, Bittensor, Polkadot, Ton, Tron) where we
     /// can confirm reachability but not network identity. The UI surfaces this
     /// distinction so the user isn't given a false sense of network safety.
@@ -45,6 +45,18 @@ private struct EVMChainIdResponse: Decodable {
 
 private struct SolanaHealthResponse: Decodable {
     let result: String?
+}
+
+private struct NearStatusResponse: Decodable {
+    struct Result: Decodable {
+        let chainId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case chainId = "chain_id"
+        }
+    }
+
+    let result: Result?
 }
 
 private struct JSONRPCResultPresentResponse: Decodable {
@@ -111,11 +123,13 @@ struct RPCHealthProbe {
             return await probeSui(url: url)
         case .Polkadot:
             // Covers polkadot + bittensor (both substrate JSON-RPC).
-            return await probeSubstrate(url: url)
+            return await probeJSONRPCResult(url: url, method: "system_health")
         case .Tron:
             return await probeTron(url: url)
         case .Ton:
             return await probeTon(url: url)
+        case .Near:
+            return await probeNear(url: url)
         default:
             return await probeReachability(url: url)
         }
@@ -255,14 +269,14 @@ struct RPCHealthProbe {
         }
     }
 
-    // MARK: - Substrate / Polkadot + Bittensor (liveness-only: system_health)
+    // MARK: - Substrate `system_health` / NEAR `status` (liveness-only)
 
-    private func probeSubstrate(url: URL) async -> RPCHealthResult {
+    private func probeJSONRPCResult(url: URL, method: String) async -> RPCHealthResult {
         let target = RPCProbeTarget(
             url: url,
             method: .post,
             task: .requestParameters(
-                ["jsonrpc": "2.0", "id": 1, "method": "system_health", "params": [] as [Any]],
+                ["jsonrpc": "2.0", "id": 1, "method": method, "params": [] as [Any]],
                 .jsonEncoding
             )
         )
@@ -275,6 +289,31 @@ struct RPCHealthProbe {
             return mapFailure(error)
         }
     }
+
+    // MARK: - NEAR (`status`, network-verified via chain_id)
+
+    private func probeNear(url: URL) async -> RPCHealthResult {
+        let target = RPCProbeTarget(
+            url: url,
+            method: .post,
+            task: .requestParameters(
+                ["jsonrpc": "2.0", "id": 1, "method": "status", "params": [] as [Any]],
+                .jsonEncoding
+            )
+        )
+        let start = CFAbsoluteTimeGetCurrent()
+        do {
+            let response = try await httpClient.request(target, responseType: NearStatusResponse.self)
+            // `wrongChain` carries numeric ids and NEAR's is a string, so a node
+            // on another network (testnet) reads as an invalid response.
+            guard response.data.result?.chainId == Self.nearMainnetChainId else { return .invalidResponse }
+            return .ok(latencyMs: latencyMs(since: start), networkVerified: true)
+        } catch {
+            return mapFailure(error)
+        }
+    }
+
+    private static let nearMainnetChainId = "mainnet"
 
     // MARK: - Tron (liveness-only: wallet/getnowblock)
 
