@@ -98,7 +98,7 @@ final class SwapDoneSummaryCardExplorerLinkTests: XCTestCase {
             vault: TestStore.makeVault(pubKey: "swap-done-explorer-cosigner"),
             summaryViewModel: JoinKeysignSummaryViewModel(),
             txHash: "cardano-tx-hash",
-            networkFee: "0.17 ADA"
+            fees: .init(networkFee: "0.17 ADA", networkFeeFiat: nil, swapFee: nil, priceImpact: nil, priceImpactColor: .clear, totalFee: nil)
         )
 
         XCTAssertEqual(card.mainHashRow.hash, "cardano-tx-hash")

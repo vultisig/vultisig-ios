@@ -18,6 +18,16 @@
 import SwiftUI
 
 struct SwapDoneSummaryCard: View {
+    /// Fee rows a co-signer can show from the keysign payload alone.
+    struct CosignerFees {
+        let networkFee: String
+        let networkFeeFiat: String?
+        let swapFee: String?
+        let priceImpact: String?
+        let priceImpactColor: Color
+        let totalFee: String?
+    }
+
     struct Fields {
         let chain: Chain
         let fromCoin: Coin?
@@ -31,10 +41,10 @@ struct SwapDoneSummaryCard: View {
         let vaultName: String
         let fromAddress: String
         let toAddress: String
-        /// Pre-computed network-fee string for the cosigner branch.
+        /// Pre-computed fees for the cosigner branch.
         /// Initiator passes `nil` and the expandable fee block from
         /// `SwapTransaction` renders instead.
-        let cosignerNetworkFee: String?
+        let cosignerFees: CosignerFees?
         /// The original `SwapTransaction` — only set for the initiator
         /// branch (it's the source of the expandable swap+gas fees).
         let transaction: SwapTransaction?
@@ -80,7 +90,7 @@ struct SwapDoneSummaryCard: View {
                 vaultName: vault.name,
                 fromAddress: transaction.fromCoin.address,
                 toAddress: transaction.toCoin.address,
-                cosignerNetworkFee: nil,
+                cosignerFees: nil,
                 transaction: transaction,
                 dappMetadata: nil
             )
@@ -92,7 +102,7 @@ struct SwapDoneSummaryCard: View {
         vault: Vault,
         summaryViewModel: JoinKeysignSummaryViewModel,
         txHash: String,
-        networkFee: String
+        fees: CosignerFees
     ) -> SwapDoneSummaryCard {
         let fromCoin = summaryViewModel.getFromCoin(keysignPayload)
         let toCoin = summaryViewModel.getToCoin(keysignPayload)
@@ -110,7 +120,7 @@ struct SwapDoneSummaryCard: View {
                 vaultName: vault.name,
                 fromAddress: fromCoin?.address ?? keysignPayload.coin.address,
                 toAddress: toCoin?.address ?? keysignPayload.toAddress,
-                cosignerNetworkFee: networkFee,
+                cosignerFees: fees,
                 transaction: nil,
                 dappMetadata: keysignPayload.dappMetadata
             )
@@ -225,9 +235,8 @@ struct SwapDoneSummaryCard: View {
                 } else {
                     otherFees(transaction, expanded: true)
                 }
-            } else if let networkFee = fields.cosignerNetworkFee {
-                separator
-                getCell(title: "networkFee", value: networkFee)
+            } else if let fees = fields.cosignerFees {
+                cosignerFeeCells(fees)
             }
         }
         .padding(.horizontal, 24)
@@ -237,6 +246,26 @@ struct SwapDoneSummaryCard: View {
             Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
+    }
+
+    @ViewBuilder
+    private func cosignerFeeCells(_ fees: CosignerFees) -> some View {
+        if let totalFee = fees.totalFee {
+            separator
+            getCell(title: "totalFee", value: totalFee)
+        }
+        separator
+        getCell(title: "networkFee", value: fees.networkFee, bracketValue: fees.networkFeeFiat)
+        if let swapFee = fees.swapFee {
+            separator
+            // The payload carries the charged amount, not the list-rate
+            // percentage, so the label stays unqualified.
+            getCell(title: "vultisigFee", value: swapFee)
+        }
+        if let priceImpact = fees.priceImpact {
+            separator
+            getCell(title: "swap.price_impact", value: priceImpact, valueColor: fees.priceImpactColor)
+        }
     }
 
     private var separator: some View {

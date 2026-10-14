@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import SwiftUI
 import Tss
 import WalletCore
 
@@ -120,6 +121,7 @@ class KeysignViewModel: ObservableObject {
     var isInitiateDevice: Bool
 
     private let gasViewModel = JoinKeysignGasViewModel()
+    private let swapFeeViewModel = JoinKeysignSwapFeeViewModel()
 
     var showRedacted: Bool {
         txid.isEmpty && !(keysignPayload?.skipBroadcast ?? false)
@@ -1458,5 +1460,28 @@ class KeysignViewModel: ObservableObject {
         return gasViewModel.getCalculatedNetworkFee(
             payload: keysignPayload, solanaAtaRent: solanaAtaRentState.amount
         )
+    }
+
+    func getSwapFee() -> (feeCrypto: String, feeFiat: String)? {
+        swapFeeViewModel.getSwapFee(swapPayload: keysignPayload?.swapPayload, vault: vault)
+    }
+
+    func getSwapTotalFee() -> String? {
+        guard let keysignPayload else { return nil }
+        return swapFeeViewModel.totalFee(
+            swapPayload: keysignPayload.swapPayload,
+            vault: vault,
+            networkFeeFiat: gasViewModel.networkFeeFiat(
+                payload: keysignPayload, vault: vault, solanaAtaRent: solanaAtaRentState.amount
+            )
+        )
+    }
+
+    var priceImpactString: String {
+        SwapCryptoLogic.priceImpactString(impact: keysignPayload?.swapPayload?.priceImpact)
+    }
+
+    var priceImpactColor: Color {
+        SwapCryptoLogic.priceImpactColor(impact: keysignPayload?.swapPayload?.priceImpact)
     }
 }

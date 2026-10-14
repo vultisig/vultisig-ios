@@ -43,7 +43,7 @@ final class SwapDoneSummaryCardDAppMetadataTests: XCTestCase {
             vault: TestStore.makeVault(pubKey: "swap-done-dapp"),
             summaryViewModel: JoinKeysignSummaryViewModel(),
             txHash: "hash",
-            networkFee: "0.000005 SOL"
+            fees: .init(networkFee: "0.000005 SOL", networkFeeFiat: nil, swapFee: nil, priceImpact: nil, priceImpactColor: .clear, totalFee: nil)
         )
     }
 
