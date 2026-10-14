@@ -149,6 +149,19 @@ class TonService {
         }
     }
 
+    /// The owner's jetton wallet for `masterAddress` as the indexer sees it, or `nil`
+    /// when the owner has none. Throws on lookup failure so callers can fail closed.
+    func getJettonWalletAddress(ownerAddress: String, masterAddress: String) async throws -> String? {
+        let response = try await httpClient.request(
+            api(.jettonWallets(ownerAddress: ownerAddress, jettonMasterAddress: masterAddress)),
+            responseType: JettonWalletsResponse.self
+        )
+        let master = TONAddressConverter.toUserFriendly(address: masterAddress, bounceable: true, testnet: false) ?? masterAddress
+        return response.data.jetton_wallets.first {
+            (TONAddressConverter.toUserFriendly(address: $0.jetton, bounceable: true, testnet: false) ?? $0.jetton) == master
+        }?.address
+    }
+
     /// Fetches jetton token metadata (name, symbol, decimals) from the Toncenter v3 `/jetton/masters` endpoint.
     /// - Parameter contractAddress: The jetton master contract address to look up.
     /// - Returns: A tuple of the token's display name, ticker symbol, and decimal precision.

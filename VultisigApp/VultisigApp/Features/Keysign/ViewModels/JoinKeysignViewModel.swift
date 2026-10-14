@@ -342,6 +342,7 @@ class JoinKeysignViewModel: ObservableObject {
                 return
             }
             swapKitDepositRecipient = try Self.swapKitDepositRecipient(of: keysignPayload)
+            try await TonJettonTransferGuard.verify(payload: keysignPayload, vault: signingVault)
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload, vaultPubKeyEdDSA: signingVault.pubKeyEdDSA)
             let preSignedImageHash = try keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
