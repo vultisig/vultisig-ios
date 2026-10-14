@@ -44,6 +44,28 @@ struct JoinKeysignSwapFeeViewModel {
         return (cryptoString, fiatString)
     }
 
+    /// Network fee plus swap fee, formatted like the initiator's total rather
+    /// than like the itemized fee rows.
+    ///
+    /// The network leg must price, and so must a non-zero swap leg — a total that
+    /// absorbed an unpriced fee would understate the swap. A STATED zero is worth
+    /// zero at any price and needs no rate. An ABSENT fee still suppresses the
+    /// row: nothing was claimed, so nothing can be totalled.
+    func totalFee(swapPayload: SwapPayload?, vault: Vault?, networkFeeFiat: Decimal?) -> String? {
+        guard let networkFeeFiat,
+              let swapFee = resolveSwapFee(swapPayload: swapPayload, vault: vault) else {
+            return nil
+        }
+        let swapFeeFiat: Decimal
+        if swapFee.amount.isZero {
+            swapFeeFiat = .zero
+        } else {
+            guard let rate = RateProvider.shared.rate(for: swapFee.coin) else { return nil }
+            swapFeeFiat = RateProvider.shared.fiatBalance(value: swapFee.amount, rate: rate)
+        }
+        return (networkFeeFiat + swapFeeFiat).formatToFiat(includeCurrencySymbol: true)
+    }
+
     func resolveSwapFee(swapPayload: SwapPayload?, vault: Vault?) -> ResolvedSwapFee? {
         switch swapPayload {
         case let .thorchain(payload), let .thorchainChainnet(payload),

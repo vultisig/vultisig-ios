@@ -176,7 +176,7 @@ struct JoinKeysignDoneView: View {
                     vault: vault,
                     summaryViewModel: summaryViewModel,
                     txHash: viewModel.txid,
-                    networkFee: viewModel.getCalculatedNetworkFee().feeCrypto
+                    fees: cosignerFees
                 )
             },
             detailContent: {
@@ -194,6 +194,19 @@ struct JoinKeysignDoneView: View {
                     onDone: { appViewModel.restart() }
                 )
             }
+        )
+    }
+
+    private var cosignerFees: SwapDoneSummaryCard.CosignerFees {
+        let networkFee = viewModel.getCalculatedNetworkFee()
+        let swapFee = viewModel.getSwapFee()
+        return .init(
+            networkFee: networkFee.feeCrypto,
+            networkFeeFiat: networkFee.feeFiat.nilIfEmpty,
+            swapFee: swapFee.map { $0.feeFiat.isEmpty ? $0.feeCrypto : "\($0.feeCrypto) (\($0.feeFiat))" },
+            priceImpact: viewModel.priceImpactString.nilIfEmpty,
+            priceImpactColor: viewModel.priceImpactColor,
+            totalFee: viewModel.getSwapTotalFee()
         )
     }
 
