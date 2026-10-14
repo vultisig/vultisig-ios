@@ -250,21 +250,45 @@ struct SwapDoneSummaryCard: View {
 
     @ViewBuilder
     private func cosignerFeeCells(_ fees: CosignerFees) -> some View {
-        if let totalFee = fees.totalFee {
-            separator
-            getCell(title: "totalFee", value: totalFee)
-        }
         separator
-        getCell(title: "networkFee", value: fees.networkFee, bracketValue: fees.networkFeeFiat)
-        if let swapFee = fees.swapFee {
-            separator
-            // The payload carries the charged amount, not the list-rate
-            // percentage, so the label stays unqualified.
-            getCell(title: "vultisigFee", value: swapFee)
+        if let totalFee = fees.totalFee {
+            Button {
+                withAnimation(.easeInOut) {
+                    showFees.toggle()
+                }
+            } label: {
+                HStack {
+                    getCell(title: "totalFee", value: totalFee)
+                    chevron
+                }
+            }
+            HStack {
+                Rectangle()
+                    .frame(width: 1)
+                    .foregroundStyle(Theme.colors.primaryAccent4)
+                    .padding(.bottom, 16)
+                cosignerFeeRows(fees)
+            }
+            .frame(maxHeight: showFees ? nil : 0)
+            .clipped()
+            .animation(.easeInOut, value: showFees)
+        } else {
+            // Without a total there is nothing to expand from.
+            cosignerFeeRows(fees)
         }
-        if let priceImpact = fees.priceImpact {
-            separator
-            getCell(title: "swap.price_impact", value: priceImpact, valueColor: fees.priceImpactColor)
+    }
+
+    private func cosignerFeeRows(_ fees: CosignerFees) -> some View {
+        VStack(spacing: 4) {
+            getCell(title: "networkFee", value: fees.networkFee, bracketValue: fees.networkFeeFiat)
+            if let swapFee = fees.swapFee {
+                // The payload carries the charged amount, not the list-rate
+                // percentage, so the label stays unqualified.
+                getCell(title: "vultisigFee", value: swapFee)
+            }
+            if let priceImpact = fees.priceImpact {
+                getCell(title: "swap.price_impact", value: priceImpact, valueColor: fees.priceImpactColor)
+            }
         }
     }
 
