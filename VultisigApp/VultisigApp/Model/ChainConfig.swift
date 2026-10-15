@@ -24,8 +24,8 @@ extension Chain {
         let chainType: ChainType
         let banxaBlockchainCode: String
         let minimumSendAmount: BigInt?
-        /// Network label when it differs from the `name` identifier (not localized: same in every locale).
-        var displayName: String?
+        /// User-facing network label (not localized: same in every locale). `name` stays the wire/storage identifier.
+        let displayName: String
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -47,7 +47,7 @@ extension Chain {
 
     var name: String { config.name }
     /// User-facing network label; `name` stays the wire and storage identifier.
-    var displayName: String { config.displayName ?? config.name }
+    var displayName: String { config.displayName }
     var ticker: String { config.ticker }
     var feeUnit: String { config.feeUnit }
     var swapAsset: String { config.swapAsset }
@@ -80,95 +80,95 @@ extension Chain {
     private func makeConfig() -> ChainConfig {
         switch self {
         case .thorChain:
-            return ChainConfig(name: "THORChain", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN", minimumSendAmount: nil)
+            return ChainConfig(name: "THORChain", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN", minimumSendAmount: nil, displayName: "THORChain")
         case .thorChainChainnet:
-            return ChainConfig(name: "THORChain-Chainnet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-CHAINNET", minimumSendAmount: nil)
+            return ChainConfig(name: "THORChain-Chainnet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-CHAINNET", minimumSendAmount: nil, displayName: "THORChain-Chainnet")
         case .thorChainStagenet:
-            return ChainConfig(name: "THORChain-Stagenet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-STAGENET", minimumSendAmount: nil)
+            return ChainConfig(name: "THORChain-Stagenet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-STAGENET", minimumSendAmount: nil, displayName: "THORChain-Stagenet")
         case .solana:
-            return ChainConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil)
+            return ChainConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil, displayName: "Solana")
         case .ethereum:
-            return ChainConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil)
+            return ChainConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil, displayName: "Ethereum")
         case .avalanche:
-            return ChainConfig(name: "Avalanche", ticker: "AVAX", feeUnit: "Gwei", swapAsset: "AVAX", logo: "avax", chainID: 43114, coinType: .avalancheCChain, chainType: .EVM, banxaBlockchainCode: "AVAX-C", minimumSendAmount: nil)
+            return ChainConfig(name: "Avalanche", ticker: "AVAX", feeUnit: "Gwei", swapAsset: "AVAX", logo: "avax", chainID: 43114, coinType: .avalancheCChain, chainType: .EVM, banxaBlockchainCode: "AVAX-C", minimumSendAmount: nil, displayName: "Avalanche")
         case .base:
-            return ChainConfig(name: "Base", ticker: "BASE", feeUnit: "Gwei", swapAsset: "BASE", logo: "base", chainID: 8453, coinType: .base, chainType: .EVM, banxaBlockchainCode: "BASE", minimumSendAmount: nil)
+            return ChainConfig(name: "Base", ticker: "BASE", feeUnit: "Gwei", swapAsset: "BASE", logo: "base", chainID: 8453, coinType: .base, chainType: .EVM, banxaBlockchainCode: "BASE", minimumSendAmount: nil, displayName: "Base")
         case .blast:
-            return ChainConfig(name: "Blast", ticker: "BLAST", feeUnit: "Gwei", swapAsset: "BLAST", logo: "blast", chainID: 81457, coinType: .blast, chainType: .EVM, banxaBlockchainCode: "BLAST", minimumSendAmount: nil)
+            return ChainConfig(name: "Blast", ticker: "BLAST", feeUnit: "Gwei", swapAsset: "BLAST", logo: "blast", chainID: 81457, coinType: .blast, chainType: .EVM, banxaBlockchainCode: "BLAST", minimumSendAmount: nil, displayName: "Blast")
         case .arbitrum:
-            return ChainConfig(name: "Arbitrum", ticker: "ARB", feeUnit: "Gwei", swapAsset: "ARB", logo: "arbitrum", chainID: 42161, coinType: .arbitrum, chainType: .EVM, banxaBlockchainCode: "ARB", minimumSendAmount: nil)
+            return ChainConfig(name: "Arbitrum", ticker: "ARB", feeUnit: "Gwei", swapAsset: "ARB", logo: "arbitrum", chainID: 42161, coinType: .arbitrum, chainType: .EVM, banxaBlockchainCode: "ARB", minimumSendAmount: nil, displayName: "Arbitrum")
         case .polygon:
-            return ChainConfig(name: "Polygon", ticker: "MATIC", feeUnit: "Gwei", swapAsset: "MATIC", logo: "matic", chainID: 137, coinType: .polygon, chainType: .EVM, banxaBlockchainCode: "MATIC", minimumSendAmount: nil)
+            return ChainConfig(name: "Polygon", ticker: "MATIC", feeUnit: "Gwei", swapAsset: "MATIC", logo: "matic", chainID: 137, coinType: .polygon, chainType: .EVM, banxaBlockchainCode: "MATIC", minimumSendAmount: nil, displayName: "Polygon")
         case .polygonV2:
-            return ChainConfig(name: "Polygon", ticker: "POL", feeUnit: "Gwei", swapAsset: "POL", logo: "matic", chainID: 137, coinType: .polygon, chainType: .EVM, banxaBlockchainCode: "MATIC", minimumSendAmount: nil)
+            return ChainConfig(name: "Polygon", ticker: "POL", feeUnit: "Gwei", swapAsset: "POL", logo: "matic", chainID: 137, coinType: .polygon, chainType: .EVM, banxaBlockchainCode: "MATIC", minimumSendAmount: nil, displayName: "Polygon")
         case .optimism:
-            return ChainConfig(name: "Optimism", ticker: "OP", feeUnit: "Gwei", swapAsset: "OP", logo: "optimism", chainID: 10, coinType: .optimism, chainType: .EVM, banxaBlockchainCode: "OPTIMISM", minimumSendAmount: nil)
+            return ChainConfig(name: "Optimism", ticker: "OP", feeUnit: "Gwei", swapAsset: "OP", logo: "optimism", chainID: 10, coinType: .optimism, chainType: .EVM, banxaBlockchainCode: "OPTIMISM", minimumSendAmount: nil, displayName: "Optimism")
         case .bscChain:
-            return ChainConfig(name: "BSC", ticker: "BNB", feeUnit: "Gwei", swapAsset: "BSC", logo: "bsc", chainID: 56, coinType: .smartChain, chainType: .EVM, banxaBlockchainCode: "BSC", minimumSendAmount: nil)
+            return ChainConfig(name: "BSC", ticker: "BNB", feeUnit: "Gwei", swapAsset: "BSC", logo: "bsc", chainID: 56, coinType: .smartChain, chainType: .EVM, banxaBlockchainCode: "BSC", minimumSendAmount: nil, displayName: "BSC")
         case .bitcoin:
-            return ChainConfig(name: "Bitcoin", ticker: "BTC", feeUnit: "BTC/vbyte", swapAsset: "BTC", logo: "btc", chainID: nil, coinType: .bitcoin, chainType: .UTXO, banxaBlockchainCode: "BTC", minimumSendAmount: nil)
+            return ChainConfig(name: "Bitcoin", ticker: "BTC", feeUnit: "BTC/vbyte", swapAsset: "BTC", logo: "btc", chainID: nil, coinType: .bitcoin, chainType: .UTXO, banxaBlockchainCode: "BTC", minimumSendAmount: nil, displayName: "Bitcoin")
         case .bitcoinCash:
-            return ChainConfig(name: "Bitcoin-Cash", ticker: "BCH", feeUnit: "BCH/vbyte", swapAsset: "BCH", logo: "bch", chainID: nil, coinType: .bitcoinCash, chainType: .UTXO, banxaBlockchainCode: "BCH", minimumSendAmount: nil)
+            return ChainConfig(name: "Bitcoin-Cash", ticker: "BCH", feeUnit: "BCH/vbyte", swapAsset: "BCH", logo: "bch", chainID: nil, coinType: .bitcoinCash, chainType: .UTXO, banxaBlockchainCode: "BCH", minimumSendAmount: nil, displayName: "Bitcoin Cash")
         case .litecoin:
-            return ChainConfig(name: "Litecoin", ticker: "LTC", feeUnit: "LTC/vbyte", swapAsset: "LTC", logo: "ltc", chainID: nil, coinType: .litecoin, chainType: .UTXO, banxaBlockchainCode: "LTC", minimumSendAmount: nil)
+            return ChainConfig(name: "Litecoin", ticker: "LTC", feeUnit: "LTC/vbyte", swapAsset: "LTC", logo: "ltc", chainID: nil, coinType: .litecoin, chainType: .UTXO, banxaBlockchainCode: "LTC", minimumSendAmount: nil, displayName: "Litecoin")
         case .dogecoin:
-            return ChainConfig(name: "Dogecoin", ticker: "DOGE", feeUnit: "DOGE/vbyte", swapAsset: "DOGE", logo: "doge", chainID: nil, coinType: .dogecoin, chainType: .UTXO, banxaBlockchainCode: "DOGE", minimumSendAmount: nil)
+            return ChainConfig(name: "Dogecoin", ticker: "DOGE", feeUnit: "DOGE/vbyte", swapAsset: "DOGE", logo: "doge", chainID: nil, coinType: .dogecoin, chainType: .UTXO, banxaBlockchainCode: "DOGE", minimumSendAmount: nil, displayName: "Dogecoin")
         case .dash:
-            return ChainConfig(name: "Dash", ticker: "DASH", feeUnit: "DASH/vbyte", swapAsset: "DASH", logo: "dash", chainID: nil, coinType: .dash, chainType: .UTXO, banxaBlockchainCode: "DASH", minimumSendAmount: nil)
+            return ChainConfig(name: "Dash", ticker: "DASH", feeUnit: "DASH/vbyte", swapAsset: "DASH", logo: "dash", chainID: nil, coinType: .dash, chainType: .UTXO, banxaBlockchainCode: "DASH", minimumSendAmount: nil, displayName: "Dash")
         case .cardano:
-            return ChainConfig(name: "Cardano", ticker: "ADA", feeUnit: "ADA/vbyte", swapAsset: "ADA", logo: "ada", chainID: nil, coinType: .cardano, chainType: .Cardano, banxaBlockchainCode: "ADA", minimumSendAmount: CardanoHelper.defaultMinUTXOValue)
+            return ChainConfig(name: "Cardano", ticker: "ADA", feeUnit: "ADA/vbyte", swapAsset: "ADA", logo: "ada", chainID: nil, coinType: .cardano, chainType: .Cardano, banxaBlockchainCode: "ADA", minimumSendAmount: CardanoHelper.defaultMinUTXOValue, displayName: "Cardano")
         case .gaiaChain:
-            return ChainConfig(name: "Cosmos", ticker: "UATOM", feeUnit: "uatom", swapAsset: "GAIA", logo: "atom", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "ATOM", minimumSendAmount: nil)
+            return ChainConfig(name: "Cosmos", ticker: "UATOM", feeUnit: "uatom", swapAsset: "GAIA", logo: "atom", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "ATOM", minimumSendAmount: nil, displayName: "Cosmos")
         case .kujira:
-            return ChainConfig(name: "Kujira", ticker: "UKUJI", feeUnit: "ukuji", swapAsset: "KUJI", logo: "kuji", chainID: nil, coinType: .kujira, chainType: .Cosmos, banxaBlockchainCode: "KUJIRA", minimumSendAmount: nil)
+            return ChainConfig(name: "Kujira", ticker: "UKUJI", feeUnit: "ukuji", swapAsset: "KUJI", logo: "kuji", chainID: nil, coinType: .kujira, chainType: .Cosmos, banxaBlockchainCode: "KUJIRA", minimumSendAmount: nil, displayName: "Kujira")
         case .mayaChain:
-            return ChainConfig(name: "MayaChain", ticker: "CACAO", feeUnit: "CACAO", swapAsset: "MAYA", logo: "maya", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "MAYACHAIN", minimumSendAmount: nil)
+            return ChainConfig(name: "MayaChain", ticker: "CACAO", feeUnit: "CACAO", swapAsset: "MAYA", logo: "maya", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "MAYACHAIN", minimumSendAmount: nil, displayName: "MayaChain")
         case .cronosChain:
-            return ChainConfig(name: "CronosChain", ticker: "CRO", feeUnit: "Gwei", swapAsset: "CRO", logo: "cro", chainID: 25, coinType: .cronosChain, chainType: .EVM, banxaBlockchainCode: "CRO", minimumSendAmount: nil)
+            return ChainConfig(name: "CronosChain", ticker: "CRO", feeUnit: "Gwei", swapAsset: "CRO", logo: "cro", chainID: 25, coinType: .cronosChain, chainType: .EVM, banxaBlockchainCode: "CRO", minimumSendAmount: nil, displayName: "Cronos Chain")
         case .sui:
-            return ChainConfig(name: "Sui", ticker: "SUI", feeUnit: "SUI", swapAsset: "SUI", logo: "sui", chainID: nil, coinType: .sui, chainType: .Sui, banxaBlockchainCode: "SUI", minimumSendAmount: nil)
+            return ChainConfig(name: "Sui", ticker: "SUI", feeUnit: "SUI", swapAsset: "SUI", logo: "sui", chainID: nil, coinType: .sui, chainType: .Sui, banxaBlockchainCode: "SUI", minimumSendAmount: nil, displayName: "Sui")
         case .polkadot:
-            return ChainConfig(name: "Polkadot", ticker: "DOT", feeUnit: "DOT", swapAsset: "DOT", logo: "dot", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "DOT", minimumSendAmount: nil)
+            return ChainConfig(name: "Polkadot", ticker: "DOT", feeUnit: "DOT", swapAsset: "DOT", logo: "dot", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "DOT", minimumSendAmount: nil, displayName: "Polkadot")
         case .zksync:
-            return ChainConfig(name: "Zksync", ticker: "ZK", feeUnit: "Gwei", swapAsset: "ZK", logo: "zsync_era", chainID: 324, coinType: .zksync, chainType: .EVM, banxaBlockchainCode: "ZKSYNC", minimumSendAmount: nil)
+            return ChainConfig(name: "Zksync", ticker: "ZK", feeUnit: "Gwei", swapAsset: "ZK", logo: "zsync_era", chainID: 324, coinType: .zksync, chainType: .EVM, banxaBlockchainCode: "ZKSYNC", minimumSendAmount: nil, displayName: "ZKsync")
         case .dydx:
-            return ChainConfig(name: "Dydx", ticker: "ADYDX", feeUnit: "adydx", swapAsset: "DYDX", logo: "dydx", chainID: nil, coinType: .dydx, chainType: .Cosmos, banxaBlockchainCode: "DYDX", minimumSendAmount: nil)
+            return ChainConfig(name: "Dydx", ticker: "ADYDX", feeUnit: "adydx", swapAsset: "DYDX", logo: "dydx", chainID: nil, coinType: .dydx, chainType: .Cosmos, banxaBlockchainCode: "DYDX", minimumSendAmount: nil, displayName: "dYdX")
         case .ton:
             return ChainConfig(name: "Ton", ticker: "TON", feeUnit: "TON", swapAsset: "TON", logo: "ton", chainID: nil, coinType: .ton, chainType: .Ton, banxaBlockchainCode: "TON", minimumSendAmount: nil, displayName: "TON (GRAM)")
         case .osmosis:
-            return ChainConfig(name: "Osmosis", ticker: "UOSMO", feeUnit: "uosmo", swapAsset: "OSMO", logo: "osmo", chainID: nil, coinType: .osmosis, chainType: .Cosmos, banxaBlockchainCode: "OSMOSIS", minimumSendAmount: nil)
+            return ChainConfig(name: "Osmosis", ticker: "UOSMO", feeUnit: "uosmo", swapAsset: "OSMO", logo: "osmo", chainID: nil, coinType: .osmosis, chainType: .Cosmos, banxaBlockchainCode: "OSMOSIS", minimumSendAmount: nil, displayName: "Osmosis")
         case .terra:
-            return ChainConfig(name: "Terra", ticker: "ULUNA", feeUnit: "uluna", swapAsset: "LUNA", logo: "terra", chainID: nil, coinType: .terraV2, chainType: .Cosmos, banxaBlockchainCode: "LUNA", minimumSendAmount: nil)
+            return ChainConfig(name: "Terra", ticker: "ULUNA", feeUnit: "uluna", swapAsset: "LUNA", logo: "terra", chainID: nil, coinType: .terraV2, chainType: .Cosmos, banxaBlockchainCode: "LUNA", minimumSendAmount: nil, displayName: "Terra")
         case .terraClassic:
-            return ChainConfig(name: "TerraClassic", ticker: "ULUNC", feeUnit: "uluna", swapAsset: "LUNC", logo: "terraclassic", chainID: nil, coinType: .terra, chainType: .Cosmos, banxaBlockchainCode: "LUNC", minimumSendAmount: nil)
+            return ChainConfig(name: "TerraClassic", ticker: "ULUNC", feeUnit: "uluna", swapAsset: "LUNC", logo: "terraclassic", chainID: nil, coinType: .terra, chainType: .Cosmos, banxaBlockchainCode: "LUNC", minimumSendAmount: nil, displayName: "Terra Classic")
         case .noble:
-            return ChainConfig(name: "Noble", ticker: "UUSDC", feeUnit: "uusdc", swapAsset: "USDC", logo: "noble", chainID: nil, coinType: .noble, chainType: .Cosmos, banxaBlockchainCode: "NOBLE", minimumSendAmount: nil)
+            return ChainConfig(name: "Noble", ticker: "UUSDC", feeUnit: "uusdc", swapAsset: "USDC", logo: "noble", chainID: nil, coinType: .noble, chainType: .Cosmos, banxaBlockchainCode: "NOBLE", minimumSendAmount: nil, displayName: "Noble")
         case .ripple:
-            return ChainConfig(name: "Ripple", ticker: "XRP", feeUnit: "XRP", swapAsset: "XRP", logo: "xrp", chainID: nil, coinType: .xrp, chainType: .Ripple, banxaBlockchainCode: "XRP", minimumSendAmount: nil)
+            return ChainConfig(name: "Ripple", ticker: "XRP", feeUnit: "XRP", swapAsset: "XRP", logo: "xrp", chainID: nil, coinType: .xrp, chainType: .Ripple, banxaBlockchainCode: "XRP", minimumSendAmount: nil, displayName: "Ripple")
         case .akash:
-            return ChainConfig(name: "Akash", ticker: "UAKT", feeUnit: "uakt", swapAsset: "AKT", logo: "akash", chainID: nil, coinType: .akash, chainType: .Cosmos, banxaBlockchainCode: "AKASH", minimumSendAmount: nil)
+            return ChainConfig(name: "Akash", ticker: "UAKT", feeUnit: "uakt", swapAsset: "AKT", logo: "akash", chainID: nil, coinType: .akash, chainType: .Cosmos, banxaBlockchainCode: "AKASH", minimumSendAmount: nil, displayName: "Akash")
         case .tron:
-            return ChainConfig(name: "Tron", ticker: "TRX", feeUnit: "TRX", swapAsset: "TRON", logo: "tron", chainID: nil, coinType: .tron, chainType: .Tron, banxaBlockchainCode: "TRON", minimumSendAmount: nil)
+            return ChainConfig(name: "Tron", ticker: "TRX", feeUnit: "TRX", swapAsset: "TRON", logo: "tron", chainID: nil, coinType: .tron, chainType: .Tron, banxaBlockchainCode: "TRON", minimumSendAmount: nil, displayName: "Tron")
         case .ethereumSepolia:
-            return ChainConfig(name: "Ethereum-Sepolia", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 11_155_111, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil)
+            return ChainConfig(name: "Ethereum-Sepolia", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 11_155_111, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil, displayName: "Ethereum-Sepolia")
         case .zcash:
-            return ChainConfig(name: "Zcash", ticker: "ZEC", feeUnit: "ZEC/vbyte", swapAsset: "ZEC", logo: "zec", chainID: nil, coinType: .zcash, chainType: .UTXO, banxaBlockchainCode: "ZEC", minimumSendAmount: nil)
+            return ChainConfig(name: "Zcash", ticker: "ZEC", feeUnit: "ZEC/vbyte", swapAsset: "ZEC", logo: "zec", chainID: nil, coinType: .zcash, chainType: .UTXO, banxaBlockchainCode: "ZEC", minimumSendAmount: nil, displayName: "Zcash")
         case .mantle:
-            return ChainConfig(name: "Mantle", ticker: "MNT", feeUnit: "Gwei", swapAsset: "MANTLE", logo: "mantle", chainID: 5000, coinType: .mantle, chainType: .EVM, banxaBlockchainCode: "MNT", minimumSendAmount: nil)
+            return ChainConfig(name: "Mantle", ticker: "MNT", feeUnit: "Gwei", swapAsset: "MANTLE", logo: "mantle", chainID: 5000, coinType: .mantle, chainType: .EVM, banxaBlockchainCode: "MNT", minimumSendAmount: nil, displayName: "Mantle")
         case .hyperliquid:
-            return ChainConfig(name: "Hyperliquid", ticker: "HYPE", feeUnit: "Gwei", swapAsset: "HYPE", logo: "hyperliquid", chainID: 999, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "HYPE", minimumSendAmount: nil)
+            return ChainConfig(name: "Hyperliquid", ticker: "HYPE", feeUnit: "Gwei", swapAsset: "HYPE", logo: "hyperliquid", chainID: 999, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "HYPE", minimumSendAmount: nil, displayName: "Hyperliquid")
         case .sei:
-            return ChainConfig(name: "Sei", ticker: "SEI", feeUnit: "Gwei", swapAsset: "SEI", logo: "sei", chainID: 1329, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "SEI", minimumSendAmount: nil)
+            return ChainConfig(name: "Sei", ticker: "SEI", feeUnit: "Gwei", swapAsset: "SEI", logo: "sei", chainID: 1329, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "SEI", minimumSendAmount: nil, displayName: "Sei")
         case .robinhood:
-            return ChainConfig(name: "Robinhood", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ROBINHOOD", logo: "robinhood", chainID: 4663, coinType: .robinhoodChain, chainType: .EVM, banxaBlockchainCode: "ROBINHOOD", minimumSendAmount: nil)
+            return ChainConfig(name: "Robinhood", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ROBINHOOD", logo: "robinhood", chainID: 4663, coinType: .robinhoodChain, chainType: .EVM, banxaBlockchainCode: "ROBINHOOD", minimumSendAmount: nil, displayName: "Robinhood")
         case .qbtc:
-            return ChainConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil)
+            return ChainConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil, displayName: "QBTC")
         case .bittensor:
-            return ChainConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil)
+            return ChainConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil, displayName: "Bittensor")
         case .near:
             // `banxaBlockchainCode` is inert: `canBuy` is false for NEAR, so no
             // on-ramp ever reads it.
-            return ChainConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil)
+            return ChainConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil, displayName: "Near")
         }
     }
 }
