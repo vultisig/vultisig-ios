@@ -618,6 +618,7 @@
 "governanceYouVoted" = "%@ 투표함";
 "hashCopied" = "해시 복사됨";
 "hideBalance" = "잔액 숨기기";
+"hideTotalBalance" = "총 잔액 숨기기";
 "high24h" = "24시간 최고";
 "hold" = "보유";
 "holdForPairedSign" = "쌍 서명을 위해 유지";
@@ -1488,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "잠깐만 걸립니다";
 "showBalance" = "잔액 표시";
 "showHint" = "힌트 표시";
+"showTotalBalance" = "총 잔액 표시";
 "sign" = "서명";
 "signature" = "서명";
 "signCustomMessage" = "커스텀 메시지 서명";

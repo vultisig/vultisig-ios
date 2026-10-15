@@ -29,7 +29,6 @@ private struct DefiTotalsTracking: ViewModifier {
     let store: HomeDefiTotalsStore
     let isNeeded: Bool
 
-    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @State private var isStale = false
 
     private let defiBalanceService = DefiBalanceService()
@@ -43,8 +42,7 @@ private struct DefiTotalsTracking: ViewModifier {
             .onChange(of: vault) { _, _ in update() }
             .onChange(of: vault.defiChains) { _, _ in update() }
             .onChange(of: vault.defiPositions) { _, _ in update() }
-            // Rate refreshes republish the wallet total; DeFi values move with them.
-            .onChange(of: vaultDetailViewModel.totalFiatBalance) { _, _ in update() }
+            .onReceive(RateProvider.shared.ratesDidChange) { _ in update() }
             .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
                 update()
             }

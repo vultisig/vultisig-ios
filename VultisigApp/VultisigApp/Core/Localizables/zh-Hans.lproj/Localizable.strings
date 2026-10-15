@@ -618,6 +618,7 @@
 "governanceYouVoted" = "您投了%@";
 "hashCopied" = "哈希已复制";
 "hideBalance" = "隐藏余额";
+"hideTotalBalance" = "隐藏总余额";
 "high24h" = "24小时最高";
 "hold" = "持有";
 "holdForPairedSign" = "按住以配对签名";
@@ -1488,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
 "showHint" = "显示提示";
+"showTotalBalance" = "显示总余额";
 "sign" = "签名";
 "signature" = "签名";
 "signCustomMessage" = "签署自定义消息";

@@ -618,6 +618,7 @@
 "governanceYouVoted" = "Glasali ste %@";
 "hashCopied" = "Hash kopiran";
 "hideBalance" = "Sakrij saldo";
+"hideTotalBalance" = "Sakrij ukupni saldo";
 "high24h" = "Najviša 24h";
 "hold" = "Držite";
 "holdForPairedSign" = "Drži za upareno potpisivanje";
@@ -1488,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
 "showHint" = "Prikaži hint";
+"showTotalBalance" = "Prikaži ukupni saldo";
 "sign" = "Potpiši";
 "signature" = "Potpis";
 "signCustomMessage" = "Potpiši prilagođenu poruku";

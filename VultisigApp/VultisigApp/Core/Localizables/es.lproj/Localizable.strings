@@ -618,6 +618,7 @@
 "governanceYouVoted" = "Has votado %@";
 "hashCopied" = "Hash copiado";
 "hideBalance" = "Ocultar saldo";
+"hideTotalBalance" = "Ocultar saldo total";
 "high24h" = "Máximo 24h";
 "hold" = "Mantener";
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
@@ -1488,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar pista";
+"showTotalBalance" = "Mostrar saldo total";
 "sign" = "Firmar";
 "signature" = "Firma";
 "signCustomMessage" = "Firmar mensaje personalizado";
