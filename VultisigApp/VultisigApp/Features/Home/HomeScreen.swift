@@ -244,6 +244,7 @@ struct HomeScreen: View {
             header(vault: selectedVault)
         }
         .environment(\.homeSelectedTab, selectedTab)
+        .environment(\.homeAlwaysFreshPages, homeViewModel.balanceDisplay == .combined ? [.defi] : [])
         .environmentObject(defiTotalsStore)
         .trackingDefiTotals(
             of: selectedVault,

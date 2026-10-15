@@ -41,8 +41,9 @@ struct HomeTabPager<Content: View>: View {
                                 Color.clear.frame(height: barReservedHeight)
                             }
                             .containerRelativeFrame(.horizontal)
-                            // Only the page on screen is readable, as in a `TabView`.
+                            // Only the page on screen is readable or tappable, as in a `TabView`.
                             .accessibilityHidden(tab != selectedTab)
+                            .allowsHitTesting(tab == selectedTab)
                             .id(tab)
                     }
                 }
@@ -122,15 +123,17 @@ private struct HomePagerTabBar: View {
     }
 }
 
-/// Runs `action` whenever `page` becomes the visible tab, at most once per
-/// `interval` — what `onAppear` did for each tab inside a `TabView`, where the
-/// pager now keeps both pages on screen.
+/// Runs `action` whenever `page` becomes the visible tab, or the header needs
+/// it fresh while hidden (`homeAlwaysFreshPages`), at most once per `interval`
+/// — what `onAppear` did for each tab inside a `TabView`, where the pager now
+/// keeps both pages on screen.
 private struct HomePageVisibleRefresh: ViewModifier {
     let page: HomeTab
     let interval: TimeInterval
     let action: () -> Void
 
     @Environment(\.homeSelectedTab) private var selectedTab
+    @Environment(\.homeAlwaysFreshPages) private var alwaysFreshPages
     @State private var isOnScreen = false
     @State private var lastRun: Date?
 
@@ -142,10 +145,11 @@ private struct HomePageVisibleRefresh: ViewModifier {
             }
             .onDisappear { isOnScreen = false }
             .onChange(of: selectedTab) { _, _ in runIfVisible() }
+            .onChange(of: alwaysFreshPages) { _, _ in runIfVisible() }
     }
 
     private func runIfVisible() {
-        guard isOnScreen, selectedTab == page else { return }
+        guard isOnScreen, selectedTab == page || alwaysFreshPages.contains(page) else { return }
         let now = Date()
         if let lastRun, now.timeIntervalSince(lastRun) < interval { return }
         lastRun = now

@@ -23,6 +23,9 @@ final class HomeDefiTotalsStore: ObservableObject {
 extension EnvironmentValues {
     /// The home pager's selected tab, for the leaves that depend on it.
     @Entry var homeSelectedTab: HomeTab = .wallet
+    /// Pages whose data the header shows even while they are off screen, so
+    /// they refresh as if visible.
+    @Entry var homeAlwaysFreshPages: Set<HomeTab> = []
 }
 
 /// Keeps `store` current for `vault`. Position rows mutate in place without

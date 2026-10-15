@@ -82,7 +82,7 @@ extension CoinMeta {
 
     /// Receipt tokens counted in the wallet total whose DeFi position is that
     /// same wallet balance, so a wallet + DeFi sum must take them once.
-    static let walletHeldDefiTickers: Set<String> = ["YRUNE", "YTCY"]
+    static let walletHeldDefiTickers: Set<String> = ["YRUNE", "YTCY", "SRUJI"]
 
     var isDefiOnly: Bool {
         CoinMeta.defiOnlyTickers.contains(ticker.uppercased())

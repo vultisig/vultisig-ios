@@ -199,8 +199,10 @@ final class VaultSwitchScrollTests: XCTestCase {
                 .customNavigationBarHidden()
         }
         .modelContainer(token.container)
-        // Both pages render the shared portfolio header, which reads the wallet
-        // total; wallet hosts inject their own model closer in.
+        // Pages keep a slot for the floating header, as `HomeScreen` sizes it.
+        .environment(\.homeHeaderHeight, 200)
+        // The header reads the wallet total; wallet hosts inject their own
+        // model closer in.
         .environmentObject(LocalWalletModel() as VaultDetailViewModel)
         .environmentObject(HomeDefiTotalsStore())
         .environmentObject(HomeViewModel())
