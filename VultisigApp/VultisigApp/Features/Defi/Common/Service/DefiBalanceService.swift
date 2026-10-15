@@ -15,8 +15,7 @@ struct DefiTotals: Equatable {
 }
 
 struct DefiBalanceService {
-    /// The vault's whole DeFi portfolio in fiat: every DeFi chain's positions
-    /// plus the yield-vault deposits.
+    /// Every DeFi chain's positions plus the yield-vault deposits, in fiat.
     @MainActor
     func totalBalanceInFiat(for chains: [Chain], vault: Vault) -> Decimal {
         let chainsBalance = chains
@@ -26,8 +25,6 @@ struct DefiBalanceService {
         return chainsBalance + yieldTotalBalanceFiatDecimal(for: vault)
     }
 
-    /// The DeFi total and the part of it the wallet total does not already
-    /// count, from one walk over the vault's positions.
     @MainActor
     func totals(for chains: [Chain], vault: Vault) -> DefiTotals {
         let total = totalBalanceInFiat(for: chains, vault: vault)

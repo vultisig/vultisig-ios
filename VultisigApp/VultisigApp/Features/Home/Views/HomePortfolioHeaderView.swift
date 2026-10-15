@@ -5,8 +5,7 @@
 
 import SwiftUI
 
-/// The home's large balance and action buttons, drawn once above both pages
-/// by `HomeFloatingHeader`.
+/// The home's large balance and action buttons, drawn once by `HomeFloatingHeader`.
 struct HomePortfolioHeaderView: View, Equatable {
     @ObservedObject var vault: Vault
     let onAction: (CoinAction) -> Void
@@ -18,9 +17,7 @@ struct HomePortfolioHeaderView: View, Equatable {
 
     private let horizontalPadding: CGFloat = 16
 
-    /// Re-placed on every frame of a scroll or swipe, so it must not rebuild
-    /// for a new `onAction` closure: Home recreates it each update, but it
-    /// always routes the same action for the same vault.
+    /// Ignores `onAction`: Home recreates it every update, but it routes the same way per vault.
     static func == (lhs: HomePortfolioHeaderView, rhs: HomePortfolioHeaderView) -> Bool {
         lhs.vault === rhs.vault
     }
@@ -49,8 +46,7 @@ struct HomePortfolioHeaderView: View, Equatable {
     }
 }
 
-/// Fades the balance as the home collapses. Its own modifier so the per-frame
-/// opacity re-applies to the balance alone, not the whole header.
+/// Its own modifier so the per-frame opacity re-applies to the balance alone.
 private struct HomeHeaderBalanceFade: ViewModifier {
     @Environment(\.homeHeaderBalanceOpacity) private var opacity
 

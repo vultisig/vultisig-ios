@@ -20,17 +20,12 @@ import Foundation
 /// scrubs with the drag and reverses with it, instead of running on its own
 /// wall-clock timeline.
 ///
-/// The two stretches measure different things — the first is the height of the
-/// content being faded, the second is the fixed `barFadeDistance` — so
-/// `midpoint` sits wherever that content ends. Both tabs fade the same header,
-/// whose height matches `barFadeDistance`, so in practice it is one half.
+/// `midpoint` sits where the faded content ends — one half for the shared header.
 struct HeaderCollapseProgress: Equatable {
     /// Scroll distance over which the top bar's own chrome — its balance and its
     /// opaque background — comes in, once the content's balance has gone.
     ///
-    /// Fixed, and deliberately independent of what is faded OUT: the background
-    /// is what stops the list showing through the bar, so the window where
-    /// content is under a still-translucent bar stays exactly this long.
+    /// Fixed: it bounds how long content shows through a still-translucent bar.
     static let barFadeDistance: CGFloat = 55
 
     /// Where the expanded state has finished fading out and the collapsed state

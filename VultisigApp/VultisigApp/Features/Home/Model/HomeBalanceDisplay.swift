@@ -28,8 +28,7 @@ enum HomeBalanceDisplay: String, CaseIterable, Identifiable {
         }
     }
 
-    /// The header total for `tab`. The combined sum adds only the DeFi value
-    /// the wallet total does not already hold.
+    /// Combined adds only the DeFi value the wallet total does not already hold.
     func total(for tab: HomeTab, wallet: Decimal, defi: DefiTotals) -> Decimal {
         switch self {
         case .combined: wallet + defi.notInWallet

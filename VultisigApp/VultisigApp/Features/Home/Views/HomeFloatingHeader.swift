@@ -36,10 +36,7 @@ struct HomeHeaderSlot: View {
     }
 }
 
-/// Draws the home header once, above the pager, at its slot on whichever page
-/// is showing. Mid-swipe it blends between the two slots, so the header never
-/// slides and is never drawn twice, even when the pages rest at different
-/// scroll heights.
+/// Drawn once above the pager and blended between both pages' slots, so it never slides or doubles.
 struct HomeFloatingHeader<Header: View>: View {
     let slots: [HomeTab: Anchor<CGRect>]
     @ObservedObject var collapse: HomeHeaderCollapse
@@ -65,7 +62,6 @@ struct HomeFloatingHeader<Header: View>: View {
     }
 }
 
-/// Where the floating header goes for the current pager and scroll positions.
 private struct HomeHeaderPlacement {
     let minY: CGFloat
     /// Fades the header in and out with a slot that is not laid out, which a

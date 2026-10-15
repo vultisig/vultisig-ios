@@ -46,8 +46,7 @@ struct HomeScreen: View {
     /// must not observe it, or every frame of a collapse would rebuild the whole
     /// tab content.
     @State private var headerCollapse = HomeHeaderCollapse()
-    /// Same ownership as `headerCollapse`: held here, observed only by the
-    /// balance leaves.
+    /// Like `headerCollapse`: observed only by the balance leaves.
     @State private var defiTotalsStore = HomeDefiTotalsStore()
     @State private var portfolioHeaderHeight: CGFloat = 0
     @State private var deeplinkError: Error?
@@ -81,8 +80,7 @@ struct HomeScreen: View {
     @ObservedObject private var transactionPoller = TransactionStatusPoller.shared
     @Environment(\.modelContext) private var modelContext
 
-    /// DeFi is always offered, also to a vault with no DeFi chains yet, which
-    /// lands on the DeFi page's own customize-chains prompt.
+    /// DeFi is offered even with no DeFi chains; its page prompts to add them.
     private let tabs: [HomeTab] = [.wallet, .defi]
 
     init(showingVaultSelector: Bool = false) {
@@ -521,7 +519,6 @@ extension HomeScreen {
         homeViewModel.hasSeenSwipeHint = true
     }
 
-    /// The header's action buttons, the same on both tabs.
     fileprivate func onAction(_ action: CoinAction, vault: Vault) {
         let selectedChain = vaultDetailViewModel.selectedChain
         let selectedNativeCoin = selectedChain.flatMap { vault.nativeCoin(for: $0) }

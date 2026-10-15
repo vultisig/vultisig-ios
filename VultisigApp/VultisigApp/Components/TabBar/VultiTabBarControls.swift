@@ -9,9 +9,7 @@ import SwiftUI
 struct VultiTabBarControls<Item: TabBarItem>: View {
     @Binding var selectedItem: Item
     let items: [Item]
-    /// Where the selection indicator sits, as a fractional item index. Whole
-    /// numbers at rest; the home pager passes in-between values while a page is
-    /// dragged so the indicator tracks the finger.
+    /// Fractional item index, so the indicator can track a page mid-drag.
     let indicatorPosition: CGFloat
     var accessory: Item?
     var onAccessory: (() -> Void)?

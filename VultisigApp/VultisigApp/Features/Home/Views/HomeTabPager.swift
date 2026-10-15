@@ -5,11 +5,7 @@
 
 import SwiftUI
 
-/// The home's tabs side by side in one horizontally paged scroll view: the user
-/// swipes between them, and picking a tab in the bar slides there.
-///
-/// Both pages stay alive, as they did inside a `TabView`, so each keeps its own
-/// scroll position.
+/// Both pages stay alive, as in a `TabView`, so each keeps its own scroll position.
 struct HomeTabPager<Content: View>: View {
     @Binding var selectedTab: HomeTab
     let tabs: [HomeTab]
@@ -18,9 +14,7 @@ struct HomeTabPager<Content: View>: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrolledTab: HomeTab?
-    /// Held in a plain `@State` and never read here: it is written on every
-    /// frame of a swipe, and only the bar observes it, so a swipe never
-    /// rebuilds the pages.
+    /// Never read here: written every swipe frame and observed only by the bar.
     @State private var progress = HomePagerProgress()
 
     // 40pt bar bottom-padding + 64pt bar pill + 16pt visual breathing room.
@@ -61,8 +55,7 @@ struct HomeTabPager<Content: View>: View {
                 onAccessory: onAccessory
             )
         }
-        // Only the bottom: the pages still need the top inset, which a
-        // `TabView` used to hand them.
+        // Only the bottom: the pages still need the top inset.
         .ignoresSafeArea(.container, edges: .bottom)
         .onAppear { scrolledTab = selectedTab }
         .onChange(of: scrolledTab) { _, tab in
@@ -123,10 +116,7 @@ private struct HomePagerTabBar: View {
     }
 }
 
-/// Runs `action` whenever `page` becomes the visible tab, or the header needs
-/// it fresh while hidden (`homeAlwaysFreshPages`), at most once per `interval`
-/// — what `onAppear` did for each tab inside a `TabView`, where the pager now
-/// keeps both pages on screen.
+/// Runs `action` when `page` is visible or in `homeAlwaysFreshPages`, at most once per `interval`.
 private struct HomePageVisibleRefresh: ViewModifier {
     let page: HomeTab
     let interval: TimeInterval
@@ -158,16 +148,13 @@ private struct HomePageVisibleRefresh: ViewModifier {
 }
 
 extension View {
-    /// See `HomePageVisibleRefresh`.
     func refreshWhenVisible(on page: HomeTab, interval: TimeInterval, action: @escaping () -> Void) -> some View {
         modifier(HomePageVisibleRefresh(page: page, interval: interval, action: action))
     }
 }
 
 private extension View {
-    /// Feeds the pager's live position to `progress`. Before iOS 18 the scroll
-    /// geometry is not observable, so the indicator steps to `restingIndex`
-    /// instead of tracking the drag.
+    /// Before iOS 18 scroll geometry is not observable, so the indicator steps to `restingIndex`.
     @ViewBuilder
     func trackPageProgress(_ progress: HomePagerProgress, restingIndex: Int) -> some View {
         if #available(iOS 18.0, macOS 15.0, *) {

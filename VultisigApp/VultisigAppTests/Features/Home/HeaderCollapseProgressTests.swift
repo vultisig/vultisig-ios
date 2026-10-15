@@ -215,9 +215,7 @@ final class HeaderCollapseProgressTests: XCTestCase {
 
     // MARK: - Ramp shape
 
-    /// The top bar's opaque background rides the collapsed ramp, and that
-    /// background is what stops the list showing through the bar, so it comes
-    /// in over exactly `barFadeDistance` once the content has gone.
+    /// The opaque bar background must come in over exactly `barFadeDistance`.
     func testTheBarComesInOverTheBarFadeDistance() {
         for tab in [HomeTab.wallet, .defi] {
             let total = HeaderCollapseProgress.defaultDistance

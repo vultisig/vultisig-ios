@@ -15,9 +15,7 @@ struct HomeSwipeHintAnchorKey: PreferenceKey {
     }
 }
 
-/// One-time hint that the home's tabs can be swiped. Dims the screen and points
-/// down at `anchor`. A tap dismisses it; a horizontal swipe on the dimmed
-/// screen does what it teaches and reports the direction.
+/// One-time hint that the home's tabs can be swiped; a swipe on the dimmed layer performs it.
 struct HomeSwipeHintView: View {
     let anchor: Anchor<CGRect>
     let onDismiss: () -> Void

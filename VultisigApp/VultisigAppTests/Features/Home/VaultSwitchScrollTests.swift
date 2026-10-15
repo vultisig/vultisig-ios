@@ -201,8 +201,7 @@ final class VaultSwitchScrollTests: XCTestCase {
         .modelContainer(token.container)
         // Pages keep a slot for the floating header, as `HomeScreen` sizes it.
         .environment(\.homeHeaderHeight, 200)
-        // The header reads the wallet total; wallet hosts inject their own
-        // model closer in.
+        // The header reads the wallet total; wallet hosts inject their own closer in.
         .environmentObject(LocalWalletModel() as VaultDetailViewModel)
         .environmentObject(HomeDefiTotalsStore())
         .environmentObject(HomeViewModel())

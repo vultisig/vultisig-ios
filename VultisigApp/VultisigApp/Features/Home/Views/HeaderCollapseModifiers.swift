@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-/// Fades in chrome that belongs to the collapsed state — today the top bar's
-/// opaque background. Its own `ViewModifier` so that only this node, not the
-/// bar, re-evaluates per frame of the collapse.
+/// Fades in collapsed-state chrome; its own modifier so only this node re-evaluates per frame.
 ///
 /// It is removed rather than left at zero opacity while the home is expanded,
 /// so a transparent full-width background can't swallow taps meant for the

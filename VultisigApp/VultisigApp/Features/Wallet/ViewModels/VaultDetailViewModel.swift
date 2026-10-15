@@ -128,9 +128,7 @@ class VaultDetailViewModel: ObservableObject {
         totalFiatBalance = total
     }
 
-    /// `vault`'s wallet total: the published value when it belongs to `vault`,
-    /// otherwise (before the first refresh, or mid vault-switch) an on-the-fly
-    /// compute, so a header is never blank and never another vault's number.
+    /// Computes on the fly until the published total belongs to `vault`, so it is never another vault's.
     func walletTotal(for vault: Vault) -> Decimal {
         guard let totalFiatBalance, totalFiatBalance.vaultPubKeyECDSA == vault.pubKeyECDSA else {
             return vault.coins.totalBalanceInFiatDecimal

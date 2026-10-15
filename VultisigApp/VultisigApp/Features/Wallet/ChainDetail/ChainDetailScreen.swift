@@ -86,9 +86,7 @@ struct ChainDetailScreen: View {
             && qbtcEligibility.hasClaimableUtxos
     }
 
-    /// Bottom clearance for the Claim button: the tab pager's bar overlays the
-    /// bottom edge on every platform, its top edge roughly `40pt` (bar padding)
-    /// + `64pt` (height) above the screen edge, plus breathing room.
+    /// Clears the tab pager's bar: 40pt padding + 64pt height + breathing room.
     private let claimButtonBottomInset: CGFloat = 120
 
     /// Bottom padding the scroll content reserves so its last row isn't

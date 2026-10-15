@@ -24,9 +24,7 @@ struct HomeMainHeaderView: View {
     var settingsAction: () -> Void
     var onRefresh: () -> Void
 
-    /// The same total as the large header, by the same rule and from the same
-    /// shared DeFi totals. Handed down as a plain `String` rather than being
-    /// re-derived on every frame of a collapse.
+    /// Same total as the large header, from the shared DeFi totals.
     var balanceText: String {
         guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
         return homeViewModel.balanceDisplay
