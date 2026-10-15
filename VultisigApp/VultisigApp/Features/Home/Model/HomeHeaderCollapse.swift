@@ -22,9 +22,7 @@ import Foundation
 /// Two properties keep the per-frame write cheap:
 /// - `update` compares before it publishes, and
 /// - the progress saturates at `0`/`1` outside the collapse window, so all but
-///   that window of a scroll publishes nothing at all. The window is per-tab
-///   (`HeaderCollapseProgress.distance(for:)`) and the DeFi tab's is the longer
-///   of the two, since it spans the banner it fades.
+///   that window of a scroll publishes nothing at all.
 ///
 /// Both tabs are stored separately because both screens stay alive inside the
 /// tab view — each one keeps its own scroll position, and the top bar reads
@@ -47,13 +45,7 @@ final class HomeHeaderCollapse: ObservableObject {
     ///   - offset: the scroll content's `minY` in the scroll view's space.
     ///   - restingOffset: that value at scroll position zero (the top inset).
     func update(tab: HomeTab, offset: CGFloat, restingOffset: CGFloat) {
-        // Per-tab distance: the ramp has to match the height of whatever that
-        // tab fades, or the content empties before it has left the screen.
-        let progress = HeaderCollapseProgress(
-            offset: offset,
-            restingOffset: restingOffset,
-            distance: HeaderCollapseProgress.distance(for: tab)
-        )
+        let progress = HeaderCollapseProgress(offset: offset, restingOffset: restingOffset)
         guard progress != self.progress(for: tab) else { return }
 
         switch tab {

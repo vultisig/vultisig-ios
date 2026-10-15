@@ -52,7 +52,9 @@ struct SettingSelectionCell: View {
             .padding(5)
             .foregroundStyle(Theme.colors.textPrimary)
             .background(Circle().fill(Theme.colors.primaryAccent3))
-            .showIf(isSelected)
+            // Hidden rather than removed, so selecting a row never reflows its text.
+            .opacity(isSelected ? 1 : 0)
+            .accessibilityHidden(!isSelected)
     }
 
     private func getDescriptionBlock(_ value: String) -> some View {

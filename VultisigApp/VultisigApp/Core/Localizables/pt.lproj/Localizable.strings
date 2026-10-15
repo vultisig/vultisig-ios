@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "Faça o backup da parte do cofre deste dispositivo agora!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponível:";
+"balanceDisplay" = "Exibição do saldo";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouReshare" = "Antes de compartilhar novamente";
 "beforeYouReshareSubtitle" = "Compartilhar novamente regenera as partes do seu cofre. Há algumas coisas que você precisa saber primeiro.";
@@ -620,6 +621,13 @@
 "high24h" = "Máxima 24h";
 "hold" = "Manter";
 "holdForPairedSign" = "Segure para assinatura emparelhada";
+"homeDisplay" = "Tela inicial";
+"homeDisplayCombinedDescription" = "As duas abas mostram o saldo combinado da carteira e do DeFi.";
+"homeDisplayCombinedTitle" = "Carteira + DeFi";
+"homeDisplaySeparateDescription" = "A aba Carteira mostra apenas o saldo da carteira e a aba DeFi mostra o saldo DeFi.";
+"homeDisplaySeparateTitle" = "Carteira e DeFi separados";
+"homeSwipeHintDescription" = "Deslize para a esquerda ou para a direita para alternar entre as abas da carteira e DeFi.";
+"homeSwipeHintTitle" = "Deslize para alternar";
 "howItWorks" = "Como funciona";
 "IBC Transfer" = "Transferência IBC";
 "ibcNoDestinationChains" = "Este ativo não tem rotas IBC a partir desta chain";
@@ -1176,6 +1184,7 @@
 "portfolioBalance" = "Saldo do portfólio";
 "Portuguese" = "Português";
 "position" = "Posição";
+"positions" = "Posições";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";
 "prepareKeysignMessagesFailed" = "Não foi possível preparar as mensagens para o keysigning. Erro: %@";
 "preparingVaultText1" = "Segurança multifatorial, ";

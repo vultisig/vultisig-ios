@@ -19,19 +19,19 @@ struct VaultMainScreen: View {
     /// invalidated by a scroll, only the two leaves that render a balance are.
     let collapse: HomeHeaderCollapse
     @Binding var shouldRefresh: Bool
-    var onCamera: () -> Void
+    /// Whether Home is presenting the receive sheet, which must not resize the
+    /// banner carousel underneath it.
+    let isReceiveSheetPresented: Bool
 
     @Environment(\.modelContext) var modelContext
     @Environment(\.router) var router
     @EnvironmentObject var viewModel: VaultDetailViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.openURL) var openURL
 
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
-    @State var showReceiveList: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     /// Chain asset the user tried to enable that requires an MLDSA key the
@@ -75,14 +75,13 @@ struct VaultMainScreen: View {
                 // previous vault's scroll position or cached lazy-stack layout.
                 .id(vault.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .background(MainBackgroundWithNotification())
                 .onAppear {
                     // Capture geometry width to avoid circular layout dependency
                     capturedGeometryWidth = geo.size.width
                 }
                 .onChange(of: geo.size.width) { _, newWidth in
                     // Update captured width when geometry changes (but not during sheet presentation)
-                    if !showChainSelection && !showReceiveList {
+                    if !showChainSelection && !isReceiveSheetPresented {
                         capturedGeometryWidth = newWidth
                     }
                 }
@@ -100,15 +99,7 @@ struct VaultMainScreen: View {
                         onRequireQuantumKeygen: onRequireQuantumKeygen
                     ) { refresh() }
                 }
-                .crossPlatformSheet(isPresented: $showReceiveList) {
-                    ReceiveChainSelectionScreen(
-                        vault: vault,
-                        isPresented: $showReceiveList,
-                        viewModel: viewModel,
-                        addressToCopy: $addressToCopy
-                    )
-                }
-                .throttledOnAppear(interval: 15.0, action: refresh)
+                .refreshWhenVisible(on: .wallet, interval: 15.0, action: refresh)
                 .refreshable { refresh() }
                 .onChange(of: settingsViewModel.selectedCurrency) {
                     refresh()
@@ -141,40 +132,9 @@ struct VaultMainScreen: View {
         }
     }
 
-    /// The view model publishes a preformatted total, recomputed only when
-    /// balances, chain membership or rates change. Computing it here instead
-    /// (`homeViewModel.balanceText(for:)`) walked every coin through
-    /// `RateProvider` on every body evaluation.
-    ///
-    /// The fallback covers the frames where the projection is not yet usable —
-    /// before `onLoad`'s `refresh()` runs, and right after a vault switch while
-    /// the published total still belongs to the previous vault — so the balance
-    /// is never blank and never another vault's number.
-    private var totalBalanceToShow: String {
-        guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
-        guard let total = viewModel.totalFiatBalance,
-              total.vaultPubKeyECDSA == vault.pubKeyECDSA else {
-            return homeViewModel.balanceText(for: vault)
-        }
-        return total.text
-    }
-
     func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 0) {
-            Group {
-                VaultMainBalanceView(
-                    vault: vault,
-                    balanceToShow: totalBalanceToShow,
-                    style: .wallet
-                )
-                    .headerCollapseFade(collapse, tab: .wallet)
-                    .padding(.bottom, 32)
-                CoinActionsView(
-                    actions: viewModel.availableActions,
-                    onAction: onAction
-                )
-            }
-            .padding(.horizontal, horizontalPadding)
+            HomeHeaderSlot(page: .wallet)
 
             BannersCarousel(
                 banners: $viewModel.vaultBanners,
@@ -198,6 +158,7 @@ struct VaultMainScreen: View {
                     searchBottomSectionHeader
                 } else {
                     defaultBottomSectionHeader
+                        .anchorPreference(key: HomeSwipeHintAnchorKey.self, value: .bounds) { $0 }
                 }
             }
             .transition(.opacity)
@@ -314,37 +275,6 @@ struct VaultMainScreen: View {
         }
     }
 
-    func onAction(_ action: CoinAction) {
-        var vaultAction: VaultAction?
-
-        let selectedChain = viewModel.selectedChain
-        let selectedNativeCoin = selectedChain.flatMap { vault.nativeCoin(for: $0) }
-
-        switch action {
-        case .send:
-            vaultAction = .send(coin: selectedNativeCoin, hasPreselectedCoin: false)
-        case .swap:
-            guard let fromCoin = selectedNativeCoin else { return }
-            vaultAction = .swap(fromCoin: fromCoin)
-        case .deposit, .bridge, .memo:
-            vaultAction = .function(coin: selectedNativeCoin)
-        case .buy:
-            vaultAction = .buy(
-                address: selectedChain.flatMap { vault.address(for: $0) } ?? "",
-                blockChainCode: selectedChain?.banxaBlockchainCode ?? "",
-                coinType: selectedNativeCoin?.ticker ?? ""
-            )
-        case .sell:
-            break
-        case .receive:
-            showReceiveList = true
-            return
-        }
-
-        guard let vaultAction else { return }
-        routeToPresent = .mainAction(vaultAction)
-    }
-
     func onBannerPressed(_ banner: VaultBannerType) {
         switch banner {
         case .upgradeVault:
@@ -420,8 +350,9 @@ struct VaultMainScreen: View {
         showBackupNow: .constant(false),
         collapse: HomeHeaderCollapse(),
         shouldRefresh: .constant(false),
-        onCamera: {}
+        isReceiveSheetPresented: false
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
+    .environmentObject(HomeDefiTotalsStore())
 }

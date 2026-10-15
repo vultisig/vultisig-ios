@@ -34,6 +34,11 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
+    func buildHomeDisplayScreen() -> some View {
+        SettingsHomeDisplayScreen()
+    }
+
+    @ViewBuilder
     func buildWidgetWatchlistScreen() -> some View {
         WidgetWatchlistSettingsScreen()
     }

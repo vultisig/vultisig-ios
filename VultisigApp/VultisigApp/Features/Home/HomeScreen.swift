@@ -31,6 +31,7 @@ struct HomeScreen: View {
     @State var vaultRoute: VaultMainRoute?
 
     @State var showScanner: Bool = false
+    @State private var showReceiveList: Bool = false
     @State private var scannerKeysignHandoff = ScannerKeysignHandoff()
     @State private var joinKeysignSession: JoinSession?
     @State private var pendingReviewKind: JoinKeysignReviewPresentation.Kind?
@@ -45,6 +46,10 @@ struct HomeScreen: View {
     /// must not observe it, or every frame of a collapse would rebuild the whole
     /// tab content.
     @State private var headerCollapse = HomeHeaderCollapse()
+    /// Same ownership as `headerCollapse`: held here, observed only by the
+    /// balance leaves.
+    @State private var defiTotalsStore = HomeDefiTotalsStore()
+    @State private var portfolioHeaderHeight: CGFloat = 0
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
@@ -76,13 +81,9 @@ struct HomeScreen: View {
     @ObservedObject private var transactionPoller = TransactionStatusPoller.shared
     @Environment(\.modelContext) private var modelContext
 
-    var tabs: [HomeTab] {
-        var baseTabs: [HomeTab] = [.wallet]
-        if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
-            baseTabs.append(.defi)
-        }
-        return baseTabs
-    }
+    /// DeFi is always offered, also to a vault with no DeFi chains yet, which
+    /// lands on the DeFi page's own customize-chains prompt.
+    private let tabs: [HomeTab] = [.wallet, .defi]
 
     init(showingVaultSelector: Bool = false) {
         self.showingVaultSelector = showingVaultSelector
@@ -191,11 +192,7 @@ struct HomeScreen: View {
     @ViewBuilder
     private func buildMainContent(selectedVault: Vault) -> some View {
         ZStack(alignment: .top) {
-            VultiTabBar(
-                selectedItem: $selectedTab,
-                items: tabs,
-                accessory: .camera,
-            ) { tab in
+            HomeTabPager(selectedTab: $selectedTab, tabs: tabs, onAccessory: onCamera) { tab in
                 Group {
                     switch tab {
                     case .wallet:
@@ -207,13 +204,16 @@ struct HomeScreen: View {
                             showBackupNow: $showBackupNow,
                             collapse: headerCollapse,
                             shouldRefresh: $shouldRefresh,
-                            onCamera: onCamera
+                            isReceiveSheetPresented: showReceiveList
                         )
                     case .defi:
                         DefiMainScreen(
                             vault: selectedVault,
                             collapse: headerCollapse
                         )
+                        // Kept on screen beside Wallet, so Home's own updates must
+                        // not rebuild it; it observes its vault itself.
+                        .equatable()
                     case .camera:
                         EmptyView()
                     }
@@ -221,12 +221,45 @@ struct HomeScreen: View {
 #if os(macOS)
                 .navigationBarBackButtonHidden()
 #endif
-            } onAccessory: {
-                onCamera()
             }
+            // One header above both pages, at whichever page's slot is showing.
+            .overlayPreferenceValue(HomeHeaderSlotKey.self) { slots in
+                HomeFloatingHeader(
+                    slots: slots,
+                    collapse: headerCollapse,
+                    onHeightChange: { portfolioHeaderHeight = $0 },
+                    header: {
+                        HomePortfolioHeaderView(
+                            vault: selectedVault,
+                            onAction: { onAction($0, vault: selectedVault) }
+                        )
+                        .equatable()
+                    }
+                )
+            }
+            .environment(\.homeHeaderHeight, portfolioHeaderHeight)
+            // One background behind both pages, so it stays put while they slide.
+            .background(MainBackgroundWithNotification())
 
             header(vault: selectedVault)
         }
+        .environment(\.homeSelectedTab, selectedTab)
+        .environmentObject(defiTotalsStore)
+        .trackingDefiTotals(
+            of: selectedVault,
+            in: defiTotalsStore,
+            isNeeded: homeViewModel.balanceDisplay == .combined || selectedTab == .defi
+        )
+        .overlayPreferenceValue(HomeSwipeHintAnchorKey.self) { anchor in
+            if let anchor, !homeViewModel.hasSeenSwipeHint {
+                HomeSwipeHintView(anchor: anchor, onDismiss: dismissSwipeHint) { towardsNextTab in
+                    selectedTab = towardsNextTab ? .defi : .wallet
+                    dismissSwipeHint()
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: homeViewModel.hasSeenSwipeHint)
     }
 
     @ViewBuilder
@@ -254,10 +287,9 @@ struct HomeScreen: View {
             .onLoad {
                 onVaultLoaded(vault: selectedVault)
             }
-            .onChange(of: selectedTab) { _, newValue in
-                if newValue == .camera {
-                    onCamera()
-                }
+            .onChange(of: selectedTab) { _, _ in
+                // Switching tabs is the gesture the hint teaches.
+                dismissSwipeHint()
             }
             .onChange(of: appViewModel.showCamera) { _, newValue in
                 guard newValue else { return }
@@ -347,6 +379,14 @@ struct HomeScreen: View {
                 }
             })
 #endif
+            .crossPlatformSheet(isPresented: $showReceiveList) {
+                ReceiveChainSelectionScreen(
+                    vault: selectedVault,
+                    isPresented: $showReceiveList,
+                    viewModel: vaultDetailViewModel,
+                    addressToCopy: $addressToCopy
+                )
+            }
             .onChange(of: showBackupNow) { _, shouldNavigate in
                 guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
                 router.navigate(to: KeygenRoute.backupNow(
@@ -473,6 +513,41 @@ extension HomeScreen {
 
     fileprivate func onCamera() {
         showScanner = true
+    }
+
+    fileprivate func dismissSwipeHint() {
+        guard !homeViewModel.hasSeenSwipeHint else { return }
+        homeViewModel.hasSeenSwipeHint = true
+    }
+
+    /// The header's action buttons, the same on both tabs.
+    fileprivate func onAction(_ action: CoinAction, vault: Vault) {
+        let selectedChain = vaultDetailViewModel.selectedChain
+        let selectedNativeCoin = selectedChain.flatMap { vault.nativeCoin(for: $0) }
+
+        let vaultAction: VaultAction
+        switch action {
+        case .send:
+            vaultAction = .send(coin: selectedNativeCoin, hasPreselectedCoin: false)
+        case .swap:
+            guard let fromCoin = selectedNativeCoin else { return }
+            vaultAction = .swap(fromCoin: fromCoin)
+        case .deposit, .bridge, .memo:
+            vaultAction = .function(coin: selectedNativeCoin)
+        case .buy:
+            vaultAction = .buy(
+                address: selectedChain.flatMap { vault.address(for: $0) } ?? "",
+                blockChainCode: selectedChain?.banxaBlockchainCode ?? "",
+                coinType: selectedNativeCoin?.ticker ?? ""
+            )
+        case .sell:
+            return
+        case .receive:
+            showReceiveList = true
+            return
+        }
+
+        vaultRoute = .mainAction(vaultAction)
     }
 
     fileprivate func fetchVaults() {

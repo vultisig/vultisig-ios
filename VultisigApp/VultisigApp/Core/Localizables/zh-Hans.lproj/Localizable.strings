@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "立即备份此设备的保险库份额！";
 "balance" = "余额";
 "balanceAvailable" = "可用余额：";
+"balanceDisplay" = "余额显示";
 "balanceInParentheses" = "( 余额: %@ %@ )";
 "beforeYouReshare" = "重新共享之前";
 "beforeYouReshareSubtitle" = "重新共享会重新生成您的保险库份额。请先了解以下事项。";
@@ -620,6 +621,13 @@
 "high24h" = "24小时最高";
 "hold" = "持有";
 "holdForPairedSign" = "按住以配对签名";
+"homeDisplay" = "首页显示";
+"homeDisplayCombinedDescription" = "两个标签页都显示钱包与 DeFi 的合计余额。";
+"homeDisplayCombinedTitle" = "钱包 + DeFi";
+"homeDisplaySeparateDescription" = "钱包标签页仅显示钱包余额，DeFi 标签页显示 DeFi 余额。";
+"homeDisplaySeparateTitle" = "钱包与 DeFi 分开显示";
+"homeSwipeHintDescription" = "向左或向右滑动，在钱包和 DeFi 标签页之间切换。";
+"homeSwipeHintTitle" = "滑动切换";
 "howItWorks" = "工作原理";
 "IBC Transfer" = "IBC 转账";
 "ibcNoDestinationChains" = "该资产在此链上没有可用的 IBC 通道";
@@ -1176,6 +1184,7 @@
 "portfolioBalance" = "投资组合余额";
 "Portuguese" = "葡萄牙语";
 "position" = "仓位";
+"positions" = "仓位";
 "positiveAmountError" = "金额必须是正数。请重试";
 "prepareKeysignMessagesFailed" = "为 keysigning 准备消息失败。错误：%@";
 "preparingVaultText1" = "多因素安全，";

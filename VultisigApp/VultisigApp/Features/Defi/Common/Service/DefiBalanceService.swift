@@ -7,15 +7,39 @@
 
 import Foundation
 
+/// A vault's DeFi portfolio in fiat, and the part of it that is not already in
+/// the wallet total (wallet-held receipt tokens such as yRUNE are in both).
+struct DefiTotals: Equatable {
+    var total: Decimal = .zero
+    var notInWallet: Decimal = .zero
+}
+
 struct DefiBalanceService {
+    /// The vault's whole DeFi portfolio in fiat: every DeFi chain's positions
+    /// plus the yield-vault deposits.
     @MainActor
-    func totalBalanceInFiatString(for chains: [Chain], vault: Vault) -> String {
+    func totalBalanceInFiat(for chains: [Chain], vault: Vault) -> Decimal {
         let chainsBalance = chains
             .filter { CoinAction.defiChains.contains($0) }
             .map { totalBalanceInFiat(for: $0, vault: vault) }
             .reduce(Decimal.zero, +)
-        let totalBalance = chainsBalance + yieldTotalBalanceFiatDecimal(for: vault)
-        return totalBalance.formatToFiat(includeCurrencySymbol: true)
+        return chainsBalance + yieldTotalBalanceFiatDecimal(for: vault)
+    }
+
+    /// The DeFi total and the part of it the wallet total does not already
+    /// count, from one walk over the vault's positions.
+    @MainActor
+    func totals(for chains: [Chain], vault: Vault) -> DefiTotals {
+        let total = totalBalanceInFiat(for: chains, vault: vault)
+        return DefiTotals(
+            total: total,
+            notInWallet: total - walletHeldPositionsBalanceInFiat(for: chains, vault: vault)
+        )
+    }
+
+    @MainActor
+    func totalBalanceInFiatString(for chains: [Chain], vault: Vault) -> String {
+        totalBalanceInFiat(for: chains, vault: vault).formatToFiat(includeCurrencySymbol: true)
     }
 
     func totalBalanceInFiatString(for chain: Chain, vault: Vault) -> String {
@@ -268,12 +292,16 @@ private extension DefiBalanceService {
     }
 
     func getStakedBalances(for vault: Vault, chain: Chain) -> Decimal {
+        getStakedBalances(for: vault, chain: chain) { _ in true }
+    }
+
+    func getStakedBalances(for vault: Vault, chain: Chain, including: (CoinMeta) -> Bool) -> Decimal {
         guard
             let enabledPositions = vault.defiPositions.first(where: { $0.chain == chain })
         else { return .zero }
 
         let filteredStakePositions = vault.stakePositions.filter {
-            enabledPositions.staking.contains($0.coin)
+            enabledPositions.staking.contains($0.coin) && including($0.coin)
         }
 
         return filteredStakePositions.compactMap { position in
@@ -281,6 +309,19 @@ private extension DefiBalanceService {
             return coin.fiat(decimal: position.amount)
         }
         .reduce(Decimal.zero, +)
+    }
+
+    /// The wallet-held receipt positions inside `totalBalanceInFiat`. Only the
+    /// THORChain and Maya totals read stake positions, so only they can hold one.
+    func walletHeldPositionsBalanceInFiat(for chains: [Chain], vault: Vault) -> Decimal {
+        chains
+            .filter { CoinAction.defiChains.contains($0) && ($0 == .thorChain || $0 == .mayaChain) }
+            .map { chain in
+                getStakedBalances(for: vault, chain: chain) {
+                    CoinMeta.walletHeldDefiTickers.contains($0.ticker.uppercased())
+                }
+            }
+            .reduce(Decimal.zero, +)
     }
 
     // MARK: - Position counts

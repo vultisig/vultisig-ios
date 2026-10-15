@@ -9,6 +9,8 @@ import SwiftUI
 
 class HomeViewModel: ObservableObject {
     @AppStorage("showVaultBalance") var hideVaultBalance: Bool = false
+    @AppStorage("homeBalanceDisplay") var balanceDisplay: HomeBalanceDisplay = .separate
+    @AppStorage("hasSeenHomeSwipeHint") var hasSeenSwipeHint: Bool = false
 
     @Published var filteredVaults: [Vault] = []
 
@@ -33,16 +35,6 @@ class HomeViewModel: ObservableObject {
         }
 
         return vault?.coins.totalBalanceInFiatString ?? ""
-    }
-
-    func defiBalanceText(for vault: Vault?) -> String {
-        guard !hideVaultBalance else {
-            return String.hideBalanceText
-        }
-
-        return vault?.coins
-            .filter { vault?.defiChains.contains($0.chain) ?? false }
-            .totalDefiBalanceInFiatString ?? ""
     }
 
     func filterVaults(vaults: [Vault], folders: [Folder]) {

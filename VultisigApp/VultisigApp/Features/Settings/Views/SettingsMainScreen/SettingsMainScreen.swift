@@ -23,7 +23,8 @@ struct SettingsMainScreen: View {
             .notifications,
             .referralCode,
             .language,
-            .currency
+            .currency,
+            .homeDisplay
         ]
 
         #if os(iOS)
@@ -155,6 +156,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.language)
         case .currency:
             router.navigate(to: SettingsRoute.currency)
+        case .homeDisplay:
+            router.navigate(to: SettingsRoute.homeDisplay)
         case .widgetWatchlist:
             router.navigate(to: SettingsRoute.widgetWatchlist)
         case .notifications:
