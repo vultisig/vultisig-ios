@@ -36,18 +36,22 @@ struct DydxVoteTransactionBuilder: TransactionBuilder {
     let amount: String = "0"
     let sendMaxAmount: Bool = false
 
-    var memo: String { "DYDX_VOTE:\(DydxVoteOption.memoValue(for: option)):\(proposalID)" }
+    /// Empty: the ballot travels as a typed `MsgVote` in `signData.signDirect`
+    /// (see `FunctionTransactionVerifyViewModel`), which every platform
+    /// co-signs. The legacy `DYDX_VOTE:` memo is still *read* by
+    /// `DydxHelperStruct` so votes from older iOS builds keep signing.
+    var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("VoteDescription", DydxVoteOption.memoValue(for: option))
         dict.set("ProposalId", "\(proposalID)")
-        dict.set("memo", memo)
         return dict
     }
 
-    var transactionType: VSTransactionType { .vote }
+    var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
-    /// Empty: the vote is addressed by its memo, not by a recipient.
-    var toAddress: String { .empty }
+    /// The voter's own address: `DydxHelperStruct` rejects a non-dYdX
+    /// `toAddress` even though `signDirect` never signs it.
+    var toAddress: String { coin.address }
 }

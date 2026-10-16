@@ -18,6 +18,36 @@ struct DydxHelperStruct {
     /// dYdX's `fee >= gas_wanted × min gas price` ante check ("insufficient fee").
     static let staticGasLimit: UInt64 = 200000
 
+    /// A vote as a typed `MsgVote` in `signDirect` — the format every platform
+    /// already co-signs for dYdX, so no peer needs vote-specific code. The fee
+    /// and gas limit resolve exactly as `getPreSignedInputData` does.
+    static func voteSignDirect(
+        coin: Coin,
+        chainSpecific: BlockChainSpecific,
+        option: TW_Cosmos_Proto_Message.VoteOption,
+        proposalID: UInt64
+    ) throws -> SignDirect {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _, let relayedGasLimit) = chainSpecific,
+              let pubKey = Data(hexString: coin.hexPublicKey) else {
+            throw HelperError.runtimeError("fail to build dydx vote")
+        }
+        let gasLimit = relayedGasLimit ?? staticGasLimit
+        let feeAmount = CosmosGasPricedFee.scaled(base: gas, fromGasLimit: staticGasLimit, toGasLimit: gasLimit)
+        let msg = CosmosStakingHelper.encodeVote(proposalID: proposalID, voter: coin.address, option: option.rawValue)
+        return SignDirect(
+            bodyBytes: CosmosStakingHelper.buildTxBodyMulti(msgsAny: [msg]).base64EncodedString(),
+            authInfoBytes: CosmosStakingHelper.buildAuthInfo(
+                pubKey: pubKey,
+                sequence: sequence,
+                gasLimit: gasLimit,
+                feeDenom: "adydx",
+                feeAmount: feeAmount
+            ).base64EncodedString(),
+            chainID: CoinType.dydx.chainId,
+            accountNumber: String(accountNumber)
+        )
+    }
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _, let relayedGasLimit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")

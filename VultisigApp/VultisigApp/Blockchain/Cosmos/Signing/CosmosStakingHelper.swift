@@ -29,6 +29,7 @@ enum CosmosStakingHelper {
     static let msgUndelegateTypeURL = "/cosmos.staking.v1beta1.MsgUndelegate"
     static let msgBeginRedelegateTypeURL = "/cosmos.staking.v1beta1.MsgBeginRedelegate"
     static let msgWithdrawDelegatorRewardTypeURL = "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"
+    static let msgVoteTypeURL = "/cosmos.gov.v1beta1.MsgVote"
     static let pubKeyTypeURL = "/cosmos.crypto.secp256k1.PubKey"
 
     /// Proto SignMode value for SIGN_MODE_DIRECT — the only mode the iOS
@@ -112,6 +113,15 @@ enum CosmosStakingHelper {
         msg.appendProtoString(fieldNumber: 1, value: delegator)
         msg.appendProtoString(fieldNumber: 2, value: validator)
         return wrapAny(typeURL: msgWithdrawDelegatorRewardTypeURL, value: msg)
+    }
+
+    /// Encodes a gov `MsgVote`. Wire shape: `{ proposal_id(1), voter(2), option(3) }`.
+    static func encodeVote(proposalID: UInt64, voter: String, option: Int) -> Data {
+        var msg = Data()
+        msg.appendProtoVarint(fieldNumber: 1, value: proposalID)
+        msg.appendProtoString(fieldNumber: 2, value: voter)
+        msg.appendProtoVarint(fieldNumber: 3, value: UInt64(option))
+        return wrapAny(typeURL: msgVoteTypeURL, value: msg)
     }
 
     // MARK: - TxBody + AuthInfo + SignDoc

@@ -119,6 +119,21 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 
+            // dYdX vote — the builder leaves the ballot in `memoFunctionDictionary`;
+            // ship it as a typed `MsgVote` so any device can co-sign.
+            if tx.coin.chain == .dydx,
+               let optionToken = tx.memoFunctionDictionary["VoteDescription"],
+               let option = DydxVoteOption.option(forMemoValue: optionToken),
+               let proposalID = tx.memoFunctionDictionary["ProposalId"].flatMap(UInt64.init) {
+                let signDirect = try DydxHelperStruct.voteSignDirect(
+                    coin: tx.coin,
+                    chainSpecific: chainSpecific,
+                    option: option,
+                    proposalID: proposalID
+                )
+                return basePayload.withSignData(.signDirect(signDirect))
+            }
+
             // Solana native-staking branch — build the unsigned delegate tx
             // once (pinned blockhash + derived stake-account address) and relay
             // it via `signData = .signSolana`, the field that round-trips so the
