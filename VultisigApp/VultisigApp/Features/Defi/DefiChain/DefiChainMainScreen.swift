@@ -137,7 +137,7 @@ struct DefiChainMainScreen: View {
             )
         }
         .crossPlatformSheet(item: $rewardHistoryViewModel) { viewModel in
-            BondRewardHistorySheet(viewModel: viewModel)
+            BondRewardHistorySheet(viewModel: viewModel, onDismiss: { rewardHistoryViewModel = nil })
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {
             #if os(macOS)

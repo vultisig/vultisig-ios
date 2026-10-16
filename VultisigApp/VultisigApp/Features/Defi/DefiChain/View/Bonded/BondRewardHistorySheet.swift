@@ -12,6 +12,7 @@ import SwiftUI
 
 struct BondRewardHistorySheet: View {
     @ObservedObject var viewModel: BondRewardHistoryViewModel
+    let onDismiss: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -26,6 +27,13 @@ struct BondRewardHistorySheet: View {
         .presentationBackground(Theme.colors.bgPrimary)
         .onAppear { viewModel.loadIfNeeded() }
         .onDisappear { viewModel.cancelLoad() }
+        #if os(macOS)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: .xmark, action: onDismiss)
+            }
+        }
+        #endif
     }
 
     private var header: some View {
@@ -67,6 +75,7 @@ struct BondRewardHistorySheet: View {
                     }
                 }
             }
+            .padding(.trailing, 12)
         }
     }
 
@@ -141,7 +150,8 @@ struct BondRewardHistorySheet: View {
                         lastReward: 25,
                         vault: .example
                     )
-                )
+                ),
+                onDismiss: {}
             )
         }
         .environmentObject(HomeViewModel())
