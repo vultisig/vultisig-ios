@@ -115,7 +115,7 @@ actor BlockaidSimulationService {
             // base58. Fail fast on any decode error rather than simulating on a
             // subset, which would make the hero show balance changes that don't
             // match what the user is signing.
-            let rawTxsBase64 = keysignPayload.signSolana?.rawTransactions ?? []
+            let rawTxsBase64 = keysignPayload.solanaRawTransactionsToSign
             guard !rawTxsBase64.isEmpty else { return .empty }
             var rawTxsBase58: [String] = []
             rawTxsBase58.reserveCapacity(rawTxsBase64.count)
@@ -234,12 +234,26 @@ actor BlockaidSimulationService {
                 guard let request = EvmRequest(payload: payload) else { return nil }
                 self = .evm(request)
             case .Solana:
-                guard let txs = payload.signSolana?.rawTransactions,
-                      !txs.isEmpty else { return nil }
+                let txs = payload.solanaRawTransactionsToSign
+                guard !txs.isEmpty else { return nil }
                 self = .solana(transactionsDigest: txs.joined(separator: "|"))
             default:
                 return nil
             }
         }
+    }
+}
+
+private extension KeysignPayload {
+    /// Base64 transactions the Solana signer will sign. Aggregator swaps
+    /// (LI.FI / Jupiter / SwapKit) carry them in `quote.tx.data`, not `signSolana`.
+    var solanaRawTransactionsToSign: [String] {
+        if let raw = signSolana?.rawTransactions, !raw.isEmpty { return raw }
+        if case .generic(let swap)? = swapPayload,
+           swap.fromCoin.chain == coin.chain,
+           !swap.quote.tx.data.isEmpty {
+            return [swap.quote.tx.data]
+        }
+        return []
     }
 }
