@@ -122,9 +122,12 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
             // dYdX vote — the builder leaves the ballot in `memoFunctionDictionary`;
             // ship it as a typed `MsgVote` so any device can co-sign.
             if tx.coin.chain == .dydx,
-               let optionToken = tx.memoFunctionDictionary["VoteDescription"],
-               let option = DydxVoteOption.option(forMemoValue: optionToken),
-               let proposalID = tx.memoFunctionDictionary["ProposalId"].flatMap(UInt64.init) {
+               tx.memoFunctionDictionary["VoteDescription"] != nil || tx.memoFunctionDictionary["ProposalId"] != nil {
+                guard let optionToken = tx.memoFunctionDictionary["VoteDescription"],
+                      let option = DydxVoteOption.option(forMemoValue: optionToken),
+                      let proposalID = tx.memoFunctionDictionary["ProposalId"].flatMap(UInt64.init) else {
+                    throw HelperError.runtimeError("The vote option is invalid")
+                }
                 let signDirect = try DydxHelperStruct.voteSignDirect(
                     coin: tx.coin,
                     chainSpecific: chainSpecific,
