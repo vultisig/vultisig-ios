@@ -157,7 +157,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
         viewModel.select(.yes)
         viewModel.proposalIDField.value = "٤٢"
 
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:Yes:42")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "Yes:42")
     }
 
     // MARK: - The memo, end to end
@@ -166,10 +166,10 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
     /// through the builder — including the one whose token contains spaces.
     func testEveryOfferedOptionReachesTheMemoThroughTheForm() {
         let expected: [(TW_Cosmos_Proto_Message.VoteOption, String)] = [
-            (.yes, "DYDX_VOTE:Yes:42"),
-            (.abstain, "DYDX_VOTE:Abstain:42"),
-            (.no, "DYDX_VOTE:No:42"),
-            (.noWithVeto, "DYDX_VOTE:No with Veto:42")
+            (.yes, "Yes:42"),
+            (.abstain, "Abstain:42"),
+            (.no, "No:42"),
+            (.noWithVeto, "No with Veto:42")
         ]
 
         for (option, memo) in expected {
@@ -179,7 +179,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
 
             let builder = viewModel.transactionBuilder as? DydxVoteTransactionBuilder
             XCTAssertEqual(builder?.option, option)
-            XCTAssertEqual(builder?.memo, memo)
+            XCTAssertEqual(builder?.ballot, memo)
             XCTAssertEqual(builder?.amount, "0", "The ballot rides the memo, never the transaction")
             XCTAssertEqual(builder?.coin.ticker, "DYDX")
         }
@@ -190,11 +190,11 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
         let viewModel = makeLoadedViewModel()
         viewModel.proposalIDField.value = "42"
         viewModel.select(.yes)
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:Yes:42")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "Yes:42")
 
         viewModel.select(.noWithVeto)
         XCTAssertEqual(viewModel.selectedOption, .noWithVeto)
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:No with Veto:42")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "No with Veto:42")
     }
 
     /// Surrounding whitespace from a paste is trimmed, not treated as a
@@ -203,7 +203,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
         let viewModel = makeLoadedViewModel()
         viewModel.select(.abstain)
         viewModel.proposalIDField.value = "  42  "
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:Abstain:42")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "Abstain:42")
     }
 
     // MARK: - Shown ballot == signed ballot
@@ -222,7 +222,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
         viewModel.optionField.value = DydxVoteOption.memoValue(for: .no)
 
         XCTAssertEqual(viewModel.selectedOption, .no, "What the row draws follows the field")
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:No:42", "And so does the memo")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "No:42", "And so does the memo")
     }
 
     /// And an unsubmittable token written straight into the field resolves to
@@ -275,7 +275,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
         viewModel.proposalIDField.value = "7"
 
         await waitForValidForm(viewModel, expected: true)
-        XCTAssertEqual(viewModel.transactionBuilder?.memo, "DYDX_VOTE:No:7")
+        XCTAssertEqual(viewModel.transactionBuilder?.ballot, "No:7")
     }
 
     /// Polls the aggregate, which lands via `RunLoop.main` rather than through

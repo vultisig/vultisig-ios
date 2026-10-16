@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import WalletCore
 
 enum JoinKeysignReviewPresentation {
     enum Surface: Equatable {
@@ -225,7 +226,13 @@ enum JoinKeysignReviewPresentation {
             isStakingReview = false
         }
         var rows: [FunctionTransactionReviewSummary.Row] = []
-        if case .validator(let address) = decoded.counterparty {
+        let ballot = decoded.operation == .vote
+            ? payload.signDirect.flatMap { CosmosSignDocReader.ballot(bodyBytes: $0.bodyBytes) }
+            : nil
+        if let ballot {
+            rows.append(.init(label: "proposalID".localized, value: String(ballot.proposalID)))
+            rows.append(.init(label: "governanceVoteAction".localized, value: voteTitle(ballot.option)))
+        } else if case .validator(let address) = decoded.counterparty {
             rows.append(.init(label: "validator".localized, value: address))
         } else if !isStakingReview, payload.toAddress.isNotEmpty {
             rows.append(.init(label: "to".localized, value: payload.toAddress))
@@ -246,7 +253,7 @@ enum JoinKeysignReviewPresentation {
         let hero = TransactionHeroResolver.hero(
             on: .keysignConfirm,
             for: .cosigning(payload: payload, simulated: { viewModel.verifyHeroContent })
-        ) ?? .send(
+        ) ?? ballot.map { .title(text: "governanceVoteAction".localized, caption: voteTitle($0.option)) } ?? .send(
             title: nil,
             coin: HeroCoinAmount(
                 amount: liquidityAmount(for: payload, details: details),
@@ -268,6 +275,10 @@ enum JoinKeysignReviewPresentation {
             fee: (fees.feeCrypto, fees.feeFiat),
             additionalRows: additionalRows
         )
+    }
+
+    private static func voteTitle(_ option: Int) -> String {
+        DydxVoteOption.displayTitle(for: TW_Cosmos_Proto_Message.VoteOption(rawValue: option) ?? .unspecified)
     }
 
     private static func feeValue(_ fee: (feeCrypto: String, feeFiat: String)) -> String {

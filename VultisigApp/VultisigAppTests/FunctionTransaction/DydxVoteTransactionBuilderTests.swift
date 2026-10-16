@@ -15,6 +15,15 @@
 import WalletCore
 import XCTest
 
+extension TransactionBuilder {
+    /// `<option>:<proposalID>` — the ballot, now carried by the dictionary
+    /// rather than a memo.
+    var ballot: String {
+        let dict = memoFunctionDictionary.allItems()
+        return "\(dict["VoteDescription"] ?? ""):\(dict["ProposalId"] ?? "")"
+    }
+}
+
 final class DydxVoteTransactionBuilderTests: XCTestCase {
 
     private static func makeDydxCoin() -> Coin {
@@ -45,15 +54,15 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
     /// one must too, or the ballot no longer parses to the option picked.
     func testMemoRendersEveryOptionExactlyAsLegacyDid() {
         let expected: [(TW_Cosmos_Proto_Message.VoteOption, String)] = [
-            (.unspecified, "DYDX_VOTE:Unspecified:42"),
-            (.yes, "DYDX_VOTE:Yes:42"),
-            (.abstain, "DYDX_VOTE:Abstain:42"),
-            (.no, "DYDX_VOTE:No:42"),
-            (.noWithVeto, "DYDX_VOTE:No with Veto:42")
+            (.unspecified, "Unspecified:42"),
+            (.yes, "Yes:42"),
+            (.abstain, "Abstain:42"),
+            (.no, "No:42"),
+            (.noWithVeto, "No with Veto:42")
         ]
 
         for (option, memo) in expected {
-            XCTAssertEqual(Self.makeBuilder(option: option, proposalID: 42).memo, memo)
+            XCTAssertEqual(Self.makeBuilder(option: option, proposalID: 42).ballot, memo)
         }
     }
 
@@ -74,17 +83,17 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
 
     /// Pin: the deleted `testToStringMatchesLegacyMemo`.
     func testMemoMatchesTheLegacyFixture() {
-        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 42).memo, "DYDX_VOTE:Yes:42")
+        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 42).ballot, "Yes:42")
     }
 
     /// A proposal ID is rendered as a plain decimal integer, never grouped and
     /// never abbreviated — the string is what identifies the proposal.
     func testProposalIDIsRenderedAsPlainDigits() {
-        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 1).memo, "DYDX_VOTE:Yes:1")
-        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 1_234_567).memo, "DYDX_VOTE:Yes:1234567")
+        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 1).ballot, "Yes:1")
+        XCTAssertEqual(Self.makeBuilder(option: .yes, proposalID: 1_234_567).ballot, "Yes:1234567")
         XCTAssertEqual(
-            Self.makeBuilder(option: .yes, proposalID: UInt64.max).memo,
-            "DYDX_VOTE:Yes:18446744073709551615"
+            Self.makeBuilder(option: .yes, proposalID: UInt64.max).ballot,
+            "Yes:18446744073709551615"
         )
     }
 
@@ -110,8 +119,7 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
         let dict = Self.makeBuilder(option: .no, proposalID: 7).memoFunctionDictionary.allItems()
         XCTAssertEqual(dict["VoteDescription"], "No")
         XCTAssertEqual(dict["ProposalId"], "7")
-        XCTAssertEqual(dict["memo"], "DYDX_VOTE:No:7")
-        XCTAssertEqual(dict.count, 3)
+        XCTAssertEqual(dict.count, 2)
     }
 
     // MARK: - Boundary (buildSendTransaction)
@@ -126,16 +134,15 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
 
         let tx = builder.buildSendTransaction(vault: vault)
 
-        XCTAssertEqual(tx.memo, "DYDX_VOTE:Yes:42")
-        XCTAssertEqual(tx.transactionType, .vote)
-        XCTAssertEqual(tx.toAddress, "")
+        XCTAssertEqual(tx.memo, "")
+        XCTAssertEqual(tx.transactionType, .unspecified)
+        XCTAssertEqual(tx.toAddress, coin.address)
         XCTAssertEqual(tx.amount, "0")
         XCTAssertEqual(tx.coin.ticker, "DYDX")
         XCTAssertFalse(tx.isStakingOperation)
         XCTAssertNil(tx.wasmContractPayload)
         XCTAssertEqual(tx.memoFunctionDictionary["VoteDescription"], "Yes")
         XCTAssertEqual(tx.memoFunctionDictionary["ProposalId"], "42")
-        XCTAssertEqual(tx.memoFunctionDictionary["memo"], "DYDX_VOTE:Yes:42")
         // Builders never take gas; `FunctionTransactionScreen.onVerify` fetches
         // it before the verify screen. The legacy sub-model took it as a
         // parameter.
@@ -185,5 +192,23 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
     func testUnrecognizedOptionsAreNotSubmittable() {
         XCTAssertFalse(DydxVoteOption.isSubmittable(.UNRECOGNIZED(99)))
         XCTAssertFalse(DydxVoteOption.selectable.contains(.UNRECOGNIZED(99)))
+    }
+
+    // MARK: - signDirect
+
+    /// The vote ships as exactly one `MsgVote` with an empty memo.
+    func testVoteSignDirectBodyIsOneMsgVote() throws {
+        let coin = Self.makeDydxCoin()
+        let signDirect = try DydxHelperStruct.voteSignDirect(
+            coin: coin,
+            chainSpecific: .Cosmos(accountNumber: 1, sequence: 2, gas: 2_500_000_000_000_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil),
+            option: .yes,
+            proposalID: 42
+        )
+        let body = try XCTUnwrap(Data(base64Encoded: signDirect.bodyBytes))
+        let msg = CosmosStakingHelper.encodeVote(proposalID: 42, voter: coin.address, option: 1)
+        // TxBody { messages(1) = msg }: tag 0x0a + length + the Any bytes, no memo.
+        XCTAssertEqual(body, Data([0x0a, UInt8(msg.count)]) + msg)
+        XCTAssertEqual(signDirect.accountNumber, "1")
     }
 }

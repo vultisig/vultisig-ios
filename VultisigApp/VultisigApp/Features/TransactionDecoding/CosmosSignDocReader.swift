@@ -32,15 +32,33 @@ enum CosmosSignDocReader {
 
     // MARK: - Reading
 
-    /// Reads one complete SignDoc body.
-    static func read(bodyBytes base64: String) -> Reading? {
+    /// The choice a `MsgVote` records.
+    struct Ballot: Hashable {
+        let proposalID: UInt64
+        let option: Int
+    }
+
+    /// The ballot of a body holding exactly one `MsgVote`.
+    static func ballot(bodyBytes base64: String) -> Ballot? {
+        guard let messages = messages(inBase64: base64),
+              messages.count == 1,
+              messages[0].url == CosmosStakingHelper.msgVoteTypeURL
+        else { return nil }
+        return ballot(messages[0].value)
+    }
+
+    private static func messages(inBase64 base64: String) -> [(url: String, value: Data)]? {
         guard base64.utf8.count <= maximumBodyBytes * 2,
               let body = Data(base64Encoded: base64),
               !body.isEmpty,
               body.count <= maximumBodyBytes
         else { return nil }
+        return messageBodies(in: body)
+    }
 
-        guard let messages = messageBodies(in: body), !messages.isEmpty else { return nil }
+    /// Reads one complete SignDoc body.
+    static func read(bodyBytes base64: String) -> Reading? {
+        guard let messages = messages(inBase64: base64), !messages.isEmpty else { return nil }
 
         // Every message must decode and agree on one operation.
         var readings: [Reading] = []
@@ -52,6 +70,9 @@ enum CosmosSignDocReader {
         guard let first = readings.first,
               readings.allSatisfy({ $0.operation == first.operation })
         else { return nil }
+
+        // A batch of ballots cannot be summarised as one vote.
+        guard first.operation != .vote || readings.count == 1 else { return nil }
 
         // Homogeneous batches have one verb but no single amount or counterparty.
         guard readings.count == 1 else {
@@ -138,9 +159,54 @@ enum CosmosSignDocReader {
             // from 1, to 2, amount 3 (repeated Coin)
             return staking(message.value, operation: .transfer, validatorField: 2, amountField: 3)
 
+        case CosmosStakingHelper.msgVoteTypeURL:
+            return vote(message.value)
+
         default:
             return nil
         }
+    }
+
+    /// A ballot moves no value, so only the verb is stated.
+    private static func vote(_ body: Data) -> Reading? {
+        guard ballot(body) != nil else { return nil }
+        return Reading(operation: .vote, amount: .unstated, counterparty: nil)
+    }
+
+    /// `MsgVote` — proposal_id 1, voter 2, option 3. An absent voter proves nothing.
+    private static func ballot(_ body: Data) -> Ballot? {
+        var reader = ByteReader(body)
+        var proposalID: UInt64?
+        var option: UInt64?
+        var voter: String?
+        var fields = 0
+
+        while !reader.isAtEnd {
+            fields += 1
+            guard fields <= maximumFields else { return nil }
+            guard let (field, wire) = reader.readTag() else { return nil }
+
+            switch (field, wire) {
+            case (1, .varint):
+                guard let value = reader.readVarint() else { return nil }
+                proposalID = value
+            case (2, .lengthDelimited):
+                guard let raw = reader.readLengthDelimited(),
+                      let text = String(data: raw, encoding: .utf8) else { return nil }
+                voter = text
+            case (3, .varint):
+                guard let value = reader.readVarint() else { return nil }
+                option = value
+            default:
+                guard reader.skip(wire) else { return nil }
+            }
+        }
+
+        guard let voter, !voter.isEmpty,
+              let proposalID,
+              let option, let option = Int(exactly: option)
+        else { return nil }
+        return Ballot(proposalID: proposalID, option: option)
     }
 
     /// Pulls an address and an optional `Coin` out of a message body.
