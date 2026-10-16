@@ -25,7 +25,6 @@ struct DefiChainMainScreen: View {
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @StateObject private var screenModel: DefiChainScreenModel
     @State private var showPositionSelection = false
-    @State private var showRewardHistorySheet = false
     /// Constructed once, when the user taps Last Reward — held here (not
     /// built inline in the `crossPlatformSheet` content closure) so a
     /// parent re-render while the sheet is open reuses the same instance
@@ -137,10 +136,8 @@ struct DefiChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
-        .crossPlatformSheet(isPresented: $showRewardHistorySheet) {
-            if let rewardHistoryViewModel {
-                BondRewardHistorySheet(viewModel: rewardHistoryViewModel)
-            }
+        .crossPlatformSheet(item: $rewardHistoryViewModel) { viewModel in
+            BondRewardHistorySheet(viewModel: viewModel)
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {
             #if os(macOS)
@@ -188,7 +185,6 @@ struct DefiChainMainScreen: View {
                                 coin: nativeCoin,
                                 node: node
                             )
-                            showRewardHistorySheet = true
                         },
                         emptyStateView: { emptyStateView }
                     )
