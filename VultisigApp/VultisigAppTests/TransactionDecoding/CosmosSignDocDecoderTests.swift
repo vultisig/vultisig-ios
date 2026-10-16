@@ -104,6 +104,18 @@ final class CosmosSignDocDecoderTests: XCTestCase {
         )
     }
 
+    func testVoteBatchesAndIncompleteBallotsAreRefused() {
+        let vote = CosmosStakingHelper.encodeVote(proposalID: 42, voter: "dydx1voter", option: 1)
+        let batch = CosmosStakingHelper.buildTxBodyMulti(msgsAny: [vote, vote]).base64EncodedString()
+        XCTAssertNil(CosmosSignDocReader.read(bodyBytes: batch))
+
+        // Proto3 omits a zero proposal id, leaving a MsgVote with no proposal.
+        let any = CosmosStakingHelper.encodeVote(proposalID: 0, voter: "dydx1voter", option: 1)
+        let body = CosmosStakingHelper.buildTxBodyMulti(msgsAny: [any]).base64EncodedString()
+        XCTAssertNil(CosmosSignDocReader.read(bodyBytes: body))
+        XCTAssertNil(CosmosSignDocReader.ballot(bodyBytes: body))
+    }
+
     func testRewardsHeroStatesItsScopeWithoutInventingAnAmount() {
         let intent = CosmosStakingPayload.withdrawRewards(
             validators: ["terravaloper1validator"],

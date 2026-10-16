@@ -71,6 +71,9 @@ enum CosmosSignDocReader {
               readings.allSatisfy({ $0.operation == first.operation })
         else { return nil }
 
+        // A batch of ballots cannot be summarised as one vote.
+        guard first.operation != .vote || readings.count == 1 else { return nil }
+
         // Homogeneous batches have one verb but no single amount or counterparty.
         guard readings.count == 1 else {
             return Reading(operation: first.operation, amount: .unstated, counterparty: nil)
@@ -173,8 +176,8 @@ enum CosmosSignDocReader {
     /// `MsgVote` — proposal_id 1, voter 2, option 3. An absent voter proves nothing.
     private static func ballot(_ body: Data) -> Ballot? {
         var reader = ByteReader(body)
-        var proposalID: UInt64 = 0
-        var option: UInt64 = 0
+        var proposalID: UInt64?
+        var option: UInt64?
         var voter: String?
         var fields = 0
 
@@ -199,7 +202,10 @@ enum CosmosSignDocReader {
             }
         }
 
-        guard let voter, !voter.isEmpty, let option = Int(exactly: option) else { return nil }
+        guard let voter, !voter.isEmpty,
+              let proposalID,
+              let option, let option = Int(exactly: option)
+        else { return nil }
         return Ballot(proposalID: proposalID, option: option)
     }
 
