@@ -105,3 +105,11 @@ final class BondRewardHistoryViewModel: ObservableObject {
         }
     }
 }
+
+// Lets the sheet be presented with `crossPlatformSheet(item:)`, so its content
+// receives the view model instead of reading optional state mid-presentation.
+extension BondRewardHistoryViewModel: Identifiable, Equatable {
+    nonisolated static func == (lhs: BondRewardHistoryViewModel, rhs: BondRewardHistoryViewModel) -> Bool {
+        lhs === rhs
+    }
+}
