@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "Backup your vault share of this device now!";
 "balance" = "Balance";
 "balanceAvailable" = "Balance available:";
+"balanceDisplay" = "Balance display";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouReshare" = "Before you reshare";
 "beforeYouReshareSubtitle" = "Resharing regenerates your vault shares. There are a few things to know first.";
@@ -617,9 +618,17 @@
 "governanceYouVoted" = "You voted %@";
 "hashCopied" = "Hash copied";
 "hideBalance" = "Hide balance";
+"hideTotalBalance" = "Hide total balance";
 "high24h" = "24h High";
 "hold" = "Hold";
 "holdForPairedSign" = "Hold for paired sign";
+"homeDisplay" = "Home display";
+"homeDisplayCombinedDescription" = "Both tabs show your combined wallet and DeFi balance.";
+"homeDisplayCombinedTitle" = "Wallet + DeFi";
+"homeDisplaySeparateDescription" = "Your Wallet tab shows your wallet balance only, and your DeFi tab shows your DeFi balance.";
+"homeDisplaySeparateTitle" = "Wallet & DeFi separate";
+"homeSwipeHintDescription" = "Swipe left or right to move between your wallet and DeFi tabs.";
+"homeSwipeHintTitle" = "Swipe to switch";
 "howItWorks" = "How it works";
 "IBC Transfer" = "IBC Transfer";
 "ibcNoDestinationChains" = "This asset has no IBC routes from this chain";
@@ -1176,6 +1185,7 @@
 "portfolioBalance" = "Portfolio Balance";
 "Portuguese" = "Portuguese";
 "position" = "Position";
+"positions" = "Positions";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
 "prepareKeysignMessagesFailed" = "Failed to prepare messages for keysigning. Error: %@";
 "preparingVaultText1" = "Multi-factor security, ";
@@ -1479,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "This should only take a second";
 "showBalance" = "Show balance";
 "showHint" = "Show hint";
+"showTotalBalance" = "Show total balance";
 "sign" = "Sign";
 "signature" = "Signature";
 "signCustomMessage" = "Sign custom message";

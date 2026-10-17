@@ -15,6 +15,7 @@ enum AccessibilityID {
         static let vaultSelector = "home.vaultSelector"
         static let cameraButton = "home.cameraButton"
         static let balanceLabel = "home.balanceLabel"
+        static let swipeHintDismissButton = "home.swipeHintDismissButton"
     }
 
     enum VaultMain {
@@ -33,6 +34,7 @@ enum AccessibilityID {
         static let container = "settings.container"
         static let languageCell = "settings.languageCell"
         static let currencyCell = "settings.currencyCell"
+        static let homeDisplayCell = "settings.homeDisplayCell"
         static let widgetWatchlistCell = "settings.widgetWatchlistCell"
         static let vaultSettingsCell = "settings.vaultSettingsCell"
         static let faqCell = "settings.faqCell"

@@ -17,7 +17,14 @@ class VaultDetailViewModel: ObservableObject {
     /// wrong number for a frame.
     struct TotalBalance: Equatable {
         let vaultPubKeyECDSA: String
+        let value: Decimal
         let text: String
+
+        init(vaultPubKeyECDSA: String, value: Decimal) {
+            self.vaultPubKeyECDSA = vaultPubKeyECDSA
+            self.value = value
+            self.text = value.formatToFiat(includeCurrencySymbol: true)
+        }
     }
 
     @Published var selectedChain: Chain? = nil
@@ -115,10 +122,18 @@ class VaultDetailViewModel: ObservableObject {
     private func refreshTotalFiatBalance(vault: Vault) {
         let total = TotalBalance(
             vaultPubKeyECDSA: vault.pubKeyECDSA,
-            text: vault.coins.totalBalanceInFiatString
+            value: vault.coins.totalBalanceInFiatDecimal
         )
         guard total != totalFiatBalance else { return }
         totalFiatBalance = total
+    }
+
+    /// Computes on the fly until the published total belongs to `vault`, so it is never another vault's.
+    func walletTotal(for vault: Vault) -> Decimal {
+        guard let totalFiatBalance, totalFiatBalance.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+            return vault.coins.totalBalanceInFiatDecimal
+        }
+        return totalFiatBalance.value
     }
 
     func filteredChains(in vault: Vault) -> [Chain] {

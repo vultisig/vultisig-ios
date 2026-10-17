@@ -49,7 +49,7 @@ struct VaultMainBalanceView: View {
                 size: 16
             )
             .contentTransition(.symbolEffect)
-            Text(homeViewModel.hideVaultBalance ? "showBalance".localized : "hideBalance".localized)
+            Text(toggleTitle)
                 .foregroundStyle(Color(hex: "5180FC"))
                 .font(Theme.fonts.caption12)
                 .contentTransition(.interpolate)
@@ -57,8 +57,19 @@ struct VaultMainBalanceView: View {
         .padding(.vertical, 4)
         .padding(.horizontal, 6)
         .background(Theme.radius.sm.shape.fill(Color(hex: "5180FC").opacity(0.12)))
-        .frame(width: 120)
+        .frame(minWidth: 120)
         .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
+    }
+
+    /// Combined mode's figure includes DeFi, so the toggle names it the total.
+    var toggleTitle: String {
+        let isTotal = homeViewModel.balanceDisplay == .combined
+        switch (homeViewModel.hideVaultBalance, isTotal) {
+        case (true, true): return "showTotalBalance".localized
+        case (true, false): return "showBalance".localized
+        case (false, true): return "hideTotalBalance".localized
+        case (false, false): return "hideBalance".localized
+        }
     }
 
     var spacing: CGFloat {

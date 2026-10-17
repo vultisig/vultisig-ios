@@ -86,22 +86,8 @@ struct ChainDetailScreen: View {
             && qbtcEligibility.hasClaimableUtxos
     }
 
-    /// Bottom clearance for the Claim button. macOS / iPadOS / iOS<26
-    /// use the legacy `VultiTabBar` overlay — its top edge sits at
-    /// roughly `40pt` (tab bar padding) + `64pt` (height) ≈ 104pt above
-    /// the screen edge, so the CTA needs to clear that plus a little
-    /// breathing room. iPhone iOS 26+ uses the system glass `TabView`
-    /// which already insets content.
-    private var claimButtonBottomInset: CGFloat {
-        #if os(macOS)
-        return 120
-        #else
-        if #available(iOS 26.0, *), !isIPadOS {
-            return 16
-        }
-        return 120
-        #endif
-    }
+    /// Clears the tab pager's bar: 40pt padding + 64pt height + breathing room.
+    private let claimButtonBottomInset: CGFloat = 120
 
     /// Bottom padding the scroll content reserves so its last row isn't
     /// hidden under the Claim button overlay. Matches the button's

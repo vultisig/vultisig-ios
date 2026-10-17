@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "¡Realiza ahora una copia de seguridad de la parte del cofre de este dispositivo!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponible:";
+"balanceDisplay" = "Visualización del saldo";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouReshare" = "Antes de compartir nuevamente";
 "beforeYouReshareSubtitle" = "Compartir nuevamente regenera las particiones de tu bóveda. Hay algunas cosas que debes saber primero.";
@@ -617,9 +618,17 @@
 "governanceYouVoted" = "Has votado %@";
 "hashCopied" = "Hash copiado";
 "hideBalance" = "Ocultar saldo";
+"hideTotalBalance" = "Ocultar saldo total";
 "high24h" = "Máximo 24h";
 "hold" = "Mantener";
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
+"homeDisplay" = "Pantalla de inicio";
+"homeDisplayCombinedDescription" = "Ambas pestañas muestran tu saldo combinado de billetera y DeFi.";
+"homeDisplayCombinedTitle" = "Billetera + DeFi";
+"homeDisplaySeparateDescription" = "La pestaña Billetera muestra solo el saldo de tu billetera y la pestaña DeFi muestra tu saldo DeFi.";
+"homeDisplaySeparateTitle" = "Billetera y DeFi por separado";
+"homeSwipeHintDescription" = "Desliza a la izquierda o a la derecha para moverte entre las pestañas de billetera y DeFi.";
+"homeSwipeHintTitle" = "Desliza para cambiar";
 "howItWorks" = "Cómo funciona";
 "IBC Transfer" = "Transferencia IBC";
 "ibcNoDestinationChains" = "Este activo no tiene rutas IBC desde esta cadena";
@@ -1176,6 +1185,7 @@
 "portfolioBalance" = "Saldo del portafolio";
 "Portuguese" = "Portugués";
 "position" = "Posición";
+"positions" = "Posiciones";
 "positiveAmountError" = "La cantidad debe ser un número positivo. Intenta de nuevo.";
 "prepareKeysignMessagesFailed" = "No se pudieron preparar los mensajes para el keysigning. Error: %@";
 "preparingVaultText1" = "Seguridad multifactor, ";
@@ -1479,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar pista";
+"showTotalBalance" = "Mostrar saldo total";
 "sign" = "Firmar";
 "signature" = "Firma";
 "signCustomMessage" = "Firmar mensaje personalizado";

@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeMainHeaderView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var defiTotalsStore: HomeDefiTotalsStore
 
     let vault: Vault
     @Binding var activeTab: HomeTab
@@ -23,31 +24,12 @@ struct HomeMainHeaderView: View {
     var settingsAction: () -> Void
     var onRefresh: () -> Void
 
-    /// Wallet total: the same guard-and-fallback shape as
-    /// `VaultMainScreen.totalBalanceToShow`. `VaultDetailViewModel` publishes it
-    /// preformatted, so the header no longer walks every coin through
-    /// `RateProvider` on each body evaluation. The fallback covers the frames
-    /// where the projection is not usable — before the first `refresh()` lands,
-    /// and right after a vault switch while the published total still belongs to
-    /// the previous vault.
-    ///
-    /// DeFi total: kept as an on-the-fly compute. Its only meaningful published
-    /// source would be `DefiMainViewModel`, which `DefiMainScreen` owns as a
-    /// `@StateObject` and is therefore unreachable from here, and
-    /// `VaultDetailViewModel` has no trigger tied to a DeFi balance refresh — a
-    /// value published there would go stale on exactly the tab that shows it.
-    /// The walk is also far cheaper: it is filtered to the vault's DeFi chains
-    /// and only runs while the DeFi tab is active. It is still a walk, though,
-    /// which is why it is computed here and handed down as a plain `String`
-    /// rather than being re-derived on every frame of a collapse.
+    /// Same total as the large header, from the shared DeFi totals.
     var balanceText: String {
         guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
-        guard activeTab != .defi else { return homeViewModel.defiBalanceText(for: vault) }
-        guard let total = vaultDetailViewModel.totalFiatBalance,
-              total.vaultPubKeyECDSA == vault.pubKeyECDSA else {
-            return homeViewModel.balanceText(for: vault)
-        }
-        return total.text
+        return homeViewModel.balanceDisplay
+            .total(for: activeTab, wallet: vaultDetailViewModel.walletTotal(for: vault), defi: defiTotalsStore.totals)
+            .formatToFiat(includeCurrencySymbol: true)
     }
 
     var body: some View {
@@ -176,4 +158,5 @@ private struct HomeMainHeaderTrailingView: View {
     .background(Theme.colors.bgPrimary)
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
+    .environmentObject(HomeDefiTotalsStore())
 }

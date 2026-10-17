@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "Izradite sigurnosnu kopiju dijela trezora ovog uređaja sada!";
 "balance" = "Saldo";
 "balanceAvailable" = "Dostupan saldo:";
+"balanceDisplay" = "Prikaz stanja";
 "balanceInParentheses" = "( Stanje: %@ %@ )";
 "beforeYouReshare" = "Prije ponovnog dijeljenja";
 "beforeYouReshareSubtitle" = "Ponovno dijeljenje ponovno stvara udjele vašeg trezora. Prvo trebate znati nekoliko stvari.";
@@ -617,9 +618,17 @@
 "governanceYouVoted" = "Glasali ste %@";
 "hashCopied" = "Hash kopiran";
 "hideBalance" = "Sakrij saldo";
+"hideTotalBalance" = "Sakrij ukupni saldo";
 "high24h" = "Najviša 24h";
 "hold" = "Držite";
 "holdForPairedSign" = "Drži za upareno potpisivanje";
+"homeDisplay" = "Prikaz početnog zaslona";
+"homeDisplayCombinedDescription" = "Obje kartice prikazuju vaše ukupno stanje novčanika i DeFi-ja.";
+"homeDisplayCombinedTitle" = "Novčanik + DeFi";
+"homeDisplaySeparateDescription" = "Kartica Novčanik prikazuje samo stanje novčanika, a kartica DeFi vaše DeFi stanje.";
+"homeDisplaySeparateTitle" = "Novčanik i DeFi odvojeno";
+"homeSwipeHintDescription" = "Povucite lijevo ili desno za prelazak između kartica novčanika i DeFi-ja.";
+"homeSwipeHintTitle" = "Povucite za promjenu";
 "howItWorks" = "Kako to radi";
 "IBC Transfer" = "IBC prijenos";
 "ibcNoDestinationChains" = "Ova imovina nema IBC rute s ovog lanca";
@@ -1176,6 +1185,7 @@
 "portfolioBalance" = "Saldo portfelja";
 "Portuguese" = "Portugalski";
 "position" = "Pozicija";
+"positions" = "Pozicije";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";
 "prepareKeysignMessagesFailed" = "Priprema poruka za keysigning nije uspjela. Pogreška: %@";
 "preparingVaultText1" = "Višefaktorska sigurnost, ";
@@ -1479,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
 "showHint" = "Prikaži hint";
+"showTotalBalance" = "Prikaži ukupni saldo";
 "sign" = "Potpiši";
 "signature" = "Potpis";
 "signCustomMessage" = "Potpiši prilagođenu poruku";

@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "Sichern Sie jetzt den Tresorteil dieses Geräts!";
 "balance" = "Guthaben";
 "balanceAvailable" = "Verfügbares Guthaben:";
+"balanceDisplay" = "Saldoanzeige";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 "beforeYouReshare" = "Bevor Sie erneut teilen";
 "beforeYouReshareSubtitle" = "Beim erneuten Teilen werden die Shares Ihres Tresors neu erzeugt. Vorher gibt es ein paar Dinge zu wissen.";
@@ -617,9 +618,17 @@
 "governanceYouVoted" = "Du hast %@ gestimmt";
 "hashCopied" = "Hash kopiert";
 "hideBalance" = "Guthaben ausblenden";
+"hideTotalBalance" = "Gesamtguthaben ausblenden";
 "high24h" = "24h Hoch";
 "hold" = "Halten";
 "holdForPairedSign" = "Halte für gekoppeltes Signieren";
+"homeDisplay" = "Startbildschirm";
+"homeDisplayCombinedDescription" = "Beide Tabs zeigen dein kombiniertes Wallet- und DeFi-Guthaben.";
+"homeDisplayCombinedTitle" = "Wallet + DeFi";
+"homeDisplaySeparateDescription" = "Der Wallet-Tab zeigt nur dein Wallet-Guthaben, der DeFi-Tab dein DeFi-Guthaben.";
+"homeDisplaySeparateTitle" = "Wallet & DeFi getrennt";
+"homeSwipeHintDescription" = "Wische nach links oder rechts, um zwischen Wallet- und DeFi-Tab zu wechseln.";
+"homeSwipeHintTitle" = "Wischen zum Wechseln";
 "howItWorks" = "So funktioniert's";
 "IBC Transfer" = "IBC Überweisung";
 "ibcNoDestinationChains" = "Dieser Vermögenswert hat keine IBC-Routen von dieser Chain";
@@ -1176,6 +1185,7 @@
 "portfolioBalance" = "Portfolio-Guthaben";
 "Portuguese" = "Portugiesisch";
 "position" = "Position";
+"positions" = "Positionen";
 "positiveAmountError" = "Die Menge muss eine positive Zahl sein. Versuche es erneut.";
 "prepareKeysignMessagesFailed" = "Vorbereiten der Nachrichten für das Keysigning fehlgeschlagen. Fehler: %@";
 "preparingVaultText1" = "Mehrfaktor-Sicherheit, ";
@@ -1479,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "showBalance" = "Guthaben anzeigen";
 "showHint" = "Hinweis anzeigen";
+"showTotalBalance" = "Gesamtguthaben anzeigen";
 "sign" = "Unterschreiben";
 "signature" = "Signatur";
 "signCustomMessage" = "Benutzerdefinierte Nachricht signieren";

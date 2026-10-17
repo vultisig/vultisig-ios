@@ -23,6 +23,8 @@ struct SettingsRouter {
             viewBuilder.buildLanguageScreen()
         case .currency:
             viewBuilder.buildCurrencyScreen()
+        case .homeDisplay:
+            viewBuilder.buildHomeDisplayScreen()
         case .widgetWatchlist:
             viewBuilder.buildWidgetWatchlistScreen()
         case .notifications:

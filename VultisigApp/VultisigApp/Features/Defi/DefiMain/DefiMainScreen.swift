@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-struct DefiMainScreen: View {
+struct DefiMainScreen: View, Equatable {
     @ObservedObject var vault: Vault
     /// Shared with the top bar and written from this screen's scroll offset.
     /// Held as a plain `let`, deliberately un-observed: this screen must not be
@@ -33,6 +33,11 @@ struct DefiMainScreen: View {
 
     @StateObject var viewModel = DefiMainViewModel()
 
+    /// Identity of what the screen renders.
+    static func == (lhs: DefiMainScreen, rhs: DefiMainScreen) -> Bool {
+        lhs.vault === rhs.vault && lhs.collapse === rhs.collapse
+    }
+
     var body: some View {
         VStack {
             ScrollViewReader { proxy in
@@ -43,13 +48,14 @@ struct DefiMainScreen: View {
                     onOffsetChange: onScrollOffsetChange
                 ) {
                     LazyVStack(spacing: 20) {
-                        DefiMainBalanceView(vault: vault)
-                            .headerCollapseFade(collapse, tab: .defi)
-                        Separator(color: Theme.colors.borderLight, opacity: 1)
-                        bottomContentSection
+                        HomeHeaderSlot(page: .defi)
+                        Group {
+                            Separator(color: Theme.colors.borderLight, opacity: 1)
+                            bottomContentSection
+                        }
+                        .padding(.horizontal, horizontalPadding)
                     }
                     .padding(.bottom, 32)
-                    .padding(.horizontal, horizontalPadding)
                 }
                 .onLoad {
                     scrollProxy = proxy
@@ -59,7 +65,6 @@ struct DefiMainScreen: View {
             // previous vault's scroll position or cached lazy-stack layout.
             .id(vault.id)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(MainBackgroundWithNotification())
             .onChange(of: showSearchHeader) { _, showSearchHeader in
                 guard showSearchHeader else { return }
                 focusSearch = true
@@ -78,7 +83,10 @@ struct DefiMainScreen: View {
                 refresh()
             }
         }
-        .throttledOnAppear(interval: 15.0, action: refresh)
+        // Paint from persisted positions at once; the network refresh waits
+        // until DeFi is actually shown.
+        .onLoad { viewModel.groupChains(vault: vault) }
+        .refreshWhenVisible(on: .defi, interval: 15.0, action: refresh)
         .onChange(of: vault) { _, _ in
             // A new vault opens at its balance, without the old search filter
             // or a focused field competing with the reset scroll position.
@@ -141,7 +149,7 @@ struct DefiMainScreen: View {
     var defaultBottomSectionHeader: some View {
         HStack(spacing: 8) {
             VStack(spacing: 8) {
-                Text("portfolio".localized)
+                Text("positions".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
                 Rectangle()
@@ -222,4 +230,5 @@ struct DefiMainScreen: View {
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
+    .environmentObject(HomeDefiTotalsStore())
 }

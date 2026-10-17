@@ -36,11 +36,7 @@ struct ChainDetailScreenContainer: View {
     }
 
     var body: some View {
-        VultiTabBar(
-            selectedItem: $selectedTab,
-            items: tabs,
-            accessory: .camera
-        ) { tab in
+        HomeTabPager(selectedTab: $selectedTab, tabs: tabs, onAccessory: onCamera) { tab in
             Group {
                 switch tab {
                 case .wallet:
@@ -81,12 +77,6 @@ struct ChainDetailScreenContainer: View {
 #if os(macOS)
             .navigationBarBackButtonHidden()
 #endif
-        } onAccessory: {
-            appViewModel.showCamera = true
-        }
-        .onChange(of: selectedTab) { _, tab in
-            guard tab == .camera else { return }
-            appViewModel.showCamera = true
         }
         #if os(iOS)
         .crossPlatformToolbar(ignoresTopEdge: true) {
@@ -102,6 +92,10 @@ struct ChainDetailScreenContainer: View {
         #endif
         .withAddressCopy(coin: $addressToCopy)
         .background(Theme.colors.bgPrimary.ignoresSafeArea())
+    }
+
+    func onCamera() {
+        appViewModel.showCamera = true
     }
 
     func onHistory() {

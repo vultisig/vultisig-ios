@@ -134,6 +134,7 @@
 "backupYourVaultNow" = "Esegui ora il backup della parte di cassaforte di questo dispositivo!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponibile:";
+"balanceDisplay" = "Visualizzazione del saldo";
 "balanceInParentheses" = "( Saldo: %@ %@ )";
 "beforeYouReshare" = "Prima di ricondividere";
 "beforeYouReshareSubtitle" = "La ricondivisione rigenera le quote del tuo vault. Ci sono alcune cose da sapere prima.";
@@ -617,9 +618,17 @@
 "governanceYouVoted" = "Hai votato %@";
 "hashCopied" = "Hash copiato";
 "hideBalance" = "Nascondi saldo";
+"hideTotalBalance" = "Nascondi saldo totale";
 "high24h" = "Massimo 24h";
 "hold" = "Mantieni";
 "holdForPairedSign" = "Tieni premuto per la firma abbinata";
+"homeDisplay" = "Schermata principale";
+"homeDisplayCombinedDescription" = "Entrambe le schede mostrano il saldo combinato di wallet e DeFi.";
+"homeDisplayCombinedTitle" = "Wallet + DeFi";
+"homeDisplaySeparateDescription" = "La scheda Wallet mostra solo il saldo del wallet e la scheda DeFi il saldo DeFi.";
+"homeDisplaySeparateTitle" = "Wallet e DeFi separati";
+"homeSwipeHintDescription" = "Scorri a sinistra o a destra per passare tra le schede wallet e DeFi.";
+"homeSwipeHintTitle" = "Scorri per cambiare";
 "howItWorks" = "Come funziona";
 "IBC Transfer" = "Trasferimento IBC";
 "ibcNoDestinationChains" = "Questo asset non ha rotte IBC da questa chain";
@@ -1176,6 +1185,7 @@
 "portfolioBalance" = "Saldo del portafoglio";
 "Portuguese" = "Portoghese";
 "position" = "Posizione";
+"positions" = "Posizioni";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";
 "prepareKeysignMessagesFailed" = "Impossibile preparare i messaggi per il keysigning. Errore: %@";
 "preparingVaultText1" = "Sicurezza multifattoriale, ";
@@ -1479,6 +1489,7 @@
 "shouldOnlyTakeAMinute..." = "Dovrebbe richiedere solo un secondo";
 "showBalance" = "Mostra saldo";
 "showHint" = "Mostra suggerimento";
+"showTotalBalance" = "Mostra saldo totale";
 "sign" = "Firma";
 "signature" = "Firma";
 "signCustomMessage" = "Firma messaggio personalizzato";

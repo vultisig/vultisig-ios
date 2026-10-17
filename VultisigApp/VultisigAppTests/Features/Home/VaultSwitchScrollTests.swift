@@ -134,19 +134,6 @@ final class VaultSwitchScrollTests: XCTestCase {
         assertAtTop(try verticalScrollView(), tab: .defi)
     }
 
-    func testRemovingSelectedDefiTabRestoresWallet() async throws {
-        let tabs = TabSelection()
-        tabs.selected = .defi
-        try host(TabSelectionContent(model: tabs))
-        try await settleLayout()
-        XCTAssertEqual(tabs.selected, .defi)
-
-        tabs.items = [.wallet]
-        try await settleLayout()
-
-        XCTAssertEqual(tabs.selected, .wallet)
-    }
-
     func testTabbedVaultSwitchDoesNotTemporarilyCollapseBalances() async throws {
         let selection = VaultSelection(vault: TestStore.makeVault(pubKey: "tabs-first"))
         let tabs = TabSelection()
@@ -212,6 +199,11 @@ final class VaultSwitchScrollTests: XCTestCase {
                 .customNavigationBarHidden()
         }
         .modelContainer(token.container)
+        // Pages keep a slot for the floating header, as `HomeScreen` sizes it.
+        .environment(\.homeHeaderHeight, 200)
+        // The header reads the wallet total; wallet hosts inject their own closer in.
+        .environmentObject(LocalWalletModel() as VaultDetailViewModel)
+        .environmentObject(HomeDefiTotalsStore())
         .environmentObject(HomeViewModel())
         .environmentObject(SettingsViewModel.shared)
         .environmentObject(PushNotificationManager.shared)
@@ -228,7 +220,7 @@ final class VaultSwitchScrollTests: XCTestCase {
     private func scrollDown(tab: HomeTab) async throws -> UIScrollView {
         try await settleLayout()
         let scroll = try verticalScrollView()
-        let distance = HeaderCollapseProgress.distance(for: tab)
+        let distance = HeaderCollapseProgress.defaultDistance
         let target = distance + 20
         let scrollableDistance = scroll.contentSize.height - scroll.bounds.height
             + scroll.adjustedContentInset.top + scroll.adjustedContentInset.bottom
@@ -275,9 +267,10 @@ private struct WalletContent: View {
 
     var body: some View {
         VaultMainScreen(
-            vault: selection.vault, routeToPresent: .constant(nil), addressToCopy: .constant(nil),
-            showUpgradeVaultSheet: .constant(false), showBackupNow: .constant(false),
-            collapse: collapse, shouldRefresh: .constant(false), onCamera: {},
+            vault: selection.vault, routeToPresent: .constant(nil),
+            addressToCopy: .constant(nil), showUpgradeVaultSheet: .constant(false),
+            showBackupNow: .constant(false), collapse: collapse, shouldRefresh: .constant(false),
+            isReceiveSheetPresented: false,
             showSearchHeader: startsInSearch, focusSearch: startsInSearch
         )
     }
@@ -306,29 +299,19 @@ private final class TabSelection: ObservableObject {
     @Published var items: [HomeTab] = [.wallet, .defi]
 }
 
-private struct TabSelectionContent: View {
-    @ObservedObject var model: TabSelection
-
-    var body: some View {
-        VultiTabBar(selectedItem: $model.selected, items: model.items, accessory: .camera) { tab in
-            Text(tab.name)
-        } onAccessory: {}
-    }
-}
-
 private struct TabbedVaultContent: View {
     @ObservedObject var selection: VaultSelection
     @ObservedObject var tabs: TabSelection
     let collapse: HomeHeaderCollapse
 
     var body: some View {
-        VultiTabBar(selectedItem: $tabs.selected, items: tabs.items, accessory: .camera) { tab in
+        HomeTabPager(selectedTab: $tabs.selected, tabs: tabs.items, onAccessory: {}, content: { tab in
             switch tab {
             case .wallet: WalletContent(selection: selection, collapse: collapse)
             case .defi: DefiContent(selection: selection, collapse: collapse)
             case .camera: EmptyView()
             }
-        } onAccessory: {}
+        })
     }
 }
 
