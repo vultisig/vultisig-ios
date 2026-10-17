@@ -98,6 +98,7 @@ struct ReceiveChainSelectionScreen: View {
             .padding(.vertical, 12)
             .background(Theme.colors.bgSurface1)
         }
+        .buttonStyle(.plain)
     }
 
     var emptyMessage: some View {
