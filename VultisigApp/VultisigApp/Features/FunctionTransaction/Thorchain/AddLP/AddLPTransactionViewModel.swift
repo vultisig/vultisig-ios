@@ -60,7 +60,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     let vault: Vault
     /// Whose pools this deposit joins — `.thorChain` or `.mayaChain`. Decides
     /// where the memo is signed and, for an L1-side deposit, whose inbound
-    /// vault receives the funds.
+    /// vault receives the funds and whose pool list is offered.
     let protocolChain: Chain
     let poolSource: PoolSource
 
@@ -71,8 +71,9 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// recomputed rather than remembered, which is the fix this migration
     /// exists for.
     @Published private(set) var coin: Coin
-    /// The address credited on the other side of the pool, or nil for a
-    /// MayaChain deposit, which takes no paired address.
+    /// The address credited on the other side of the pool: the vault's
+    /// protocol-chain address when an L1 asset is deposited, and its address on
+    /// the pool's chain when the protocol's own asset is.
     @Published private(set) var pairedAddress: String?
     @Published private(set) var pools: [THORChainAsset] = []
     @Published private(set) var poolsState: PoolsState = .idle
@@ -83,7 +84,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     @Published var amountField = FormField(label: "amount".localized)
     @Published var percentageSelected: Double?
     @Published var isLoading: Bool = false
-    @Published private(set) var isEnablingThorchain: Bool = false
+    @Published private(set) var isEnablingProtocolChain: Bool = false
 
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [amountField]
@@ -92,11 +93,23 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     private let resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch
     private let fetchPools: PoolsFetch
+    private let mayaChecks: MayaLPChecks
     /// Reads the ERC-20 approval an ERC20 deposit needs, once, on Continue.
     private let approvalResolver: ERC20ApprovalResolving
     /// Why the last Continue could not read that approval, or nil. Surfaces
     /// through `blockingMessage`; the next Continue or asset change clears it.
     @Published private(set) var approvalError: String?
+    /// Why the MayaChain record check refused the last Continue, or nil.
+    @Published private(set) var mayaCheckError: String?
+    /// Set when the vault already holds a live CACAO-only position: mayanode
+    /// would refund a paired add there, so the CACAO side is built `+:POOL`.
+    private var singleSidedFallback = false
+    /// The half MayaChain was holding when a completion was opened. The form
+    /// refuses to proceed once the record no longer carries it: a completed or
+    /// refunded deposit leaves nothing to complete, and a new deposit would just
+    /// sit pending again.
+    private var expectedPendingTxId: String?
+    private var lastInbounds: [InboundAddress] = []
     /// Locale the amount is read in. Injected so a test pins the separators
     /// rather than inheriting the machine's — the parse deliberately refuses an
     /// amount written in another locale's convention, so which locale is in
@@ -119,23 +132,34 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         poolSource: PoolSource,
         vault: Vault,
         prefillsFullBalance: Bool,
-        resolveInboundAddresses: @escaping ThorchainLPDestinationResolver.InboundAddressFetch
-            = ThorchainLPDestinationResolver.live,
-        fetchPools: @escaping PoolsFetch = { try await ThorchainService.shared.fetchLPPools() },
+        resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
+        fetchPools: PoolsFetch? = nil,
         approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver(),
+        mayaChecks: MayaLPChecks? = nil,
         locale: Locale = .current
     ) {
         self.coin = coin
         self.protocolChain = protocolChain
         self.poolSource = poolSource
         self.vault = vault
-        self.resolveInboundAddresses = resolveInboundAddresses
-        self.fetchPools = fetchPools
+        // Each protocol reads its OWN node: a deposit routed to the other
+        // protocol's vault is stranded, so the pairing is decided here once
+        // rather than left to each caller.
+        let defaultInbound: ThorchainLPDestinationResolver.InboundAddressFetch
+        let defaultPools: PoolsFetch
+        if protocolChain == .mayaChain {
+            defaultInbound = { bypassCache in await ThorchainLPDestinationResolver.liveMaya(bypassCache) }
+            defaultPools = { try await MayachainService.shared.fetchLPPools() }
+        } else {
+            defaultInbound = { bypassCache in await ThorchainLPDestinationResolver.live(bypassCache) }
+            defaultPools = { try await ThorchainService.shared.fetchLPPools() }
+        }
+        self.resolveInboundAddresses = resolveInboundAddresses ?? defaultInbound
+        self.fetchPools = fetchPools ?? defaultPools
         self.approvalResolver = approvalResolver
+        self.mayaChecks = mayaChecks ?? .live
         self.locale = locale
-        // MayaChain credits the depositing address itself, so a paired address
-        // would name an account the memo has no slot for.
-        self.pairedAddress = protocolChain == .mayaChain ? nil : pairedCoin?.address
+        self.pairedAddress = pairedCoin?.address
         self.percentageSelected = prefillsFullBalance ? 100 : nil
         // NOT `prefillsFullBalance`. A pre-filled 100% is a convenience, not a
         // send-max: `sendMaxAmount` changes how a UTXO transaction is planned
@@ -176,8 +200,8 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         )
     }
 
-    /// A deposit opened from a chain's action list, where no position exists
-    /// yet and the pool is the first thing the user chooses.
+    /// A THORChain deposit opened from a chain's action list, where no position
+    /// exists yet and the pool is the first thing the user chooses.
     static func chain(coin: Coin, vault: Vault) -> AddLPTransactionViewModel {
         AddLPTransactionViewModel(
             coin: coin,
@@ -190,6 +214,53 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             // can never be signed — and unlike a position deposit, the asset
             // here is not chosen yet when the form opens.
             prefillsFullBalance: false
+        )
+    }
+
+    /// The missing side of a half-finished MayaChain add: the pool is the
+    /// pending deposit's, and the memo names the other side's address.
+    static func completion(
+        cacao: Coin,
+        asset: Coin,
+        side: LPDepositSide,
+        pool: String,
+        pendingTxId: String?,
+        vault: Vault,
+        mayaChecks: MayaLPChecks? = nil
+    ) -> AddLPTransactionViewModel {
+        let viewModel = AddLPTransactionViewModel(
+            coin: side == .coin1 ? cacao : asset,
+            pairedCoin: side == .coin1 ? asset : cacao,
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: pool),
+            vault: vault,
+            prefillsFullBalance: false,
+            mayaChecks: mayaChecks
+        )
+        viewModel.expectedPendingTxId = pendingTxId
+        return viewModel
+    }
+
+    /// The asset side of a MayaChain add, opened from a chain's action list.
+    /// The chain's native coin goes into the pool that chain is fixed to, so
+    /// there is nothing to choose.
+    static func mayaChain(
+        coin: Coin,
+        vault: Vault,
+        resolveInboundAddresses: ThorchainLPDestinationResolver.InboundAddressFetch? = nil,
+        mayaChecks: MayaLPChecks? = nil,
+        locale: Locale = .current
+    ) -> AddLPTransactionViewModel {
+        AddLPTransactionViewModel(
+            coin: coin,
+            pairedCoin: vault.nativeCoin(for: .mayaChain),
+            protocolChain: .mayaChain,
+            poolSource: .fixed(pool: MayaLPPools.nativePool(for: coin.chain)),
+            vault: vault,
+            prefillsFullBalance: false,
+            resolveInboundAddresses: resolveInboundAddresses,
+            mayaChecks: mayaChecks,
+            locale: locale
         )
     }
 
@@ -231,41 +302,73 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     // MARK: - Pools
 
-    /// A THORChain pool credits liquidity to a RUNE account, which the memo has
-    /// to name — so a vault that holds no RUNE cannot deposit into one at all.
-    var isThorchainEnabled: Bool {
-        protocolChain != .thorChain || vault.nativeCoin(for: .thorChain) != nil
+    /// A pool credits liquidity to an account on the protocol's chain — RUNE or
+    /// CACAO — which the memo has to name, so a vault that holds none cannot
+    /// deposit into one at all.
+    var isProtocolChainEnabled: Bool {
+        vault.nativeCoin(for: protocolChain) != nil
     }
 
-    /// A THORChain LP add must name the paired account. Without this, the same
-    /// `+:POOL` prefix becomes an asymmetric add, which staged pools must not
+    /// An LP add must name the paired account. Without this, the same `+:POOL`
+    /// prefix becomes an asymmetric add, which neither protocol's form may
     /// silently enable.
-    var hasThorchainPairedAddress: Bool {
-        protocolChain != .thorChain || pairedAddress?.nilIfEmpty != nil
+    var hasPairedAddress: Bool {
+        pairedAddress?.nilIfEmpty != nil
     }
 
-    /// Adds RUNE to the vault so a THORChain deposit can name a paired address.
+    /// Whether this deposit's memo must name the other side's address.
+    ///
+    /// MayaChain's CACAO side names one only for pools whose asset half the app
+    /// can send; elsewhere a paired add would sit pending until refunded. The
+    /// asset side always names the CACAO address.
+    var requiresPairedAddress: Bool {
+        guard protocolChain == .mayaChain, coin.chain == .mayaChain else { return true }
+        guard !singleSidedFallback else { return false }
+        return poolName.map(MayaLPPools.isPairable(pool:)) ?? false
+    }
+
+    /// The paired address the memo carries, or nil for a single-sided add.
+    private var memoPairedAddress: String? {
+        requiresPairedAddress ? pairedAddress : nil
+    }
+
+    /// Localization key of the button that offers RUNE or CACAO.
+    var enableProtocolChainTitleKey: String {
+        protocolChain == .mayaChain ? "enableMayaChain" : "enableThorchain"
+    }
+
+    /// Adds RUNE or CACAO to the vault so a deposit can name a paired address.
     ///
     /// Carried over from the form this replaces, where it was the only way out
     /// of an otherwise unsubmittable screen. The paired address is re-read
     /// afterwards because it is what the new coin supplies.
-    func enableThorchain() async {
-        guard !isEnablingThorchain, !isThorchainEnabled else { return }
-        guard let runeMeta = TokensStore.TokenSelectionAssets.first(where: {
-            $0.chain == .thorChain && $0.isNativeToken
+    func enableProtocolChain() async {
+        guard !isEnablingProtocolChain, !isProtocolChainEnabled else { return }
+        let chain = protocolChain
+        guard let nativeMeta = TokensStore.TokenSelectionAssets.first(where: {
+            $0.chain == chain && $0.isNativeToken
         }) else { return }
 
-        isEnablingThorchain = true
-        defer { isEnablingThorchain = false }
+        isEnablingProtocolChain = true
+        defer { isEnablingProtocolChain = false }
 
         do {
-            try await CoinService.addToChain(assets: [runeMeta], to: vault)
+            try await CoinService.addToChain(assets: [nativeMeta], to: vault)
         } catch {
-            logger.error("Failed to enable THORChain for LP: \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to enable \(chain.name, privacy: .public) for LP: \(error.localizedDescription, privacy: .public)")
             return
         }
 
-        pairedAddress = vault.nativeCoin(for: .thorChain)?.address
+        pairedAddress = vault.nativeCoin(for: chain)?.address
+    }
+
+    /// The fixed pool an asset-side MayaChain deposit names, shown in place of a
+    /// picker. Nil whenever the user chooses the pool or the pool is not Maya's
+    /// asset side.
+    var fixedPoolTitle: String? {
+        guard protocolChain == .mayaChain, coin.chain != .mayaChain,
+              case .fixed = poolSource, let poolName else { return nil }
+        return String(format: "mayaLpTargetPool".localized, poolName)
     }
 
     /// Whether the form shows a pool picker at all.
@@ -307,7 +410,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
                 }
             } catch {
                 guard !Task.isCancelled, let self else { return }
-                logger.error("Failed to load THORChain LP pools: \(error.localizedDescription, privacy: .public)")
+                logger.error("Failed to load LP pools: \(error.localizedDescription, privacy: .public)")
                 self.pools = []
                 self.poolsState = .failed
             }
@@ -395,11 +498,18 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     private func resolveDestination(bypassCache: Bool, generation: UInt64) async {
         let asset = coin
+        let fetch = resolveInboundAddresses
+        // Remembers the list the answer was read from, so the dust check judges
+        // the same vault the transaction will pay.
         let resolved = await ThorchainLPDestinationResolver.resolve(
             depositing: asset,
             into: protocolChain,
             bypassCache: bypassCache,
-            fetch: resolveInboundAddresses
+            fetch: { [weak self] bypass in
+                let inbounds = await fetch(bypass)
+                self?.lastInbounds = inbounds
+                return inbounds
+            }
         )
         publish(resolved, resolvedFor: asset, generation: generation)
     }
@@ -409,7 +519,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     /// Resolves the live destination, then builds. This is the Continue path.
     ///
     /// The recipient is fetched here with the cache bypassed, so the address
-    /// the transaction carries is the one THORChain is observing at the moment
+    /// the transaction carries is the one the protocol is observing at the moment
     /// the transaction is made — not the one that happened to be cached when
     /// the form opened, and not one resolved for an asset the user has since
     /// replaced. It re-reads the LP-actions pause flag in the same breath,
@@ -424,13 +534,100 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         isLoading = true
         defer { isLoading = false }
         approvalError = nil
+        mayaCheckError = nil
+        singleSidedFallback = false
 
         destinationTask?.cancel()
         destinationTask = nil
         await resolveDestination(bypassCache: true, generation: nextDestinationGeneration())
 
+        guard await verifyMayaPairing(), await verifyMayaPreflight(), verifyInboundDust() else { return nil }
+
         guard let builder = addLPBuilder else { return nil }
         return await withApprovalDecision(builder)
+    }
+
+    /// Reads the vault's record on the pool before either side is signed.
+    ///
+    /// mayanode records an asset address only on a zero-unit record, so a live
+    /// CACAO-only position refunds any add naming one. The CACAO side then falls
+    /// back to `+:POOL`; the asset side, which has no single-sided form, is
+    /// refused. An unreadable record refuses both rather than guess.
+    /// Returns false, with `mayaCheckError` set, when the form must not proceed.
+    private func verifyMayaPairing() async -> Bool {
+        guard protocolChain == .mayaChain, let pool = poolName,
+              let cacaoAddress = vault.nativeCoin(for: .mayaChain)?.address.nilIfEmpty else { return true }
+
+        let assetAddress: String
+        if coin.chain == .mayaChain {
+            guard requiresPairedAddress, let paired = pairedAddress?.nilIfEmpty else { return true }
+            assetAddress = paired
+        } else {
+            assetAddress = coin.address
+        }
+
+        let record: MayaLiquidityProvider?
+        do {
+            record = try await mayaChecks.liquidityProvider(pool, cacaoAddress)
+        } catch {
+            logger.warning("Failed to read the MayaChain LP record for \(pool, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            mayaCheckError = "mayaLpUnverified".localized
+            return false
+        }
+
+        if let expected = expectedPendingTxId,
+           record?.pendingTxId?.caseInsensitiveCompare(expected) != .orderedSame {
+            mayaCheckError = "mayaLpPendingGone".localized
+            return false
+        }
+
+        switch record?.pairing(cacaoAddress: cacaoAddress, assetAddress: assetAddress) ?? .pairable {
+        case .pairable:
+            return true
+        case .singleSidedPosition:
+            guard coin.chain == .mayaChain else {
+                mayaCheckError = String(format: "mayaLpSingleSidedPosition".localized, pool)
+                return false
+            }
+            singleSidedFallback = true
+            return true
+        case .addressMismatch:
+            mayaCheckError = String(format: "mayaLpAddressMismatch".localized, pool)
+            return false
+        }
+    }
+
+    /// Asks the node whether MayaChain would refund this add: LP adds paused,
+    /// the asset chain halted, or a pool that takes no such add.
+    private func verifyMayaPreflight() async -> Bool {
+        guard protocolChain == .mayaChain, let pool = poolName else { return true }
+        let isPairedAdd = coin.chain != .mayaChain || (requiresPairedAddress && hasPairedAddress)
+        guard let block = await mayaChecks.preflight(pool, isPairedAdd) else { return true }
+        mayaCheckError = block.message
+        return false
+    }
+
+    /// Bifrost ignores an inbound below the chain's dust threshold, published
+    /// in MayaChain's 1e8 fixed point whatever the coin's own decimals: such a
+    /// deposit confirms on the source chain and is never credited.
+    private func verifyInboundDust() -> Bool {
+        guard protocolChain == .mayaChain, coin.chain != .mayaChain,
+              let amount = HumanDecimalAmount.parse(amountField.rawValue, decimals: coin.decimals, locale: locale) else {
+            return true
+        }
+        let chainName = ThorchainService.getInboundChainName(for: coin.chain).uppercased()
+        guard let dust = lastInbounds.first(where: { $0.chain.uppercased() == chainName })?
+            .dust_threshold.flatMap({ Decimal(string: $0) }), dust > 0 else { return true }
+
+        let fixedPoint = Decimal(sign: .plus, exponent: 8, significand: 1)
+        // A UTXO max send pays its fee out of the output, so what arrives is
+        // less than the typed amount by a fee only known at planning time. Ask
+        // for twice the threshold there rather than let it land under dust.
+        let required = isMaxAmount && coin.chainType == .UTXO ? dust * 2 : dust
+        guard amount * fixedPoint < required else { return true }
+        let minimum = (required / fixedPoint).formatToDecimal(digits: 8)
+        mayaCheckError = String(format: "mayaLpBelowInboundDust".localized, minimum, coin.ticker, coin.chain.name)
+        return false
     }
 
     /// The builder with its ERC-20 approval read once here, for the exact
@@ -463,11 +660,11 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
         // would be wrong in both directions.
         validateErrors()
         guard form.allSatisfy({ $0.valid }) else { return nil }
-        // A THORChain pool without a paired RUNE account is a memo for a
-        // DIFFERENT operation — `+:POOL` alone is an asymmetric, asset-only
-        // deposit — so an absent RUNE coin blocks rather than silently changing
-        // what is signed.
-        guard isThorchainEnabled, hasThorchainPairedAddress else { return nil }
+        // A pool without a paired account is a memo for a DIFFERENT operation —
+        // `+:POOL` alone is an asymmetric, single-sided deposit — so an absent
+        // RUNE/CACAO or asset address blocks rather than silently changing what
+        // is signed.
+        guard isProtocolChainEnabled, hasPairedAddress || !requiresPairedAddress else { return nil }
         guard let poolName else { return nil }
         guard let amount = HumanDecimalAmount.parse(
             amountField.rawValue,
@@ -484,9 +681,10 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             coin: coin,
             amount: amount.formatToDecimal(digits: coin.decimals),
             poolName: poolName,
-            pairedAddress: pairedAddress,
+            pairedAddress: memoPairedAddress,
             sendMaxAmount: isMaxAmount,
-            toAddress: toAddress
+            toAddress: toAddress,
+            protocolChain: protocolChain
         )
     }
 
@@ -494,14 +692,6 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     var title: String {
         String(format: "addCoinLP".localized, coin.chain.name)
-    }
-
-    var showAsymmetricDepositInfo: Bool {
-        protocolChain == .mayaChain
-    }
-
-    var asymmetricDepositMessage: String {
-        "asymmetricDepositInfo".localized
     }
 
     /// Whether the pool list is still arriving.
@@ -516,11 +706,16 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
 
     /// Why the deposit cannot proceed, or nil when nothing is wrong.
     var blockingMessage: String? {
-        if !isThorchainEnabled || !hasThorchainPairedAddress {
-            return "thorChainNotEnabledForLP".localized
+        if !isProtocolChainEnabled || (requiresPairedAddress && !hasPairedAddress) {
+            return protocolChain == .mayaChain
+                ? "mayaChainNotEnabledForLP".localized
+                : "thorChainNotEnabledForLP".localized
         }
         if let approvalError {
             return approvalError
+        }
+        if let mayaCheckError {
+            return mayaCheckError
         }
         if case .chosen = poolSource, poolsState == .loaded, pools.isEmpty {
             return "addLpNoDepositablePools".localized

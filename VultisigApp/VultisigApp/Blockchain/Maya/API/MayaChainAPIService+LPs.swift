@@ -45,6 +45,104 @@ extension MayaChainAPIService {
         return response.data
     }
 
+    /// The vault's record on `pool`, or nil when mayanode has none. Any other
+    /// failure throws: a caller about to move funds must not read an outage as
+    /// an empty record.
+    func getLiquidityProvider(pool: String, address: String) async throws -> MayaLiquidityProvider? {
+        do {
+            let response = try await httpClient.request(
+                MayaChainLPsAPI.getLiquidityProvider(pool: pool, address: address),
+                responseType: MayaLiquidityProvider.self
+            )
+            return response.data
+        } catch HTTPError.statusCode(404, _) {
+            return nil
+        }
+    }
+
+    /// Finds the vault's half-finished paired adds.
+    ///
+    /// The scan starts from the pool list, whose `pending_inbound_*` fields say
+    /// which pools hold anyone's pending liquidity; only those are then read for
+    /// `cacaoAddress`, the address mayanode keys every paired add by. Throws
+    /// when the pool scan fails, so an outage is not read as "no deposits"; a
+    /// failed read on one pool leaves the others and marks the scan incomplete.
+    func getPendingLPDeposits(cacaoAddress: String) async throws -> MayaPendingLPScan {
+        let candidates = try await getNodePools().filter { pool in
+            (Decimal(string: pool.pendingInboundCacao) ?? 0) > 0 || (Decimal(string: pool.pendingInboundAsset) ?? 0) > 0
+        }
+        guard !candidates.isEmpty else { return MayaPendingLPScan(deposits: [], isComplete: true) }
+
+        let reads = await withTaskGroup(of: PendingRead.self) { group in
+            for (index, pool) in candidates.enumerated() {
+                group.addTask {
+                    do {
+                        let record = try await getLiquidityProvider(pool: pool.asset, address: cacaoAddress)
+                        guard let record, let deposit = MayaPendingLPDeposit(pool: pool.asset, record: record) else {
+                            return PendingRead(index: index, found: nil, failed: false)
+                        }
+                        let height = record.lastAddHeight.flatMap { $0 > 0 ? $0 : nil }
+                        return PendingRead(index: index, found: (deposit, height), failed: false)
+                    } catch {
+                        return PendingRead(index: index, found: nil, failed: true)
+                    }
+                }
+            }
+            var results: [PendingRead] = []
+            for await result in group { results.append(result) }
+            return results.sorted { $0.index < $1.index }
+        }
+        let isComplete = !reads.contains { $0.failed }
+        let found = reads.compactMap(\.found)
+        guard !found.isEmpty else { return MayaPendingLPScan(deposits: [], isComplete: isComplete) }
+
+        async let mimir = try? getMimirValues()
+        async let height = try? getLastBlock()
+        // mimir overrides the node's default; an unreadable mimir leaves the
+        // countdown unknown rather than guessed.
+        let ageLimit = await mimir.map { values -> Int64 in
+            values[Self.pendingAgeLimitKey].flatMap { $0 > 0 ? $0 : nil } ?? Self.defaultPendingAgeLimit
+        }
+        let currentHeight = await height.flatMap { $0 > 0 ? $0 : nil }
+
+        let deposits = found.map { deposit, lastAddHeight in
+            var deposit = deposit
+            deposit.blocksUntilRefund = MayaPendingLPDeposit.blocksUntilRefund(
+                lastAddHeight: lastAddHeight,
+                ageLimit: ageLimit,
+                currentHeight: currentHeight
+            )
+            return deposit
+        }
+        return MayaPendingLPScan(deposits: deposits, isComplete: isComplete)
+    }
+
+    private struct PendingRead {
+        let index: Int
+        let found: (MayaPendingLPDeposit, Int64?)?
+        let failed: Bool
+    }
+
+    /// Mimir override for the blocks MayaChain holds a half-deposit.
+    private static var pendingAgeLimitKey: String { "PENDINGLIQUIDITYAGELIMIT" }
+
+    /// The node's `PendingLiquidityAgeLimit` constant, used when mimir carries
+    /// no override: roughly a week at MayaChain's block time.
+    private static var defaultPendingAgeLimit: Int64 { 100_800 }
+
+    /// The node's pools with their status and pending inbound liquidity.
+    func getNodePools() async throws -> [MayaChainPool] {
+        try await httpClient.request(MayaChainLPsAPI.getNodePools, responseType: [MayaChainPool].self).data
+    }
+
+    /// Every mimir key as a number. Read raw because the LP rules look keys up by
+    /// name (`PAUSELP<CHAIN>`) and a value that is not a number must not fail the
+    /// whole read.
+    func getMimirValues() async throws -> [String: Int64] {
+        let response = try await httpClient.request(MayaChainBondsAPI.getMimir, responseType: [String: LossyInt64].self)
+        return response.data.compactMapValues(\.value)
+    }
+
     /// Fetches complete LP positions for an address with calculated current values
     /// - Parameters:
     ///   - address: The MayaChain or asset address to lookup
@@ -119,5 +217,14 @@ extension MayaChainAPICache {
 
     func cachePoolStats(_ data: [MayaPoolStats]) {
         MayaChainAPICache.poolStatsCache = (data, Date())
+    }
+}
+
+/// An integer that reads as nil rather than failing its container.
+struct LossyInt64: Decodable {
+    let value: Int64?
+
+    init(from decoder: Decoder) throws {
+        value = try? decoder.singleValueContainer().decode(Int64.self)
     }
 }
