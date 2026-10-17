@@ -228,8 +228,17 @@ struct SettingsCustomMessageView: View {
         return Self.personalSignMessage(for: message)
     }
 
+    /// `0x…` input is hex data (matching `CustomMessagePayload.keysignMessages`), so its
+    /// envelope is built from the decoded bytes and re-encoded as hex.
     static func personalSignMessage(for message: String) -> String {
-        "\u{19}Ethereum Signed Message:\n\(message.lengthOfBytes(using: .utf8))\(message)"
+        let prefix = "\u{19}Ethereum Signed Message:\n"
+        if message.starts(with: "0x") {
+            let data = Data(hex: message)
+            if !data.isEmpty {
+                return "0x" + (Data(prefix.utf8) + Data(String(data.count).utf8) + data).hexString
+            }
+        }
+        return "\(prefix)\(message.lengthOfBytes(using: .utf8))\(message)"
     }
 
     var continueButton: some View {

@@ -21,3 +21,17 @@ final class SettingsCustomMessagePersonalSignTests: XCTestCase {
         )
     }
 }
+
+extension SettingsCustomMessagePersonalSignTests {
+    func testPersonalSignHexInputEnvelopesDecodedBytes() {
+        let payload = CustomMessagePayload(
+            method: "personal_sign",
+            message: SettingsCustomMessageView.personalSignMessage(for: "0x6869"),
+            vaultPublicKeyECDSA: "",
+            vaultLocalPartyID: "",
+            chain: "Ethereum"
+        )
+        let expected = Data("\u{19}Ethereum Signed Message:\n2hi".utf8).sha3(.keccak256).hexString
+        XCTAssertEqual(payload.keysignMessages, [expected])
+    }
+}
