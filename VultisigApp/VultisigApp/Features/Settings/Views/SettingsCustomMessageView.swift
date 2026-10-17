@@ -214,11 +214,22 @@ struct SettingsCustomMessageView: View {
 
     var customMessagePayload: CustomMessagePayload? {
         return CustomMessagePayload(method: method,
-                                    message: message,
+                                    message: personalSignMessage,
                                     vaultPublicKeyECDSA: vault.pubKeyECDSA,
                                     vaultLocalPartyID: vault.localPartyID,
                                     chain: Chain.ethereum.name,
                                     decodedMessage: nil)
+    }
+
+    /// `personal_sign` signs the EIP-191 envelope, while the confirmation UI
+    /// continues to show the plain-text message the user entered.
+    var personalSignMessage: String {
+        guard method == "personal_sign" else { return message }
+        return Self.personalSignMessage(for: message)
+    }
+
+    static func personalSignMessage(for message: String) -> String {
+        "\u{19}Ethereum Signed Message:\n\(message.lengthOfBytes(using: .utf8))\(message)"
     }
 
     var continueButton: some View {
