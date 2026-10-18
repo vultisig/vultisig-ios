@@ -17,7 +17,7 @@ enum CustomMessagePayloadError: LocalizedError, Equatable {
         case let .unsupportedChain(chain):
             return "Custom-message signing is unavailable for \(chain)."
         case .unsupportedEVMFormat:
-            return "Only personal_sign (EIP-191) and eth_signTypedData_v4 messages can be signed on EVM chains."
+            return "unsupportedEVMCustomMessageFormat".localized
         }
     }
 }
@@ -128,8 +128,12 @@ struct CustomMessagePayload: Codable, Hashable {
         guard bytes.starts(with: prefix) else { return false }
         let rest = bytes.dropFirst(prefix.count)
         let digits = rest.prefix(while: { $0 >= 0x30 && $0 <= 0x39 })
-        guard let length = String(bytes: digits, encoding: .utf8).flatMap({ Int($0) }) else { return false }
-        return rest.count - digits.count == length
+        // The length's digits are followed by message bytes that may themselves be digits,
+        // so accept any split whose declared length matches the bytes after it.
+        return digits.indices.contains { end in
+            let count = end - digits.startIndex + 1
+            return String(bytes: digits.prefix(count), encoding: .utf8).flatMap({ Int($0) }) == rest.count - count
+        }
     }
 
     /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),

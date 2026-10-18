@@ -1776,6 +1776,7 @@
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
 "unstake" = "Unstake";
 "unstakeCoin" = "Unstake %@";
+"unsupportedEVMCustomMessageFormat" = "Only personal_sign (EIP-191) and eth_signTypedData_v4 messages can be signed on EVM chains.";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "unverifiedFunction" = "Unverified function";
 "upcoming" = "Upcoming";

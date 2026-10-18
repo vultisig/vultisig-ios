@@ -17,6 +17,11 @@ final class CustomMessageEVMFormatTests: XCTestCase {
         XCTAssertNoThrow(try payload(method: "personal_sign", message: message).validateEVMSignable())
     }
 
+    func testAcceptsPersonalSignEnvelopeWhoseMessageStartsWithDigits() {
+        let message = SettingsCustomMessageView.personalSignMessage(for: "123")
+        XCTAssertNoThrow(try payload(method: "personal_sign", message: message).validateEVMSignable())
+    }
+
     func testAcceptsTypedDataV4() {
         XCTAssertNoThrow(try payload(method: "eth_signTypedData_v4", message: "{}").validateEVMSignable())
     }
