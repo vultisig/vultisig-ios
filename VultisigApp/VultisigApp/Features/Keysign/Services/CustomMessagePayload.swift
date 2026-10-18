@@ -10,11 +10,14 @@ import WalletCore
 
 enum CustomMessagePayloadError: LocalizedError, Equatable {
     case unsupportedChain(String)
+    case unsupportedEVMFormat
 
     var errorDescription: String? {
         switch self {
         case let .unsupportedChain(chain):
             return "Custom-message signing is unavailable for \(chain)."
+        case .unsupportedEVMFormat:
+            return "Only personal_sign (EIP-191) and eth_signTypedData_v4 messages can be signed on EVM chains."
         }
     }
 }
@@ -103,6 +106,30 @@ struct CustomMessagePayload: Codable, Hashable {
             throw CustomMessagePayloadError.unsupportedChain(resolved.name)
         }
         return resolved
+    }
+
+    /// EVM custom messages are signed as keccak256 of the raw bytes, which only has a
+    /// message-signing domain for an EIP-191 envelope or EIP-712 typed data. Everything
+    /// else is refused so the vault key never signs an arbitrary 32-byte digest.
+    /// Unknown chain names fall back to Ethereum, as in `resolveSigningChain()`.
+    func validateEVMSignable() throws {
+        let resolved = Chain.allCases.first { $0.name.caseInsensitiveCompare(chain) == .orderedSame } ?? .ethereum
+        guard resolved.chainType == .EVM else { return }
+        if method == "eth_signTypedData_v4" { return }
+        guard method == "personal_sign", hasEIP191Envelope else {
+            throw CustomMessagePayloadError.unsupportedEVMFormat
+        }
+    }
+
+    /// `\x19Ethereum Signed Message:\n`, a decimal length, then exactly that many bytes.
+    private var hasEIP191Envelope: Bool {
+        let bytes = [UInt8](message.starts(with: "0x") ? Data(hex: message) : Data(message.utf8))
+        let prefix = [UInt8]("\u{19}Ethereum Signed Message:\n".utf8)
+        guard bytes.starts(with: prefix) else { return false }
+        let rest = bytes.dropFirst(prefix.count)
+        let digits = rest.prefix(while: { $0 >= 0x30 && $0 <= 0x39 })
+        guard let length = String(bytes: digits, encoding: .utf8).flatMap({ Int($0) }) else { return false }
+        return rest.count - digits.count == length
     }
 
     /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),

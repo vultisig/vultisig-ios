@@ -363,6 +363,13 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
+        do {
+            try customMessagePayload.validateEVMSignable()
+        } catch {
+            self.errorMsg = error.localizedDescription
+            self.status = .FailedToStart
+            return
+        }
         self.keysignMessages = customMessagePayload.keysignMessages
     }
 

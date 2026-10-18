@@ -22,6 +22,7 @@ struct SettingsCustomMessageView: View {
     @State var keysignView: KeysignView?
     @State var method: String = .empty
     @State var message: String = .empty
+    @State var formatError: String?
 
     @State var fastVaultPassword: String = .empty
     @State var fastPasswordPresented = false
@@ -242,10 +243,23 @@ struct SettingsCustomMessageView: View {
     }
 
     var continueButton: some View {
-        PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
-            viewModel.moveToNextView()
+        VStack(spacing: 12) {
+            if let formatError {
+                Text(formatError)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.alertError)
+            }
+            PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+                do {
+                    try customMessagePayload?.validateEVMSignable()
+                    formatError = nil
+                    viewModel.moveToNextView()
+                } catch {
+                    formatError = error.localizedDescription
+                }
+            }
+            .disabled(!signButtonEnabled)
         }
-        .disabled(!signButtonEnabled)
         .padding(.horizontal, 16)
     }
 
