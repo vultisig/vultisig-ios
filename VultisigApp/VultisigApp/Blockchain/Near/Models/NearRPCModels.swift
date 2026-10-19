@@ -55,12 +55,25 @@ struct NearRPCErrorBody: Decodable {
     /// `name` is read from the handler's nested `cause` when the endpoint puts
     /// it there (`query` nests one level deeper than `tx` does), because the
     /// name is the only part that distinguishes a missing record from a
-    /// timeout from a rejection.
+    /// timeout from a rejection. An endpoint that drops the name (the Vultisig
+    /// proxy does) still carries nearcore's message, so the not-found ones are
+    /// read from it.
     func nearError(method: String) -> NearError {
-        let resolvedName = cause?.name ?? name ?? "UNKNOWN_ERROR"
         let detail = data.flatMap { $0.isEmpty ? nil : $0 } ?? message ?? "unknown error"
+        let resolvedName = cause?.name ?? name ?? Self.unknownEntityName(inMessage: detail) ?? "UNKNOWN_ERROR"
         return NearError.unknownEntity(forRPCName: resolvedName, detail: detail)
             ?? .rpc(method: method, name: resolvedName, message: detail)
+    }
+
+    /// nearcore's whole not-found messages, matched end to end so that no other
+    /// failure can read as a missing record.
+    private static let unknownEntityMessages: [(pattern: String, name: String)] = [
+        (#"^account \S+ does not exist while viewing\z"#, "UNKNOWN_ACCOUNT"),
+        (#"^Transaction \S+ doesn't exist\z"#, "UNKNOWN_TRANSACTION")
+    ]
+
+    private static func unknownEntityName(inMessage message: String) -> String? {
+        unknownEntityMessages.first { message.range(of: $0.pattern, options: .regularExpression) != nil }?.name
     }
 }
 

@@ -69,6 +69,22 @@ final class SendNearGuardTests: XCTestCase {
         }
     }
 
+    func testAReceiverTheProxyReportsWithoutAnErrorNameIsRefusedAsUnknown() async throws {
+        let balance = BigInt("1000000000000000000000000") // 1 NEAR
+        let node = ScriptedNearNode(accounts: [Self.sender: (amount: balance, storageUsage: 182)], omitsErrorNames: true)
+        let vm = makeVerifyViewModel(node: node, signedGas: Self.quotedGas, balance: balance)
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("a send to a named account that does not exist must not reach signing")
+        } catch {
+            XCTAssertEqual(
+                error.localizedDescription,
+                String(format: "nearUnknownReceiverError".localized, Self.receiver)
+            )
+        }
+    }
+
     func testAReceiverLookupThatFailsRefusesTheSend() async throws {
         let balance = BigInt("1000000000000000000000000") // 1 NEAR
         let node = ScriptedNearNode(
@@ -141,14 +157,17 @@ final class SendNearGuardTests: XCTestCase {
 
 /// Answers `view_account` from `accounts` (UNKNOWN_ACCOUNT otherwise, a node
 /// timeout for `unreachableAccounts`) and `EXPERIMENTAL_protocol_config` with
-/// nearcore 2.13.4's costs.
+/// nearcore 2.13.4's costs. `omitsErrorNames` answers UNKNOWN_ACCOUNT the way
+/// api.vultisig.com/near/ does: nearcore's message with no `name` or `cause`.
 private final class ScriptedNearNode: HTTPClientProtocol, @unchecked Sendable {
     private let accounts: [String: (amount: BigInt, storageUsage: Int)]
     private let unreachableAccounts: Set<String>
+    private let omitsErrorNames: Bool
 
-    init(accounts: [String: (amount: BigInt, storageUsage: Int)], unreachableAccounts: Set<String> = []) {
+    init(accounts: [String: (amount: BigInt, storageUsage: Int)], unreachableAccounts: Set<String> = [], omitsErrorNames: Bool = false) {
         self.accounts = accounts
         self.unreachableAccounts = unreachableAccounts
+        self.omitsErrorNames = omitsErrorNames
     }
 
     // Protocol requires `async`; the body is synchronous.
@@ -169,6 +188,8 @@ private final class ScriptedNearNode: HTTPClientProtocol, @unchecked Sendable {
                 json = #"{"jsonrpc":"2.0","id":"query","error":{"name":"HANDLER_ERROR","cause":{"name":"TIMEOUT_ERROR"},"message":"Server error","data":"Timeout"}}"#
             } else if let account = accounts[accountId] {
                 json = #"{"jsonrpc":"2.0","id":"query","result":{"amount":"\#(account.amount)","locked":"0","storage_usage":\#(account.storageUsage)}}"#
+            } else if omitsErrorNames {
+                json = #"{"jsonrpc":"2.0","id":"query","error":{"code":-32000,"message":"Server error","data":"account \#(accountId) does not exist while viewing"}}"#
             } else {
                 json = #"{"jsonrpc":"2.0","id":"query","error":{"name":"HANDLER_ERROR","cause":{"name":"UNKNOWN_ACCOUNT"},"message":"Server error","data":"account \#(accountId) does not exist while viewing"}}"#
             }

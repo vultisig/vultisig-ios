@@ -72,45 +72,14 @@ struct SendDetailsScreen: View {
                 viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.toAddress) { _, _ in
-                viewModel.cancelAddressResolution()
-
-                guard !viewModel.toAddress.isEmpty else {
-                    viewModel.onToAddressCleared()
-                    // Clear any stale amount warning now the destination is gone
-                    // (this branch returns before the trigger below).
-                    viewModel.debouncedValidateAmount()
-                    return
-                }
-
-                if viewModel.isValidAddressFormat() {
-                    viewModel.addressSetupDone = true
-                    viewModel.onSelect(tab: .amount)
-                } else {
-                    viewModel.debouncedResolveAddress()
-                }
-                // Destination changed → re-run the inline amount validation
-                // (no-op / clears when no validator applies or the address
-                // isn't ready).
-                viewModel.debouncedValidateAmount()
+                viewModel.handleToAddressChange()
             }
             .onChange(of: viewModel.amount) { _, _ in
                 viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.isAddressResolved) { _, resolved in
                 guard let resolved else { return }
-                viewModel.addressSetupDone = resolved
-                if resolved {
-                    viewModel.onSelect(tab: .amount)
-                } else {
-                    // Definitive resolution failure on a non-empty recipient:
-                    // keep Next disabled *with a visible reason* instead of
-                    // silently. `markInvalidRecipient` no-ops on an empty field.
-                    viewModel.markInvalidRecipient()
-                    if viewModel.selectedTab == .amount {
-                        viewModel.onSelect(tab: .address)
-                    }
-                }
-                viewModel.debouncedValidateAmount()
+                viewModel.handleAddressResolution(resolved)
             }
             .onDisappear {
                 if !router.isShowingSigningRoute {
