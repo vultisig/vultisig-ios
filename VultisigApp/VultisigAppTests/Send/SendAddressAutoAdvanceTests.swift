@@ -93,6 +93,35 @@ final class SendAddressAutoAdvanceTests: XCTestCase {
         XCTAssertEqual(vm.selectedTab, .amount)
     }
 
+    func testAPastedNearNamedAccountMovesOnToAmount() {
+        let vm = makeViewModel(.near, ticker: "NEAR", decimals: 24, address: "alice.near")
+
+        vm.applyPickedRecipient()
+        vm.handleToAddressChange()
+
+        XCTAssertTrue(vm.addressSetupDone)
+        XCTAssertEqual(vm.selectedTab, .amount)
+    }
+
+    func testAPastedSolanaAddressShortOfTheMaximumMovesOnToAmount() {
+        let vm = makeViewModel(.solana, ticker: "SOL", decimals: 9, address: String(Self.solanaAddress.dropLast()))
+
+        vm.applyPickedRecipient()
+        vm.handleToAddressChange()
+
+        XCTAssertEqual(vm.selectedTab, .amount)
+    }
+
+    func testAPastedValueThatCanNeverResolveIsFlagged() {
+        let vm = makeViewModel(.near, ticker: "NEAR", decimals: 24, address: "Alice.near")
+
+        vm.applyPickedRecipient()
+
+        XCTAssertFalse(vm.addressSetupDone)
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertEqual(vm.selectedTab, .address)
+    }
+
     func testAResolvedNearNamedAccountStaysOnTheAddressStep() {
         let vm = makeViewModel(.near, ticker: "NEAR", decimals: 24, address: "al")
 

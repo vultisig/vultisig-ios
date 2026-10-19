@@ -637,6 +637,17 @@ final class SendDetailsViewModel {
         debouncedValidateAmount()
     }
 
+    /// A pasted, scanned or address-book recipient for the current chain arrives
+    /// whole, so a valid one moves on to Amount whatever its length.
+    func applyPickedRecipient() {
+        guard isValidAddressFormat() else {
+            markInvalidRecipientIfUnresolvable()
+            return
+        }
+        addressSetupDone = true
+        onSelect(tab: .amount)
+    }
+
     /// Applies the verdict of a background address resolution.
     func handleAddressResolution(_ resolved: Bool) {
         if resolved {
