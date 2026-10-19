@@ -142,6 +142,6 @@ struct VaultRouteBuilder {
 
     @ViewBuilder
     func buildDefiChainDetailScreen(chain: Chain, vault: Vault) -> some View {
-        DefiChainMainScreen(vault: vault, chain: chain)
+        ChainDetailScreenContainer(chain: chain, vault: vault, initialTab: .defi)
     }
 }

@@ -13,8 +13,6 @@ struct TronRouter {
     @ViewBuilder
     func build(_ route: TronRoute) -> some View {
         switch route {
-        case .main(let vault):
-            viewBuilder.buildMainScreen(vault: vault)
         case .freeze(let vault):
             viewBuilder.buildFreezeScreen(vault: vault)
         case .unfreeze(let vault, let frozenBandwidth, let frozenEnergy):

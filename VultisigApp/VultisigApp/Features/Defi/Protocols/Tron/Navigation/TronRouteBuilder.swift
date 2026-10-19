@@ -10,11 +10,6 @@ import SwiftUI
 struct TronRouteBuilder {
 
     @ViewBuilder
-    func buildMainScreen(vault: Vault) -> some View {
-        TronScreen(vault: vault)
-    }
-
-    @ViewBuilder
     func buildFreezeScreen(vault: Vault) -> some View {
         TronFreezeScreen(vault: vault)
     }

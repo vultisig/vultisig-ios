@@ -20,7 +20,7 @@ struct ChainDetailScreenContainer: View {
     @Environment(\.openURL) var openURL
     @Environment(\.router) var router
 
-    init(chain: Chain, vault: Vault) {
+    init(chain: Chain, vault: Vault, initialTab: HomeTab = .wallet) {
         self.chain = chain
         self.vault = vault
         let supportsDefiTab = vault.availableDefiChains.contains(chain)
@@ -29,6 +29,7 @@ struct ChainDetailScreenContainer: View {
             newTabs.append(.defi)
         }
         self.tabs = newTabs
+        self._selectedTab = State(initialValue: newTabs.contains(initialTab) ? initialTab : .wallet)
     }
 
     private var nativeCoin: Coin? {

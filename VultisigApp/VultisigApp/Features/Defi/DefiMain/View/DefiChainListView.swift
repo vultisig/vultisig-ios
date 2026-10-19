@@ -69,10 +69,8 @@ struct DefiChainListView: View {
             router.navigate(to: YieldRoute.main(vault: vault, providerID: providerID))
         case .chain(let chain):
             switch chain {
-            case .thorChain, .mayaChain, .terra, .terraClassic, .qbtc, .ton, .solana:
+            case .thorChain, .mayaChain, .terra, .terraClassic, .qbtc, .ton, .solana, .tron:
                 router.navigate(to: VaultRoute.defiChain(chain: chain, vault: vault))
-            case .tron:
-                router.navigate(to: TronRoute.main(vault: vault))
             default:
                 break
             }
