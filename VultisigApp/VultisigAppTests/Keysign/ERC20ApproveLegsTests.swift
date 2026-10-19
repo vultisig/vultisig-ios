@@ -46,6 +46,27 @@ final class ERC20ApproveLegsTests: XCTestCase {
         ])
     }
 
+    // MARK: - Approve bound to the swap
+
+    func testApproveToTheSwapRouterPasses() throws {
+        let swap = try XCTUnwrap(oneInchApproveSwapPayload(reset: false).swapPayload)
+        XCTAssertNoThrow(try swap.requireApproveBound(approve(reset: false)))
+    }
+
+    func testApproveToAnotherSpenderThrows() throws {
+        let swap = try XCTUnwrap(oneInchApproveSwapPayload(reset: false).swapPayload)
+        let other = ERC20ApprovePayload(amount: Self.amount, spender: "0x000000000000000000000000000000000000dEaD")
+        XCTAssertThrowsError(try swap.requireApproveBound(other)) {
+            XCTAssertEqual($0 as? SwapPayloadError, .approveNotBoundToSwap)
+        }
+    }
+
+    func testApproveAboveTheSwapInputThrows() throws {
+        let swap = try XCTUnwrap(oneInchApproveSwapPayload(reset: false).swapPayload)
+        let more = ERC20ApprovePayload(amount: swap.fromAmount + 1, spender: Self.spender)
+        XCTAssertThrowsError(try swap.requireApproveBound(more))
+    }
+
     // MARK: - Payload
 
     func testLegAmountsFollowTheResetFlag() {
@@ -489,7 +510,9 @@ final class ERC20ApproveLegsTests: XCTestCase {
             ),
             memo: "=:MAYA.CACAO:\(cacao.address)",
             swapPayload: .mayachain(swap),
-            approvePayload: withApprove ? approve(reset: reset) : nil
+            approvePayload: withApprove
+                ? ERC20ApprovePayload(amount: Self.amount, spender: Self.mayaRouter, resetAllowanceFirst: reset)
+                : nil
         )
     }
 
