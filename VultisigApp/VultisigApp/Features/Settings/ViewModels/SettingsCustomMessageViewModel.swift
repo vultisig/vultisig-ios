@@ -35,6 +35,7 @@ class SettingsCustomMessageViewModel: ObservableObject {
 
     @Published var state: KeysignState = .initial
     @Published var currentIndex: Int = 1
+    @Published var formatError: String?
 
     var progress: Double {
         return Double(currentIndex) / Double(KeysignState.allCases.count)
@@ -43,6 +44,17 @@ class SettingsCustomMessageViewModel: ObservableObject {
     func moveToNextView() {
         currentIndex += 1
         state = KeysignState.allCases[currentIndex-1]
+    }
+
+    /// Advances only when the payload is a signable format; otherwise surfaces the reason.
+    func continueIfSignable(_ payload: CustomMessagePayload?) {
+        do {
+            try payload?.validateEVMSignable()
+            formatError = nil
+            moveToNextView()
+        } catch {
+            formatError = error.localizedDescription
+        }
     }
 
     func canGoBack() -> Bool {

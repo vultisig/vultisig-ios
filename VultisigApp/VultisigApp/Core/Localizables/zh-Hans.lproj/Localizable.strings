@@ -1776,6 +1776,7 @@
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
 "unstake" = "取消质押";
 "unstakeCoin" = "取消质押 %@";
+"unsupportedEVMCustomMessageFormat" = "在 EVM 链上只能签署 personal_sign (EIP-191) 和 eth_signTypedData_v4 消息。";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
 "unverifiedFunction" = "未验证的函数";
 "upcoming" = "即将到来";

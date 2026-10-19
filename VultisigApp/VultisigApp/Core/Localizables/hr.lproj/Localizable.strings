@@ -1776,6 +1776,7 @@
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
 "unstake" = "Povuci";
 "unstakeCoin" = "Povuci %@";
+"unsupportedEVMCustomMessageFormat" = "Na EVM lancima mogu se potpisati samo poruke personal_sign (EIP-191) i eth_signTypedData_v4.";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "unverifiedFunction" = "Neprovjerena funkcija";
 "upcoming" = "Nadolazeće";

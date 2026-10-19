@@ -119,7 +119,7 @@ final class KeysignDAppMetadataFallbackTests: XCTestCase {
     private func makeCustomMessagePayload(dappMetadata: DAppMetadata?) -> CustomMessagePayload {
         CustomMessagePayload(
             method: "personal_sign",
-            message: "0x48656c6c6f",
+            message: "0x19457468657265756d205369676e6564204d6573736167653a0a3548656c6c6f",
             vaultPublicKeyECDSA: "02abc",
             vaultLocalPartyID: "party",
             chain: "Ethereum",

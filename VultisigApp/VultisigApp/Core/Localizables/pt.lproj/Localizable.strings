@@ -1776,6 +1776,7 @@
 "unrelatedQRCodeMessage" = "Foi escaneado um código QR não relacionado.";
 "unstake" = "Retirar Stake";
 "unstakeCoin" = "Retirar %@";
+"unsupportedEVMCustomMessageFormat" = "Em cadeias EVM, só é possível assinar mensagens personal_sign (EIP-191) e eth_signTypedData_v4.";
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "unverifiedFunction" = "Função não verificada";
 "upcoming" = "Próximo";

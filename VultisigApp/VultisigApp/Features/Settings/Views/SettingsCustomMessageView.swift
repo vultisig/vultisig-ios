@@ -242,10 +242,19 @@ struct SettingsCustomMessageView: View {
     }
 
     var continueButton: some View {
-        PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
-            viewModel.moveToNextView()
+        VStack(spacing: 12) {
+            if let formatError = viewModel.formatError {
+                Text(formatError)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.alertError)
+            }
+            PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+                viewModel.continueIfSignable(customMessagePayload)
+            }
+            .disabled(!signButtonEnabled)
         }
-        .disabled(!signButtonEnabled)
+        .onChange(of: method) { _, _ in viewModel.formatError = nil }
+        .onChange(of: message) { _, _ in viewModel.formatError = nil }
         .padding(.horizontal, 16)
     }
 

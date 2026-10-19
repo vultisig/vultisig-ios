@@ -1776,6 +1776,7 @@
 "unrelatedQRCodeMessage" = "관련 없는 QR 코드가 스캔되었습니다.";
 "unstake" = "언스테이킹";
 "unstakeCoin" = "%@ 언스테이킹";
+"unsupportedEVMCustomMessageFormat" = "EVM 체인에서는 personal_sign(EIP-191) 및 eth_signTypedData_v4 메시지만 서명할 수 있습니다.";
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
 "unverifiedFunction" = "확인되지 않은 함수";
 "upcoming" = "예정";
