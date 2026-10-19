@@ -67,6 +67,13 @@ final class ERC20ApproveLegsTests: XCTestCase {
         XCTAssertThrowsError(try swap.requireApproveBound(more))
     }
 
+    /// The leg serializes `amount.magnitude`, so a negative amount would sign its absolute value.
+    func testNegativeApproveAmountThrows() throws {
+        let swap = try XCTUnwrap(oneInchApproveSwapPayload(reset: false).swapPayload)
+        let negative = ERC20ApprovePayload(amount: -(swap.fromAmount + 1), spender: Self.spender)
+        XCTAssertThrowsError(try swap.requireApproveBound(negative))
+    }
+
     // MARK: - Payload
 
     func testLegAmountsFollowTheResetFlag() {

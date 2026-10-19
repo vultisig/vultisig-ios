@@ -184,7 +184,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     /// SwapKit are exempt from the spender check: their approval target is not
     /// `quote.tx.to` and the payload does not carry it.
     func requireApproveBound(_ approve: ERC20ApprovePayload) throws {
-        guard approve.amount <= fromAmount else { throw SwapPayloadError.approveNotBoundToSwap }
+        guard approve.amount >= 0, approve.amount <= fromAmount else { throw SwapPayloadError.approveNotBoundToSwap }
         if case .generic(let payload) = self, payload.provider == .lifi || payload.provider == .swapkit { return }
         guard let router, router.lowercased() == approve.spender.lowercased() else {
             throw SwapPayloadError.approveNotBoundToSwap
