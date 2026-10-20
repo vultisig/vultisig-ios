@@ -177,6 +177,20 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
+    /// Throws `SwapPayloadError.approveNotBoundToSwap` unless the approve is one
+    /// this swap implies: it spends no more than the swap's input and names the
+    /// swap's own router. The approved token is the signing coin, which
+    /// `requireSellsSigningCoin` already ties to the swap's source. LI.FI and
+    /// SwapKit are exempt from the spender check: their approval target is not
+    /// `quote.tx.to` and the payload does not carry it.
+    func requireApproveBound(_ approve: ERC20ApprovePayload) throws {
+        guard approve.amount >= 0, approve.amount <= fromAmount else { throw SwapPayloadError.approveNotBoundToSwap }
+        if case .generic(let payload) = self, payload.provider == .lifi || payload.provider == .swapkit { return }
+        guard let router, router.lowercased() == approve.spender.lowercased() else {
+            throw SwapPayloadError.approveNotBoundToSwap
+        }
+    }
+
     private static func isSameContract(_ lhs: String, _ rhs: String, on chain: Chain) -> Bool {
         chain.chainType == .EVM ? lhs.lowercased() == rhs.lowercased() : lhs == rhs
     }
@@ -184,11 +198,14 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
 enum SwapPayloadError: Error, LocalizedError, Equatable {
     case coinMismatch
+    case approveNotBoundToSwap
 
     var errorDescription: String? {
         switch self {
         case .coinMismatch:
             return "Swap payload source coin does not match the coin being signed"
+        case .approveNotBoundToSwap:
+            return "Swap payload approve does not match the swap's router and amount"
         }
     }
 }

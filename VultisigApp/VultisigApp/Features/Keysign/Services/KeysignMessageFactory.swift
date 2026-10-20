@@ -30,6 +30,7 @@ struct KeysignMessageFactory {
         var messages: [String] = []
 
         if let approvePayload =  payload.approvePayload {
+            try payload.swapPayload?.requireApproveBound(approvePayload)
             let swaps = THORChainSwaps()
             approveMessages = try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
