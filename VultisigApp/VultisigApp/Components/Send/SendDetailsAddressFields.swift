@@ -72,7 +72,7 @@ struct SendDetailsAddressFields: View {
 
     func handle(addressResult: AddressResult?) {
         guard let addressResult else { return }
-        viewModel.toAddress = addressResult.address
+        viewModel.setPickedAddress(addressResult.address)
 
         if let amount = addressResult.amount, amount.isNotEmpty {
             viewModel.amount = amount
@@ -92,12 +92,7 @@ struct SendDetailsAddressFields: View {
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
             } else {
-                // Paste/QR/address-book value that neither matches the current
-                // chain nor one we can switch to. A same-chain-valid value
-                // advances via the shared `toAddress` onChange; an ENS/TNS name
-                // still needs async resolution. Only a value that can never
-                // resolve is flagged now, so Next is disabled *with a reason*.
-                viewModel.markInvalidRecipientIfUnresolvable()
+                viewModel.applyPickedRecipient()
             }
         }
 

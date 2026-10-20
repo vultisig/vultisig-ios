@@ -26,6 +26,7 @@ extension Chain {
         let minimumSendAmount: BigInt?
         /// User-facing network label (not localized: same in every locale). `name` stays the wire/storage identifier.
         let displayName: String
+        var typedAddressCompleteLength: Int?
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -71,6 +72,12 @@ extension Chain {
     /// wallet but silently dropped by the node.
     var minimumSendAmount: BigInt? { config.minimumSendAmount }
 
+    /// Length at which a typed recipient can no longer be extended into another
+    /// valid address, or `nil` when no valid address is a prefix of another.
+    /// NEAR accepts any account id of 2+ characters; a 43-character Solana
+    /// prefix can decode to 32 bytes.
+    var typedAddressCompleteLength: Int? { config.typedAddressCompleteLength }
+
     // MARK: - Row definitions
     //
     // One row per chain, in `Chain` declaration order. These are the single
@@ -86,7 +93,7 @@ extension Chain {
         case .thorChainStagenet:
             return ChainConfig(name: "THORChain-Stagenet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-STAGENET", minimumSendAmount: nil, displayName: "THORChain-Stagenet")
         case .solana:
-            return ChainConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil, displayName: "Solana")
+            return ChainConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil, displayName: "Solana", typedAddressCompleteLength: 44)
         case .ethereum:
             return ChainConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil, displayName: "Ethereum")
         case .avalanche:
@@ -168,7 +175,7 @@ extension Chain {
         case .near:
             // `banxaBlockchainCode` is inert: `canBuy` is false for NEAR, so no
             // on-ramp ever reads it.
-            return ChainConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil, displayName: "Near")
+            return ChainConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil, displayName: "Near", typedAddressCompleteLength: 64)
         }
     }
 }

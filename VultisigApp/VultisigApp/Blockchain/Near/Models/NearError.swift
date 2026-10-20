@@ -12,8 +12,9 @@ import Foundation
 enum NearError: LocalizedError, Equatable {
 
     /// The node returned a JSON-RPC error. `name` is the RPC error name
-    /// (`cause.name` when the handler nests it), which is the only part that
-    /// distinguishes a timeout from a rejection from a missing record.
+    /// (`cause.name` when the handler nests it), which distinguishes a timeout
+    /// from a rejection from a missing record; a body without one is read as a
+    /// missing record only on nearcore's whole not-found message.
     case rpc(method: String, name: String, message: String)
 
     /// The node affirmatively answered that the entity does not exist.

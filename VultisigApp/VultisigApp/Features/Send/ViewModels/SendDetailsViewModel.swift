@@ -611,6 +611,78 @@ final class SendDetailsViewModel {
         isNamespaceResolved = true
     }
 
+    /// Reacts to an edit of the recipient field: a valid address is marked set,
+    /// anything else is resolved after a pause.
+    func handleToAddressChange() {
+        cancelAddressResolution()
+
+        guard !toAddress.isEmpty else {
+            onToAddressCleared()
+            // Clear any stale amount warning now the destination is gone
+            // (this branch returns before the trigger below).
+            debouncedValidateAmount()
+            return
+        }
+
+        if isValidAddressFormat() {
+            acceptRecipient()
+        } else {
+            // A valid prefix may have set this; the edit is unresolved until the debounce answers.
+            addressSetupDone = false
+            debouncedResolveAddress()
+        }
+        // Destination changed → re-run the inline amount validation
+        // (no-op / clears when no validator applies or the address
+        // isn't ready).
+        debouncedValidateAmount()
+    }
+
+    /// Drops a lookup still pending for the previous input first: the `toAddress`
+    /// onChange that would cancel it runs later, after the lookup may have landed.
+    func setPickedAddress(_ address: String) {
+        cancelAddressResolution()
+        toAddress = address
+    }
+
+    /// A pasted, scanned or address-book recipient for the current chain arrives
+    /// whole, so a valid one moves on to Amount whatever its length.
+    func applyPickedRecipient() {
+        guard isValidAddressFormat() else {
+            markInvalidRecipientIfUnresolvable()
+            return
+        }
+        addressSetupDone = true
+        onSelect(tab: .amount)
+    }
+
+    /// Applies the verdict of a background address resolution.
+    func handleAddressResolution(_ resolved: Bool) {
+        if resolved {
+            acceptRecipient()
+        } else {
+            addressSetupDone = false
+            // Definitive resolution failure on a non-empty recipient:
+            // keep Next disabled *with a visible reason* instead of
+            // silently. `markInvalidRecipient` no-ops on an empty field.
+            markInvalidRecipient()
+            if selectedTab == .amount {
+                onSelect(tab: .address)
+            }
+        }
+        debouncedValidateAmount()
+    }
+
+    /// Marks the recipient as set, and moves on to Amount only when the address
+    /// cannot still grow into a different valid one, so a typed address is never
+    /// committed mid-word.
+    private func acceptRecipient() {
+        addressSetupDone = true
+        if let completeLength = coin.chain.typedAddressCompleteLength, toAddress.count < completeLength {
+            return
+        }
+        onSelect(tab: .amount)
+    }
+
     func isValidAddressFormat() -> Bool {
         guard !toAddress.isEmpty else { return false }
         normalizeRippleXAddressIfNeeded()

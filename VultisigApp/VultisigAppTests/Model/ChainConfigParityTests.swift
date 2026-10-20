@@ -34,6 +34,7 @@ final class ChainConfigParityTests: XCTestCase {
         let banxaBlockchainCode: String
         let minimumSendAmount: BigInt?
         var displayName: String?
+        var typedAddressCompleteLength: Int?
     }
 
     // Hard-coded ledger — one row per `Chain`, transcribed from the
@@ -43,7 +44,7 @@ final class ChainConfigParityTests: XCTestCase {
         .thorChain: ExpectedConfig(name: "THORChain", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN", minimumSendAmount: nil),
         .thorChainChainnet: ExpectedConfig(name: "THORChain-Chainnet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-CHAINNET", minimumSendAmount: nil),
         .thorChainStagenet: ExpectedConfig(name: "THORChain-Stagenet", ticker: "RUNE", feeUnit: "RUNE", swapAsset: "THOR", logo: "rune", chainID: nil, coinType: .thorchain, chainType: .THORChain, banxaBlockchainCode: "THORCHAIN-STAGENET", minimumSendAmount: nil),
-        .solana: ExpectedConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil),
+        .solana: ExpectedConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil, typedAddressCompleteLength: 44),
         .ethereum: ExpectedConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil),
         .avalanche: ExpectedConfig(name: "Avalanche", ticker: "AVAX", feeUnit: "Gwei", swapAsset: "AVAX", logo: "avax", chainID: 43114, coinType: .avalancheCChain, chainType: .EVM, banxaBlockchainCode: "AVAX-C", minimumSendAmount: nil),
         .base: ExpectedConfig(name: "Base", ticker: "BASE", feeUnit: "Gwei", swapAsset: "BASE", logo: "base", chainID: 8453, coinType: .base, chainType: .EVM, banxaBlockchainCode: "BASE", minimumSendAmount: nil),
@@ -83,7 +84,7 @@ final class ChainConfigParityTests: XCTestCase {
         .robinhood: ExpectedConfig(name: "Robinhood", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ROBINHOOD", logo: "robinhood", chainID: 4663, coinType: .robinhoodChain, chainType: .EVM, banxaBlockchainCode: "ROBINHOOD", minimumSendAmount: nil),
         .qbtc: ExpectedConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil),
         .bittensor: ExpectedConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil),
-        .near: ExpectedConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil)
+        .near: ExpectedConfig(name: "Near", ticker: "NEAR", feeUnit: "NEAR", swapAsset: "NEAR", logo: "near", chainID: nil, coinType: .near, chainType: .Near, banxaBlockchainCode: "NEAR", minimumSendAmount: nil, typedAddressCompleteLength: 64)
     ]
 
     // MARK: - Coverage guard
@@ -162,6 +163,12 @@ final class ChainConfigParityTests: XCTestCase {
     func testBanxaBlockchainCodeParity() {
         for (chain, expected) in Self.expected {
             XCTAssertEqual(chain.banxaBlockchainCode, expected.banxaBlockchainCode, "banxaBlockchainCode mismatch for \(chain)")
+        }
+    }
+
+    func testTypedAddressCompleteLengthParity() {
+        for (chain, expected) in Self.expected {
+            XCTAssertEqual(chain.typedAddressCompleteLength, expected.typedAddressCompleteLength, "typedAddressCompleteLength mismatch for \(chain)")
         }
     }
 
