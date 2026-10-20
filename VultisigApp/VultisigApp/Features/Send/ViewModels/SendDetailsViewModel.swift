@@ -637,6 +637,13 @@ final class SendDetailsViewModel {
         debouncedValidateAmount()
     }
 
+    /// Drops a lookup still pending for the previous input first: the `toAddress`
+    /// onChange that would cancel it runs later, after the lookup may have landed.
+    func setPickedAddress(_ address: String) {
+        cancelAddressResolution()
+        toAddress = address
+    }
+
     /// A pasted, scanned or address-book recipient for the current chain arrives
     /// whole, so a valid one moves on to Amount whatever its length.
     func applyPickedRecipient() {

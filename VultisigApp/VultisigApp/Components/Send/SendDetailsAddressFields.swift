@@ -72,7 +72,7 @@ struct SendDetailsAddressFields: View {
 
     func handle(addressResult: AddressResult?) {
         guard let addressResult else { return }
-        viewModel.toAddress = addressResult.address
+        viewModel.setPickedAddress(addressResult.address)
 
         if let amount = addressResult.amount, amount.isNotEmpty {
             viewModel.amount = amount

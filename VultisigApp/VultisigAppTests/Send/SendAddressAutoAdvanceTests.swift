@@ -122,6 +122,25 @@ final class SendAddressAutoAdvanceTests: XCTestCase {
         XCTAssertEqual(vm.selectedTab, .address)
     }
 
+    func testALookupPendingForATypedNameCannotReplaceAPickedAddress() async {
+        let picked = "0x15E9eBd862E8d7cd571062D0fBd41D695A9575AF"
+        let lookupStarted = expectation(description: "lookup started")
+        let coin = SendFormFixture.makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let vm = SendFormFixture.make(coin: coin, addressResolver: { _, _ in
+            lookupStarted.fulfill()
+            try await Task.sleep(for: .milliseconds(300))
+            return "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+        })
+        vm.toAddress = "vitalik.eth"
+        vm.debouncedResolveAddress()
+        await fulfillment(of: [lookupStarted], timeout: 3)
+
+        vm.setPickedAddress(picked)
+        try? await Task.sleep(for: .milliseconds(600))
+
+        XCTAssertEqual(vm.toAddress, picked)
+    }
+
     func testAResolvedNearNamedAccountStaysOnTheAddressStep() {
         let vm = makeViewModel(.near, ticker: "NEAR", decimals: 24, address: "al")
 
