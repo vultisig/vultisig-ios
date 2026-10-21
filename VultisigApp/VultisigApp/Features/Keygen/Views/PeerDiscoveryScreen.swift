@@ -164,7 +164,7 @@ struct PeerDiscoveryScreen: View {
 
     /// macOS keeps the flat background like keysign's pair screen; the blue
     /// gradient glow reads as a dark band behind the "Pair" title, which macOS hides.
-    var screenBackground: ScreenBackgroundType {
+    private var screenBackground: ScreenBackgroundType {
 #if os(macOS)
         .plain
 #else
@@ -172,7 +172,7 @@ struct PeerDiscoveryScreen: View {
 #endif
     }
 
-    var screenTitle: String {
+    private var screenTitle: String {
 #if os(macOS)
         .empty
 #else
