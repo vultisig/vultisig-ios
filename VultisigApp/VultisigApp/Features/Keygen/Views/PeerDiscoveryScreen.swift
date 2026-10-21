@@ -162,6 +162,24 @@ struct PeerDiscoveryScreen: View {
         }
     }
 
+    /// macOS keeps the flat background like keysign's pair screen; the blue
+    /// gradient glow reads as a dark band behind the "Pair" title, which macOS hides.
+    private var screenBackground: ScreenBackgroundType {
+#if os(macOS)
+        .plain
+#else
+        .gradient
+#endif
+    }
+
+    private var screenTitle: String {
+#if os(macOS)
+        .empty
+#else
+        "pair".localized
+#endif
+    }
+
     var isInternetMode: Bool {
         viewModel.selectedNetwork == .Internet
     }
@@ -171,7 +189,7 @@ struct PeerDiscoveryScreen: View {
             Screen {
                 states
             }
-            .screenTitle("pair".localized)
+            .screenTitle(screenTitle)
             .screenNavigationBarHidden(!selectedTab.hasOtherDevices)
             .screenBackButtonHidden(hideBackButton || viewModel.isStartingKeygen)
             .screenToolbar {
@@ -186,7 +204,7 @@ struct PeerDiscoveryScreen: View {
                 }
             }
             .screenEdgeInsets(ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-            .screenBackground(.gradient)
+            .screenBackground(screenBackground)
             .onAppear {
                 screenWidth = proxy.size.width
                 screenHeight = proxy.size.height
