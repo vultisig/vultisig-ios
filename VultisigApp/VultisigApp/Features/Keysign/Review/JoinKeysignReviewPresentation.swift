@@ -99,6 +99,8 @@ enum JoinKeysignReviewPresentation {
             ? (feeCrypto: "loading".localized, feeFiat: String.empty)
             : viewModel.getCalculatedNetworkFee()
         let lpDetails = liquidityDetails(for: payload)
+        let isSignDirect = payload?.signDirect != nil
+        let signedTransfer = payload.flatMap(Self.signedTransfer)
         let isPlainRipplePayment = payload?.coin.chain == .ripple && payload?.swapPayload == nil
         let placement = LimitOrderPlacementPresentation.display(for: payload)
         var additionalRows: [SendCryptoVerifySummaryRow] = []
@@ -117,7 +119,7 @@ enum JoinKeysignReviewPresentation {
         return SendCryptoVerifySummary(
             fromName: viewModel.vault.name,
             fromAddress: payload?.coin.address ?? .empty,
-            toAddress: payload?.toAddress ?? .empty,
+            toAddress: signedTransfer.map(\.recipient) ?? (isSignDirect ? .empty : payload?.toAddress ?? .empty),
             network: payload?.coin.chain.displayName ?? .empty,
             networkImage: payload?.coin.chain.logo ?? .empty,
             memo: isPlainRipplePayment
@@ -131,8 +133,10 @@ enum JoinKeysignReviewPresentation {
             feeFiat: fees.feeFiat,
             isCalculatingFee: viewModel.solanaAtaRentState == .loading,
             coinImage: payload?.coin.logo ?? .empty,
-            amount: liquidityAmount(for: payload, details: lpDetails),
-            amountFiat: lpDetails == nil ? viewModel.getAmountFiat() : .empty,
+            amount: isSignDirect
+                ? (signedTransfer?.amount.formatForDisplay() ?? .empty)
+                : liquidityAmount(for: payload, details: lpDetails),
+            amountFiat: lpDetails == nil && !isSignDirect ? viewModel.getAmountFiat() : .empty,
             coinTicker: payload?.coin.ticker ?? .empty,
             keysignPayload: payload,
             hero: TransactionHeroResolver.hero(
@@ -234,7 +238,9 @@ enum JoinKeysignReviewPresentation {
             rows.append(.init(label: "governanceVoteAction".localized, value: voteTitle(ballot.option)))
         } else if case .validator(let address) = decoded.counterparty {
             rows.append(.init(label: "validator".localized, value: address))
-        } else if !isStakingReview, payload.toAddress.isNotEmpty {
+        } else if let transfer = signedTransfer(of: payload) {
+            rows.append(.init(label: "to".localized, value: transfer.recipient))
+        } else if !isStakingReview, payload.signDirect == nil, payload.toAddress.isNotEmpty {
             rows.append(.init(label: "to".localized, value: payload.toAddress))
         }
         if let details {
@@ -256,7 +262,9 @@ enum JoinKeysignReviewPresentation {
         ) ?? ballot.map { .title(text: "governanceVoteAction".localized, caption: voteTitle($0.option)) } ?? .send(
             title: nil,
             coin: HeroCoinAmount(
-                amount: liquidityAmount(for: payload, details: details),
+                amount: payload.signDirect == nil
+                    ? liquidityAmount(for: payload, details: details)
+                    : (signedTransfer(of: payload)?.amount.formatForDisplay() ?? .empty),
                 ticker: details == nil ? payload.coin.ticker : .empty,
                 logo: payload.coin.logo
             )
@@ -275,6 +283,21 @@ enum JoinKeysignReviewPresentation {
             fee: (fees.feeCrypto, fees.feeFiat),
             additionalRows: additionalRows
         )
+    }
+
+    /// Recipient and amount of a `signDirect` single `MsgSend`, read from the
+    /// signed body rather than the initiator's display copy. Nil for any other
+    /// body, or when the denom is not the payload coin's own.
+    private static func signedTransfer(of payload: KeysignPayload) -> (recipient: String, amount: Decimal)? {
+        guard let direct = payload.signDirect,
+              let reading = CosmosSignDocReader.read(bodyBytes: direct.bodyBytes),
+              reading.operation == .transfer,
+              case .contract(let recipient)? = reading.counterparty,
+              case .units(let raw, .denom(let denom)) = reading.amount,
+              denom == (payload.coin.isNativeToken ? payload.coin.chain.feeUnit : payload.coin.contractAddress),
+              let value = Decimal(string: raw.description)
+        else { return nil }
+        return (recipient, value / pow(10, payload.coin.decimals))
     }
 
     private static func voteTitle(_ option: Int) -> String {
