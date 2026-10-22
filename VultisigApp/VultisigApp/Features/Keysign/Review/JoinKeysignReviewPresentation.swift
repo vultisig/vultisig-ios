@@ -288,7 +288,7 @@ enum JoinKeysignReviewPresentation {
     /// Recipient and amount of a `signDirect` single `MsgSend`, read from the
     /// signed body rather than the initiator's display copy. Nil for any other
     /// body, or when the denom is not the payload coin's own.
-    private static func signedTransfer(of payload: KeysignPayload) -> (recipient: String, amount: Decimal)? {
+    static func signedTransfer(of payload: KeysignPayload) -> (recipient: String, amount: Decimal)? {
         guard let direct = payload.signDirect,
               let reading = CosmosSignDocReader.read(bodyBytes: direct.bodyBytes),
               reading.operation == .transfer,
