@@ -41,6 +41,15 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     /// and amount. Signing refuses it if either has changed since.
     var approvalDecision: ERC20ApprovalDecision?
 
+    /// Whose pool this deposit joins. It rides into the signing boundary
+    /// because an ERC-20 deposit's router call names the protocol's inbound
+    /// VAULT, and a MayaChain deposit naming THORChain's would be stranded.
+    var protocolChain: Chain = .thorChain
+
+    /// Value of the `protocol` memo-dictionary entry that marks a MayaChain
+    /// deposit. THORChain deposits carry no entry at all.
+    static let mayaProtocolMarker = "MayaChain"
+
     var memo: String {
         let address = pairedAddress?.nilIfEmpty
         let lpData = AddLPMemoData(pool: poolName, pairedAddress: address)
@@ -56,6 +65,9 @@ struct AddLPTransactionBuilder: TransactionBuilder {
             dict.set("pairedAddress", pairedAddress)
         }
         dict.set("memo", memo)
+        if protocolChain == .mayaChain {
+            dict.set("protocol", Self.mayaProtocolMarker)
+        }
         return dict
     }
 

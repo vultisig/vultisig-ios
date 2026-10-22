@@ -339,4 +339,390 @@ final class AddLPTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(fetched.first?.toAddress, AddLPFixture.ethRouter)
         XCTAssertEqual(fetched.first?.memo, "+:\(AddLPFixture.usdcPool):\(AddLPFixture.thorAddress)")
     }
+
+    // MARK: - MayaChain
+
+    /// Only a MayaChain deposit carries the protocol marker, so the THORChain
+    /// dictionary stays exactly what it was.
+    func testOnlyAMayaDepositMarksItsProtocol() {
+        var maya = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaBtcVault
+        )
+        maya.protocolChain = .mayaChain
+        let thor = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.thorAddress,
+            toAddress: AddLPFixture.btcVault
+        )
+
+        XCTAssertEqual(maya.memoFunctionDictionary.get("protocol"), AddLPTransactionBuilder.mayaProtocolMarker)
+        XCTAssertNil(thor.memoFunctionDictionary.get("protocol"))
+    }
+
+    /// ⚠️ The router call carries the inbound VAULT as an argument. A MayaChain
+    /// ERC-20 deposit must name Maya's vault there — THORChain's would strand
+    /// the tokens — and must be signed as a Maya payload.
+    func testAMayaErc20DepositIsBuiltAgainstTheMayaInboundVault() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaEthRouter
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        let (swapPayload, _) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: decision,
+            thorchainService: ThorchainService(httpClient: LPInboundStubClient(
+                path: "/thorchain/inbound_addresses",
+                address: AddLPFixture.ethVault,
+                router: AddLPFixture.ethRouter
+            )),
+            mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                path: "/mayachain/inbound_addresses",
+                address: AddLPFixture.mayaEthVault,
+                router: AddLPFixture.mayaEthRouter,
+                pool: AddLPFixture.usdcPool
+            ))
+        )
+
+        guard case .mayachain(let payload) = try XCTUnwrap(swapPayload) else {
+            return XCTFail("a MayaChain deposit must be signed as a Maya payload")
+        }
+        XCTAssertEqual(payload.vaultAddress, AddLPFixture.mayaEthVault)
+        XCTAssertEqual(payload.routerAddress, AddLPFixture.mayaEthRouter)
+    }
+
+    /// The router the deposit was built against must still be Maya's router
+    /// when it is signed; a rotated one is refused rather than paired with the
+    /// current vault.
+    func testAMayaErc20DepositIsRefusedWhenTheRouterRotated() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: "0xretiredrouter"
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter,
+                    pool: AddLPFixture.usdcPool
+                ))
+            )
+            XCTFail("a rotated router must not be signed")
+        } catch is HelperError {
+        }
+    }
+
+    /// The pool the memo names must still take adds when the router deposit is
+    /// built: a clear inbound halt flag says nothing about a pool that has left
+    /// the list or been suspended since the form opened.
+    func testAMayaErc20DepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        for (pool, status) in [(AddLPFixture.ethPool, "Available"), (AddLPFixture.usdcPool, "Suspended")] {
+            var deposit = builder(
+                coin: AddLPFixture.usdc(),
+                amount: "10",
+                pool: AddLPFixture.usdcPool,
+                pairedAddress: AddLPFixture.mayaAddress,
+                toAddress: AddLPFixture.mayaEthRouter
+            )
+            deposit.protocolChain = .mayaChain
+            let tx = deposit.buildSendTransaction(vault: .example)
+            let decision = ERC20ApprovalDecision(
+                query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+                requirement: .notRequired
+            )
+
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: decision,
+                    mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                        path: "/mayachain/inbound_addresses",
+                        address: AddLPFixture.mayaEthVault,
+                        router: AddLPFixture.mayaEthRouter,
+                        pool: pool,
+                        poolStatus: status
+                    ))
+                )
+                XCTFail("\(pool) \(status): an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
+        }
+    }
+
+    /// A MayaChain deposit whose chain has no inbound entry must say MayaChain
+    /// does not support it, not borrow THORChain's wording.
+    func testAMayaErc20DepositWithNoInboundNamesMayaChain() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.usdc(),
+            amount: "10",
+            pool: AddLPFixture.usdcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: AddLPFixture.mayaEthRouter
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+        let decision = ERC20ApprovalDecision(
+            query: try XCTUnwrap(ThorchainRouterDepositBuilder.approvalQuery(for: tx)),
+            requirement: .notRequired
+        )
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: decision,
+                mayachainService: MayachainService(httpClient: LPInboundStubClient(
+                    path: "/mayachain/inbound_addresses",
+                    address: AddLPFixture.mayaEthVault,
+                    router: AddLPFixture.mayaEthRouter,
+                    chain: "BTC"
+                ))
+            )
+            XCTFail("a chain without a Maya inbound must not be deposited")
+        } catch let error as HelperError {
+            let expected = String(format: "mayaInboundAddressNotFound".localized, "ETH")
+            XCTAssertEqual(error.localizedDescription, expected)
+        }
+    }
+
+    private func mayaNativeDeposit(toAddress: String) -> SendTransaction {
+        var deposit = builder(
+            coin: AddLPFixture.bitcoin(),
+            amount: "0.5",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.mayaAddress,
+            toAddress: toAddress
+        )
+        deposit.protocolChain = .mayaChain
+        return deposit.buildSendTransaction(vault: .example)
+    }
+
+    private func mayaBtcService(
+        halted: Bool = false,
+        pool: String = AddLPFixture.btcPool,
+        poolStatus: String = "Available"
+    ) -> MayachainService {
+        MayachainService(httpClient: LPInboundStubClient(
+            path: "/mayachain/inbound_addresses",
+            address: AddLPFixture.mayaBtcVault,
+            router: "",
+            chain: "BTC",
+            pool: pool,
+            poolStatus: poolStatus,
+            halted: halted
+        ))
+    }
+
+    /// A native Maya deposit is a plain transfer to the inbound vault and has
+    /// no router shim, but the vault, halt flag and pool are still re-read
+    /// when it is signed.
+    func testAMayaNativeDepositStillSignsWhenTheInboundIsCurrent() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: nil,
+            mayachainService: mayaBtcService()
+        )
+
+        XCTAssertNil(swapPayload)
+        XCTAssertNil(approvePayload)
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenTheVaultRotated() async throws {
+        let tx = mayaNativeDeposit(toAddress: "bc1qretiredvault")
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService()
+            )
+            XCTFail("a retired vault must not be sent funds")
+        } catch is HelperError {
+        }
+    }
+
+    /// Base58 addresses are case-sensitive, so a vault that differs only by
+    /// case is a different destination.
+    func testAMayaNativeDepositVaultMatchIsCaseSensitive() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault.uppercased())
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService()
+            )
+            XCTFail("a case-variant vault must not be treated as the inbound")
+        } catch is HelperError {
+        }
+    }
+
+    /// CACAO has no inbound vault to compare, but its pool must still take adds
+    /// when the payload is built.
+    func testACacaoDepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        var deposit = builder(
+            coin: AddLPFixture.cacao(),
+            amount: "10",
+            pool: AddLPFixture.btcPool,
+            pairedAddress: AddLPFixture.btcAddress,
+            toAddress: .empty
+        )
+        deposit.protocolChain = .mayaChain
+        let tx = deposit.buildSendTransaction(vault: .example)
+
+        for (pool, status) in [(AddLPFixture.ethPool, "Available"), (AddLPFixture.btcPool, "Suspended")] {
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: nil,
+                    mayachainService: mayaBtcService(pool: pool, poolStatus: status)
+                )
+                XCTFail("\(pool) \(status): an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
+        }
+
+        let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+            tx: tx,
+            approvalDecision: nil,
+            mayachainService: mayaBtcService()
+        )
+        XCTAssertNil(swapPayload)
+        XCTAssertNil(approvePayload)
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenTheInboundHalted() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        do {
+            _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                tx: tx,
+                approvalDecision: nil,
+                mayachainService: mayaBtcService(halted: true)
+            )
+            XCTFail("a halted inbound must not be sent funds")
+        } catch let error as HelperError {
+            XCTAssertEqual(error.localizedDescription, String(format: "inboundPaused".localized, "BTC"))
+        }
+    }
+
+    func testAMayaNativeDepositIsRefusedWhenItsPoolIsNoLongerOffered() async throws {
+        let tx = mayaNativeDeposit(toAddress: AddLPFixture.mayaBtcVault)
+
+        for service in [
+            mayaBtcService(pool: AddLPFixture.ethPool),
+            mayaBtcService(poolStatus: "Suspended")
+        ] {
+            do {
+                _ = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(
+                    tx: tx,
+                    approvalDecision: nil,
+                    mayachainService: service
+                )
+                XCTFail("an ineligible pool must not be deposited into")
+            } catch let error as HelperError {
+                XCTAssertEqual(error.localizedDescription, "addLpDestinationUnavailable".localized)
+            }
+        }
+    }
+
+    /// Maya's pool list names its CACAO side `balance_cacao`; it must still
+    /// decode into the shared pool model, status included.
+    func testMayaPoolsDecodeIntoThePoolModel() throws {
+        let json = """
+        [{"balance_cacao":"829279815415031","balance_asset":"3632195306916","asset":"BTC.BTC",
+          "LP_units":"1","pool_units":"1","status":"Available","decimals":8,
+          "synth_units":"0","synth_supply":"0","pending_inbound_cacao":"5","pending_inbound_asset":"0"},
+         {"asset":"ARB.ETH","status":"Staged","balance_cacao":"1","balance_asset":"2",
+          "LP_units":"1","pool_units":"1","synth_units":"0","synth_supply":"0",
+          "pending_inbound_cacao":"0","pending_inbound_asset":"0"}]
+        """
+        let pools = try JSONDecoder().decode([MayaChainPool].self, from: Data(json.utf8)).map(\.pool)
+
+        XCTAssertEqual(pools.map(\.asset), ["BTC.BTC", "ARB.ETH"])
+        XCTAssertEqual(pools.first?.balanceRune, "829279815415031")
+        XCTAssertEqual(pools.first?.pendingInboundRune, "5")
+        XCTAssertTrue(pools[0].supportsPairedLPAdd)
+        XCTAssertTrue(pools[1].isStaged)
+    }
+}
+
+/// Serves one inbound-address row on `path`, optionally Maya's pool list, and
+/// 501s anything else.
+private actor LPInboundStubClient: HTTPClientProtocol {
+    private let path: String
+    private let body: Data
+    private let pools: Data?
+
+    /// `pool`/`poolStatus` serve a one-pool `/mayachain/pools` answer.
+    init(
+        path: String,
+        address: String,
+        router: String,
+        chain: String = "ETH",
+        pool: String? = nil,
+        poolStatus: String = "Available",
+        halted: Bool = false
+    ) {
+        self.path = path
+        self.body = Data("""
+        [{"chain":"\(chain)","address":"\(address)","router":"\(router)","halted":\(halted),
+          "gas_rate":"1","gas_rate_units":"gwei"}]
+        """.utf8)
+        self.pools = pool.map { pool in
+            Data("""
+            [{"asset":"\(pool)","status":"\(poolStatus)","balance_cacao":"1","balance_asset":"1","pool_units":"1",
+              "LP_units":"1","synth_units":"0","synth_supply":"0",
+              "pending_inbound_cacao":"0","pending_inbound_asset":"0"}]
+            """.utf8)
+        }
+    }
+
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        await Task.yield()
+        let payload: Data
+        if target.path == path {
+            payload = body
+        } else if target.path == "/mayachain/pools", let pools {
+            payload = pools
+        } else {
+            throw HTTPError.statusCode(501, nil)
+        }
+        let url = target.baseURL.appendingPathComponent(target.path)
+        guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil) else {
+            throw HTTPError.invalidResponse
+        }
+        return HTTPResponse(data: payload, response: response)
+    }
 }

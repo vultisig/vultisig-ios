@@ -209,6 +209,20 @@ class MayachainService: ThorchainSwapProvider {
     }
 }
 
+extension MayachainService {
+
+    /// The pools a paired LP add can join: available or staged, never
+    /// suspended. Read live on each open of the form — the list is a handful of
+    /// rows and feeds a one-shot picker.
+    func fetchLPPools() async throws -> [ThorchainPool] {
+        let response = try await httpClient.request(
+            api(.pools),
+            responseType: [MayaChainPool].self
+        )
+        return response.data.map(\.pool).filter(\.supportsPairedLPAdd)
+    }
+}
+
 private extension MayachainService {
     /// MayaChain only supports a single affiliate (no nested referral like THORChain).
     /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)

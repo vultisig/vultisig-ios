@@ -10,7 +10,7 @@ import OSLog
 
 private let logger = Log.defi.interactor
 
-struct MayaChainLPsInteractor: LPsInteractor {
+struct MayaChainLPsInteractor: LPsInteractor, PendingLPDepositsProviding {
     private let mayaAPIService = MayaChainAPIService()
 
     var aprPeriod: String {
@@ -33,6 +33,13 @@ struct MayaChainLPsInteractor: LPsInteractor {
             logger.error("Failed to fetch Maya LP positions: \(error.localizedDescription, privacy: .private)")
             return []
         }
+    }
+}
+
+extension MayaChainLPsInteractor {
+    func fetchPendingLPDeposits(vault: Vault) async throws -> MayaPendingLPScan {
+        guard let cacao = await cacaoSnapshot(in: vault) else { return MayaPendingLPScan(deposits: [], isComplete: true) }
+        return try await mayaAPIService.getPendingLPDeposits(cacaoAddress: cacao.address)
     }
 }
 
