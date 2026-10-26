@@ -362,14 +362,8 @@ extension SendDetailsScreen {
     private func setMainData() async {
         guard !viewModel.isLoading else { return }
 
-        if let coin = coin {
-            let savedToAddress = viewModel.toAddress.isEmpty ? nil : viewModel.toAddress
-            viewModel.reset(to: coin)
-            if let saved = savedToAddress {
-                viewModel.toAddress = saved
-            } else if viewModel.toAddress.isEmpty {
-                viewModel.toAddress = deeplinkViewModel.address ?? ""
-            }
+        if coin != nil {
+            viewModel.applyDeeplinkAddress(deeplinkViewModel.address)
             deeplinkViewModel.address = nil
             self.coin = nil
         } else {

@@ -280,6 +280,28 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.pendingTransactionCountdown, 0)
     }
 
+    // MARK: - Deeplink entry
+
+    func testDeeplinkEntryKeepsSeededAmountAndMemo() {
+        let rune = SendFormFixture.makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        let vault = SendFormFixture.makeVault()
+        let vm = SendFormFixture.make(coin: rune, vault: vault)
+        vm.hydrate(from: .fromAction(
+            coin: rune,
+            vault: vault,
+            hasPreselectedCoin: true,
+            prefilledToAddress: "thor1uet6cagmzqrmff5a3p74mtu3j4gunl30qz79tu",
+            prefilledAmount: "0.01",
+            prefilledMemo: "TCY+"
+        ))
+
+        vm.applyDeeplinkAddress(nil)
+
+        XCTAssertEqual(vm.toAddress, "thor1uet6cagmzqrmff5a3p74mtu3j4gunl30qz79tu")
+        XCTAssertEqual(vm.amount, "0.01")
+        XCTAssertEqual(vm.memo, "TCY+")
+    }
+
     // MARK: - Reset
 
     func testResetClearsEveryFormFieldButPreservesVaultAndNewCoin() {

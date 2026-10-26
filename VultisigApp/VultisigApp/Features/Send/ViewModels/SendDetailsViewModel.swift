@@ -1481,6 +1481,13 @@ final class SendDetailsViewModel {
         showAlert = false
     }
 
+    /// Fills the recipient from a deeplink when the seed left it empty; every
+    /// other seeded field, a deeplink's amount and memo included, is kept.
+    func applyDeeplinkAddress(_ address: String?) {
+        guard toAddress.isEmpty, let address else { return }
+        toAddress = address
+    }
+
     /// Reset the form for a fresh send (e.g., after Done → back to Details).
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
