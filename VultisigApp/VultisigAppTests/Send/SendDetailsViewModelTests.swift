@@ -295,7 +295,7 @@ final class SendDetailsViewModelTests: XCTestCase {
             prefilledMemo: "TCY+"
         ))
 
-        vm.applyDeeplinkAddress(nil)
+        vm.applyDeeplinkAddress("thor1someoneelse")
 
         XCTAssertEqual(vm.toAddress, "thor1uet6cagmzqrmff5a3p74mtu3j4gunl30qz79tu")
         XCTAssertEqual(vm.amount, "0.01")

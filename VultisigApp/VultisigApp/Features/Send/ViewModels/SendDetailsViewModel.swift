@@ -741,7 +741,7 @@ final class SendDetailsViewModel {
 
     /// Called by every path that writes the amount fields itself — a
     /// percentage/Max preset, a QR/deeplink fill, a coin switch, the background
-    /// max-fee refine's commit, a reset, a re-hydrate. The pending keystroke
+    /// max-fee refine's commit, a re-hydrate. The pending keystroke
     /// commit is dropped, so it cannot land afterwards and undo the write.
     ///
     /// This is the half a shared debouncer could not provide: none of those paths
@@ -1177,7 +1177,7 @@ final class SendDetailsViewModel {
         }
 
         // Publish only if the form hasn't moved on (a newer amount/address, a
-        // chain switch, or a reset/cancel while the lookup was in flight) so a
+        // chain switch, or a cancel while the lookup was in flight) so a
         // late result can't write a stale message.
         if !Task.isCancelled, currentAmountValidationInput == input {
             amountValidation = state
@@ -1469,7 +1469,16 @@ final class SendDetailsViewModel {
         )
     }
 
-    // MARK: - Reset
+    // MARK: - Deeplink entry
+
+    /// Fills the recipient from a deeplink when the seed left it empty; every
+    /// other seeded field, a deeplink's amount and memo included, is kept.
+    func applyDeeplinkAddress(_ address: String?) {
+        guard toAddress.isEmpty, let address else { return }
+        toAddress = address
+    }
+
+    // MARK: - Validation state
 
     /// Clear validation state ahead of an async check (matches legacy parity).
     private func resetStates() {
@@ -1479,12 +1488,5 @@ final class SendDetailsViewModel {
         showAddressAlert = false
         showAmountAlert = false
         showAlert = false
-    }
-
-    /// Fills the recipient from a deeplink when the seed left it empty; every
-    /// other seeded field, a deeplink's amount and memo included, is kept.
-    func applyDeeplinkAddress(_ address: String?) {
-        guard toAddress.isEmpty, let address else { return }
-        toAddress = address
     }
 }
