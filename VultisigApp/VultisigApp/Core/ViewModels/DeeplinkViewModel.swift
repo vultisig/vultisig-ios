@@ -249,6 +249,8 @@ struct DeeplinkLogic {
 
     /// Chains whose Function screen offers a Custom memo deposit.
     private static let customDepositChains: [Chain] = [.thorChain, .mayaChain]
+    /// A ticker as a link may name one; it is echoed in errors.
+    private static let tickerPattern = "^[A-Za-z0-9.-]{1,15}$"
 
     private func processDepositDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         func value(_ name: String) -> String? {
@@ -263,8 +265,7 @@ struct DeeplinkLogic {
         }
 
         let ticker = value("assetTicker") ?? chain.ticker
-        // The ticker is echoed in errors, so it may only look like a ticker.
-        guard ticker.range(of: "^[A-Za-z0-9.-]{1,15}$", options: .regularExpression) != nil else {
+        guard ticker.range(of: Self.tickerPattern, options: .regularExpression) != nil else {
             throw DeeplinkError.unsupportedLink
         }
 
@@ -272,8 +273,7 @@ struct DeeplinkLogic {
         result.type = .Deposit
         result.assetChain = chain.rawValue
         result.assetTicker = ticker
-        // Attacker-supplied: anything that would not stage the number the link names
-        // leaves the field empty.
+        // Attacker-supplied: an amount that would not stage as written stays empty.
         result.sendAmount = value("amount").flatMap { $0.externalAmount(locale: locale) }
         result.sendMemo = value("memo")
         result.pendingDepositDeeplink = true

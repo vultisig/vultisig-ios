@@ -403,8 +403,7 @@ struct HomeScreen: View {
                 }
             }
             .crossPlatformSheet(isPresented: $showVaultSelector, onDismiss: {
-                // Dismissed without picking a vault: the link's memo and amount must not
-                // resurface on the next vault switch.
+                // Dismissed without a pick: the link's memo must not resurface on the next switch.
                 if deeplinkViewModel.pendingDepositDeeplink {
                     deeplinkViewModel.resetData()
                 }
