@@ -446,7 +446,7 @@ final class FunctionActionIntentTests: XCTestCase {
         ]
 
         for coin in coins {
-            guard case .customMemo(let mappedCoin) = FunctionAction.custom.transactionType(
+            guard case .customMemo(let mappedCoin, _, _) = FunctionAction.custom.transactionType(
                 coin: coin,
                 nodeAddress: Self.thorNode
             ) else {

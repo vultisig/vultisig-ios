@@ -1778,6 +1778,8 @@
 "unstakeCoin" = "%@ 언스테이킹";
 "unsupportedEVMCustomMessageFormat" = "EVM 체인에서는 personal_sign(EIP-191) 및 eth_signTypedData_v4 메시지만 서명할 수 있습니다.";
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
+"unsupportedLink" = "지원되지 않는 링크";
+"unsupportedLinkMessage" = "지원되지 않는 링크입니다.";
 "unverifiedFunction" = "확인되지 않은 함수";
 "upcoming" = "예정";
 "updateNow" = "지금 업데이트";

@@ -11,6 +11,7 @@ enum DeeplinkFlowType {
     case NewVault
     case SignTransaction
     case Send
+    case Deposit
     case Unknown
 }
 
@@ -30,6 +31,7 @@ class DeeplinkViewModel: ObservableObject {
     @Published var sendAmount: String? = nil
     @Published var sendMemo: String? = nil
     @Published var pendingSendDeeplink: Bool = false
+    @Published var pendingDepositDeeplink: Bool = false
     @Published var isInternalDeeplink: Bool = false
 
     private let logic = DeeplinkLogic()
@@ -81,6 +83,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
+        pendingDepositDeeplink = false
     }
 
     private func apply(result: DeeplinkLogic.DeeplinkResult) {
@@ -94,6 +97,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = result.sendAmount
         sendMemo = result.sendMemo
         pendingSendDeeplink = result.pendingSendDeeplink
+        pendingDepositDeeplink = result.pendingDepositDeeplink
     }
 }
 
@@ -116,6 +120,7 @@ struct DeeplinkLogic {
         var sendAmount: String?
         var sendMemo: String?
         var pendingSendDeeplink: Bool = false
+        var pendingDepositDeeplink: Bool = false
         var shouldNotify: Bool = false
     }
 
@@ -127,12 +132,17 @@ struct DeeplinkLogic {
         let queryItems = urlComponents.queryItems
         let isSendPath = Self.isSendPath(urlComponents, urlString: url.absoluteString)
 
-        if isSendPath {
+        if urlComponents.host?.lowercased() == "deposit" {
+            return try processDepositDeeplink(queryItems: queryItems, vaults: vaults)
+        } else if isSendPath {
             return processSendDeeplink(queryItems: queryItems, vaults: vaults)
         } else if queryItems == nil {
             return buildAddressOnlyResult(url: url)
         } else {
             var result = try processKeygenOrKeysignDeeplink(queryItems: queryItems, vaults: vaults)
+            if result.type == .Unknown && urlComponents.scheme?.lowercased() == "vultisig" {
+                throw DeeplinkError.unsupportedLink
+            }
             if result.type != nil {
                 result.shouldNotify = true
             }
@@ -227,6 +237,35 @@ struct DeeplinkLogic {
         return result
     }
 
+    /// Chains whose Function screen offers a Custom memo deposit.
+    private static let customDepositChains: [Chain] = [.thorChain, .mayaChain]
+
+    private func processDepositDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
+        func value(_ name: String) -> String? {
+            queryItems?.first(where: { $0.name == name })?.value?.removingPercentEncoding
+        }
+
+        let chainName = value("assetChain")?.lowercased()
+        guard let chain = Self.customDepositChains.first(where: {
+            $0.rawValue.lowercased() == chainName || $0.name.lowercased() == chainName
+        }) else {
+            throw DeeplinkError.unsupportedLink
+        }
+
+        var result = DeeplinkResult()
+        result.type = .Deposit
+        result.assetChain = chain.rawValue
+        result.assetTicker = value("assetTicker") ?? chain.ticker
+        // Attacker-supplied: anything that would not stage the number the link names
+        // leaves the field empty.
+        result.sendAmount = value("amount").flatMap { $0.externalAmount(locale: locale) }
+        result.sendMemo = value("memo")
+        result.pendingDepositDeeplink = true
+        result.selectedVault = vaults.first { vault in vault.coins.contains { $0.chain == chain } }
+        result.shouldNotify = true
+        return result
+    }
+
     private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         var result = DeeplinkResult()
 
@@ -278,6 +317,7 @@ struct DeeplinkLogic {
 enum DeeplinkError: Error, ErrorWithCustomPresentation {
     case unrelatedQRCode
     case chainNotAdded(chainName: String)
+    case unsupportedLink
 
     var errorTitle: String {
         switch self {
@@ -285,6 +325,8 @@ enum DeeplinkError: Error, ErrorWithCustomPresentation {
             return NSLocalizedString("unrelatedQRCode", comment: "")
         case .chainNotAdded:
             return NSLocalizedString("chainNotAdded", comment: "")
+        case .unsupportedLink:
+            return NSLocalizedString("unsupportedLink", comment: "")
         }
     }
 
@@ -297,6 +339,8 @@ enum DeeplinkError: Error, ErrorWithCustomPresentation {
                 format: NSLocalizedString("chainNotAddedMessage", comment: ""),
                 chainName
             )
+        case .unsupportedLink:
+            return NSLocalizedString("unsupportedLinkMessage", comment: "")
         }
     }
 }

@@ -94,8 +94,9 @@ enum FunctionTransactionType: Hashable {
     /// operation the app has no form for. `coin` is the asset the deposit rides
     /// on, and the form lets the user swap it for another of the vault's coins
     /// on the same chain; every one of those is already held, so the intent
-    /// names only the coin the caller opened on.
-    case customMemo(coin: CoinMeta)
+    /// names only the coin the caller opened on. `memo` and `amount` prefill
+    /// the form when a `vultisig://deposit` link opened it.
+    case customMemo(coin: CoinMeta, memo: String? = nil, amount: String? = nil)
 
     var coins: [CoinMeta] {
         switch self {
@@ -156,7 +157,7 @@ enum FunctionTransactionType: Hashable {
             return [coin]
         case .ibcTransfer(let coin, _):
             return [coin]
-        case .customMemo(let coin):
+        case .customMemo(let coin, _, _):
             return [coin]
         }
     }

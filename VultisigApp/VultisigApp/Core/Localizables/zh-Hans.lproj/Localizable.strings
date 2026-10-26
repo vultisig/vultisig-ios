@@ -1778,6 +1778,8 @@
 "unstakeCoin" = "取消质押 %@";
 "unsupportedEVMCustomMessageFormat" = "在 EVM 链上只能签署 personal_sign (EIP-191) 和 eth_signTypedData_v4 消息。";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
+"unsupportedLink" = "不支持的链接";
+"unsupportedLinkMessage" = "不支持此链接。";
 "unverifiedFunction" = "未验证的函数";
 "upcoming" = "即将到来";
 "updateNow" = "立即更新";

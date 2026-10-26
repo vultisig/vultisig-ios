@@ -68,6 +68,7 @@ struct HomeScreen: View {
         case initialDeeplink
         case retrySendDeeplink
         case sendRoute
+        case depositRoute
         case addressOnlyRoute
         case scannerClose
     }
@@ -409,7 +410,9 @@ struct HomeScreen: View {
                     vaultRoute = .createVault
                 } onSelectVault: { vault in
                     showVaultSelector.toggle()
-                    if deeplinkViewModel.pendingSendDeeplink {
+                    if deeplinkViewModel.pendingDepositDeeplink {
+                        handleDepositDeeplinkAfterVaultSelection(vault: vault)
+                    } else if deeplinkViewModel.pendingSendDeeplink {
                         let isAddressOnly =
                             deeplinkViewModel.address != nil && deeplinkViewModel.assetChain == nil
                             && deeplinkViewModel.assetTicker == nil
@@ -607,6 +610,11 @@ extension HomeScreen {
             moveToVaultsView()
         case .Send:
             handleSendDeeplink()
+        case .Deposit:
+            chooseDeeplinkVault(
+                onVault: handleDepositDeeplinkAfterVaultSelection,
+                markPending: { deeplinkViewModel.pendingDepositDeeplink = true }
+            )
         case .Unknown:
             handleAddressOnlyDeeplink()
         }
@@ -620,10 +628,19 @@ extension HomeScreen {
             return
         }
 
+        chooseDeeplinkVault(
+            onVault: handleSendDeeplinkAfterVaultSelection,
+            markPending: { deeplinkViewModel.pendingSendDeeplink = true }
+        )
+    }
+
+    /// Picks the vault a deeplink acts on: the selected vault for an in-app
+    /// scan, the only vault, or the user's choice from the vault selector.
+    private func chooseDeeplinkVault(onVault: @escaping (Vault) -> Void, markPending: @escaping () -> Void) {
         guard !vaults.isEmpty else {
             scheduleDelayedTask(.retrySendDeeplink, after: .seconds(1)) {
                 if !vaults.isEmpty {
-                    handleSendDeeplink()
+                    chooseDeeplinkVault(onVault: onVault, markPending: markPending)
                 }
             }
             return
@@ -631,21 +648,43 @@ extension HomeScreen {
 
         if deeplinkViewModel.isInternalDeeplink, let selectedVault = appViewModel.selectedVault {
             closeScannerIfNeeded {
-                self.handleSendDeeplinkAfterVaultSelection(vault: selectedVault)
+                onVault(selectedVault)
             }
             return
         }
 
         if vaults.count == 1, let singleVault = vaults.first {
             closeScannerIfNeeded {
-                self.handleSendDeeplinkAfterVaultSelection(vault: singleVault)
+                onVault(singleVault)
             }
             return
         }
 
         closeScannerIfNeeded {
-            self.deeplinkViewModel.pendingSendDeeplink = true
+            markPending()
             self.showVaultSelector = true
+        }
+    }
+
+    private func handleDepositDeeplinkAfterVaultSelection(vault: Vault) {
+        deeplinkViewModel.pendingDepositDeeplink = false
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
+
+        guard let coin = deeplinkViewModel.findCoin(in: vault) else {
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: deeplinkViewModel.assetTicker ?? "")
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        let transactionType = FunctionTransactionType.customMemo(
+            coin: coin.toCoinMeta(),
+            memo: deeplinkViewModel.sendMemo,
+            amount: deeplinkViewModel.sendAmount
+        )
+        deeplinkViewModel.resetData()
+
+        scheduleDelayedTask(.depositRoute, after: .milliseconds(300)) {
+            router.navigate(to: FunctionTransactionRoute.functionTransaction(vault: vault, transactionType: transactionType))
         }
     }
 

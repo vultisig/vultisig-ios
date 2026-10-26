@@ -56,7 +56,7 @@ final class CustomMemoTransactionViewModel: ObservableObject, Form {
     /// force is part of the behaviour under test.
     private let locale: Locale
 
-    init(coin: Coin, vault: Vault, locale: Locale = .current) {
+    init(coin: Coin, vault: Vault, memo: String? = nil, amount: String? = nil, locale: Locale = .current) {
         self.chain = coin.chain
         self.vault = vault
         self.locale = locale
@@ -67,6 +67,8 @@ final class CustomMemoTransactionViewModel: ObservableObject, Form {
         // for something, and silently attaching it to RUNE is a different
         // transaction from the one the user is composing.
         self.selectedAsset = Self.assets(for: depositableCoins).first { $0.asset == coin.toCoinMeta() }
+        memoField.value = memo ?? ""
+        amountField.value = amount ?? ""
     }
 
     /// The picker's rows. A local list, so the sheet resolves instantly and

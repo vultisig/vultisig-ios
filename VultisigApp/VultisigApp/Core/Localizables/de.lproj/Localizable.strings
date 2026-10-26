@@ -1778,6 +1778,8 @@
 "unstakeCoin" = "%@ entstaken";
 "unsupportedEVMCustomMessageFormat" = "Auf EVM-Chains können nur personal_sign- (EIP-191) und eth_signTypedData_v4-Nachrichten signiert werden.";
 "unsupportedFileTypeError" = "Nicht unterstützter Dateityp, bitte versuche es erneut";
+"unsupportedLink" = "Link nicht unterstützt";
+"unsupportedLinkMessage" = "Dieser Link wird nicht unterstützt.";
 "unverifiedFunction" = "Unverifizierte Funktion";
 "upcoming" = "Bevorstehend";
 "updateNow" = "Jetzt updaten";
