@@ -214,16 +214,4 @@ final class RippleDestinationTagViewModel {
     func acknowledge(toAddress: String) {
         unverifiedAckAddress = toAddress
     }
-
-    // MARK: - Reset
-
-    /// Clear the tag state for a fresh send. Mirrors the fields the parent's
-    /// `reset(to:)` cleared for the tag — the requirement cache and nudge are
-    /// intentionally left intact (unchanged from the pre-extraction behavior).
-    func reset() {
-        destinationTag = ""
-        isDestinationTagLocked = false
-        showDestinationTagUnverifiedAlert = false
-        unverifiedAckAddress = nil
-    }
 }

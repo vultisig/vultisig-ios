@@ -624,14 +624,6 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertTrue(vm.validateRippleTagAndMemo())
     }
 
-    @MainActor
-    func testResetClearsDestinationTag() {
-        let vm = Self.makeRippleForm()
-        vm.rippleTag.destinationTag = "12345"
-        vm.reset(to: SendFormFixture.makeBTC())
-        XCTAssertEqual(vm.rippleTag.destinationTag, "")
-    }
-
     // MARK: - Fixtures
 
     private static let destination = "rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh"

@@ -120,18 +120,6 @@ final class SendDetailsViewModelReserveTests: XCTestCase {
         XCTAssertFalse(vm.continueButtonDisabled)
     }
 
-    // MARK: - Reset
-
-    func testResetClearsReserveWarning() {
-        let vm = makeXRPVM(service: fundedService())
-        vm.amountValidation = SendAmountValidationState(message: "stale warning", blocksContinue: true)
-
-        vm.reset(to: SendFormFixture.makeXRP())
-
-        XCTAssertEqual(vm.amountValidation, .valid)
-        XCTAssertFalse(vm.continueButtonDisabled)
-    }
-
     // MARK: - Fixtures
 
     /// A well-formed mainnet XRP classic address (the XRPL genesis account),

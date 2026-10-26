@@ -238,22 +238,4 @@ final class RippleDestinationTagViewModelTests: XCTestCase {
         _ = await vm.validateRequireDest(toAddress: destination, memo: "")
         XCTAssertEqual(spy.calls.count, 2, "a failed lookup retries next time")
     }
-
-    // MARK: - Reset
-
-    func testResetClearsTagStateButNotNudge() async {
-        let spy = ProviderSpy(result: .required)
-        let vm = makeVM(spy: spy)
-        // Trigger the RequireDest nudge on a tagless send first, then lock a
-        // tag so reset has both to clear.
-        _ = await vm.validateRequireDest(toAddress: destination, memo: "")
-        XCTAssertEqual(vm.destinationTagFieldNudge, 1)
-        vm.applyDecodedTag(5)
-
-        vm.reset()
-        XCTAssertEqual(vm.destinationTag, "")
-        XCTAssertFalse(vm.isDestinationTagLocked)
-        XCTAssertFalse(vm.showDestinationTagUnverifiedAlert)
-        XCTAssertEqual(vm.destinationTagFieldNudge, 1, "reset intentionally leaves the nudge intact")
-    }
 }

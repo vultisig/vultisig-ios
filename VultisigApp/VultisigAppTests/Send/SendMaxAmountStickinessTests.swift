@@ -379,18 +379,6 @@ final class SendMaxAmountStickinessTests: XCTestCase {
         XCTAssertTrue(wasCancelled)
     }
 
-    func testAResetCancelsThePendingCommit() async {
-        let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
-        let vm = SendFormFixture.make(coin: btc)
-
-        let superseded = typeAmount("0.3", into: vm)
-        vm.reset(to: SendFormFixture.makeBTC(rawBalance: "100000000"))
-
-        let wasCancelled = await settle(superseded)
-        XCTAssertTrue(wasCancelled)
-        XCTAssertEqual(vm.amount, "", "a commit from before the reset must not repopulate the form")
-    }
-
     func testAHydrateCancelsThePendingCommit() async {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
         let vm = SendFormFixture.make(coin: btc)

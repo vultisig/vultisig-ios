@@ -166,15 +166,4 @@ final class RippleXAddressAutofillTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "destinationTagInvalidError")
         XCTAssertEqual(vm.rippleTag.destinationTag, "0", "the embedded tag surfaced before rejection")
     }
-
-    func testResetClearsLock() {
-        let vm = makeRippleForm()
-        vm.toAddress = taggedXAddress
-        XCTAssertTrue(vm.isValidAddressFormat())
-        XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)
-
-        vm.reset(to: SendFormFixture.makeBTC())
-        XCTAssertFalse(vm.rippleTag.isDestinationTagLocked)
-        XCTAssertEqual(vm.rippleTag.destinationTag, "")
-    }
 }

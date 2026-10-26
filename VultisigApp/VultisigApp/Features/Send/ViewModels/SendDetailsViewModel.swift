@@ -1487,40 +1487,4 @@ final class SendDetailsViewModel {
         guard toAddress.isEmpty, let address else { return }
         toAddress = address
     }
-
-    /// Reset the form for a fresh send (e.g., after Done → back to Details).
-    /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
-    /// screen. Phase D lesson: clear *every* derived field, not just amount.
-    func reset(to newCoin: Coin) {
-        cancelPendingAmountCommit()
-        amountValidationTask?.cancel()
-        amountValidationTask = nil
-        amountValidation = .valid
-        coin = newCoin
-        fromAddress = newCoin.address
-        toAddress = ""
-        toAddressLabel = nil
-        lastResolvedAddress = nil
-        amount = ""
-        amountInFiat = ""
-        memo = ""
-        rippleTag.reset()
-        feeMode = .default
-        sendMaxAmount = false
-        isStakingOperation = false
-        transactionType = .unspecified
-        memoFunctionDictionary = [:]
-        wasmContractPayload = nil
-        gas = .zero
-        fee = .zero
-        estimatedGasLimit = nil
-        customGasLimit = nil
-        customByteFee = nil
-        isCalculatingFee = false
-        errorTitle = ""
-        errorMessage = nil
-        showAlert = false
-        showAddressAlert = false
-        showAmountAlert = false
-    }
 }

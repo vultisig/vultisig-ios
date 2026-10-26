@@ -302,33 +302,6 @@ final class SendDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.memo, "TCY+")
     }
 
-    // MARK: - Reset
-
-    func testResetClearsEveryFormFieldButPreservesVaultAndNewCoin() {
-        let originalCoin = SendFormFixture.makeETH()
-        let newCoin = SendFormFixture.makeBTC()
-        let vm = SendFormFixture.make(coin: originalCoin)
-        vm.amount = "1.0"
-        vm.toAddress = "0xabc"
-        vm.memo = "test"
-        vm.gas = BigInt(50)
-        vm.fee = BigInt(5000)
-        vm.customGasLimit = BigInt(50_000)
-        vm.memoFunctionDictionary = ["pool": "BTC.BTC"]
-
-        vm.reset(to: newCoin)
-
-        XCTAssertEqual(vm.coin, newCoin)
-        XCTAssertEqual(vm.fromAddress, newCoin.address)
-        XCTAssertEqual(vm.amount, "")
-        XCTAssertEqual(vm.toAddress, "")
-        XCTAssertEqual(vm.memo, "")
-        XCTAssertEqual(vm.gas, .zero)
-        XCTAssertEqual(vm.fee, .zero)
-        XCTAssertNil(vm.customGasLimit)
-        XCTAssertTrue(vm.memoFunctionDictionary.isEmpty)
-    }
-
     // MARK: - Fast vault
     // `vault.isFastVault` reads the cache populated by
     // `FastVaultEligibilityRefresher`. Returns `false` until the cache is
