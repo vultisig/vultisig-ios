@@ -402,7 +402,13 @@ struct HomeScreen: View {
                     homeViewModel.shouldShowScanner = false
                 }
             }
-            .crossPlatformSheet(isPresented: $showVaultSelector) {
+            .crossPlatformSheet(isPresented: $showVaultSelector, onDismiss: {
+                // Dismissed without picking a vault: the link's memo and amount must not
+                // resurface on the next vault switch.
+                if deeplinkViewModel.pendingDepositDeeplink {
+                    deeplinkViewModel.resetData()
+                }
+            }, sheetContent: {
                 VaultManagementSheet(
                     isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight
                 ) {
@@ -428,7 +434,7 @@ struct HomeScreen: View {
                         }
                     }
                 }
-            }
+            })
             .withError(error: $deeplinkError, errorType: .warning) {
                 // Retry action - reopen scanner
                 showScanner = true
@@ -670,8 +676,11 @@ extension HomeScreen {
         deeplinkViewModel.pendingDepositDeeplink = false
         appViewModel.set(selectedVault: vault, restartNavigation: false)
 
-        guard let coin = deeplinkViewModel.findCoin(in: vault) else {
-            deeplinkError = DeeplinkError.chainNotAdded(chainName: deeplinkViewModel.assetTicker ?? "")
+        let matches = deeplinkViewModel.matchingCoins(in: vault)
+        guard matches.count == 1, let coin = matches.first else {
+            deeplinkError = matches.isEmpty
+                ? DeeplinkError.chainNotAdded(chainName: deeplinkViewModel.assetTicker ?? "")
+                : DeeplinkError.unsupportedLink
             deeplinkViewModel.resetData()
             return
         }

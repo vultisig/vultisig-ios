@@ -16,7 +16,8 @@ enum DeeplinkRoutingPolicy {
     /// never started.
     static func allowsPushNotificationRoute(_ url: URL) -> Bool {
         guard let components = URLComponents(string: url.absoluteString),
-              !DeeplinkLogic.isSendPath(components, urlString: url.absoluteString) else {
+              !DeeplinkLogic.isSendPath(components, urlString: url.absoluteString),
+              components.host?.lowercased() != "deposit" else {
             return false
         }
         return queryValue("type", in: components) == keysignType

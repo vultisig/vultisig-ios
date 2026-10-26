@@ -72,6 +72,10 @@ class DeeplinkViewModel: ObservableObject {
         logic.findCoin(in: vault, assetChain: assetChain, assetTicker: assetTicker)
     }
 
+    func matchingCoins(in vault: Vault) -> [Coin] {
+        logic.matchingCoins(in: vault, assetChain: assetChain, assetTicker: assetTicker)
+    }
+
     private func resetFieldsForExtraction() {
         selectedVault = nil
         tssType = nil
@@ -165,18 +169,24 @@ struct DeeplinkLogic {
     }
 
     func findCoin(in vault: Vault, assetChain: String?, assetTicker: String?) -> Coin? {
+        matchingCoins(in: vault, assetChain: assetChain, assetTicker: assetTicker).first
+    }
+
+    /// The vault's coins on `assetChain` whose ticker is `assetTicker`; more
+    /// than one means the ticker alone cannot say which coin a link means.
+    func matchingCoins(in vault: Vault, assetChain: String?, assetTicker: String?) -> [Coin] {
         guard let assetChain = assetChain,
               let assetTicker = assetTicker else {
-            return nil
+            return []
         }
 
         let chainString = assetChain.lowercased()
         guard let chain = Chain.supportedCases.first(where: { $0.rawValue.lowercased() == chainString }) else {
-            return nil
+            return []
         }
 
         let tickerUpper = assetTicker.uppercased()
-        return vault.coins.first { coin in
+        return vault.coins.filter { coin in
             coin.chain == chain && coin.ticker.uppercased() == tickerUpper
         }
     }
@@ -252,10 +262,16 @@ struct DeeplinkLogic {
             throw DeeplinkError.unsupportedLink
         }
 
+        let ticker = value("assetTicker") ?? chain.ticker
+        // The ticker is echoed in errors, so it may only look like a ticker.
+        guard ticker.range(of: "^[A-Za-z0-9.-]{1,15}$", options: .regularExpression) != nil else {
+            throw DeeplinkError.unsupportedLink
+        }
+
         var result = DeeplinkResult()
         result.type = .Deposit
         result.assetChain = chain.rawValue
-        result.assetTicker = value("assetTicker") ?? chain.ticker
+        result.assetTicker = ticker
         // Attacker-supplied: anything that would not stage the number the link names
         // leaves the field empty.
         result.sendAmount = value("amount").flatMap { $0.externalAmount(locale: locale) }
