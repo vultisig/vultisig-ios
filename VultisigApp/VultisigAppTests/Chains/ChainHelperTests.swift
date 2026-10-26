@@ -175,7 +175,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .thorchain: return 9
         case .thorchainswap: return 5
         case .thorchainswapLimitOrder: return 1
-        case .ton: return 3
+        case .ton: return 6
         case .tron: return 4
         case .utxo: return 5
         case .utxoDashZcash: return 2

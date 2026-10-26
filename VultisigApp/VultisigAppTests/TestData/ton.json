@@ -96,5 +96,109 @@
         "lib_type": "DKLS"
       },
       "expected_image_hash": ["f132a896ec6ea24c25309f2c220da4efcbd99c210323e266a8dafa8c5e290b78"]
+    },
+    {
+      "name": "Send TON from W5 (SDK golden ton-w5-native-transfer)",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "TON",
+          "address": "UQCvaZohosTA0ak9ZFMs-cvL1JrXqogqJH8sI2uO6k8clJpn",
+          "decimals": 9,
+          "price_provider_id": "the-open-network",
+          "is_native_token": true,
+          "hex_public_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "contract_address": "",
+          "logo": "ton"
+        },
+        "to_address": "0:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "to_amount": "1500000000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 7,
+            "expire_at": 1800000000,
+            "bounceable": true
+          }
+        },
+        "memo": "",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": [
+        "abf94fba832a80f102ce54157614a39904f6616741584b6d9808f439963d9bfc"
+      ]
+    },
+    {
+      "name": "Send TON from undeployed W5, seqno 0 (SDK golden ton-w5-native-transfer)",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "TON",
+          "address": "UQCvaZohosTA0ak9ZFMs-cvL1JrXqogqJH8sI2uO6k8clJpn",
+          "decimals": 9,
+          "price_provider_id": "the-open-network",
+          "is_native_token": true,
+          "hex_public_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "contract_address": "",
+          "logo": "ton"
+        },
+        "to_address": "0:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "to_amount": "1500000000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 0,
+            "expire_at": 1800000000,
+            "bounceable": true
+          }
+        },
+        "memo": "",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": [
+        "24ca4679d5c2ee8d3a6c44be341e0d6f2e8d1cc39639e552e4687e9671b905de"
+      ]
+    },
+    {
+      "name": "Send jetton from W5 (SDK golden ton-w5-jetton-transfer)",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "USDT",
+          "address": "UQCvaZohosTA0ak9ZFMs-cvL1JrXqogqJH8sI2uO6k8clJpn",
+          "decimals": 6,
+          "price_provider_id": "usdt",
+          "is_native_token": false,
+          "hex_public_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "contract_address": "0:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "logo": "usdt"
+        },
+        "to_address": "0:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "to_amount": "5000000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 7,
+            "expire_at": 1800000000,
+            "bounceable": true,
+            "jettons_address": "0:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "is_active": true
+          }
+        },
+        "memo": "hello",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": [
+        "033e82120d7bd67901b7df3ef3134b0f931d95a551b99cbce383ed67652e699b"
+      ]
     }
   ]
