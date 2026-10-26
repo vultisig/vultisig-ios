@@ -19,9 +19,6 @@ enum TonHelper {
     static let defaultFee: BigInt = BigInt(50_000_000) // 0.05 TON
     static let defaultJettonFee: BigInt = BigInt(80_000_000) // 0.08 TON
 
-    // TonConnect sendTransaction caps at 4 messages per request.
-    static let maxTonConnectMessages = 4
-
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
         // Keyed on the chain case, not on a ticker string: `chain.ticker` is a
@@ -39,7 +36,17 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
 
-        let messages = try buildTransfers(keysignPayload: keysignPayload)
+        let walletVersion = try TonWalletVersion.resolve(senderAddress: keysignPayload.coin.address, publicKeyData: pubKeyData)
+        var messages = try buildTransfers(keysignPayload: keysignPayload, walletVersion: walletVersion)
+        if walletVersion == .v5r1 {
+            // W5 code rejects any external action that does not carry IGNORE_ACTION_PHASE_ERRORS.
+            let ignoreErrors = UInt32(TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+            messages = messages.map { message in
+                var message = message
+                message.mode |= ignoreErrors
+                return message
+            }
+        }
 
         let sequenceNumberUInt32 = UInt32(sequenceNumber.description) ?? 0
         let expireAtUInt32 = UInt32(expireAt.description) ?? 0
@@ -48,7 +55,7 @@ enum TonHelper {
             $0.messages = messages
             $0.sequenceNumber = sequenceNumberUInt32
             $0.expireAt = expireAtUInt32
-            $0.walletVersion = TheOpenNetworkWalletVersion.walletV4R2
+            $0.walletVersion = walletVersion.walletCoreVersion
             $0.publicKey = pubKeyData
         }
 
@@ -57,19 +64,20 @@ enum TonHelper {
         return serializedData
     }
 
-    private static func buildTransfers(keysignPayload: KeysignPayload) throws -> [TheOpenNetworkTransfer] {
+    private static func buildTransfers(keysignPayload: KeysignPayload, walletVersion: TonWalletVersion) throws -> [TheOpenNetworkTransfer] {
         guard case .Ton(_, _, let bounceable, _, let jettonAddress, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
 
-        // TonConnect sendTransaction: build one Transfer per tonMessage (up to 4),
+        // TonConnect sendTransaction: build one Transfer per tonMessage (up to the wallet's cap),
         // threading stateInit and custom payloads through.
         if let signTon = keysignPayload.signTon {
             guard !signTon.tonMessages.isEmpty else {
                 throw HelperError.runtimeError("tonMessages must not be empty")
             }
-            guard signTon.tonMessages.count <= maxTonConnectMessages else {
-                throw HelperError.runtimeError("TonConnect allows at most \(maxTonConnectMessages) messages, got \(signTon.tonMessages.count)")
+            let maxMessages = walletVersion.maxMessagesPerRequest
+            guard signTon.tonMessages.count <= maxMessages else {
+                throw HelperError.runtimeError("TonConnect allows at most \(maxMessages) messages, got \(signTon.tonMessages.count)")
             }
             return try signTon.tonMessages.map { try buildTonConnectTransfer(message: $0) }
         }
