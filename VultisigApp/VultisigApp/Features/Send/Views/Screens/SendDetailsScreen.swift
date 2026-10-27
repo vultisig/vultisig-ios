@@ -364,7 +364,11 @@ extension SendDetailsScreen {
 
         if let coin = coin {
             let savedToAddress = viewModel.toAddress.isEmpty ? nil : viewModel.toAddress
+            let seeded = (amount: viewModel.amount, amountInFiat: viewModel.amountInFiat, memo: viewModel.memo)
             viewModel.reset(to: coin)
+            viewModel.amount = seeded.amount
+            viewModel.amountInFiat = seeded.amountInFiat
+            viewModel.memo = seeded.memo
             if let saved = savedToAddress {
                 viewModel.toAddress = saved
             } else if viewModel.toAddress.isEmpty {
