@@ -306,6 +306,18 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .customMemoPrefilled(let coin, let memo, let amount):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CustomMemoTransactionScreen(
+                        viewModel: CustomMemoTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            memo: memo,
+                            amount: amount
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)

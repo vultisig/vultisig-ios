@@ -96,6 +96,8 @@ enum FunctionTransactionType: Hashable {
     /// on the same chain; every one of those is already held, so the intent
     /// names only the coin the caller opened on.
     case customMemo(coin: CoinMeta)
+    /// `customMemo` opened by a deeplink with the memo and amount it names already typed in.
+    case customMemoPrefilled(coin: CoinMeta, memo: String, amount: String?)
 
     var coins: [CoinMeta] {
         switch self {
@@ -156,7 +158,7 @@ enum FunctionTransactionType: Hashable {
             return [coin]
         case .ibcTransfer(let coin, _):
             return [coin]
-        case .customMemo(let coin):
+        case .customMemo(let coin), .customMemoPrefilled(let coin, _, _):
             return [coin]
         }
     }

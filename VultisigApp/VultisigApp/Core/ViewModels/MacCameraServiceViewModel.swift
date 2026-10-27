@@ -147,7 +147,7 @@ extension MacCameraServiceViewModel {
             text = "pair"
         case .SignTransaction:
             text = "keysign"
-        case .Send, .Unknown:
+        case .Send, .Deposit, .Unknown:
             text = "scanQRCode"
         }
         return NSLocalizedString(text, comment: "")
