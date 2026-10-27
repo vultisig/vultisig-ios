@@ -40,6 +40,11 @@ struct HomeRouteBuilder {
                 defaultCoin: coin,
                 vault: vault
             )
+        case .customMemo(let coin, let memo, let amount):
+            FunctionTransactionRouteBuilder().buildFunctionTransactionScreen(
+                vault: vault,
+                transactionType: .customMemoPrefilled(coin: coin.toCoinMeta(), memo: memo, amount: amount)
+            )
         case .buy(let address, let blockChainCode, let coinType):
             SendRouteBuilder().buildBuyScreen(
                 address: address,

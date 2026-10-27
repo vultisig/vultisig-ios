@@ -11,6 +11,7 @@ enum DeeplinkFlowType {
     case NewVault
     case SignTransaction
     case Send
+    case Deposit
     case Unknown
 }
 
@@ -30,6 +31,7 @@ class DeeplinkViewModel: ObservableObject {
     @Published var sendAmount: String? = nil
     @Published var sendMemo: String? = nil
     @Published var pendingSendDeeplink: Bool = false
+    @Published var pendingDepositDeeplink: Bool = false
     @Published var isInternalDeeplink: Bool = false
 
     private let logic = DeeplinkLogic()
@@ -70,6 +72,14 @@ class DeeplinkViewModel: ObservableObject {
         logic.findCoin(in: vault, assetChain: assetChain, assetTicker: assetTicker)
     }
 
+    func depositError() -> DeeplinkError? {
+        logic.depositError(assetChain: assetChain, memo: sendMemo)
+    }
+
+    func findDepositCoin(in vault: Vault) -> Coin? {
+        logic.findDepositCoin(in: vault, assetChain: assetChain, assetTicker: assetTicker)
+    }
+
     private func resetFieldsForExtraction() {
         selectedVault = nil
         tssType = nil
@@ -81,6 +91,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
+        pendingDepositDeeplink = false
     }
 
     private func apply(result: DeeplinkLogic.DeeplinkResult) {
@@ -94,6 +105,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = result.sendAmount
         sendMemo = result.sendMemo
         pendingSendDeeplink = result.pendingSendDeeplink
+        pendingDepositDeeplink = result.pendingDepositDeeplink
     }
 }
 
@@ -116,6 +128,7 @@ struct DeeplinkLogic {
         var sendAmount: String?
         var sendMemo: String?
         var pendingSendDeeplink: Bool = false
+        var pendingDepositDeeplink: Bool = false
         var shouldNotify: Bool = false
     }
 
@@ -227,11 +240,67 @@ struct DeeplinkLogic {
         return result
     }
 
+    /// `type=Deposit`: a `MsgDeposit` memo handed over by a partner dApp. Values are read
+    /// as `URLQueryItem` already decoded them: decoding a memo again would corrupt a `%`.
+    private func processDepositDeeplink(queryItems: [URLQueryItem]?) -> DeeplinkResult {
+        func value(_ name: String) -> String? {
+            queryItems?.first(where: { $0.name == name })?.value
+        }
+
+        var result = DeeplinkResult()
+        result.type = .Deposit
+        result.assetChain = value("assetChain")
+        result.assetTicker = value("assetTicker")
+        result.sendAmount = value("amount")?.externalAmount(locale: locale)
+        result.sendMemo = value("memo")
+        result.pendingDepositDeeplink = true
+        result.shouldNotify = true
+        return result
+    }
+
+    /// Chains a deposit link may name. Mainnets only: the test networks are not something a
+    /// partner link should point a user at.
+    private static let depositChains: [Chain] = [.thorChain, .mayaChain]
+
+    /// The link's own faults, checked before any vault is picked. Blank memo or an unsupported
+    /// chain can never succeed, so the user should not be asked to choose a vault first.
+    func depositError(assetChain: String?, memo: String?) -> DeeplinkError? {
+        guard memo?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+            return .unrelatedQRCode
+        }
+        guard Self.depositChain(named: assetChain) != nil else {
+            return .chainNotAdded(chainName: assetChain?.capitalized ?? "Unknown")
+        }
+        return nil
+    }
+
+    /// The vault coin the deposit rides on: the named ticker, or the chain's native coin when
+    /// the link names none. Nil when the vault does not hold it or the Custom form cannot
+    /// deposit with it.
+    func findDepositCoin(in vault: Vault, assetChain: String?, assetTicker: String?) -> Coin? {
+        guard let chain = Self.depositChain(named: assetChain) else { return nil }
+        let ticker = assetTicker?.trimmingCharacters(in: .whitespaces).uppercased() ?? ""
+        return vault.coins.first { coin in
+            coin.chain == chain
+                && (ticker.isEmpty ? coin.isNativeToken : coin.ticker.uppercased() == ticker)
+                && CustomMemoAssets.supports(ticker: coin.ticker, on: chain)
+        }
+    }
+
+    private static func depositChain(named name: String?) -> Chain? {
+        let name = name?.lowercased()
+        return depositChains.first { $0.rawValue.lowercased() == name }
+    }
+
     private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         var result = DeeplinkResult()
 
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
         result.type = parseFlowType(typeData)
+
+        if result.type == .Deposit {
+            return processDepositDeeplink(queryItems: queryItems)
+        }
 
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
         let vault = getVault(for: vaultPubKey, vaults: vaults)
@@ -257,6 +326,8 @@ struct DeeplinkLogic {
             return .SignTransaction
         case "Send":
             return .Send
+        case "Deposit":
+            return .Deposit
         default:
             return .Unknown
         }

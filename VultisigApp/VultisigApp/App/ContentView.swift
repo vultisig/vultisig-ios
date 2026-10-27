@@ -515,7 +515,8 @@ struct ContentView: View {
             vultExtensionViewModel.documentUrl = incomingURL
             vultExtensionViewModel.showImportView = true
         } else if deeplinkType == "https" {
-            let updatedURL = incomingURL.absoluteString.replacingOccurrences(of: "https", with: "vultisig")
+            // Scheme only: a Deposit memo is carried verbatim and may contain "https".
+            let updatedURL = "vultisig" + incomingURL.absoluteString.dropFirst("https".count)
 
             guard let url = URL(string: updatedURL) else {
                 return
