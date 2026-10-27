@@ -650,7 +650,7 @@ extension HomeScreen {
 
         closeScannerIfNeeded {
             self.deeplinkViewModel.pendingSendDeeplink = true
-            self.showVaultSelector = true
+            self.presentVaultSelectorForDeeplink()
         }
     }
 
@@ -771,7 +771,7 @@ extension HomeScreen {
 
         deeplinkViewModel.pendingSendDeeplink = true
         closeScannerIfNeeded {
-            self.showVaultSelector = true
+            self.presentVaultSelectorForDeeplink()
         }
     }
 
@@ -830,6 +830,19 @@ extension HomeScreen {
                     prefilledToAddress: address
                 ))
         }
+    }
+
+    /// The selector is this screen's sheet, and a sheet presented by a screen
+    /// that has another pushed above it never appears — it only raises the
+    /// blur over whatever is on top. Pop back first, unless that would abandon
+    /// a running ceremony; the link is then dropped, as an incoming join is.
+    private func presentVaultSelectorForDeeplink() {
+        guard !router.containsRoute(where: Self.ownsLiveCeremony) else {
+            deeplinkViewModel.pendingSendDeeplink = false
+            return
+        }
+        router.navigateToRoot()
+        showVaultSelector = true
     }
 
     private func closeScannerIfNeeded(completion: @escaping () -> Void) {
