@@ -23,6 +23,8 @@ enum VaultAction: Equatable, Hashable {
     )
     case swap(fromCoin: Coin)
     case function(coin: Coin?)
+    /// A `type=Deposit` deeplink: the Custom form opened with the link's memo and amount.
+    case customMemo(coin: Coin, memo: String, amount: String?)
     case buy(address: String, blockChainCode: String, coinType: String)
     /// QBTC-specific claim flow — see `Features/QBTCClaim/`.
     case qbtcClaim(vault: Vault)
