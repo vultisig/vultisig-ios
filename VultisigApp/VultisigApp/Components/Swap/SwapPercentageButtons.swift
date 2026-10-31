@@ -31,12 +31,13 @@ import SwiftUI
 extension SwapPercentageButtons {
     var container: some View {
         buttons
-            .padding(.horizontal, 8)
             .padding(.vertical, 8)
     }
 
     var buttons: some View {
-        HStack {
+        // Compact and fixed-size so four pills plus the confirm button fit a
+        // keyboard toolbar on phones narrower than 440pt.
+        HStack(spacing: 4) {
             ForEach(buttonOptions, id: \.self) { option in
                 getPercentageButton(for: option)
             }
@@ -60,8 +61,9 @@ extension SwapPercentageButtons {
         Text(text + "%")
             .font(Theme.fonts.caption12)
             .foregroundStyle(isSelected ? Color.white : Theme.colors.textPrimary)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 6)
             .padding(.vertical, 10)
+            .fixedSize()
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
             // Not the macOS twin's `pill`, and not an oversight: this cell is
             // taller (10pt of vertical padding against macOS's 8), so its 16

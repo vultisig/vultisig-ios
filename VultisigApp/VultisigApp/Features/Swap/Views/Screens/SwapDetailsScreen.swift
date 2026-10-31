@@ -11,7 +11,6 @@ struct SwapDetailsScreen: View {
     let vault: Vault
 
     @State private var detailsViewModel = SwapDetailsViewModel()
-    @StateObject private var keyboardObserver = KeyboardObserver()
 
     @State private var showErrorTooltip = false
     /// Local Market/Limit tab state. The Limit branch lives entirely inside
@@ -425,10 +424,6 @@ struct SwapDetailsScreen: View {
         ) { percentage in
             handlePercentageSelection(percentage)
         }
-        #if os(iOS)
-        .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)
-        .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
-        #endif
     }
 
     private func setInitialChains() {
