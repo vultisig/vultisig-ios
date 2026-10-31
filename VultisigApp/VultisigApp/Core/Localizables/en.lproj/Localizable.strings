@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";
-"enterVaultEmail" = "This email is used for cloud backup and shared with no third party";
+"enterVaultEmail" = "Used once to send your vault backup. We don't store it.";
 "enterVaultName" = "Enter Vault Name";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
 "enterYourEmail" = "Enter your email";
@@ -1078,8 +1078,8 @@
 "ok" = "OK";
 "oldBackupsOnlyWorkTogetherDescription" = "Any existing .vult files will only work together. Mixing old and new shares will not work to sign transactions.";
 "oldBackupsOnlyWorkTogetherTitle" = "Old backups will only work together";
-"oldBackupsWontWork" = "Old backups won't work";
-"oldBackupsWontWorkDescription" = "Backups from previous vault setups can't be used. Only backups created during this setup are valid.";
+"oldBackupsWontWork" = "Make fresh backups";
+"oldBackupsWontWorkDescription" = "Backups from before this reshare can't be combined with the new ones. Old backups still work together, so keep them safe or delete them. If a device was lost or compromised, move your funds to a new vault.";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
 "OnboardingCard1Text2" = "vault shares, ";
