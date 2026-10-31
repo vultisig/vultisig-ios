@@ -11,8 +11,8 @@
 "widget.cryptocurrency" = "Kryptowährung";
 "widget.cryptoMarketDataUnavailable" = "Krypto-Marktdaten sind vorübergehend nicht verfügbar";
 "widget.cryptoTicker" = "Krypto-Ticker";
-"widget.cryptoTicker.choose" = "Wähle die Kryptowährung für dieses Widget.";
-"widget.cryptoTicker.description" = "Verfolge Preis und Sieben-Tage-Trend einer Kryptowährung.";
+"widget.cryptoTicker.choose" = "Wählen Sie die Kryptowährung für dieses Widget.";
+"widget.cryptoTicker.description" = "Verfolgen Sie Preis und Sieben-Tage-Trend einer Kryptowährung.";
 "widget.down" = "gefallen um";
 "widget.marketCap" = "Marktkapitalisierung";
 "widget.marketData" = "Marktdaten";
@@ -21,13 +21,13 @@
 "widget.sevenDay" = "7 T";
 "widget.temporarilyUnavailable" = "Vorübergehend nicht verfügbar";
 "widget.topCryptos" = "Top-Kryptos";
-"widget.topCryptos.description" = "Verfolge die führenden Kryptowährungen nach Marktkapitalisierung.";
+"widget.topCryptos.description" = "Verfolgen Sie die führenden Kryptowährungen nach Marktkapitalisierung.";
 "widget.topMarketDataUnavailable" = "Marktdaten der Top-Kryptowährungen sind vorübergehend nicht verfügbar";
 "widget.up" = "gestiegen um";
 "widget.updatedData" = "aktualisierte Daten";
 "widget.valueUnavailableDisplay" = "—";
 "widget.watchlist" = "Beobachtungsliste";
-"widget.watchlist.configure" = "Wähle Assets in den Vultisig-Einstellungen";
-"widget.watchlist.description" = "Verfolge bis zu fünf in Vultisig ausgewählte Kryptowährungen.";
+"widget.watchlist.configure" = "Assets in den Vultisig-Einstellungen auswählen";
+"widget.watchlist.description" = "Verfolgen Sie bis zu fünf in Vultisig ausgewählte Kryptowährungen.";
 "widget.watchlist.marketDataUnavailable" = "Marktdaten der Beobachtungsliste sind vorübergehend nicht verfügbar";
 "widgetNoAvailableData" = "Keine Daten verfügbar";
