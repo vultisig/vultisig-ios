@@ -12,6 +12,7 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
     @ObservedObject var viewModel: DefiChainLPsViewModel
     var onRemove: (LPPosition) -> Void
     var onAdd: (LPPosition) -> Void
+    var onCompletePending: (MayaPendingLPDeposit) -> Void = { _ in }
     var emptyStateView: () -> EmptyStateView
 
     var showLoading: Bool {
@@ -36,6 +37,13 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
 
     var body: some View {
         LazyVStack(spacing: 14) {
+            ForEach(viewModel.pendingDeposits) { deposit in
+                DefiChainPendingLPDepositView(
+                    card: MayaPendingLPPresentation.card(for: deposit),
+                    canComplete: viewModel.canComplete(deposit),
+                    onComplete: { onCompletePending(deposit) }
+                )
+            }
             if showLoading {
                 ForEach(0..<2, id: \.self) { _ in
                     DefiChainLPPositionSkeletonView()

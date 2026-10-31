@@ -11,3 +11,10 @@ protocol LPsInteractor {
     /// good value.
     func fetchLPPositions(vault: Vault) async -> [LPPositionData]
 }
+
+/// An interactor whose protocol can hold half of a paired add. Separate from
+/// `LPsInteractor` because only MayaChain surfaces them.
+protocol PendingLPDepositsProviding {
+    /// Throws when the scan fails, so an outage is not read as "no deposits".
+    func fetchPendingLPDeposits(vault: Vault) async throws -> MayaPendingLPScan
+}

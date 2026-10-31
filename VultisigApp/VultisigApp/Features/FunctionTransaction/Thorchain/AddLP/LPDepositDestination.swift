@@ -43,10 +43,12 @@ enum LPDepositDestination: Equatable {
     case protocolNative(asset: CoinMeta)
     /// The L1 inbound vault (native assets) or the router contract (ERC-20).
     case inbound(asset: CoinMeta, address: String, requiresApproval: Bool)
-    /// THORChain has paused liquidity-provider actions for the source chain.
+    /// The protocol has paused liquidity-provider actions for the source chain.
     case lpActionsPaused(chain: String)
     /// THORChain lists no inbound vault for the source chain at all.
     case inboundNotFound(chain: String)
+    /// MayaChain lists no inbound vault for the source chain at all.
+    case mayaInboundNotFound(chain: String)
     /// An ERC-20 deposit whose chain reports no router to approve.
     case routerNotAvailable(chain: String)
     /// The protocol this pool belongs to has no L1 deposit path wired here.
@@ -71,7 +73,8 @@ extension LPDepositDestination {
             return asset == coin.toCoinMeta() ? .empty : nil
         case .inbound(let asset, let address, _):
             return asset == coin.toCoinMeta() ? address : nil
-        case .unresolved, .lpActionsPaused, .inboundNotFound, .routerNotAvailable, .unsupportedProtocol:
+        case .unresolved, .lpActionsPaused, .inboundNotFound, .mayaInboundNotFound,
+             .routerNotAvailable, .unsupportedProtocol:
             return nil
         }
     }
@@ -88,6 +91,8 @@ extension LPDepositDestination {
             return String(format: "inboundPaused".localized, chain)
         case .inboundNotFound(let chain):
             return String(format: "inboundAddressNotFound".localized, chain)
+        case .mayaInboundNotFound(let chain):
+            return String(format: "mayaInboundAddressNotFound".localized, chain)
         case .routerNotAvailable(let chain):
             return String(format: "routerNotAvailable".localized, chain)
         case .unsupportedProtocol:
@@ -102,17 +107,19 @@ extension LPDepositDestination {
 /// made — never once when the form opens. Both properties matter: per asset,
 /// because the pool picker reassigns which asset is deposited and the recipient
 /// differs between a native transfer (the inbound vault) and an ERC-20 one (the
-/// router); at build time with the cache bypassed, because THORChain churns its
-/// inbound vaults and a five-minute-old address can already be retired.
+/// router); at build time with the cache bypassed, because the protocols churn
+/// their inbound vaults and a five-minute-old address can already be retired.
 ///
-/// **What this does not do.** It is a build-time check, not a sign-time one:
-/// the route can still halt between Continue and the last co-signer. Swaps have
-/// `assertSourceChainNotHalted` on the signing path and function calls have no
-/// equivalent, so closing this belongs in a gate shared by the whole
-/// FunctionCall tail rather than here. It also reads only the per-chain flags
-/// the inbound endpoint publishes; THORChain can additionally pause a SINGLE
-/// pool's deposits by mimir, which those flags do not express and which would
-/// need a separate read.
+/// **What this does not do.** A MayaChain add is read again when its keysign
+/// payload is built (`ThorchainRouterDepositBuilder.synthesizeRouterDeposit`),
+/// but a THORChain add is not: swaps have `assertSourceChainNotHalted` on the
+/// signing path and function calls have no equivalent, so closing this for
+/// THORChain belongs in a gate shared by the whole FunctionCall tail rather
+/// than here. Nor does either read cover the window between that build and the
+/// last co-signer. THORChain can additionally pause a SINGLE pool's deposits by
+/// mimir, which the per-chain flags do not express and which would need a
+/// separate read. MayaChain's endpoint publishes only `halted`, so that is the
+/// one flag honoured for it.
 enum ThorchainLPDestinationResolver {
 
     /// The inbound-address read this resolution depends on. A closure rather
@@ -126,6 +133,16 @@ enum ThorchainLPDestinationResolver {
         await ThorchainService.shared.fetchThorchainInboundAddress(bypassCache: bypassCache)
     }
 
+    /// The MayaChain counterpart of `live`.
+    static let liveMaya: @Sendable (_ bypassCache: Bool) async -> [InboundAddress] = { bypassCache in
+        do {
+            return try await MayachainService.shared.fetchInboundAddressOrThrow(bypassCache: bypassCache)
+        } catch {
+            Log.chain.service.warning("MayaChain inbound address fetch failed: \(error.localizedDescription, privacy: .public)")
+            return []
+        }
+    }
+
     /// Where a deposit of `coin` into `protocolChain`'s pools must be sent.
     ///
     /// - Parameters:
@@ -134,6 +151,9 @@ enum ThorchainLPDestinationResolver {
     ///   - protocolChain: whose pools the memo names — `.thorChain` or
     ///     `.mayaChain`.
     ///   - bypassCache: true on the path that builds the transaction.
+    ///   - fetch: the inbound read of `protocolChain`'s own node. Reading the
+    ///     other protocol's would name a vault that has never heard of the
+    ///     memo, so the caller pairs the two.
     @MainActor
     static func resolve(
         depositing coin: Coin,
@@ -147,18 +167,19 @@ enum ThorchainLPDestinationResolver {
             return .protocolNative(asset: coin.toCoinMeta())
         }
 
-        // An L1-side deposit is a transfer into the protocol's inbound vault,
-        // and only THORChain's vaults are read here. Failing closed rather than
-        // reading THORChain's inbound for a MayaChain pool is the whole point:
-        // that would send funds to a vault which has never heard of the memo.
-        guard protocolChain == .thorChain else {
+        // An L1-side deposit is a transfer into the protocol's inbound vault.
+        // Only the two pooled protocols have one wired here; anything else fails
+        // closed rather than borrowing another protocol's vault.
+        guard protocolChain == .thorChain || protocolChain == .mayaChain else {
             return .unsupportedProtocol
         }
 
         let chainName = ThorchainService.getInboundChainName(for: coin.chain)
         let addresses = await fetch(bypassCache)
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-            return .inboundNotFound(chain: chainName)
+            return protocolChain == .mayaChain
+                ? .mayaInboundNotFound(chain: chainName)
+                : .inboundNotFound(chain: chainName)
         }
 
         // An LP add must honour `chain_lp_actions_paused` (the `PauseLP<CHAIN>`
