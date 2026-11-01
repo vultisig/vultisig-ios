@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
+"peerSlotPosition" = "%1$@ od %2$@";
 "pendingIncomingBalance" = "+%@ na čekanju";
 "pendingRewards" = "Nagrade na čekanju";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "Izrađeno za timove i riznice";
 "vaultSetup4Subtitle" = "Trezor s 4+ uređaja";
 "vaultSetup4Title" = "Siguran trezor";
+"vaultSetupThreshold" = "Trezor %1$ld od %2$ld";
 "vaultShareBackupsViewTitle1" = "Stvorit ćeš nove sigurnosne kopije dijelova trezora";
 "vaultShareBackupsViewTitle2" = ", pohrani ih kao i prije";
+"vaultSharePosition" = "Dio %1$ld od %2$ld";
 "vaultType" = "Dio trezora";
 "vaultTypeDoesnotMatch" = " Vrsta trezora se ne podudara";
 "vaultTypeMismatch" = "Vrsta trezora se ne podudara, pokretni uređaj i upareni uređaj imaju različite vrste trezora";

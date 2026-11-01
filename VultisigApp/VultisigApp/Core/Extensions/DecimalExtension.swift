@@ -20,17 +20,17 @@ extension Decimal {
 
     /// Base method for formatting fiat values with configurable decimal places
     private func formatToFiat(includeCurrencySymbol: Bool = true, maximumFractionDigits: Int, roundingMode: NumberFormatter.RoundingMode = .down) -> String {
-        let formatter = NumberFormatter()
+        let currency = SettingsCurrency.current
+        let formatter: NumberFormatter
         if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = SettingsCurrency.current.rawValue
+            formatter = FiatFormatLocale.currencyFormatter(for: currency.rawValue)
         } else {
+            formatter = NumberFormatter()
+            formatter.locale = currency.formattingLocale
             formatter.numberStyle = .decimal
         }
         formatter.maximumFractionDigits = maximumFractionDigits
         formatter.minimumFractionDigits = 2
-        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
-        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         formatter.roundingMode = roundingMode
 
         let number = NSDecimalNumber(decimal: self)

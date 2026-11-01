@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "다른 기기에서 앱을 열고 \"QR 스캔\"을 탭하여 연결하세요.";
 "peerDiscoveryInfoTitle" = "다른 기기의 QR을 스캔하세요";
 "peerDiscoveryScanDeviceDisclaimer" = "다른 기기로 QR을 스캔하세요. 3기기 설정 권장, 2개로도 충분합니다.";
+"peerSlotPosition" = "%1$@/%2$@";
 "pendingIncomingBalance" = "+%@ 대기 중";
 "pendingRewards" = "대기 중인 보상";
 "phantomWallet" = "Phantom 지갑";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "팀 및 금고에 맞게 제작됨";
 "vaultSetup4Subtitle" = "4기기 이상 볼트";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "%1$ld/%2$ld 볼트 구성";
 "vaultShareBackupsViewTitle1" = "새 볼트 공유 백업을 생성합니다";
 "vaultShareBackupsViewTitle2" = ", 이전과 같이 저장하세요";
+"vaultSharePosition" = "볼트 셰어 %1$ld/%2$ld";
 "vaultType" = "볼트 부분";
 "vaultTypeDoesnotMatch" = "볼트 유형이 일치하지 않습니다";
 "vaultTypeMismatch" = "볼트 유형이 일치하지 않습니다, 초기 기기와 페어 기기의 볼트 유형이 다릅니다";

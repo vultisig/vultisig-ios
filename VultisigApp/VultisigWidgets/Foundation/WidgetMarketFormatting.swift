@@ -6,14 +6,11 @@
 import Foundation
 
 enum WidgetMarketFormatting {
-    static func price(_ value: Double, currency: String, locale: Locale = .current) -> String {
+    static func price(_ value: Double, currency: String) -> String {
         guard value.isFinite else {
             return String(localized: "widget.valueUnavailableDisplay")
         }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currency.uppercased()
-        formatter.locale = locale
+        let formatter = FiatFormatLocale.currencyFormatter(for: currency)
         formatter.usesGroupingSeparator = true
 
         switch abs(value) {

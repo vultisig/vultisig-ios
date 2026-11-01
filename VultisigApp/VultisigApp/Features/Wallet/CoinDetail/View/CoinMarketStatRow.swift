@@ -56,9 +56,9 @@ enum MarketStatFormatter {
     /// Fiat amount, abbreviated above a million.
     ///
     /// A market cap written out in full is a fourteen-digit number that nobody
-    /// reads; `$1.28T` is the number people actually compare. The symbol is
-    /// prefixed rather than run through `NumberFormatter`, because the
-    /// abbreviation replaces the formatter's own grouping.
+    /// reads; `$1.28T` is the number people actually compare. The compact number
+    /// and the symbol's side follow the currency's locale (`285,45 Mrd. €` for
+    /// EUR), matching the iOS 18 compact currency style, which iOS 17 lacks.
     static func fiat(_ value: Double?) -> String? {
         guard let value, value.isFinite else { return nil }
 
@@ -66,7 +66,16 @@ enum MarketStatFormatter {
         guard abs(decimal) >= 1_000_000 else {
             return decimal.formatToFiatPrice()
         }
-        return "\(currencySymbol)\(decimal.formatForDisplay())"
+        let currency = SettingsCurrency.current
+        let formatter = FiatFormatLocale.currencyFormatter(for: currency.rawValue)
+        let number = decimal.formatted(
+            .number
+                .notation(.compactName)
+                .precision(.fractionLength(0...2))
+                .rounded(rule: .down)
+                .locale(currency.formattingLocale)
+        )
+        return "\(formatter.positivePrefix ?? "")\(number)\(formatter.positiveSuffix ?? "")"
     }
 
     /// Exact fiat price, keeping the leading significant digits of a sub-cent
@@ -102,12 +111,5 @@ enum MarketStatFormatter {
     private static func signed(_ percentage: Decimal) -> String {
         let sign = percentage < 0 ? "" : "+"
         return "\(sign)\(percentage.formatToDecimal(digits: 2))%"
-    }
-
-    private static var currencySymbol: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = SettingsCurrency.current.rawValue
-        return formatter.currencySymbol ?? ""
     }
 }

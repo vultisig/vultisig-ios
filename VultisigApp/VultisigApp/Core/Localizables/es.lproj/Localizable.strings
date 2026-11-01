@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "En tu otro dispositivo, abre la app y toca \"Escanear QR\" para conectarlo.";
 "peerDiscoveryInfoTitle" = "Escanea el QR en tus otros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
+"peerSlotPosition" = "%1$@ de %2$@";
 "pendingIncomingBalance" = "+%@ pendiente";
 "pendingRewards" = "Recompensas pendientes";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "Construido para equipos y tesorerías";
 "vaultSetup4Subtitle" = "Bóveda de 4+ dispositivos";
 "vaultSetup4Title" = "Bóveda segura";
+"vaultSetupThreshold" = "Bóveda %1$ld de %2$ld";
 "vaultShareBackupsViewTitle1" = "Crearás nuevas copias de seguridad de la bóveda";
 "vaultShareBackupsViewTitle2" = ", guárdalas como hiciste antes";
+"vaultSharePosition" = "Parte %1$ld de %2$ld";
 "vaultType" = "Parte de la bóveda";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
 "vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";

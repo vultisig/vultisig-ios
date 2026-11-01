@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "No seu outro dispositivo, abra o app e toque em \"Escanear QR\" para conectá-lo.";
 "peerDiscoveryInfoTitle" = "Escaneie o QR nos seus outros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";
+"peerSlotPosition" = "%1$@ de %2$@";
 "pendingIncomingBalance" = "+%@ pendente";
 "pendingRewards" = "Recompensas pendentes";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "Construído para equipes e tesourarias";
 "vaultSetup4Subtitle" = "Cofre de 4+ dispositivos";
 "vaultSetup4Title" = "Cofre seguro";
+"vaultSetupThreshold" = "Cofre %1$ld de %2$ld";
 "vaultShareBackupsViewTitle1" = "Você criará novos backups das partes do cofre";
 "vaultShareBackupsViewTitle2" = ", armazene-os como antes";
+"vaultSharePosition" = "Parte %1$ld de %2$ld";
 "vaultType" = "Parte do Cofre";
 "vaultTypeDoesnotMatch" = "O tipo de cofre não corresponde";
 "vaultTypeMismatch" = "O tipo de cofre não corresponde, o dispositivo iniciador e o dispositivo emparelhado têm tipos de cofre diferentes";

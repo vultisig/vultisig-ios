@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
 "peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
+"peerSlotPosition" = "%1$@/%2$@";
 "pendingIncomingBalance" = "+%@ 待确认";
 "pendingRewards" = "待领取奖励";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "为团队和财务构建";
 "vaultSetup4Subtitle" = "4+设备保险库";
 "vaultSetup4Title" = "安全保险库";
+"vaultSetupThreshold" = "%1$ld/%2$ld 保险库设置";
 "vaultShareBackupsViewTitle1" = "您将创建新的保险库份额备份";
 "vaultShareBackupsViewTitle2" = "，像以前一样存储它们";
+"vaultSharePosition" = "份额 %1$ld/%2$ld";
 "vaultType" = "保险库部分";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";

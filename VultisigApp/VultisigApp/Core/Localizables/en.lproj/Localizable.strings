@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
 "peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
+"peerSlotPosition" = "%1$@ of %2$@";
 "pendingIncomingBalance" = "+%@ pending";
 "pendingRewards" = "Pending Rewards";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "Built for teams and treasuries";
 "vaultSetup4Subtitle" = "4+-device vault";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "%1$ld-of-%2$ld vault setup";
 "vaultShareBackupsViewTitle1" = "You’ll create new Vault Share backups";
 "vaultShareBackupsViewTitle2" = ", store them as you did before";
+"vaultSharePosition" = "Share %1$ld of %2$ld";
 "vaultType" = "Vault Part";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";

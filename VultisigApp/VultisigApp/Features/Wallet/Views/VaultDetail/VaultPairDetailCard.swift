@@ -81,7 +81,7 @@ struct VaultPairDetailCard: View {
 
     @ViewBuilder
     var vaultSetupSection: some View {
-        let title = "\(vault.getThreshold()+1)-\("of".localized)-\(devicesInfo.count) " + "vaultSetup".localized
+        let title = String(format: "vaultSetupThreshold".localized, vault.getThreshold() + 1, devicesInfo.count)
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(Theme.fonts.caption12)
@@ -195,14 +195,9 @@ struct VaultPairDetailCard: View {
     }
 
     private func titlePartText() -> String {
-        let part = NSLocalizedString("share", comment: "")
-        let of = NSLocalizedString("of", comment: "")
-        let space = " "
         let matchedIndex = devicesInfo.first(where: { $0.Signer == vault.localPartyID })?.Index
-        let vaultIndex = matchedIndex.map { "\($0 + 1)" } ?? "0"
-        let totalCount = "\(vault.signers.count)"
-
-        return part + space + vaultIndex + space + of + space + totalCount
+        let vaultIndex = matchedIndex.map { $0 + 1 } ?? 0
+        return String(format: "vaultSharePosition".localized, vaultIndex, vault.signers.count)
     }
 
     func iconName(for signer: String) -> ImageResource {

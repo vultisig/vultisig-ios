@@ -1170,6 +1170,7 @@
 "peerDiscoveryInfoDescription" = "Öffnen Sie auf Ihrem anderen Gerät die App und tippen Sie auf \"QR scannen\", um es zu verbinden.";
 "peerDiscoveryInfoTitle" = "Scannen Sie den QR auf Ihren anderen Geräten";
 "peerDiscoveryScanDeviceDisclaimer" = "Scanne den QR-Code mit einem anderen Gerät. 3-Geräte-Setup empfohlen, 2 sind ausreichend.";
+"peerSlotPosition" = "%1$@ von %2$@";
 "pendingIncomingBalance" = "+%@ ausstehend";
 "pendingRewards" = "Ausstehende Belohnungen";
 "phantomWallet" = "Phantom wallet";
@@ -1876,8 +1877,10 @@
 "vaultSetup4Feature3Title" = "Gebaut für Teams und Treasuries";
 "vaultSetup4Subtitle" = "4+-Geräte-Tresor";
 "vaultSetup4Title" = "Sicherer Tresor";
+"vaultSetupThreshold" = "%1$ld-von-%2$ld-Tresor";
 "vaultShareBackupsViewTitle1" = "Du wirst neue Tresor-Backups erstellen";
 "vaultShareBackupsViewTitle2" = ", speichere sie wie zuvor";
+"vaultSharePosition" = "Anteil %1$ld von %2$ld";
 "vaultType" = "Tresorteil";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "vaultTypeMismatch" = "Tresortyp stimmt nicht überein, initiierende Gerät und gekoppeltes Gerät haben unterschiedliche Tresortypen";

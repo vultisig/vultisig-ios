@@ -178,7 +178,7 @@ struct SettingsMainScreen: View {
     func description(for option: SettingsOption) -> String? {
         switch option {
         case .language:
-            return settingsViewModel.selectedLanguage.rawValue
+            return settingsViewModel.selectedLanguage.nativeName
         case .currency:
             return settingsViewModel.selectedCurrency.rawValue
         default:

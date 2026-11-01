@@ -75,10 +75,12 @@ struct ImportVaultSelectionSheet: View {
                     Text(subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
                     if let caption {
                         Text(caption)
                             .foregroundStyle(Theme.colors.textTertiary)
                             .font(Theme.fonts.caption10)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
