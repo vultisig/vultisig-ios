@@ -782,6 +782,14 @@
 "label" = "标签";
 "language" = "语言";
 "languageChangeTitle" = "语言已更改";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "上次奖励";
 "learnMore" = "了解更多";
 "Leave" = "离开";

@@ -782,6 +782,14 @@
 "label" = "라벨";
 "language" = "언어";
 "languageChangeTitle" = "언어가 변경됨";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "마지막 보상";
 "learnMore" = "더 알아보기";
 "Leave" = "나가기";

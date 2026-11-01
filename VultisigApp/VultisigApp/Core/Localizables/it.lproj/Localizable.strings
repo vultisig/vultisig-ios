@@ -782,6 +782,14 @@
 "label" = "Etichetta";
 "language" = "Lingua";
 "languageChangeTitle" = "Lingua cambiata";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Ultima Ricompensa";
 "learnMore" = "Scopri di più";
 "Leave" = "Lascia";

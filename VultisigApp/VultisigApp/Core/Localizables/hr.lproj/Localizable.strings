@@ -782,6 +782,14 @@
 "label" = "Oznaka";
 "language" = "Jezik";
 "languageChangeTitle" = "Jezik promijenjen";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Posljednja Nagrada";
 "learnMore" = "Saznaj više";
 "Leave" = "Napusti";

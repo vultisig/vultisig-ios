@@ -782,6 +782,14 @@
 "label" = "Rótulo";
 "language" = "Idioma";
 "languageChangeTitle" = "Idioma alterado";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Última Recompensa";
 "learnMore" = "Saiba mais";
 "Leave" = "Sair";

@@ -68,14 +68,17 @@ enum MarketStatFormatter {
         }
         let currency = SettingsCurrency.current
         let formatter = FiatFormatLocale.currencyFormatter(for: currency.rawValue)
-        let number = decimal.formatted(
+        let number = abs(decimal).formatted(
             .number
                 .notation(.compactName)
                 .precision(.fractionLength(0...2))
                 .rounded(rule: .down)
                 .locale(currency.formattingLocale)
         )
-        return "\(formatter.positivePrefix ?? "")\(number)\(formatter.positiveSuffix ?? "")"
+        let isNegative = decimal < 0
+        let prefix = (isNegative ? formatter.negativePrefix : formatter.positivePrefix) ?? ""
+        let suffix = (isNegative ? formatter.negativeSuffix : formatter.positiveSuffix) ?? ""
+        return "\(prefix)\(number)\(suffix)"
     }
 
     /// Exact fiat price, keeping the leading significant digits of a sub-cent

@@ -21,14 +21,14 @@ enum SettingsLanguage: String, CaseIterable {
     /// The language's name in its own language. Raw values stay as persisted keys.
     var nativeName: String {
         switch self {
-        case .English: return "English"
-        case .Deutsch: return "Deutsch"
-        case .Espanol: return "Español"
-        case .Italiano: return "Italiano"
-        case .Hrvatski: return "Hrvatski"
-        case .Portuguese: return "Português"
-        case .Chinese: return "简体中文"
-        case .Korean: return "한국어"
+        case .English: return "languageNativeNameEnglish".localized
+        case .Deutsch: return "languageNativeNameDeutsch".localized
+        case .Espanol: return "languageNativeNameEspanol".localized
+        case .Italiano: return "languageNativeNameItaliano".localized
+        case .Hrvatski: return "languageNativeNameHrvatski".localized
+        case .Portuguese: return "languageNativeNamePortuguese".localized
+        case .Chinese: return "languageNativeNameChinese".localized
+        case .Korean: return "languageNativeNameKorean".localized
         }
     }
 
