@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Todos los archivos .vult existentes solo funcionan juntos. Mezclar particiones antiguas y nuevas no servirá para firmar transacciones.";
 "oldBackupsOnlyWorkTogetherTitle" = "Los respaldos antiguos solo funcionan juntos";
 "oldBackupsWontWork" = "Crea copias de seguridad nuevas";
-"oldBackupsWontWorkDescription" = "Las copias de seguridad anteriores a esta recompartición no se pueden combinar con las nuevas. Las copias antiguas siguen funcionando entre sí, así que guárdalas en un lugar seguro o elimínalas. Si perdiste un dispositivo o quedó comprometido, mueve tus fondos a una bóveda nueva.";
+"oldBackupsWontWorkDescription" = "Las copias de seguridad anteriores a esta recompartición no se pueden combinar con las nuevas. Primero guarda una copia de seguridad nueva de cada dispositivo. Después, las copias antiguas siguen funcionando entre sí, así que guárdalas en un lugar seguro o elimínalas. Si perdiste un dispositivo o quedó comprometido, mueve tus fondos a una bóveda nueva.";
 "on" = "en";
 "OnboardingCard1Text1" = "Di hola a ";
 "OnboardingCard1Text2" = "fragmentos de la bóveda, ";

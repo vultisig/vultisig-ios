@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Todos os arquivos .vult existentes só funcionam juntos. Misturar partes antigas e novas não funcionará para assinar transações.";
 "oldBackupsOnlyWorkTogetherTitle" = "Os backups antigos só funcionam juntos";
 "oldBackupsWontWork" = "Faça novos backups";
-"oldBackupsWontWorkDescription" = "Os backups anteriores a este recompartilhamento não podem ser combinados com os novos. Os backups antigos continuam funcionando entre si, então guarde-os em segurança ou exclua-os. Se um dispositivo foi perdido ou comprometido, transfira seus fundos para um novo cofre.";
+"oldBackupsWontWorkDescription" = "Os backups anteriores a este recompartilhamento não podem ser combinados com os novos. Primeiro, salve um novo backup de cada dispositivo. Depois disso, os backups antigos continuam funcionando entre si, então guarde-os em segurança ou exclua-os. Se um dispositivo foi perdido ou comprometido, transfira seus fundos para um novo cofre.";
 "on" = "na";
 "OnboardingCard1Text1" = "Diga olá para ";
 "OnboardingCard1Text2" = "partes do cofre, ";

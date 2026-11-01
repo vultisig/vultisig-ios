@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Sve postojeće .vult datoteke rade samo zajedno. Miješanje starih i novih udjela neće raditi za potpisivanje transakcija.";
 "oldBackupsOnlyWorkTogetherTitle" = "Stare sigurnosne kopije rade samo zajedno";
 "oldBackupsWontWork" = "Napravite nove sigurnosne kopije";
-"oldBackupsWontWorkDescription" = "Sigurnosne kopije od prije ovog ponovnog dijeljenja ne mogu se kombinirati s novima. Stare sigurnosne kopije i dalje rade zajedno, pa ih čuvajte na sigurnom ili ih izbrišite. Ako je uređaj izgubljen ili kompromitiran, prebacite sredstva u novi trezor.";
+"oldBackupsWontWorkDescription" = "Sigurnosne kopije od prije ovog ponovnog dijeljenja ne mogu se kombinirati s novima. Najprije spremite novu sigurnosnu kopiju sa svakog uređaja. Nakon toga stare sigurnosne kopije i dalje rade zajedno, pa ih čuvajte na sigurnom ili ih izbrišite. Ako je uređaj izgubljen ili kompromitiran, prebacite sredstva u novi trezor.";
 "on" = "na";
 "OnboardingCard1Text1" = "Pozdravite ";
 "OnboardingCard1Text2" = "udjele trezora, ";

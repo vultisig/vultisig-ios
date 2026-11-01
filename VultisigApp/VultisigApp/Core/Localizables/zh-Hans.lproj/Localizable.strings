@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "所有现有的 .vult 文件只能一起使用。混用新旧份额将无法签署交易。";
 "oldBackupsOnlyWorkTogetherTitle" = "旧备份只能一起使用";
 "oldBackupsWontWork" = "创建新的备份";
-"oldBackupsWontWorkDescription" = "此次重新共享之前的备份无法与新备份混用。旧备份之间仍可共同使用，请妥善保管或将其删除。如果有设备丢失或遭到入侵，请将您的资金转移到新的保险库。";
+"oldBackupsWontWorkDescription" = "此次重新共享之前的备份无法与新备份混用。请先在每台设备上保存新备份。之后，旧备份之间仍可共同使用，请妥善保管或将其删除。如果有设备丢失或遭到入侵，请将您的资金转移到新的保险库。";
 "on" = "在";
 "OnboardingCard1Text1" = "向";
 "OnboardingCard1Text2" = "保险库份额问好，";

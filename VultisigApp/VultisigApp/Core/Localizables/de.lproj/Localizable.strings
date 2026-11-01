@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Alle vorhandenen .vult-Dateien funktionieren nur untereinander. Alte und neue Tresoranteile lassen sich nicht gemeinsam zum Signieren verwenden.";
 "oldBackupsOnlyWorkTogetherTitle" = "Alte Backups funktionieren nur zusammen";
 "oldBackupsWontWork" = "Neue Backups erstellen";
-"oldBackupsWontWorkDescription" = "Backups von vor diesem Reshare lassen sich nicht mit den neuen kombinieren. Alte Backups funktionieren untereinander weiterhin – bewahren Sie sie also sicher auf oder löschen Sie sie. Wenn ein Gerät verloren gegangen ist oder kompromittiert wurde, übertragen Sie Ihr Guthaben in einen neuen Tresor.";
+"oldBackupsWontWorkDescription" = "Backups von vor diesem Reshare lassen sich nicht mit den neuen kombinieren. Speichern Sie zuerst von jedem Gerät ein neues Backup. Danach funktionieren alte Backups untereinander weiterhin – bewahren Sie sie also sicher auf oder löschen Sie sie. Wenn ein Gerät verloren gegangen ist oder kompromittiert wurde, übertragen Sie Ihr Guthaben in einen neuen Tresor.";
 "on" = "auf";
 "OnboardingCard1Text1" = "Neu: ";
 "OnboardingCard1Text2" = "Tresoranteile, ";

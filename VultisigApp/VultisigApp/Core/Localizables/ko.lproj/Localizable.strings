@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "기존 .vult 파일은 모두 함께만 작동합니다. 기존 셰어와 새 셰어를 혼용하면 거래에 서명할 수 없습니다.";
 "oldBackupsOnlyWorkTogetherTitle" = "기존 백업은 함께만 작동합니다";
 "oldBackupsWontWork" = "새 백업을 만드세요";
-"oldBackupsWontWorkDescription" = "이번 재공유 이전의 백업은 새 백업과 함께 사용할 수 없습니다. 이전 백업끼리는 계속 작동하므로 안전하게 보관하거나 삭제하세요. 기기를 분실했거나 보안이 침해된 경우 자금을 새 볼트로 옮기세요.";
+"oldBackupsWontWorkDescription" = "이번 재공유 이전의 백업은 새 백업과 함께 사용할 수 없습니다. 먼저 모든 기기에서 새 백업을 저장하세요. 그 후에도 이전 백업끼리는 계속 작동하므로 안전하게 보관하거나 삭제하세요. 기기를 분실했거나 보안이 침해된 경우 자금을 새 볼트로 옮기세요.";
 "on" = "켜짐";
 "OnboardingCard1Text1" = "새로운 복구 방법, ";
 "OnboardingCard1Text2" = "볼트 셰어를 ";

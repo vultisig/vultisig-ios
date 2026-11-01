@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Any existing .vult files will only work together. Mixing old and new shares will not work to sign transactions.";
 "oldBackupsOnlyWorkTogetherTitle" = "Old backups will only work together";
 "oldBackupsWontWork" = "Make fresh backups";
-"oldBackupsWontWorkDescription" = "Backups from before this reshare can't be combined with the new ones. Old backups still work together, so keep them safe or delete them. If a device was lost or compromised, move your funds to a new vault.";
+"oldBackupsWontWorkDescription" = "Backups from before this reshare can't be combined with the new ones. Save a new backup from every device first. After that, old backups still work together, so keep them safe or delete them. If a device was lost or compromised, move your funds to a new vault.";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
 "OnboardingCard1Text2" = "vault shares, ";

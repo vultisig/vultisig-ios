@@ -1079,7 +1079,7 @@
 "oldBackupsOnlyWorkTogetherDescription" = "Tutti i file .vult esistenti funzionano solo insieme. Combinare quote vecchie e nuove non funzionerà per firmare le transazioni.";
 "oldBackupsOnlyWorkTogetherTitle" = "I vecchi backup funzionano solo insieme";
 "oldBackupsWontWork" = "Crea nuovi backup";
-"oldBackupsWontWorkDescription" = "I backup precedenti a questo reshare non possono essere combinati con quelli nuovi. I vecchi backup continuano a funzionare tra loro, quindi conservali al sicuro o eliminali. Se un dispositivo è stato perso o compromesso, sposta i tuoi fondi in un nuovo vault.";
+"oldBackupsWontWorkDescription" = "I backup precedenti a questo reshare non possono essere combinati con quelli nuovi. Prima salva un nuovo backup da ogni dispositivo. Dopodiché, i vecchi backup continuano a funzionare tra loro, quindi conservali al sicuro o eliminali. Se un dispositivo è stato perso o compromesso, sposta i tuoi fondi in un nuovo vault.";
 "on" = "su";
 "OnboardingCard1Text1" = "Ecco le ";
 "OnboardingCard1Text2" = "quote del vault, ";
