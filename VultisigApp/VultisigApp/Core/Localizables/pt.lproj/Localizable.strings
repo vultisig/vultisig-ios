@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Digite até 4 caracteres";
 "enterValidAmount" = "Insira um valor válido maior que zero.";
 "enterValidFolderName" = "Insira um nome de pasta válido e tente novamente.";
-"enterVaultEmail" = "Usado uma única vez para enviar o backup do seu cofre. Não o armazenamos.";
+"enterVaultEmail" = "Usado uma única vez para enviar o backup do seu cofre. A Vultisig não armazena seu endereço de e-mail.";
 "enterVaultName" = "Digite o Nome do Cofre";
 "enterVaultPassword" = "Digite a senha definida ao criar este cofre.";
 "enterYourEmail" = "Digite seu e-mail";

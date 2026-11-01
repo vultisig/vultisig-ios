@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";
-"enterVaultEmail" = "Used once to send your vault backup. We don't store it.";
+"enterVaultEmail" = "Used once to send your vault backup. Vultisig doesn't store your email address.";
 "enterVaultName" = "Enter Vault Name";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
 "enterYourEmail" = "Enter your email";

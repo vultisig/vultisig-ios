@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "输入最多 4 个字符";
 "enterValidAmount" = "请输入大于零的有效金额。";
 "enterValidFolderName" = "请输入有效的文件夹名称并重试";
-"enterVaultEmail" = "仅用于一次性发送您的保险库备份，我们不会保存该邮箱。";
+"enterVaultEmail" = "仅用于发送您的保险库备份一次。Vultisig 不会存储您的电子邮箱。";
 "enterVaultName" = "输入保险库名称";
 "enterVaultPassword" = "输入您创建此保险库时设置的密码";
 "enterYourEmail" = "输入您的电子邮件";

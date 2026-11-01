@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Bis zu 4 Zeichen eingeben";
 "enterValidAmount" = "Bitte geben Sie einen gültigen Betrag größer als null ein.";
 "enterValidFolderName" = "Bitte geben Sie einen gültigen Ordnernamen ein und versuchen Sie es erneut.";
-"enterVaultEmail" = "Wird nur einmal zum Senden Ihres Tresor-Backups verwendet. Wir speichern sie nicht.";
+"enterVaultEmail" = "Wird nur einmal zum Senden Ihres Tresor-Backups verwendet. Vultisig speichert Ihre E-Mail-Adresse nicht.";
 "enterVaultName" = "Tresornamen eingeben";
 "enterVaultPassword" = "Geben Sie das Passwort ein, das Sie beim Erstellen dieses Tresors festgelegt haben.";
 "enterYourEmail" = "Geben Sie Ihre E-Mail ein";

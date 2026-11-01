@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Unesite do 4 znaka";
 "enterValidAmount" = "Unesite valjan iznos veći od nule.";
 "enterValidFolderName" = "Unesite ispravan naziv mape i pokušajte ponovno.";
-"enterVaultEmail" = "Koristi se jednom za slanje sigurnosne kopije trezora. Ne pohranjujemo je.";
+"enterVaultEmail" = "Koristi se jednom za slanje sigurnosne kopije trezora. Vultisig ne pohranjuje vašu adresu e-pošte.";
 "enterVaultName" = "Unesite naziv trezora";
 "enterVaultPassword" = "Unesite lozinku koju ste postavili prilikom izrade ovog trezora.";
 "enterYourEmail" = "Unesite svoj e-mail";

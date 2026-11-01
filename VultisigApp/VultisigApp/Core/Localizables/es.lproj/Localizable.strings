@@ -459,7 +459,7 @@
 "enterUpto4Characters" = "Ingresa hasta 4 caracteres";
 "enterValidAmount" = "Ingresa una cantidad válida mayor que cero.";
 "enterValidFolderName" = "Ingresa un nombre de carpeta válido e inténtalo de nuevo.";
-"enterVaultEmail" = "Se usa una sola vez para enviarte la copia de seguridad de tu bóveda. No lo guardamos.";
+"enterVaultEmail" = "Se usa una sola vez para enviarte la copia de seguridad de tu bóveda. Vultisig no almacena tu dirección de correo electrónico.";
 "enterVaultName" = "Ingresa el nombre de la bóveda";
 "enterVaultPassword" = "Ingresa la contraseña que configuraste al crear esta bóveda.";
 "enterYourEmail" = "Ingresa tu correo electrónico";
