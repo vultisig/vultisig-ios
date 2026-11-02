@@ -11,15 +11,18 @@
 //  `CoinMeta.uniqueId`, so a held secured coin collapses onto its catalog twin
 //  but still shows its balance.
 //
-//  One instance is registered at app startup (see `VultisigApp.init`) into
-//  both the swap destination registry and the wallet `appCatalog`, so the two
-//  surfaces share one cache and one fetch.
+//  `shared` is registered at app startup (see `VultisigApp.init`) into both
+//  the swap destination registry and the wallet `appCatalog`, and the swap
+//  source picker reads it directly, so every surface shares one cache and one
+//  fetch.
 //
 
 import Foundation
 
 @MainActor
 final class SecuredAssetTokenProvider {
+
+    static let shared = SecuredAssetTokenProvider()
 
     nonisolated static let kind = "thorchainSecured"
 

@@ -232,6 +232,7 @@ struct SwapCoinSelectionLogic {
     private let isDestination: Bool
     private let service: TokenSearchService
     private let registry: DestinationTokenRegistry
+    private let securedAssets: SecuredAssetTokenProvider
 
     @MainActor
     init(
@@ -251,6 +252,7 @@ struct SwapCoinSelectionLogic {
         // under Swift 6 strict concurrency). Same pattern as
         // `TransactionHistoryViewModel.init` → `SwapTrackingRegistry.shared`.
         self.registry = registry ?? DestinationTokenRegistry.shared
+        self.securedAssets = SecuredAssetTokenProvider.shared
     }
 
     func fetchCoins(chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
@@ -260,27 +262,29 @@ struct SwapCoinSelectionLogic {
     }
 
     /// Builds the picker-ready list from an already-fetched external token list
-    /// (native + external/preset + destination registry + the vault's held
-    /// coins, deduped + sorted). Separated from the network fetch so the view
+    /// (native + external/preset + destination registry, or on the source side
+    /// THORChain secured assets only, + the vault's held coins, deduped +
+    /// sorted). Separated from the network fetch so the view
     /// model can serve a cached external list without a spinner. The vault read
     /// and `sort` (live balance reads) stay on the MainActor.
     func merge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
         // Destination-side picker pulls in tokens from every registered
         // DestinationTokenProvider; source-side skips them (SwapKit + sibling
         // providers add no signal for tokens the user doesn't hold) and lists
-        // only the external catalog plus held coins.
+        // the external catalog, held coins and the secured assets, which the
+        // cached external catalog never carries.
         let externalBuckets: [DestinationTokenBucket]
         if isDestination {
             externalBuckets = await registry.tokens(for: chain, forceRefresh: forceRefresh)
         } else {
-            externalBuckets = []
+            externalBuckets = [await securedAssets.tokens(for: chain, forceRefresh: forceRefresh)]
         }
         return await assemble(externalTokens: externalTokens, chain: chain, externalBuckets: externalBuckets)
     }
 
     /// Network-free variant of `merge` — assembles the list from what is
     /// already local (curated native + external/preset list + vault coins),
-    /// skipping the destination-registry hop. The view model publishes this
+    /// skipping the destination-registry and secured-asset hops. The view model publishes this
     /// first so the destination picker is browsable immediately while the
     /// remote providers (SwapKit catalog, THORChain/Maya pools) are awaited.
     func localMerge(externalTokens: [CoinMeta], chain: Chain) async -> SwapCoinSelectionResult {
