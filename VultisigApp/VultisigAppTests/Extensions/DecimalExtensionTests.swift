@@ -8,10 +8,10 @@ import XCTest
 
 final class DecimalExtensionTests: XCTestCase {
 
-    private let separator = Locale.current.decimalSeparator ?? "."
+    private let separator = SettingsCurrency.current.formattingLocale.decimalSeparator ?? "."
 
-    /// Builds an expected string using the host locale's decimal separator so the
-    /// assertions hold regardless of where the suite runs.
+    /// Builds an expected string using the selected currency's decimal separator so the
+    /// assertions hold whatever currency the host has selected.
     private func expected(_ value: String) -> String {
         value.replacingOccurrences(of: ".", with: separator)
     }

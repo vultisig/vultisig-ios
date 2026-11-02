@@ -782,6 +782,14 @@
 "label" = "Oznaka";
 "language" = "Jezik";
 "languageChangeTitle" = "Jezik promijenjen";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Posljednja Nagrada";
 "learnMore" = "Saznaj više";
 "Leave" = "Napusti";
@@ -1170,6 +1178,7 @@
 "peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
+"peerSlotPosition" = "%1$@ od %2$@";
 "pendingIncomingBalance" = "+%@ na čekanju";
 "pendingRewards" = "Nagrade na čekanju";
 "phantomWallet" = "Phantom novčanik";
@@ -1876,8 +1885,10 @@
 "vaultSetup4Feature3Title" = "Izrađeno za timove i riznice";
 "vaultSetup4Subtitle" = "Trezor s 4+ uređaja";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "Trezor %1$ld od %2$ld";
 "vaultShareBackupsViewTitle1" = "Stvorit ćete nove sigurnosne kopije udjela trezora";
 "vaultShareBackupsViewTitle2" = ", pohranite ih kao i prije";
+"vaultSharePosition" = "Dio %1$ld od %2$ld";
 "vaultType" = "Dio trezora";
 "vaultTypeDoesnotMatch" = "Vrsta trezora se ne podudara";
 "vaultTypeMismatch" = "Vrsta trezora se ne podudara: uređaj koji pokreće postupak i upareni uređaj imaju različite vrste trezora";

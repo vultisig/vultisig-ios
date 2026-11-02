@@ -18,6 +18,20 @@ enum SettingsLanguage: String, CaseIterable {
     case Chinese
     case Korean
 
+    /// The language's name in its own language. Raw values stay as persisted keys.
+    var nativeName: String {
+        switch self {
+        case .English: return "languageNativeNameEnglish".localized
+        case .Deutsch: return "languageNativeNameDeutsch".localized
+        case .Espanol: return "languageNativeNameEspanol".localized
+        case .Italiano: return "languageNativeNameItaliano".localized
+        case .Hrvatski: return "languageNativeNameHrvatski".localized
+        case .Portuguese: return "languageNativeNamePortuguese".localized
+        case .Chinese: return "languageNativeNameChinese".localized
+        case .Korean: return "languageNativeNameKorean".localized
+        }
+    }
+
     func description() -> String {
         switch self {
         case .English:
@@ -109,6 +123,10 @@ enum SettingsCurrency: String, CaseIterable {
             WidgetSharedStorage.setCurrencyCode(newValue.rawValue)
             WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+
+    var formattingLocale: Locale {
+        FiatFormatLocale.locale(for: rawValue)
     }
 
     var usesEuropeanFormat: Bool {

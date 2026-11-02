@@ -39,6 +39,8 @@ struct KeysignCustomMessageConfirmView: View {
                     heroSection
                     Separator()
                 }
+                chain
+                Separator()
                 method
                 Separator()
                 message
@@ -91,6 +93,10 @@ struct KeysignCustomMessageConfirmView: View {
         let hasSignature = !(viewModel.decodedFunctionSignature?.isEmpty ?? true)
         let hasArguments = !(viewModel.decodedFunctionArguments?.isEmpty ?? true)
         return hasSignature || hasArguments
+    }
+
+    var chain: some View {
+        getPrimaryCell(title: "chain".localized, value: viewModel.customMessagePayload?.displayChainName ?? "")
     }
 
     var method: some View {

@@ -782,6 +782,14 @@
 "label" = "标签";
 "language" = "语言";
 "languageChangeTitle" = "语言已更改";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "上次奖励";
 "learnMore" = "了解更多";
 "Leave" = "离开";
@@ -1170,6 +1178,7 @@
 "peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
 "peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
+"peerSlotPosition" = "%1$@/%2$@";
 "pendingIncomingBalance" = "+%@ 待确认";
 "pendingRewards" = "待领取奖励";
 "phantomWallet" = "Phantom 钱包";
@@ -1876,8 +1885,10 @@
 "vaultSetup4Feature3Title" = "为团队和财务构建";
 "vaultSetup4Subtitle" = "4+设备保险库";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "%1$ld/%2$ld 保险库设置";
 "vaultShareBackupsViewTitle1" = "您将创建新的保险库份额备份";
 "vaultShareBackupsViewTitle2" = "，像以前一样存储它们";
+"vaultSharePosition" = "份额 %1$ld/%2$ld";
 "vaultType" = "保险库部分";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
