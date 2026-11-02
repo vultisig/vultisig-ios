@@ -49,6 +49,18 @@ struct CustomMessageDecoder {
         return messageBody
     }
 
+    /// Text to show the user for a custom message: decoded text, the personal_sign body, or the raw message.
+    static func displayMessage(_ payload: CustomMessagePayload) -> String {
+        if let decoded = payload.decodedMessage, !decoded.isEmpty { return decoded }
+        if payload.method == "personal_sign", let decoded = decodePersonalSign(payload) { return decoded }
+        if payload.message.hasPrefix("0x"),
+           let data = Data(hexString: String(payload.message.dropFirst(2))),
+           let decoded = String(data: data, encoding: .utf8) {
+            return decoded
+        }
+        return payload.message
+    }
+
     /// personal_sign: show the signed text, not the EIP-191 envelope around it.
     static func decodePersonalSign(_ payload: CustomMessagePayload) -> String? {
         if let body = payload.eip191Body {
