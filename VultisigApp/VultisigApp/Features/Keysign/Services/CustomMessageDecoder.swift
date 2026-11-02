@@ -16,7 +16,7 @@ struct CustomMessageDecoder {
             return decodeTronSignMessage(payload.message)
 
         case "personal_sign":
-            return decodePersonalSign(payload.message)
+            return decodePersonalSign(payload)
 
         case "eth_signTypedData_v4":
             return decodeTypedData(payload.message)
@@ -49,13 +49,14 @@ struct CustomMessageDecoder {
         return messageBody
     }
 
-    /// personal_sign: hex -> UTF-8
-    private static func decodePersonalSign(_ message: String) -> String? {
-        guard message.hasPrefix("0x") else { return nil }
-        let hex = String(message.dropFirst(2))
-        guard let data = Data(hexString: hex),
-              let decoded = String(data: data, encoding: .utf8) else { return nil }
-        return decoded
+    /// personal_sign: show the signed text, not the EIP-191 envelope around it.
+    static func decodePersonalSign(_ payload: CustomMessagePayload) -> String? {
+        if let body = payload.eip191Body {
+            return String(data: body, encoding: .utf8)
+        }
+        guard payload.message.hasPrefix("0x"),
+              let data = Data(hexString: String(payload.message.dropFirst(2))) else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     /// eth_signTypedData_v4: pretty-print JSON

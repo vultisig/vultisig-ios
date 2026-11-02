@@ -142,6 +142,10 @@ struct KeysignCustomMessageConfirmView: View {
             return decoded
         }
 
+        if payload.method == "personal_sign", let decoded = CustomMessageDecoder.decodePersonalSign(payload) {
+            return decoded
+        }
+
         // Fallback: try hex to UTF-8
         if payload.message.hasPrefix("0x") {
             let hex = String(payload.message.dropFirst(2))
