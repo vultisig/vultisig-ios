@@ -108,13 +108,32 @@ struct CustomMessagePayload: Codable, Hashable {
         return resolved
     }
 
+    /// Chain a signature is attributed to; unknown names fall back to Ethereum, as in `resolveSigningChain()`.
+    private var lenientChain: Chain {
+        Chain.allCases.first { $0.name.caseInsensitiveCompare(chain) == .orderedSame } ?? .ethereum
+    }
+
+    /// What the confirm screen shows, so it matches the chain actually used for signing.
+    var displayChainName: String { lenientChain.name }
+
+    /// Chains outside the signing allow-list (EVM, Cosmos, Solana, Sui, TON, Tron, Polkadot/Bittensor,
+    /// Cardano, Ripple) are refused; mirrors `isSignableCustomMessage` in vultisig-windows.
+    ///
     /// EVM custom messages are signed as keccak256 of the raw bytes, which only has a
     /// message-signing domain for an EIP-191 envelope or EIP-712 typed data. Everything
     /// else is refused so the vault key never signs an arbitrary 32-byte digest.
     /// Unknown chain names fall back to Ethereum, as in `resolveSigningChain()`.
     func validateEVMSignable() throws {
-        let resolved = Chain.allCases.first { $0.name.caseInsensitiveCompare(chain) == .orderedSame } ?? .ethereum
-        guard resolved.chainType == .EVM else { return }
+        let resolved = lenientChain
+        switch resolved.chainType {
+        case .EVM:
+            break
+        case .Cosmos, .THORChain, .Solana, .Sui, .Ton, .Tron, .Polkadot, .Cardano, .Ripple:
+            return
+        case .UTXO, .Near:
+            // No message-signing domain: a 32-byte "message" could be a transaction sighash.
+            throw CustomMessagePayloadError.unsupportedChain(resolved.name)
+        }
         if method == "eth_signTypedData_v4" { return }
         guard method == "personal_sign", hasEIP191Envelope else {
             throw CustomMessagePayloadError.unsupportedEVMFormat

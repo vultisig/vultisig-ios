@@ -46,4 +46,22 @@ final class CustomMessageEVMFormatTests: XCTestCase {
     func testNonEVMChainUntouched() {
         XCTAssertNoThrow(try payload(method: "sign_message", message: "x", chain: "Solana").validateEVMSignable())
     }
+
+    func testRefusesChainsOutsideAllowList() {
+        let digest = "0x" + String(repeating: "ab", count: 32)
+        for chain in ["Bitcoin", "Litecoin", "Zcash", "Near"] {
+            XCTAssertThrowsError(try payload(method: "sign_message", message: digest, chain: chain).validateEVMSignable(), chain)
+        }
+    }
+
+    func testAllowListedChainsStillSign() {
+        for chain in ["Solana", "Sui", "Ton", "Tron", "Polkadot", "Bittensor", "Cardano", "Ripple", "Cosmos", "THORChain"] {
+            XCTAssertNoThrow(try payload(method: "sign_message", message: "x", chain: chain).validateEVMSignable(), chain)
+        }
+    }
+
+    func testDisplayChainMatchesSigningChain() {
+        XCTAssertEqual(payload(method: "sign_message", message: "x", chain: "solana").displayChainName, "Solana")
+        XCTAssertEqual(payload(method: "sign_message", message: "x", chain: "Solana ").displayChainName, "Ethereum")
+    }
 }
