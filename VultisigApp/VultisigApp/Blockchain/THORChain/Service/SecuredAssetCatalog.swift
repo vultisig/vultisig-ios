@@ -3,10 +3,11 @@
 //  VultisigApp
 //
 //  Dynamic catalog of THORChain secured assets for the swap destination
-//  picker. Fetches the canonical universe from `/thorchain/securedassets`
-//  (via `ThorchainService.fetchSecuredAssets`) and maps each dash-notation
-//  denom to a `CoinMeta` on `.thorChain`, falling back to a small static list
-//  when the live fetch fails so discovery still works offline.
+//  picker and the wallet add-token screen. Fetches the canonical universe
+//  from `/thorchain/securedassets` (via `ThorchainService.fetchSecuredAssets`)
+//  and maps each dash-notation denom to a `CoinMeta` on `.thorChain`, falling
+//  back to a small static list when the live fetch fails so discovery still
+//  works offline.
 //
 
 import Foundation

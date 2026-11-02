@@ -364,6 +364,15 @@ enum THORChainHelper {
         securedAssetChain(contractAddress: coinMeta.contractAddress)
     }
 
+    /// Display name of the L1 chain a secured asset comes from
+    /// (e.g., "eth-usdc-0xa0b..." → "Ethereum"); the raw denom prefix when the
+    /// app has no chain for it.
+    static func securedAssetSourceChainName(coinMeta: CoinMeta) -> String {
+        let code = securedAssetChain(coinMeta: coinMeta)
+        let sourceChain = Chain.supportedCases.first { $0.swapAsset.caseInsensitiveCompare(code) == .orderedSame }
+        return sourceChain?.displayName ?? code
+    }
+
     private static func securedAssetChain(contractAddress: String) -> String {
         guard let chain = contractAddress.split(separator: "-").first else {
             return "THOR"

@@ -78,20 +78,26 @@ struct VultisigApp: App {
         SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
         SwapTrackingRegistry.shared.register(NativeSwapTrackingService.shared)
 
+        // Shared by both registries below so the swap picker and the wallet
+        // add-token screen read one secured-asset cache.
+        let sharedSecuredAssetProvider = SecuredAssetTokenProvider()
+
         // Register every destination-token provider with the swap destination
         // registry so the swap coin picker can aggregate destination tokens from
         // every source. New destination providers register here.
         TokenCatalogRepository.shared.register(SwapKitTokensCache.shared)
         TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .thorchain))
         TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .mayachain))
-        TokenCatalogRepository.shared.register(SecuredAssetTokenProvider())
+        TokenCatalogRepository.shared.register(sharedSecuredAssetProvider)
 
         // Register the app-wide token catalog providers (wallet search /
         // add-token). Bundled `TokensStore` is the highest-precedence, curated,
-        // offline floor; dynamic sources (1inch / Jupiter) register on top.
+        // offline floor; dynamic sources (1inch / Jupiter / THORChain secured
+        // assets) register on top.
         TokenCatalogRepository.appCatalog.register(BundledTokensProvider.shared)
         TokenCatalogRepository.appCatalog.register(OneInchCatalogProvider.shared)
         TokenCatalogRepository.appCatalog.register(JupiterCatalogProvider.shared)
+        TokenCatalogRepository.appCatalog.register(sharedSecuredAssetProvider)
     }
     var body: some Scene {
         WindowGroup {

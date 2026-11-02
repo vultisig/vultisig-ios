@@ -18,9 +18,10 @@ struct TokenSearchService {
     /// re-merge the vault's held coins themselves on each open.
     ///
     /// The list is now assembled by the app-wide `TokenCatalogRepository`
-    /// (bundled curated `TokensStore` + 1inch + Jupiter, deduped by
-    /// `CoinMeta.uniqueId` with the curated logo/priceProviderId winning). The
-    /// caller-facing shape is unchanged — non-native `CoinMeta` for the chain.
+    /// (bundled curated `TokensStore` + 1inch + Jupiter + THORChain secured
+    /// assets, deduped by `CoinMeta.uniqueId` with the curated
+    /// logo/priceProviderId winning). The caller-facing shape is unchanged —
+    /// non-native `CoinMeta` for the chain.
     func loadTokens(for chain: Chain) async throws -> [CoinMeta] {
         try await SwapTokenListCache.shared.tokens(for: chain) {
             try await self.fetchUncached(for: chain)

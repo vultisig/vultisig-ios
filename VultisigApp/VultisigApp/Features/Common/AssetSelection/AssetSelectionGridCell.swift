@@ -12,6 +12,8 @@ struct AssetSelectionGridCell: View {
     let ticker: String
     let logo: String
     let tokenChainLogo: String?
+    /// Optional second caption line under `name`; the cell grows to fit it.
+    let subtitle: String?
     @Binding var isSelected: Bool
     var onSelection: () -> Void
 
@@ -20,6 +22,7 @@ struct AssetSelectionGridCell: View {
         ticker: String,
         logo: String,
         tokenChainLogo: String? = nil,
+        subtitle: String? = nil,
         isSelected: Binding<Bool>,
         onSelection: @escaping () -> Void
     ) {
@@ -27,6 +30,7 @@ struct AssetSelectionGridCell: View {
         self.ticker = ticker
         self.logo = logo
         self.tokenChainLogo = tokenChainLogo
+        self.subtitle = subtitle
         self._isSelected = isSelected
         self.onSelection = onSelection
     }
@@ -54,25 +58,39 @@ struct AssetSelectionGridCell: View {
                 .clipShape(Theme.radius.xl.shape)
                 .animation(.easeInOut, value: isSelected)
 
-                Text(name)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    // Clipped to the cell, never sized to the text: a long name
-                    // (dynamic-catalog tickers run to `aEthLidoUSDC` length) used
-                    // to lay out at its full ideal width and overlap the
-                    // neighbouring cells. Truncating in the MIDDLE keeps both ends
-                    // visible — these long tickers share prefixes, so tail
-                    // truncation renders `aEthLidoUSDC` and `aEthLidoUSDS`
-                    // identically.
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 2) {
+                    Text(name)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        // Clipped to the cell, never sized to the text: a long name
+                        // (dynamic-catalog tickers run to `aEthLidoUSDC` length) used
+                        // to lay out at its full ideal width and overlap the
+                        // neighbouring cells. Truncating in the MIDDLE keeps both ends
+                        // visible — these long tickers share prefixes, so tail
+                        // truncation renders `aEthLidoUSDC` and `aEthLidoUSDS`
+                        // identically.
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .frame(maxWidth: .infinity)
+
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(Theme.fonts.caption10)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
             }
-            .frame(width: 74, height: 100)
+            .frame(width: 74, height: 100 + (subtitle == nil ? 0 : Self.subtitleLineHeight))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
+
+    /// Extra height the `subtitle` line needs inside the fixed cell frame.
+    private static let subtitleLineHeight: CGFloat = 18
 
     var selectedOverlay: some View {
         ZStack(alignment: .bottomTrailing) {

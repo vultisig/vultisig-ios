@@ -2,18 +2,18 @@
 //  SecuredAssetTokenProvider.swift
 //  VultisigApp
 //
-//  Destination-token source for the swap coin picker that surfaces the
-//  THORChain secured-asset universe (from `SecuredAssetCatalog`) so a user
-//  can discover and swap *into* any secured asset — not only the ones the
-//  vault already holds. Every secured asset lives on `.thorChain` (its denom
-//  is stored as the token's `contractAddress`), so this provider emits a
-//  single bucket keyed to `.thorChain` and an empty bucket for every other
-//  chain. The picker aggregates it alongside the curated + SwapKit + native
-//  pool lists via `DestinationTokenRegistry`, deduping by `CoinMeta.uniqueId`
-//  (so a held secured coin collapses onto its catalog twin but still shows
-//  its balance).
+//  Token source that surfaces the THORChain secured-asset universe (from
+//  `SecuredAssetCatalog`) so a user can discover, add and swap *into* any
+//  secured asset — not only the ones the vault already holds. Every secured
+//  asset lives on `.thorChain` (its denom is stored as the token's
+//  `contractAddress`), so this provider emits a single bucket keyed to
+//  `.thorChain` and an empty bucket for every other chain. Consumers dedupe by
+//  `CoinMeta.uniqueId`, so a held secured coin collapses onto its catalog twin
+//  but still shows its balance.
 //
-//  Registered once at app startup (see `VultisigApp.init`).
+//  One instance is registered at app startup (see `VultisigApp.init`) into
+//  both the swap destination registry and the wallet `appCatalog`, so the two
+//  surfaces share one cache and one fetch.
 //
 
 import Foundation
@@ -21,7 +21,9 @@ import Foundation
 @MainActor
 final class SecuredAssetTokenProvider {
 
-    let kind: String = "thorchainSecured"
+    nonisolated static let kind = "thorchainSecured"
+
+    let kind: String = SecuredAssetTokenProvider.kind
     // The THORChain secured-asset universe is a curated catalog.
     let verification: TokenVerification = .curated
 

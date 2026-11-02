@@ -266,9 +266,9 @@ struct SwapCoinSelectionLogic {
     /// and `sort` (live balance reads) stay on the MainActor.
     func merge(externalTokens: [CoinMeta], chain: Chain, forceRefresh: Bool = false) async throws -> SwapCoinSelectionResult {
         // Destination-side picker pulls in tokens from every registered
-        // DestinationTokenProvider; source-side stays vault-bounded since
-        // SwapKit + sibling providers add no signal for tokens the user
-        // doesn't actually hold.
+        // DestinationTokenProvider; source-side skips them (SwapKit + sibling
+        // providers add no signal for tokens the user doesn't hold) and lists
+        // only the external catalog plus held coins.
         let externalBuckets: [DestinationTokenBucket]
         if isDestination {
             externalBuckets = await registry.tokens(for: chain, forceRefresh: forceRefresh)
@@ -295,7 +295,10 @@ struct SwapCoinSelectionLogic {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
-        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
+        // Secured assets share tickers across source chains, so they dedupe by denom.
+        let baseUnique = baseTokens.uniqueBy {
+            THORChainHelper.isSecuredAsset(coinMeta: $0) ? $0.uniqueId : $0.ticker.lowercased()
+        }
 
         // Coins the vault actually holds for this chain — including user-added
         // custom tokens that aren't in the curated TokensStore / search list.
