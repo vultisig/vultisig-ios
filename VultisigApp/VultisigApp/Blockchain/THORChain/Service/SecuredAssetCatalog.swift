@@ -7,8 +7,8 @@
 //  universe (via `ThorchainService.fetchSecuredAssets`) restricted to assets
 //  whose THORChain pool is Available, and maps each dash-notation denom to a
 //  `CoinMeta` on `.thorChain`. Falls back to a small static list when either
-//  live fetch fails, so discovery still works offline and a Staged asset is
-//  never listed.
+//  live fetch fails, so discovery still works offline instead of listing the
+//  live feed unfiltered.
 //
 
 import Foundation
@@ -86,7 +86,6 @@ final class SecuredAssetCatalog {
     func coinMetas() async -> [CoinMeta] {
         do {
             let assets = try await fetch()
-            guard !assets.isEmpty else { return Self.fallbackCoinMetas }
             let pools = Set(try await availablePools().map { $0.uppercased() })
             let listed = assets.filter { pools.contains(Self.poolAsset(forDenom: $0.asset)) }
             let metas = Self.map(denoms: listed.map { $0.asset.lowercased() })
@@ -100,10 +99,9 @@ final class SecuredAssetCatalog {
     /// The pool asset a secured denom belongs to (`ETH-USDC-0X…` → `ETH.USDC-0X…`),
     /// uppercased for comparison.
     private nonisolated static func poolAsset(forDenom denom: String) -> String {
-        guard let dash = denom.firstIndex(of: "-") else { return denom.uppercased() }
-        var pool = denom
-        pool.replaceSubrange(dash...dash, with: ".")
-        return pool.uppercased()
+        denom.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
+            .joined(separator: ".")
+            .uppercased()
     }
 
     /// Maps denoms to `CoinMeta`, deduping by `uniqueId`, preserving order.

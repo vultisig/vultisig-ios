@@ -221,8 +221,8 @@ struct TokenSelectionLogic {
     /// Tokens with no known source share a single bucket rather than escaping
     /// the cap — an unattributed token should shrink the list, not uncap it.
     ///
-    /// THORChain secured assets are never capped: the live list is ~40 assets
-    /// in alphabetical order, so a cap would hide the tail (ZEC) from browse.
+    /// THORChain secured assets are never capped: the live list is a few dozen
+    /// assets, so a cap would hide its tail (e.g. ZEC) from browse.
     static func cappedPerProvider(
         _ tokens: [CoinMeta],
         sourceKindByUniqueId: [String: String],
