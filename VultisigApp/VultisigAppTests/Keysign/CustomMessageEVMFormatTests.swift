@@ -59,4 +59,9 @@ final class CustomMessageEVMFormatTests: XCTestCase {
             XCTAssertNoThrow(try payload(method: "sign_message", message: "x", chain: chain).validateEVMSignable(), chain)
         }
     }
+
+    func testDisplayChainMatchesSigningChain() {
+        XCTAssertEqual(payload(method: "sign_message", message: "x", chain: "solana").displayChainName, "Solana")
+        XCTAssertEqual(payload(method: "sign_message", message: "x", chain: "Solana ").displayChainName, "Ethereum")
+    }
 }

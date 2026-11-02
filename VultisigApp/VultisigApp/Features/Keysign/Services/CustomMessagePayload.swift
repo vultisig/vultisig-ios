@@ -108,6 +108,14 @@ struct CustomMessagePayload: Codable, Hashable {
         return resolved
     }
 
+    /// Chain a signature is attributed to; unknown names fall back to Ethereum, as in `resolveSigningChain()`.
+    private var lenientChain: Chain {
+        Chain.allCases.first { $0.name.caseInsensitiveCompare(chain) == .orderedSame } ?? .ethereum
+    }
+
+    /// What the confirm screen shows, so it matches the chain actually used for signing.
+    var displayChainName: String { lenientChain.name }
+
     /// Chains outside the signing allow-list (EVM, Cosmos, Solana, Sui, TON, Tron, Polkadot/Bittensor,
     /// Cardano, Ripple) are refused; mirrors `isSignableCustomMessage` in vultisig-windows.
     ///
@@ -116,7 +124,7 @@ struct CustomMessagePayload: Codable, Hashable {
     /// else is refused so the vault key never signs an arbitrary 32-byte digest.
     /// Unknown chain names fall back to Ethereum, as in `resolveSigningChain()`.
     func validateEVMSignable() throws {
-        let resolved = Chain.allCases.first { $0.name.caseInsensitiveCompare(chain) == .orderedSame } ?? .ethereum
+        let resolved = lenientChain
         switch resolved.chainType {
         case .EVM:
             break

@@ -96,7 +96,7 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var chain: some View {
-        getPrimaryCell(title: "chain".localized, value: viewModel.customMessagePayload?.chain ?? "")
+        getPrimaryCell(title: "chain".localized, value: viewModel.customMessagePayload?.displayChainName ?? "")
     }
 
     var method: some View {
