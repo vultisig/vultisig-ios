@@ -782,6 +782,14 @@
 "label" = "Bezeichnung";
 "language" = "Sprache";
 "languageChangeTitle" = "Sprache geändert";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Letzte Belohnung";
 "learnMore" = "Mehr erfahren";
 "Leave" = "Verlassen";
@@ -1170,6 +1178,7 @@
 "peerDiscoveryInfoDescription" = "Öffnen Sie auf Ihrem anderen Gerät die App und tippen Sie auf \"QR scannen\", um es zu verbinden.";
 "peerDiscoveryInfoTitle" = "Scannen Sie den QR-Code mit Ihren anderen Geräten";
 "peerDiscoveryScanDeviceDisclaimer" = "Scannen Sie den QR-Code mit einem anderen Gerät. Empfohlen sind 3 Geräte, 2 reichen aus.";
+"peerSlotPosition" = "%1$@ von %2$@";
 "pendingIncomingBalance" = "+%@ ausstehend";
 "pendingRewards" = "Ausstehende Belohnungen";
 "phantomWallet" = "Phantom-Wallet";
@@ -1876,8 +1885,10 @@
 "vaultSetup4Feature3Title" = "Gebaut für Teams und Treasuries";
 "vaultSetup4Subtitle" = "4+-Geräte-Tresor";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "%1$ld-von-%2$ld-Tresor";
 "vaultShareBackupsViewTitle1" = "Sie erstellen neue Backups Ihrer Tresoranteile";
 "vaultShareBackupsViewTitle2" = ", bewahren Sie sie wie bisher auf";
+"vaultSharePosition" = "Anteil %1$ld von %2$ld";
 "vaultType" = "Tresoranteil";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "vaultTypeMismatch" = "Tresortyp stimmt nicht überein: Das initiierende und das gekoppelte Gerät haben unterschiedliche Tresortypen";

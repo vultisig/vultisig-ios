@@ -113,23 +113,17 @@ struct VaultDeletionDetails: View {
     }
 
     private func titlePartText() -> String {
-        let part = NSLocalizedString("share", comment: "")
-        let of = NSLocalizedString("of", comment: "")
-        let space = " "
-        let vaultIndex = getDeviceIndex()
-        let totalCount = "\(vault.signers.count)"
-
-        return part + space + vaultIndex + space + of + space + totalCount
+        String(format: "vaultSharePosition".localized, getDeviceIndex(), vault.signers.count)
     }
 
-    private func getDeviceIndex() -> String {
+    private func getDeviceIndex() -> Int {
         for device in devicesInfo {
             if device.Signer == vault.localPartyID {
-                return "\(device.Index + 1)"
+                return device.Index + 1
             }
         }
 
-        return "0"
+        return 0
     }
 }
 

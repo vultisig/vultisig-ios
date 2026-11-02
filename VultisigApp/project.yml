@@ -310,6 +310,8 @@ targets:
         group: VultisigApp/Shared/WidgetShared
       - path: VultisigApp/Shared/WidgetShared/WidgetSparklineSampler.swift
         group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/FiatFormatLocale.swift
+        group: VultisigApp/Shared/WidgetShared
       - path: VultisigApp/Core/Networking/HTTPMethod.swift
         group: VultisigApp/Core/Networking
       - path: VultisigApp/Core/Networking/TargetType.swift
