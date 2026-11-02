@@ -299,10 +299,7 @@ struct SwapCoinSelectionLogic {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
 
         let baseTokens = ([nativeToken] + externalTokens).compactMap { $0 }
-        // Secured assets share tickers across source chains, so they dedupe by denom.
-        let baseUnique = baseTokens.uniqueBy {
-            THORChainHelper.isSecuredAsset(coinMeta: $0) ? $0.uniqueId : $0.ticker.lowercased()
-        }
+        let baseUnique = baseTokens.uniqueBy { $0.ticker.lowercased() }
 
         // Coins the vault actually holds for this chain — including user-added
         // custom tokens that aren't in the curated TokensStore / search list.
