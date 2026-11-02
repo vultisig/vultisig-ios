@@ -135,7 +135,10 @@ struct CustomMessagePayload: Codable, Hashable {
         // so accept any split whose declared length matches the bytes after it.
         for end in digits.indices {
             let count = end - digits.startIndex + 1
-            if String(bytes: digits.prefix(count), encoding: .utf8).flatMap({ Int($0) }) == rest.count - count {
+            // Canonical decimal only (no leading zeros): verifiers hash `String(length)`.
+            guard let text = String(bytes: digits.prefix(count), encoding: .utf8),
+                  let length = Int(text), String(length) == text else { continue }
+            if length == rest.count - count {
                 return Data(rest.dropFirst(count))
             }
         }
