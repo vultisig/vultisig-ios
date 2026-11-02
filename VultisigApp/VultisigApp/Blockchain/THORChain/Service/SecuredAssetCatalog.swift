@@ -99,9 +99,7 @@ final class SecuredAssetCatalog {
     /// The pool asset a secured denom belongs to (`ETH-USDC-0X…` → `ETH.USDC-0X…`),
     /// uppercased for comparison.
     private nonisolated static func poolAsset(forDenom denom: String) -> String {
-        denom.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
-            .joined(separator: ".")
-            .uppercased()
+        denom.replacing("-", with: ".", maxReplacements: 1).uppercased()
     }
 
     /// Maps denoms to `CoinMeta`, deduping by `uniqueId`, preserving order.
