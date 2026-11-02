@@ -144,19 +144,7 @@ struct KeysignCustomMessageConfirmView: View {
     private var formattedMessage: String {
         guard let payload = viewModel.customMessagePayload else { return "" }
 
-        if let decoded = payload.decodedMessage, !decoded.isEmpty {
-            return decoded
-        }
-
-        // Fallback: try hex to UTF-8
-        if payload.message.hasPrefix("0x") {
-            let hex = String(payload.message.dropFirst(2))
-            if let data = Data(hexString: hex), let decoded = String(data: data, encoding: .utf8) {
-                return decoded
-            }
-        }
-
-        return payload.message
+        return CustomMessageDecoder.displayMessage(payload)
     }
 
     var button: some View {

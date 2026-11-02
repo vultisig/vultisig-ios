@@ -38,10 +38,12 @@ struct SignedMessageDoneTokenContent: View {
             )
             Separator()
 
-            if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
-                cell(titleKey: "transactionDetails", description: decodedMessage)
-            } else {
-                cell(titleKey: "message", description: viewModel.customMessagePayload?.message ?? "")
+            if let payload = viewModel.customMessagePayload {
+                let hasDecoded = !(payload.decodedMessage?.isEmpty ?? true)
+                cell(
+                    titleKey: hasDecoded ? "transactionDetails" : "message",
+                    description: CustomMessageDecoder.displayMessage(payload)
+                )
             }
 
             if let tokenDisplay = viewModel.decodedTokenDisplay, !tokenDisplay.isEmpty {

@@ -47,6 +47,14 @@ final class CustomMessageEVMFormatTests: XCTestCase {
         XCTAssertNoThrow(try payload(method: "sign_message", message: "x", chain: "Solana").validateEVMSignable())
     }
 
+    func testDecodePersonalSignStripsEnvelope() {
+        for message in [SettingsCustomMessageView.personalSignMessage(for: "helloe"),
+                        SettingsCustomMessageView.personalSignMessage(for: "0x68656c6c6f65")] {
+            let decoded = CustomMessageDecoder.decodePersonalSign(payload(method: "personal_sign", message: message))
+            XCTAssertEqual(decoded, "helloe")
+        }
+    }
+
     func testRefusesChainsOutsideAllowList() {
         let digest = "0x" + String(repeating: "ab", count: 32)
         for chain in ["Bitcoin", "Litecoin", "Zcash", "Near"] {

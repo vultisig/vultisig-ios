@@ -140,19 +140,28 @@ struct CustomMessagePayload: Codable, Hashable {
         }
     }
 
-    /// `\x19Ethereum Signed Message:\n`, a decimal length, then exactly that many bytes.
-    private var hasEIP191Envelope: Bool {
+    private var hasEIP191Envelope: Bool { eip191Body != nil }
+
+    /// The user's message inside `\x19Ethereum Signed Message:\n`, a decimal length, then exactly
+    /// that many bytes; nil when the payload is not such an envelope.
+    var eip191Body: Data? {
         let bytes = [UInt8](message.starts(with: "0x") ? Data(hex: message) : Data(message.utf8))
         let prefix = [UInt8]("\u{19}Ethereum Signed Message:\n".utf8)
-        guard bytes.starts(with: prefix) else { return false }
+        guard bytes.starts(with: prefix) else { return nil }
         let rest = bytes.dropFirst(prefix.count)
         let digits = rest.prefix(while: { $0 >= 0x30 && $0 <= 0x39 })
         // The length's digits are followed by message bytes that may themselves be digits,
         // so accept any split whose declared length matches the bytes after it.
-        return digits.indices.contains { end in
+        for end in digits.indices {
             let count = end - digits.startIndex + 1
-            return String(bytes: digits.prefix(count), encoding: .utf8).flatMap({ Int($0) }) == rest.count - count
+            // Canonical decimal only (no leading zeros): verifiers hash `String(length)`.
+            guard let text = String(bytes: digits.prefix(count), encoding: .utf8),
+                  let length = Int(text), String(length) == text else { continue }
+            if length == rest.count - count {
+                return Data(rest.dropFirst(count))
+            }
         }
+        return nil
     }
 
     /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),
