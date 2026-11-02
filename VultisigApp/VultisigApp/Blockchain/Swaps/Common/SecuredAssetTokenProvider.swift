@@ -50,9 +50,10 @@ final class SecuredAssetTokenProvider {
     /// fresh; otherwise re-derives from the catalog.
     ///
     /// The catalog never throws (it falls back to a small static list when the
-    /// live `/securedassets` fetch fails), so the bucket is always populated.
-    /// The underlying network fetch is itself governed by
-    /// `ThorchainService.fetchSecuredAssets`'s 5-minute cache, so `forceRefresh`
+    /// live `/securedassets` or `/pools` fetch fails), so the bucket is always
+    /// populated. The underlying network fetches are themselves governed by
+    /// the 5-minute caches of `ThorchainService.fetchSecuredAssets` and
+    /// `fetchLPPools`, so `forceRefresh`
     /// bypasses this provider's TTL to re-derive the bucket while staying cheap
     /// and offline-safe.
     private func ensureSnapshot(forceRefresh: Bool) async -> DestinationTokenBucket {
