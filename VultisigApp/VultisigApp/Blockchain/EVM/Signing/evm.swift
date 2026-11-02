@@ -27,6 +27,11 @@ class EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
 
+    /// Shared with the send security scan so it scans exactly the signed bytes.
+    static func transferData(memo: String) -> Data {
+        memo.hasPrefix("0x") ? Data(hex: memo) : Data(memo.utf8)
+    }
+
     func getChainId(chain: Chain) -> String {
         switch chain {
         case .ethereumSepolia:
@@ -238,12 +243,7 @@ class EVMHelper {
                 $0.transfer = EthereumTransaction.Transfer.with {
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
-                        if memo.hasPrefix("0x") {
-                            // if memo start with 0x , meaning it is hex encoded string , then let's hex decode it first
-                            $0.data = Data(hex: memo)
-                        } else {
-                            $0.data = Data(memo.utf8)
-                        }
+                        $0.data = Self.transferData(memo: memo)
                     }
                 }
             }

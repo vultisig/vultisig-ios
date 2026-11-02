@@ -85,9 +85,10 @@ private extension SecurityScannerTransactionFactory {
             data = try EthereumFunction.transferErc20Encoder(address: transaction.toAddress, amount: tokenAmount)
             to = transaction.coin.contractAddress
         } else {
-            transferType = SecurityTransactionType.coinTransfer
+            let calldata = EVMHelper.transferData(memo: transaction.memo)
+            transferType = calldata.isEmpty ? .coinTransfer : .smartContract
             amount = transaction.amountInRaw
-            data = "0x"
+            data = "0x" + calldata.hexString
             to = transaction.toAddress
         }
 
