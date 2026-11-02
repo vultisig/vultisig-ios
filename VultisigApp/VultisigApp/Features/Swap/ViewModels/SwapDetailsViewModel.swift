@@ -725,10 +725,7 @@ extension SwapDetailsViewModel {
 
     var fromFiatAmount: String {
         guard let context = amountInput.context else { return .empty }
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .currency
-        formatter.currencyCode = context.currency
+        let formatter = FiatFormatLocale.currencyFormatter(for: context.currency)
         let value = fromAmountDecimal * context.rate
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? .empty
     }

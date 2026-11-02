@@ -38,7 +38,7 @@ struct GroupedChainCellView: View {
         if let trailingSubtitleOverride {
             return trailingSubtitleOverride
         }
-        return showAssetCount ? "\(assetCount) \("assets".localized)" : cryptoBalance
+        return showAssetCount ? String.localizedStringWithFormat("assetCount".localized, assetCount) : cryptoBalance
     }
 
     private var trailingSubtitleFont: Font {

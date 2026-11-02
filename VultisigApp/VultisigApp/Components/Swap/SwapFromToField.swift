@@ -97,11 +97,8 @@ struct SwapFromToField: View {
     }
 
     private var currencySymbol: String {
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .currency
-        formatter.currencyCode = detailsViewModel.fromInputCurrencyCode
-        return formatter.currencySymbol ?? detailsViewModel.fromInputCurrencyCode
+        FiatFormatLocale.currencyFormatter(for: detailsViewModel.fromInputCurrencyCode).currencySymbol
+            ?? detailsViewModel.fromInputCurrencyCode
     }
 
     private func refreshCurrencyContext() {

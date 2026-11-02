@@ -782,6 +782,14 @@
 "label" = "Etichetta";
 "language" = "Lingua";
 "languageChangeTitle" = "Lingua cambiata";
+"languageNativeNameChinese" = "简体中文";
+"languageNativeNameDeutsch" = "Deutsch";
+"languageNativeNameEnglish" = "English";
+"languageNativeNameEspanol" = "Español";
+"languageNativeNameHrvatski" = "Hrvatski";
+"languageNativeNameItaliano" = "Italiano";
+"languageNativeNameKorean" = "한국어";
+"languageNativeNamePortuguese" = "Português";
 "lastReward" = "Ultima Ricompensa";
 "learnMore" = "Scopri di più";
 "Leave" = "Lascia";
@@ -1170,6 +1178,7 @@
 "peerDiscoveryInfoDescription" = "Sull'altro dispositivo, apri l'app e tocca \"Scansiona QR\" per connetterlo.";
 "peerDiscoveryInfoTitle" = "Scansiona il QR sugli altri dispositivi";
 "peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
+"peerSlotPosition" = "%1$@ di %2$@";
 "pendingIncomingBalance" = "+%@ in attesa";
 "pendingRewards" = "Ricompense in sospeso";
 "phantomWallet" = "Portafoglio Phantom";
@@ -1876,8 +1885,10 @@
 "vaultSetup4Feature3Title" = "Costruito per team e tesorerie";
 "vaultSetup4Subtitle" = "Vault a 4+ dispositivi";
 "vaultSetup4Title" = "Secure Vault";
+"vaultSetupThreshold" = "Vault %1$ld di %2$ld";
 "vaultShareBackupsViewTitle1" = "Creerai nuovi backup delle quote del vault";
 "vaultShareBackupsViewTitle2" = ", conservali come fatto in precedenza";
+"vaultSharePosition" = "Quota %1$ld di %2$ld";
 "vaultType" = "Quota del vault";
 "vaultTypeDoesnotMatch" = "Il tipo di vault non corrisponde";
 "vaultTypeMismatch" = "Il tipo di vault non corrisponde, il dispositivo di avvio e il dispositivo accoppiato hanno tipi di vault diversi";

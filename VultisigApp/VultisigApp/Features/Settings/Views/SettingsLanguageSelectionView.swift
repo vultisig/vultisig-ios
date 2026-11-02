@@ -25,7 +25,7 @@ struct SettingsLanguageSelectionView: View {
                             handleSelection(language)
                         } label: {
                             SettingSelectionCell(
-                                title: language.rawValue,
+                                title: language.nativeName,
                                 isSelected: language == settingsViewModel.selectedLanguage,
                                 description: language.description()
                             )
