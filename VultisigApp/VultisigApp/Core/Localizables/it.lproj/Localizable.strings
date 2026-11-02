@@ -1662,7 +1662,7 @@
 "swapOverview" = "Panoramica dello scambio";
 "swapRecipientRouteNotAvailable" = "Nessun percorso verso un destinatario esterno è disponibile per questa coppia. Rimuovi il destinatario o scegli un'altra coppia.";
 "swapRecipientVerificationFailed" = "Non è stato possibile confermare che lo swap venga consegnato al destinatario scelto ed è stato interrotto prima della firma. Riprova.";
-"swapReferralDiscount" = "Referral: %@";
+"swapReferralDiscount" = "Referral: %d%%";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swapRouteResetToAuto" = "Percorso reimpostato su Auto";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello Ultimate e riceverai una completa esenzione dalle commissioni Vultisig su tutti gli swap.";
 "unlockUltimateTierDescriptionHighlighted" = "completa esenzione dalle commissioni Vultisig su tutti gli swap.";
 "unlockXTier" = "Sblocca livello %@";
-"unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli swap.";
-"unlockXTierDescriptionHighlighted" = "sconto di %@ bps sulle commissioni di trading";
+"unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@%% sulle commissioni di trading su tutti gli swap.";
+"unlockXTierDescriptionHighlighted" = "sconto di %@%% sulle commissioni di trading";
 "unrelatedQRCode" = "Codice QR non correlato";
 "unrelatedQRCodeMessage" = "È stato scansionato un codice QR non correlato.";
 "unstake" = "Unstake";
@@ -1906,7 +1906,7 @@
 "volume24h" = "Volume 24h";
 "Vote" = "Vota";
 "vult" = "$VULT";
-"vultDiscount" = "Sconto: %dbps";
+"vultDiscount" = "Sconto: %d%%";
 "vultDiscountHeroSubtitle" = "ricevi uno sconto sul trading";
 "vultDiscountHeroTitle" = "Detieni $VULT";
 "vultDiscountTiers" = "Livelli di Sconto $VULT";

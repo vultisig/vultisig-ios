@@ -1662,7 +1662,7 @@
 "swapOverview" = "Swap-Übersicht";
 "swapRecipientRouteNotAvailable" = "Für dieses Paar ist keine Route zu einem externen Empfänger verfügbar. Entfernen Sie den Empfänger oder wählen Sie ein anderes Paar.";
 "swapRecipientVerificationFailed" = "Es konnte nicht bestätigt werden, dass der Swap an den gewählten Empfänger geht; er wurde vor dem Signieren gestoppt. Bitte versuchen Sie es erneut.";
-"swapReferralDiscount" = "Empfehlung: %@";
+"swapReferralDiscount" = "Empfehlung: %d%%";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap-Route nicht verfügbar";
 "swapRouteResetToAuto" = "Route auf Auto zurückgesetzt";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die Ultimate-Stufe frei und erhalten einen vollständigen Vultisig-Gebührenerlass auf alle Swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "vollständigen Vultisig-Gebührenerlass auf alle Swaps.";
 "unlockXTier" = "%@ Stufe freischalten";
-"unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
-"unlockXTierDescriptionHighlighted" = "Rabatt von %@ bps";
+"unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@%% auf alle Swaps.";
+"unlockXTierDescriptionHighlighted" = "Rabatt von %@%%";
 "unrelatedQRCode" = "Unbekannter QR-Code";
 "unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
 "unstake" = "Unstaken";
@@ -1906,7 +1906,7 @@
 "volume24h" = "24h Volumen";
 "Vote" = "Abstimmen";
 "vult" = "$VULT";
-"vultDiscount" = "Rabatt: %dbps";
+"vultDiscount" = "Rabatt: %d%%";
 "vultDiscountHeroSubtitle" = "erhalten Sie einen Handelsrabatt";
 "vultDiscountHeroTitle" = "$VULT halten";
 "vultDiscountTiers" = "$VULT Rabattstufen";

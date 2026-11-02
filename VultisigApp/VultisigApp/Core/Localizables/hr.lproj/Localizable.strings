@@ -1662,7 +1662,7 @@
 "swapOverview" = "Pregled zamjene";
 "swapRecipientRouteNotAvailable" = "Za ovaj par nije dostupna ruta do vanjskog primatelja. Uklonite primatelja ili odaberite drugi par.";
 "swapRecipientVerificationFailed" = "Nije se moglo potvrditi da će zamjena biti isporučena odabranom primatelju te je zaustavljena prije potpisivanja. Pokušajte ponovno.";
-"swapReferralDiscount" = "Preporuka: %@";
+"swapReferralDiscount" = "Preporuka: %d%%";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swapRouteResetToAuto" = "Ruta vraćena na Auto";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "Držanjem %@ $VULT otključat ćete Ultimate razinu i primiti potpuno oslobođenje od Vultisig naknada na svim swapovima.";
 "unlockUltimateTierDescriptionHighlighted" = "potpuno oslobođenje od Vultisig naknada na svim swapovima.";
 "unlockXTier" = "Otključaj %@ razinu";
-"unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";
-"unlockXTierDescriptionHighlighted" = "popust od %@ bps na naknade za trgovanje";
+"unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@%% na naknade za trgovanje na svim swapovima.";
+"unlockXTierDescriptionHighlighted" = "popust od %@%% na naknade za trgovanje";
 "unrelatedQRCode" = "Nepovezani QR kod";
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
 "unstake" = "Povuci";
@@ -1906,7 +1906,7 @@
 "volume24h" = "Volumen 24h";
 "Vote" = "Glasaj";
 "vult" = "$VULT";
-"vultDiscount" = "Popust: %dbps";
+"vultDiscount" = "Popust: %d%%";
 "vultDiscountHeroSubtitle" = "ostvarite popust na trgovanje";
 "vultDiscountHeroTitle" = "Držite $VULT";
 "vultDiscountTiers" = "$VULT Razine Popusta";

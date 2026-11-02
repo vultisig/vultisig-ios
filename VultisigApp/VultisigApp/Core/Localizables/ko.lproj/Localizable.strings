@@ -1662,7 +1662,7 @@
 "swapOverview" = "스왑 개요";
 "swapRecipientRouteNotAvailable" = "이 쌍에 대해 외부 수신자로 가는 경로를 사용할 수 없습니다. 수신자를 제거하거나 다른 쌍을 선택하세요.";
 "swapRecipientVerificationFailed" = "스왑이 선택한 수신자에게 전달되는지 확인할 수 없어 서명 전에 중단되었습니다. 다시 시도해 주세요.";
-"swapReferralDiscount" = "추천: %@";
+"swapReferralDiscount" = "추천: %d%%";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swapRouteResetToAuto" = "경로가 자동으로 재설정되었습니다";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "%@ $VULT를 보유하면 Ultimate 티어를 잠금 해제하고 모든 스왑에서 Vultisig 수수료를 완전히 면제받을 수 있습니다.";
 "unlockUltimateTierDescriptionHighlighted" = "Vultisig 수수료를 완전히 면제";
 "unlockXTier" = "%@ 티어 잠금 해제";
-"unlockXTierDescription" = "%@ $VULT를 보유하면 %@ 티어를 잠금 해제하고 모든 스왑에서 %@ bps 거래 수수료 할인을 받을 수 있습니다.";
-"unlockXTierDescriptionHighlighted" = "%@ bps 거래 수수료 할인";
+"unlockXTierDescription" = "%@ $VULT를 보유하면 %@ 티어를 잠금 해제하고 모든 스왑에서 %@%% 거래 수수료 할인을 받을 수 있습니다.";
+"unlockXTierDescriptionHighlighted" = "%@%% 거래 수수료 할인";
 "unrelatedQRCode" = "관련 없는 QR 코드";
 "unrelatedQRCodeMessage" = "관련 없는 QR 코드가 스캔되었습니다.";
 "unstake" = "언스테이킹";
@@ -1906,7 +1906,7 @@
 "volume24h" = "24시간 거래량";
 "Vote" = "투표";
 "vult" = "$VULT";
-"vultDiscount" = "할인: %dbps";
+"vultDiscount" = "할인: %d%%";
 "vultDiscountHeroSubtitle" = "거래 할인을 받으세요";
 "vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT 할인 티어";

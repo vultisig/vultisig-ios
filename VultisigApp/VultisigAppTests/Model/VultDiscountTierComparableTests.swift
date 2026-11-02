@@ -31,12 +31,12 @@ final class VultDiscountTierComparableTests: XCTestCase {
         XCTAssertEqual(shuffled.sorted(), VultDiscountTier.allCases)
     }
 
-    func test_discountPerkText_numericTiers_includeBps() {
-        XCTAssertTrue(VultDiscountTier.bronze.discountPerkText.contains("5"))
-        XCTAssertTrue(VultDiscountTier.silver.discountPerkText.contains("10"))
-        XCTAssertTrue(VultDiscountTier.gold.discountPerkText.contains("20"))
-        XCTAssertTrue(VultDiscountTier.platinum.discountPerkText.contains("25"))
-        XCTAssertTrue(VultDiscountTier.diamond.discountPerkText.contains("35"))
+    func test_discountPerkText_numericTiers_includePercentOffFee() {
+        XCTAssertTrue(VultDiscountTier.bronze.discountPerkText.contains("10%"))
+        XCTAssertTrue(VultDiscountTier.silver.discountPerkText.contains("20%"))
+        XCTAssertTrue(VultDiscountTier.gold.discountPerkText.contains("40%"))
+        XCTAssertTrue(VultDiscountTier.platinum.discountPerkText.contains("50%"))
+        XCTAssertTrue(VultDiscountTier.diamond.discountPerkText.contains("70%"))
     }
 
     func test_discountPerkText_ultimate_neverPrintsSentinel() {

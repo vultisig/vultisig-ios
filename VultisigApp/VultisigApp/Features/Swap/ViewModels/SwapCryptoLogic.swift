@@ -756,11 +756,16 @@ enum SwapCryptoLogic {
 
     // MARK: - Discounts
 
+    /// Whole-percent share of the list fee a discount removes (5 bps → 10%, Ultimate's `Int.max` → 100%).
+    static func percentOffListFee(bps: Int) -> Int {
+        max(0, min(bps, affiliateListFeeBps)) * 100 / affiliateListFeeBps
+    }
+
     static func vultDiscountLabel(vultDiscountBps: Int) -> String {
+        let percentage = percentOffListFee(bps: vultDiscountBps)
         guard let tier = VultDiscountTier.from(bpsDiscount: vultDiscountBps) else {
-            return String(format: "swapVultDiscountFallback".localized, vultDiscountBps)
+            return String(format: "swapVultDiscountFallback".localized, percentage)
         }
-        let percentage = tier == .ultimate ? 100 : tier.bpsDiscount
         return String(
             format: "swapVultDiscount".localized,
             tier.name.localized,
@@ -771,7 +776,7 @@ enum SwapCryptoLogic {
     static func referralDiscountLabel(referralDiscountBps: Int) -> String {
         String(
             format: "swapReferralDiscount".localized,
-            SwapSlippage.format(bps: referralDiscountBps)
+            percentOffListFee(bps: referralDiscountBps)
         )
     }
 

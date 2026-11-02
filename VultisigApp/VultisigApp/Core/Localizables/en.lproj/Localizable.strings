@@ -1662,7 +1662,7 @@
 "swapOverview" = "Swap overview";
 "swapRecipientRouteNotAvailable" = "No route to an external recipient is available for this pair. Remove the recipient or choose a different pair.";
 "swapRecipientVerificationFailed" = "The swap could not be confirmed to deliver to your chosen recipient and was stopped before signing. Please try again.";
-"swapReferralDiscount" = "Referral: %@";
+"swapReferralDiscount" = "Referral: %d%%";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap route not available";
 "swapRouteResetToAuto" = "Route reset to Auto";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
 "unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";
 "unlockXTier" = "Unlock %@ Tier";
-"unlockXTierDescription" = "By holding %@ $VULT, you’ll unlock the %@ Tier and receive a %@ bps trading fee discount on all swaps.";
-"unlockXTierDescriptionHighlighted" = "%@ bps trading fee discount";
+"unlockXTierDescription" = "By holding %@ $VULT, you’ll unlock the %@ Tier and receive a %@%% trading fee discount on all swaps.";
+"unlockXTierDescriptionHighlighted" = "%@%% trading fee discount";
 "unrelatedQRCode" = "Unrelated QR Code";
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
 "unstake" = "Unstake";
@@ -1906,7 +1906,7 @@
 "volume24h" = "24h Volume";
 "Vote" = "Vote";
 "vult" = "$VULT";
-"vultDiscount" = "Discount: %dbps";
+"vultDiscount" = "Discount: %d%%";
 "vultDiscountHeroSubtitle" = "receive a trading discount";
 "vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT Discount Tiers";
