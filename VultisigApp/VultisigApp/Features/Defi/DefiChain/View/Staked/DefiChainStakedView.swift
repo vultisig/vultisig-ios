@@ -13,6 +13,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
     var onUnstake: (StakePosition) -> Void
     var onWithdraw: (StakePosition) -> Void
     var onTransfer: (StakePosition) -> Void
+    var onShowRewardHistory: (StakePosition) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var showLoading: Bool {
@@ -52,7 +53,8 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                         onStake: { onStake(position) },
                         onUnstake: { onUnstake(position) },
                         onWithdraw: { onWithdraw(position) },
-                        onTransfer: { onTransfer(position) }
+                        onTransfer: { onTransfer(position) },
+                        onShowRewardHistory: position.isTCYStake ? { onShowRewardHistory(position) } : nil
                     )
                 }
             } else {
@@ -69,6 +71,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         onUnstake: { _ in },
         onWithdraw: { _ in },
         onTransfer: { _ in },
+        onShowRewardHistory: { _ in },
         emptyStateView: { EmptyView() }
     )
     .environmentObject(HomeViewModel())

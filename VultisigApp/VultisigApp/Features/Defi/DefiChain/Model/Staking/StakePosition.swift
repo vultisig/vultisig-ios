@@ -81,6 +81,11 @@ final class StakePosition {
         return !unstakeAmount.isZero && (unstakeMetadata?.canUnstake() ?? true)
     }
 
+    /// Same key `THORChainStakeInteractor` builds the plain TCY stake from; sTCY / yTCY don't match.
+    var isTCYStake: Bool {
+        coin.chain == .thorChain && coin.ticker.uppercased() == "TCY"
+    }
+
     var unstakeMessage: String? {
         if let unlockTime = withdrawalUnlockTime {
             let date = CustomDateFormatter.formatMonthDayYear(unlockTime)
