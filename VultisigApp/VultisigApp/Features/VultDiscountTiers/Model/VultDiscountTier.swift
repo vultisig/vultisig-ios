@@ -106,15 +106,19 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
         }
     }
 
+    var percentOffFee: Int {
+        SwapCryptoLogic.percentOffListFee(bps: bpsDiscount)
+    }
+
     /// Localized perk-pill copy driven by the tier's discount data.
     /// `.ultimate`'s `bpsDiscount` is `Int.max` (a sentinel), so it renders the
-    /// fee-waiver copy instead of a numeric bps value.
+    /// fee-waiver copy instead of a numeric value.
     var discountPerkText: String {
         switch self {
         case .ultimate:
             "noFee".localized
         default:
-            String(format: "vultDiscount".localized, bpsDiscount)
+            String(format: "vultDiscount".localized, percentOffFee)
         }
     }
 

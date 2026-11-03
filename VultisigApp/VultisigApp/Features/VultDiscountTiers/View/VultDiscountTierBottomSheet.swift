@@ -26,7 +26,7 @@ struct VultDiscountTierBottomSheet: View {
                 format: "unlockXTierDescription".localized,
                 tier.balanceToUnlock.formatForDisplay(),
                 tier.name.localized,
-                "\(tier.bpsDiscount)"
+                "\(tier.percentOffFee)"
             )
         }
     }
@@ -38,7 +38,7 @@ struct VultDiscountTierBottomSheet: View {
         default:
             String(
                 format: "unlockXTierDescriptionHighlighted".localized,
-                "\(tier.bpsDiscount)"
+                "\(tier.percentOffFee)"
             )
         }
     }

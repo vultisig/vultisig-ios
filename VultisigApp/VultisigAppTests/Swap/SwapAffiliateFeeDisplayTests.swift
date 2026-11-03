@@ -93,13 +93,13 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(SwapCryptoLogic.affiliateListFeeBps, 50)
     }
 
-    func testDiscountLabelsUseFigmaPercentageFormatForEveryTier() {
+    func testDiscountLabelsShowPercentOffTheListFeeForEveryTier() {
         let expectedLabels: [(VultDiscountTier, String)] = [
-            (.bronze, "VULT Bronze: 5%"),
-            (.silver, "VULT Silver: 10%"),
-            (.gold, "VULT Gold: 20%"),
-            (.platinum, "VULT Platinum: 25%"),
-            (.diamond, "VULT Diamond: 35%"),
+            (.bronze, "VULT Bronze: 10%"),
+            (.silver, "VULT Silver: 20%"),
+            (.gold, "VULT Gold: 40%"),
+            (.platinum, "VULT Platinum: 50%"),
+            (.diamond, "VULT Diamond: 70%"),
             (.ultimate, "VULT Ultimate: 100%")
         ]
 
@@ -111,11 +111,11 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         }
         XCTAssertEqual(
             SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: 15),
-            "VULT: 15%"
+            "VULT: 30%"
         )
         XCTAssertEqual(
             SwapCryptoLogic.referralDiscountLabel(referralDiscountBps: 5),
-            "Referral: 0.05%"
+            "Referral: 10%"
         )
     }
 

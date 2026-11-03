@@ -1662,7 +1662,7 @@
 "swapOverview" = "兑换概览";
 "swapRecipientRouteNotAvailable" = "此交易对没有可用的外部接收方路由。请移除接收方或选择其他交易对。";
 "swapRecipientVerificationFailed" = "无法确认此兑换会发送至您选择的接收方，已在签名前停止。请重试。";
-"swapReferralDiscount" = "推荐：%@";
+"swapReferralDiscount" = "推荐：%d%%";
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "兑换路由不可用";
 "swapRouteResetToAuto" = "路线已重置为自动";
@@ -1779,8 +1779,8 @@
 "unlockUltimateTierDescription" = "通过持有 %@ $VULT，您将解锁终极等级，并在所有兑换中获得 Vultisig 全额手续费豁免。";
 "unlockUltimateTierDescriptionHighlighted" = "在所有兑换中获得 Vultisig 全额手续费豁免。";
 "unlockXTier" = "解锁 %@ 等级";
-"unlockXTierDescription" = "通过持有 %@ $VULT，您将解锁 %@ 等级并在所有兑换中获得 %@ 个基点的交易费折扣";
-"unlockXTierDescriptionHighlighted" = "%@ 个基点的交易费折扣";
+"unlockXTierDescription" = "通过持有 %@ $VULT，您将解锁 %@ 等级并在所有兑换中获得 %@%%的交易费折扣";
+"unlockXTierDescriptionHighlighted" = "%@%%的交易费折扣";
 "unrelatedQRCode" = "无关的二维码";
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
 "unstake" = "取消质押";
@@ -1906,7 +1906,7 @@
 "volume24h" = "24小时交易量";
 "Vote" = "投票";
 "vult" = "$VULT";
-"vultDiscount" = "折扣：%d 个基点";
+"vultDiscount" = "折扣：%d%%";
 "vultDiscountHeroSubtitle" = "获享交易折扣";
 "vultDiscountHeroTitle" = "持有 $VULT";
 "vultDiscountTiers" = "$VULT 折扣等级";
