@@ -105,6 +105,7 @@ final class TCYRewardHistoryTests: XCTestCase {
 
         viewModel.load()
         await waitUntil { !viewModel.isLoading }
+        XCTAssertFalse(viewModel.isLoading)
 
         XCTAssertEqual(viewModel.total, Decimal(175_000_005))
         XCTAssertEqual(viewModel.history.count, 3)
@@ -123,6 +124,7 @@ final class TCYRewardHistoryTests: XCTestCase {
 
         viewModel.load()
         await waitUntil { !viewModel.isLoading }
+        XCTAssertFalse(viewModel.isLoading)
 
         XCTAssertEqual(viewModel.total, 0)
         XCTAssertNil(viewModel.loadError)

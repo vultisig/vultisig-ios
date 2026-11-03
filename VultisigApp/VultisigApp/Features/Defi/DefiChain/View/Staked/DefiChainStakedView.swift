@@ -20,6 +20,11 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         !viewModel.initialLoadingDone
     }
 
+    /// The sheet needs the vault's RUNE and TCY coins; without them the tap could not open it.
+    func canShowRewardHistory(_ position: StakePosition) -> Bool {
+        position.isTCYStake && viewModel.vault.runeCoin != nil && viewModel.vault.tcyCoin != nil
+    }
+
     var formattedStakePositions: [(position: StakePosition, fiatAmount: String)] {
         let valued = viewModel.stakePositions
             .map { position -> (position: StakePosition, fiatAmount: Decimal) in
@@ -54,7 +59,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                         onUnstake: { onUnstake(position) },
                         onWithdraw: { onWithdraw(position) },
                         onTransfer: { onTransfer(position) },
-                        onShowRewardHistory: position.isTCYStake ? { onShowRewardHistory(position) } : nil
+                        onShowRewardHistory: canShowRewardHistory(position) ? { onShowRewardHistory(position) } : nil
                     )
                 }
             } else {

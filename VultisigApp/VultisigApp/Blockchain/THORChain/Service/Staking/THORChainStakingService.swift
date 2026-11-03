@@ -511,10 +511,11 @@ extension THORChainStakingService {
     ) -> [BondRewardHistoryEntry] {
         (distributions ?? [])
             .compactMap { row -> BondRewardHistoryEntry? in
-                guard let amount = UInt64(row.amount), amount > 0,
-                      let seconds = Int(row.date), seconds > 0 else {
+                guard let amount = UInt64(row.amount), let seconds = Int(row.date) else {
+                    Log.chain.other.warning("Skipped TCY reward row with unparseable amount or date: \(row.amount), \(row.date)")
                     return nil
                 }
+                guard amount > 0, seconds > 0 else { return nil }
                 return BondRewardHistoryEntry(
                     id: seconds,
                     date: Date(timeIntervalSince1970: TimeInterval(seconds)),
