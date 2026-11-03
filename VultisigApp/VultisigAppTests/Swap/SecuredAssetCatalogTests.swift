@@ -70,6 +70,8 @@ final class SecuredAssetCatalogTests: XCTestCase {
                 ),
                 ThorchainSecuredAsset(asset: "BTC-BTC", supply: "1", depth: "1")
             ]
+        }, availablePools: {
+            ["ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48", "BTC.BTC"]
         })
         let metas = await catalog.coinMetas()
         XCTAssertEqual(metas.count, 2)
@@ -91,7 +93,7 @@ final class SecuredAssetCatalogTests: XCTestCase {
     }
 
     func testCatalogFallsBackWhenFeedEmpty() async {
-        let catalog = SecuredAssetCatalog(fetch: { [] })
+        let catalog = SecuredAssetCatalog(fetch: { [] }, availablePools: { [] })
         let metas = await catalog.coinMetas()
         XCTAssertEqual(metas.count, SecuredAssetCatalog.fallbackDenoms.count)
     }

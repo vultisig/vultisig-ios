@@ -3,10 +3,12 @@
 //  VultisigApp
 //
 //  Dynamic catalog of THORChain secured assets for the swap destination
-//  picker. Fetches the canonical universe from `/thorchain/securedassets`
-//  (via `ThorchainService.fetchSecuredAssets`) and maps each dash-notation
-//  denom to a `CoinMeta` on `.thorChain`, falling back to a small static list
-//  when the live fetch fails so discovery still works offline.
+//  picker and the wallet add-token screen. Lists the `/thorchain/securedassets`
+//  universe (via `ThorchainService.fetchSecuredAssets`) restricted to assets
+//  whose THORChain pool is Available, and maps each dash-notation denom to a
+//  `CoinMeta` on `.thorChain`. Falls back to a small static list when either
+//  live fetch fails, so discovery still works offline instead of listing the
+//  live feed unfiltered.
 //
 
 import Foundation
@@ -61,26 +63,43 @@ enum SecuredAssetMapper {
 final class SecuredAssetCatalog {
 
     typealias Fetcher = () async throws -> [ThorchainSecuredAsset]
+    /// Asset names (`ETH.USDC-0X…`) of the THORChain pools whose status is Available.
+    typealias AvailablePoolsFetcher = () async throws -> [String]
 
     private let fetch: Fetcher
+    private let availablePools: AvailablePoolsFetcher
 
-    init(fetch: @escaping Fetcher = { try await ThorchainService.shared.fetchSecuredAssets() }) {
+    init(
+        fetch: @escaping Fetcher = { try await ThorchainService.shared.fetchSecuredAssets() },
+        availablePools: @escaping AvailablePoolsFetcher = {
+            try await ThorchainService.shared.fetchLPPools().filter(\.isAvailable).map(\.asset)
+        }
+    ) {
         self.fetch = fetch
+        self.availablePools = availablePools
     }
 
-    /// The live secured-asset universe mapped to `.thorChain` `CoinMeta`s,
-    /// deduped by `uniqueId`. Falls back to the static list when the fetch
-    /// fails or returns nothing, so the picker is never empty of secured
-    /// assets while online-first data warms.
+    /// The live secured assets whose pool is Available, mapped to `.thorChain`
+    /// `CoinMeta`s and deduped by `uniqueId`. Falls back to the static list when
+    /// either fetch fails or nothing is left, so the picker is never empty of
+    /// secured assets and never shows the unfiltered live list.
     func coinMetas() async -> [CoinMeta] {
         do {
             let assets = try await fetch()
-            let metas = Self.map(denoms: assets.map { $0.asset.lowercased() })
+            let pools = Set(try await availablePools().map { $0.uppercased() })
+            let listed = assets.filter { pools.contains(Self.poolAsset(forDenom: $0.asset)) }
+            let metas = Self.map(denoms: listed.map { $0.asset.lowercased() })
             return metas.isEmpty ? Self.fallbackCoinMetas : metas
         } catch {
             logger.warning("secured asset catalog fetch failed: \(error.localizedDescription, privacy: .public)")
             return Self.fallbackCoinMetas
         }
+    }
+
+    /// The pool asset a secured denom belongs to (`ETH-USDC-0X…` → `ETH.USDC-0X…`),
+    /// uppercased for comparison.
+    private nonisolated static func poolAsset(forDenom denom: String) -> String {
+        denom.replacing("-", with: ".", maxReplacements: 1).uppercased()
     }
 
     /// Maps denoms to `CoinMeta`, deduping by `uniqueId`, preserving order.
@@ -98,8 +117,8 @@ final class SecuredAssetCatalog {
     }
 
     /// Canonical secured denoms (lowercase dash notation) used only when the
-    /// live `/securedassets` fetch fails. Intentionally small — the live list
-    /// is ~2.5x larger, which is why the dynamic fetch is primary.
+    /// live `/securedassets` or `/pools` fetch fails. Intentionally small — the
+    /// live list is ~2x larger, which is why the dynamic fetch is primary.
     nonisolated static let fallbackDenoms: [String] = [
         "btc-btc",
         "eth-eth",

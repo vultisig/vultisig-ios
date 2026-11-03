@@ -12,7 +12,8 @@
 //                    pool, secured). Consumed via `tokens(for:)` (per-provider
 //                    buckets), byte-identical to the old `DestinationTokenRegistry`.
 //   - `appCatalog` — the wallet token search / add-token catalog (bundled
-//                    `TokensStore` + 1inch + Jupiter). Consumed via `catalog(for:)`.
+//                    `TokensStore` + 1inch + Jupiter + secured). Consumed via
+//                    `catalog(for:)`.
 //
 //  Keyed by `kind`; re-registering the same kind overwrites in place (idempotent)
 //  so a hot-reload or test override doesn't accumulate duplicates. Registration
