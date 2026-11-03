@@ -12,77 +12,35 @@ struct SettingsMainScreen: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
-    @StateObject var referredViewModel = ReferredViewModel()
-
     @State var tapCount = 0
     @State var scale: CGFloat = 1
-    @State var showReferralBannerSheet = false
 
-    var groups: [SettingsOptionGroup] {
-        var generalOptions: [SettingsOption] = [
-            .notifications,
-            .referralCode,
-            .language,
-            .currency,
-            .homeDisplay
-        ]
+    private static let contentTopInset: CGFloat = 3
 
+    let vaultGroup = SettingsOptionGroup(title: "vault", options: [.vaultSettings, .vultDiscountTiers])
+    let communityLinks: [SettingsOption] = [.twitter, .discord, .github, .website]
+    let communityGroup = SettingsOptionGroup(title: "vultisigCommunity", options: [.rateApp, .shareApp])
+    let supportGroup = SettingsOptionGroup(title: "support", options: [.faq, .checkForUpdates, .education])
+    let legalGroup = SettingsOptionGroup(title: "legal", options: [.privacyPolicy, .termsOfService])
+
+    var generalGroup: SettingsOptionGroup {
+        var options: [SettingsOption] = [.notifications, .language, .currency, .homeDisplay]
         #if os(iOS)
-        generalOptions.append(.widgetWatchlist)
+        options.append(.widgetWatchlist)
         #endif
-        generalOptions.append(.addressBook)
-
-        return [
-            SettingsOptionGroup(
-                title: "vault",
-                options: [
-                    .vaultSettings,
-                    .vultDiscountTiers
-                ]
-            ),
-            SettingsOptionGroup(
-                title: "general",
-                options: generalOptions
-            )
-        ]
-        + [SettingsOptionGroup(title: "security", options: [.managePasscode])]
-        + [
-        SettingsOptionGroup(
-            title: "support",
-            options: [
-                .faq,
-                .checkForUpdates,
-                .education,
-                .rateApp,
-                .shareApp
-            ]
-        ),
-        SettingsOptionGroup(
-            title: "vultisigCommunity",
-            options: [
-                .twitter,
-                .discord,
-                .github,
-                .website
-            ]
-        ),
-        SettingsOptionGroup(
-            title: "legal",
-            options: [
-                .privacyPolicy,
-                .termsOfService
-            ]
-        )
-        ]
+        options.append(.addressBook)
+        return SettingsOptionGroup(title: "general", options: options)
     }
 
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
-                    ForEach(groups) { group in
-                        groupView(for: group)
-                    }
+                    groupView(for: vaultGroup)
+                    groupView(for: generalGroup)
+                    communitySection
+                    groupView(for: supportGroup)
+                    groupView(for: legalGroup)
                     appVersion
                         .padding(.bottom, 12)
                 }
@@ -90,35 +48,55 @@ struct SettingsMainScreen: View {
         }
         .accessibilityIdentifier(AccessibilityID.Settings.container)
         .screenTitle("settings".localized)
-        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        .crossPlatformSheet(isPresented: $showReferralBannerSheet) {
-            ReferralOnboardingBanner {
-                showReferralBannerSheet = false
-                referredViewModel.showReferralCodeOnboarding = false
-                router.navigate(to: ReferralRoute.onboarding)
-            } onClose: {
-                showReferralBannerSheet = false
-            }.presentationDetents([.height(400)])
-        }
+        .screenEdgeInsets(ScreenEdgeInsets(top: Self.contentTopInset, bottom: 0))
     }
 
     func groupView(for group: SettingsOptionGroup) -> some View {
-        SettingsSectionView(title: group.title.localized) {
-            ForEach(Array(group.options.enumerated()), id: \.element) { index, option in
-                optionView(for: option, shouldHighlight: false)
-                    .commonListItemContainer(index: index, itemsCount: group.options.count)
+        SettingsSectionView(title: group.title.localized, style: .flush) {
+            rows(for: group)
+        }
+    }
+
+    func rows(for group: SettingsOptionGroup) -> some View {
+        ForEach(Array(group.options.enumerated()), id: \.element) { index, option in
+            optionView(for: option)
+                .commonListItemContainer(index: index, itemsCount: group.options.count, style: .flush)
+        }
+    }
+
+    /// Link tiles above a card of rows, which `SettingsSectionView` cannot lay out.
+    var communitySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(communityGroup.title.localized)
+                .settingsText(.caption)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            VStack(spacing: 8) {
+                HStack(spacing: 6) {
+                    ForEach(communityLinks) { option in
+                        optionContainerView(for: option) {
+                            SettingsCommunityTile(icon: option.icon, title: option.title.localized)
+                        }
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+
+                VStack(spacing: .zero) {
+                    rows(for: communityGroup)
+                }
+                .commonListContainer(style: .flush)
             }
         }
     }
 
     @ViewBuilder
-    func optionView(for option: SettingsOption, shouldHighlight: Bool) -> some View {
+    func optionView(for option: SettingsOption) -> some View {
         optionContainerView(for: option) {
             SettingsCommonOptionView(
                 icon: option.icon,
                 title: option.title.localized,
                 description: description(for: option),
-                type: shouldHighlight ? .highlighted : .normal
+                chevron: option.chevron
             )
         }
         .accessibilityIdentifier(option.accessibilityID ?? "")
@@ -130,12 +108,6 @@ struct SettingsMainScreen: View {
         case .navigation:
             Button {
                 navigateToOption(option)
-            } label: {
-                content()
-            }
-        case .button:
-            Button {
-                onOption(option)
             } label: {
                 content()
             }
@@ -164,8 +136,6 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
-        case .managePasscode:
-            router.navigate(to: SettingsRoute.managePasscode)
         case .faq:
             router.navigate(to: SettingsRoute.faq)
         case .checkForUpdates:
@@ -188,7 +158,7 @@ struct SettingsMainScreen: View {
 
     var appVersion: some View {
         Text(Bundle.main.appVersionString)
-            .font(Theme.fonts.caption12)
+            .settingsText(.caption)
             .foregroundStyle(Theme.colors.textTertiary)
             .scaleEffect(scale)
             .onTapGesture {
@@ -212,19 +182,6 @@ struct SettingsMainScreen: View {
                 tapCount = 0
                 router.navigate(to: SettingsRoute.advancedSettings)
             }
-        }
-    }
-
-    func onOption(_ option: SettingsOption) {
-        switch option {
-        case .referralCode:
-            if referredViewModel.showReferralCodeOnboarding {
-                showReferralBannerSheet = true
-            } else {
-                router.navigate(to: ReferralRoute.initial)
-            }
-        default:
-            return
         }
     }
 }

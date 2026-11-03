@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "Impossibile aggiornare le posizioni. Trascina per riprovare.";
 "delete" = "Elimina";
 "deleteFolder" = "Elimina cartella";
-"deleteVault" = "Elimina definitivamente il tuo vault";
+"deleteVault" = "Elimina definitivamente la tua quota del vault";
 "deleteVaultTitle" = "Elimina vault";
 "dependencies" = "Dipendenze";
 "destinationAddress" = "Indirizzo di destinazione";
@@ -627,6 +627,7 @@
 "homeDisplayCombinedTitle" = "Wallet + DeFi";
 "homeDisplaySeparateDescription" = "La scheda Wallet mostra solo il saldo del wallet e la scheda DeFi il saldo DeFi.";
 "homeDisplaySeparateTitle" = "Wallet e DeFi separati";
+"homeDisplaySubtitle" = "Modifica la visualizzazione del saldo del wallet";
 "homeSwipeHintDescription" = "Scorri a sinistra o a destra per passare tra le schede wallet e DeFi.";
 "homeSwipeHintTitle" = "Scorri per cambiare";
 "howItWorks" = "Come funziona";
@@ -924,6 +925,8 @@
 "loadingSecuredAssets" = "Caricamento asset garantiti...";
 "localModeWaitingOnDevices" = "Modalità locale, in attesa dei dispositivi...";
 "lockAfterTitle" = "Blocca dopo";
+"lockTime" = "Tempo di blocco";
+"lockTimeSubtitle" = "Imposta il tempo prima che l'app si blocchi automaticamente";
 "loginUsingFaceID" = "Accedi usando Face ID";
 "loginUsingOpticID" = "Accedi con Optic ID";
 "loginUsingTouchID" = "Accedi con Touch ID";
@@ -1160,7 +1163,6 @@
 "passcodeLockedOutMinutes" = "Troppi tentativi. Riprova tra %d minuti.";
 "passcodeLockedOutShortly" = "Troppi tentativi. Riprova tra poco.";
 "passcodeManageExplanation" = "Impostare un codice di accesso cifra le quote di chiave del tuo vault su questo dispositivo; rimuoverlo le decifra di nuovo. Non sostituisce il backup del vault.";
-"passcodeManageTitle" = "Codice";
 "passcodeMismatch" = "Non corrispondono. Riprova.";
 "passcodeNewTitle" = "Scegli un nuovo codice";
 "passcodeSealedSharesWithoutKey" = "I tuoi vault sono già cifrati su questo dispositivo, ma la chiave che li apre non è leggibile. Ripristinali da un backup.";
@@ -1326,7 +1328,7 @@
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Esegui il reshare del vault";
-"reshareVault" = "Esegui il reshare del vault con nuovi dispositivi";
+"reshareVault" = "Esegui il reshare del vault con un nuovo comitato";
 "reshareVaultSubtitle" = "Aggiorna la configurazione del tuo vault. Aggiungi o rimuovi dispositivi, oppure aggiorna le quote.";
 "resharingLoaderTitle" = "Aggiungi dispositivi da includere o escludi quelli da rimuovere dal vault";
 "resolvingRecipientName" = "Risoluzione del nome…";
@@ -1435,6 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transazione non scansionata da";
 "securityScannerTransactionScannedBy" = "Transazione scansionata da";
 "securityScannerTransactionScanning" = "Scansione ...";
+"securitySettingsSubtitle" = "Gestisci la biometria per la firma rapida";
 "seedPhraseAlreadyImported" = "Seed phrase già importata";
 "seedPhraseAlreadyImportedDescription" = "Importa un'altra seed phrase";
 "seedPhraseImportTip" = "Suggerimento: Puoi usare un browser come dispositivo";
@@ -1834,7 +1837,7 @@
 "vaultImportWouldOverwriteExisting" = "Questo backup non può essere importato: sovrascriverebbe un vault già presente su questo dispositivo.";
 "vaultInfo" = "Informazioni sul Vault";
 "vaultLibType" = "Tipo di vault";
-"vaultManagement" = "Vault";
+"vaultManagement" = "Gestione vault";
 "vaultName" = "Nome del vault";
 "vaultNameAlreadyInUse" = "Nome Vault già in uso";
 "vaultNameExists" = "Il nome del vault %s esiste già";
@@ -1918,7 +1921,7 @@
 "vultisigEducation" = "Vultisig Education";
 "vultisigFee" = "Commissione Vultisig";
 "vultisigFeePercentage" = "Commissione Vultisig (%.2f%%)";
-"vultisigWebsite" = "Sito Web Vultisig";
+"vultisigWebsite" = "Sito Web";
 "vultTierBadge" = "LIVELLO VULT";
 "waitChurnedOutNode" = "Attendi fino a quando il Nodo non viene escluso";
 "waitingForDevicesToConnect" = "In attesa della connessione dei dispositivi";
@@ -1952,7 +1955,7 @@
 "wrongVaultSelected" = "Hai scelto il vault sbagliato";
 "wrongVaultSelectedDescription" = "Il vault selezionato non corrisponde alla sessione di keygen. Seleziona il vault corretto.";
 "wrongVaultTryAgain" = "Vault o abbinamento errato";
-"x" = "X (Twitter)";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "Impossibile verificare l'account XRP di destinazione (%@). Riprova.";
 "xrpDestinationNotActivatedError" = "L'indirizzo XRP di destinazione non è ancora attivato. Un primo trasferimento deve essere di almeno %@ XRP (la riserva base della rete). Aumenta l'importo o verifica l'indirizzo.";
 "xrpDestinationNoTrustLineError" = "Il destinatario non ha una linea di fiducia %@, quindi questo pagamento verrebbe rifiutato dall'XRP Ledger.";

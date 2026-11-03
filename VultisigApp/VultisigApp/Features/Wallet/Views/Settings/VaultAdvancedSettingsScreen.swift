@@ -23,10 +23,10 @@ struct VaultAdvancedSettingsScreen: View {
                 VStack(spacing: 0) {
                     ForEach(Array(rows.enumerated()), id: \.element) { index, row in
                         view(for: row)
-                            .commonListItemContainer(index: index, itemsCount: rows.count)
+                            .commonListItemContainer(index: index, itemsCount: rows.count, style: .flush)
                     }
                 }
-                .commonListContainer()
+                .commonListContainer(style: .flush)
             }
         }
         .task {
@@ -103,7 +103,12 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.reshare(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: .upload4, title: "reshare".localized, subtitle: "reshareVault".localized)
+            SettingsCommonOptionView(
+                icon: .shareUpRight2,
+                title: "reshare".localized,
+                subtitle: "reshareVault".localized,
+                titleStyle: .subtitle
+            )
         }
     }
 
@@ -111,9 +116,10 @@ struct VaultAdvancedSettingsScreen: View {
         VStack(spacing: 16) {
             Button(action: startKeygen) {
                 SettingsCommonOptionView(
-                    icon: .atomShield,
+                    icon: .filePen,
                     title: "dilithiumKeygen".localized,
-                    subtitle: "dilithiumKeygenSubtitle".localized
+                    subtitle: "dilithiumKeygenSubtitle".localized,
+                    titleStyle: .subtitle
                 )
             }
             .disabled(routingState != .idle)
@@ -176,7 +182,12 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.customMessage(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: .filePen, title: "sign".localized, subtitle: "signCustomMessage".localized)
+            SettingsCommonOptionView(
+                icon: .penWriting,
+                title: "sign".localized,
+                subtitle: "signCustomMessage".localized,
+                titleStyle: .subtitle
+            )
         }
     }
 
@@ -185,9 +196,10 @@ struct VaultAdvancedSettingsScreen: View {
             router.navigate(to: VaultRoute.onChainSecurity)
         } label: {
             SettingsCommonOptionView(
-                icon: .folderLock,
+                icon: .fileLock,
                 title: "vaultSettingsSecurityTitle".localized,
-                subtitle: "vaultSettingsSecuritySubtitle".localized
+                subtitle: "vaultSettingsSecuritySubtitle".localized,
+                titleStyle: .subtitle
             )
         }
     }
@@ -197,13 +209,12 @@ struct VaultAdvancedSettingsScreen: View {
             handleCustomRPCTap()
         } label: {
             SettingsOptionView(
-                icon: .mobileSignal,
+                icon: .signature,
                 title: "settingsAdvancedCustomRPC",
                 subtitle: "customRPCSubtitle".localized,
+                titleStyle: .subtitle,
                 titleAccessory: { VultTierBadge() },
-                trailingView: {
-                    Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
-                }
+                trailingView: { SettingsChevronIcon() }
             )
         }
     }

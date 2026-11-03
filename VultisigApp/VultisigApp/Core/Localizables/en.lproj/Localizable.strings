@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "Couldn't refresh positions. Pull to retry.";
 "delete" = "Delete";
 "deleteFolder" = "Delete Folder";
-"deleteVault" = "Delete your vault permanently";
+"deleteVault" = "Delete your vault share permanently";
 "deleteVaultTitle" = "Delete Vault";
 "dependencies" = "Dependencies";
 "destinationAddress" = "Destination Address";
@@ -627,6 +627,7 @@
 "homeDisplayCombinedTitle" = "Wallet + DeFi";
 "homeDisplaySeparateDescription" = "Your Wallet tab shows your wallet balance only, and your DeFi tab shows your DeFi balance.";
 "homeDisplaySeparateTitle" = "Wallet & DeFi separate";
+"homeDisplaySubtitle" = "Edit wallet balance display";
 "homeSwipeHintDescription" = "Swipe left or right to move between your wallet and DeFi tabs.";
 "homeSwipeHintTitle" = "Swipe to switch";
 "howItWorks" = "How it works";
@@ -924,6 +925,8 @@
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Local mode, waiting on devices...";
 "lockAfterTitle" = "Lock after";
+"lockTime" = "Lock time";
+"lockTimeSubtitle" = "Set the time until the app locks automatically";
 "loginUsingFaceID" = "Login using Face ID";
 "loginUsingOpticID" = "Login using Optic ID";
 "loginUsingTouchID" = "Login using Touch ID";
@@ -1160,7 +1163,6 @@
 "passcodeLockedOutMinutes" = "Too many attempts. Try again in %d minutes.";
 "passcodeLockedOutShortly" = "Too many attempts. Try again shortly.";
 "passcodeManageExplanation" = "Setting a passcode encrypts your vault key shares on this device; removing it decrypts them again. It is not a replacement for your vault backup.";
-"passcodeManageTitle" = "Passcode";
 "passcodeMismatch" = "Those did not match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
@@ -1326,7 +1328,7 @@
 "resendNotificationIn" = "Resend notification in %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Reshare your vault";
-"reshareVault" = "Reshare vault with new devices";
+"reshareVault" = "Reshare vault with a new committee";
 "reshareVaultSubtitle" = "Update your vault setup. Add or remove devices, or refresh shares.";
 "resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
 "resolvingRecipientName" = "Resolving name…";
@@ -1435,6 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transaction not scanned by";
 "securityScannerTransactionScannedBy" = "Transaction scanned by";
 "securityScannerTransactionScanning" = "Scanning…";
+"securitySettingsSubtitle" = "Manage biometrics for fast sign";
 "seedPhraseAlreadyImported" = "Seed Phrase already imported";
 "seedPhraseAlreadyImportedDescription" = "Please import another seed phrase";
 "seedPhraseImportTip" = "Tip: You can use a browser as a device";
@@ -1834,7 +1837,7 @@
 "vaultImportWouldOverwriteExisting" = "This backup can't be imported: it would overwrite a vault already on this device.";
 "vaultInfo" = "Vault Info";
 "vaultLibType" = "Vault Type";
-"vaultManagement" = "Vault";
+"vaultManagement" = "Vault Management";
 "vaultName" = "Vault Name";
 "vaultNameAlreadyInUse" = "Vault name already in use";
 "vaultNameExists" = "Vault name %s already exists";
@@ -1852,7 +1855,7 @@
 "vaultSettingsSecurityScreenTitleContent" = "You can disable your realtime on-chain security";
 "vaultSettingsSecurityScreenTitleSwitch" = "Manage your on-chain security";
 "vaultSettingsSecuritySubtitle" = "Manage your on-chain security";
-"vaultSettingsSecurityTitle" = "On-chain Security";
+"vaultSettingsSecurityTitle" = "On-chain security";
 "vaultSetup1Feature1Description" = "Convenient one-device signing on the go. Perfect for daily transactions or trading smaller amounts.";
 "vaultSetup1Feature1Title" = "1-Device Signing";
 "vaultSetup1Feature2Description" = "No long setup. Just your email and password, plus two backups.";
@@ -1918,7 +1921,7 @@
 "vultisigEducation" = "Vultisig Education";
 "vultisigFee" = "Vultisig Fee";
 "vultisigFeePercentage" = "Vultisig Fee (%.2f%%)";
-"vultisigWebsite" = "Vultisig Website";
+"vultisigWebsite" = "Website";
 "vultTierBadge" = "VULT TIER";
 "waitChurnedOutNode" = "Wait until Node is churned out";
 "waitingForDevicesToConnect" = "Waiting for devices to connect";
@@ -1952,7 +1955,7 @@
 "wrongVaultSelected" = "You chose the wrong vault";
 "wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
-"x" = "X (Twitter)";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "The destination XRP account couldn't be verified (%@). Please try again.";
 "xrpDestinationNotActivatedError" = "The destination XRP address is not activated yet. A first transfer to it must be at least %@ XRP (the network base reserve). Increase the amount or double-check the address.";
 "xrpDestinationNoTrustLineError" = "The recipient has no %@ trust line, so this payment would be rejected by the XRP Ledger.";

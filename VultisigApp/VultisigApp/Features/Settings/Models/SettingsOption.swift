@@ -16,7 +16,6 @@ struct SettingsOptionGroup: Identifiable {
 
 enum SettingsOptionType {
     case navigation
-    case button
     case link(url: URL)
     case shareLink(url: URL)
 }
@@ -32,8 +31,6 @@ enum SettingsOption: String, Identifiable {
     case widgetWatchlist
     case notifications
     case addressBook
-    case managePasscode
-    case referralCode
     case faq
     case education
     case checkForUpdates
@@ -64,10 +61,6 @@ enum SettingsOption: String, Identifiable {
             return "notifications"
         case .addressBook:
             return "addressBook"
-        case .managePasscode:
-            return "passcodeManageTitle"
-        case .referralCode:
-            return "referralCode"
         case .faq:
             return "faq"
         case .education:
@@ -96,43 +89,39 @@ enum SettingsOption: String, Identifiable {
     var icon: ImageResource? {
         switch self {
         case .vaultSettings:
-            return .gear
+            return .slider
         case .vultDiscountTiers:
-            return .coins
+            return .cardsFilled
         case .language:
             return .language
         case .currency:
             return .circleDollar
         case .homeDisplay:
-            return .wallet
+            return .walletFilledSolid
         case .widgetWatchlist:
             return .eye
         case .notifications:
-            return .bell
+            return .bellFilled
         case .addressBook:
             return .bookBookmarkFilled
-        case .managePasscode:
-            return .lockPassword
-        case .referralCode:
-            return .megaphone
         case .faq:
             return .squareQuestion
         case .education:
-            return .books
+            return .bookBookmarkFilled
         case .checkForUpdates:
             return .cloudUpload
         case .rateApp:
-            return .stars
+            return .sparkle
         case .shareApp:
-            return .connectedDots3
+            return .shareUpRight2
         case .twitter:
-            return .iconX
+            return .socialsTwitter
         case .discord:
-            return .iconDiscord
+            return .socialsDiscord
         case .github:
-            return .iconGithub
+            return .socialsGithub
         case .website:
-            return .globe
+            return .globe2
         case .privacyPolicy:
             return .shield
         case .termsOfService:
@@ -148,8 +137,17 @@ enum SettingsOption: String, Identifiable {
         case .widgetWatchlist: return AccessibilityID.Settings.widgetWatchlistCell
         case .vaultSettings: return AccessibilityID.Settings.vaultSettingsCell
         case .faq: return AccessibilityID.Settings.faqCell
-        case .managePasscode: return AccessibilityID.Settings.managePasscodeCell
         default: return nil
+        }
+    }
+
+    /// Legal rows end in the larger chevron the design gives them.
+    var chevron: SettingsChevron {
+        switch self {
+        case .privacyPolicy, .termsOfService:
+            return .regular
+        default:
+            return .small
         }
     }
 
@@ -173,8 +171,6 @@ enum SettingsOption: String, Identifiable {
             return .link(url: StaticURL.TermsOfServiceURL)
         case .education:
             return .link(url: StaticURL.VultisigDocsURL)
-        case .referralCode:
-            return .button
         default:
             return .navigation
         }

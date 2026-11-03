@@ -7,9 +7,19 @@
 
 import SwiftUI
 
+/// How a group of list rows is drawn.
+enum CommonListStyle {
+    /// A hairline-bordered card whose separators sit between the rows.
+    case outlined
+    /// A borderless card whose separators are drawn inside each row's own
+    /// height, so a row keeps the design's height whether it has one or not.
+    case flush
+}
+
 struct CommonListItemContainer: ViewModifier {
     let index: Int
     let itemsCount: Int
+    let style: CommonListStyle
 
     var isFirst: Bool {
         index == 0
@@ -23,8 +33,10 @@ struct CommonListItemContainer: ViewModifier {
     /// middle row's clip is a plain rectangle the size of the row — visually a
     /// no-op that still installs a mask and can cost an offscreen pass, once
     /// per row, on every frame the list composites.
+    ///
+    /// A flush card clips once at the container, so its rows never need one.
     private var needsCornerClip: Bool {
-        isFirst || isLast
+        style == .outlined && (isFirst || isLast)
     }
 
     func body(content: Content) -> some View {
@@ -56,40 +68,64 @@ struct CommonListItemContainer: ViewModifier {
         }
     }
 
+    @ViewBuilder
     private func row(_ content: Content) -> some View {
-        VStack(spacing: 0) {
+        switch style {
+        case .outlined:
+            VStack(spacing: 0) {
+                content
+                separator
+            }
+        case .flush:
             content
-            Separator(color: Theme.colors.borderLight, opacity: 1)
-                .showIf(!isLast)
+                .overlay(alignment: .bottom) { separator }
         }
+    }
+
+    private var separator: some View {
+        Separator(color: Theme.colors.borderLight, opacity: 1)
+            .showIf(!isLast)
     }
 }
 
 /// Wrapping container for a group of `commonListItemContainer` rows: a single
-/// rounded surface with a hairline border, matching the Figma list style.
+/// rounded surface, outlined by a hairline or flush with the screen.
 struct CommonListContainer: ViewModifier {
     static let cornerRadius = Theme.radius.xl
+    /// The flush card's rows start one point below its top edge.
+    static let flushTopInset: CGFloat = 1
 
+    let style: CommonListStyle
+
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
-            .background(
-                Self.cornerRadius.shape
-                    .fill(Theme.colors.bgSurface1)
-            )
-            .overlay(
-                Self.cornerRadius.shape
-                    .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
-                    .allowsHitTesting(false)
-            )
+        switch style {
+        case .outlined:
+            content
+                .background(
+                    Self.cornerRadius.shape
+                        .fill(Theme.colors.bgSurface1)
+                )
+                .overlay(
+                    Self.cornerRadius.shape
+                        .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+                        .allowsHitTesting(false)
+                )
+        case .flush:
+            content
+                .background(Theme.colors.bgSurface1)
+                .padding(.top, Self.flushTopInset)
+                .clipShape(Self.cornerRadius.shape)
+        }
     }
 }
 
 extension View {
-    func commonListItemContainer(index: Int, itemsCount: Int) -> some View {
-        modifier(CommonListItemContainer(index: index, itemsCount: itemsCount))
+    func commonListItemContainer(index: Int, itemsCount: Int, style: CommonListStyle = .outlined) -> some View {
+        modifier(CommonListItemContainer(index: index, itemsCount: itemsCount, style: style))
     }
 
-    func commonListContainer() -> some View {
-        modifier(CommonListContainer())
+    func commonListContainer(style: CommonListStyle = .outlined) -> some View {
+        modifier(CommonListContainer(style: style))
     }
 }

@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "No se pudieron actualizar las posiciones. Desliza para reintentar.";
 "delete" = "Eliminar";
 "deleteFolder" = "Eliminar carpeta";
-"deleteVault" = "Eliminar tu bóveda de forma permanente";
+"deleteVault" = "Eliminar tu fragmento de la bóveda de forma permanente";
 "deleteVaultTitle" = "Eliminar bóveda";
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
@@ -627,6 +627,7 @@
 "homeDisplayCombinedTitle" = "Billetera + DeFi";
 "homeDisplaySeparateDescription" = "La pestaña Billetera muestra solo el saldo de tu billetera y la pestaña DeFi muestra tu saldo DeFi.";
 "homeDisplaySeparateTitle" = "Billetera y DeFi por separado";
+"homeDisplaySubtitle" = "Edita cómo se muestra el saldo de la billetera";
 "homeSwipeHintDescription" = "Desliza a la izquierda o a la derecha para moverte entre las pestañas de billetera y DeFi.";
 "homeSwipeHintTitle" = "Desliza para cambiar";
 "howItWorks" = "Cómo funciona";
@@ -924,6 +925,8 @@
 "loadingSecuredAssets" = "Cargando activos asegurados...";
 "localModeWaitingOnDevices" = "Modo local, esperando dispositivos...";
 "lockAfterTitle" = "Bloquear después de";
+"lockTime" = "Tiempo de bloqueo";
+"lockTimeSubtitle" = "Define el tiempo hasta que la app se bloquee automáticamente";
 "loginUsingFaceID" = "Iniciar sesión usando Face ID";
 "loginUsingOpticID" = "Iniciar sesión con Optic ID";
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
@@ -1160,7 +1163,6 @@
 "passcodeLockedOutMinutes" = "Demasiados intentos. Inténtalo en %d minutos.";
 "passcodeLockedOutShortly" = "Demasiados intentos. Inténtalo en un momento.";
 "passcodeManageExplanation" = "Al establecer un código de acceso, los fragmentos de clave de tu bóveda se cifran en este dispositivo; al quitarlo, se descifran de nuevo. No sustituye a la copia de seguridad de tu bóveda.";
-"passcodeManageTitle" = "Código";
 "passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus bóvedas ya están cifradas en este dispositivo, pero no se puede leer la clave que las abre. Restáuralas desde una copia de seguridad.";
@@ -1326,7 +1328,7 @@
 "resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";
 "reshareLabelTitle" = "Recomparte tu bóveda";
-"reshareVault" = "Recompartir la bóveda con nuevos dispositivos";
+"reshareVault" = "Recompartir la bóveda con un nuevo comité";
 "reshareVaultSubtitle" = "Actualiza la configuración de tu bóveda. Agrega o quita dispositivos, o renueva los fragmentos.";
 "resharingLoaderTitle" = "Agrega los dispositivos que quieras incluir o deja fuera los que quieras quitar de la bóveda";
 "resolvingRecipientName" = "Resolviendo nombre…";
@@ -1435,6 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transacción no escaneada por";
 "securityScannerTransactionScannedBy" = "Transacción escaneada por";
 "securityScannerTransactionScanning" = "Analizando…";
+"securitySettingsSubtitle" = "Gestiona la biometría para la firma rápida";
 "seedPhraseAlreadyImported" = "Frase semilla ya importada";
 "seedPhraseAlreadyImportedDescription" = "Importa otra frase semilla";
 "seedPhraseImportTip" = "Consejo: Puedes usar un navegador como dispositivo";
@@ -1918,7 +1921,7 @@
 "vultisigEducation" = "Educación Vultisig";
 "vultisigFee" = "Comisión de Vultisig";
 "vultisigFeePercentage" = "Comisión de Vultisig (%.2f%%)";
-"vultisigWebsite" = "Sitio web de Vultisig";
+"vultisigWebsite" = "Sitio web";
 "vultTierBadge" = "NIVEL VULT";
 "waitChurnedOutNode" = "Espera a que el nodo salga por rotación";
 "waitingForDevicesToConnect" = "Esperando a que los dispositivos se conecten";
@@ -1952,7 +1955,7 @@
 "wrongVaultSelected" = "Elegiste la bóveda incorrecta";
 "wrongVaultSelectedDescription" = "La bóveda que seleccionaste no coincide con la sesión de generación de claves. Selecciona la bóveda correcta.";
 "wrongVaultTryAgain" = "Bóveda o dispositivo emparejado incorrecto";
-"x" = "X (Twitter)";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "No se pudo verificar la cuenta XRP de destino (%@). Inténtalo de nuevo.";
 "xrpDestinationNotActivatedError" = "La dirección XRP de destino aún no está activada. Una primera transferencia debe ser de al menos %@ XRP (la reserva base de la red). Aumenta la cantidad o verifica la dirección.";
 "xrpDestinationNoTrustLineError" = "El destinatario no tiene una línea de confianza de %@, por lo que el XRP Ledger rechazaría este pago.";

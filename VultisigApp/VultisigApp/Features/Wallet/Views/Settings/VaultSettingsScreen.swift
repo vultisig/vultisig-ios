@@ -22,10 +22,16 @@ struct VaultSettingsScreen: View {
     @State var presentFastSigningBiometricsSheet = false
 
     @State var isFastSigningBiometricsEnabled: Bool = false
+    @State var isPasscodeSet = false
+    @State var showReferralBannerSheet = false
     @StateObject var viewModel = SettingsBiometryViewModel()
+    @StateObject var referredViewModel = ReferredViewModel()
 
-    init(vault: Vault) {
+    private let passcodeService: PasscodeService
+
+    init(vault: Vault, passcodeService: PasscodeService = .shared) {
         self.vault = vault
+        self.passcodeService = passcodeService
     }
 
     var body: some View {
@@ -37,13 +43,29 @@ struct VaultSettingsScreen: View {
                     section(title: "other".localized, rows: otherRows)
 
                     deleteVault
-                        .commonListItemContainer(index: 0, itemsCount: 1)
-                        .commonListContainer()
+                        .commonListContainer(style: .flush)
                 }
             }
         }
         .screenTitle("vaultSettings".localized)
         .onLoad(perform: onLoad)
+        // The passcode is set or removed on a screen pushed from here, so re-read it on return.
+        .task { await refreshPasscodeState() }
+        // On macOS `.task` does not re-run when a pushed screen pops.
+        #if os(macOS)
+        .onReceive(router.$navPath) { _ in
+            Task { await refreshPasscodeState() }
+        }
+        #endif
+        .crossPlatformSheet(isPresented: $showReferralBannerSheet) {
+            ReferralOnboardingBanner {
+                showReferralBannerSheet = false
+                referredViewModel.showReferralCodeOnboarding = false
+                router.navigate(to: ReferralRoute.onboarding)
+            } onClose: {
+                showReferralBannerSheet = false
+            }.presentationDetents([.height(400)])
+        }
         .crossPlatformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(
                 showSheet: $showUpgradeYourVaultSheet,
@@ -73,13 +95,19 @@ struct VaultSettingsScreen: View {
         }
     }
 
+    private static let toggleLayoutHeight: CGFloat = 20
+
     /// The rows a section can hold. Sections compose them as an ordered array
     /// so each row knows its position, which is what drives the shared list
     /// container's separators and end-row corner rounding.
     enum Row {
         case vaultDetails
         case editVault
+        case homeDisplay
+        case referralCode
         case fastSigningBiometrics
+        case security
+        case lockTime
         case passwordHint
         case backupVault
         case migrateVault
@@ -87,7 +115,7 @@ struct VaultSettingsScreen: View {
     }
 
     var vaultManagementRows: [Row] {
-        var rows: [Row] = [.vaultDetails, .editVault]
+        var rows: [Row] = [.vaultDetails, .editVault, .homeDisplay, .referralCode]
         if vault.isFastVault {
             rows.append(.fastSigningBiometrics)
         }
@@ -95,7 +123,15 @@ struct VaultSettingsScreen: View {
     }
 
     var securityRows: [Row] {
-        vault.isFastVault ? [.passwordHint, .backupVault] : [.backupVault]
+        var rows: [Row] = [.security]
+        if isPasscodeSet {
+            rows.append(.lockTime)
+        }
+        if vault.isFastVault {
+            rows.append(.passwordHint)
+        }
+        rows.append(.backupVault)
+        return rows
     }
 
     var otherRows: [Row] {
@@ -104,10 +140,10 @@ struct VaultSettingsScreen: View {
     }
 
     func section(title: String, rows: [Row]) -> some View {
-        SettingsSectionView(title: title) {
+        SettingsSectionView(title: title, style: .flush) {
             ForEach(Array(rows.enumerated()), id: \.element) { index, row in
                 view(for: row)
-                    .commonListItemContainer(index: index, itemsCount: rows.count)
+                    .commonListItemContainer(index: index, itemsCount: rows.count, style: .flush)
             }
         }
     }
@@ -119,8 +155,16 @@ struct VaultSettingsScreen: View {
             vaultDetails
         case .editVault:
             editVault
+        case .homeDisplay:
+            homeDisplay
+        case .referralCode:
+            referralCode
         case .fastSigningBiometrics:
             fastSigningBiometrics
+        case .security:
+            security
+        case .lockTime:
+            lockTime
         case .passwordHint:
             passwordHint
         case .backupVault:
@@ -134,13 +178,17 @@ struct VaultSettingsScreen: View {
 
     var fastSigningBiometrics: some View {
         SettingsOptionView(
-            icon: .bolt,
-            title: "biometricsFastSigning".localized
+            icon: .boltFilled,
+            title: "biometricsFastSigning".localized,
+            titleStyle: .footnote
         ) {
-            VultiToggle(isOn: Binding(
+            Toggle("biometricsFastSigning".localized, isOn: Binding(
                 get: { viewModel.isBiometryEnabled },
                 set: { onBiometryEnabledChanged($0) }
             ))
+            .toggleStyle(SettingsToggleStyle())
+            // The switch overhangs the row's padding so the row stays as tall as an icon row.
+            .frame(height: Self.toggleLayoutHeight)
         }
     }
 
@@ -148,15 +196,79 @@ struct VaultSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.passwordHint(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: .inputPasswordEdit, title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
+            SettingsCommonOptionView(
+                icon: .inputPasswordEdit,
+                title: "passwordHint".localized,
+                subtitle: "setOrUpdateHint".localized,
+                titleStyle: .footnote
+            )
         }
+    }
+
+    var homeDisplay: some View {
+        Button {
+            router.navigate(to: SettingsRoute.homeDisplay)
+        } label: {
+            SettingsCommonOptionView(
+                icon: .gridLayout7,
+                title: "homeDisplay".localized,
+                subtitle: "homeDisplaySubtitle".localized,
+                titleStyle: .footnote
+            )
+        }
+        .accessibilityIdentifier(AccessibilityID.Settings.homeDisplayCell)
+    }
+
+    var referralCode: some View {
+        Button {
+            if referredViewModel.showReferralCodeOnboarding {
+                showReferralBannerSheet = true
+            } else {
+                router.navigate(to: ReferralRoute.initial)
+            }
+        } label: {
+            SettingsCommonOptionView(icon: .megaphone, title: "referralCode".localized, titleStyle: .footnote)
+        }
+    }
+
+    var security: some View {
+        Button {
+            router.navigate(to: SettingsRoute.managePasscode)
+        } label: {
+            SettingsCommonOptionView(
+                icon: .shield,
+                title: "security".localized,
+                subtitle: "securitySettingsSubtitle".localized,
+                titleStyle: .footnote
+            )
+        }
+        .accessibilityIdentifier(AccessibilityID.Settings.managePasscodeCell)
+    }
+
+    var lockTime: some View {
+        Button {
+            router.navigate(to: SettingsRoute.autoLock)
+        } label: {
+            SettingsCommonOptionView(
+                icon: .lockFilled,
+                title: "lockTime".localized,
+                subtitle: "lockTimeSubtitle".localized,
+                titleStyle: .footnote
+            )
+        }
+        .accessibilityIdentifier(AccessibilityID.Settings.autoLockCell)
     }
 
     var vaultDetails: some View {
         Button {
             router.navigate(to: VaultRoute.vaultDetails(vault: vault, devicesInfo: devicesInfo))
         } label: {
-            SettingsCommonOptionView(icon: .circleInfo, title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
+            SettingsCommonOptionView(
+                icon: .circleInfo,
+                title: "vaultDetailsTitle".localized,
+                subtitle: "vaultDetailsDescription".localized,
+                titleStyle: .footnote
+            )
         }
     }
 
@@ -171,7 +283,8 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .cloudDownload,
                 title: "backupVaultShareTitle".localized,
-                subtitle: "backupVaultShareDescription".localized
+                subtitle: "backupVaultShareDescription".localized,
+                titleStyle: .footnote
             )
         }
     }
@@ -181,9 +294,10 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.renameVault(vault: vault, vaults: vaults, folders: folders))
         } label: {
             SettingsCommonOptionView(
-                icon: .penWritingFilled,
+                icon: .penWriting,
                 title: "rename".localized,
-                subtitle: "renameVault".localized
+                subtitle: "renameVault".localized,
+                titleStyle: .footnote
             )
         }
     }
@@ -193,13 +307,14 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.deleteVault(vault: vault, devicesInfo: devicesInfo))
         } label: {
             SettingsCommonOptionView(
-                icon: .trash,
+                icon: .trashFilled,
                 title: "delete".localized,
                 subtitle: "deleteVault".localized,
-                type: .alert
+                type: .alert,
+                titleStyle: .footnote,
+                chevron: .regular
             )
         }
-
     }
 
     var migrateVault: some View {
@@ -209,7 +324,9 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .cloudUpload,
                 title: "migrate".localized,
-                subtitle: "migrateVault".localized
+                subtitle: "migrateVault".localized,
+                titleStyle: .footnote,
+                chevron: .regular
             )
         }
     }
@@ -219,9 +336,11 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.advancedSettings(vault: vault))
         } label: {
             SettingsCommonOptionView(
-                icon: .folderKey,
+                icon: .fileSearch,
                 title: "advanced".localized,
-                subtitle: "advancedDescription".localized
+                subtitle: "advancedDescription".localized,
+                titleStyle: .footnote,
+                chevron: .regular
             )
         }
     }
@@ -231,6 +350,10 @@ struct VaultSettingsScreen: View {
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
         }
+    }
+
+    private func refreshPasscodeState() async {
+        isPasscodeSet = await passcodeService.isSet
     }
 
     func onDeviceBackup() {
