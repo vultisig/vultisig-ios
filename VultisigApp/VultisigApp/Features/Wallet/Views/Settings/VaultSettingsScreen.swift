@@ -48,9 +48,12 @@ struct VaultSettingsScreen: View {
             }
         }
         .screenTitle("vaultSettings".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .onLoad(perform: onLoad)
-        // The passcode is set or removed on a screen pushed from here, so re-read it on return.
+        // The passcode is set or removed on a screen pushed from here, and returning
+        // from it does not re-run `.task`.
         .task { await refreshPasscodeState() }
+        .onAppear { Task { await refreshPasscodeState() } }
         // On macOS `.task` does not re-run when a pushed screen pops.
         #if os(macOS)
         .onReceive(router.$navPath) { _ in

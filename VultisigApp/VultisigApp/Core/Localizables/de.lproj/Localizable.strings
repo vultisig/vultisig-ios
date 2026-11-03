@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Tresor-Reshare";
-"reshareVault" = "Reshare mit einem neuen Komitee";
+"reshareVault" = "Reshare mit neuen Geräten";
 "reshareVaultSubtitle" = "Passen Sie die Einrichtung Ihres Tresors an: Fügen Sie Geräte hinzu, entfernen Sie Geräte oder erneuern Sie die Tresoranteile.";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
 "resolvingRecipientName" = "Name wird aufgelöst…";

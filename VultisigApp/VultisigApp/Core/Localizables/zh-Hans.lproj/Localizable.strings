@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
 "reshareLabelTitle" = "重新共享您的保险库";
-"reshareVault" = "与新的委员会重新共享保险库";
+"reshareVault" = "使用新设备重新共享保险库";
 "reshareVaultSubtitle" = "更新您的保险库设置。添加或移除设备，或刷新份额。";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
 "resolvingRecipientName" = "正在解析名称…";

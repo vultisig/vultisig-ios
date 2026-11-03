@@ -9,7 +9,6 @@ import SwiftUI
 
 enum SettingsOptionViewType {
     case normal
-    case highlighted
     case alert
 }
 
@@ -40,19 +39,10 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         self.trailingView = trailingView
     }
 
-    var bgColor: Color? {
-        switch type {
-        case .normal, .alert:
-            return nil
-        case .highlighted:
-            return Theme.colors.primaryAccent3
-        }
-    }
-
     var iconColor: Color {
         switch type {
-        case .normal, .highlighted:
-            // One step below the label; `.highlighted` still reads through `bgColor`.
+        case .normal:
+            // One step below the label.
             return Theme.colors.textSecondary
         case .alert:
             return Theme.colors.alertError
@@ -61,7 +51,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
 
     var fontColor: Color {
         switch type {
-        case .normal, .highlighted:
+        case .normal:
             return Theme.colors.textPrimary
         case .alert:
             return Theme.colors.alertError
@@ -70,7 +60,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
 
     var subtitleColor: Color {
         switch type {
-        case .normal, .highlighted:
+        case .normal:
             return Theme.colors.textSecondary
         case .alert:
             return Theme.colors.alertError.opacity(Self.alertSubtitleOpacity)
@@ -106,7 +96,6 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 16)
-        .background(bgColor)
     }
 }
 

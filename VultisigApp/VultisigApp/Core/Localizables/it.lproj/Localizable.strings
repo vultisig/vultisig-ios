@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Esegui il reshare del vault";
-"reshareVault" = "Esegui il reshare del vault con un nuovo comitato";
+"reshareVault" = "Esegui il reshare del vault con nuovi dispositivi";
 "reshareVaultSubtitle" = "Aggiorna la configurazione del tuo vault. Aggiungi o rimuovi dispositivi, oppure aggiorna le quote.";
 "resharingLoaderTitle" = "Aggiungi dispositivi da includere o escludi quelli da rimuovere dal vault";
 "resolvingRecipientName" = "Risoluzione del nome…";

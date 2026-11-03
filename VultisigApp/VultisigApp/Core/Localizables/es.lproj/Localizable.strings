@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";
 "reshareLabelTitle" = "Recomparte tu bóveda";
-"reshareVault" = "Recompartir la bóveda con un nuevo comité";
+"reshareVault" = "Recompartir la bóveda con nuevos dispositivos";
 "reshareVaultSubtitle" = "Actualiza la configuración de tu bóveda. Agrega o quita dispositivos, o renueva los fragmentos.";
 "resharingLoaderTitle" = "Agrega los dispositivos que quieras incluir o deja fuera los que quieras quitar de la bóveda";
 "resolvingRecipientName" = "Resolviendo nombre…";

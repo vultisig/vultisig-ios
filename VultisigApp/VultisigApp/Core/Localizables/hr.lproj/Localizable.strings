@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
-"reshareVault" = "Ponovno podijelite trezor s novim odborom";
+"reshareVault" = "Ponovno podijelite trezor s novim uređajima";
 "reshareVaultSubtitle" = "Ažurirajte postavke svog trezora. Dodajte ili uklonite uređaje ili osvježite udjele.";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
 "resolvingRecipientName" = "Razrješavanje naziva…";
