@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import VultisigUIResources
 
 struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
@@ -15,48 +14,42 @@ struct UpdateCheckUpdateNowView: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
-            updateLogo
-            VStack(spacing: 12) {
+        VStack(spacing: 0) {
+            UpdateCheckLogo()
+            VStack(spacing: UpdateCheckLayout.titleToVersion) {
                 updateTitle
                 updateDescription
             }
+            .padding(.top, UpdateCheckLayout.logoToTitle)
             updateButton
+                .padding(.top, UpdateCheckLayout.versionToButton)
             #if os(macOS)
             downloadViaGitHubButton
+                .padding(.top, UpdateCheckLayout.versionToButton)
             #endif
             Spacer()
         }
-    }
-
-    var updateLogo: some View {
-        VultisigImage("vultisig-logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 72)
-            .padding(.bottom, 4)
+        .padding(.top, UpdateCheckLayout.topInset)
     }
 
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
-            .font(Theme.fonts.bodyMMedium)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .padding(.top, 24)
+            .settingsText(.buttonRegular)
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.center)
     }
 
     var updateDescription: some View {
         Text(latestVersion)
-            .font(Theme.fonts.bodySRegular)
-            .foregroundStyle(Theme.colors.textPrimary)
+            .settingsText(.buttonS)
+            .foregroundStyle(Theme.colors.textTertiary)
     }
 
     var updateButton: some View {
-        return Link(destination: link) {
-            PrimaryButtonView(title: "updateNow")
+        Link(destination: link) {
+            Text("updateApp".localized)
         }
-        .buttonStyle(PrimaryButtonStyle())
-        .frame(maxWidth: 160)
+        .buttonStyle(SettingsCTAButtonStyle(width: .hug))
     }
 
     #if os(macOS)

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import VultisigUIResources
 
 struct UpdateCheckUpToDateView: View {
     let currentVersion: String
@@ -14,10 +13,9 @@ struct UpdateCheckUpToDateView: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(spacing: 34) {
-            Spacer()
-            vultisigLogo
-            VStack(spacing: 12) {
+        VStack(spacing: UpdateCheckLayout.logoToTitle) {
+            UpdateCheckLogo()
+            VStack(spacing: UpdateCheckLayout.titleToVersion) {
                 upToDateTitle
                 upToDateDescription
             }
@@ -26,25 +24,19 @@ struct UpdateCheckUpToDateView: View {
             #endif
             Spacer()
         }
-    }
-
-    var vultisigLogo: some View {
-        VultisigImage("vultisig-logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 72)
+        .padding(.top, UpdateCheckLayout.topInset)
     }
 
     var upToDateTitle: some View {
         Text(NSLocalizedString("appUpToDate", comment: ""))
-            .font(Theme.fonts.bodyMMedium)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .padding(.top, 24)
+            .settingsText(.buttonRegular)
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.center)
     }
 
     var upToDateDescription: some View {
         Text(currentVersion)
-            .font(Theme.fonts.bodySMedium)
+            .settingsText(.buttonS)
             .foregroundStyle(Theme.colors.textTertiary)
     }
 
@@ -56,6 +48,39 @@ struct UpdateCheckUpToDateView: View {
         .frame(maxWidth: 200)
     }
     #endif
+}
+
+/// Spacing shared by the up to date and update available states, so the logo
+/// and text stay put when the button appears.
+enum UpdateCheckLayout {
+    static let topInset: CGFloat = 186
+    static let glowOffset: CGFloat = -59.5
+    static let logoToTitle: CGFloat = 27.5
+    static let titleToVersion: CGFloat = 12
+    static let versionToButton: CGFloat = 30
+}
+
+/// The app tile the update states lead with.
+struct UpdateCheckLogo: View {
+    private static let side: CGFloat = 74.5
+    private static let radius: CGFloat = 23.84
+    private static let markSide: CGFloat = 41.72
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: Self.radius)
+            .fill(
+                LinearGradient(
+                    colors: [Theme.colors.primaryAccent4, Color(hex: "0D39B1")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .shadow(.inner(color: .white.opacity(0.35), radius: 0.75, y: 1.49))
+            )
+            .frame(width: Self.side, height: Self.side)
+            .overlay {
+                Icon(.vultisigMark, color: nil, size: Self.markSide)
+            }
+    }
 }
 
 #Preview {
