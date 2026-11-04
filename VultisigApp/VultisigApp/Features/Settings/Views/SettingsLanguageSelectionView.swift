@@ -27,17 +27,18 @@ struct SettingsLanguageSelectionView: View {
                             SettingSelectionCell(
                                 title: language.nativeName,
                                 isSelected: language == settingsViewModel.selectedLanguage,
-                                description: language.description()
+                                description: language.description(),
+                                style: .highlighted(title: .subtitle)
                             )
                         }
-                        .commonListItemContainer(index: index, itemsCount: languages.count)
+                        .commonListItemContainer(index: index, itemsCount: languages.count, style: .flush)
                     }
                 }
-                .commonListContainer()
+                .commonListContainer(style: .flush)
             }
         }
         .screenTitle("language".localized)
-        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .screenEdgeInsets(ScreenEdgeInsets(top: CommonListContainer.flushScreenTopInset, bottom: 0))
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),

@@ -29,17 +29,18 @@ struct SettingsCurrencySelectionView: View {
                         } label: {
                             SettingSelectionCell(
                                 title: viewModel.description,
-                                isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue
+                                isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
+                                style: .highlighted(title: .bodyS)
                             )
                         }
-                        .commonListItemContainer(index: index, itemsCount: currencies.count)
+                        .commonListItemContainer(index: index, itemsCount: currencies.count, style: .flush)
                     }
                 }
-                .commonListContainer()
+                .commonListContainer(style: .flush)
             }
         }
         .screenTitle("currency".localized)
-        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .screenEdgeInsets(ScreenEdgeInsets(top: CommonListContainer.flushScreenTopInset, bottom: 0))
         .onLoad(perform: onLoad)
     }
 
@@ -56,11 +57,22 @@ struct SettingsCurrencySelectionView: View {
         dismiss()
     }
 
+    /// The design lists the Swiss Franc ahead of the Pound.
+    private var displayOrder: [SettingsCurrency] {
+        var order = SettingsCurrency.allCases
+        if let pound = order.firstIndex(of: .GBP), let franc = order.firstIndex(of: .CHF) {
+            order.swapAt(pound, franc)
+        }
+        return order
+    }
+
     func onLoad() {
         let formatter = NumberFormatter()
         let locale = Locale(identifier: "en_US")
         formatter.numberStyle = .currency
-        currencies = SettingsCurrency.allCases.map { currency in
+        // Unambiguous in every device region: US$, JP¥ and CA$ rather than a bare $ or ¥.
+        formatter.locale = Locale(identifier: "en_GB")
+        currencies = displayOrder.map { currency in
             formatter.currencyCode = currency.rawValue
             return SettingsCurrencyViewModel(
                 currency: currency,
