@@ -16,6 +16,12 @@ enum SettingsTextStyle {
     case subtitle
     /// Section captions, row subtitles and tile labels.
     case caption
+    /// Selection and toggle row titles.
+    case bodyM
+    /// Empty and update state titles.
+    case buttonRegular
+    /// Empty and update state subtitles.
+    case buttonS
 
     var font: Font {
         switch self {
@@ -23,6 +29,9 @@ enum SettingsTextStyle {
         case .footnote: Theme.fonts.footnote
         case .subtitle: Theme.fonts.subtitle
         case .caption: Theme.fonts.caption12
+        case .bodyM: Theme.fonts.bodyMMedium
+        case .buttonRegular: Theme.fonts.buttonRegularMedium
+        case .buttonS: Theme.fonts.buttonSMedium
         }
     }
 
@@ -32,12 +41,14 @@ enum SettingsTextStyle {
         case .footnote: 13
         case .subtitle: 15
         case .caption: 12
+        case .bodyM, .buttonRegular: 16
+        case .buttonS: 14
         }
     }
 
     var tracking: CGFloat {
         switch self {
-        case .bodyS: 0
+        case .bodyS, .bodyM, .buttonRegular, .buttonS: 0
         case .footnote: 0.06
         case .subtitle: -0.18
         case .caption: 0.12
@@ -50,6 +61,9 @@ enum SettingsTextStyle {
         case .footnote: 18
         case .subtitle: 17
         case .caption: 16
+        case .bodyM: 24
+        case .buttonRegular: 20
+        case .buttonS: 18
         }
     }
 

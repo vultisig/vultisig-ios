@@ -19,6 +19,12 @@ enum CommonTextFieldErrorStyle {
     case error, warning
 }
 
+/// `.settings` is the settings forms' field: a 52 tall card with a dim label and
+/// placeholder and no outer gutter. Everywhere else keeps `.standard`.
+enum CommonTextFieldAppearance {
+    case standard, settings
+}
+
 struct CommonTextField<TrailingView: View>: View {
     @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
@@ -32,8 +38,11 @@ struct CommonTextField<TrailingView: View>: View {
     let labelStyle: TextFieldLabelStyle
     let size: CommonTextFieldSize
     let errorStyle: CommonTextFieldErrorStyle
+    let appearance: CommonTextFieldAppearance
 
     let trailingView: () -> TrailingView
+
+    private static var settingsHeight: CGFloat { 52 }
 
     init(
         text: Binding<String>,
@@ -47,6 +56,7 @@ struct CommonTextField<TrailingView: View>: View {
         labelStyle: TextFieldLabelStyle = .primary,
         size: CommonTextFieldSize = .normal,
         errorStyle: CommonTextFieldErrorStyle = .error,
+        appearance: CommonTextFieldAppearance = .standard,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -60,6 +70,7 @@ struct CommonTextField<TrailingView: View>: View {
         self.labelStyle = labelStyle
         self.size = size
         self.errorStyle = errorStyle
+        self.appearance = appearance
         self._isValid = isValid
     }
 
@@ -74,7 +85,8 @@ struct CommonTextField<TrailingView: View>: View {
         isScrollable: Bool = false,
         labelStyle: TextFieldLabelStyle = .primary,
         size: CommonTextFieldSize = .normal,
-        errorStyle: CommonTextFieldErrorStyle = .error
+        errorStyle: CommonTextFieldErrorStyle = .error,
+        appearance: CommonTextFieldAppearance = .standard
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
@@ -88,6 +100,7 @@ struct CommonTextField<TrailingView: View>: View {
             labelStyle: labelStyle,
             size: size,
             errorStyle: errorStyle,
+            appearance: appearance,
             trailingView: { EmptyView() }
         )
     }
@@ -95,15 +108,22 @@ struct CommonTextField<TrailingView: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let label {
-                Text(label)
-                    .foregroundStyle(labelColor)
-                    .font(labelFont)
+                switch appearance {
+                case .standard:
+                    Text(label)
+                        .foregroundStyle(labelColor)
+                        .font(labelFont)
+                case .settings:
+                    Text(label)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .settingsText(.bodyS)
+                }
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     textFieldContainer
-                        .font(Theme.fonts.bodyMRegular)
+                        .font(textFont)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .submitLabel(.done)
                         .colorScheme(.dark)
@@ -115,16 +135,13 @@ struct CommonTextField<TrailingView: View>: View {
                 }
                 .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
-                .padding(.horizontal, 12)
-                .background(Theme.colors.bgSurface1)
-                .cornerRadius(Theme.radius.md)
-                .overlay(
-                    Theme.radius.md.shape
-                        .stroke(borderColor, lineWidth: borderWidth)
-                )
+                .padding(.horizontal, horizontalPadding)
+                .background(backgroundColor)
+                .cornerRadius(cornerRadius)
+                .overlay(border)
                 .autocorrectionDisabled()
                 .borderlessTextFieldStyle()
-                .padding(1)
+                .padding(outerPadding)
 
                 if let error, showErrorText {
                     Text(error.localized)
@@ -213,6 +230,12 @@ struct CommonTextField<TrailingView: View>: View {
         Group {
             if isSecure {
                 SecureField(placeholder?.localized ?? .empty, text: $text)
+            } else if appearance == .settings {
+                TextField(
+                    placeholder?.localized ?? .empty,
+                    text: $text,
+                    prompt: Text(placeholder?.localized ?? .empty).foregroundStyle(Theme.colors.textTertiary)
+                )
             } else {
                 TextField(placeholder?.localized ?? .empty, text: $text)
             }
@@ -244,11 +267,44 @@ struct CommonTextField<TrailingView: View>: View {
     }
 
     var height: CGFloat {
+        guard appearance == .standard else { return Self.settingsHeight }
         switch size {
         case .normal:
-            56
+            return 56
         case .small:
-            36
+            return 36
+        }
+    }
+
+    var textFont: Font {
+        appearance == .settings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMRegular
+    }
+
+    var horizontalPadding: CGFloat {
+        appearance == .settings ? 16 : 12
+    }
+
+    var outerPadding: CGFloat {
+        appearance == .settings ? 0 : 1
+    }
+
+    var backgroundColor: Color {
+        appearance == .settings ? Color(hex: "051937") : Theme.colors.bgSurface1
+    }
+
+    var cornerRadius: CornerRadius {
+        appearance == .settings ? Theme.radius.lg : Theme.radius.md
+    }
+
+    @ViewBuilder
+    var border: some View {
+        switch appearance {
+        case .standard:
+            cornerRadius.shape
+                .stroke(borderColor, lineWidth: borderWidth)
+        case .settings:
+            cornerRadius.shape
+                .strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1)
         }
     }
 }
