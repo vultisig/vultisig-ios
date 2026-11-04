@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "Não foi possível atualizar as posições. Puxe para tentar novamente.";
 "delete" = "Excluir";
 "deleteFolder" = "Excluir pasta";
-"deleteVault" = "Excluir seu cofre permanentemente";
+"deleteVault" = "Excluir sua parte do cofre permanentemente";
 "deleteVaultTitle" = "Excluir cofre";
 "dependencies" = "Dependências";
 "destinationAddress" = "Endereço de destino";
@@ -924,6 +924,8 @@
 "loadingSecuredAssets" = "Carregando Secured Assets...";
 "localModeWaitingOnDevices" = "Modo local, aguardando dispositivos...";
 "lockAfterTitle" = "Bloquear após";
+"lockTime" = "Tempo de bloqueio";
+"lockTimeSubtitle" = "Defina o tempo até o app ser bloqueado automaticamente";
 "loginUsingFaceID" = "Login usando Face ID";
 "loginUsingOpticID" = "Entrar usando Optic ID";
 "loginUsingTouchID" = "Entrar usando Touch ID";
@@ -1160,7 +1162,6 @@
 "passcodeLockedOutMinutes" = "Muitas tentativas. Tente novamente em %d minutos.";
 "passcodeLockedOutShortly" = "Muitas tentativas. Tente novamente em instantes.";
 "passcodeManageExplanation" = "Definir um código de acesso criptografa as partes do cofre neste dispositivo; removê-lo as descriptografa. Não substitui o backup do cofre.";
-"passcodeManageTitle" = "Código";
 "passcodeMismatch" = "Não coincidem. Tente novamente.";
 "passcodeNewTitle" = "Escolha um novo código";
 "passcodeSealedSharesWithoutKey" = "Seus cofres já estão criptografados neste dispositivo, mas a chave que os abre não pode ser lida. Restaure-os a partir de um backup.";
@@ -1435,6 +1436,7 @@
 "securityScannerTransactionNotScanned" = "Transação não verificada por";
 "securityScannerTransactionScannedBy" = "Transação verificada por";
 "securityScannerTransactionScanning" = "Varredura ...";
+"securitySettingsSubtitle" = "Gerencie seu código de acesso";
 "seedPhraseAlreadyImported" = "Frase semente já importada";
 "seedPhraseAlreadyImportedDescription" = "Por favor importe outra frase semente";
 "seedPhraseImportTip" = "Dica: Você pode usar um navegador como dispositivo";
@@ -1918,7 +1920,7 @@
 "vultisigEducation" = "Educação Vultisig";
 "vultisigFee" = "Taxa da Vultisig";
 "vultisigFeePercentage" = "Taxa da Vultisig (%.2f%%)";
-"vultisigWebsite" = "Site do Vultisig";
+"vultisigWebsite" = "Site";
 "vultTierBadge" = "NÍVEL VULT";
 "waitChurnedOutNode" = "Aguarde até que o Nó seja excluído";
 "waitingForDevicesToConnect" = "Aguardando conexão dos dispositivos";
@@ -1952,7 +1954,7 @@
 "wrongVaultSelected" = "Você escolheu o cofre errado";
 "wrongVaultSelectedDescription" = "O cofre que você selecionou não corresponde à sessão de keygen. Selecione o cofre correto.";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
-"x" = "x";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "Não foi possível verificar a conta XRP de destino (%@). Tente novamente.";
 "xrpDestinationNotActivatedError" = "O endereço XRP de destino ainda não está ativado. Uma primeira transferência deve ser de pelo menos %@ XRP (a reserva base da rede). Aumente o valor ou verifique o endereço.";
 "xrpDestinationNoTrustLineError" = "O destinatário não tem uma linha de confiança de %@, por isso este pagamento seria rejeitado pelo XRP Ledger.";

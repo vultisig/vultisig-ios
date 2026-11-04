@@ -21,6 +21,6 @@ final class SettingsAppReviewOptionTests: XCTestCase {
     func testRateAppUsesLocalizedTitleAndSparkleIcon() {
         XCTAssertEqual(SettingsOption.rateApp.title, "rateTheApp")
         XCTAssertNotEqual(SettingsOption.rateApp.title.localized, SettingsOption.rateApp.title)
-        XCTAssertEqual(SettingsOption.rateApp.icon, .stars)
+        XCTAssertEqual(SettingsOption.rateApp.icon, .sparkle)
     }
 }

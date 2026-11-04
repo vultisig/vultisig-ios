@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "无法刷新仓位。下拉重试。";
 "delete" = "删除";
 "deleteFolder" = "删除文件夹";
-"deleteVault" = "永久删除您的保险库";
+"deleteVault" = "永久删除您的保险库份额";
 "deleteVaultTitle" = "删除保险库";
 "dependencies" = "依赖项";
 "destinationAddress" = "目标地址";
@@ -924,6 +924,8 @@
 "loadingSecuredAssets" = "加载担保资产中...";
 "localModeWaitingOnDevices" = "本地模式，等待设备...";
 "lockAfterTitle" = "自动锁定时间";
+"lockTime" = "锁定时间";
+"lockTimeSubtitle" = "设置应用自动锁定前的时间";
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";
@@ -1160,7 +1162,6 @@
 "passcodeLockedOutMinutes" = "尝试次数过多，请在 %d 分钟后再试。";
 "passcodeLockedOutShortly" = "尝试次数过多，请稍后再试。";
 "passcodeManageExplanation" = "设置密码会加密本设备上的保险库密钥份额，移除密码则会将其重新解密。它不能替代保险库备份。";
-"passcodeManageTitle" = "密码";
 "passcodeMismatch" = "两次输入不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
 "passcodeSealedSharesWithoutKey" = "本设备上的保险库已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
@@ -1326,7 +1327,7 @@
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
 "reshareLabelTitle" = "重新共享您的保险库";
-"reshareVault" = "使用新设备重新共享保险库";
+"reshareVault" = "使用新的设备组重新共享保险库";
 "reshareVaultSubtitle" = "更新您的保险库设置。添加或移除设备，或刷新份额。";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
 "resolvingRecipientName" = "正在解析名称…";
@@ -1435,6 +1436,7 @@
 "securityScannerTransactionNotScanned" = "交易未被扫描";
 "securityScannerTransactionScannedBy" = "交易已被扫描";
 "securityScannerTransactionScanning" = "正在扫描…";
+"securitySettingsSubtitle" = "管理您的密码";
 "seedPhraseAlreadyImported" = "助记词已导入";
 "seedPhraseAlreadyImportedDescription" = "请导入另一个助记词";
 "seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";
@@ -1918,7 +1920,7 @@
 "vultisigEducation" = "Vultisig 教育";
 "vultisigFee" = "Vultisig 费用";
 "vultisigFeePercentage" = "Vultisig 费用 (%.2f%%)";
-"vultisigWebsite" = "Vultisig 网站";
+"vultisigWebsite" = "网站";
 "vultTierBadge" = "VULT 等级";
 "waitChurnedOutNode" = "等待节点被淘汰";
 "waitingForDevicesToConnect" = "等待设备连接";
@@ -1952,7 +1954,7 @@
 "wrongVaultSelected" = "您选择了错误的保险库";
 "wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
-"x" = "X（推特）";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "无法验证目标 XRP 账户 (%@)。请重试。";
 "xrpDestinationNotActivatedError" = "目标 XRP 地址尚未激活。首次向其转账必须至少为 %@ XRP（网络基础准备金）。请增加金额或核对地址。";
 "xrpDestinationNoTrustLineError" = "收款方没有 %@ 信任线，因此此付款会被 XRP Ledger 拒绝。";

@@ -10,13 +10,13 @@ import SwiftUI
 struct VultTierBadge: View {
     var body: some View {
         Text("vultTierBadge".localized)
-            .font(Theme.fonts.caption10)
+            .settingsText(.caption)
             .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Theme.colors.primaryAccent4.opacity(0.12))
+            .padding(.vertical, 3)
+            .background(Theme.colors.bgSurface12)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(Theme.colors.bgSurface2, lineWidth: 1))
+            .overlay(Capsule().strokeBorder(Theme.colors.bgSurface2, lineWidth: 1))
     }
 }
 

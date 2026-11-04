@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "Nije moguće osvježiti pozicije. Povucite prema dolje za ponovni pokušaj.";
 "delete" = "Izbriši";
 "deleteFolder" = "Izbriši mapu";
-"deleteVault" = "Trajno izbrišite svoj trezor";
+"deleteVault" = "Trajno izbrišite svoj udio trezora";
 "deleteVaultTitle" = "Izbriši trezor";
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
@@ -924,6 +924,8 @@
 "loadingSecuredAssets" = "Učitavanje osigurane imovine...";
 "localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
 "lockAfterTitle" = "Zaključaj nakon";
+"lockTime" = "Vrijeme zaključavanja";
+"lockTimeSubtitle" = "Postavite vrijeme do automatskog zaključavanja aplikacije";
 "loginUsingFaceID" = "Prijava pomoću Face ID";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
@@ -1160,7 +1162,6 @@
 "passcodeLockedOutMinutes" = "Previše pokušaja. Pokušajte ponovno za %d minuta.";
 "passcodeLockedOutShortly" = "Previše pokušaja. Pokušajte uskoro ponovno.";
 "passcodeManageExplanation" = "Postavljanje zaporke šifrira udjele ključa vašeg trezora na ovom uređaju; uklanjanje ih ponovno dešifrira. Ne zamjenjuje sigurnosnu kopiju trezora.";
-"passcodeManageTitle" = "Zaporka";
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši trezori već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
@@ -1326,7 +1327,7 @@
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
-"reshareVault" = "Ponovno podijelite trezor s novim uređajima";
+"reshareVault" = "Ponovno podijelite trezor s novom skupinom uređaja";
 "reshareVaultSubtitle" = "Ažurirajte postavke svog trezora. Dodajte ili uklonite uređaje ili osvježite udjele.";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
 "resolvingRecipientName" = "Razrješavanje naziva…";
@@ -1435,6 +1436,7 @@
 "securityScannerTransactionNotScanned" = "Transakciju nije skenirao";
 "securityScannerTransactionScannedBy" = "Transakcija skenirana";
 "securityScannerTransactionScanning" = "Skeniranje…";
+"securitySettingsSubtitle" = "Upravljajte svojim pristupnim kodom";
 "seedPhraseAlreadyImported" = "Seed fraza već uvezena";
 "seedPhraseAlreadyImportedDescription" = "Molimo uvezite drugu seed frazu";
 "seedPhraseImportTip" = "Savjet: Možete koristiti preglednik kao uređaj";
@@ -1918,7 +1920,7 @@
 "vultisigEducation" = "Edukacija Vultisig";
 "vultisigFee" = "Vultisig naknada";
 "vultisigFeePercentage" = "Vultisig naknada (%.2f%%)";
-"vultisigWebsite" = "Web stranica Vultisig";
+"vultisigWebsite" = "Web";
 "vultTierBadge" = "VULT RAZINA";
 "waitChurnedOutNode" = "Pričekajte dok čvor ne bude isključen";
 "waitingForDevicesToConnect" = "Čekanje na povezivanje uređaja";
@@ -1952,7 +1954,7 @@
 "wrongVaultSelected" = "Odabrali ste pogrešan trezor";
 "wrongVaultSelectedDescription" = "Trezor koji ste odabrali ne odgovara keygen sesiji. Odaberite ispravan trezor.";
 "wrongVaultTryAgain" = "Pogrešan trezor ili uparivanje";
-"x" = "x";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "Odredišni XRP račun nije bilo moguće provjeriti (%@). Pokušajte ponovno.";
 "xrpDestinationNotActivatedError" = "Odredišna XRP adresa još nije aktivirana. Prvi prijenos na nju mora iznositi najmanje %@ XRP (osnovna rezerva mreže). Povećajte iznos ili provjerite adresu.";
 "xrpDestinationNoTrustLineError" = "Primatelj nema %@ liniju povjerenja, pa bi XRP Ledger odbio ovu uplatu.";

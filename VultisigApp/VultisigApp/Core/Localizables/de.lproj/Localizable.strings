@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "Positionen konnten nicht aktualisiert werden. Zum Wiederholen ziehen.";
 "delete" = "Löschen";
 "deleteFolder" = "Ordner löschen";
-"deleteVault" = "Tresor dauerhaft löschen";
+"deleteVault" = "Tresoranteil dauerhaft löschen";
 "deleteVaultTitle" = "Tresor löschen";
 "dependencies" = "Abhängigkeiten";
 "destinationAddress" = "Zieladresse";
@@ -924,6 +924,8 @@
 "loadingSecuredAssets" = "Secured Assets werden geladen …";
 "localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
 "lockAfterTitle" = "Sperren nach";
+"lockTime" = "Sperrzeit";
+"lockTimeSubtitle" = "Legen Sie fest, wann die App automatisch gesperrt wird";
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";
@@ -1160,7 +1162,6 @@
 "passcodeLockedOutMinutes" = "Zu viele Versuche. Versuchen Sie es in %d Minuten erneut.";
 "passcodeLockedOutShortly" = "Zu viele Versuche. Versuchen Sie es gleich erneut.";
 "passcodeManageExplanation" = "Ein Passcode verschlüsselt die Schlüsselanteile Ihres Tresors auf diesem Gerät; wird er entfernt, werden sie wieder entschlüsselt. Er ersetzt nicht Ihr Tresor-Backup.";
-"passcodeManageTitle" = "Passcode";
 "passcodeMismatch" = "Die Eingaben stimmen nicht überein. Erneut versuchen.";
 "passcodeNewTitle" = "Neuen Passcode wählen";
 "passcodeSealedSharesWithoutKey" = "Ihre Tresore sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel dazu kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
@@ -1326,7 +1327,7 @@
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Tresor-Reshare";
-"reshareVault" = "Reshare mit neuen Geräten";
+"reshareVault" = "Tresor-Reshare mit neuer Gerätegruppe durchführen";
 "reshareVaultSubtitle" = "Passen Sie die Einrichtung Ihres Tresors an: Fügen Sie Geräte hinzu, entfernen Sie Geräte oder erneuern Sie die Tresoranteile.";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
 "resolvingRecipientName" = "Name wird aufgelöst…";
@@ -1435,6 +1436,7 @@
 "securityScannerTransactionNotScanned" = "Transaktion nicht gescannt von";
 "securityScannerTransactionScannedBy" = "Transaktion gescannt von";
 "securityScannerTransactionScanning" = "Scannen…";
+"securitySettingsSubtitle" = "Passcode verwalten";
 "seedPhraseAlreadyImported" = "Seed-Phrase bereits importiert";
 "seedPhraseAlreadyImportedDescription" = "Bitte importieren Sie eine andere Seed-Phrase";
 "seedPhraseImportTip" = "Tipp: Sie können einen Browser als Gerät verwenden";
@@ -1918,7 +1920,7 @@
 "vultisigEducation" = "Vultisig-Wissen";
 "vultisigFee" = "Vultisig-Gebühr";
 "vultisigFeePercentage" = "Vultisig-Gebühr (%.2f%%)";
-"vultisigWebsite" = "Vultisig-Website";
+"vultisigWebsite" = "Website";
 "vultTierBadge" = "VULT-STUFE";
 "waitChurnedOutNode" = "Warten Sie, bis der Knoten ausgeschieden ist";
 "waitingForDevicesToConnect" = "Warten auf Verbindung der Geräte";
@@ -1952,7 +1954,7 @@
 "wrongVaultSelected" = "Sie haben den falschen Tresor gewählt";
 "wrongVaultSelectedDescription" = "Der ausgewählte Tresor passt nicht zur laufenden Schlüsselerzeugung. Bitte wählen Sie den richtigen Tresor aus.";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
-"x" = "X (Twitter)";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "Das XRP-Zielkonto konnte nicht überprüft werden (%@). Bitte versuchen Sie es erneut.";
 "xrpDestinationNotActivatedError" = "Die XRP-Zieladresse ist noch nicht aktiviert. Eine erste Überweisung an sie muss mindestens %@ XRP betragen (die Basisreserve des Netzwerks). Erhöhen Sie den Betrag oder überprüfen Sie die Adresse.";
 "xrpDestinationNoTrustLineError" = "Der Empfänger hat keine %@-Trust-Line, daher würde diese Zahlung vom XRP Ledger abgelehnt.";

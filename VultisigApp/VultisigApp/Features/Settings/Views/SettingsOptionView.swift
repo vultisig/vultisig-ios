@@ -9,7 +9,6 @@ import SwiftUI
 
 enum SettingsOptionViewType {
     case normal
-    case highlighted
     case alert
 }
 
@@ -18,6 +17,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
     let title: String
     let subtitle: String?
     let type: SettingsOptionViewType
+    let titleStyle: SettingsTextStyle
     let titleAccessory: () -> TitleAccessory
     let trailingView: () -> TrailingView
 
@@ -26,6 +26,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
+        titleStyle: SettingsTextStyle = .bodyS,
         @ViewBuilder titleAccessory: @escaping () -> TitleAccessory,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
@@ -33,27 +34,16 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.type = type
+        self.titleStyle = titleStyle
         self.titleAccessory = titleAccessory
         self.trailingView = trailingView
     }
 
-    var bgColor: Color? {
-        switch type {
-        case .normal, .alert:
-            return nil
-        case .highlighted:
-            return Theme.colors.primaryAccent3
-        }
-    }
-
     var iconColor: Color {
         switch type {
-        case .normal, .highlighted:
-            // Matches the label rather than tinting: a settings row's icon is a
-            // glyph for the destination, not an accent, and the accent blue read
-            // as decoration against a white label. `.highlighted` still reads as
-            // highlighted through `bgColor`.
-            return Theme.colors.textPrimary
+        case .normal:
+            // One step below the label.
+            return Theme.colors.textSecondary
         case .alert:
             return Theme.colors.alertError
         }
@@ -61,12 +51,23 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
 
     var fontColor: Color {
         switch type {
-        case .normal, .highlighted:
+        case .normal:
             return Theme.colors.textPrimary
         case .alert:
             return Theme.colors.alertError
         }
     }
+
+    var subtitleColor: Color {
+        switch type {
+        case .normal:
+            return Theme.colors.textSecondary
+        case .alert:
+            return Theme.colors.alertError.opacity(Self.alertSubtitleOpacity)
+        }
+    }
+
+    private static var alertSubtitleOpacity: Double { 0.8 }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -75,29 +76,26 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     Text(title.localized)
-                        .font(Theme.fonts.subtitle)
+                        .settingsText(titleStyle)
                         .foregroundStyle(fontColor)
                     titleAccessory()
                 }
 
                 if let subtitle {
                     Text(subtitle)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(fontColor)
+                        .settingsText(.caption)
+                        .foregroundStyle(subtitleColor)
                         .multilineTextAlignment(.leading)
                 }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             trailingView()
-                .foregroundStyle(fontColor)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 16)
-        .background(bgColor)
     }
 }
 
@@ -107,6 +105,7 @@ extension SettingsOptionView where TitleAccessory == EmptyView {
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
+        titleStyle: SettingsTextStyle = .bodyS,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self.init(
@@ -114,6 +113,7 @@ extension SettingsOptionView where TitleAccessory == EmptyView {
             title: title,
             subtitle: subtitle,
             type: type,
+            titleStyle: titleStyle,
             titleAccessory: { EmptyView() },
             trailingView: trailingView
         )

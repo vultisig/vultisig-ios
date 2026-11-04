@@ -360,7 +360,7 @@
 "defiRefreshFailed" = "포지션을 새로 고칠 수 없습니다. 아래로 당겨 다시 시도하세요.";
 "delete" = "삭제";
 "deleteFolder" = "폴더 삭제";
-"deleteVault" = "볼트를 영구적으로 삭제";
+"deleteVault" = "볼트 셰어를 영구적으로 삭제";
 "deleteVaultTitle" = "볼트 삭제";
 "dependencies" = "종속성";
 "destinationAddress" = "목적지 주소";
@@ -924,6 +924,8 @@
 "loadingSecuredAssets" = "보안 자산 로딩 중...";
 "localModeWaitingOnDevices" = "로컬 모드, 기기 대기 중...";
 "lockAfterTitle" = "자동 잠금 시간";
+"lockTime" = "잠금 시간";
+"lockTimeSubtitle" = "앱이 자동으로 잠기기까지의 시간 설정";
 "loginUsingFaceID" = "Face ID로 로그인";
 "loginUsingOpticID" = "Optic ID로 로그인";
 "loginUsingTouchID" = "Touch ID로 로그인";
@@ -1160,7 +1162,6 @@
 "passcodeLockedOutMinutes" = "시도 횟수가 너무 많습니다. %d분 후에 다시 시도하세요.";
 "passcodeLockedOutShortly" = "시도 횟수가 너무 많습니다. 잠시 후 다시 시도하세요.";
 "passcodeManageExplanation" = "패스코드를 설정하면 이 기기의 볼트 키 셰어가 암호화되고, 삭제하면 다시 복호화됩니다. 볼트 백업을 대신하지는 않습니다.";
-"passcodeManageTitle" = "패스코드";
 "passcodeMismatch" = "일치하지 않습니다. 다시 시도하세요.";
 "passcodeNewTitle" = "새 패스코드 선택";
 "passcodeSealedSharesWithoutKey" = "이 기기의 볼트는 이미 암호화되어 있지만 이를 여는 키를 읽을 수 없습니다. 백업에서 복원하세요.";
@@ -1326,7 +1327,7 @@
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";
 "reshareLabelTitle" = "볼트 재공유";
-"reshareVault" = "새 기기로 볼트 재공유";
+"reshareVault" = "새로운 기기 그룹으로 볼트 재공유";
 "reshareVaultSubtitle" = "볼트 설정을 업데이트하세요. 기기를 추가 또는 제거하거나 셰어를 갱신하세요.";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
 "resolvingRecipientName" = "이름 확인 중…";
@@ -1435,6 +1436,7 @@
 "securityScannerTransactionNotScanned" = "트랜잭션이 스캔되지 않았습니다";
 "securityScannerTransactionScannedBy" = "트랜잭션 스캔됨";
 "securityScannerTransactionScanning" = "스캔 중…";
+"securitySettingsSubtitle" = "패스코드 관리";
 "seedPhraseAlreadyImported" = "시드 문구가 이미 가져와졌습니다";
 "seedPhraseAlreadyImportedDescription" = "다른 시드 문구를 가져오세요";
 "seedPhraseImportTip" = "팁: 브라우저를 기기로 사용할 수 있습니다";
@@ -1834,7 +1836,7 @@
 "vaultImportWouldOverwriteExisting" = "이 백업은 가져올 수 없습니다: 이 기기에 이미 있는 볼트를 덮어쓰게 됩니다.";
 "vaultInfo" = "볼트 정보";
 "vaultLibType" = "볼트 유형";
-"vaultManagement" = "볼트";
+"vaultManagement" = "볼트 관리";
 "vaultName" = "볼트 이름";
 "vaultNameAlreadyInUse" = "볼트 이름이 이미 사용 중입니다";
 "vaultNameExists" = "볼트 이름 %s이(가) 이미 존재합니다";
@@ -1918,7 +1920,7 @@
 "vultisigEducation" = "Vultisig 교육";
 "vultisigFee" = "Vultisig 수수료";
 "vultisigFeePercentage" = "Vultisig 수수료 (%.2f%%)";
-"vultisigWebsite" = "Vultisig 웹사이트";
+"vultisigWebsite" = "웹사이트";
 "vultTierBadge" = "VULT 등급";
 "waitChurnedOutNode" = "노드가 처른될 때까지 기다리세요";
 "waitingForDevicesToConnect" = "기기 연결 대기 중";
@@ -1952,7 +1954,7 @@
 "wrongVaultSelected" = "잘못된 볼트를 선택했습니다";
 "wrongVaultSelectedDescription" = "선택한 볼트가 키젠 세션과 일치하지 않습니다. 올바른 볼트를 선택하세요.";
 "wrongVaultTryAgain" = "잘못된 볼트 또는 쌍";
-"x" = "X (Twitter)";
+"x" = "X";
 "xrpDestinationLookupFailedError" = "대상 XRP 계정을 확인할 수 없습니다 (%@). 다시 시도해 주세요.";
 "xrpDestinationNotActivatedError" = "대상 XRP 주소가 아직 활성화되지 않았습니다. 첫 송금은 최소 %@ XRP(네트워크 기본 준비금) 이상이어야 합니다. 금액을 늘리거나 주소를 다시 확인하세요.";
 "xrpDestinationNoTrustLineError" = "수신자에게 %@ 신뢰선이 없으므로 이 결제는 XRP Ledger에서 거부됩니다.";
