@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "%1$ld-of-%2$ld Vault Setup";
 "vaultShareBackupsViewTitle1" = "You’ll create new Vault Share backups";
 "vaultShareBackupsViewTitle2" = ", store them as you did before";
-"vaultSharePosition" = "Share %1$ld-of-%2$ld";
+"vaultSharePosition" = "Share %1$ld of %2$ld";
 "vaultType" = "Vault Part";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";

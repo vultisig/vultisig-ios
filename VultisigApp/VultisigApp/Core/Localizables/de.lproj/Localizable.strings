@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "%1$ld-von-%2$ld-Tresor";
 "vaultShareBackupsViewTitle1" = "Sie erstellen neue Backups Ihrer Tresoranteile";
 "vaultShareBackupsViewTitle2" = ", bewahren Sie sie wie bisher auf";
-"vaultSharePosition" = "Anteil %1$ld-von-%2$ld";
+"vaultSharePosition" = "Anteil %1$ld von %2$ld";
 "vaultType" = "Tresoranteil";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "vaultTypeMismatch" = "Tresortyp stimmt nicht überein: Das initiierende und das gekoppelte Gerät haben unterschiedliche Tresortypen";

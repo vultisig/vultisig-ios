@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "Vault %1$ld di %2$ld";
 "vaultShareBackupsViewTitle1" = "Creerai nuovi backup delle quote del vault";
 "vaultShareBackupsViewTitle2" = ", conservali come fatto in precedenza";
-"vaultSharePosition" = "Quota %1$ld-di-%2$ld";
+"vaultSharePosition" = "Quota %1$ld di %2$ld";
 "vaultType" = "Quota del vault";
 "vaultTypeDoesnotMatch" = "Il tipo di vault non corrisponde";
 "vaultTypeMismatch" = "Il tipo di vault non corrisponde, il dispositivo di avvio e il dispositivo accoppiato hanno tipi di vault diversi";

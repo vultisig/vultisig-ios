@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "Cofre %1$ld de %2$ld";
 "vaultShareBackupsViewTitle1" = "Você criará novos backups das partes do cofre";
 "vaultShareBackupsViewTitle2" = ", armazene-os como antes";
-"vaultSharePosition" = "Parte %1$ld-de-%2$ld";
+"vaultSharePosition" = "Parte %1$ld de %2$ld";
 "vaultType" = "Parte do Cofre";
 "vaultTypeDoesnotMatch" = "O tipo de cofre não corresponde";
 "vaultTypeMismatch" = "O tipo de cofre não corresponde, o dispositivo iniciador e o dispositivo emparelhado têm tipos de cofre diferentes";

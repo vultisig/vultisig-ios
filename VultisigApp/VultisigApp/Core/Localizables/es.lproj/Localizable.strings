@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "Bóveda %1$ld de %2$ld";
 "vaultShareBackupsViewTitle1" = "Crearás nuevas copias de seguridad de los fragmentos de la bóveda";
 "vaultShareBackupsViewTitle2" = ", guárdalos como hiciste antes";
-"vaultSharePosition" = "Parte %1$ld-de-%2$ld";
+"vaultSharePosition" = "Parte %1$ld de %2$ld";
 "vaultType" = "Fragmento de la bóveda";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
 "vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";

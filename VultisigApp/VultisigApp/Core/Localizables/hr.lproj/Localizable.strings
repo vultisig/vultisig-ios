@@ -1893,7 +1893,7 @@
 "vaultSetupThreshold" = "Trezor %1$ld od %2$ld";
 "vaultShareBackupsViewTitle1" = "Stvorit ćete nove sigurnosne kopije udjela trezora";
 "vaultShareBackupsViewTitle2" = ", pohranite ih kao i prije";
-"vaultSharePosition" = "Dio %1$ld-od-%2$ld";
+"vaultSharePosition" = "Dio %1$ld od %2$ld";
 "vaultType" = "Dio trezora";
 "vaultTypeDoesnotMatch" = "Vrsta trezora se ne podudara";
 "vaultTypeMismatch" = "Vrsta trezora se ne podudara: uređaj koji pokreće postupak i upareni uređaj imaju različite vrste trezora";
