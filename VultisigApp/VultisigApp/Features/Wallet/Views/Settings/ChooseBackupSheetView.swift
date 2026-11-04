@@ -9,7 +9,9 @@ import SwiftData
 import SwiftUI
 
 struct ChooseBackupSheetView: View, BottomSheetProperties {
+    #if os(iOS)
     @Environment(\.dismiss) private var dismiss
+    #endif
     @Query var vaults: [Vault]
     let vault: Vault
 

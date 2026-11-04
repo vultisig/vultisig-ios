@@ -29,9 +29,6 @@ struct VaultServerBackupScreen: View {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        emailTextField
-                        passwordTextField
-
                         InfoBannerView(
                             description: viewModel.alertErrorDescription ?? "",
                             type: .error,
@@ -40,6 +37,9 @@ struct VaultServerBackupScreen: View {
                         )
                         .transition(.verticalGrowAndFade)
                         .showIf(showAlert)
+
+                        emailTextField
+                        passwordTextField
                     }
                 }
                 .onLoad {

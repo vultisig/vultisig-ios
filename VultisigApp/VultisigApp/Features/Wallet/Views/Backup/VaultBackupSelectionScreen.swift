@@ -118,6 +118,7 @@ struct VaultBackupSelectionScreen: View {
         }
         .padding(15)
         .overlay(Theme.radius.xl.shape.strokeBorder(Theme.colors.borderLight, lineWidth: 1))
+        .contentShape(Theme.radius.xl.shape)
     }
 
     func vaultRow(vault: Vault) -> some View {

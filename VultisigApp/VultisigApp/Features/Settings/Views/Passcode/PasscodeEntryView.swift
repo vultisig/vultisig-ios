@@ -100,7 +100,7 @@ struct PasscodeEntryView: View {
             .frame(maxWidth: 283)
 
             if let completedPasscode {
-                dots(for: completedPasscode, isSuccess: false)
+                dots(for: completedPasscode, hasError: false, isSuccess: false)
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
 
@@ -112,7 +112,7 @@ struct PasscodeEntryView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
-                dots(for: passcode, isSuccess: isSuccess)
+                dots(for: passcode, hasError: hasError, isSuccess: isSuccess)
                     .modifier(PasscodeShakeEffect(travel: shakeTravel))
 
                 Text(errorMessage ?? " ")
@@ -126,7 +126,7 @@ struct PasscodeEntryView: View {
         }
     }
 
-    private func dots(for value: String, isSuccess: Bool) -> some View {
+    private func dots(for value: String, hasError: Bool, isSuccess: Bool) -> some View {
         HStack(spacing: 10) {
             ForEach(0..<PasscodeService.passcodeLength, id: \.self) { index in
                 let isFilled = index < value.count
@@ -134,12 +134,16 @@ struct PasscodeEntryView: View {
                     .fill(isFilled ? dotColor(isSuccess: isSuccess) : Color.clear)
                     .frame(width: 13.5, height: 13.5)
                     .overlay {
-                        Circle().stroke(dotColor(isSuccess: isSuccess), lineWidth: 1.5)
+                        Circle().stroke(
+                            hasError ? Theme.colors.alertError : dotColor(isSuccess: isSuccess),
+                            lineWidth: 1.5
+                        )
                     }
                     .frame(width: 25, height: 25)
                     .animation(.spring(response: 0.22, dampingFraction: 0.55), value: isFilled)
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: hasError)
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier(AccessibilityID.Passcode.dots)
         .accessibilityValue("\(value.count)")
