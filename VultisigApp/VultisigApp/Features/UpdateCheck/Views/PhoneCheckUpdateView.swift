@@ -12,7 +12,7 @@ struct PhoneCheckUpdateView: View {
 
     var body: some View {
         Screen {
-            view.background(BlurredBackground())
+            view.background(SettingsGlowBackground(verticalOffset: UpdateCheckLayout.glowOffset))
         }
         .screenTitle("checkUpdate".localized)
         .onAppear {

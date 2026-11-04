@@ -8,10 +8,16 @@
 import SwiftUI
 
 struct AddressBookChainCellView: View {
+    /// `.field` is the value inside the chain selector field.
+    enum Style {
+        case row, field
+    }
+
     let chain: AddressBookChainType
+    var style: Style = .row
 
     var body: some View {
-        HStack {
+        HStack(spacing: style == .field ? 6 : nil) {
             iconImage
             nameText
         }
@@ -27,8 +33,12 @@ struct AddressBookChainCellView: View {
     }
 
     var nameText: some View {
-        Text(chain.name)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.textPrimary)
+        Group {
+            switch style {
+            case .row: Text(chain.name).font(Theme.fonts.bodySMedium)
+            case .field: Text(chain.name).settingsText(.bodyM)
+            }
+        }
+        .foregroundStyle(Theme.colors.textPrimary)
     }
 }

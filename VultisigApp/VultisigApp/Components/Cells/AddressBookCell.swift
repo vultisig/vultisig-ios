@@ -19,15 +19,18 @@ struct AddressBookCell: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
 
+    private static let rowHeight: CGFloat = 66
+    private static let gripToRow: CGFloat = 5.5
+
     var body: some View {
-        HStack {
+        HStack(spacing: Self.gripToRow) {
             rearrangeIcon
                 .showIf(isEditing)
             content
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
 
     var content: some View {
@@ -45,14 +48,13 @@ struct AddressBookCell: View {
             deleteIcon
                 .showIf(isEditing)
         }
-        .padding(.vertical, 16)
         .padding(.leading, 16)
         .padding(.trailing, isEditing ? 20 : 16)
+        .frame(minHeight: Self.rowHeight)
         .background(
             (isEditing ? Theme.radius.pill : Theme.radius.xl).shape
-                .inset(by: 1)
                 .fill(Theme.colors.bgSurface1)
-                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
     }
 
@@ -74,21 +76,21 @@ struct AddressBookCell: View {
     var titleContent: some View {
         Text(address.title)
             .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
+            .settingsText(.bodyS)
             .lineLimit(1)
             .truncationMode(.tail)
     }
 
     var addressContent: some View {
         Text(address.address)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .settingsText(.caption)
             .lineLimit(1)
             .truncationMode(.middle)
     }
 
     var rearrangeIcon: some View {
-        Icon(.gripDotsVertical, color: Theme.colors.textSecondary)
+        Icon(.gripDotsVertical, color: Theme.colors.textPrimary, size: 24)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -104,7 +106,7 @@ struct AddressBookCell: View {
     }
 
     var deleteIconLabel: some View {
-        Icon(.trash, color: Theme.colors.textTertiary)
+        Icon(.trashFilled, color: Theme.colors.textTertiary, size: 20)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

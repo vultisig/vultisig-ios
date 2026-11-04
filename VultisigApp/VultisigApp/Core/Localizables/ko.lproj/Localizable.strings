@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA 키";
 "editAddress" = "주소 편집";
+"editAddressBook" = "주소록 편집";
 "editFolder" = "폴더 편집";
 "editFriendsReferral" = "친구 추천 코드 편집";
 "editPasswordHintSubtitle" = "비밀번호를 잊어버린 경우 표시됩니다";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "푸시 알림 활성화";
 "enableThorchain" = "THORChain 활성화";
 "enablingThorchain" = "THORChain 활성화 중...";
-"EnglishUK" = "영어 (영국)";
+"EnglishUK" = "(영국)";
 "enter4Characters" = "최대 4자 입력";
 "enter4DigitCode" = "4자리 코드 입력";
 "enter4DigitVerificationCode" = "이메일로 받은 4자리 코드";
@@ -1382,7 +1383,6 @@
 "sameDeviceShareErrorDescription" = "서명에 사용할 셰어를 변경하세요. 두 기기는 공동 서명에 동일한 볼트 셰어를 사용할 수 없습니다.";
 "sameNameFolderDescription" = "해당 폴더 이름이 이미 존재합니다. 새로운 이름을 시도하세요.";
 "save" = "저장";
-"saveAddress" = "주소 저장";
 "saveChanges" = "변경 사항 저장";
 "savedAddresses" = "저장된 주소";
 "saveOnSwaps" = "스왑에서 %@ 절약";
@@ -1791,6 +1791,7 @@
 "unsupportedFileTypeError" = "지원되지 않는 파일 형식입니다. 다시 시도하세요";
 "unverifiedFunction" = "확인되지 않은 함수";
 "upcoming" = "예정";
+"updateApp" = "앱 업데이트";
 "updateNow" = "지금 업데이트";
 "upgrade" = "업그레이드";
 "upgradeNow" = "지금 업그레이드";

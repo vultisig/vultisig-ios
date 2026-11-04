@@ -52,25 +52,26 @@ struct NotificationsSettingsScreen: View {
     }
 
     var mainToggleSection: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("pushNotifications".localized)
-                    .font(Theme.fonts.bodyMMedium)
+                    .settingsText(.bodyM)
                     .foregroundStyle(Theme.colors.textPrimary)
 
                 Text("pushNotificationsDescription".localized)
-                    .font(Theme.fonts.caption12)
+                    .settingsText(.caption)
                     .foregroundStyle(Theme.colors.textSecondary)
                     .frame(maxWidth: 235, alignment: .leading)
             }.frame(maxWidth: .infinity, alignment: .leading)
 
-            VultiToggle(isOn: Binding(
+            Toggle("pushNotifications".localized, isOn: Binding(
                 get: { notificationsEnabled },
                 set: {
                     guard $0 != notificationsEnabled else { return }
                     onNotificationsEnabled($0)
                 }
-            )).fixedSize()
+            ))
+            .toggleStyle(SettingsToggleStyle(size: .regular))
         }
         .padding(.vertical, 8)
     }
@@ -86,34 +87,43 @@ struct NotificationsSettingsScreen: View {
     }
 
     var vaultListSection: some View {
-        SettingsSectionView(title: "vaultNotifications".localized) {
-            if showsEnableAll {
-                enableAllView
-                    .commonListItemContainer(index: 0, itemsCount: rowCount)
-            }
+        VStack(alignment: .leading, spacing: 14) {
+            Text("vaultNotifications".localized)
+                .settingsText(.footnote)
+                .foregroundStyle(Theme.colors.textTertiary)
 
-            ForEach(Array(vaults.enumerated()), id: \.element.id) { index, vault in
-                VaultNotificationToggleRow(vault: vault)
-                    .commonListItemContainer(
-                        index: index + (showsEnableAll ? 1 : 0),
-                        itemsCount: rowCount
-                    )
+            VStack(spacing: .zero) {
+                if showsEnableAll {
+                    enableAllView
+                        .commonListItemContainer(index: 0, itemsCount: rowCount, style: .flushOutlined)
+                }
+
+                ForEach(Array(vaults.enumerated()), id: \.element.id) { index, vault in
+                    VaultNotificationToggleRow(vault: vault, style: .settings)
+                        .commonListItemContainer(
+                            index: index + (showsEnableAll ? 1 : 0),
+                            itemsCount: rowCount,
+                            style: .flushOutlined
+                        )
+                }
             }
+            .commonListContainer(style: .flushOutlined)
         }
     }
 
     var enableAllView: some View {
-        HStack(alignment: .center, spacing: 0) {
+        HStack(alignment: .center, spacing: 4) {
             Text("enableAll".localized)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            VultiToggle(isOn: Binding(
+            Toggle("enableAll".localized, isOn: Binding(
                 get: { allVaultsEnabled },
                 set: { pushNotificationManager.setAllVaultsOptIn(vaults, enabled: $0) }
             ))
+            .toggleStyle(SettingsToggleStyle(size: .regular))
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 14)
         .padding(.vertical, 16)
     }
 

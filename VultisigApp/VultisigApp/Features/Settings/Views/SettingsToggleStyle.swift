@@ -5,25 +5,58 @@
 
 import SwiftUI
 
-/// The design's small switch for settings rows.
+/// The design's switches for settings rows.
 struct SettingsToggleStyle: ToggleStyle {
-    private static let trackSize = CGSize(width: 40, height: 24)
-    private static let knobDiameter: CGFloat = 20
-    private static let knobInset: CGFloat = 2
+    enum Size {
+        /// 40x24, for the rows of the settings lists.
+        case small
+        /// 56x30, for standalone rows such as Notifications.
+        case regular
+
+        var track: CGSize {
+            switch self {
+            case .small: CGSize(width: 40, height: 24)
+            case .regular: CGSize(width: 56, height: 30)
+            }
+        }
+
+        var knobDiameter: CGFloat {
+            switch self {
+            case .small: 20
+            case .regular: 24
+            }
+        }
+
+        var knobInset: CGFloat {
+            switch self {
+            case .small: 2
+            case .regular: 3
+            }
+        }
+
+        var onTrack: Color {
+            switch self {
+            case .small: Theme.colors.textSecondary
+            case .regular: Theme.colors.primaryAccent4
+            }
+        }
+    }
+
+    var size: Size = .small
 
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
         } label: {
             Capsule(style: .circular)
-                .fill(configuration.isOn ? Theme.colors.textSecondary : Theme.colors.textTertiary)
+                .fill(configuration.isOn ? size.onTrack : Theme.colors.textTertiary)
                 .overlay(alignment: configuration.isOn ? .trailing : .leading) {
                     Circle()
                         .fill(Theme.colors.textPrimary)
-                        .frame(width: Self.knobDiameter, height: Self.knobDiameter)
-                        .padding(Self.knobInset)
+                        .frame(width: size.knobDiameter, height: size.knobDiameter)
+                        .padding(size.knobInset)
                 }
-                .frame(width: Self.trackSize.width, height: Self.trackSize.height)
+                .frame(width: size.track.width, height: size.track.height)
                 .animation(.easeInOut(duration: 0.15), value: configuration.isOn)
         }
         .buttonStyle(.plain)

@@ -14,6 +14,7 @@ struct PrimaryButtonView<LeadingView: View, TrailingView: View>: View {
     let isLoading: Bool
     let paddingLeading: CGFloat
     let reserveTrailingIconSpace: Bool
+    let hugsTitle: Bool
 
     init(
         title: String,
@@ -21,7 +22,8 @@ struct PrimaryButtonView<LeadingView: View, TrailingView: View>: View {
         @ViewBuilder trailingView: () -> TrailingView,
         isLoading: Bool = false,
         paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
+        reserveTrailingIconSpace: Bool = false,
+        hugsTitle: Bool = false
     ) {
         self.title = title
         self.leadingView = leadingView()
@@ -29,15 +31,29 @@ struct PrimaryButtonView<LeadingView: View, TrailingView: View>: View {
         self.isLoading = isLoading
         self.paddingLeading = paddingLeading
         self.reserveTrailingIconSpace = reserveTrailingIconSpace
+        self.hugsTitle = hugsTitle
     }
 
+    @ViewBuilder
     var body: some View {
+        if hugsTitle {
+            titleText
+        } else {
+            fillingContent
+        }
+    }
+
+    private var titleText: some View {
+        Text(NSLocalizedString(title, comment: "Button Text"))
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.leading, paddingLeading)
+    }
+
+    private var fillingContent: some View {
         HStack(spacing: 8) {
             Spacer()
             leadingView
-            Text(NSLocalizedString(title, comment: "Button Text"))
-                .fixedSize(horizontal: true, vertical: false)
-                .padding(.leading, paddingLeading)
+            titleText
             trailingView
             if reserveTrailingIconSpace, TrailingView.self == EmptyView.self {
                 Icon(.check, color: .clear, size: 15)
@@ -59,7 +75,8 @@ extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Empt
         title: String,
         isLoading: Bool = false,
         paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
+        reserveTrailingIconSpace: Bool = false,
+        hugsTitle: Bool = false
     ) {
         self.init(
             title: title,
@@ -67,7 +84,8 @@ extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Empt
             trailingView: { EmptyView() },
             isLoading: isLoading,
             paddingLeading: paddingLeading,
-            reserveTrailingIconSpace: reserveTrailingIconSpace
+            reserveTrailingIconSpace: reserveTrailingIconSpace,
+            hugsTitle: hugsTitle
         )
     }
 }

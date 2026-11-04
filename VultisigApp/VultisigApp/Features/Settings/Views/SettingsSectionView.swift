@@ -36,7 +36,7 @@ struct SettingsSectionView<Content: View>: View {
             Text(title.localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
-        case .flush:
+        case .flush, .flushOutlined:
             Text(title.localized)
                 .settingsText(.caption)
                 .foregroundStyle(Theme.colors.textTertiary)

@@ -14,18 +14,22 @@ struct SettingFAQCell: View {
 
     @State var isExpanded = false
 
+    private static let collapsedMinHeight: CGFloat = 70
+
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 title
                 description
                     .showIf(isExpanded)
             }
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
             chevron
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        // A two-line question fits the 70 tall row only with 15 above and below.
+        .padding(.vertical, isExpanded ? 16 : 15)
+        .frame(minHeight: Self.collapsedMinHeight)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation {
@@ -36,19 +40,19 @@ struct SettingFAQCell: View {
 
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
-            .font(Theme.fonts.bodySMedium)
+            .settingsText(.bodyS)
             .foregroundStyle(Theme.colors.textSecondary)
     }
 
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
-            .font(Theme.fonts.footnote)
+            .settingsText(.footnote)
             .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var chevron: some View {
         Icon(
-            .chevronDown,
+            .chevronDownSmall,
             color: Theme.colors.textTertiary,
             size: 16
         )

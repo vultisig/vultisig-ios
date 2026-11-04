@@ -189,7 +189,7 @@
 "checkEmptyField" = "Certifique-se de que todos os campos estão preenchidos.";
 "checkForUpdates" = "Verifique se há atualizações";
 "checkingForUpdate" = "Verificando atualizações...";
-"checkUpdate" = "Verificar atualização";
+"checkUpdate" = "Verificar atualizações";
 "Chinese" = "Chinês";
 "chooseAPassword" = "Escolha uma senha";
 "chooseBackupMethod" = "Escolha o método de backup";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "Chave EdDSA";
 "editAddress" = "Editar endereço";
+"editAddressBook" = "Editar agenda de endereços";
 "editFolder" = "Editar pasta";
 "editFriendsReferral" = "Editar indicação de amigo";
 "editPasswordHintSubtitle" = "Isso será mostrado caso você esqueça sua senha";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Ativar notificações push";
 "enableThorchain" = "Ativar THORChain";
 "enablingThorchain" = "Ativando THORChain...";
-"EnglishUK" = "Inglês (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Digite 4 caracteres";
 "enter4DigitCode" = "Insira código de 4 dígitos";
 "enter4DigitVerificationCode" = "Código de 4 dígitos recebido por email";
@@ -1382,7 +1383,6 @@
 "sameDeviceShareErrorDescription" = "Troque a parte do cofre para assinar. Dois dispositivos não podem usar a mesma parte do cofre para coassinar.";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
 "save" = "Salvar";
-"saveAddress" = "Salvar endereço";
 "saveChanges" = "Salvar alterações";
 "savedAddresses" = "Endereços salvos";
 "saveOnSwaps" = "Economize %@ em swaps";
@@ -1791,6 +1791,7 @@
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "unverifiedFunction" = "Função não verificada";
 "upcoming" = "Próximo";
+"updateApp" = "Atualizar aplicativo";
 "updateNow" = "Atualizar agora";
 "upgrade" = "Atualizar";
 "upgradeNow" = "Atualizar agora";

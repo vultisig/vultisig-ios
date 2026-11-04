@@ -14,6 +14,8 @@ enum CommonListStyle {
     /// A borderless card whose separators are drawn inside each row's own
     /// height, so a row keeps the design's height whether it has one or not.
     case flush
+    /// A flush card with a hairline drawn over its edge.
+    case flushOutlined
 }
 
 struct CommonListItemContainer: ViewModifier {
@@ -76,7 +78,7 @@ struct CommonListItemContainer: ViewModifier {
                 content
                 separator
             }
-        case .flush:
+        case .flush, .flushOutlined:
             content
                 .overlay(alignment: .bottom) { separator }
         }
@@ -94,6 +96,8 @@ struct CommonListContainer: ViewModifier {
     static let cornerRadius = Theme.radius.xl
     /// The flush card's rows start one point below its top edge.
     static let flushTopInset: CGFloat = 1
+    /// A screen's top inset that puts a flush card's rows 12 below the toolbar.
+    static let flushScreenTopInset: CGFloat = 12 - flushTopInset
 
     let style: CommonListStyle
 
@@ -116,6 +120,15 @@ struct CommonListContainer: ViewModifier {
                 .background(Theme.colors.bgSurface1)
                 .padding(.top, Self.flushTopInset)
                 .clipShape(Self.cornerRadius.shape)
+        case .flushOutlined:
+            content
+                .background(Theme.colors.bgSurface1)
+                .clipShape(Self.cornerRadius.shape)
+                .overlay(
+                    Self.cornerRadius.shape
+                        .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+                        .allowsHitTesting(false)
+                )
         }
     }
 }

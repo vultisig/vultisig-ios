@@ -14,20 +14,29 @@ struct SettingsHomeDisplayScreen: View {
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionView(title: "balanceDisplay") {
-                    ForEach(Array(options.enumerated()), id: \.element) { index, option in
-                        Button {
-                            homeViewModel.balanceDisplay = option
-                        } label: {
-                            SettingSelectionCell(
-                                title: option.title,
-                                isSelected: homeViewModel.balanceDisplay == option,
-                                description: option.description
-                            )
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("balanceDisplay".localized)
+                        .settingsText(.bodyM)
+                        .foregroundStyle(Theme.colors.textSecondary)
+
+                    VStack(spacing: .zero) {
+                        ForEach(Array(options.enumerated()), id: \.element) { index, option in
+                            Button {
+                                homeViewModel.balanceDisplay = option
+                            } label: {
+                                SettingSelectionCell(
+                                    title: option.title,
+                                    isSelected: homeViewModel.balanceDisplay == option,
+                                    description: option.description,
+                                    style: .radio
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .commonListItemContainer(index: index, itemsCount: options.count)
                         }
-                        .buttonStyle(.plain)
-                        .commonListItemContainer(index: index, itemsCount: options.count)
                     }
+                    .padding(1)
+                    .commonListContainer()
                 }
             }
         }

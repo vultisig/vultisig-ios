@@ -44,6 +44,7 @@ struct AddAddressBookScreen: View {
             }
         }
         .screenTitle("addAddress".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(top: 16))
         .onLoad(perform: setData)
         .alert(isPresented: $showAlert) {
             alert
@@ -88,7 +89,7 @@ struct AddAddressBookScreen: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "save") {
+        PrimaryButton(title: "save", size: .compact) {
             addAddress()
         }
     }

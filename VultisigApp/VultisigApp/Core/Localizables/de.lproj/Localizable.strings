@@ -189,7 +189,7 @@
 "checkEmptyField" = "Bitte füllen Sie alle Felder aus.";
 "checkForUpdates" = "Nach Updates suchen";
 "checkingForUpdate" = "Suche nach Updates...";
-"checkUpdate" = "Update prüfen";
+"checkUpdate" = "Updates prüfen";
 "Chinese" = "Chinesisch";
 "chooseAPassword" = "Passwort wählen";
 "chooseBackupMethod" = "Backup-Methode wählen";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA-Schlüssel";
 "editAddress" = "Adresse bearbeiten";
+"editAddressBook" = "Adressbuch bearbeiten";
 "editFolder" = "Ordner bearbeiten";
 "editFriendsReferral" = "Freunde-Empfehlung bearbeiten";
 "editPasswordHintSubtitle" = "Dies wird gezeigt, falls Sie Ihr Passwort vergessen";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
 "enableThorchain" = "THORChain aktivieren";
 "enablingThorchain" = "THORChain wird aktiviert...";
-"EnglishUK" = "Englisch (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Bis zu 4 Zeichen eingeben";
 "enter4DigitCode" = "4-stelligen Code eingeben";
 "enter4DigitVerificationCode" = "4-stelliger Code per E-Mail erhalten";
@@ -1382,7 +1383,6 @@
 "sameDeviceShareErrorDescription" = "Bitte verwenden Sie zum Signieren einen anderen Tresoranteil. Zwei Geräte können nicht denselben Tresoranteil zum gemeinsamen Signieren verwenden.";
 "sameNameFolderDescription" = "Dieser Ordnername existiert bereits. Bitte wählen Sie einen anderen.";
 "save" = "Speichern";
-"saveAddress" = "Adresse speichern";
 "saveChanges" = "Änderungen speichern";
 "savedAddresses" = "Gespeicherte Adressen";
 "saveOnSwaps" = "%@ bei Swaps sparen";
@@ -1791,6 +1791,7 @@
 "unsupportedFileTypeError" = "Nicht unterstützter Dateityp. Bitte versuchen Sie es erneut.";
 "unverifiedFunction" = "Unverifizierte Funktion";
 "upcoming" = "Bevorstehend";
+"updateApp" = "App aktualisieren";
 "updateNow" = "Jetzt updaten";
 "upgrade" = "Upgrade";
 "upgradeNow" = "Jetzt aktualisieren";

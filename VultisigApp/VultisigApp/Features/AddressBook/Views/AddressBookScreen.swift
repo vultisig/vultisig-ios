@@ -22,6 +22,9 @@ struct AddressBookScreen: View {
 
     @Environment(\.modelContext) var modelContext
 
+    private static let emptyStateTopInset: CGFloat = 209
+    private static let emptyStateGlowOffset: CGFloat = -39.5
+
     var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
 
     var body: some View {
@@ -30,17 +33,17 @@ struct AddressBookScreen: View {
                 Group {
                     if savedAddressesEmpty {
                        emptyView
-                            .background(BlurredBackground())
                     } else {
                         list
-                        addAddressButton
+                        addAddressButton(size: .compact)
                             .padding(.bottom, 12)
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(savedAddressesEmpty ? SettingsGlowBackground(verticalOffset: Self.emptyStateGlowOffset) : nil)
         }
-        .screenTitle("addressBook".localized)
+        .screenTitle((isEditing && !savedAddressesEmpty ? "editAddressBook" : "addressBook").localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0))
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
@@ -58,19 +61,21 @@ struct AddressBookScreen: View {
     var emptyView: some View {
         VStack(spacing: 12) {
             Text("addressBookEmptyTitle".localized)
-                .font(Theme.fonts.bodyMMedium)
+                .settingsText(.buttonRegular)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text("addressBookEmptySubtitle".localized)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.buttonS)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
 
-            addAddressButton
-                .frame(maxWidth: 200)
+            addAddressButton(size: .compactHug)
                 .padding(.top, 18)
+
+            Spacer()
         }
         .frame(maxWidth: 265)
+        .padding(.top, Self.emptyStateTopInset)
     }
 
     var list: some View {
@@ -105,8 +110,8 @@ struct AddressBookScreen: View {
         }
     }
 
-    var addAddressButton: some View {
-        PrimaryButton(title: "addAddress".localized) {
+    func addAddressButton(size: ButtonSize) -> some View {
+        PrimaryButton(title: "addAddress", size: size) {
             router.navigate(to: SettingsRoute.addAddressBook())
         }
     }
@@ -122,11 +127,11 @@ struct AddressBookScreen: View {
     @ViewBuilder
     var navigationButton: some View {
         if isEditing {
-            ToolbarButton(image: .check, type: .confirmation) {
+            ToolbarButton(image: .check, iconSize: 24, type: .confirmation) {
                 toggleEdit()
             }
         } else {
-            ToolbarButton(image: .penWritingFilled) {
+            ToolbarButton(image: .penWritingFilled, iconSize: 24) {
                 toggleEdit()
             }
         }

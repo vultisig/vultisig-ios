@@ -189,7 +189,7 @@
 "checkEmptyField" = "Assicurati che tutti i campi siano compilati.";
 "checkForUpdates" = "Controlla gli aggiornamenti";
 "checkingForUpdate" = "Verifica aggiornamenti in corso...";
-"checkUpdate" = "Controlla aggiornamento";
+"checkUpdate" = "Controlla aggiornamenti";
 "Chinese" = "Cinese";
 "chooseAPassword" = "Scegli una password";
 "chooseBackupMethod" = "Scegli il metodo di backup";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "editAddress" = "Modifica indirizzo";
+"editAddressBook" = "Modifica rubrica";
 "editFolder" = "Modifica cartella";
 "editFriendsReferral" = "Modifica il referral di amici";
 "editPasswordHintSubtitle" = "Questo verrà mostrato nel caso in cui dimentichi la tua password";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Attiva notifiche push";
 "enableThorchain" = "Attiva THORChain";
 "enablingThorchain" = "Attivazione di THORChain...";
-"EnglishUK" = "Inglese (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Inserisci 4 caratteri";
 "enter4DigitCode" = "Inserisci codice a 4 cifre";
 "enter4DigitVerificationCode" = "Codice a 4 cifre ricevuto via email";
@@ -1382,7 +1383,6 @@
 "sameDeviceShareErrorDescription" = "Cambia la quota con cui firmare. Due dispositivi non possono usare la stessa quota del vault per la co-firma.";
 "sameNameFolderDescription" = "Scegli un nome univoco per la cartella e riprova.";
 "save" = "Salva";
-"saveAddress" = "Salva indirizzo";
 "saveChanges" = "Salva modifiche";
 "savedAddresses" = "Indirizzi salvati";
 "saveOnSwaps" = "Risparmia %@ sugli swap";
@@ -1791,6 +1791,7 @@
 "unsupportedFileTypeError" = "Tipo di file non supportato, riprova";
 "unverifiedFunction" = "Funzione non verificata";
 "upcoming" = "In Arrivo";
+"updateApp" = "Aggiorna app";
 "updateNow" = "Aggiorna ora";
 "upgrade" = "Aggiorna";
 "upgradeNow" = "Aggiorna ora";

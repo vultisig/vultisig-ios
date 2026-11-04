@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA 密钥";
 "editAddress" = "编辑地址";
+"editAddressBook" = "编辑地址簿";
 "editFolder" = "编辑文件夹";
 "editFriendsReferral" = "编辑好友推荐";
 "editPasswordHintSubtitle" = "如果您忘记密码，将显示此内容";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "启用推送通知";
 "enableThorchain" = "启用 THORChain";
 "enablingThorchain" = "正在启用 THORChain...";
-"EnglishUK" = "英语（英国）";
+"EnglishUK" = "（英国）";
 "enter4Characters" = "输入最多 4 个字符";
 "enter4DigitCode" = "输入4位代码";
 "enter4DigitVerificationCode" = "通过电子邮件收到的4位验证码";
@@ -1382,7 +1383,6 @@
 "sameDeviceShareErrorDescription" = "请更改份额以签名。两台设备不能使用相同的保险库份额进行联合签名。";
 "sameNameFolderDescription" = "该文件夹名称已存在。尝试一个新的";
 "save" = "保存";
-"saveAddress" = "保存地址";
 "saveChanges" = "保存更改";
 "savedAddresses" = "已保存的地址";
 "saveOnSwaps" = "在兑换中节省 %@";
@@ -1791,6 +1791,7 @@
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
 "unverifiedFunction" = "未验证的函数";
 "upcoming" = "即将到来";
+"updateApp" = "更新应用";
 "updateNow" = "立即更新";
 "upgrade" = "升级";
 "upgradeNow" = "立即升级";

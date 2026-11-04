@@ -29,17 +29,18 @@ struct SettingsCurrencySelectionView: View {
                         } label: {
                             SettingSelectionCell(
                                 title: viewModel.description,
-                                isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue
+                                isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
+                                style: .highlighted(title: .bodyS)
                             )
                         }
-                        .commonListItemContainer(index: index, itemsCount: currencies.count)
+                        .commonListItemContainer(index: index, itemsCount: currencies.count, style: .flush)
                     }
                 }
-                .commonListContainer()
+                .commonListContainer(style: .flush)
             }
         }
         .screenTitle("currency".localized)
-        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .screenEdgeInsets(ScreenEdgeInsets(top: CommonListContainer.flushScreenTopInset, bottom: 0))
         .onLoad(perform: onLoad)
     }
 
@@ -57,14 +58,12 @@ struct SettingsCurrencySelectionView: View {
     }
 
     func onLoad() {
-        let formatter = NumberFormatter()
         let locale = Locale(identifier: "en_US")
-        formatter.numberStyle = .currency
         currencies = SettingsCurrency.allCases.map { currency in
-            formatter.currencyCode = currency.rawValue
+            let symbol = FiatFormatLocale.currencyFormatter(for: currency.rawValue).currencySymbol ?? ""
             return SettingsCurrencyViewModel(
                 currency: currency,
-                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(formatter.currencySymbol ?? ""))"
+                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(symbol))"
             )
         }
     }

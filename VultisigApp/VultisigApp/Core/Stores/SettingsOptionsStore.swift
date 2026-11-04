@@ -35,7 +35,7 @@ enum SettingsLanguage: String, CaseIterable {
     func description() -> String {
         switch self {
         case .English:
-            return NSLocalizedString("EnglishUK", comment: "English (UK)")
+            return NSLocalizedString("EnglishUK", comment: "Caption under the English row, which already names the language")
         case .Deutsch:
             return NSLocalizedString("German", comment: "German")
         case .Espanol:

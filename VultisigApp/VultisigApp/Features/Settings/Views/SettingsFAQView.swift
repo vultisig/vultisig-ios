@@ -18,14 +18,14 @@ struct SettingsFAQView: View {
                 VStack(spacing: .zero) {
                     ForEach(Array(faqs.enumerated()), id: \.element.question) { index, faq in
                         SettingFAQCell(question: faq.question, answer: faq.answer)
-                            .commonListItemContainer(index: index, itemsCount: faqs.count)
+                            .commonListItemContainer(index: index, itemsCount: faqs.count, style: .flush)
                     }
                 }
-                .commonListContainer()
+                .commonListContainer(style: .flush)
             }
         }
         .screenTitle("faq".localized)
-        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .screenEdgeInsets(ScreenEdgeInsets(top: CommonListContainer.flushScreenTopInset, bottom: 0))
     }
 }
 
