@@ -107,8 +107,8 @@
 "backupNowWarning" = "Esegui il backup del vault su ogni dispositivo, uno per uno!";
 "backupOptionsBox1" = "Per impostazione predefinita, il backup è sicuro senza una password aggiuntiva, perché conservi le quote del vault in luoghi diversi.";
 "backupOptionsBox1Highlighted" = "sicuro senza";
-"backupOptionsBox2" = "Se scegli di aggiungere una password, la password del vault verrà usata per crittografare il file di backup.";
-"backupOptionsBox2Highlighted" = "password del vault";
+"backupOptionsBox2" = "Se scegli di aggiungere una password, verrà usata per crittografare il file di backup.";
+"backupOptionsBox2Highlighted" = "crittografare";
 "backupOptionsBox3" = "Ricorda: se dimentichi la password del vault, non può essere reimpostata né recuperata.";
 "backupOptionsBox3Highlighted" = "non può";
 "backupOptionsTitle" = "Vuoi crittografare il tuo backup con una password?";
@@ -131,6 +131,7 @@
 "backupVaultShareDescription" = "Esegui il backup della quota del vault in un luogo a tua scelta";
 "backupVaultShareTitle" = "Backup della quota del vault";
 "backupWithoutPassword" = "Backup senza password";
+"backupWithPassword" = "Backup con password";
 "backupYourVaultNow" = "Esegui ora il backup della quota del vault di questo dispositivo!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponibile:";
@@ -374,6 +375,8 @@
 "destinationValidator" = "Validatore di destinazione";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Conserva la quota del vault di questo dispositivo.";
+"deviceBackupPasswordButton" = "Fai il backup di questo dispositivo";
+"deviceBackupPasswordTitle" = "Password del backup del dispositivo";
 "deviceBackupTitle" = "Backup del dispositivo";
 "deviceID" = "ID dispositivo";
 "devices" = "Dispositivi";
@@ -1120,7 +1123,6 @@
 "operatorFeesError" = "La commissione operatore non può essere vuota se il fornitore è compilato";
 "operatorFeesLabel" = "Commissioni operatore (Punti Base)";
 "optional" = "(opzionale)";
-"optionalPasswordProtectBackup" = "Protezione opzionale del vault con password";
 "other" = "Altro";
 "overview" = "Panoramica";
 "pair" = "Accoppia";
@@ -1131,7 +1133,9 @@
 "passcodeAutoLockTitle" = "Blocco automatico";
 "passcodeBackupPromptBackUpNow" = "Fai il backup ora";
 "passcodeBackupPromptHasBackup" = "Ho già un backup";
-"passcodeBackupPromptSubtitle" = "Un codice di accesso cifra le tue quote di chiave con una chiave conservata su questo dispositivo. Se quella chiave va persa, il backup .vult è l'unico modo per recuperarle: il codice stesso non può essere recuperato.";
+"passcodeBackupPromptSubtitle" = "Attivando un codice di accesso, le tue quote di chiave vengono cifrate con una chiave conservata su questo dispositivo. Se quella chiave va persa, il backup .vult è l'unico modo per recuperarle. Il codice stesso non può essere recuperato né reimpostato.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "backup .vult è l'unico modo per recuperarle.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "non può essere recuperato né reimpostato.";
 "passcodeBackupPromptTitle" = "Prima esegui il backup del vault";
 "passcodeBiometricDisableFailed" = "Non è stato possibile disattivare lo sblocco con la biometria. Riprova.";
 "passcodeBiometricEnableFailed" = "Non è stato possibile attivare lo sblocco con la biometria. Il codice continua a funzionare.";
@@ -1161,7 +1165,7 @@
 "passcodeLockedOutMinutes" = "Troppi tentativi. Riprova tra %d minuti.";
 "passcodeLockedOutShortly" = "Troppi tentativi. Riprova tra poco.";
 "passcodeManageExplanation" = "Impostare un codice di accesso cifra le quote di chiave del tuo vault su questo dispositivo; rimuoverlo le decifra di nuovo. Non sostituisce il backup del vault.";
-"passcodeMismatch" = "Non corrispondono. Riprova.";
+"passcodeMismatch" = "I codici non corrispondono. Riprova.";
 "passcodeNewTitle" = "Scegli un nuovo codice";
 "passcodeSealedSharesWithoutKey" = "I tuoi vault sono già cifrati su questo dispositivo, ma la chiave che li apre non è leggibile. Ripristinali da un backup.";
 "passcodeSetSheetTitle" = "Imposta codice";
@@ -1489,6 +1493,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
 "settingsEnterHint" = "Inserisci un suggerimento";
 "settingsEnterPassword" = "Inserisci la password";
+"settingsReEnterPassword" = "Reinserisci la password";
 "share" = "Condividi";
 "shareOf" = "quota %d di %d";
 "shareQRCode" = "Condividi codice QR";
@@ -1813,7 +1818,6 @@
 "useDifferentEmail" = "Usa un'email diversa";
 "useExternalRecipient" = "Usa destinatario esterno";
 "useLocalMode" = "Usa la modalità locale";
-"usePassword" = "Usa password";
 "useStandardMode" = "Usa la modalità standard";
 "utxoPlanDustAmountError" = "Ciò che resterebbe al destinatario è sotto il limite di polvere della rete. Invia un importo maggiore oppure riduci la tariffa di rete in modo che resti di più da inviare.";
 "utxoPlanFailedError" = "Non è stato possibile preparare questa transazione (%@). Prova con un importo diverso oppure riduci la tariffa di rete.";

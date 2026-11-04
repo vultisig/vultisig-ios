@@ -21,8 +21,9 @@ enum CommonTextFieldErrorStyle {
 
 /// `.settings`: a 52 tall card with a dim label and placeholder, no outer gutter.
 /// `.settingsInput`: the same card with a normal border that shows validation colours.
+/// `.settingsForm`: radius 12 with a light border, for fields inside a form section.
 enum CommonTextFieldAppearance {
-    case standard, settings, settingsInput
+    case standard, settings, settingsInput, settingsForm
 }
 
 private struct CommonTextFieldMetrics {
@@ -122,7 +123,7 @@ struct CommonTextField<TrailingView: View>: View {
                     Text(label)
                         .foregroundStyle(labelColor)
                         .font(labelFont)
-                case .settings, .settingsInput:
+                case .settings, .settingsInput, .settingsForm:
                     Text(label)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.bodyS)
@@ -317,6 +318,15 @@ struct CommonTextField<TrailingView: View>: View {
                 cornerRadius: Theme.radius.lg,
                 clearIconSize: 18
             )
+        case .settingsForm:
+            CommonTextFieldMetrics(
+                height: settingsHeight,
+                textFont: Theme.fonts.bodySMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.md,
+                clearIconSize: 18
+            )
         }
     }
 
@@ -332,6 +342,9 @@ struct CommonTextField<TrailingView: View>: View {
         case .settingsInput:
             metrics.cornerRadius.shape
                 .strokeBorder(settingsInputBorderColor, lineWidth: 1)
+        case .settingsForm:
+            metrics.cornerRadius.shape
+                .strokeBorder(hasError ? invalidColor : Theme.colors.borderExtraLight, lineWidth: 1)
         }
     }
 

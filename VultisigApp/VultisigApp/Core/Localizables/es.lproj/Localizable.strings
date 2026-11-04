@@ -107,8 +107,8 @@
 "backupNowWarning" = "¡Haz una copia de seguridad de tu bóveda en cada dispositivo por separado!";
 "backupOptionsBox1" = "De forma predeterminada, tu copia de seguridad es segura sin una contraseña adicional, ya que guardas los fragmentos de la bóveda en distintos lugares.";
 "backupOptionsBox1Highlighted" = "segura sin";
-"backupOptionsBox2" = "Si decides agregar una contraseña, la contraseña de tu bóveda se usará para cifrar el archivo de copia de seguridad.";
-"backupOptionsBox2Highlighted" = "contraseña de tu bóveda";
+"backupOptionsBox2" = "Si decides agregar una contraseña, se usará para cifrar el archivo de copia de seguridad.";
+"backupOptionsBox2Highlighted" = "cifrar";
 "backupOptionsBox3" = "Recuerda: si olvidas la contraseña de tu bóveda, no se puede restablecer ni recuperar.";
 "backupOptionsBox3Highlighted" = "no se puede";
 "backupOptionsTitle" = "¿Quieres cifrar tu copia de seguridad con una contraseña?";
@@ -131,6 +131,7 @@
 "backupVaultShareDescription" = "Haz una copia de seguridad de tu fragmento de la bóveda en la ubicación que prefieras";
 "backupVaultShareTitle" = "Respaldar fragmento de la bóveda";
 "backupWithoutPassword" = "Copia de seguridad sin contraseña";
+"backupWithPassword" = "Copia de seguridad con contraseña";
 "backupYourVaultNow" = "¡Haz ahora una copia de seguridad del fragmento de la bóveda de este dispositivo!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponible:";
@@ -374,6 +375,8 @@
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Guarda el fragmento de la bóveda de este dispositivo.";
+"deviceBackupPasswordButton" = "Crear copia de este dispositivo";
+"deviceBackupPasswordTitle" = "Contraseña de copia del dispositivo";
 "deviceBackupTitle" = "Copia de seguridad del dispositivo";
 "deviceID" = "ID del dispositivo";
 "devices" = "Dispositivos";
@@ -1120,7 +1123,6 @@
 "operatorFeesError" = "La comisión del operador no puede estar vacía si se indica un proveedor";
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
 "optional" = "(opcional)";
-"optionalPasswordProtectBackup" = "Protección opcional con contraseña de tu bóveda";
 "other" = "Otro";
 "overview" = "Resumen";
 "pair" = "Emparejar";
@@ -1131,7 +1133,9 @@
 "passcodeAutoLockTitle" = "Bloqueo automático";
 "passcodeBackupPromptBackUpNow" = "Crear copia ahora";
 "passcodeBackupPromptHasBackup" = "Ya tengo una copia de seguridad";
-"passcodeBackupPromptSubtitle" = "Un código de acceso cifra tus fragmentos de clave con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia de seguridad .vult es la única forma de recuperarlos: el código de acceso en sí no se puede recuperar.";
+"passcodeBackupPromptSubtitle" = "Al activar un código de acceso, tus fragmentos de clave se cifran con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia de seguridad .vult es la única forma de recuperarlos. El código de acceso en sí no se puede recuperar ni restablecer.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "copia de seguridad .vult es la única forma de recuperarlos.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "no se puede recuperar ni restablecer.";
 "passcodeBackupPromptTitle" = "Primero haz una copia de tu bóveda";
 "passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
 "passcodeBiometricEnableFailed" = "No se pudo activar el desbloqueo biométrico. Tu código sigue funcionando.";
@@ -1161,7 +1165,7 @@
 "passcodeLockedOutMinutes" = "Demasiados intentos. Inténtalo en %d minutos.";
 "passcodeLockedOutShortly" = "Demasiados intentos. Inténtalo en un momento.";
 "passcodeManageExplanation" = "Al establecer un código de acceso, los fragmentos de clave de tu bóveda se cifran en este dispositivo; al quitarlo, se descifran de nuevo. No sustituye a la copia de seguridad de tu bóveda.";
-"passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
+"passcodeMismatch" = "Los códigos no coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus bóvedas ya están cifradas en este dispositivo, pero no se puede leer la clave que las abre. Restáuralas desde una copia de seguridad.";
 "passcodeSetSheetTitle" = "Establecer código";
@@ -1489,6 +1493,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "settingsEnterHint" = "Ingresa una pista";
 "settingsEnterPassword" = "Ingresa la contraseña";
+"settingsReEnterPassword" = "Vuelve a ingresar la contraseña";
 "share" = "Compartir";
 "shareOf" = "fragmento %d de %d";
 "shareQRCode" = "Compartir código QR";
@@ -1813,7 +1818,6 @@
 "useDifferentEmail" = "Usar un correo diferente";
 "useExternalRecipient" = "Usar destinatario externo";
 "useLocalMode" = "Usar modo local";
-"usePassword" = "Usar contraseña";
 "useStandardMode" = "Usar modo estándar";
 "utxoPlanDustAmountError" = "Lo que quedaría para el destinatario está por debajo del límite de polvo de la red. Envía una cantidad mayor o reduce la tarifa de red para que quede más por enviar.";
 "utxoPlanFailedError" = "No se pudo preparar esta transacción (%@). Prueba con otra cantidad o reduce la tarifa de red.";

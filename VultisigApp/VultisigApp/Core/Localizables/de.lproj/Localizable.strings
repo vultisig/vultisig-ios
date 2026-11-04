@@ -107,8 +107,8 @@
 "backupNowWarning" = "Sichern Sie Ihren Tresor auf jedem Gerät einzeln!";
 "backupOptionsBox1" = "Standardmäßig ist Ihr Backup auch ohne zusätzliches Passwort sicher, da Sie die Tresoranteile an verschiedenen Orten aufbewahren.";
 "backupOptionsBox1Highlighted" = "ohne zusätzliches Passwort sicher";
-"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen, wird Ihr Tresor-Passwort zur Verschlüsselung der Sicherungsdatei verwendet.";
-"backupOptionsBox2Highlighted" = "Tresor-Passwort";
+"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen, wird es zur Verschlüsselung der Sicherungsdatei verwendet.";
+"backupOptionsBox2Highlighted" = "Verschlüsselung";
 "backupOptionsBox3" = "Denken Sie daran: Wenn Sie Ihr Tresor-Passwort vergessen, kann es nicht zurückgesetzt oder wiederhergestellt werden.";
 "backupOptionsBox3Highlighted" = "nicht";
 "backupOptionsTitle" = "Möchten Sie Ihre Sicherung mit einem Passwort verschlüsseln?";
@@ -131,6 +131,7 @@
 "backupVaultShareDescription" = "Sichern Sie Ihren Tresoranteil an einem Ort Ihrer Wahl";
 "backupVaultShareTitle" = "Tresoranteil sichern";
 "backupWithoutPassword" = "Backup ohne Passwort";
+"backupWithPassword" = "Backup mit Passwort";
 "backupYourVaultNow" = "Sichern Sie jetzt den Tresoranteil dieses Geräts!";
 "balance" = "Guthaben";
 "balanceAvailable" = "Verfügbares Guthaben:";
@@ -374,6 +375,8 @@
 "destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
 "deviceBackupDescription" = "Speichern Sie den Tresoranteil dieses Geräts.";
+"deviceBackupPasswordButton" = "Dieses Gerät jetzt sichern";
+"deviceBackupPasswordTitle" = "Passwort für Geräte-Backup";
 "deviceBackupTitle" = "Gerätesicherung";
 "deviceID" = "Geräte-ID";
 "devices" = "Geräte";
@@ -1120,7 +1123,6 @@
 "operatorFeesError" = "Betreibergebühr darf nicht leer sein, wenn Anbieter ausgefüllt ist";
 "operatorFeesLabel" = "Betreibergebühren (Basispunkte)";
 "optional" = "(optional)";
-"optionalPasswordProtectBackup" = "Optionaler Passwortschutz für Ihren Tresor";
 "other" = "Sonstiges";
 "overview" = "Übersicht";
 "pair" = "Koppeln";
@@ -1131,7 +1133,9 @@
 "passcodeAutoLockTitle" = "Automatische Sperre";
 "passcodeBackupPromptBackUpNow" = "Jetzt sichern";
 "passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
-"passcodeBackupPromptSubtitle" = "Ein Passcode verschlüsselt Ihre Schlüsselanteile mit einem Schlüssel, der auf diesem Gerät liegt. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück – der Passcode selbst lässt sich nicht wiederherstellen.";
+"passcodeBackupPromptSubtitle" = "Wenn Sie einen Passcode aktivieren, werden Ihre Schlüsselanteile mit einem Schlüssel verschlüsselt, der auf diesem Gerät gespeichert ist. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück. Der Passcode selbst kann nicht wiederhergestellt oder zurückgesetzt werden.";
+"passcodeBackupPromptSubtitleHighlightBackup" = ".vult-Backup der einzige Weg zurück.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "nicht wiederhergestellt oder zurückgesetzt werden.";
 "passcodeBackupPromptTitle" = "Sichern Sie zuerst Ihren Tresor";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
 "passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
@@ -1161,7 +1165,7 @@
 "passcodeLockedOutMinutes" = "Zu viele Versuche. Versuchen Sie es in %d Minuten erneut.";
 "passcodeLockedOutShortly" = "Zu viele Versuche. Versuchen Sie es gleich erneut.";
 "passcodeManageExplanation" = "Ein Passcode verschlüsselt die Schlüsselanteile Ihres Tresors auf diesem Gerät; wird er entfernt, werden sie wieder entschlüsselt. Er ersetzt nicht Ihr Tresor-Backup.";
-"passcodeMismatch" = "Die Eingaben stimmen nicht überein. Erneut versuchen.";
+"passcodeMismatch" = "Die Passcodes stimmen nicht überein. Erneut versuchen.";
 "passcodeNewTitle" = "Neuen Passcode wählen";
 "passcodeSealedSharesWithoutKey" = "Ihre Tresore sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel dazu kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
 "passcodeSetSheetTitle" = "Passcode festlegen";
@@ -1489,6 +1493,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
 "settingsEnterHint" = "Hinweis eingeben";
 "settingsEnterPassword" = "Passwort eingeben";
+"settingsReEnterPassword" = "Passwort erneut eingeben";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";
 "shareQRCode" = "QR-Code teilen";
@@ -1813,7 +1818,6 @@
 "useDifferentEmail" = "Andere E-Mail verwenden";
 "useExternalRecipient" = "Externen Empfänger verwenden";
 "useLocalMode" = "Lokalen Modus verwenden";
-"usePassword" = "Passwort verwenden";
 "useStandardMode" = "Standardmodus verwenden";
 "utxoPlanDustAmountError" = "Der Betrag, der beim Empfänger ankäme, liegt unter dem Dust-Limit des Netzwerks. Senden Sie einen größeren Betrag oder senken Sie die Gebührenrate, damit mehr übrig bleibt.";
 "utxoPlanFailedError" = "Diese Transaktion konnte nicht vorbereitet werden (%@). Versuchen Sie einen anderen Betrag oder senken Sie die Gebührenrate.";

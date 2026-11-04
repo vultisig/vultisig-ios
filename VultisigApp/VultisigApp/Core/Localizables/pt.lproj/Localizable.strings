@@ -107,8 +107,8 @@
 "backupNowWarning" = "Faça o backup do seu cofre em cada dispositivo individualmente!";
 "backupOptionsBox1" = "Por padrão, seu backup é seguro sem uma senha extra, pois você guarda as partes do cofre em locais diferentes.";
 "backupOptionsBox1Highlighted" = "seguro sem";
-"backupOptionsBox2" = "Se escolher adicionar uma senha, a senha do seu cofre será usada para criptografar o arquivo de backup.";
-"backupOptionsBox2Highlighted" = "senha do seu cofre";
+"backupOptionsBox2" = "Se escolher adicionar uma senha, ela será usada para criptografar o arquivo de backup.";
+"backupOptionsBox2Highlighted" = "criptografar";
 "backupOptionsBox3" = "Lembre -se: Se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
 "backupOptionsBox3Highlighted" = "não pode";
 "backupOptionsTitle" = "Deseja criptografar seu backup com uma senha?";
@@ -131,6 +131,7 @@
 "backupVaultShareDescription" = "Faça backup da parte do cofre em um local de sua preferência";
 "backupVaultShareTitle" = "Fazer backup da parte do cofre";
 "backupWithoutPassword" = "Backup sem senha";
+"backupWithPassword" = "Backup com senha";
 "backupYourVaultNow" = "Faça o backup da parte do cofre deste dispositivo agora!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponível:";
@@ -374,6 +375,8 @@
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Guarde a parte do cofre deste dispositivo.";
+"deviceBackupPasswordButton" = "Fazer backup deste dispositivo";
+"deviceBackupPasswordTitle" = "Senha do backup do dispositivo";
 "deviceBackupTitle" = "Backup de dispositivo";
 "deviceID" = "ID do dispositivo";
 "devices" = "Dispositivos";
@@ -1120,7 +1123,6 @@
 "operatorFeesError" = "A taxa do operador não pode estar vazia se o provedor estiver preenchido";
 "operatorFeesLabel" = "Taxas do operador (Pontos Base)";
 "optional" = "(opcional)";
-"optionalPasswordProtectBackup" = "Proteção opcional do seu cofre com senha";
 "other" = "Outro";
 "overview" = "Visão geral";
 "pair" = "Emparelhar";
@@ -1131,7 +1133,9 @@
 "passcodeAutoLockTitle" = "Bloqueio automático";
 "passcodeBackupPromptBackUpNow" = "Fazer backup agora";
 "passcodeBackupPromptHasBackup" = "Já tenho um backup";
-"passcodeBackupPromptSubtitle" = "O código de acesso criptografa as partes do cofre com uma chave guardada neste dispositivo. Se essa chave se perder, seu backup .vult é a única forma de recuperá-las — o código de acesso em si não pode ser recuperado.";
+"passcodeBackupPromptSubtitle" = "Ao ativar um código de acesso, as partes do cofre são criptografadas com uma chave guardada neste dispositivo. Se essa chave se perder, seu backup .vult é a única forma de recuperá-las. O código de acesso em si não pode ser recuperado nem redefinido.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "backup .vult é a única forma de recuperá-las.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "não pode ser recuperado nem redefinido.";
 "passcodeBackupPromptTitle" = "Primeiro, faça backup do seu cofre";
 "passcodeBiometricDisableFailed" = "Não foi possível desativar o desbloqueio biométrico. Tente novamente.";
 "passcodeBiometricEnableFailed" = "Não foi possível ativar o desbloqueio biométrico. Seu código continua funcionando.";
@@ -1161,7 +1165,7 @@
 "passcodeLockedOutMinutes" = "Muitas tentativas. Tente novamente em %d minutos.";
 "passcodeLockedOutShortly" = "Muitas tentativas. Tente novamente em instantes.";
 "passcodeManageExplanation" = "Definir um código de acesso criptografa as partes do cofre neste dispositivo; removê-lo as descriptografa. Não substitui o backup do cofre.";
-"passcodeMismatch" = "Não coincidem. Tente novamente.";
+"passcodeMismatch" = "Os códigos não coincidem. Tente novamente.";
 "passcodeNewTitle" = "Escolha um novo código";
 "passcodeSealedSharesWithoutKey" = "Seus cofres já estão criptografados neste dispositivo, mas a chave que os abre não pode ser lida. Restaure-os a partir de um backup.";
 "passcodeSetSheetTitle" = "Definir código";
@@ -1489,6 +1493,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Limpar cache de tokens do SwapKit";
 "settingsEnterHint" = "Insira uma dica";
 "settingsEnterPassword" = "Digite a senha";
+"settingsReEnterPassword" = "Digite a senha novamente";
 "share" = "Compartilhar";
 "shareOf" = "parte %d de %d";
 "shareQRCode" = "Compartilhar código QR";
@@ -1813,7 +1818,6 @@
 "useDifferentEmail" = "Usar um email diferente";
 "useExternalRecipient" = "Usar destinatário externo";
 "useLocalMode" = "Usar modo local";
-"usePassword" = "Usar senha";
 "useStandardMode" = "Usar modo padrão";
 "utxoPlanDustAmountError" = "O que sobraria para o destinatário está abaixo do limite de poeira da rede. Envie um valor maior ou reduza a taxa de rede para que sobre mais para enviar.";
 "utxoPlanFailedError" = "Não foi possível preparar esta transação (%@). Tente outro valor ou reduza a taxa de rede.";

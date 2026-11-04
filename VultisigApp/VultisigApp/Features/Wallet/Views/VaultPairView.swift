@@ -9,10 +9,11 @@ import SwiftUI
 
 struct VaultPartView: View {
     let vault: Vault
+    var usesFilledIcon = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
-            VaultIconTypeView(isFastVault: vault.offersFastSigning)
+            VaultIconTypeView(isFastVault: vault.offersFastSigning, usesFilledIcon: usesFilledIcon)
             Text(vault.signerPartDescription)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)

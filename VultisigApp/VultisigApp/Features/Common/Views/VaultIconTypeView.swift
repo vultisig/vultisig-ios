@@ -9,9 +9,13 @@ import SwiftUI
 
 struct VaultIconTypeView: View {
     let isFastVault: Bool
+    var usesFilledIcon = false
 
     var iconName: ImageResource {
-        isFastVault ? .bolt : .shield
+        if usesFilledIcon {
+            return isFastVault ? .boltFilled : .shieldFilled
+        }
+        return isFastVault ? .bolt : .shield
     }
 
     var iconColor: Color {
