@@ -189,7 +189,7 @@
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "checkForUpdates" = "Check for Updates";
 "checkingForUpdate" = "Checking for update...";
-"checkUpdate" = "Check Update";
+"checkUpdate" = "Check Updates";
 "Chinese" = "Chinese";
 "chooseAPassword" = "Choose a password";
 "chooseBackupMethod" = "Choose Backup Method";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA Key";
 "editAddress" = "Edit Address";
+"editAddressBook" = "Edit Address Book";
 "editFolder" = "Edit folder";
 "editFriendsReferral" = "Edit Friends Referral";
 "editPasswordHintSubtitle" = "This will be shown in case you forget your password";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Enable push notifications";
 "enableThorchain" = "Enable THORChain";
 "enablingThorchain" = "Enabling THORChain...";
-"EnglishUK" = "English (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Enter up to 4 characters";
 "enter4DigitCode" = "Enter 4-character code";
 "enter4DigitVerificationCode" = "4-digit code received via email";
@@ -1218,7 +1219,7 @@
 "psbtSignedByThisDevice" = "Signed by this device";
 "psbtTransactionDetails" = "Transaction Details (PSBT)";
 "publish" = "Publish";
-"pushNotifications" = "Push notifications";
+"pushNotifications" = "Push Notifications";
 "pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "qbtcClaimAwaitingConfirmationsDetail" = "Your Bitcoin UTXOs need more confirmations before they can be claimed. Please check back later.";
 "qbtcClaimAwaitingConfirmationsTitle" = "Awaiting confirmations";
@@ -1383,7 +1384,6 @@
 "sameDeviceShareErrorDescription" = "Please change the share to sign. Two devices cannot use the same vault share for co-signing.";
 "sameNameFolderDescription" = "That folder name already exists. Try a new one.";
 "save" = "Save";
-"saveAddress" = "Save Address";
 "saveChanges" = "Save Changes";
 "savedAddresses" = "Saved Addresses";
 "saveOnSwaps" = "Save %@ on swaps";
@@ -1792,6 +1792,7 @@
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "unverifiedFunction" = "Unverified function";
 "upcoming" = "Upcoming";
+"updateApp" = "Update App";
 "updateNow" = "Update Now";
 "upgrade" = "Upgrade";
 "upgradeNow" = "Upgrade now";
@@ -1841,7 +1842,7 @@
 "vaultName" = "Vault Name";
 "vaultNameAlreadyInUse" = "Vault name already in use";
 "vaultNameExists" = "Vault name %s already exists";
-"vaultNotifications" = "Vault notifications";
+"vaultNotifications" = "Vault Notifications";
 "vaultNotImportedDescription" = "Please import the correct share.";
 "vaultNotImportedTitle" = "Vault is not loaded";
 "vaultPart" = "Vault Share";

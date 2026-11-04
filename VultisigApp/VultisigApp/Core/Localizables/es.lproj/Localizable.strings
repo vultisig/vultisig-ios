@@ -189,7 +189,7 @@
 "checkEmptyField" = "Por favor, asegúrate de que todos los campos están llenos.";
 "checkForUpdates" = "Buscar actualizaciones";
 "checkingForUpdate" = "Buscando actualizaciones...";
-"checkUpdate" = "Comprobar actualización";
+"checkUpdate" = "Comprobar actualizaciones";
 "Chinese" = "Chino";
 "chooseAPassword" = "Elige una contraseña";
 "chooseBackupMethod" = "Elige el método de copia de seguridad";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "Clave EdDSA";
 "editAddress" = "Editar dirección";
+"editAddressBook" = "Editar libreta de direcciones";
 "editFolder" = "Editar carpeta";
 "editFriendsReferral" = "Editar código de referido de un amigo";
 "editPasswordHintSubtitle" = "Se mostrará si olvidas tu contraseña";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Activar notificaciones push";
 "enableThorchain" = "Activar THORChain";
 "enablingThorchain" = "Activando THORChain...";
-"EnglishUK" = "Inglés (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Ingresa hasta 4 caracteres";
 "enter4DigitCode" = "Ingresa código de 4 dígitos";
 "enter4DigitVerificationCode" = "Código de 4 dígitos recibido por email";
@@ -1383,7 +1384,6 @@
 "sameDeviceShareErrorDescription" = "Cambia el fragmento con el que firmas. Dos dispositivos no pueden usar el mismo fragmento de la bóveda para cofirmar.";
 "sameNameFolderDescription" = "Ese nombre de carpeta ya existe. Prueba con otro.";
 "save" = "Guardar";
-"saveAddress" = "Guardar dirección";
 "saveChanges" = "Guardar cambios";
 "savedAddresses" = "Direcciones guardadas";
 "saveOnSwaps" = "Ahorra %@ en swaps";
@@ -1792,6 +1792,7 @@
 "unsupportedFileTypeError" = "Tipo de archivo no soportado, inténtalo de nuevo";
 "unverifiedFunction" = "Función no verificada";
 "upcoming" = "Próximo";
+"updateApp" = "Actualizar app";
 "updateNow" = "Actualizar ahora";
 "upgrade" = "Actualizar";
 "upgradeNow" = "Actualizar ahora";

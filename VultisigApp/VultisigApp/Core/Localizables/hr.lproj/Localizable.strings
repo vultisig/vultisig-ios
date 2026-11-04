@@ -189,7 +189,7 @@
 "checkEmptyField" = "Molimo provjerite da su sva polja ispunjena.";
 "checkForUpdates" = "Provjerite ažuriranja";
 "checkingForUpdate" = "Provjeravanje ažuriranja...";
-"checkUpdate" = "Provjeri ažuriranje";
+"checkUpdate" = "Provjeri ažuriranja";
 "Chinese" = "Kineski";
 "chooseAPassword" = "Odaberite lozinku";
 "chooseBackupMethod" = "Odaberite metodu sigurnosne kopije";
@@ -421,6 +421,7 @@
 "EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA ključ";
 "editAddress" = "Uredi adresu";
+"editAddressBook" = "Uredi adresar";
 "editFolder" = "Uredi mapu";
 "editFriendsReferral" = "Uredite preporuku prijatelja";
 "editPasswordHintSubtitle" = "To će biti prikazano u slučaju da zaboravite lozinku";
@@ -444,7 +445,7 @@
 "enablePushNotifications" = "Omogući push obavijesti";
 "enableThorchain" = "Omogući THORChain";
 "enablingThorchain" = "Omogućavanje THORChain-a...";
-"EnglishUK" = "Engleski (UK)";
+"EnglishUK" = "(UK)";
 "enter4Characters" = "Unesite do 4 znaka";
 "enter4DigitCode" = "Unesite 4-znamenkasti kod";
 "enter4DigitVerificationCode" = "4-znamenkasti kod primljen putem e-maila";
@@ -1383,7 +1384,6 @@
 "sameDeviceShareErrorDescription" = "Promijenite udio za potpisivanje. Dva uređaja ne mogu koristiti isti udio trezora za zajedničko potpisivanje.";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
 "save" = "Spremi";
-"saveAddress" = "Spremi adresu";
 "saveChanges" = "Spremi promjene";
 "savedAddresses" = "Spremljene adrese";
 "saveOnSwaps" = "Uštedite %@ na zamjenama";
@@ -1792,6 +1792,7 @@
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "unverifiedFunction" = "Neprovjerena funkcija";
 "upcoming" = "Nadolazeće";
+"updateApp" = "Ažuriraj aplikaciju";
 "updateNow" = "Ažuriraj sada";
 "upgrade" = "Nadogradi";
 "upgradeNow" = "Nadogradi sada";
