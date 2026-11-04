@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Tresor-Reshare";
-"reshareVault" = "Reshare mit neuen Geräten";
+"reshareVault" = "Tresor-Reshare mit neuer Gerätegruppe durchführen";
 "reshareVaultSubtitle" = "Passen Sie die Einrichtung Ihres Tresors an: Fügen Sie Geräte hinzu, entfernen Sie Geräte oder erneuern Sie die Tresoranteile.";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
 "resolvingRecipientName" = "Name wird aufgelöst…";
@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transaktion nicht gescannt von";
 "securityScannerTransactionScannedBy" = "Transaktion gescannt von";
 "securityScannerTransactionScanning" = "Scannen…";
-"securitySettingsSubtitle" = "Biometrie für schnelles Signieren verwalten";
+"securitySettingsSubtitle" = "Passcode verwalten";
 "seedPhraseAlreadyImported" = "Seed-Phrase bereits importiert";
 "seedPhraseAlreadyImportedDescription" = "Bitte importieren Sie eine andere Seed-Phrase";
 "seedPhraseImportTip" = "Tipp: Sie können einen Browser als Gerät verwenden";

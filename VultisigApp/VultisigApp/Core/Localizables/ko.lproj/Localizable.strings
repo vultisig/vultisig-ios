@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";
 "reshareLabelTitle" = "볼트 재공유";
-"reshareVault" = "새 기기로 볼트 재공유";
+"reshareVault" = "새로운 구성원과 볼트 재공유";
 "reshareVaultSubtitle" = "볼트 설정을 업데이트하세요. 기기를 추가 또는 제거하거나 셰어를 갱신하세요.";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
 "resolvingRecipientName" = "이름 확인 중…";
@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "트랜잭션이 스캔되지 않았습니다";
 "securityScannerTransactionScannedBy" = "트랜잭션 스캔됨";
 "securityScannerTransactionScanning" = "스캔 중…";
-"securitySettingsSubtitle" = "빠른 서명을 위한 생체인식 관리";
+"securitySettingsSubtitle" = "패스코드 관리";
 "seedPhraseAlreadyImported" = "시드 문구가 이미 가져와졌습니다";
 "seedPhraseAlreadyImportedDescription" = "다른 시드 문구를 가져오세요";
 "seedPhraseImportTip" = "팁: 브라우저를 기기로 사용할 수 있습니다";

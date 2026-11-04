@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transaction not scanned by";
 "securityScannerTransactionScannedBy" = "Transaction scanned by";
 "securityScannerTransactionScanning" = "Scanning…";
-"securitySettingsSubtitle" = "Manage biometrics for fast sign";
+"securitySettingsSubtitle" = "Manage your passcode";
 "seedPhraseAlreadyImported" = "Seed Phrase already imported";
 "seedPhraseAlreadyImportedDescription" = "Please import another seed phrase";
 "seedPhraseImportTip" = "Tip: You can use a browser as a device";

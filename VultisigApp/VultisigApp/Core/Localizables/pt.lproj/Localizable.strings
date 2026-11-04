@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transação não verificada por";
 "securityScannerTransactionScannedBy" = "Transação verificada por";
 "securityScannerTransactionScanning" = "Varredura ...";
-"securitySettingsSubtitle" = "Gerenciar a biometria para assinatura rápida";
+"securitySettingsSubtitle" = "Gerencie seu código de acesso";
 "seedPhraseAlreadyImported" = "Frase semente já importada";
 "seedPhraseAlreadyImportedDescription" = "Por favor importe outra frase semente";
 "seedPhraseImportTip" = "Dica: Você pode usar um navegador como dispositivo";

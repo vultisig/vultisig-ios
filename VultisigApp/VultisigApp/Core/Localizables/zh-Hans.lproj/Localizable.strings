@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
 "reshareLabelTitle" = "重新共享您的保险库";
-"reshareVault" = "使用新设备重新共享保险库";
+"reshareVault" = "使用新的设备组重新共享保险库";
 "reshareVaultSubtitle" = "更新您的保险库设置。添加或移除设备，或刷新份额。";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
 "resolvingRecipientName" = "正在解析名称…";
@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "交易未被扫描";
 "securityScannerTransactionScannedBy" = "交易已被扫描";
 "securityScannerTransactionScanning" = "正在扫描…";
-"securitySettingsSubtitle" = "管理用于快速签名的生物识别";
+"securitySettingsSubtitle" = "管理您的密码";
 "seedPhraseAlreadyImported" = "助记词已导入";
 "seedPhraseAlreadyImportedDescription" = "请导入另一个助记词";
 "seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";

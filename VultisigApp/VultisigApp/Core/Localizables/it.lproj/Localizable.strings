@@ -1328,7 +1328,7 @@
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Reshare";
 "reshareLabelTitle" = "Esegui il reshare del vault";
-"reshareVault" = "Esegui il reshare del vault con nuovi dispositivi";
+"reshareVault" = "Esegui il reshare del vault con un nuovo comitato";
 "reshareVaultSubtitle" = "Aggiorna la configurazione del tuo vault. Aggiungi o rimuovi dispositivi, oppure aggiorna le quote.";
 "resharingLoaderTitle" = "Aggiungi dispositivi da includere o escludi quelli da rimuovere dal vault";
 "resolvingRecipientName" = "Risoluzione del nome…";
@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transazione non scansionata da";
 "securityScannerTransactionScannedBy" = "Transazione scansionata da";
 "securityScannerTransactionScanning" = "Scansione ...";
-"securitySettingsSubtitle" = "Gestisci la biometria per la firma rapida";
+"securitySettingsSubtitle" = "Gestisci il tuo codice di accesso";
 "seedPhraseAlreadyImported" = "Seed phrase già importata";
 "seedPhraseAlreadyImportedDescription" = "Importa un'altra seed phrase";
 "seedPhraseImportTip" = "Suggerimento: Puoi usare un browser come dispositivo";
