@@ -15,8 +15,8 @@ struct SettingsGlowBackground: View {
 
         var colors: (start: Color, end: Color) {
             switch self {
-            case .neutral: (Color(hex: "33E6BF"), Color(hex: "0439C7"))
-            case .destructive: (Color(hex: "D32829"), Color(hex: "FF5C5C"))
+            case .neutral: (Theme.colors.turquoise, Theme.colors.primaryAccent2)
+            case .destructive: (Theme.colors.destructiveGlow, Theme.colors.alertError)
             }
         }
 

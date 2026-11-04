@@ -69,7 +69,7 @@ struct CommonTextEditor: View {
 
     @ViewBuilder
     private var editorBox: some View {
-        if appearance.isSettings {
+        if appearance != .standard {
             editorContent
                 .padding(.horizontal, Self.settingsPadding)
                 .padding(.vertical, Self.settingsPadding)
@@ -101,9 +101,9 @@ struct CommonTextEditor: View {
                     .textEditorStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .foregroundStyle(Theme.colors.textPrimary)
-                    .font(appearance.isSettings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
-                    .lineSpacing(appearance.isSettings ? Self.settingsLineSpacing : 0)
-                    .padding(appearance.isSettings ? Self.negative(Self.editorInsets) : EdgeInsets())
+                    .font(appearance != .standard ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
+                    .lineSpacing(appearance != .standard ? Self.settingsLineSpacing : 0)
+                    .padding(appearance != .standard ? Self.negative(Self.editorInsets) : EdgeInsets())
                     .submitLabel(.continue)
                     .autocorrectionDisabled()
                     .focused(isFocused)
@@ -120,7 +120,7 @@ struct CommonTextEditor: View {
                 }
             }
             if value.isEmpty {
-                if appearance.isSettings {
+                if appearance != .standard {
                     Text(placeholder)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.bodyS)

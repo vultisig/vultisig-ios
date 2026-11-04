@@ -46,7 +46,7 @@ struct RenameVaultView: View {
     }
 
     var button: some View {
-        SettingsCTAButton(title: "save", width: .fill, weight: .semibold) {
+        PrimaryButton(title: "save", size: .compactSemibold) {
             rename()
         }
         .disabled(trimmedName.isEmpty)

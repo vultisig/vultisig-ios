@@ -38,6 +38,10 @@ struct TokenSelectionGridCell: View {
             ticker: coin.ticker,
             logo: coin.logo,
             tokenChainLogo: showChainIcon ? coin.tokenChainLogo : nil,
+            // Secured assets share tickers across source chains; the chain tells them apart.
+            subtitle: THORChainHelper.isSecuredAsset(coinMeta: coin)
+                ? THORChainHelper.securedAssetSourceChainName(coinMeta: coin)
+                : nil,
             isSelected: $isSelected
         ) { onSelection(isSelected) }
         .overlay(alignment: .topTrailing) {

@@ -35,7 +35,7 @@ struct AddressBookScreen: View {
                        emptyView
                     } else {
                         list
-                        addAddressButton(width: .fill)
+                        addAddressButton(size: .compact)
                             .padding(.bottom, 12)
                     }
                 }
@@ -62,14 +62,14 @@ struct AddressBookScreen: View {
         VStack(spacing: 12) {
             Text("addressBookEmptyTitle".localized)
                 .settingsText(.buttonRegular)
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text("addressBookEmptySubtitle".localized)
                 .settingsText(.buttonS)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
 
-            addAddressButton(width: .hug)
+            addAddressButton(size: .compactHug)
                 .padding(.top, 18)
 
             Spacer()
@@ -110,8 +110,8 @@ struct AddressBookScreen: View {
         }
     }
 
-    func addAddressButton(width: SettingsCTAButtonStyle.Width) -> some View {
-        SettingsCTAButton(title: "addAddress", width: width) {
+    func addAddressButton(size: ButtonSize) -> some View {
+        PrimaryButton(title: "addAddress", size: size) {
             router.navigate(to: SettingsRoute.addAddressBook())
         }
     }

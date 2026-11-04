@@ -28,9 +28,6 @@ struct LockedFeatureSheet: View {
     /// Deliberately off the scale — mirrors `VultDiscountTierView`'s card, whose
     /// 20pt bottom is a Figma value the footer bar is drawn to sit under.
     private let cardCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
-    private let settingsCardTopRadius: CGFloat = 24 // swiftlint:disable:this no_raw_corner_radius
-    private let settingsFooterRadius: CGFloat = 24 // swiftlint:disable:this no_raw_corner_radius
-    private let settingsBalanceRadius: CGFloat = 14 // swiftlint:disable:this no_raw_corner_radius
     private let settingsFooterHeight: CGFloat = 74
     private let settingsFooterOverlap: CGFloat = 22
     private let settingsDetent: CGFloat = 565
@@ -138,15 +135,15 @@ struct LockedFeatureSheet: View {
     private var settingsBadge: some View {
         ZStack {
             Circle()
-                .fill(Color(hex: "03132C"))
+                .fill(Theme.colors.bgPrimary)
             Rectangle()
-                .fill(Color(hex: "0C4EFF"))
+                .fill(Theme.colors.devicesSelectionGlow)
                 .frame(width: 16, height: 8)
                 .blur(radius: 9.5)
                 .frame(maxHeight: .infinity, alignment: .bottom)
             Circle()
                 .inset(by: 0.75)
-                .stroke(.white.opacity(0.15), lineWidth: 1.5)
+                .stroke(Theme.colors.buttonBevelLight, lineWidth: 1.5)
             Icon(viewModel.feature.icon, color: Theme.colors.bgButtonTertiary, size: 24)
         }
         .frame(width: settingsBadgeDiameter, height: settingsBadgeDiameter)
@@ -155,10 +152,10 @@ struct LockedFeatureSheet: View {
 
     private var settingsCardShape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
-            topLeadingRadius: settingsCardTopRadius,
+            topLeadingRadius: Theme.radius.xl.points,
             bottomLeadingRadius: cardCornerRadius,
             bottomTrailingRadius: cardCornerRadius,
-            topTrailingRadius: settingsCardTopRadius
+            topTrailingRadius: Theme.radius.xl.points
         )
     }
 
@@ -223,7 +220,7 @@ struct LockedFeatureSheet: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: settingsBalanceRadius)
+            Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface12)
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
@@ -241,8 +238,8 @@ struct LockedFeatureSheet: View {
                 .overlay(footerInnerShadow)
                 .clipShape(
                     UnevenRoundedRectangle(
-                        bottomLeadingRadius: settingsFooterRadius,
-                        bottomTrailingRadius: settingsFooterRadius
+                        bottomLeadingRadius: Theme.radius.xl.points,
+                        bottomTrailingRadius: Theme.radius.xl.points
                     )
                 )
                 .contentShape(Rectangle())

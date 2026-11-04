@@ -42,7 +42,7 @@ struct SecurityScannerBottomSheetContent: View {
             }
 
             VStack(spacing: 8) {
-                SettingsCTAButton(title: "securityScannerContinueGoBack", width: .fill) {
+                PrimaryButton(title: "securityScannerContinueGoBack", size: .compact) {
                     onDismissRequest()
                 }
 
@@ -76,14 +76,14 @@ private struct SecurityWarningBadge: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color(hex: "03132C"))
+                .fill(Theme.colors.bgPrimary)
                 .frame(width: Self.ringDiameter, height: Self.ringDiameter)
             Rectangle()
                 .fill(tint)
                 .frame(width: Self.glowSize.width, height: Self.glowSize.height)
                 .blur(radius: Self.glowBlur)
             Circle()
-                .stroke(.white.opacity(0.1), lineWidth: 2)
+                .stroke(Theme.colors.buttonBevelLight, lineWidth: 2)
                 .frame(width: Self.ringDiameter, height: Self.ringDiameter)
             Icon(.circleWarning, color: tint, size: Self.glyphSize)
         }

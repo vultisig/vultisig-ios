@@ -15,6 +15,9 @@ public protocol ColorSystemProtocol {
     var buttonBevelDark: Color { get }
     var medallionInsetShadow: Color { get }
 
+    var appTileGradientEnd: Color { get }
+    var appTileHighlight: Color { get }
+
     var textButtonDark: Color { get }
     var textButtonLight: Color { get }
     var textButtonDisabled: Color { get }
@@ -54,6 +57,7 @@ public protocol ColorSystemProtocol {
     var alertInfo: Color { get }
 
     var turquoise: Color { get }
+    var destructiveGlow: Color { get }
     var devicesSelectionGlow: Color { get }
 
     // Promotional banner gradient endpoints from the 2026 banner system.

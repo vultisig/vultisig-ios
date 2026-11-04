@@ -56,7 +56,8 @@ struct PrimaryButton<LeadingView: View, TrailingView: View>: View {
                 leadingView: { leadingView },
                 trailingView: { trailingView },
                 isLoading: isLoading,
-                reserveTrailingIconSpace: reserveTrailingIconSpace
+                reserveTrailingIconSpace: reserveTrailingIconSpace,
+                hugsTitle: size == .compactHug
             )
         }
         .buttonStyle(

@@ -21,6 +21,10 @@ struct TokenSearchService {
     /// (bundled curated `TokensStore` + 1inch + Jupiter, deduped by
     /// `CoinMeta.uniqueId` with the curated logo/priceProviderId winning). The
     /// caller-facing shape is unchanged — non-native `CoinMeta` for the chain.
+    ///
+    /// THORChain secured assets are excluded: this list is cached for hours,
+    /// and the swap pickers read them fresh from `SecuredAssetTokenProvider`
+    /// so an asset whose pool stops being Available drops out within minutes.
     func loadTokens(for chain: Chain) async throws -> [CoinMeta] {
         try await SwapTokenListCache.shared.tokens(for: chain) {
             try await self.fetchUncached(for: chain)
@@ -43,7 +47,8 @@ struct TokenSearchService {
 
         guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
 
-        return Self.surfaceableTokens(from: candidates)
+        let cacheable = candidates.filter { $0.sourceKind != SecuredAssetTokenProvider.kind }
+        return Self.surfaceableTokens(from: cacheable)
     }
 
     /// The full verification-aware catalog for the wallet add-token picker: the

@@ -627,7 +627,6 @@
 "homeDisplayCombinedTitle" = "Wallet + DeFi";
 "homeDisplaySeparateDescription" = "Der Wallet-Tab zeigt nur Ihr Wallet-Guthaben, der DeFi-Tab Ihr DeFi-Guthaben.";
 "homeDisplaySeparateTitle" = "Wallet & DeFi getrennt";
-"homeDisplaySubtitle" = "Anzeige des Wallet-Guthabens bearbeiten";
 "homeSwipeHintDescription" = "Wischen Sie nach links oder rechts, um zwischen Wallet- und DeFi-Tab zu wechseln.";
 "homeSwipeHintTitle" = "Wischen zum Wechseln";
 "howItWorks" = "So funktioniert's";

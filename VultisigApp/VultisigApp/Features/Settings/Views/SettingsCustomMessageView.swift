@@ -245,7 +245,7 @@ struct SettingsCustomMessageView: View {
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.alertError)
             }
-            SettingsCTAButton(title: "continue", width: .fill) {
+            PrimaryButton(title: "continue", size: .compact) {
                 viewModel.continueIfSignable(customMessagePayload)
             }
             .disabled(!signButtonEnabled)
@@ -256,7 +256,16 @@ struct SettingsCustomMessageView: View {
     }
 
     var signButton: some View {
-        signButtons
+        SigningCTAButtons(
+            isFastVault: vault.offersFastSigning,
+            isDisabled: !signButtonEnabled,
+            singleSignTitle: "sign",
+            onFastSign: { fastPasswordPresented = true },
+            onPairedSign: {
+                fastVaultPassword = .empty
+                onSignPress()
+            }
+        )
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 isPresented: $fastPasswordPresented,
@@ -266,26 +275,6 @@ struct SettingsCustomMessageView: View {
             )
         }
         .padding(.horizontal, 16)
-    }
-
-    @ViewBuilder
-    private var signButtons: some View {
-        if vault.offersFastSigning {
-            SigningCTAButtons(
-                isFastVault: true,
-                isDisabled: !signButtonEnabled,
-                onFastSign: { fastPasswordPresented = true },
-                onPairedSign: signPaired
-            )
-        } else {
-            SettingsCTAButton(title: "sign", width: .fill, action: signPaired)
-                .disabled(!signButtonEnabled)
-        }
-    }
-
-    private func signPaired() {
-        fastVaultPassword = .empty
-        onSignPress()
     }
 
     func onSignPress() {

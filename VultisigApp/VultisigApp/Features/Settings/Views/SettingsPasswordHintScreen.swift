@@ -32,7 +32,7 @@ struct SettingsPasswordHintScreen: View {
                     }
                 }
 
-                SettingsCTAButton(title: "save", width: .fill, weight: .semibold) {
+                PrimaryButton(title: "save", size: .compactSemibold) {
                     viewModel.saveHint(vault: vault)
                     dismiss()
                 }

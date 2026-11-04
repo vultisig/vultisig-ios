@@ -60,7 +60,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
 
         let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
 
-        XCTAssertEqual(history.map(\.churnHeight), [300, 200], "stops before the churn the vault wasn't bonded for yet")
+        XCTAssertEqual(history.map(\.id), [300, 200], "stops before the churn the vault wasn't bonded for yet")
         XCTAssertEqual(history.map(\.amount), [500, 500])
     }
 
@@ -79,7 +79,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
 
         let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
 
-        XCTAssertEqual(history.map(\.churnHeight), [300, 200, 100])
+        XCTAssertEqual(history.map(\.id), [300, 200, 100])
     }
 
     /// `date` on the wire is unix NANOSECONDS — a raw-seconds interpretation
@@ -95,7 +95,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
 
         let expected = Date(timeIntervalSince1970: Double(nanos) / 1_000_000_000)
-        XCTAssertEqual(history.first?.churnDate.timeIntervalSince1970 ?? 0, expected.timeIntervalSince1970, accuracy: 0.001)
+        XCTAssertEqual(history.first?.date.timeIntervalSince1970 ?? 0, expected.timeIntervalSince1970, accuracy: 0.001)
     }
 
     /// Cap respected even when more churns are available than `limit` asks for.
@@ -111,7 +111,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, limit: 3)
 
         XCTAssertEqual(history.count, 3)
-        XCTAssertEqual(history.map(\.churnHeight), [500, 400, 300], "the 3 newest, not an arbitrary 3")
+        XCTAssertEqual(history.map(\.id), [500, 400, 300], "the 3 newest, not an arbitrary 3")
     }
 
     /// Bonded now, but never a provider at any past churn — the sheet must

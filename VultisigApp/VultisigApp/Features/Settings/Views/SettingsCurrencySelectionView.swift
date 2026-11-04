@@ -57,26 +57,13 @@ struct SettingsCurrencySelectionView: View {
         dismiss()
     }
 
-    /// The design lists the Swiss Franc ahead of the Pound.
-    private var displayOrder: [SettingsCurrency] {
-        var order = SettingsCurrency.allCases
-        if let pound = order.firstIndex(of: .GBP), let franc = order.firstIndex(of: .CHF) {
-            order.swapAt(pound, franc)
-        }
-        return order
-    }
-
     func onLoad() {
-        let formatter = NumberFormatter()
         let locale = Locale(identifier: "en_US")
-        formatter.numberStyle = .currency
-        // Unambiguous in every device region: US$, JP¥ and CA$ rather than a bare $ or ¥.
-        formatter.locale = Locale(identifier: "en_GB")
-        currencies = displayOrder.map { currency in
-            formatter.currencyCode = currency.rawValue
+        currencies = SettingsCurrency.allCases.map { currency in
+            let symbol = FiatFormatLocale.currencyFormatter(for: currency.rawValue).currencySymbol ?? ""
             return SettingsCurrencyViewModel(
                 currency: currency,
-                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(formatter.currencySymbol ?? ""))"
+                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(symbol))"
             )
         }
     }

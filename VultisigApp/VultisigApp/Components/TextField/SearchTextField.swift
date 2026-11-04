@@ -15,7 +15,6 @@ struct SearchTextField: View {
     }
 
     private static var settingsHeight: CGFloat { 42 }
-    private static var settingsInnerGlow: Color { Color(hex: "F0F4FC").opacity(0.03) }
 
     @Binding var value: String
     @Binding var isFocused: Bool
@@ -111,7 +110,7 @@ struct SearchTextField: View {
             Theme.colors.bgSurface1
         case .settings:
             Capsule(style: .circular)
-                .fill(Theme.colors.bgSurface1.shadow(.inner(color: Self.settingsInnerGlow, radius: 8)))
+                .fill(Theme.colors.bgSurface1.shadow(.inner(color: Theme.colors.borderExtraLight, radius: 8)))
         }
     }
 

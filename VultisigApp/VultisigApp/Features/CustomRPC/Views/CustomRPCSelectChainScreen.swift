@@ -39,7 +39,7 @@ struct CustomRPCSelectChainScreen: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("customRPCSelectChain".localized)
                 .settingsText(.title2)
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.colors.textPrimary)
             SearchTextField(value: $viewModel.searchText, isFocused: $searchFocused, appearance: .settings)
         }
     }

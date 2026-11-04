@@ -89,7 +89,7 @@ struct AddAddressBookScreen: View {
     }
 
     var button: some View {
-        SettingsCTAButton(title: "save", width: .fill) {
+        PrimaryButton(title: "save", size: .compact) {
             addAddress()
         }
     }

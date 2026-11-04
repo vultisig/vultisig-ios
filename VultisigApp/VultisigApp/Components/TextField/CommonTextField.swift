@@ -21,14 +21,18 @@ enum CommonTextFieldErrorStyle {
 
 /// `.settings` is the settings forms' field: a 52 tall card with a dim label and
 /// placeholder and no outer gutter. `.settingsInput` is the same card with the
-/// design's normal border, which shows validation colours. Everywhere else keeps
-/// `.standard`.
+/// normal border, which shows validation colours. Everywhere else keeps `.standard`.
 enum CommonTextFieldAppearance {
     case standard, settings, settingsInput
+}
 
-    var isSettings: Bool {
-        self != .standard
-    }
+private struct CommonTextFieldMetrics {
+    let height: CGFloat
+    let textFont: Font
+    let horizontalPadding: CGFloat
+    let outerPadding: CGFloat
+    let cornerRadius: CornerRadius
+    let clearIconSize: CGFloat
 }
 
 struct CommonTextField<TrailingView: View>: View {
@@ -48,7 +52,7 @@ struct CommonTextField<TrailingView: View>: View {
 
     let trailingView: () -> TrailingView
 
-    private static var settingsHeight: CGFloat { 52 }
+    private let settingsHeight: CGFloat = 52
 
     init(
         text: Binding<String>,
@@ -129,7 +133,7 @@ struct CommonTextField<TrailingView: View>: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     textFieldContainer
-                        .font(textFont)
+                        .font(metrics.textFont)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .submitLabel(.done)
                         .colorScheme(.dark)
@@ -139,16 +143,15 @@ struct CommonTextField<TrailingView: View>: View {
                         .showIf(isEnabled)
                     trailingView()
                 }
-                .frame(height: appearance.isSettings ? nil : height)
-                .frame(minHeight: appearance.isSettings ? height : nil)
+                .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
-                .padding(.horizontal, horizontalPadding)
-                .background(backgroundColor)
-                .cornerRadius(cornerRadius)
+                .padding(.horizontal, metrics.horizontalPadding)
+                .background(Theme.colors.bgSurface1)
+                .cornerRadius(metrics.cornerRadius)
                 .overlay(border)
                 .autocorrectionDisabled()
                 .borderlessTextFieldStyle()
-                .padding(outerPadding)
+                .padding(metrics.outerPadding)
 
                 if let error, showErrorText {
                     Text(error.localized)
@@ -169,7 +172,7 @@ struct CommonTextField<TrailingView: View>: View {
             Icon(
                 .circleXmarkFilled,
                 color: Theme.colors.textTertiary,
-                size: appearance == .settingsInput ? 18 : 16
+                size: metrics.clearIconSize
             )
         }
         .buttonStyle(.plain)
@@ -237,7 +240,7 @@ struct CommonTextField<TrailingView: View>: View {
         Group {
             if isSecure {
                 SecureField(placeholder?.localized ?? .empty, text: $text)
-            } else if appearance.isSettings {
+            } else if appearance != .standard {
                 TextField(
                     placeholder?.localized ?? .empty,
                     text: $text,
@@ -247,7 +250,7 @@ struct CommonTextField<TrailingView: View>: View {
                 TextField(placeholder?.localized ?? .empty, text: $text)
             }
         }
-        .frame(height: appearance.isSettings ? nil : height)
+        .frame(height: height)
     }
 
     var labelFont: Font {
@@ -274,46 +277,61 @@ struct CommonTextField<TrailingView: View>: View {
     }
 
     var height: CGFloat {
-        guard appearance == .standard else { return Self.settingsHeight }
+        metrics.height
+    }
+
+    private var standardHeight: CGFloat {
         switch size {
         case .normal:
-            return 56
+            56
         case .small:
-            return 36
+            36
         }
     }
 
-    var textFont: Font {
-        appearance.isSettings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMRegular
-    }
-
-    var horizontalPadding: CGFloat {
-        appearance.isSettings ? 16 : 12
-    }
-
-    var outerPadding: CGFloat {
-        appearance.isSettings ? 0 : 1
-    }
-
-    var backgroundColor: Color {
-        appearance.isSettings ? Color(hex: "051937") : Theme.colors.bgSurface1
-    }
-
-    var cornerRadius: CornerRadius {
-        appearance.isSettings ? Theme.radius.lg : Theme.radius.md
+    private var metrics: CommonTextFieldMetrics {
+        switch appearance {
+        case .standard:
+            CommonTextFieldMetrics(
+                height: standardHeight,
+                textFont: Theme.fonts.bodyMRegular,
+                horizontalPadding: 12,
+                outerPadding: 1,
+                cornerRadius: Theme.radius.md,
+                clearIconSize: 16
+            )
+        case .settings:
+            CommonTextFieldMetrics(
+                height: settingsHeight,
+                textFont: Theme.fonts.bodySMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.lg,
+                clearIconSize: 16
+            )
+        case .settingsInput:
+            CommonTextFieldMetrics(
+                height: settingsHeight,
+                textFont: Theme.fonts.bodySMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.lg,
+                clearIconSize: 18
+            )
+        }
     }
 
     @ViewBuilder
     var border: some View {
         switch appearance {
         case .standard:
-            cornerRadius.shape
+            metrics.cornerRadius.shape
                 .stroke(borderColor, lineWidth: borderWidth)
         case .settings:
-            cornerRadius.shape
+            metrics.cornerRadius.shape
                 .strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1)
         case .settingsInput:
-            cornerRadius.shape
+            metrics.cornerRadius.shape
                 .strokeBorder(settingsInputBorderColor, lineWidth: 1)
         }
     }

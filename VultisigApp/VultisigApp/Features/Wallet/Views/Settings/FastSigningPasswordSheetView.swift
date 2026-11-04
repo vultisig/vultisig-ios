@@ -19,7 +19,7 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
         VStack(alignment: .leading, spacing: 16) {
             Text("biometricsFastSigning".localized)
                 .settingsText(.title2)
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             SecureTextField(
                 value: $viewModel.password,
@@ -28,7 +28,7 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
                 appearance: .settingsInput
             )
 
-            SettingsCTAButton(title: "enable", width: .fill) {
+            PrimaryButton(title: "enable", size: .compact) {
                 Task {
                     let isValid = await viewModel.validateForm(vault: vault)
 

@@ -17,6 +17,10 @@ struct ColorSystem: ColorSystemProtocol {
     var buttonBevelDark: Color { .vultisig(hex: "0F1C3E") }
     var medallionInsetShadow: Color { .vultisig(hex: "000000").opacity(0.25) }
 
+    // The app icon tile on the update check states.
+    var appTileGradientEnd: Color { .vultisig(hex: "0D39B1") }
+    var appTileHighlight: Color { .vultisig(hex: "FFFFFF").opacity(0.35) }
+
     var textButtonDark: Color { .vultisig(hex: "02122B") }
     var textButtonLight: Color { .vultisig(hex: "F0F4FC") }
     var textButtonDisabled: Color { .vultisig(hex: "718096") }
@@ -57,6 +61,8 @@ struct ColorSystem: ColorSystemProtocol {
     var alertInfo: Color { .vultisig(hex: "5CA7FF") }
 
     var turquoise: Color { .vultisig(hex: "33E6BF") }
+    // Red glow behind Delete Vault.
+    var destructiveGlow: Color { .vultisig(hex: "D32829") }
     // Devices-selection blue glow used by onboarding and reshare.
     var devicesSelectionGlow: Color { .vultisig(hex: "084BFF") }
 

@@ -30,7 +30,7 @@ struct UpdateCheckUpToDateView: View {
     var upToDateTitle: some View {
         Text(NSLocalizedString("appUpToDate", comment: ""))
             .settingsText(.buttonRegular)
-            .foregroundStyle(.white)
+            .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
 
@@ -70,11 +70,11 @@ struct UpdateCheckLogo: View {
         RoundedRectangle(cornerRadius: Self.radius)
             .fill(
                 LinearGradient(
-                    colors: [Theme.colors.primaryAccent4, Color(hex: "0D39B1")],
+                    colors: [Theme.colors.primaryAccent4, Theme.colors.appTileGradientEnd],
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .shadow(.inner(color: .white.opacity(0.35), radius: 0.75, y: 1.49))
+                .shadow(.inner(color: Theme.colors.appTileHighlight, radius: 0.75, y: 1.49))
             )
             .frame(width: Self.side, height: Self.side)
             .overlay {

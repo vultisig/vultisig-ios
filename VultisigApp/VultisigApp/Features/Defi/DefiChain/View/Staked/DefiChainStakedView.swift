@@ -13,10 +13,16 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
     var onUnstake: (StakePosition) -> Void
     var onWithdraw: (StakePosition) -> Void
     var onTransfer: (StakePosition) -> Void
+    var onShowRewardHistory: (StakePosition) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var showLoading: Bool {
         !viewModel.initialLoadingDone
+    }
+
+    /// The sheet needs the vault's RUNE and TCY coins; without them the tap could not open it.
+    func canShowRewardHistory(_ position: StakePosition) -> Bool {
+        position.isTCYStake && viewModel.vault.runeCoin != nil && viewModel.vault.tcyCoin != nil
     }
 
     var formattedStakePositions: [(position: StakePosition, fiatAmount: String)] {
@@ -52,7 +58,8 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                         onStake: { onStake(position) },
                         onUnstake: { onUnstake(position) },
                         onWithdraw: { onWithdraw(position) },
-                        onTransfer: { onTransfer(position) }
+                        onTransfer: { onTransfer(position) },
+                        onShowRewardHistory: canShowRewardHistory(position) ? { onShowRewardHistory(position) } : nil
                     )
                 }
             } else {
@@ -69,6 +76,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         onUnstake: { _ in },
         onWithdraw: { _ in },
         onTransfer: { _ in },
+        onShowRewardHistory: { _ in },
         emptyStateView: { EmptyView() }
     )
     .environmentObject(HomeViewModel())

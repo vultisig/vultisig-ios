@@ -627,7 +627,6 @@
 "homeDisplayCombinedTitle" = "Wallet + DeFi";
 "homeDisplaySeparateDescription" = "La scheda Wallet mostra solo il saldo del wallet e la scheda DeFi il saldo DeFi.";
 "homeDisplaySeparateTitle" = "Wallet e DeFi separati";
-"homeDisplaySubtitle" = "Modifica la visualizzazione del saldo del wallet";
 "homeSwipeHintDescription" = "Scorri a sinistra o a destra per passare tra le schede wallet e DeFi.";
 "homeSwipeHintTitle" = "Scorri per cambiare";
 "howItWorks" = "Come funziona";

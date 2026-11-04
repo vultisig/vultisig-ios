@@ -50,7 +50,7 @@ struct SecureTextField: View {
                         }
                     },
                     label: {
-                        if appearance.isSettings {
+                        if appearance != .standard {
                             Icon(isSecure ? .eyeClosed : .eye, color: Theme.colors.textPrimary, size: 20)
                         } else {
                             Image(systemName: isSecure ? "eye.slash": "eye")

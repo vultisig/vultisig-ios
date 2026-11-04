@@ -104,7 +104,7 @@ struct CustomRPCDetailScreen: View {
 
     private var actions: some View {
         VStack(spacing: 12) {
-            SettingsCTAButton(title: "customRPCSaveButton", width: .fill, isLoading: viewModel.isSaving) {
+            PrimaryButton(title: "customRPCSaveButton", isLoading: viewModel.isSaving, size: .compact) {
                 Task {
                     if await viewModel.save() {
                         bannerText = String(
@@ -119,7 +119,7 @@ struct CustomRPCDetailScreen: View {
             .disabled(!viewModel.canSave)
 
             if viewModel.hasOverride {
-                SettingsCTAButton(title: "customRPCResetToDefault", width: .fill, kind: .secondary) {
+                PrimaryButton(title: "customRPCResetToDefault", type: .secondary, size: .compact) {
                     viewModel.reset()
                 }
                 .disabled(!viewModel.canReset)

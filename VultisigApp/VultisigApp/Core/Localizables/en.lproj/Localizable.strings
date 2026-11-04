@@ -627,7 +627,6 @@
 "homeDisplayCombinedTitle" = "Wallet + DeFi";
 "homeDisplaySeparateDescription" = "Your Wallet tab shows your wallet balance only, and your DeFi tab shows your DeFi balance.";
 "homeDisplaySeparateTitle" = "Wallet & DeFi separate";
-"homeDisplaySubtitle" = "Edit wallet balance display";
 "homeSwipeHintDescription" = "Swipe left or right to move between your wallet and DeFi tabs.";
 "homeSwipeHintTitle" = "Swipe to switch";
 "howItWorks" = "How it works";

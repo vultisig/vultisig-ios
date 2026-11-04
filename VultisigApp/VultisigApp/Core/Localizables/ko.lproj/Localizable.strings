@@ -627,7 +627,6 @@
 "homeDisplayCombinedTitle" = "지갑 + DeFi";
 "homeDisplaySeparateDescription" = "지갑 탭에는 지갑 잔액만, DeFi 탭에는 DeFi 잔액이 표시됩니다.";
 "homeDisplaySeparateTitle" = "지갑과 DeFi 분리";
-"homeDisplaySubtitle" = "지갑 잔액 표시 편집";
 "homeSwipeHintDescription" = "좌우로 스와이프하여 지갑 탭과 DeFi 탭 사이를 이동하세요.";
 "homeSwipeHintTitle" = "스와이프하여 전환";
 "howItWorks" = "작동 방식";
@@ -1329,7 +1328,7 @@
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";
 "reshareLabelTitle" = "볼트 재공유";
-"reshareVault" = "새로운 구성원과 볼트 재공유";
+"reshareVault" = "새로운 기기 그룹으로 볼트 재공유";
 "reshareVaultSubtitle" = "볼트 설정을 업데이트하세요. 기기를 추가 또는 제거하거나 셰어를 갱신하세요.";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
 "resolvingRecipientName" = "이름 확인 중…";

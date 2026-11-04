@@ -53,7 +53,7 @@ final class MayaChainBondRewardHistoryTests: XCTestCase {
 
         let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
 
-        XCTAssertEqual(history.map(\.churnHeight), [300, 200])
+        XCTAssertEqual(history.map(\.id), [300, 200])
         XCTAssertEqual(history.map(\.amount), [500, 500])
     }
 

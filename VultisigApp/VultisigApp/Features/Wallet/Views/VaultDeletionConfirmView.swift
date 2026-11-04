@@ -95,7 +95,7 @@ struct VaultDeletionConfirmView: View {
     }
 
     var deleteButton: some View {
-        SettingsCTAButton(title: "deleteVaultTitle", width: .fill, kind: .destructive, weight: .semibold) {
+        PrimaryButton(title: "deleteVaultTitle", type: .alert, size: .compactSemibold) {
             delete()
         }
         .disabled(!buttonEnabled)

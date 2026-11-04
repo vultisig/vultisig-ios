@@ -163,7 +163,7 @@ struct VaultPairDetailCard: View {
 
                 Text(signer)
                     .settingsText(.buttonS)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
                 Text("vaultDetailsThisDevice".localized)
                     .settingsText(.footnote)
