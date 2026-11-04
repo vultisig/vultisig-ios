@@ -50,7 +50,7 @@ struct AddressBookCell: View {
         }
         .padding(.leading, 16)
         .padding(.trailing, isEditing ? 20 : 16)
-        .frame(height: Self.rowHeight)
+        .frame(minHeight: Self.rowHeight)
         .background(
             (isEditing ? Theme.radius.pill : Theme.radius.xl).shape
                 .fill(Theme.colors.bgSurface1)
