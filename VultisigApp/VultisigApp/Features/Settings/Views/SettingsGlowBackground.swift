@@ -15,8 +15,8 @@ struct SettingsGlowBackground: View {
             .fill(
                 LinearGradient(
                     stops: [
-                        .init(color: Color(hex: "33E6BF"), location: 0.023),
-                        .init(color: Color(hex: "0439C7"), location: 0.986)
+                        .init(color: Theme.colors.turquoise, location: 0.023),
+                        .init(color: Theme.colors.primaryAccent2, location: 0.986)
                     ],
                     startPoint: UnitPoint(x: -0.169, y: -0.635),
                     endPoint: UnitPoint(x: 1.295, y: -0.799)

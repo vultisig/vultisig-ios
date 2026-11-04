@@ -35,7 +35,7 @@ struct UpdateCheckUpdateNowView: View {
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
             .settingsText(.buttonRegular)
-            .foregroundStyle(.white)
+            .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
 
@@ -47,9 +47,9 @@ struct UpdateCheckUpdateNowView: View {
 
     var updateButton: some View {
         Link(destination: link) {
-            Text("updateApp".localized)
+            PrimaryButtonView(title: "updateApp", hugsTitle: true)
         }
-        .buttonStyle(SettingsCTAButtonStyle(width: .hug))
+        .buttonStyle(PrimaryButtonStyle(size: .compactHug))
     }
 
     #if os(macOS)

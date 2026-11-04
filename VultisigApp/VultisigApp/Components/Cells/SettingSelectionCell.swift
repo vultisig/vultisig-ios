@@ -113,7 +113,8 @@ struct SettingSelectionCell: View {
     }
 
     private var checkmark: some View {
-        Icon(.selectionCheck, color: nil, size: 16)
+        Icon(.selectionCheck, color: Theme.colors.textPrimary, size: 16)
+            .background(Circle().fill(Theme.colors.primaryAccent3))
             .opacity(isSelected ? 1 : 0)
             .accessibilityHidden(!isSelected)
     }

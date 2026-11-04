@@ -47,7 +47,7 @@ struct SettingFAQCell: View {
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
             .settingsText(.footnote)
-            .foregroundStyle(.white)
+            .foregroundStyle(Theme.colors.textPrimary)
     }
 
     var chevron: some View {
