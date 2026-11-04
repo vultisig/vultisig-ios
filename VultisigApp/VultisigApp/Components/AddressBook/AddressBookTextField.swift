@@ -71,7 +71,7 @@ struct AddressBookTextField: View {
         Button {
             showScanner.toggle()
         } label: {
-            Icon(.camera, color: Theme.colors.textPrimary, size: 20)
+            Icon(.cameraFilled, color: Theme.colors.textPrimary, size: 20)
         }
     }
 
@@ -106,7 +106,8 @@ extension AddressBookTextField {
             text: $text,
             label: title.localized,
             placeholder: "typeHere".localized,
-            isScrollable: isScrollable
+            isScrollable: isScrollable,
+            appearance: .settings
         ) {
             if showActions {
                 HStack(spacing: 8) {
@@ -155,7 +156,8 @@ extension AddressBookTextField {
         CommonTextField(
             text: $text,
             label: title.localized,
-            placeholder: "typeHere".localized
+            placeholder: "typeHere".localized,
+            appearance: .settings
         ) {
             if showActions {
                 HStack(spacing: 8) {

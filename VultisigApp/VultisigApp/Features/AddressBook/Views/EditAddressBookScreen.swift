@@ -35,6 +35,7 @@ struct EditAddressBookScreen: View {
             }
         }
         .screenTitle("editAddress".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(top: 16))
         .onLoad(perform: setData)
         .alert(isPresented: $showAlert) {
             alert
@@ -66,7 +67,7 @@ struct EditAddressBookScreen: View {
     }
 
     var titleField: some View {
-        AddressBookTextField(title: "title", text: $title)
+        AddressBookTextField(title: "label", text: $title)
     }
 
     var addressField: some View {
@@ -79,7 +80,7 @@ struct EditAddressBookScreen: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "saveAddress") {
+        SettingsCTAButton(title: "save", width: .fill) {
             saveAddress()
         }
     }
