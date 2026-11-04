@@ -440,7 +440,6 @@
 "emptyLPsField" = "LPs 字段为空";
 "enable" = "启用";
 "enableAll" = "全部启用";
-"enableBiometricsFastSigning" = "启用生物识别快速签名";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "enablePushNotifications" = "启用推送通知";
 "enableThorchain" = "启用 THORChain";
@@ -1117,6 +1116,7 @@
 "OnboardingCard6Text2" = "解锁您的保险库";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "链上安全";
 "openSettings" = "打开设置";
 "openSystemSettings" = "打开系统设置";
 "operatorFeeRangeError" = "运营商费用必须介于 0 和 10000 基点之间";
@@ -1490,6 +1490,10 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "这将永久删除所有保险库的全部本地交易记录和所有已跟踪的限价单，并停止跟踪它们。此操作仅清除本应用显示的内容，不会影响您的资金、密钥或任何链上挂单。仍在 THORChain 上挂着的限价单依然有效，您只是不再在此跟踪它。此操作无法撤销。";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "重置交易记录？";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
+"settingsEnterHint" = "输入提示";
+"settingsEnterPassword" = "输入密码";
+"settingsToggleOff" = "关闭";
+"settingsToggleOn" = "开启";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
 "shareQRCode" = "分享二维码";
@@ -1503,6 +1507,7 @@
 "showHint" = "显示提示";
 "showTotalBalance" = "显示总余额";
 "sign" = "签名";
+"Sign message" = "签署消息";
 "signature" = "签名";
 "signCustomMessage" = "签署自定义消息";
 "signer" = "签名者";
@@ -1834,6 +1839,7 @@
 "vaultBackupExportFailed" = "无法创建备份文件。请解锁应用后重试。";
 "vaultCreated" = "保险库已创建";
 "vaultDetailsDescription" = "查看保险库名称、部分和类型";
+"vaultDetailsThisDevice" = "此设备";
 "vaultDetailsTitle" = "详情";
 "vaultImportWouldOverwriteExisting" = "无法导入此备份：它会覆盖此设备上已有的保险库。";
 "vaultInfo" = "保险库信息";
@@ -1851,9 +1857,9 @@
 "vaults" = "保险库";
 "vaultSelected" = "已选择保险库";
 "vaultSettings" = "保险库设置";
-"vaultSettingsSecurityScreenContentBottomsheet" = "禁用链上安全意味着 Blockaid 无法验证交易。您将受到较少保护";
+"vaultSettingsSecurityScreenContentBottomsheet" = "禁用链上安全意味着 Blockaid 无法验证交易。您将受到较少保护。";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "链上安全已禁用";
-"vaultSettingsSecurityScreenTitleContent" = "您可以禁用实时链上安全";
+"vaultSettingsSecurityScreenTitleContent" = "您可以禁用由 Blockaid 提供的实时链上安全。";
 "vaultSettingsSecurityScreenTitleSwitch" = "管理您的链上安全";
 "vaultSettingsSecuritySubtitle" = "管理您的链上安全";
 "vaultSettingsSecurityTitle" = "链上安全";

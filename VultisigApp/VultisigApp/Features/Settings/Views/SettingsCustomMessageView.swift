@@ -84,7 +84,7 @@ struct SettingsCustomMessageView: View {
     }
 
     var verifyContent: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             verifyRow(title: "signingMethod".localized, value: method)
             verifyRow(title: "messageToSign".localized, value: message)
         }
@@ -94,20 +94,17 @@ struct SettingsCustomMessageView: View {
     private func verifyRow(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.caption)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(value)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(
-                    Theme.radius.md.shape
-                        .fill(Theme.colors.bgSurface2)
-                )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .settingsInfoCard()
     }
 
     var keysign: some View {
@@ -181,7 +178,7 @@ struct SettingsCustomMessageView: View {
     }
 
     func textField(title: String, text: Binding<String>) -> some View {
-        CommonTextField(text: text, placeholder: title)
+        CommonTextField(text: text, placeholder: title, appearance: .settingsInput)
     }
 
     var pair: some View {
@@ -248,7 +245,7 @@ struct SettingsCustomMessageView: View {
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.alertError)
             }
-            PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+            SettingsCTAButton(title: "continue", width: .fill) {
                 viewModel.continueIfSignable(customMessagePayload)
             }
             .disabled(!signButtonEnabled)
@@ -259,16 +256,7 @@ struct SettingsCustomMessageView: View {
     }
 
     var signButton: some View {
-        SigningCTAButtons(
-            isFastVault: vault.offersFastSigning,
-            isDisabled: !signButtonEnabled,
-            singleSignTitle: "signTransaction",
-            onFastSign: { fastPasswordPresented = true },
-            onPairedSign: {
-                fastVaultPassword = .empty
-                onSignPress()
-            }
-        )
+        signButtons
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 isPresented: $fastPasswordPresented,
@@ -278,6 +266,26 @@ struct SettingsCustomMessageView: View {
             )
         }
         .padding(.horizontal, 16)
+    }
+
+    @ViewBuilder
+    private var signButtons: some View {
+        if vault.offersFastSigning {
+            SigningCTAButtons(
+                isFastVault: true,
+                isDisabled: !signButtonEnabled,
+                onFastSign: { fastPasswordPresented = true },
+                onPairedSign: signPaired
+            )
+        } else {
+            SettingsCTAButton(title: "sign", width: .fill, action: signPaired)
+                .disabled(!signButtonEnabled)
+        }
+    }
+
+    private func signPaired() {
+        fastVaultPassword = .empty
+        onSignPress()
     }
 
     func onSignPress() {

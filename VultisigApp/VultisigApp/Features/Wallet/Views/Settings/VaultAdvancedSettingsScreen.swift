@@ -45,7 +45,8 @@ struct VaultAdvancedSettingsScreen: View {
             LockedFeatureSheet(
                 feature: .customRPC,
                 vault: vault,
-                isPresented: $showCustomRPCLockedSheet
+                isPresented: $showCustomRPCLockedSheet,
+                appearance: .settings
             ) {
                 showCustomRPCLockedSheet = false
                 router.navigate(to: VaultRoute.swap(

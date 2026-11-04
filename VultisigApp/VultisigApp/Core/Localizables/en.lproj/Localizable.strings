@@ -329,7 +329,7 @@
 "customRPCInvalidResponse" = "Invalid response";
 "customRPCInvalidURL" = "Enter a valid http(s) URL";
 "customRPCModifiedSuccess" = "%@ RPC modified successfully";
-"customRPCResetToDefault" = "Reset to default";
+"customRPCResetToDefault" = "Reset to Default";
 "customRPCSaveButton" = "Save RPC";
 "customRPCScreenTitle" = "%@ RPC";
 "customRPCSelectChain" = "Select chain";
@@ -440,7 +440,6 @@
 "emptyLPsField" = "Empty LPs field";
 "enable" = "Enable";
 "enableAll" = "Enable all";
-"enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "enablePushNotifications" = "Enable push notifications";
 "enableThorchain" = "Enable THORChain";
@@ -1117,6 +1116,7 @@
 "OnboardingCard6Text2" = "unlock your vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "On-chain Security";
 "openSettings" = "Open Settings";
 "openSystemSettings" = "Open System Settings";
 "operatorFeeRangeError" = "Operator-fee must be between 0 and 10000 basis points";
@@ -1431,7 +1431,7 @@
 "securityScannerHighRiskTitle" = "High risk transaction detected";
 "securityScannerLowRiskTitle" = "Low risk transaction detected";
 "securityScannerMediumRiskTitle" = "Medium risk transaction detected";
-"securityScannerPoweredBy" = "Powered by ";
+"securityScannerPoweredBy" = "Powered by";
 "securityScannerSafeDescription" = "No malicious activity detected. This transaction is safe to sign.";
 "securityScannerSafeTitle" = "Scanned by Blockaid";
 "securityScannerTransactionNotScanned" = "Transaction not scanned by";
@@ -1490,6 +1490,10 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "This permanently deletes all local transaction history and all tracked limit orders across every vault, and stops tracking them. It only clears what this app shows — it does not affect your funds, keys, or any orders resting on-chain. A limit order still open on THORChain stays open; you just stop tracking it here. This cannot be undone.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "Reset transaction history?";
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
+"settingsEnterHint" = "Enter hint";
+"settingsEnterPassword" = "Enter password";
+"settingsToggleOff" = "OFF";
+"settingsToggleOn" = "ON";
 "share" = "Share";
 "shareOf" = "share %d of %d";
 "shareQRCode" = "Share QR Code";
@@ -1503,6 +1507,7 @@
 "showHint" = "Show hint";
 "showTotalBalance" = "Show total balance";
 "sign" = "Sign";
+"Sign message" = "Sign Message";
 "signature" = "Signature";
 "signCustomMessage" = "Sign custom message";
 "signer" = "Signer";
@@ -1834,6 +1839,7 @@
 "vaultBackupExportFailed" = "Could not create the backup file. Unlock the app and try again.";
 "vaultCreated" = "Vault created";
 "vaultDetailsDescription" = "View vault name, part and type";
+"vaultDetailsThisDevice" = "This device";
 "vaultDetailsTitle" = "Details";
 "vaultImportWouldOverwriteExisting" = "This backup can't be imported: it would overwrite a vault already on this device.";
 "vaultInfo" = "Vault Info";
@@ -1851,9 +1857,9 @@
 "vaults" = "Vaults";
 "vaultSelected" = "Vault selected";
 "vaultSettings" = "Vault Settings";
-"vaultSettingsSecurityScreenContentBottomsheet" = "Disabling on-chain security means Blockaid can\'t verify transactions. You\'ll be less protected";
+"vaultSettingsSecurityScreenContentBottomsheet" = "Disabling on-chain security means Blockaid can\'t verify transactions. You\'ll be less protected.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "On-chain security disabled";
-"vaultSettingsSecurityScreenTitleContent" = "You can disable your realtime on-chain security";
+"vaultSettingsSecurityScreenTitleContent" = "You can disable your realtime on-chain security provided by Blockaid.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Manage your on-chain security";
 "vaultSettingsSecuritySubtitle" = "Manage your on-chain security";
 "vaultSettingsSecurityTitle" = "On-chain security";
@@ -1889,10 +1895,10 @@
 "vaultSetup4Feature3Title" = "Built for teams and treasuries";
 "vaultSetup4Subtitle" = "4+-device vault";
 "vaultSetup4Title" = "Secure Vault";
-"vaultSetupThreshold" = "%1$ld-of-%2$ld vault setup";
+"vaultSetupThreshold" = "%1$ld-of-%2$ld Vault Setup";
 "vaultShareBackupsViewTitle1" = "You’ll create new Vault Share backups";
 "vaultShareBackupsViewTitle2" = ", store them as you did before";
-"vaultSharePosition" = "Share %1$ld of %2$ld";
+"vaultSharePosition" = "Share %1$ld-of-%2$ld";
 "vaultType" = "Vault Part";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";

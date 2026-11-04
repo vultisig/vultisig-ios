@@ -440,7 +440,6 @@
 "emptyLPsField" = "Leeres LPs-Feld";
 "enable" = "Aktivieren";
 "enableAll" = "Alle aktivieren";
-"enableBiometricsFastSigning" = "Biometrische Schnellsignatur aktivieren";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
 "enableThorchain" = "THORChain aktivieren";
@@ -1117,6 +1116,7 @@
 "OnboardingCard6Text2" = "Ihren Tresor zu entsperren.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "On-Chain-Sicherheit";
 "openSettings" = "Einstellungen öffnen";
 "openSystemSettings" = "Systemeinstellungen öffnen";
 "operatorFeeRangeError" = "Betreibergebühr muss zwischen 0 und 10000 Basispunkten liegen";
@@ -1431,7 +1431,7 @@
 "securityScannerHighRiskTitle" = "Transaktion mit hohem Risiko erkannt";
 "securityScannerLowRiskTitle" = "Transaktion mit geringem Risiko erkannt";
 "securityScannerMediumRiskTitle" = "Transaktion mit mittlerem Risiko erkannt";
-"securityScannerPoweredBy" = "Bereitgestellt von ";
+"securityScannerPoweredBy" = "Bereitgestellt von";
 "securityScannerSafeDescription" = "Keine böswillige Aktivität erkannt. Diese Transaktion kann sicher signiert werden.";
 "securityScannerSafeTitle" = "Von Blockaid gescannt";
 "securityScannerTransactionNotScanned" = "Transaktion nicht gescannt von";
@@ -1490,6 +1490,10 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "Dies löscht dauerhaft den gesamten lokalen Transaktionsverlauf und alle verfolgten Limit-Orders aller Tresore und beendet deren Verfolgung. Es wird nur das gelöscht, was diese App anzeigt – Ihre Gelder, Schlüssel oder auf der Blockchain offenen Orders sind nicht betroffen. Eine noch offene Limit-Order auf THORChain bleibt offen; Sie verfolgen sie hier nur nicht mehr. Dies kann nicht rückgängig gemacht werden.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "Transaktionsverlauf zurücksetzen?";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
+"settingsEnterHint" = "Hinweis eingeben";
+"settingsEnterPassword" = "Passwort eingeben";
+"settingsToggleOff" = "AUS";
+"settingsToggleOn" = "AN";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";
 "shareQRCode" = "QR-Code teilen";
@@ -1503,6 +1507,7 @@
 "showHint" = "Hinweis anzeigen";
 "showTotalBalance" = "Gesamtguthaben anzeigen";
 "sign" = "Signieren";
+"Sign message" = "Nachricht signieren";
 "signature" = "Signatur";
 "signCustomMessage" = "Benutzerdefinierte Nachricht signieren";
 "signer" = "Unterzeichner";
@@ -1834,6 +1839,7 @@
 "vaultBackupExportFailed" = "Die Sicherungsdatei konnte nicht erstellt werden. Entsperren Sie die App und versuchen Sie es erneut.";
 "vaultCreated" = "Tresor erstellt";
 "vaultDetailsDescription" = "Name, Anteil und Typ des Tresors anzeigen";
+"vaultDetailsThisDevice" = "Dieses Gerät";
 "vaultDetailsTitle" = "Details";
 "vaultImportWouldOverwriteExisting" = "Dieses Backup kann nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
 "vaultInfo" = "Tresor-Info";
@@ -1853,7 +1859,7 @@
 "vaultSettings" = "Tresoreinstellungen";
 "vaultSettingsSecurityScreenContentBottomsheet" = "Wenn Sie die On-Chain-Sicherheit deaktivieren, kann Blockaid Transaktionen nicht prüfen. Sie sind dann weniger geschützt.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "On-Chain-Sicherheit deaktiviert";
-"vaultSettingsSecurityScreenTitleContent" = "Sie können Ihre Echtzeit-On-Chain-Sicherheit deaktivieren";
+"vaultSettingsSecurityScreenTitleContent" = "Sie können Ihre von Blockaid bereitgestellte Echtzeit-On-Chain-Sicherheit deaktivieren.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Verwalten Sie Ihre On-Chain-Sicherheit";
 "vaultSettingsSecuritySubtitle" = "Verwalten Sie Ihre On-Chain-Sicherheit";
 "vaultSettingsSecurityTitle" = "On-Chain-Sicherheit";
@@ -1892,7 +1898,7 @@
 "vaultSetupThreshold" = "%1$ld-von-%2$ld-Tresor";
 "vaultShareBackupsViewTitle1" = "Sie erstellen neue Backups Ihrer Tresoranteile";
 "vaultShareBackupsViewTitle2" = ", bewahren Sie sie wie bisher auf";
-"vaultSharePosition" = "Anteil %1$ld von %2$ld";
+"vaultSharePosition" = "Anteil %1$ld-von-%2$ld";
 "vaultType" = "Tresoranteil";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "vaultTypeMismatch" = "Tresortyp stimmt nicht überein: Das initiierende und das gekoppelte Gerät haben unterschiedliche Tresortypen";

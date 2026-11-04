@@ -13,22 +13,22 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
     let vault: Vault
 
     var bgColor: Color? { Theme.colors.bgPrimary }
+    var usesSystemGrabber: Bool { true }
 
     var body: some View {
-        VStack(spacing: 24) {
-            Text("enableBiometricsFastSigning".localized)
-                .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            GradientListSeparator()
+        VStack(alignment: .leading, spacing: 16) {
+            Text("biometricsFastSigning".localized)
+                .settingsText(.title2)
+                .foregroundStyle(.white)
 
             SecureTextField(
                 value: $viewModel.password,
-                placeholder: "enterPassword".localized,
-                error: $viewModel.passwordError
+                placeholder: "settingsEnterPassword".localized,
+                error: $viewModel.passwordError,
+                appearance: .settingsInput
             )
 
-            PrimaryButton(title: "enable".localized) {
+            SettingsCTAButton(title: "enable", width: .fill) {
                 Task {
                     let isValid = await viewModel.validateForm(vault: vault)
 

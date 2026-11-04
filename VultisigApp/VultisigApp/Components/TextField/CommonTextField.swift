@@ -20,9 +20,15 @@ enum CommonTextFieldErrorStyle {
 }
 
 /// `.settings` is the settings forms' field: a 52 tall card with a dim label and
-/// placeholder and no outer gutter. Everywhere else keeps `.standard`.
+/// placeholder and no outer gutter. `.settingsInput` is the same card with the
+/// design's normal border, which shows validation colours. Everywhere else keeps
+/// `.standard`.
 enum CommonTextFieldAppearance {
-    case standard, settings
+    case standard, settings, settingsInput
+
+    var isSettings: Bool {
+        self != .standard
+    }
 }
 
 struct CommonTextField<TrailingView: View>: View {
@@ -113,7 +119,7 @@ struct CommonTextField<TrailingView: View>: View {
                     Text(label)
                         .foregroundStyle(labelColor)
                         .font(labelFont)
-                case .settings:
+                case .settings, .settingsInput:
                     Text(label)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.bodyS)
@@ -133,7 +139,8 @@ struct CommonTextField<TrailingView: View>: View {
                         .showIf(isEnabled)
                     trailingView()
                 }
-                .frame(height: height)
+                .frame(height: appearance.isSettings ? nil : height)
+                .frame(minHeight: appearance.isSettings ? height : nil)
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, horizontalPadding)
                 .background(backgroundColor)
@@ -162,7 +169,7 @@ struct CommonTextField<TrailingView: View>: View {
             Icon(
                 .circleXmarkFilled,
                 color: Theme.colors.textTertiary,
-                size: 16
+                size: appearance == .settingsInput ? 18 : 16
             )
         }
         .buttonStyle(.plain)
@@ -230,7 +237,7 @@ struct CommonTextField<TrailingView: View>: View {
         Group {
             if isSecure {
                 SecureField(placeholder?.localized ?? .empty, text: $text)
-            } else if appearance == .settings {
+            } else if appearance.isSettings {
                 TextField(
                     placeholder?.localized ?? .empty,
                     text: $text,
@@ -240,7 +247,7 @@ struct CommonTextField<TrailingView: View>: View {
                 TextField(placeholder?.localized ?? .empty, text: $text)
             }
         }
-        .frame(height: height)
+        .frame(height: appearance.isSettings ? nil : height)
     }
 
     var labelFont: Font {
@@ -277,23 +284,23 @@ struct CommonTextField<TrailingView: View>: View {
     }
 
     var textFont: Font {
-        appearance == .settings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMRegular
+        appearance.isSettings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMRegular
     }
 
     var horizontalPadding: CGFloat {
-        appearance == .settings ? 16 : 12
+        appearance.isSettings ? 16 : 12
     }
 
     var outerPadding: CGFloat {
-        appearance == .settings ? 0 : 1
+        appearance.isSettings ? 0 : 1
     }
 
     var backgroundColor: Color {
-        appearance == .settings ? Color(hex: "051937") : Theme.colors.bgSurface1
+        appearance.isSettings ? Color(hex: "051937") : Theme.colors.bgSurface1
     }
 
     var cornerRadius: CornerRadius {
-        appearance == .settings ? Theme.radius.lg : Theme.radius.md
+        appearance.isSettings ? Theme.radius.lg : Theme.radius.md
     }
 
     @ViewBuilder
@@ -305,6 +312,16 @@ struct CommonTextField<TrailingView: View>: View {
         case .settings:
             cornerRadius.shape
                 .strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1)
+        case .settingsInput:
+            cornerRadius.shape
+                .strokeBorder(settingsInputBorderColor, lineWidth: 1)
         }
+    }
+
+    private var settingsInputBorderColor: Color {
+        if let isValid, isValid {
+            return Theme.colors.alertSuccess
+        }
+        return hasError ? invalidColor : Theme.colors.borderNormal
     }
 }

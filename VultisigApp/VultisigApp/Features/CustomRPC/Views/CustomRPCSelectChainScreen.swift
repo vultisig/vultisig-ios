@@ -13,7 +13,7 @@ struct CustomRPCSelectChainScreen: View {
     @StateObject private var viewModel = CustomRPCSelectChainViewModel()
     @State private var searchFocused = false
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
+    private let columns = Array(repeating: GridItem(.flexible(maximum: 74), spacing: 16), count: 4)
 
     var body: some View {
         Screen {
@@ -38,9 +38,9 @@ struct CustomRPCSelectChainScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("customRPCSelectChain".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
-            SearchTextField(value: $viewModel.searchText, isFocused: $searchFocused)
+                .settingsText(.title2)
+                .foregroundStyle(.white)
+            SearchTextField(value: $viewModel.searchText, isFocused: $searchFocused, appearance: .settings)
         }
     }
 
@@ -81,7 +81,7 @@ private struct CustomRPCChainGridCell: View {
             VStack(spacing: 11) {
                 tile
                 Text(chain.displayName)
-                    .font(Theme.fonts.caption12)
+                    .settingsText(.caption)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
@@ -113,8 +113,9 @@ private struct CustomRPCChainGridCell: View {
     /// around the badge instead of being broken by it.
     private var editedOverlay: some View {
         ZStack(alignment: .bottomTrailing) {
-            Icon(.penWritingFilled, color: Theme.colors.textPrimary, size: 8)
-                .padding(8)
+            Icon(.pen, color: Theme.colors.textPrimary, size: 12)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
                 .background(
                     UnevenRoundedRectangle(
                         cornerRadii: .init(
@@ -128,10 +129,10 @@ private struct CustomRPCChainGridCell: View {
                         ),
                         style: Theme.radius.xl.style
                     )
-                    .fill(Theme.colors.border)
+                    .fill(Theme.colors.borderLight)
                 )
             Theme.radius.xl.shape
-                .strokeBorder(Theme.colors.border, lineWidth: 1.5)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1.5)
         }
     }
 }

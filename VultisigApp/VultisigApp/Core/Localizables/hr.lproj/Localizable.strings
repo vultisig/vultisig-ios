@@ -440,7 +440,6 @@
 "emptyLPsField" = "Prazno polje LPs";
 "enable" = "Omogućiti";
 "enableAll" = "Omogući sve";
-"enableBiometricsFastSigning" = "Omogući brzo potpisivanje biometrijom";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "enablePushNotifications" = "Omogući push obavijesti";
 "enableThorchain" = "Omogući THORChain";
@@ -1117,6 +1116,7 @@
 "OnboardingCard6Text2" = "otključali vaš trezor.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "Sigurnost na lancu";
 "openSettings" = "Otvori Postavke";
 "openSystemSettings" = "Otvori Postavke sustava";
 "operatorFeeRangeError" = "Naknada operatora mora biti između 0 i 10000 baznih točaka";
@@ -1431,7 +1431,7 @@
 "securityScannerHighRiskTitle" = "Otkrivena transakcija visokog rizika";
 "securityScannerLowRiskTitle" = "Otkrivena transakcija s niskim rizikom";
 "securityScannerMediumRiskTitle" = "Otkrivena transakcija srednjeg rizika";
-"securityScannerPoweredBy" = "Pokreće ";
+"securityScannerPoweredBy" = "Pokreće";
 "securityScannerSafeDescription" = "Nije otkrivena zlonamjerna aktivnost. Ova transakcija je sigurna za potpisivanje.";
 "securityScannerSafeTitle" = "Skenirao Blockaid";
 "securityScannerTransactionNotScanned" = "Transakciju nije skenirao";
@@ -1490,6 +1490,10 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "Ovo trajno briše svu lokalnu povijest transakcija i sve praćene limit naloge iz svih trezora te prestaje s njihovim praćenjem. Briše samo ono što ova aplikacija prikazuje — ne utječe na vaša sredstva, ključeve ni na naloge otvorene na lancu. Limit nalog koji je i dalje otvoren na THORChainu ostaje otvoren; ovdje ga samo prestajete pratiti. Ovo se ne može poništiti.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "Poništiti povijest transakcija?";
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
+"settingsEnterHint" = "Unesite savjet";
+"settingsEnterPassword" = "Unesite lozinku";
+"settingsToggleOff" = "ISKLJUČENO";
+"settingsToggleOn" = "UKLJUČENO";
 "share" = "Podijeli";
 "shareOf" = "udio %d od %d";
 "shareQRCode" = "Podijeli QR kod";
@@ -1503,6 +1507,7 @@
 "showHint" = "Prikaži hint";
 "showTotalBalance" = "Prikaži ukupni saldo";
 "sign" = "Potpiši";
+"Sign message" = "Potpiši poruku";
 "signature" = "Potpis";
 "signCustomMessage" = "Potpiši prilagođenu poruku";
 "signer" = "Potpisnik";
@@ -1834,6 +1839,7 @@
 "vaultBackupExportFailed" = "Datoteku sigurnosne kopije nije bilo moguće izraditi. Otključajte aplikaciju i pokušajte ponovno.";
 "vaultCreated" = "Trezor stvoren";
 "vaultDetailsDescription" = "Pogledajte naziv, udio i vrstu trezora";
+"vaultDetailsThisDevice" = "Ovaj uređaj";
 "vaultDetailsTitle" = "Detalji";
 "vaultImportWouldOverwriteExisting" = "Ova sigurnosna kopija ne može se uvesti: prebrisala bi trezor koji već postoji na ovom uređaju.";
 "vaultInfo" = "Informacije o trezorima";
@@ -1851,9 +1857,9 @@
 "vaults" = "Trezori";
 "vaultSelected" = "Odabrani trezor";
 "vaultSettings" = "Postavke trezora";
-"vaultSettingsSecurityScreenContentBottomsheet" = "Onemogućavanje sigurnosti na lancu znači da Blockaid ne može provjeravati transakcije. Bit ćete manje zaštićeni";
+"vaultSettingsSecurityScreenContentBottomsheet" = "Onemogućavanje sigurnosti na lancu znači da Blockaid ne može provjeravati transakcije. Bit ćete manje zaštićeni.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "Sigurnost na lancu onemogućena";
-"vaultSettingsSecurityScreenTitleContent" = "Možete onemogućiti sigurnosnu provjeru na lancu u stvarnom vremenu";
+"vaultSettingsSecurityScreenTitleContent" = "Možete onemogućiti sigurnosnu provjeru na lancu u stvarnom vremenu koju pruža Blockaid.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Upravljanje sigurnošću na lancu";
 "vaultSettingsSecuritySubtitle" = "Upravljanje sigurnošću na lancu";
 "vaultSettingsSecurityTitle" = "Sigurnost na lancu";
@@ -1892,7 +1898,7 @@
 "vaultSetupThreshold" = "Trezor %1$ld od %2$ld";
 "vaultShareBackupsViewTitle1" = "Stvorit ćete nove sigurnosne kopije udjela trezora";
 "vaultShareBackupsViewTitle2" = ", pohranite ih kao i prije";
-"vaultSharePosition" = "Dio %1$ld od %2$ld";
+"vaultSharePosition" = "Dio %1$ld-od-%2$ld";
 "vaultType" = "Dio trezora";
 "vaultTypeDoesnotMatch" = "Vrsta trezora se ne podudara";
 "vaultTypeMismatch" = "Vrsta trezora se ne podudara: uređaj koji pokreće postupak i upareni uređaj imaju različite vrste trezora";
