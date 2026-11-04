@@ -29,10 +29,17 @@ struct LockedFeatureSheet: View {
     /// 20pt bottom is a Figma value the footer bar is drawn to sit under.
     private let cardCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
     private let settingsFooterHeight: CGFloat = 74
+    private let settingsFooterLabelInset: CGFloat = 19
+    private let settingsTopInset: CGFloat = 82
     private let settingsFooterOverlap: CGFloat = 22
-    private let settingsDetent: CGFloat = 565
+    private let settingsDetent: CGFloat = 530
     private let settingsHeaderInset: CGFloat = 28
     private let settingsBadgeDiameter: CGFloat = 40
+    private let settingsBadgeGlowSize = CGSize(width: 16, height: 8)
+    private let settingsBadgeGlowBlur: CGFloat = 9.5
+    private let settingsTierIconSize: CGFloat = 36
+    /// The small tier icon lays out at 42pt; the settings card draws it at 36.
+    private let settingsTierIconScale: CGFloat = 36.0 / 42.0
 
     init(
         feature: LockedFeature,
@@ -55,9 +62,10 @@ struct LockedFeatureSheet: View {
             header
             requiresCard
         }
-        .padding(.top, 40)
+        .padding(.top, isSettings ? settingsTopInset : 40)
         .padding(.horizontal, isSettings ? 16 : 24)
         .padding(.bottom, 24)
+        .frame(maxHeight: isSettings ? .infinity : nil, alignment: .top)
         #if os(macOS)
         .applySheetSize(400, isSettings ? settingsDetent : 460)
         #endif
@@ -88,10 +96,12 @@ struct LockedFeatureSheet: View {
                         .settingsText(.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(viewModel.feature.subtitleKey.localized)
                         .settingsText(.bodyS)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.horizontal, settingsHeaderInset)
             }
@@ -138,8 +148,8 @@ struct LockedFeatureSheet: View {
                 .fill(Theme.colors.bgPrimary)
             Rectangle()
                 .fill(Theme.colors.devicesSelectionGlow)
-                .frame(width: 16, height: 8)
-                .blur(radius: 9.5)
+                .frame(width: settingsBadgeGlowSize.width, height: settingsBadgeGlowSize.height)
+                .blur(radius: settingsBadgeGlowBlur)
                 .frame(maxHeight: .infinity, alignment: .bottom)
             Circle()
                 .inset(by: 0.75)
@@ -168,6 +178,8 @@ struct LockedFeatureSheet: View {
 
             HStack(spacing: 12) {
                 VultDiscountTierIcon(tier: viewModel.requiredTier, size: .small)
+                    .scaleEffect(settingsTierIconScale)
+                    .frame(width: settingsTierIconSize, height: settingsTierIconSize)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(
                         String(
@@ -177,6 +189,7 @@ struct LockedFeatureSheet: View {
                     )
                     .settingsText(.bodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
                     Text(
                         String(
                             format: "customRPCsLockedTierSubtitle".localized,
@@ -185,6 +198,7 @@ struct LockedFeatureSheet: View {
                     )
                     .settingsText(.priceFootnote)
                     .foregroundStyle(Theme.colors.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 2)
                 Spacer(minLength: 0)
@@ -232,8 +246,8 @@ struct LockedFeatureSheet: View {
                 .font(Theme.fonts.buttonSSemibold)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity)
-                .frame(height: settingsFooterHeight, alignment: .bottom)
-                .padding(.bottom, 19)
+                .frame(height: settingsFooterHeight - settingsFooterLabelInset, alignment: .bottom)
+                .padding(.bottom, settingsFooterLabelInset)
                 .background(footerGradient)
                 .overlay(footerInnerShadow)
                 .clipShape(

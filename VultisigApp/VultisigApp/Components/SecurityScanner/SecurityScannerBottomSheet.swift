@@ -22,6 +22,9 @@ struct SecurityScannerBottomSheetContent: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.caption)
                     VultisigImage(securityScannerProvider)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .frame(width: Self.providerLogoSize.width, height: Self.providerLogoSize.height)
                 }
             }
@@ -33,6 +36,7 @@ struct SecurityScannerBottomSheetContent: View {
                     .foregroundStyle(contentStyle.imageColor)
                     .settingsText(.title2)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(contentStyle.description)
                     .foregroundStyle(Theme.colors.textTertiary)

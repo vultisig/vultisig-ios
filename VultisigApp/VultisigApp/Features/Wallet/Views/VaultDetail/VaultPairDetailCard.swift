@@ -86,8 +86,8 @@ struct VaultPairDetailCard: View {
 
             LazyVGrid(
                 columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
+                    GridItem(.flexible(), spacing: 12, alignment: .top),
+                    GridItem(.flexible(), spacing: 12, alignment: .top)
                 ],
                 spacing: 12
             ) {
@@ -170,7 +170,7 @@ struct VaultPairDetailCard: View {
                     .foregroundStyle(Theme.colors.textSecondary)
                     .showIf(isLocalPary)
             }
-            .frame(maxWidth: .infinity, minHeight: Self.signerTextMinHeight, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: Self.signerTextMinHeight, alignment: .topLeading)
             Icon(
                 iconName(for: signer),
                 color: Theme.colors.textTertiary,

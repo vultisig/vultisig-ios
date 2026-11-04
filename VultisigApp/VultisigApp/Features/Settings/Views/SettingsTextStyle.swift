@@ -85,9 +85,9 @@ enum SettingsTextStyle {
         }
     }
 
-    /// Brockmann's ascent plus descent is 1.2 times its point size, Satoshi's 1.35.
+    /// Brockmann's ascent plus descent is 1.2 times its point size, Satoshi's 1.25.
     var unroundedLineHeight: CGFloat {
-        pointSize * (self == .priceFootnote ? 1.35 : 1.2)
+        pointSize * (self == .priceFootnote ? 1.25 : 1.2)
     }
 }
 

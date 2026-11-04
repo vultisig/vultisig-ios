@@ -20,6 +20,7 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
             Text("biometricsFastSigning".localized)
                 .settingsText(.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
             SecureTextField(
                 value: $viewModel.password,

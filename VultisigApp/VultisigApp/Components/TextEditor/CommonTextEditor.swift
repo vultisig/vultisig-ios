@@ -19,10 +19,9 @@ struct CommonTextEditor: View {
     let accessory: String?
     let appearance: CommonTextFieldAppearance
 
-    /// `UITextView`'s own insets around its text, which `.settingsInput` removes
-    /// so the text sits on the design's 16pt padding.
-    private static var editorInsets: EdgeInsets {
-        EdgeInsets(top: isMacOS ? 0 : 8, leading: 5, bottom: isMacOS ? 0 : 8, trailing: 5)
+    /// Cancels `UITextView`'s own insets so the text sits on the design's 16pt padding.
+    private static var settingsTextViewOutset: EdgeInsets {
+        EdgeInsets(top: isMacOS ? 0 : -8, leading: -5, bottom: isMacOS ? 0 : -8, trailing: -5)
     }
 
     private static var settingsLineSpacing: CGFloat { 3 }
@@ -71,8 +70,7 @@ struct CommonTextEditor: View {
     private var editorBox: some View {
         if appearance != .standard {
             editorContent
-                .padding(.horizontal, Self.settingsPadding)
-                .padding(.vertical, Self.settingsPadding)
+                .padding(Self.settingsPadding)
                 .frame(height: Self.settingsHeight)
                 .background(
                     Theme.radius.lg.shape
@@ -103,7 +101,7 @@ struct CommonTextEditor: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(appearance != .standard ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
                     .lineSpacing(appearance != .standard ? Self.settingsLineSpacing : 0)
-                    .padding(appearance != .standard ? Self.negative(Self.editorInsets) : EdgeInsets())
+                    .padding(appearance == .standard ? EdgeInsets() : Self.settingsTextViewOutset)
                     .submitLabel(.continue)
                     .autocorrectionDisabled()
                     .focused(isFocused)
@@ -146,10 +144,6 @@ struct CommonTextEditor: View {
                 }
             }
         }
-    }
-
-    private static func negative(_ insets: EdgeInsets) -> EdgeInsets {
-        EdgeInsets(top: -insets.top, leading: -insets.leading, bottom: -insets.bottom, trailing: -insets.trailing)
     }
 
     private var settingsBorderColor: Color {

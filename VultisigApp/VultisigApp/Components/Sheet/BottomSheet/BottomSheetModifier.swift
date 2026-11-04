@@ -84,7 +84,7 @@ private extension BottomSheetModifier {
         guard sizedSheetHeight > 0 else {
             return [.fraction(0.3)]
         }
-        let headerHeight: CGFloat = 20
+        let headerHeight: CGFloat = sheetContent.usesSystemGrabber ? 0 : 20
         return [.height(sizedSheetHeight + headerHeight)]
     }
 }

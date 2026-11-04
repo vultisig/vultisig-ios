@@ -65,7 +65,7 @@ struct SettingsCustomMessageView: View {
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
                 continueButton
-                    .padding(.bottom, isMacOS ? 40 : 0)
+                    .padding(.bottom, isMacOS ? 40 : 12)
             }
         }
     }
@@ -78,7 +78,7 @@ struct SettingsCustomMessageView: View {
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .verify {
                 signButton
-                    .padding(.bottom, isMacOS ? 40 : 0)
+                    .padding(.bottom, isMacOS ? 40 : 12)
             }
         }
     }

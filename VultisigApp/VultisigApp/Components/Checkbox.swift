@@ -59,10 +59,7 @@ struct Checkbox: View {
                 HStack(spacing: Self.settingsRowPadding) {
                     settingsCheck
                     settingsDescription
-
-                    if isExtended {
-                        Spacer(minLength: 0)
-                    }
+                        .frame(maxWidth: isExtended ? .infinity : nil, alignment: .leading)
                 }
                 .padding(.horizontal, Self.settingsRowPadding)
                 .frame(minHeight: rowMinHeight)

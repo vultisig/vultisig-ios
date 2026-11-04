@@ -19,9 +19,8 @@ enum CommonTextFieldErrorStyle {
     case error, warning
 }
 
-/// `.settings` is the settings forms' field: a 52 tall card with a dim label and
-/// placeholder and no outer gutter. `.settingsInput` is the same card with the
-/// normal border, which shows validation colours. Everywhere else keeps `.standard`.
+/// `.settings`: a 52 tall card with a dim label and placeholder, no outer gutter.
+/// `.settingsInput`: the same card with a normal border that shows validation colours.
 enum CommonTextFieldAppearance {
     case standard, settings, settingsInput
 }
