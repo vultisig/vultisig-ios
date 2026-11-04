@@ -21,26 +21,41 @@ struct AutoLockScreen: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("autoLockDescription".localized)
-                        .font(Theme.fonts.caption12)
+                        .settingsText(.footnote)
                         .foregroundStyle(Theme.colors.textSecondary)
 
                     ForEach(AutoLockInterval.selectableCases) { interval in
                         Button {
                             select(interval)
                         } label: {
-                            SettingSelectionCell(
-                                title: interval.titleKey.localized,
-                                isSelected: interval == selection
-                            )
+                            row(for: interval)
                         }
-                        .background(Theme.colors.bgSurface1)
-                        .clipShape(Theme.radius.md.shape)
+                        .buttonStyle(.plain)
                     }
                 }
             }
         }
         .screenTitle("autoLockScreenTitle".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+    }
+
+    private func row(for interval: AutoLockInterval) -> some View {
+        HStack(spacing: 12) {
+            Text(interval.titleKey.localized)
+                .settingsText(.bodyS)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Icon(.selectionCheck, color: Theme.colors.textPrimary, size: 16)
+                .background(Circle().fill(Theme.colors.primaryAccent3))
+                .opacity(interval == selection ? 1 : 0)
+                .accessibilityHidden(interval != selection)
+        }
+        .padding(16)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(Theme.radius.lg.shape)
+        .overlay(Theme.radius.lg.shape.strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1))
+        .contentShape(Rectangle())
     }
 
     private func select(_ interval: AutoLockInterval) {
