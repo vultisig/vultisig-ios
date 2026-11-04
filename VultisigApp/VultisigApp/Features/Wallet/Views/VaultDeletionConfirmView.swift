@@ -26,6 +26,7 @@ struct VaultDeletionConfirmView: View {
 
     private static let topContentInset: CGFloat = 17
     private static let glowOffset: CGFloat = -9.5
+    private static let subtitleMaxWidth: CGFloat = 283
     private static let firstCheckboxMinHeight: CGFloat = 24
     private static let checkboxMinHeight: CGFloat = 40
 
@@ -68,7 +69,7 @@ struct VaultDeletionConfirmView: View {
                     .settingsText(.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 283)
+                    .frame(maxWidth: Self.subtitleMaxWidth)
             }
         }
     }

@@ -129,10 +129,10 @@ private struct CustomRPCChainGridCell: View {
                         ),
                         style: Theme.radius.xl.style
                     )
-                    .fill(Theme.colors.borderLight)
+                    .fill(Theme.colors.border)
                 )
             Theme.radius.xl.shape
-                .strokeBorder(Theme.colors.borderLight, lineWidth: 1.5)
+                .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }
 }

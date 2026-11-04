@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
 "earn" = "Earn";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA Key";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA Key";
 "editAddress" = "Edit Address";
 "editAddressBook" = "Edit Address Book";
@@ -1491,8 +1489,6 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "settingsEnterHint" = "Enter hint";
 "settingsEnterPassword" = "Enter password";
-"settingsToggleOff" = "OFF";
-"settingsToggleOn" = "ON";
 "share" = "Share";
 "shareOf" = "share %d of %d";
 "shareQRCode" = "Share QR Code";

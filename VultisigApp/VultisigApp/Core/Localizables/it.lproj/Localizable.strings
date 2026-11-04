@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "Scarica via GitHub";
 "dropFileHere" = "Rilascia il file qui...";
 "earn" = "Earn";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "Chiave ECDSA";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "editAddress" = "Modifica indirizzo";
 "editAddressBook" = "Modifica rubrica";
@@ -1491,8 +1489,6 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
 "settingsEnterHint" = "Inserisci un suggerimento";
 "settingsEnterPassword" = "Inserisci la password";
-"settingsToggleOff" = "DISATTIVATO";
-"settingsToggleOn" = "ATTIVATO";
 "share" = "Condividi";
 "shareOf" = "quota %d di %d";
 "shareQRCode" = "Condividi codice QR";

@@ -10,23 +10,21 @@ import VultisigUIResources
 
 struct SecurityScannerBottomSheetContent: View {
     let contentStyle: SecurityScannerBottomSheetStyle
-    let securityScannerProvider: String?
+    let securityScannerProvider: String
     let onDismissRequest: () -> Void
     let onContinueAnyway: () -> Void
 
     var body: some View {
         VStack(spacing: 24) {
-            if let securityScannerProvider = securityScannerProvider {
-                HStack(spacing: 4) {
-                    Text("securityScannerPoweredBy".localized)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .settingsText(.caption)
-                    VultisigImage(securityScannerProvider)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .frame(width: Self.providerLogoSize.width, height: Self.providerLogoSize.height)
-                }
+            HStack(spacing: 4) {
+                Text("securityScannerPoweredBy".localized)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .settingsText(.caption)
+                VultisigImage(securityScannerProvider)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .frame(width: Self.providerLogoSize.width, height: Self.providerLogoSize.height)
             }
 
             SecurityWarningBadge(tint: contentStyle.imageColor)

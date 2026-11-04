@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "GitHub을 통해 다운로드";
 "dropFileHere" = "여기에 파일을 드롭하세요...";
 "earn" = "적립";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA 키";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA 키";
 "editAddress" = "주소 편집";
 "editAddressBook" = "주소록 편집";
@@ -1491,8 +1489,6 @@
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
 "settingsEnterHint" = "힌트 입력";
 "settingsEnterPassword" = "비밀번호 입력";
-"settingsToggleOff" = "꺼짐";
-"settingsToggleOn" = "켜짐";
 "share" = "공유";
 "shareOf" = "셰어 %d/%d";
 "shareQRCode" = "QR 코드 공유";

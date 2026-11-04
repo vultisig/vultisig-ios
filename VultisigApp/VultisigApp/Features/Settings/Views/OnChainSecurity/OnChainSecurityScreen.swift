@@ -47,14 +47,9 @@ struct OnChainSecurityScreen: View {
             Text("vaultSettingsSecurityScreenTitleContent".localized)
                 .settingsText(.caption)
                 .foregroundStyle(Theme.colors.textSecondary)
-            HStack(spacing: 8) {
-                Toggle("vaultSettingsSecurityScreenTitleSwitch".localized, isOn: $securityScannerEnabled)
-                    .labelsHidden()
-                    .toggleStyle(SettingsToggleStyle(size: .regular))
-                Text((securityScannerEnabled ? "settingsToggleOn" : "settingsToggleOff").localized)
-                    .settingsText(.bodyMRegular)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
+            Toggle("vaultSettingsSecurityScreenTitleSwitch".localized, isOn: $securityScannerEnabled)
+                .labelsHidden()
+                .toggleStyle(SettingsToggleStyle(size: .regular))
         }
         .padding(.top, Self.topContentInset)
         .frame(maxWidth: .infinity, alignment: .leading)

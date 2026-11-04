@@ -15,6 +15,9 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
     var bgColor: Color? { Theme.colors.bgPrimary }
     var usesSystemGrabber: Bool { true }
 
+    /// The field puts its error 4pt below it, 12pt closer than this stack's spacing.
+    private static let errorSpacingOverlap: CGFloat = 12
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("biometricsFastSigning".localized)
@@ -41,6 +44,15 @@ struct FastSigningPasswordSheetView: View, BottomSheetProperties {
                 }
             }
             .disabled(!viewModel.isSaveEnabled)
+
+            // The sheet measures itself once with no error, so this holds the error's height.
+            if viewModel.passwordError == nil {
+                Text("wrongVaultPassword".localized)
+                    .font(Theme.fonts.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, -Self.errorSpacingOverlap)
+                    .hidden()
+            }
         }
         .onChange(of: viewModel.password) { _, _ in
             viewModel.passwordError = nil

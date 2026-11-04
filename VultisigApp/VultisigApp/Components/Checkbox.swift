@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Checkbox: View {
-    enum Appearance: Equatable {
+    enum Appearance {
         case standard
         /// The settings confirmation row: caption text, the design's check, and a
         /// tappable row at least this tall.

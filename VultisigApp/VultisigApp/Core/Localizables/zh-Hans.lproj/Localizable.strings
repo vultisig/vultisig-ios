@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "通过 GitHub 下载";
 "dropFileHere" = "将文件拖放到此处...";
 "earn" = "赚币";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA 密钥";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "EdDSA 密钥";
 "editAddress" = "编辑地址";
 "editAddressBook" = "编辑地址簿";
@@ -1491,8 +1489,6 @@
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "settingsEnterHint" = "输入提示";
 "settingsEnterPassword" = "输入密码";
-"settingsToggleOff" = "关闭";
-"settingsToggleOn" = "开启";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
 "shareQRCode" = "分享二维码";
