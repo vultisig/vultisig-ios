@@ -107,10 +107,14 @@
 "backupNowWarning" = "Faça o backup do seu cofre em cada dispositivo individualmente!";
 "backupOptionsBox1" = "Por padrão, seu backup é seguro sem uma senha extra, pois você guarda as partes do cofre em locais diferentes.";
 "backupOptionsBox1Highlighted" = "seguro sem";
-"backupOptionsBox2" = "Se escolher adicionar uma senha, ela será usada para criptografar o arquivo de backup.";
-"backupOptionsBox2Highlighted" = "criptografar";
+"backupOptionsBox2" = "Se escolher adicionar uma senha, a senha do seu cofre será usada para criptografar o arquivo de backup.";
+"backupOptionsBox2Highlighted" = "senha do seu cofre";
 "backupOptionsBox3" = "Lembre -se: Se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
 "backupOptionsBox3Highlighted" = "não pode";
+"backupOptionsSettingsBox2" = "Se escolher adicionar uma senha, ela será usada para criptografar o arquivo de backup.";
+"backupOptionsSettingsBox2Highlighted" = "criptografar";
+"backupOptionsSettingsBox3" = "Lembre-se: se você esquecer esta senha, ela não poderá ser redefinida ou recuperada.";
+"backupOptionsSettingsBox3Highlighted" = "não poderá";
 "backupOptionsTitle" = "Deseja criptografar seu backup com uma senha?";
 "backupPasswordDisclaimer" = "Nunca guarde partes do cofre de dispositivos diferentes no mesmo local";
 "backupSaveButton" = "Salvar backup";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "A taxa do operador não pode estar vazia se o provedor estiver preenchido";
 "operatorFeesLabel" = "Taxas do operador (Pontos Base)";
 "optional" = "(opcional)";
+"optionalPasswordProtectBackup" = "Proteção opcional do seu cofre com senha";
 "other" = "Outro";
 "overview" = "Visão geral";
 "pair" = "Emparelhar";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "Bloqueio automático";
 "passcodeBackupPromptBackUpNow" = "Fazer backup agora";
 "passcodeBackupPromptHasBackup" = "Já tenho um backup";
-"passcodeBackupPromptSubtitle" = "Ao ativar um código de acesso, as partes do cofre são criptografadas com uma chave guardada neste dispositivo. Se essa chave se perder, seu backup .vult é a única forma de recuperá-las. O código de acesso em si não pode ser recuperado nem redefinido.";
-"passcodeBackupPromptSubtitleHighlightBackup" = "backup .vult é a única forma de recuperá-las.";
+"passcodeBackupPromptSubtitle" = "Ao ativar um código de acesso, as partes do cofre são criptografadas com uma chave guardada neste dispositivo. Se essa chave se perder, somente um backup .vult pode restaurar as partes do cofre neste dispositivo. O código de acesso em si não pode ser recuperado nem redefinido.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "somente um backup .vult pode restaurar as partes do cofre neste dispositivo.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "não pode ser recuperado nem redefinido.";
 "passcodeBackupPromptTitle" = "Primeiro, faça backup do seu cofre";
 "passcodeBiometricDisableFailed" = "Não foi possível desativar o desbloqueio biométrico. Tente novamente.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "Usar um email diferente";
 "useExternalRecipient" = "Usar destinatário externo";
 "useLocalMode" = "Usar modo local";
+"usePassword" = "Usar senha";
 "useStandardMode" = "Usar modo padrão";
 "utxoPlanDustAmountError" = "O que sobraria para o destinatário está abaixo do limite de poeira da rede. Envie um valor maior ou reduza a taxa de rede para que sobre mais para enviar.";
 "utxoPlanFailedError" = "Não foi possível preparar esta transação (%@). Tente outro valor ou reduza a taxa de rede.";

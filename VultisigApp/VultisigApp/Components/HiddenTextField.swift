@@ -7,11 +7,17 @@
 
 import SwiftUI
 
+/// `.settings`: the settings forms' 52 tall field, with a border that follows focus.
+enum HiddenTextFieldAppearance {
+    case standard, settings
+}
+
 struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
     var showHideOption: Bool = true
     var errorMessage: String
+    var appearance: HiddenTextFieldAppearance = .standard
     var isFocused: Bool = false
 
     @State var isPasswordVisible: Bool = false
@@ -45,14 +51,28 @@ struct HiddenTextField: View {
                 button
             }
         }
-        .frame(height: 52)
+        .frame(height: isSettings ? 52 : 56)
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .clipShape(Theme.radius.lg.shape)
-        .overlay(Theme.radius.lg.shape.strokeBorder(borderColor, lineWidth: 1))
+        .cornerRadius(isSettings ? Theme.radius.lg : Theme.radius.md)
+        .overlay(fieldBorder)
     }
 
-    private var borderColor: Color {
+    private var isSettings: Bool {
+        appearance == .settings
+    }
+
+    @ViewBuilder
+    private var fieldBorder: some View {
+        if isSettings {
+            Theme.radius.lg.shape.strokeBorder(settingsBorderColor, lineWidth: 1)
+        } else {
+            Theme.radius.md.shape
+                .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
+        }
+    }
+
+    private var settingsBorderColor: Color {
         if !errorMessage.isEmpty {
             return Theme.colors.alertError
         }
@@ -79,7 +99,7 @@ struct HiddenTextField: View {
         }
         .submitLabel(.done)
         .colorScheme(.dark)
-        .font(Theme.fonts.bodySMedium)
+        .font(isSettings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
         .foregroundStyle(Theme.colors.textPrimary)
     }
 
@@ -91,7 +111,15 @@ struct HiddenTextField: View {
                 }
             },
             label: {
-                Icon(isPasswordVisible ? .eye : .eyeClosed, color: Theme.colors.textPrimary, size: 20)
+                if isSettings {
+                    Icon(isPasswordVisible ? .eye : .eyeClosed, color: Theme.colors.textPrimary, size: 20)
+                        .accessibilityRepresentation {
+                            Image(systemName: isPasswordVisible ? "eye": "eye.slash")
+                        }
+                } else {
+                    Image(systemName: isPasswordVisible ? "eye": "eye.slash")
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
             }
         )
         .buttonStyle(.plain)

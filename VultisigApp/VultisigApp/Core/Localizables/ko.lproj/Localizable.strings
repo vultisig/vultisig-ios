@@ -107,10 +107,14 @@
 "backupNowWarning" = "각 기기에서 개별적으로 볼트를 백업하세요!";
 "backupOptionsBox1" = "기본적으로 볼트 셰어를 서로 다른 위치에 저장하므로 추가 비밀번호 없이도 백업이 안전합니다.";
 "backupOptionsBox1Highlighted" = "추가 비밀번호 없이도";
-"backupOptionsBox2" = "비밀번호를 추가하면 해당 비밀번호로 백업 파일을 암호화합니다.";
-"backupOptionsBox2Highlighted" = "암호화";
+"backupOptionsBox2" = "비밀번호를 추가하면 볼트 비밀번호로 백업 파일을 암호화합니다.";
+"backupOptionsBox2Highlighted" = "볼트 비밀번호";
 "backupOptionsBox3" = "기억하세요: 볼트 비밀번호를 잊으면 재설정하거나 복구할 수 없습니다.";
 "backupOptionsBox3Highlighted" = "복구할 수 없습니다";
+"backupOptionsSettingsBox2" = "비밀번호를 추가하면 해당 비밀번호로 백업 파일을 암호화합니다.";
+"backupOptionsSettingsBox2Highlighted" = "암호화";
+"backupOptionsSettingsBox3" = "기억하세요: 이 비밀번호를 잊으면 재설정하거나 복구할 수 없습니다.";
+"backupOptionsSettingsBox3Highlighted" = "복구할 수 없습니다";
 "backupOptionsTitle" = "비밀번호로 백업을 암호화하시겠습니까?";
 "backupPasswordDisclaimer" = "다른 기기의 볼트 셰어를 같은 위치에 저장하지 마세요";
 "backupSaveButton" = "백업 저장";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "공급자가 입력된 경우 운영자 수수료는 비워둘 수 없습니다";
 "operatorFeesLabel" = "운영자 수수료 (기준점)";
 "optional" = "(선택 사항)";
+"optionalPasswordProtectBackup" = "볼트의 선택적 비밀번호 보호";
 "other" = "기타";
 "overview" = "개요";
 "pair" = "쌍";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "자동 잠금";
 "passcodeBackupPromptBackUpNow" = "지금 백업";
 "passcodeBackupPromptHasBackup" = "이미 백업이 있습니다";
-"passcodeBackupPromptSubtitle" = "패스코드를 켜면 이 기기에 저장된 키로 키 셰어가 암호화됩니다. 그 키를 잃어버리면 .vult 백업이 유일한 복구 방법입니다. 패스코드 자체는 복구하거나 재설정할 수 없습니다.";
-"passcodeBackupPromptSubtitleHighlightBackup" = ".vult 백업이 유일한 복구 방법입니다.";
+"passcodeBackupPromptSubtitle" = "패스코드를 켜면 이 기기에 저장된 키로 키 셰어가 암호화됩니다. 그 키를 잃어버리면 .vult 백업으로만 이 기기의 키 셰어를 복원할 수 있습니다. 패스코드 자체는 복구하거나 재설정할 수 없습니다.";
+"passcodeBackupPromptSubtitleHighlightBackup" = ".vult 백업으로만 이 기기의 키 셰어를 복원할 수 있습니다.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "복구하거나 재설정할 수 없습니다.";
 "passcodeBackupPromptTitle" = "먼저 볼트를 백업하세요";
 "passcodeBiometricDisableFailed" = "생체 인식 잠금 해제를 끄지 못했습니다. 다시 시도하세요.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "다른 이메일 사용";
 "useExternalRecipient" = "외부 수신자 사용";
 "useLocalMode" = "로컬 모드 사용";
+"usePassword" = "비밀번호 사용";
 "useStandardMode" = "표준 모드 사용";
 "utxoPlanDustAmountError" = "받는 사람에게 남는 금액이 네트워크의 더스트 한도보다 적습니다. 더 큰 금액을 전송하거나 네트워크 수수료율을 낮춰 전송할 금액을 늘리세요.";
 "utxoPlanFailedError" = "이 트랜잭션을 준비할 수 없습니다 (%@). 다른 금액을 시도하거나 네트워크 수수료율을 낮추세요.";

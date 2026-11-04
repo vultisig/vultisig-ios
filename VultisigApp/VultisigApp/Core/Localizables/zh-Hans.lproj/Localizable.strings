@@ -107,10 +107,14 @@
 "backupNowWarning" = "在每个设备上单独备份您的保险库！";
 "backupOptionsBox1" = "默认情况下，您的备份是安全的，无需额外密码，因为您将保险库份额存储在不同位置";
 "backupOptionsBox1Highlighted" = "无需";
-"backupOptionsBox2" = "如果您选择添加密码，该密码将用于加密备份文件。";
-"backupOptionsBox2Highlighted" = "加密";
+"backupOptionsBox2" = "如果您选择添加密码，您的保险库密码将用于加密备份文件";
+"backupOptionsBox2Highlighted" = "保险库密码";
 "backupOptionsBox3" = "记住：如果您忘记保险库密码，它将无法重置或恢复";
 "backupOptionsBox3Highlighted" = "无法";
+"backupOptionsSettingsBox2" = "如果您选择添加密码，该密码将用于加密备份文件。";
+"backupOptionsSettingsBox2Highlighted" = "加密";
+"backupOptionsSettingsBox3" = "记住：如果您忘记此密码，它将无法重置或恢复。";
+"backupOptionsSettingsBox3Highlighted" = "无法";
 "backupOptionsTitle" = "您想用密码加密备份吗？";
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
 "backupSaveButton" = "保存备份";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "如果填写了提供商，运营商费用不能为空";
 "operatorFeesLabel" = "运营商费用（基点）";
 "optional" = "(可选)";
+"optionalPasswordProtectBackup" = "保险库的可选密码保护";
 "other" = "其他";
 "overview" = "概览";
 "pair" = "配对";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "自动锁定";
 "passcodeBackupPromptBackUpNow" = "立即备份";
 "passcodeBackupPromptHasBackup" = "我已有备份";
-"passcodeBackupPromptSubtitle" = "开启密码后，您的密钥份额将使用保存在本设备上的密钥加密。如果该密钥丢失，您的 .vult 备份是唯一的恢复途径。密码本身无法找回或重置。";
-"passcodeBackupPromptSubtitleHighlightBackup" = ".vult 备份是唯一的恢复途径。";
+"passcodeBackupPromptSubtitle" = "开启密码后，您的密钥份额将使用保存在本设备上的密钥加密。如果该密钥丢失，只有 .vult 备份才能恢复本设备上的密钥份额。密码本身无法找回或重置。";
+"passcodeBackupPromptSubtitleHighlightBackup" = "只有 .vult 备份才能恢复本设备上的密钥份额。";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "无法找回或重置。";
 "passcodeBackupPromptTitle" = "请先备份您的保险库";
 "passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "使用不同的电子邮件";
 "useExternalRecipient" = "使用外部接收方";
 "useLocalMode" = "使用本地模式";
+"usePassword" = "使用密码";
 "useStandardMode" = "使用标准模式";
 "utxoPlanDustAmountError" = "留给收款方的金额低于网络的尘埃限额。请发送更大的金额，或降低网络费率以留下更多可发送金额";
 "utxoPlanFailedError" = "无法准备此交易 (%@)。请尝试其他金额或降低网络费率";

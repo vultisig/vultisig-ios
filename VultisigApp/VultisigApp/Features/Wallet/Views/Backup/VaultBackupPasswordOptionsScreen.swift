@@ -30,14 +30,10 @@ struct VaultBackupPasswordOptionsScreen: View {
             origin: origin
         ) {
             Screen {
-                VStack(spacing: 12) {
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 36) {
-                            icon
-                            textContent
-                        }
-                    }
-                    buttons
+                if origin.usesSettingsLook {
+                    settingsContent
+                } else {
+                    standardContent
                 }
             }
         }
@@ -45,7 +41,42 @@ struct VaultBackupPasswordOptionsScreen: View {
         .onDisappear(perform: backupViewModel.resetData)
     }
 
+    var standardContent: some View {
+        VStack(spacing: 36) {
+            icon
+            textContent
+            Spacer()
+            buttons
+        }
+    }
+
+    /// The buttons follow the boxes in one scroll, so on a short screen all three
+    /// warnings pass before either button can be reached.
+    var settingsContent: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 36) {
+                    settingsIcon
+                    settingsTextContent
+                    Spacer(minLength: 0)
+                    buttons
+                }
+                .frame(minHeight: proxy.size.height)
+            }
+            .scrollIndicatorsFlash(onAppear: true)
+        }
+    }
+
     var icon: some View {
+        Image(systemName: "person.badge.key")
+            .font(Theme.fonts.title1)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .frame(width: 64, height: 64)
+            .background(Theme.colors.bgSurface2)
+            .cornerRadius(Theme.radius.lg)
+    }
+
+    var settingsIcon: some View {
         Icon(.lockPassword, color: Theme.colors.textPrimary, size: 32)
             .padding(16)
             .background(Theme.colors.bgSurface2)
@@ -55,20 +86,51 @@ struct VaultBackupPasswordOptionsScreen: View {
     var textContent: some View {
         VStack(spacing: 16) {
             Text("backupOptionsTitle".localized)
+                .font(Theme.fonts.title2)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: .lockFilled)
+
+            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: .folderLock)
+
+            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: .fileAlert)
+        }
+    }
+
+    var settingsTextContent: some View {
+        VStack(spacing: 16) {
+            Text("backupOptionsTitle".localized)
                 .settingsText(.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: .lockFilled)
+            settingsBoxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: .lockFilled)
 
-            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: .folders)
+            settingsBoxedText("backupOptionsSettingsBox2".localized, highlighted: "backupOptionsSettingsBox2Highlighted".localized, icon: .folders)
 
-            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: .triangleWarningFilled)
+            settingsBoxedText("backupOptionsSettingsBox3".localized, highlighted: "backupOptionsSettingsBox3Highlighted".localized, icon: .triangleWarningFilled)
         }
     }
 
     func boxedText(_ text: String, highlighted: String, icon: ImageResource) -> some View {
+        HStack(spacing: 12) {
+            Icon(icon, color: Theme.colors.primaryAccent4, size: 24)
+            HighlightedText(text: String(format: text.localized, highlighted), highlightedText: highlighted) {
+                $0.foregroundColor = Theme.colors.textTertiary
+                $0.font = Theme.fonts.footnote
+            } highlightedTextStyle: {
+                $0.foregroundColor = Theme.colors.textPrimary
+                $0.font = Theme.fonts.footnote
+            }
+        }
+        .frame(maxWidth: 325)
+        .containerStyle(padding: 16, bgColor: Theme.colors.bgSurface1)
+
+    }
+
+    func settingsBoxedText(_ text: String, highlighted: String, icon: ImageResource) -> some View {
         HStack(spacing: 12) {
             Icon(icon, color: Theme.colors.primaryAccent4, size: 24)
             HighlightedText(text: String(format: text.localized, highlighted), highlightedText: highlighted) {
@@ -98,13 +160,17 @@ struct VaultBackupPasswordOptionsScreen: View {
     }
 
     var withoutPasswordButton: some View {
-        PrimaryButton(title: "backupWithoutPassword", size: .compact) {
+        PrimaryButton(title: "backupWithoutPassword", size: origin.usesSettingsLook ? .compact : .medium) {
             presentFileExporter = true
         }
     }
 
     var withPasswordButton: some View {
-        PrimaryButton(title: "backupWithPassword", type: .secondary, size: .compact) {
+        PrimaryButton(
+            title: origin.usesSettingsLook ? "backupWithPassword" : "usePassword",
+            type: .secondary,
+            size: origin.usesSettingsLook ? .compact : .medium
+        ) {
             router.navigate(to: VaultRoute.backupPasswordScreen(
                 tssType: tssType,
                 backupType: backupType,

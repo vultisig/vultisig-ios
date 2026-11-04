@@ -107,10 +107,14 @@
 "backupNowWarning" = "Sigurnosno kopirajte svoj trezor na svakom uređaju pojedinačno!";
 "backupOptionsBox1" = "Prema zadanim postavkama vaša je sigurnosna kopija sigurna i bez dodatne lozinke jer udjele trezora pohranjujete na različitim lokacijama.";
 "backupOptionsBox1Highlighted" = "sigurna i bez";
-"backupOptionsBox2" = "Ako odlučite dodati lozinku, ona će se koristiti za šifriranje datoteke sigurnosne kopije.";
-"backupOptionsBox2Highlighted" = "šifriranje";
+"backupOptionsBox2" = "Ako odlučite dodati lozinku, lozinka vašeg trezora bit će upotrijebljena za šifriranje datoteke sigurnosne kopije.";
+"backupOptionsBox2Highlighted" = "lozinka vašeg trezora";
 "backupOptionsBox3" = "Zapamtite: Ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
 "backupOptionsBox3Highlighted" = "ne može";
+"backupOptionsSettingsBox2" = "Ako odlučite dodati lozinku, ona će se koristiti za šifriranje datoteke sigurnosne kopije.";
+"backupOptionsSettingsBox2Highlighted" = "šifriranje";
+"backupOptionsSettingsBox3" = "Zapamtite: ako zaboravite ovu lozinku, ona se ne može resetirati ili oporaviti.";
+"backupOptionsSettingsBox3Highlighted" = "ne može";
 "backupOptionsTitle" = "Želite li svoju sigurnosnu kopiju šifrirati lozinkom?";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte udjele trezora s različitih uređaja na istom mjestu";
 "backupSaveButton" = "Spremi sigurnosnu kopiju";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "Naknada operatora ne može biti prazna ako je pružatelj popunjen";
 "operatorFeesLabel" = "Naknade operatora (Bazne točke)";
 "optional" = "(neobavezno)";
+"optionalPasswordProtectBackup" = "Neobavezna zaštita trezora lozinkom";
 "other" = "Ostalo";
 "overview" = "Pregled";
 "pair" = "Upareni";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
 "passcodeBackupPromptBackUpNow" = "Napravi kopiju sada";
 "passcodeBackupPromptHasBackup" = "Već imam sigurnosnu kopiju";
-"passcodeBackupPromptSubtitle" = "Uključivanjem zaporke vaši se udjeli ključa šifriraju ključem spremljenim na ovom uređaju. Ako se taj ključ izgubi, vaša .vult sigurnosna kopija jedini je način povratka. Sama zaporka ne može se vratiti ni resetirati.";
-"passcodeBackupPromptSubtitleHighlightBackup" = ".vult sigurnosna kopija jedini je način povratka.";
+"passcodeBackupPromptSubtitle" = "Uključivanjem zaporke vaši se udjeli ključa šifriraju ključem spremljenim na ovom uređaju. Ako se taj ključ izgubi, samo .vult sigurnosna kopija može vratiti udjele ključa na ovom uređaju. Sama zaporka ne može se vratiti ni resetirati.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "samo .vult sigurnosna kopija može vratiti udjele ključa na ovom uređaju.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "ne može se vratiti ni resetirati.";
 "passcodeBackupPromptTitle" = "Najprije napravite sigurnosnu kopiju trezora";
 "passcodeBiometricDisableFailed" = "Otključavanje biometrijom nije se moglo isključiti. Pokušajte ponovno.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "Koristite drugu e-mail adresu";
 "useExternalRecipient" = "Koristi vanjskog primatelja";
 "useLocalMode" = "Koristi lokalni način";
+"usePassword" = "Koristi lozinku";
 "useStandardMode" = "Koristi standardni način";
 "utxoPlanDustAmountError" = "Ono što bi ostalo primatelju ispod je mrežnog praga za prašinu. Pošaljite veći iznos ili smanjite mrežnu stopu kako bi ostalo više za slanje.";
 "utxoPlanFailedError" = "Ovu transakciju nije bilo moguće pripremiti (%@). Pokušajte s drugim iznosom ili smanjite mrežnu stopu.";

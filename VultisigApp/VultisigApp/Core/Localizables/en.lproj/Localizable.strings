@@ -107,10 +107,14 @@
 "backupNowWarning" = "Backup your vault on every device individually!";
 "backupOptionsBox1" = "By default, your backup is secure without an extra password, since you store Vault shares in different locations.";
 "backupOptionsBox1Highlighted" = "secure without";
-"backupOptionsBox2" = "If you choose to add a password, this will be used to encrypt the backup file.";
-"backupOptionsBox2Highlighted" = "encrypt";
-"backupOptionsBox3" = "Remember: if you forget your vault password, it cannot be reset or recovered.";
+"backupOptionsBox2" = "If you choose to add a password, your vault password will be used to encrypt the backup file.";
+"backupOptionsBox2Highlighted" = "vault password";
+"backupOptionsBox3" = "Remember: If you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
+"backupOptionsSettingsBox2" = "If you choose to add a password, this will be used to encrypt the backup file.";
+"backupOptionsSettingsBox2Highlighted" = "encrypt";
+"backupOptionsSettingsBox3" = "Remember: if you forget this password, it cannot be reset or recovered.";
+"backupOptionsSettingsBox3Highlighted" = "cannot";
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
 "backupSaveButton" = "Save backup";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "optional" = "(optional)";
+"optionalPasswordProtectBackup" = "Optional password protection of your Vault";
 "other" = "Other";
 "overview" = "Overview";
 "pair" = "Pair";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "Auto-lock";
 "passcodeBackupPromptBackUpNow" = "Back Up Now";
 "passcodeBackupPromptHasBackup" = "I already have a backup";
-"passcodeBackupPromptSubtitle" = "Turning on a passcode encrypts your key shares with a key stored on this device. If that key is ever lost, your .vult backup is the only way back in. The passcode itself can't be recovered or reset.";
-"passcodeBackupPromptSubtitleHighlightBackup" = ".vult backup is the only way back in.";
+"passcodeBackupPromptSubtitle" = "Turning on a passcode encrypts your key shares with a key stored on this device. If that key is ever lost, only a .vult backup can restore the key shares on this device. The passcode itself can't be recovered or reset.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "only a .vult backup can restore the key shares on this device.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "can't be recovered or reset.";
 "passcodeBackupPromptTitle" = "Back up your vault first";
 "passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "Use a different email";
 "useExternalRecipient" = "Use External Recipient";
 "useLocalMode" = "Use local mode";
+"usePassword" = "Use password";
 "useStandardMode" = "Use standard mode";
 "utxoPlanDustAmountError" = "What would be left for the recipient is below the network's dust limit. Send a larger amount, or lower the network rate so more remains to send.";
 "utxoPlanFailedError" = "This transaction could not be prepared (%@). Try a different amount, or lower the network rate.";

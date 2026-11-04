@@ -6,8 +6,18 @@
 //
 
 enum VaultBackupOrigin: Hashable {
+    /// Backup opened from Vault Settings. Behaves as `.standard`; only the look differs.
+    case vaultSettings
     case standard
     case appLockSettings
+}
+
+extension VaultBackupOrigin {
+    /// Settings entries use the redesigned backup screens; keygen, onboarding, home and the
+    /// monthly reminder keep the original ones.
+    var usesSettingsLook: Bool {
+        self != .standard
+    }
 }
 
 enum VaultRoute: Hashable {

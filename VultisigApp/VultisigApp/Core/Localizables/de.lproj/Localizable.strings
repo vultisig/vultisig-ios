@@ -107,10 +107,14 @@
 "backupNowWarning" = "Sichern Sie Ihren Tresor auf jedem Gerät einzeln!";
 "backupOptionsBox1" = "Standardmäßig ist Ihr Backup auch ohne zusätzliches Passwort sicher, da Sie die Tresoranteile an verschiedenen Orten aufbewahren.";
 "backupOptionsBox1Highlighted" = "ohne zusätzliches Passwort sicher";
-"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen, wird es zur Verschlüsselung der Sicherungsdatei verwendet.";
-"backupOptionsBox2Highlighted" = "Verschlüsselung";
+"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen, wird Ihr Tresor-Passwort zur Verschlüsselung der Sicherungsdatei verwendet.";
+"backupOptionsBox2Highlighted" = "Tresor-Passwort";
 "backupOptionsBox3" = "Denken Sie daran: Wenn Sie Ihr Tresor-Passwort vergessen, kann es nicht zurückgesetzt oder wiederhergestellt werden.";
 "backupOptionsBox3Highlighted" = "nicht";
+"backupOptionsSettingsBox2" = "Wenn Sie ein Passwort hinzufügen, wird es zur Verschlüsselung der Sicherungsdatei verwendet.";
+"backupOptionsSettingsBox2Highlighted" = "Verschlüsselung";
+"backupOptionsSettingsBox3" = "Denken Sie daran: Wenn Sie dieses Passwort vergessen, kann es nicht zurückgesetzt oder wiederhergestellt werden.";
+"backupOptionsSettingsBox3Highlighted" = "nicht";
 "backupOptionsTitle" = "Möchten Sie Ihre Sicherung mit einem Passwort verschlüsseln?";
 "backupPasswordDisclaimer" = "Speichern Sie Tresoranteile verschiedener Geräte niemals am selben Ort";
 "backupSaveButton" = "Sicherung speichern";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "Betreibergebühr darf nicht leer sein, wenn Anbieter ausgefüllt ist";
 "operatorFeesLabel" = "Betreibergebühren (Basispunkte)";
 "optional" = "(optional)";
+"optionalPasswordProtectBackup" = "Optionaler Passwortschutz für Ihren Tresor";
 "other" = "Sonstiges";
 "overview" = "Übersicht";
 "pair" = "Koppeln";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "Automatische Sperre";
 "passcodeBackupPromptBackUpNow" = "Jetzt sichern";
 "passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
-"passcodeBackupPromptSubtitle" = "Wenn Sie einen Passcode aktivieren, werden Ihre Schlüsselanteile mit einem Schlüssel verschlüsselt, der auf diesem Gerät gespeichert ist. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück. Der Passcode selbst kann nicht wiederhergestellt oder zurückgesetzt werden.";
-"passcodeBackupPromptSubtitleHighlightBackup" = ".vult-Backup der einzige Weg zurück.";
+"passcodeBackupPromptSubtitle" = "Wenn Sie einen Passcode aktivieren, werden Ihre Schlüsselanteile mit einem Schlüssel verschlüsselt, der auf diesem Gerät gespeichert ist. Geht dieser Schlüssel verloren, können die Schlüsselanteile auf diesem Gerät nur mit einem .vult-Backup wiederhergestellt werden. Der Passcode selbst kann nicht wiederhergestellt oder zurückgesetzt werden.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "nur mit einem .vult-Backup wiederhergestellt werden.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "nicht wiederhergestellt oder zurückgesetzt werden.";
 "passcodeBackupPromptTitle" = "Sichern Sie zuerst Ihren Tresor";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "Andere E-Mail verwenden";
 "useExternalRecipient" = "Externen Empfänger verwenden";
 "useLocalMode" = "Lokalen Modus verwenden";
+"usePassword" = "Passwort verwenden";
 "useStandardMode" = "Standardmodus verwenden";
 "utxoPlanDustAmountError" = "Der Betrag, der beim Empfänger ankäme, liegt unter dem Dust-Limit des Netzwerks. Senden Sie einen größeren Betrag oder senken Sie die Gebührenrate, damit mehr übrig bleibt.";
 "utxoPlanFailedError" = "Diese Transaktion konnte nicht vorbereitet werden (%@). Versuchen Sie einen anderen Betrag oder senken Sie die Gebührenrate.";

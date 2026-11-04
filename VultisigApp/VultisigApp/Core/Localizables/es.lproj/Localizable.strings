@@ -107,10 +107,14 @@
 "backupNowWarning" = "¡Haz una copia de seguridad de tu bóveda en cada dispositivo por separado!";
 "backupOptionsBox1" = "De forma predeterminada, tu copia de seguridad es segura sin una contraseña adicional, ya que guardas los fragmentos de la bóveda en distintos lugares.";
 "backupOptionsBox1Highlighted" = "segura sin";
-"backupOptionsBox2" = "Si decides agregar una contraseña, se usará para cifrar el archivo de copia de seguridad.";
-"backupOptionsBox2Highlighted" = "cifrar";
+"backupOptionsBox2" = "Si decides agregar una contraseña, la contraseña de tu bóveda se usará para cifrar el archivo de copia de seguridad.";
+"backupOptionsBox2Highlighted" = "contraseña de tu bóveda";
 "backupOptionsBox3" = "Recuerda: si olvidas la contraseña de tu bóveda, no se puede restablecer ni recuperar.";
 "backupOptionsBox3Highlighted" = "no se puede";
+"backupOptionsSettingsBox2" = "Si decides agregar una contraseña, se usará para cifrar el archivo de copia de seguridad.";
+"backupOptionsSettingsBox2Highlighted" = "cifrar";
+"backupOptionsSettingsBox3" = "Recuerda: si olvidas esta contraseña, no se puede restablecer ni recuperar.";
+"backupOptionsSettingsBox3Highlighted" = "no se puede";
 "backupOptionsTitle" = "¿Quieres cifrar tu copia de seguridad con una contraseña?";
 "backupPasswordDisclaimer" = "Nunca guardes los fragmentos de la bóveda de distintos dispositivos en el mismo lugar";
 "backupSaveButton" = "Guardar respaldo";
@@ -1123,6 +1127,7 @@
 "operatorFeesError" = "La comisión del operador no puede estar vacía si se indica un proveedor";
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
 "optional" = "(opcional)";
+"optionalPasswordProtectBackup" = "Protección opcional con contraseña de tu bóveda";
 "other" = "Otro";
 "overview" = "Resumen";
 "pair" = "Emparejar";
@@ -1133,8 +1138,8 @@
 "passcodeAutoLockTitle" = "Bloqueo automático";
 "passcodeBackupPromptBackUpNow" = "Crear copia ahora";
 "passcodeBackupPromptHasBackup" = "Ya tengo una copia de seguridad";
-"passcodeBackupPromptSubtitle" = "Al activar un código de acceso, tus fragmentos de clave se cifran con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia de seguridad .vult es la única forma de recuperarlos. El código de acceso en sí no se puede recuperar ni restablecer.";
-"passcodeBackupPromptSubtitleHighlightBackup" = "copia de seguridad .vult es la única forma de recuperarlos.";
+"passcodeBackupPromptSubtitle" = "Al activar un código de acceso, tus fragmentos de clave se cifran con una clave guardada en este dispositivo. Si esa clave se pierde, solo una copia de seguridad .vult puede restaurar los fragmentos de clave de este dispositivo. El código de acceso en sí no se puede recuperar ni restablecer.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "solo una copia de seguridad .vult puede restaurar los fragmentos de clave de este dispositivo.";
 "passcodeBackupPromptSubtitleHighlightPasscode" = "no se puede recuperar ni restablecer.";
 "passcodeBackupPromptTitle" = "Primero haz una copia de tu bóveda";
 "passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
@@ -1818,6 +1823,7 @@
 "useDifferentEmail" = "Usar un correo diferente";
 "useExternalRecipient" = "Usar destinatario externo";
 "useLocalMode" = "Usar modo local";
+"usePassword" = "Usar contraseña";
 "useStandardMode" = "Usar modo estándar";
 "utxoPlanDustAmountError" = "Lo que quedaría para el destinatario está por debajo del límite de polvo de la red. Envía una cantidad mayor o reduce la tarifa de red para que quede más por enviar.";
 "utxoPlanFailedError" = "No se pudo preparar esta transacción (%@). Prueba con otra cantidad o reduce la tarifa de red.";
