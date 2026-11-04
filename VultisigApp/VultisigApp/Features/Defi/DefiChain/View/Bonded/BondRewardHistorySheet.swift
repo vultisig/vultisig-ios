@@ -3,9 +3,10 @@
 //  VultisigApp
 //
 //  "Total Rewards Earned": the live Upcoming share plus one dated row per
-//  past churn this vault was a bond provider for, newest first. Opened from
-//  the bonded node card's Last Reward cell — shared by THOR and Maya, since
-//  both feed it the same `BondRewardHistoryEntry` shape.
+//  past reward, newest first. Opened from the bonded node card's Last Reward
+//  cell (THOR and Maya, one row per churn) and from the TCY stake card's
+//  Estimated Reward cell (one row per daily payout) — all feed it the same
+//  `BondRewardHistoryEntry` shape.
 //
 
 import SwiftUI
@@ -46,7 +47,7 @@ struct BondRewardHistorySheet: View {
                 .font(Theme.fonts.priceTitle1)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            Text(String(format: "rewardHistoryNodeAddress".localized, viewModel.node.node.address.truncatedAddress))
+            Text(viewModel.subtitle)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
         }
@@ -56,8 +57,11 @@ struct BondRewardHistorySheet: View {
     @ViewBuilder
     private var historyList: some View {
         ScrollView {
-            VStack(spacing: 12) {
-                upcomingRow
+            // Lazy: TCY staking pays daily, so its history runs to hundreds of rows.
+            LazyVStack(spacing: 12) {
+                if let upcomingAmount = viewModel.upcomingAmount {
+                    upcomingRow(upcomingAmount)
+                }
 
                 if viewModel.isLoading, viewModel.history.isEmpty {
                     ProgressView()
@@ -70,7 +74,7 @@ struct BondRewardHistorySheet: View {
                 } else {
                     ForEach(viewModel.history) { entry in
                         row(amount: entry.amount, amountPrefix: nil) {
-                            datePill(entry.churnDate)
+                            datePill(entry.date)
                         }
                     }
                 }
@@ -79,8 +83,8 @@ struct BondRewardHistorySheet: View {
         }
     }
 
-    private var upcomingRow: some View {
-        row(amount: viewModel.upcomingAmount, amountPrefix: "~") {
+    private func upcomingRow(_ amount: Decimal) -> some View {
+        row(amount: amount, amountPrefix: "~") {
             upcomingBadge
         }
     }

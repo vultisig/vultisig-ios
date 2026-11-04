@@ -17,6 +17,8 @@ struct DefiChainStakedPositionView: View {
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
     var onTransfer: () -> Void
+    /// Makes the Estimated Reward cell a button into the payout history.
+    var onShowRewardHistory: (() -> Void)?
 
     var stakedAmount: String {
         AmountFormatter.formatCryptoAmount(value: position.amount, coin: position.coin)
@@ -84,7 +86,8 @@ struct DefiChainStakedPositionView: View {
     }
 
     var hasAPR: Bool { position.apr != nil }
-    var hasEstimatedReward: Bool { position.estimatedReward != nil }
+    /// The TCY stake keeps the cell without an estimate, since it is the way into the payout history.
+    var hasEstimatedReward: Bool { position.estimatedReward != nil || onShowRewardHistory != nil }
     var hasNextPayout: Bool { position.nextPayout != nil }
 
     var isCompound: Bool { position.type == .compound }
@@ -195,7 +198,21 @@ struct DefiChainStakedPositionView: View {
         }
     }
 
+    @ViewBuilder
     var estimatedRewardView: some View {
+        if let onShowRewardHistory {
+            Button(action: onShowRewardHistory) {
+                estimatedRewardCell(showsChevron: true)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("totalRewardsEarned".localized)
+        } else {
+            estimatedRewardCell(showsChevron: false)
+        }
+    }
+
+    func estimatedRewardCell(showsChevron: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Icon(.trophy, color: Theme.colors.textTertiary, size: 16)
@@ -203,10 +220,19 @@ struct DefiChainStakedPositionView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
             }
-            if let estimatedReward = position.estimatedReward, let rewardCoin = position.rewardCoin {
-                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: rewardCoin))
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textSecondary)
+            HStack(spacing: 4) {
+                if let estimatedReward = position.estimatedReward, let rewardCoin = position.rewardCoin {
+                    HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: rewardCoin))
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                } else {
+                    Text("—")
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
+                if showsChevron {
+                    Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
+                }
             }
         }
     }
