@@ -1329,7 +1329,7 @@
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
-"reshareVault" = "Ponovno podijelite trezor s novim uređajima";
+"reshareVault" = "Ponovno podijelite trezor s novom skupinom uređaja";
 "reshareVaultSubtitle" = "Ažurirajte postavke svog trezora. Dodajte ili uklonite uređaje ili osvježite udjele.";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
 "resolvingRecipientName" = "Razrješavanje naziva…";
@@ -1437,7 +1437,7 @@
 "securityScannerTransactionNotScanned" = "Transakciju nije skenirao";
 "securityScannerTransactionScannedBy" = "Transakcija skenirana";
 "securityScannerTransactionScanning" = "Skeniranje…";
-"securitySettingsSubtitle" = "Upravljajte biometrijom za brzo potpisivanje";
+"securitySettingsSubtitle" = "Upravljajte svojim pristupnim kodom";
 "seedPhraseAlreadyImported" = "Seed fraza već uvezena";
 "seedPhraseAlreadyImportedDescription" = "Molimo uvezite drugu seed frazu";
 "seedPhraseImportTip" = "Savjet: Možete koristiti preglednik kao uređaj";
