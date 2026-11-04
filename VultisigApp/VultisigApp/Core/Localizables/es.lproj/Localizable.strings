@@ -628,7 +628,6 @@
 "homeDisplayCombinedTitle" = "Billetera + DeFi";
 "homeDisplaySeparateDescription" = "La pestaña Billetera muestra solo el saldo de tu billetera y la pestaña DeFi muestra tu saldo DeFi.";
 "homeDisplaySeparateTitle" = "Billetera y DeFi por separado";
-"homeDisplaySubtitle" = "Edita cómo se muestra el saldo de la billetera";
 "homeSwipeHintDescription" = "Desliza a la izquierda o a la derecha para moverte entre las pestañas de billetera y DeFi.";
 "homeSwipeHintTitle" = "Desliza para cambiar";
 "howItWorks" = "Cómo funciona";

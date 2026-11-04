@@ -628,7 +628,6 @@
 "homeDisplayCombinedTitle" = "Novčanik + DeFi";
 "homeDisplaySeparateDescription" = "Kartica Novčanik prikazuje samo stanje novčanika, a kartica DeFi vaše DeFi stanje.";
 "homeDisplaySeparateTitle" = "Novčanik i DeFi odvojeno";
-"homeDisplaySubtitle" = "Uredite prikaz stanja novčanika";
 "homeSwipeHintDescription" = "Povucite lijevo ili desno za prelazak između kartica novčanika i DeFi-ja.";
 "homeSwipeHintTitle" = "Povucite za promjenu";
 "howItWorks" = "Kako to radi";

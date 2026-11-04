@@ -129,7 +129,8 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
     @ViewBuilder
     var grid: some View {
         let spacing: CGFloat = 16
-        let gridItem = GridItem(.flexible(), spacing: spacing)
+        // Top-aligned: a tile with a subtitle is taller than its row neighbours.
+        let gridItem = GridItem(.flexible(), spacing: spacing, alignment: .top)
         // Keyed on the section's own type, NOT the whole value: `AssetSection`
         // hashes its asset array, so `id: \.self` changed the section's identity
         // on every catalog update and keystroke. SwiftUI then tore down and

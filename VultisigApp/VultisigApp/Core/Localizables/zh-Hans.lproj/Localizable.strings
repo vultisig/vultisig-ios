@@ -628,7 +628,6 @@
 "homeDisplayCombinedTitle" = "钱包 + DeFi";
 "homeDisplaySeparateDescription" = "钱包标签页仅显示钱包余额，DeFi 标签页显示 DeFi 余额。";
 "homeDisplaySeparateTitle" = "钱包与 DeFi 分开显示";
-"homeDisplaySubtitle" = "编辑钱包余额显示";
 "homeSwipeHintDescription" = "向左或向右滑动，在钱包和 DeFi 标签页之间切换。";
 "homeSwipeHintTitle" = "滑动切换";
 "howItWorks" = "工作原理";

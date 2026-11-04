@@ -18,9 +18,10 @@ import Foundation
 struct CatalogToken: Equatable, Sendable, Codable {
     let meta: CoinMeta
     let verification: TokenVerification
-    /// Discriminator of the provider that offered this token (`kind`), for
-    /// logging / debugging. Dedup is by `meta.uniqueId`, so colliding
-    /// `sourceKind`s don't affect merge behaviour.
+    /// Discriminator of the provider that won this token (`kind`). Browse caps
+    /// and the swap token cache's secured-asset exclusion key on it. Dedup is
+    /// by `meta.uniqueId`, so colliding `sourceKind`s don't affect merge
+    /// behaviour.
     let sourceKind: String
 
     init(meta: CoinMeta, verification: TokenVerification, sourceKind: String) {

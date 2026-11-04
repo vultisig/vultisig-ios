@@ -106,7 +106,6 @@ struct VaultSettingsScreen: View {
     enum Row {
         case vaultDetails
         case editVault
-        case homeDisplay
         case referralCode
         case fastSigningBiometrics
         case security
@@ -118,7 +117,7 @@ struct VaultSettingsScreen: View {
     }
 
     var vaultManagementRows: [Row] {
-        var rows: [Row] = [.vaultDetails, .editVault, .homeDisplay, .referralCode]
+        var rows: [Row] = [.vaultDetails, .editVault, .referralCode]
         if vault.isFastVault {
             rows.append(.fastSigningBiometrics)
         }
@@ -158,8 +157,6 @@ struct VaultSettingsScreen: View {
             vaultDetails
         case .editVault:
             editVault
-        case .homeDisplay:
-            homeDisplay
         case .referralCode:
             referralCode
         case .fastSigningBiometrics:
@@ -206,20 +203,6 @@ struct VaultSettingsScreen: View {
                 titleStyle: .footnote
             )
         }
-    }
-
-    var homeDisplay: some View {
-        Button {
-            router.navigate(to: SettingsRoute.homeDisplay)
-        } label: {
-            SettingsCommonOptionView(
-                icon: .gridLayout7,
-                title: "homeDisplay".localized,
-                subtitle: "homeDisplaySubtitle".localized,
-                titleStyle: .footnote
-            )
-        }
-        .accessibilityIdentifier(AccessibilityID.Settings.homeDisplayCell)
     }
 
     var referralCode: some View {

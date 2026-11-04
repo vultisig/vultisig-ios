@@ -628,7 +628,6 @@
 "homeDisplayCombinedTitle" = "Carteira + DeFi";
 "homeDisplaySeparateDescription" = "A aba Carteira mostra apenas o saldo da carteira e a aba DeFi mostra o saldo DeFi.";
 "homeDisplaySeparateTitle" = "Carteira e DeFi separados";
-"homeDisplaySubtitle" = "Editar a exibição do saldo da carteira";
 "homeSwipeHintDescription" = "Deslize para a esquerda ou para a direita para alternar entre as abas da carteira e DeFi.";
 "homeSwipeHintTitle" = "Deslize para alternar";
 "howItWorks" = "Como funciona";
