@@ -30,10 +30,13 @@ struct VaultBackupPasswordOptionsScreen: View {
             origin: origin
         ) {
             Screen {
-                VStack(spacing: 36) {
-                    icon
-                    textContent
-                    Spacer()
+                VStack(spacing: 12) {
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 36) {
+                            icon
+                            textContent
+                        }
+                    }
                     buttons
                 }
             }
@@ -43,26 +46,25 @@ struct VaultBackupPasswordOptionsScreen: View {
     }
 
     var icon: some View {
-        Image(systemName: "person.badge.key")
-            .font(Theme.fonts.title1)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .frame(width: 64, height: 64)
+        Icon(.lockPassword, color: Theme.colors.textPrimary, size: 32)
+            .padding(16)
             .background(Theme.colors.bgSurface2)
-            .cornerRadius(Theme.radius.lg)
+            .clipShape(Theme.radius.lg.shape)
     }
 
     var textContent: some View {
         VStack(spacing: 16) {
             Text("backupOptionsTitle".localized)
-                .font(Theme.fonts.title2)
+                .settingsText(.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
 
             boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: .lockFilled)
 
-            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: .folderLock)
+            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: .folders)
 
-            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: .fileAlert)
+            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: .triangleWarningFilled)
         }
     }
 
@@ -76,10 +78,15 @@ struct VaultBackupPasswordOptionsScreen: View {
                 $0.foregroundColor = Theme.colors.textPrimary
                 $0.font = Theme.fonts.footnote
             }
+            .settingsText(.footnote)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: 325)
-        .containerStyle(padding: 16, bgColor: Theme.colors.bgSurface1)
-
+        .padding(16)
+        .frame(maxWidth: 327)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(Theme.radius.lg.shape)
+        .overlay(Theme.radius.lg.shape.strokeBorder(Theme.colors.borderLight, lineWidth: 1))
     }
 
     var buttons: some View {
@@ -91,13 +98,13 @@ struct VaultBackupPasswordOptionsScreen: View {
     }
 
     var withoutPasswordButton: some View {
-        PrimaryButton(title: "backupWithoutPassword") {
+        PrimaryButton(title: "backupWithoutPassword", size: .compact) {
             presentFileExporter = true
         }
     }
 
     var withPasswordButton: some View {
-        PrimaryButton(title: "usePassword", type: .secondary) {
+        PrimaryButton(title: "backupWithPassword", type: .secondary, size: .compact) {
             router.navigate(to: VaultRoute.backupPasswordScreen(
                 tssType: tssType,
                 backupType: backupType,

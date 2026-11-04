@@ -35,16 +35,14 @@ struct VaultBackupPasswordScreen: View {
             origin: origin
         ) {
             Screen {
-                VStack {
-                    passwordField
-                    Spacer()
-                    VStack(spacing: 16) {
-                        disclaimer
-                        saveButton
+                VStack(spacing: 12) {
+                    ScrollView(showsIndicators: false) {
+                        passwordField
                     }
+                    saveButton
                 }
             }
-            .screenTitle("backup".localized)
+            .screenEdgeInsets(ScreenEdgeInsets(top: 3))
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -66,27 +64,39 @@ struct VaultBackupPasswordScreen: View {
 
     @ViewBuilder
     var saveButton: some View {
-        PrimaryButton(title: "save") {
+        PrimaryButton(title: "deviceBackupPasswordButton", size: .compactSemibold) {
             onSave()
         }
     }
 
     var passwordField: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
-                .font(Theme.fonts.bodySMedium)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("deviceBackupPasswordTitle".localized)
+                .settingsText(.largeTitle)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
-            textfield
-            verifyTextfield
+            InfoBannerView(
+                description: "PasswordCannotBeReset".localized + "\n" + "backupPasswordDisclaimer".localized,
+                type: .warning,
+                leadingIcon: nil,
+                trailingIcon: .circleInfo,
+                appearance: .settings
+            )
+
+            VStack(spacing: 8) {
+                textfield
+                verifyTextfield
+            }
+            .padding(.top, 13)
         }
     }
 
     var textfield: some View {
-        HiddenTextField(placeholder: "enterPassword",
+        HiddenTextField(placeholder: "settingsEnterPassword",
                         password: $backupViewModel.encryptionPassword,
-                        errorMessage: passwordErrorMessage)
-            .padding(.top, 8)
+                        errorMessage: passwordErrorMessage,
+                        isFocused: passwordFieldFocused)
             .focused($passwordFieldFocused)
             .onSubmit {
                 if !backupViewModel.encryptionPassword.isEmpty {
@@ -96,15 +106,16 @@ struct VaultBackupPasswordScreen: View {
     }
 
     var verifyTextfield: some View {
-        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword, errorMessage: passwordVerifyErrorMessage)
+        HiddenTextField(
+            placeholder: "settingsReEnterPassword",
+            password: $verifyPassword,
+            errorMessage: passwordVerifyErrorMessage,
+            isFocused: passwordVerifyFieldFocused
+        )
             .focused($passwordVerifyFieldFocused)
             .onSubmit {
                 onSave()
             }
-    }
-
-    var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("backupPasswordDisclaimer", comment: ""))
     }
 
     func onSave() {

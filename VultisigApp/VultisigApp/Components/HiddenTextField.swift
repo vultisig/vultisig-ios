@@ -12,6 +12,7 @@ struct HiddenTextField: View {
     @Binding var password: String
     var showHideOption: Bool = true
     var errorMessage: String
+    var isFocused: Bool = false
 
     @State var isPasswordVisible: Bool = false
 
@@ -44,14 +45,18 @@ struct HiddenTextField: View {
                 button
             }
         }
-        .frame(height: 56)
+        .frame(height: 52)
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(Theme.radius.md)
-        .overlay(
-            Theme.radius.md.shape
-                .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
-        )
+        .clipShape(Theme.radius.lg.shape)
+        .overlay(Theme.radius.lg.shape.strokeBorder(borderColor, lineWidth: 1))
+    }
+
+    private var borderColor: Color {
+        if !errorMessage.isEmpty {
+            return Theme.colors.alertError
+        }
+        return isFocused ? Theme.colors.borderNormal : Theme.colors.borderExtraLight
     }
 
     var textfield: some View {
@@ -74,7 +79,7 @@ struct HiddenTextField: View {
         }
         .submitLabel(.done)
         .colorScheme(.dark)
-        .font(Theme.fonts.bodyMMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundStyle(Theme.colors.textPrimary)
     }
 
@@ -86,8 +91,7 @@ struct HiddenTextField: View {
                 }
             },
             label: {
-                Image(systemName: isPasswordVisible ? "eye": "eye.slash")
-                    .foregroundStyle(Theme.colors.textPrimary)
+                Icon(isPasswordVisible ? .eye : .eyeClosed, color: Theme.colors.textPrimary, size: 20)
             }
         )
         .buttonStyle(.plain)

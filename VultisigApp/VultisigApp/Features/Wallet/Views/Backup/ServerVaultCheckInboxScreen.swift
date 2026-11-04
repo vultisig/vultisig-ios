@@ -18,44 +18,46 @@ struct ServerVaultCheckInboxScreen: View {
 
     var body: some View {
         Screen {
-            VStack {
-                Spacer()
-                VStack(spacing: 40) {
-                    VultisigImage("check-inbox")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 365)
+            VStack(spacing: 0) {
+                VultisigImage("check-inbox")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 250)
 
-                    VStack(spacing: 16) {
-                        Text("backupShareSent")
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .font(Theme.fonts.title1)
-                        Text("weJustSentYourBackupShare")
-                            .foregroundStyle(Theme.colors.textTertiary)
-                            .font(Theme.fonts.bodySMedium)
-                            .multilineTextAlignment(.center)
-                        Button {
-                            onCheckEmail()
-                        } label: {
-                            Text("checkEmail")
-                                .foregroundStyle(Theme.colors.textPrimary)
-                                .font(Theme.fonts.bodySMedium)
-                                .underline()
-                        }
-                        .showIf(showCheckInboxButton)
-                        .buttonStyle(.plain)
+                Spacer()
+
+                VStack(spacing: 16) {
+                    Text("backupShareSent")
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.title1)
+                    Text("weJustSentYourBackupShare")
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .settingsText(.bodyS)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 275)
+                    Button {
+                        onCheckEmail()
+                    } label: {
+                        Text("checkEmail")
+                            .foregroundStyle(Theme.colors.textSecondary)
+                            .settingsText(.bodyS)
+                            .underline()
                     }
-                    .padding(.horizontal, 16)
+                    .showIf(showCheckInboxButton)
+                    .buttonStyle(.plain)
                 }
+
                 Spacer()
 
                 PrimaryButton(
                     title: "close".localized,
-                    type: .secondary
+                    type: .secondary,
+                    size: .compactSemibold
                 ) {
                     onClose()
                     isPresented.toggle()
                 }
+                .padding(.horizontal, 17)
             }
         }
         .screenTitle("serverBackup".localized)
