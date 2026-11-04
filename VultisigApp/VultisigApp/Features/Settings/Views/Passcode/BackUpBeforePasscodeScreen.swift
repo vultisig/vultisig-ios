@@ -40,6 +40,7 @@ struct BackUpBeforePasscodeScreen: View {
             VStack(spacing: 32) {
                 VaultBackupContent(title: "passcodeBackupPromptTitle".localized, titleSpacing: 12) {
                     Text(subtitle)
+                        .settingsText(.bodyS)
                 }
 
                 Spacer()
