@@ -2,19 +2,26 @@
 //  BondRewardHistoryEntry.swift
 //  VultisigApp
 //
-//  One past churn's realized reward for a bond provider — the "dated row"
-//  the Total Rewards Earned sheet renders below the live Upcoming row.
-//  Chain-agnostic: THOR and Maya both produce this from their own node
-//  details response via `BondRewardMath`.
+//  One past realized reward — the "dated row" the Total Rewards Earned sheet
+//  renders below the live Upcoming row. THOR and Maya bonds produce it per
+//  churn via `BondRewardMath`; TCY staking produces it per daily payout.
 //
 
 import Foundation
 
 struct BondRewardHistoryEntry: Identifiable, Equatable, Sendable {
-    var id: Int { churnHeight }
-    let churnHeight: Int
-    let churnDate: Date
+    /// Unique within one history: the churn height for a bond, the payout's
+    /// unix second for TCY staking (Midgard sends no height for those).
+    let id: Int
+    let date: Date
+    /// Base units of the sheet's coin.
     let amount: Decimal
+}
+
+extension BondRewardHistoryEntry {
+    init(churnHeight: Int, churnDate: Date, amount: Decimal) {
+        self.init(id: churnHeight, date: churnDate, amount: amount)
+    }
 }
 
 /// The outcome of one historical `?height=` query, distinguishing a

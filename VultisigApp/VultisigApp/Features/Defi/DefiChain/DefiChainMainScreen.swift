@@ -25,10 +25,11 @@ struct DefiChainMainScreen: View {
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @StateObject private var screenModel: DefiChainScreenModel
     @State private var showPositionSelection = false
-    /// Constructed once, when the user taps Last Reward — held here (not
-    /// built inline in the `crossPlatformSheet` content closure) so a
-    /// parent re-render while the sheet is open reuses the same instance
-    /// instead of discarding its loaded history and restarting the fetch.
+    /// Constructed once, when the user taps a bonded node's Last Reward or the
+    /// TCY stake's Estimated Reward — held here (not built inline in the
+    /// `crossPlatformSheet` content closure) so a parent re-render while the
+    /// sheet is open reuses the same instance instead of discarding its loaded
+    /// history and restarting the fetch.
     @State private var rewardHistoryViewModel: BondRewardHistoryViewModel?
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -210,6 +211,7 @@ struct DefiChainMainScreen: View {
                             ))
                         },
                         onTransfer: { onTransfer(position: $0) },
+                        onShowRewardHistory: { onShowTcyRewardHistory(position: $0) },
                         emptyStateView: { emptyStateView }
                     )
                 }
@@ -374,6 +376,15 @@ struct DefiChainMainScreen: View {
             action: .send(coin: coin, hasPreselectedCoin: true),
             vault: vault
         ))
+    }
+
+    func onShowTcyRewardHistory(position: StakePosition) {
+        guard let runeCoin = vault.runeCoin, let tcyCoin = vault.tcyCoin else { return }
+        rewardHistoryViewModel = BondRewardHistoryViewModel(
+            tcyStakerAddress: tcyCoin.address,
+            runeCoin: runeCoin,
+            estimatedReward: position.estimatedReward
+        )
     }
 
     /// Opens the deposit form for one curated vault.

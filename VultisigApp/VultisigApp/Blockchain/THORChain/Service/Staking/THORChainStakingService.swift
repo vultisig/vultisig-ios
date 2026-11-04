@@ -496,3 +496,32 @@ extension THORChainStakingService {
         return text.contains("TCYStaker doesn't exist")
     }
 }
+
+// MARK: - TCY reward history
+
+extension THORChainStakingService {
+
+    func fetchTcyRewardHistory(address: String) async throws -> [BondRewardHistoryEntry] {
+        Self.makeTcyRewardHistory(from: try await fetchTcyUserDistributions(address: address).distributions)
+    }
+
+    /// Newest first. Midgard dates payouts in unix seconds, not the churns' nanoseconds, and sends them unsorted.
+    static func makeTcyRewardHistory(
+        from distributions: [TcyUserDistributionsResponse.TcyUserDistribution]?
+    ) -> [BondRewardHistoryEntry] {
+        (distributions ?? [])
+            .compactMap { row -> BondRewardHistoryEntry? in
+                guard let amount = UInt64(row.amount), let seconds = Int(row.date) else {
+                    Log.chain.other.warning("Skipped TCY reward row with unparseable amount or date: \(row.amount), \(row.date)")
+                    return nil
+                }
+                guard amount > 0, seconds > 0 else { return nil }
+                return BondRewardHistoryEntry(
+                    id: seconds,
+                    date: Date(timeIntervalSince1970: TimeInterval(seconds)),
+                    amount: Decimal(amount)
+                )
+            }
+            .sorted { $0.date > $1.date }
+    }
+}

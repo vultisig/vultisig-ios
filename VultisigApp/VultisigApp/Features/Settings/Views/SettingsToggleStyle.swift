@@ -42,9 +42,6 @@ struct SettingsToggleStyle: ToggleStyle {
         }
     }
 
-    private static let offTrack = Color(hex: "7D909E")
-    private static let knob = Color(hex: "FFFFFF")
-
     var size: Size = .small
 
     func makeBody(configuration: Configuration) -> some View {
@@ -52,10 +49,10 @@ struct SettingsToggleStyle: ToggleStyle {
             configuration.isOn.toggle()
         } label: {
             Capsule(style: .circular)
-                .fill(configuration.isOn ? size.onTrack : Self.offTrack)
+                .fill(configuration.isOn ? size.onTrack : Theme.colors.textTertiary)
                 .overlay(alignment: configuration.isOn ? .trailing : .leading) {
                     Circle()
-                        .fill(Self.knob)
+                        .fill(Theme.colors.textPrimary)
                         .frame(width: size.knobDiameter, height: size.knobDiameter)
                         .padding(size.knobInset)
                 }
