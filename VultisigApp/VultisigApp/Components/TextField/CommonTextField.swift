@@ -25,6 +25,14 @@ enum CommonTextFieldAppearance {
     case standard, settings
 }
 
+private struct CommonTextFieldMetrics {
+    let height: CGFloat
+    let textFont: Font
+    let horizontalPadding: CGFloat
+    let outerPadding: CGFloat
+    let cornerRadius: CornerRadius
+}
+
 struct CommonTextField<TrailingView: View>: View {
     @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
@@ -42,7 +50,7 @@ struct CommonTextField<TrailingView: View>: View {
 
     let trailingView: () -> TrailingView
 
-    private static var settingsHeight: CGFloat { 52 }
+    private let settingsHeight: CGFloat = 52
 
     init(
         text: Binding<String>,
@@ -123,7 +131,7 @@ struct CommonTextField<TrailingView: View>: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     textFieldContainer
-                        .font(textFont)
+                        .font(metrics.textFont)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .submitLabel(.done)
                         .colorScheme(.dark)
@@ -135,13 +143,13 @@ struct CommonTextField<TrailingView: View>: View {
                 }
                 .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
-                .padding(.horizontal, horizontalPadding)
-                .background(backgroundColor)
-                .cornerRadius(cornerRadius)
+                .padding(.horizontal, metrics.horizontalPadding)
+                .background(Theme.colors.bgSurface1)
+                .cornerRadius(metrics.cornerRadius)
                 .overlay(border)
                 .autocorrectionDisabled()
                 .borderlessTextFieldStyle()
-                .padding(outerPadding)
+                .padding(metrics.outerPadding)
 
                 if let error, showErrorText {
                     Text(error.localized)
@@ -267,43 +275,47 @@ struct CommonTextField<TrailingView: View>: View {
     }
 
     var height: CGFloat {
-        guard appearance == .standard else { return Self.settingsHeight }
+        metrics.height
+    }
+
+    private var standardHeight: CGFloat {
         switch size {
         case .normal:
-            return 56
+            56
         case .small:
-            return 36
+            36
         }
     }
 
-    var textFont: Font {
-        appearance == .settings ? Theme.fonts.bodySMedium : Theme.fonts.bodyMRegular
-    }
-
-    var horizontalPadding: CGFloat {
-        appearance == .settings ? 16 : 12
-    }
-
-    var outerPadding: CGFloat {
-        appearance == .settings ? 0 : 1
-    }
-
-    var backgroundColor: Color {
-        appearance == .settings ? Color(hex: "051937") : Theme.colors.bgSurface1
-    }
-
-    var cornerRadius: CornerRadius {
-        appearance == .settings ? Theme.radius.lg : Theme.radius.md
+    private var metrics: CommonTextFieldMetrics {
+        switch appearance {
+        case .standard:
+            CommonTextFieldMetrics(
+                height: standardHeight,
+                textFont: Theme.fonts.bodyMRegular,
+                horizontalPadding: 12,
+                outerPadding: 1,
+                cornerRadius: Theme.radius.md
+            )
+        case .settings:
+            CommonTextFieldMetrics(
+                height: settingsHeight,
+                textFont: Theme.fonts.bodySMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.lg
+            )
+        }
     }
 
     @ViewBuilder
     var border: some View {
         switch appearance {
         case .standard:
-            cornerRadius.shape
+            metrics.cornerRadius.shape
                 .stroke(borderColor, lineWidth: borderWidth)
         case .settings:
-            cornerRadius.shape
+            metrics.cornerRadius.shape
                 .strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1)
         }
     }
