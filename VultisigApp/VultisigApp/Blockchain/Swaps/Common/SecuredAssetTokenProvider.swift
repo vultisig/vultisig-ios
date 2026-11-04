@@ -2,18 +2,19 @@
 //  SecuredAssetTokenProvider.swift
 //  VultisigApp
 //
-//  Destination-token source for the swap coin picker that surfaces the
-//  THORChain secured-asset universe (from `SecuredAssetCatalog`) so a user
-//  can discover and swap *into* any secured asset — not only the ones the
-//  vault already holds. Every secured asset lives on `.thorChain` (its denom
-//  is stored as the token's `contractAddress`), so this provider emits a
-//  single bucket keyed to `.thorChain` and an empty bucket for every other
-//  chain. The picker aggregates it alongside the curated + SwapKit + native
-//  pool lists via `DestinationTokenRegistry`, deduping by `CoinMeta.uniqueId`
-//  (so a held secured coin collapses onto its catalog twin but still shows
-//  its balance).
+//  Token source that surfaces the THORChain secured-asset universe (from
+//  `SecuredAssetCatalog`) so a user can discover, add and swap *into* any
+//  secured asset — not only the ones the vault already holds. Every secured
+//  asset lives on `.thorChain` (its denom is stored as the token's
+//  `contractAddress`), so this provider emits a single bucket keyed to
+//  `.thorChain` and an empty bucket for every other chain. Consumers dedupe by
+//  `CoinMeta.uniqueId`, so a held secured coin collapses onto its catalog twin
+//  but still shows its balance.
 //
-//  Registered once at app startup (see `VultisigApp.init`).
+//  `shared` is registered at app startup (see `VultisigApp.init`) into both
+//  the swap destination registry and the wallet `appCatalog`, and the swap
+//  source picker reads it directly, so every surface shares one cache and one
+//  fetch.
 //
 
 import Foundation
@@ -21,7 +22,11 @@ import Foundation
 @MainActor
 final class SecuredAssetTokenProvider {
 
-    let kind: String = "thorchainSecured"
+    static let shared = SecuredAssetTokenProvider()
+
+    nonisolated static let kind = "thorchainSecured"
+
+    let kind: String = SecuredAssetTokenProvider.kind
     // The THORChain secured-asset universe is a curated catalog.
     let verification: TokenVerification = .curated
 
@@ -48,11 +53,11 @@ final class SecuredAssetTokenProvider {
     /// fresh; otherwise re-derives from the catalog.
     ///
     /// The catalog never throws (it falls back to a small static list when the
-    /// live `/securedassets` fetch fails), so the bucket is always populated.
-    /// The underlying network fetch is itself governed by
-    /// `ThorchainService.fetchSecuredAssets`'s 5-minute cache, so `forceRefresh`
-    /// bypasses this provider's TTL to re-derive the bucket while staying cheap
-    /// and offline-safe.
+    /// live `/securedassets` or `/pools` fetch fails), so the bucket is always
+    /// populated. The underlying network fetches are themselves governed by the
+    /// 5-minute caches of `ThorchainService.fetchSecuredAssets` and
+    /// `fetchLPPools`, so `forceRefresh` bypasses this provider's TTL to
+    /// re-derive the bucket while staying cheap and offline-safe.
     private func ensureSnapshot(forceRefresh: Bool) async -> DestinationTokenBucket {
         let now = Date()
         if !forceRefresh, let snapshot, now.timeIntervalSince(snapshot.fetchedAt) < cacheTTL {

@@ -21,9 +21,10 @@ class TokenSelectionViewModel: ObservableObject {
     /// Curated `TokensStore` presets not held/hidden (browse, after held). Always
     /// present synchronously — independent of the async provider fetch.
     @Published var preExistTokens: [CoinMeta] = []
-    /// Verified provider breadth for browse (1inch / Jupiter), deduped against
-    /// the local tokens above and capped to the best
-    /// `TokenSelectionLogic.browseTokensPerProvider` of EACH provider. Empty
+    /// Verified provider breadth for browse (1inch / Jupiter / THORChain
+    /// secured assets), deduped against the local tokens above and capped to
+    /// the best `TokenSelectionLogic.browseTokensPerProvider` of EACH provider
+    /// (secured assets are shown in full, see `cappedPerProvider`). Empty
     /// until the provider fetch lands. Search is not capped this way — it reads
     /// `searchableTokens`, which holds the full breadth.
     @Published var browseProviderTokens: [CoinMeta] = []
@@ -219,6 +220,9 @@ struct TokenSelectionLogic {
     ///
     /// Tokens with no known source share a single bucket rather than escaping
     /// the cap — an unattributed token should shrink the list, not uncap it.
+    ///
+    /// THORChain secured assets are never capped: the live list is a few dozen
+    /// assets, so a cap would hide its tail (e.g. ZEC) from browse.
     static func cappedPerProvider(
         _ tokens: [CoinMeta],
         sourceKindByUniqueId: [String: String],
@@ -227,6 +231,7 @@ struct TokenSelectionLogic {
         var shownPerSource: [String: Int] = [:]
         return tokens.filter { token in
             let source = sourceKindByUniqueId[token.uniqueId] ?? .empty
+            guard source != SecuredAssetTokenProvider.kind else { return true }
             let shown = shownPerSource[source, default: 0]
             guard shown < limit else { return false }
             shownPerSource[source] = shown + 1

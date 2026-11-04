@@ -18,8 +18,15 @@ final class SecuredAssetTokenProviderTests: XCTestCase {
 
     private enum StubError: Error { case unavailable }
 
+    /// Every pool the stubbed assets below belong to, all Available.
+    private static let availablePools = [
+        "BTC.BTC",
+        "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+        "GAIA.ATOM"
+    ]
+
     private func makeProvider(assets: [ThorchainSecuredAsset]) -> SecuredAssetTokenProvider {
-        SecuredAssetTokenProvider(catalog: SecuredAssetCatalog(fetch: { assets }))
+        SecuredAssetTokenProvider(catalog: SecuredAssetCatalog(fetch: { assets }, availablePools: { Self.availablePools }))
     }
 
     // MARK: - Bucket population
