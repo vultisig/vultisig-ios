@@ -10,27 +10,41 @@ import VultisigUIResources
 
 struct VultDiscountTierIcon: View {
     enum IconSize {
-        case big
         case small
+        /// Draws at exactly 36pt, where `.small` lays out at 42.
+        case settingsSmall
+        /// Draws at exactly 46pt.
+        case settingsBig
     }
     let tier: VultDiscountTier
     let size: IconSize
 
     var iconSize: CGFloat {
         switch size {
-        case .big:
+        case .settingsBig:
             46
-        case .small:
+        case .small, .settingsSmall:
             36
         }
     }
 
-    var borderWidth: CGFloat {
+    /// The glyphs have different aspect ratios, so only a fixed width keeps
+    /// the settings badges the same size in a column.
+    private var glyphWidth: CGFloat? {
         switch size {
-        case .big:
-            2
         case .small:
-            1
+            nil
+        case .settingsBig, .settingsSmall:
+            iconSize * 2 / 3
+        }
+    }
+
+    private var glyphPadding: CGFloat {
+        switch size {
+        case .small:
+            iconSize / 4
+        case .settingsBig, .settingsSmall:
+            iconSize / 6
         }
     }
 
@@ -38,8 +52,8 @@ struct VultDiscountTierIcon: View {
         Image(tier.icon)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(height: iconSize * 2 / 3)
-            .padding(iconSize / 4)
+            .frame(width: glyphWidth, height: iconSize * 2 / 3)
+            .padding(glyphPadding)
             .background(backgroundView.overlay(overlayView))
     }
 
@@ -53,7 +67,7 @@ struct VultDiscountTierIcon: View {
             .mask(
                 Circle()
                     .inset(by: 1)
-                    .stroke(lineWidth: borderWidth)
+                    .stroke(lineWidth: 1)
             )
     }
 

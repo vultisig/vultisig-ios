@@ -10,33 +10,31 @@ import VultisigUIResources
 
 struct BannerView<Content: View>: View {
     let bgImage: String
-    /// Defaults to the container step. **Every banner in the app takes it**,
-    /// including the collected-rewards banner nested inside the referral
-    /// section — that is a design decision, not an oversight: banners read as
-    /// banners at one radius, and this view's own 24pt padding keeps the two
-    /// edges apart where one sits inside another.
-    ///
-    /// The parameter stays as the seam for a future banner that genuinely has
-    /// to step down. There is no such call site today.
+    /// Defaults to the container step. Pass a smaller step when the banner sits
+    /// inside another surface, as the collected-rewards banner does.
     let radius: CornerRadius
+    let padding: CGFloat
     let content: () -> Content
 
     init(
         bgImage: String,
         radius: CornerRadius = Theme.radius.xl,
+        padding: CGFloat = 24,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.content = content
         self.bgImage = bgImage
         self.radius = radius
+        self.padding = padding
     }
 
     var body: some View {
         content()
-            .padding(24)
+            .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(image)
             .containerStyle(radius: radius)
+            .padding(-1) // Cancels containerStyle's outer gutter so the edges meet the neighbours'.
     }
 
     var image: some View {

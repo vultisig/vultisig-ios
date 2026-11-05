@@ -12,6 +12,8 @@ struct CounterView: View {
     let minimumValue: Int
 
     private var disabled: Bool { count == minimumValue }
+    private let cellHeight: CGFloat = 52
+    private let iconSize: CGFloat = 20
 
     init(count: Binding<Int>, minimumValue: Int) {
         self._count = count
@@ -19,51 +21,38 @@ struct CounterView: View {
     }
 
     var body: some View {
-        HStack {
-            counterButton(icon: "minus.circle") {
+        HStack(spacing: 8) {
+            counterButton(icon: .minus) {
                 count -= 1
             }
             .disabled(disabled)
             .opacity(disabled ? 0.2 : 1)
 
-            counterContainer {
-                Text("\(count)")
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(.clear)
-                    .font(Theme.fonts.bodyMMedium)
-            }
+            Text("\(count)")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(count < 1 ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(height: cellHeight)
+                .overlay(
+                    Theme.radius.md.shape
+                        .strokeBorder(Theme.colors.borderNormal, lineWidth: 1)
+                )
 
-            counterButton(icon: "plus.circle") {
+            counterButton(icon: .plus) {
                 count += 1
             }
         }
     }
 
-    func counterButton(icon: String, perform: @escaping () -> Void) -> some View {
+    func counterButton(icon: ImageResource, perform: @escaping () -> Void) -> some View {
         Button(action: perform) {
-            counterContainer {
-                Image(systemName: icon)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(Theme.colors.bgSurface1)
-                    .font(Theme.fonts.title2)
-            }
+            Icon(icon, color: Theme.colors.textPrimary, size: iconSize)
+                .frame(maxWidth: .infinity)
+                .frame(height: cellHeight)
+                .surface(Theme.colors.bgSurface1, radius: Theme.radius.md)
+                .contentShape(Theme.radius.md.shape)
         }
-    }
-
-    @ViewBuilder
-    func counterContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        ZStack {
-            content()
-        }
-        .foregroundStyle(Theme.colors.textPrimary)
-        .cornerRadius(Theme.radius.md)
-        .overlay(
-            Theme.radius.md.shape
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
-        .padding(1)
+        .buttonStyle(.plain)
     }
 }
 

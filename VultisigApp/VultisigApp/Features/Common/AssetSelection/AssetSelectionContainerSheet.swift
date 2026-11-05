@@ -57,6 +57,8 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
     @Binding var isPresented: Bool
     @Binding var searchText: String
     let elements: [AssetSection<SectionType, Asset>]
+    /// Off for pickers that apply the choice on tap, so there is nothing to confirm.
+    let showsConfirmButton: Bool
     var onSave: () -> Void
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
@@ -71,6 +73,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         isPresented: Binding<Bool>,
         searchText: Binding<String>,
         elements: [AssetSection<SectionType, Asset>],
+        showsConfirmButton: Bool = true,
         onSave: @escaping () -> Void,
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
         emptyStateBuilder: @escaping () -> EmptyStateView,
@@ -81,6 +84,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         self._isPresented = isPresented
         self._searchText = searchText
         self.elements = elements
+        self.showsConfirmButton = showsConfirmButton
         self.onSave = onSave
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
@@ -91,12 +95,21 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         content.sheetContainer()
     }
 
+    /// With no toolbar item the bar collapses, so this holds the title where it would sit.
+    private var contentTopInset: CGFloat {
+        #if os(iOS)
+        showsConfirmButton ? 0 : 70
+        #else
+        0
+        #endif
+    }
+
     var content: some View {
         AssetSelectionContainerView(
             title: title,
             subtitle: subtitle,
             searchText: $searchText,
-            insets: EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0),
+            insets: EdgeInsets(top: contentTopInset, leading: 16, bottom: 0, trailing: 0),
             elements: elements,
             cellBuilder: cellBuilder,
             emptyStateBuilder: emptyStateBuilder,
@@ -117,12 +130,14 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
                 }
             #endif
 
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: .check, type: .confirmation) {
-                    onSave()
-                }
-                .supportsLiquidGlass { view, isSupported in
-                    view.padding(.top, isSupported ? 0 : 16)
+            if showsConfirmButton {
+                CustomToolbarItem(placement: .trailing) {
+                    ToolbarButton(image: .check, type: .confirmation) {
+                        onSave()
+                    }
+                    .supportsLiquidGlass { view, isSupported in
+                        view.padding(.top, isSupported ? 0 : 16)
+                    }
                 }
             }
         }

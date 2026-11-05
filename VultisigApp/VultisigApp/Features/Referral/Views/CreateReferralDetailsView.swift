@@ -16,14 +16,19 @@ struct CreateReferralDetailsView: View {
 
     @State var showTooltip = false
 
+    private let tooltipWidth: CGFloat = 300
+    private let tooltipArrowFraction: CGFloat = 0.94
+
     var body: some View {
         Screen {
             VStack {
+                main
+                button
+            }
+            .overlay(alignment: .topTrailing) {
                 if showTooltip {
                     tooltip
                 }
-                main
-                button
             }
         }
         .screenTitle("createReferral".localized)
@@ -47,7 +52,7 @@ struct CreateReferralDetailsView: View {
 
     var main: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 14) {
                 pickReferralCode
                 separator
                 setExpiration
@@ -66,13 +71,14 @@ struct CreateReferralDetailsView: View {
             setExpirationTitle
             CounterView(count: $viewModel.expireInCount, minimumValue: 1)
             expirationDate
+                .padding(.top, 6)
         }
     }
 
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
             .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
+            .settingsText(.bodyS)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -81,12 +87,13 @@ struct CreateReferralDetailsView: View {
             title: "expirationDate",
             description1: getExpirationDate(),
             description2: "",
+            titleStyle: .bodyS,
             isPlaceholder: viewModel.expireInCount == 0
         )
     }
 
     var summary: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             getCell(
                 title: NSLocalizedString("registrationFee", comment: ""),
                 description1: "\(viewModel.getRegistrationFee()) RUNE",
@@ -104,11 +111,12 @@ struct CreateReferralDetailsView: View {
     }
 
     var separator: some View {
-        LinearSeparator()
+        Separator(color: Theme.colors.borderLight, opacity: 1)
+            .padding(.vertical, -0.5) // Takes the line out of the 14pt rhythm, as in the design.
     }
 
     var button: some View {
-        PrimaryButton(title: "createReferralCode") {
+        PrimaryButton(title: "createReferralCode", size: .compactSemibold) {
             Task {
                 guard let tx = await viewModel.verifyReferralEntries() else {
                     return
@@ -151,44 +159,49 @@ struct CreateReferralDetailsView: View {
     }
 
     var tooltip: some View {
-        VStack(alignment: .leading) {
-            Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundStyle(Theme.colors.textDark)
-                .font(Theme.fonts.bodyMMedium)
-
-             Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
-                .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
+        InfoTooltip(
+            title: "referralProgram".localized,
+            description: "referralProgramTooltipDescription".localized,
+            arrowXFraction: tooltipArrowFraction,
+            maxWidth: tooltipWidth
+        ) {
+            showTooltip = false
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
-        .background(Theme.colors.textPrimary)
-        .cornerRadius(Theme.radius.sm)
+        .frame(width: tooltipWidth)
+        .padding(.trailing, 4)
+        .offset(y: -13)
         .onTapGesture {
             showTooltip = false
         }
     }
 
-    private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
+    private func getCell(
+        title: String,
+        description1: String,
+        description2: String,
+        titleStyle: SettingsTextStyle = .footnote,
+        isPlaceholder: Bool
+    ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
+                .settingsText(titleStyle)
                 .foregroundStyle(Theme.colors.textTertiary)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 0) {
                 Text(description1)
+                    .settingsText(.bodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
 
                 if !description2.isEmpty {
                     Text(description2)
+                        .settingsText(.bodyS)
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
-        .font(Theme.fonts.bodySMedium)
     }
 
     private func setData() {

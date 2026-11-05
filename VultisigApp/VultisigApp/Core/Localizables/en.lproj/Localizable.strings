@@ -316,9 +316,9 @@
 "createFolder" = "Create Folder";
 "createNewVault" = "Create new Vault";
 "createQR" = "Create QR";
-"createReferral" = "Create referral";
+"createReferral" = "Create Referral";
 "createReferralCardTitle" = "Create Referral";
-"createReferralCode" = "Create referral code";
+"createReferralCode" = "Create Referral";
 "createVault" = "Create vault";
 "createYourCodeAndEarn" = "Create your own code and earn %@ on referred swaps";
 "Croatian" = "Croatian";
@@ -431,7 +431,7 @@
 "editFriendsReferral" = "Edit Friends Referral";
 "editPasswordHintSubtitle" = "This will be shown in case you forget your password";
 "editPasswordHintTitle" = "Edit password hint";
-"editReferral" = "Edit referral";
+"editReferral" = "Edit Referral";
 "editReferredCode" = "Edit referred code";
 "editVaults" = "Edit Vaults";
 "elements" = "Elements";
@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "Each device will create a new .vult backup that differs from the old backups";
 "newBackupsCreatedTitle" = "New backups will be created";
 "newChainDetected" = "New chain detected";
+"newExpirationDate" = "New expiration date:";
 "newUpdateAvailable" = "Update is available.";
 "newWalletNameDescription" = "You can always rename your vault later in the settings";
 "next" = "Next";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "This referral code doesn't have an alias set. Please check and try again.";
 "referralLaunchCodeLengthError" = "Referral code can be up to 4 characters";
 "referralNetworkError" = "Error while fetching referral data.";
+"referralOnboardingBannerDescription" = "Share your unique referral code to invite friends. They get a discount and the more they trade, the more you earn.";
 "referralOnboardingBannerTitle1" = "Invite friends. ";
 "referralOnboardingBannerTitle2" = "Earn rewards.\n";
 "referralOnboardingBannerTitle3" = "Save on fees.";
@@ -1392,8 +1394,8 @@
 "save" = "Save";
 "saveChanges" = "Save Changes";
 "savedAddresses" = "Saved Addresses";
-"saveOnSwaps" = "Save %@ on swaps";
-"saveReferral" = "Save referral";
+"saveOnSwaps" = "Save %@ on swaps now";
+"saveReferral" = "Save Referral";
 "saveReferralCardBody" = "Save a friend's referral code and save %@ on swaps.";
 "saveReferralCardTitle" = "Save Referral";
 "saveReferredCode" = "Save referred code";
@@ -1465,6 +1467,7 @@
 "selectToken" = "Select Token";
 "selectTokensSubtitle" = "Enable at least one token to view balances and manage positions.";
 "selectTokensTitle" = "Select tokens";
+"selectVault" = "Select vault";
 "selectVaults" = "Select Vaults";
 "selectVaultsToBackUpSubtitle" = "Choose whether to back up just this vault or all vaults in your app.";
 "selectVaultsToBackUpTitle" = "Select Vaults to Back Up";
@@ -1922,10 +1925,9 @@
 "Vote" = "Vote";
 "vult" = "$VULT";
 "vultDiscount" = "Discount: %d%%";
-"vultDiscountHeroSubtitle" = "receive a trading discount";
-"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT Discount Tiers";
 "vultDiscountTiersDescription" = "Hold $VULT to unlock lower trading fees.";
+"vultDiscountTiersThorguardBoost" = "Holding a ThorGuard raises your discount tier by one level, up to Platinum.";
 "vultiserverPassword" = "Vultiserver Password";
 "vultisig-referrals" = "Vultisig Referrals";
 "vultisigBrandName" = "Vultisig";

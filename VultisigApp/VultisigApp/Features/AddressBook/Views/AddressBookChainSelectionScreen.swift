@@ -18,52 +18,34 @@ struct AddressBookChainSelectionScreen: View {
         self._viewModel = StateObject(wrappedValue: AddressBookChainSelectionViewModel(vaultChains: vaultChains))
     }
 
-    var body: some View {
-        Screen {
-            VStack(spacing: 12) {
-                SearchTextField(value: $viewModel.searchText)
-                ScrollView(showsIndicators: false) {
-                    if !viewModel.filteredChains.isEmpty {
-                        list
-                    } else {
-                        emptyMessage
-                    }
-                }
-                .cornerRadius(Theme.radius.xl)
-            }
-        }
-        .screenTitle("selectChain".localized)
-        .screenBackButtonHidden()
-        .screenToolbar {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: .xmark) {
-                    isPresented.toggle()
-                }
-            }
-        }
-        .applySheetSize()
-        .onLoad(perform: viewModel.setup)
+    private var sections: [AssetSection<Int, AddressBookChainType>] {
+        viewModel.filteredChains.isEmpty ? [] : [AssetSection(assets: viewModel.filteredChains)]
     }
 
-    var list: some View {
-        LazyVStack(spacing: 0) {
-            ForEach(viewModel.filteredChains) { chain in
-                AddressBookChainCell(
-                    chain: chain,
-                    isSelected: selectedChain == chain
+    var body: some View {
+        AssetSelectionContainerSheet(
+            title: "selectChain".localized,
+            isPresented: $isPresented,
+            searchText: $viewModel.searchText,
+            elements: sections,
+            showsConfirmButton: false,
+            onSave: {},
+            cellBuilder: { chain, _ in
+                AssetSelectionGridCell(
+                    name: chain.name,
+                    ticker: .empty,
+                    logo: chain.icon,
+                    isSelected: .constant(selectedChain == chain)
                 ) {
                     selectedChain = chain
-                    isPresented.toggle()
+                    isPresented = false
                 }
-                GradientListSeparator()
-                    .showIf(chain != viewModel.filteredChains.last)
+            },
+            emptyStateBuilder: {
+                ChainNotFoundEmptyStateView()
             }
-        }
-    }
-
-    var emptyMessage: some View {
-        ErrorMessage(text: "noResultFound")
-            .padding(.top, 48)
+        )
+        .onLoad(perform: viewModel.setup)
     }
 }
 

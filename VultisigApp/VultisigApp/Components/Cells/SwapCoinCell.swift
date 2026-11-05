@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct SwapCoinCell: View {
+    enum Appearance {
+        case standard
+        /// Settings lists: 20 side padding, 12 after the logo, 13/18 ticker.
+        case settings
+    }
+
     let coin: CoinMeta
     let balance: String?
     let balanceFiat: String?
@@ -18,6 +24,7 @@ struct SwapCoinCell: View {
     /// dropped after the last row — so it turns this off, otherwise every pair
     /// of rows is separated by two lines and a stray line hangs under the last.
     let showsSeparator: Bool
+    let appearance: Appearance
 
     var onSelect: () -> Void
 
@@ -27,6 +34,7 @@ struct SwapCoinCell: View {
         balanceFiat: String?,
         isSelected: Bool,
         showsSeparator: Bool = true,
+        appearance: Appearance = .standard,
         onSelect: @escaping () -> Void
     ) {
         self.coin = coin
@@ -34,6 +42,7 @@ struct SwapCoinCell: View {
         self.balanceFiat = balanceFiat
         self.isSelected = isSelected
         self.showsSeparator = showsSeparator
+        self.appearance = appearance
         self.onSelect = onSelect
     }
 
@@ -58,12 +67,13 @@ struct SwapCoinCell: View {
     var content: some View {
         HStack(spacing: 8) {
             icon
+                .padding(.trailing, appearance == .settings ? 4 : 0)
             title
             chain
             Spacer()
             balanceView
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, appearance == .settings ? 20 : 22)
         .padding(.vertical, 12)
     }
 
@@ -76,10 +86,18 @@ struct SwapCoinCell: View {
         )
     }
 
+    @ViewBuilder
     var title: some View {
-        Text(coin.ticker)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.textPrimary)
+        switch appearance {
+        case .standard:
+            Text(coin.ticker)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        case .settings:
+            Text(coin.ticker)
+                .settingsText(.footnote)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
     }
 
     @ViewBuilder

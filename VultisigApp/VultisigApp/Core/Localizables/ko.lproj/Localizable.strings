@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "각 기기가 기존 백업과 다른 새 .vult 백업을 생성합니다";
 "newBackupsCreatedTitle" = "새 백업이 생성됩니다";
 "newChainDetected" = "새 체인 감지됨";
+"newExpirationDate" = "새 만료일:";
 "newUpdateAvailable" = "업데이트가 가능합니다.";
 "newWalletNameDescription" = "나중에 설정에서 볼트 이름을 변경할 수 있습니다";
 "next" = "다음";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "이 추천 코드에는 별칭이 설정되어 있지 않습니다. 확인하고 다시 시도하세요.";
 "referralLaunchCodeLengthError" = "추천 코드는 최대 4자입니다";
 "referralNetworkError" = "추천 데이터를 가져오는 중 오류가 발생했습니다.";
+"referralOnboardingBannerDescription" = "나만의 추천 코드를 공유해 친구를 초대하세요. 친구는 할인을 받고, 친구가 거래할수록 내 수익도 늘어납니다.";
 "referralOnboardingBannerTitle1" = "친구를 초대하세요. ";
 "referralOnboardingBannerTitle2" = "보상을 받으세요.\n";
 "referralOnboardingBannerTitle3" = "수수료를 절약하세요.";
@@ -1392,7 +1394,7 @@
 "save" = "저장";
 "saveChanges" = "변경 사항 저장";
 "savedAddresses" = "저장된 주소";
-"saveOnSwaps" = "스왑에서 %@ 절약";
+"saveOnSwaps" = "지금 스왑에서 %@ 절약";
 "saveReferral" = "추천 코드 저장";
 "saveReferralCardBody" = "친구의 추천 코드를 저장하고 스왑에서 %@를 절약하세요.";
 "saveReferralCardTitle" = "추천 저장";
@@ -1465,6 +1467,7 @@
 "selectToken" = "토큰 선택";
 "selectTokensSubtitle" = "잔액을 보고 포지션을 관리하려면 하나 이상의 토큰을 활성화하세요.";
 "selectTokensTitle" = "토큰 선택";
+"selectVault" = "볼트 선택";
 "selectVaults" = "볼트 선택";
 "selectVaultsToBackUpSubtitle" = "이 볼트만 백업할지 앱의 모든 볼트를 백업할지 선택하세요.";
 "selectVaultsToBackUpTitle" = "백업할 볼트 선택";
@@ -1922,10 +1925,9 @@
 "Vote" = "투표";
 "vult" = "$VULT";
 "vultDiscount" = "할인: %d%%";
-"vultDiscountHeroSubtitle" = "거래 할인을 받으세요";
-"vultDiscountHeroTitle" = "Hold $VULT";
 "vultDiscountTiers" = "$VULT 할인 티어";
 "vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
+"vultDiscountTiersThorguardBoost" = "ThorGuard를 보유하면 할인 등급이 한 단계 상승하며, 최대 플래티넘까지입니다.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
 "vultisig-referrals" = "Vultisig 추천";
 "vultisigBrandName" = "Vultisig";

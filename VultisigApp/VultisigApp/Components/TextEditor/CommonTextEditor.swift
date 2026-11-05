@@ -94,54 +94,67 @@ struct CommonTextEditor: View {
 
     private var editorContent: some View {
         ZStack(alignment: .topLeading) {
-            HStack {
-                TextEditor(text: $value)
-                    .textEditorStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .font(appearance != .standard ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
-                    .lineSpacing(appearance != .standard ? Self.settingsLineSpacing : 0)
-                    .padding(appearance == .standard ? EdgeInsets() : Self.settingsTextViewOutset)
-                    .submitLabel(.continue)
-                    .autocorrectionDisabled()
-                    .focused(isFocused)
-                    .onSubmit {
-                        onSubmit()
-                    }
-
-                if !value.isEmpty {
-                    VStack {
-                        clearButton
-                            .showIf(isEnabled)
-                        Spacer()
-                    }
-                }
-            }
+            editorRow
             if value.isEmpty {
-                if appearance != .standard {
-                    Text(placeholder)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .settingsText(.bodyS)
-                        .allowsHitTesting(false)
-                } else {
-                    Text(placeholder)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .font(Theme.fonts.bodyMMedium)
-                        .padding(.leading, 6)
-                        .padding(.top, isMacOS ? 0 : 8)
-                }
+                placeholderLabel
             }
 
             if let accessory {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Text(accessory)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                            .font(Theme.fonts.caption12)
-                    }
+                accessoryLabel(accessory)
+            }
+        }
+    }
+
+    private var editorRow: some View {
+        HStack {
+            TextEditor(text: $value)
+                .textEditorStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(appearance != .standard ? Theme.fonts.bodySMedium : Theme.fonts.bodyMMedium)
+                .lineSpacing(appearance != .standard ? Self.settingsLineSpacing : 0)
+                .padding(appearance == .standard ? EdgeInsets() : Self.settingsTextViewOutset)
+                .submitLabel(.continue)
+                .autocorrectionDisabled()
+                .focused(isFocused)
+                .onSubmit {
+                    onSubmit()
                 }
+
+            if !value.isEmpty {
+                VStack {
+                    clearButton
+                        .showIf(isEnabled)
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var placeholderLabel: some View {
+        if appearance != .standard {
+            Text(placeholder)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .settingsText(.bodyS)
+                .allowsHitTesting(false)
+        } else {
+            Text(placeholder)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .font(Theme.fonts.bodyMMedium)
+                .padding(.leading, 6)
+                .padding(.top, isMacOS ? 0 : 8)
+        }
+    }
+
+    private func accessoryLabel(_ accessory: String) -> some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Text(accessory)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .font(Theme.fonts.caption12)
             }
         }
     }

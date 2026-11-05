@@ -67,7 +67,7 @@ struct VaultSettingsScreen: View {
                 router.navigate(to: ReferralRoute.onboarding)
             } onClose: {
                 showReferralBannerSheet = false
-            }.presentationDetents([.height(400)])
+            }
         }
         .crossPlatformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(

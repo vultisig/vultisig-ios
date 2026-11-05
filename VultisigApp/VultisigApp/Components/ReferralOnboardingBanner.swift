@@ -12,30 +12,39 @@ struct ReferralOnboardingBanner: View {
     let onNext: () -> Void
     let onClose: () -> Void
 
+    @State private var contentHeight: CGFloat = 0
+
+    private let minimumSheetHeight: CGFloat = 512
+    private let homeIndicatorHeight: CGFloat = 34
+
     var body: some View {
-        ZStack {
-            Background()
+        ZStack(alignment: .top) {
+            Theme.colors.bgSurface1
+                .ignoresSafeArea()
             content
             closeButtonContainer
         }
+        .presentationDetents([.height(max(minimumSheetHeight, contentHeight + homeIndicatorHeight))])
+        .presentationDragIndicator(.visible)
     }
 
     var content: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 24) {
             image
-            Spacer()
             title
+            description
             button
         }
-        .frame(height: 400)
-        .padding(.horizontal, 24)
+        .padding(.top, 26)
+        .padding(.bottom, 12)
+        .fixedSize(horizontal: false, vertical: true)
+        .readSize { contentHeight = $0.height }
     }
 
     var image: some View {
         VultisigImage("ReferralOnboardingBanner")
             .resizable()
-            .frame(width: 240, height: 194)
-            .padding(.bottom, 12)
+            .frame(width: 241, height: 194)
     }
 
     var title: some View {
@@ -47,16 +56,24 @@ struct ReferralOnboardingBanner: View {
             Text(NSLocalizedString("referralOnboardingBannerTitle3", comment: ""))
                 .foregroundStyle(Theme.colors.textPrimary)
         }
-        .font(Theme.fonts.title2)
+        .settingsText(.title2)
         .multilineTextAlignment(.center)
+        .padding(.horizontal, 35)
+    }
+
+    var description: some View {
+        Text("referralOnboardingBannerDescription".localized)
+            .settingsText(.bodyS)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 35)
     }
 
     var button: some View {
-        PrimaryButton(title: "next") {
+        PrimaryButton(title: "getStarted", size: .compactSemibold) {
             handleTap()
         }
-        .padding(.bottom, 24)
-        .padding(.top, 12)
+        .padding(.horizontal, 35)
     }
 
     var closeButtonContainer: some View {

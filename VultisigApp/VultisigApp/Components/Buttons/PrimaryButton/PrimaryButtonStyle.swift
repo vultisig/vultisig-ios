@@ -93,12 +93,14 @@ private extension PrimaryButtonStyle {
             return EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0)
         case .mini:
             return EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
-        case .squared:
-            return EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
         case .compact, .compactSemibold:
             return EdgeInsets(top: 14.5, leading: 0, bottom: 14.5, trailing: 0)
         case .compactHug:
             return EdgeInsets(top: 14.5, leading: 32, bottom: 14.5, trailing: 32)
+        case .squared:
+            return EdgeInsets(top: 19.5, leading: 24, bottom: 19.5, trailing: 24)
+        case .pill:
+            return EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
         }
     }
 
@@ -108,7 +110,7 @@ private extension PrimaryButtonStyle {
         if type == .secondary {
             switch size {
             case .medium, .small, .smallFixed: return Theme.fonts.buttonSMedium
-            case .mini, .squared, .compact, .compactHug, .compactSemibold: return font(for: size)
+            case .mini, .squared, .compact, .compactHug, .compactSemibold, .pill: return font(for: size)
             }
         }
         return font(for: size)
@@ -117,7 +119,7 @@ private extension PrimaryButtonStyle {
     func font(for size: ButtonSize) -> Font {
         switch size {
         case .medium, .small, .smallFixed: return Theme.fonts.buttonRegularSemibold
-        case .mini: return Theme.fonts.caption12
+        case .mini, .pill: return Theme.fonts.caption12
         case .squared, .compactHug, .compactSemibold: return Theme.fonts.buttonSSemibold
         case .compact: return Theme.fonts.buttonSMedium
         }
@@ -129,7 +131,7 @@ private extension PrimaryButtonStyle {
     /// intention instead, and renders the same shape at every button size.
     func radius(for size: ButtonSize) -> CornerRadius {
         switch size {
-        case .medium, .small, .smallFixed, .mini, .compact, .compactHug, .compactSemibold: Theme.radius.pill
+        case .medium, .small, .smallFixed, .mini, .compact, .compactHug, .compactSemibold, .pill: Theme.radius.pill
         case .squared: Theme.radius.md
         }
     }
@@ -152,7 +154,7 @@ private extension PrimaryButtonStyle {
             } else if shouldHighlight {
                 return Theme.colors.bgButtonTertiaryPressed
             } else {
-                return Theme.colors.bgButtonTertiary
+                return Theme.colors.bgButtonCtaPrimary
             }
 
         case .secondary:
@@ -192,7 +194,7 @@ private extension PrimaryButtonStyle {
     func borderColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
         case .primary:
-            return isEnabled ? .clear : Theme.colors.bgButtonTertiary.opacity(0.6)
+            return isEnabled ? .clear : Theme.colors.bgButtonCtaPrimary.opacity(0.6)
         case .alert, .primarySuccess:
             return .clear
         case .secondary:

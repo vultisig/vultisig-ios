@@ -34,6 +34,12 @@ enum SettingsTextStyle {
     case largeTitle
     /// Passcode guidance and prompts.
     case bodySRegular
+    /// Card titles on the referral screens.
+    case title3
+    /// Referral rewards and expiry values.
+    case bodyL
+    /// Tier unlock sheet titles.
+    case title1
 
     var font: Font {
         switch self {
@@ -50,6 +56,9 @@ enum SettingsTextStyle {
         case .bodyMRegular: Theme.fonts.bodyMRegular
         case .largeTitle: Theme.fonts.largeTitle
         case .bodySRegular: Theme.fonts.bodySRegular
+        case .title3: Theme.fonts.title3
+        case .bodyL: Theme.fonts.bodyLMedium
+        case .title1: Theme.fonts.title1
         }
     }
 
@@ -65,6 +74,9 @@ enum SettingsTextStyle {
         case .captionSmall: 10
         case .priceFootnote: 13
         case .largeTitle: 34
+        case .title3: 17
+        case .bodyL: 18
+        case .title1: 28
         }
     }
 
@@ -77,6 +89,9 @@ enum SettingsTextStyle {
         case .title2: -0.36
         case .priceFootnote: 0.2
         case .largeTitle: -1
+        case .title3: -0.3
+        case .bodyL: -0.09
+        case .title1: -0.64
         }
     }
 
@@ -91,6 +106,9 @@ enum SettingsTextStyle {
         case .buttonS, .priceFootnote: 18
         case .captionSmall: 14
         case .largeTitle: 37
+        case .title3: 20
+        case .bodyL: 28
+        case .title1: 34
         }
     }
 

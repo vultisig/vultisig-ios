@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import VultisigUIResources
 
 struct ReferralVaultSelectionScreen: View {
     @Query var vaults: [Vault]
@@ -19,7 +20,7 @@ struct ReferralVaultSelectionScreen: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("vaults".localized)
-                        .font(Theme.fonts.caption12)
+                        .settingsText(.caption)
                         .foregroundStyle(Theme.colors.textTertiary)
 
                     VStack(spacing: 0) {
@@ -39,22 +40,30 @@ struct ReferralVaultSelectionScreen: View {
                 }
             }
         }
-        .screenTitle("referral".localized)
+        .screenTitle("selectVault".localized)
     }
 
     func vaultRow(vault: Vault) -> some View {
         HStack(spacing: 16) {
+            VultisigImage("vault-icon")
+                .resizable()
+                .aspectRatio(1, contentMode: .fit)
+                .frame(width: 28)
             Text(vault.name)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Spacer()
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
-                VaultPartView(vault: vault)
+                VaultPartView(vault: vault, usesFilledIcon: true)
+                    .fixedSize()
                 trailingIcon(vault: vault)
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
+        .frame(minHeight: 58)
         .background(isSelected(vault: vault) ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
 
@@ -63,7 +72,7 @@ struct ReferralVaultSelectionScreen: View {
         if isSelected(vault: vault) {
             Icon(.check, color: Theme.colors.alertSuccess, size: 16)
         } else {
-            Icon(.chevronRight, color: Theme.colors.textPrimary, size: 16)
+            Icon(.chevronRight, color: Theme.colors.textPrimary, size: 14)
         }
     }
 

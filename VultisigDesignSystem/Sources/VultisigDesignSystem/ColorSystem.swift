@@ -4,6 +4,7 @@ struct ColorSystem: ColorSystemProtocol {
     var bgButtonPrimary: Color { .vultisig(hex: "33E6BF") }
     var bgButtonSecondary: Color { .vultisig(hex: "11284A") }
     var bgButtonTertiary: Color { .vultisig(hex: "2155DF") }
+    var bgButtonCtaPrimary: Color { .vultisig(hex: "0B4EFF") }
 
     // Hover in the design source.
     var bgButtonPrimaryPressed: Color { .vultisig(hex: "0FBF93") }

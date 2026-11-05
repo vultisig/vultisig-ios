@@ -14,7 +14,9 @@ struct ReferralTextField: View {
     @Binding var errorMessage: String?
 
     var showSuccess: Bool
+    var showInvalid: Bool
     var isDisabled = false
+    let appearance: CommonTextFieldAppearance
 
     init(
         text: Binding<String>,
@@ -22,14 +24,18 @@ struct ReferralTextField: View {
         action: ReferralTextFieldAction,
         errorMessage: Binding<String?> = .constant(nil),
         showSuccess: Bool = false,
-        isDisabled: Bool = false
+        showInvalid: Bool = false,
+        isDisabled: Bool = false,
+        appearance: CommonTextFieldAppearance = .settingsCode
     ) {
         self._text = text
         self.placeholderText = placeholderText
         self.action = action
         self._errorMessage = errorMessage
         self.showSuccess = showSuccess
+        self.showInvalid = showInvalid
         self.isDisabled = isDisabled
+        self.appearance = appearance
     }
 
     var body: some View {
@@ -43,13 +49,20 @@ struct ReferralTextField: View {
         CommonTextField(
             text: $text,
             placeholder: placeholderText,
-            error: $errorMessage
+            error: $errorMessage,
+            isValid: .constant(validation),
+            appearance: appearance
         ) {
             HStack {
                 actionButton
             }
         }
         .disabled(isDisabled)
+    }
+
+    private var validation: Bool? {
+        if showSuccess { return true }
+        return showInvalid ? false : nil
     }
 
     var actionButton: some View {
@@ -79,7 +92,7 @@ struct ReferralTextField: View {
         Button {
             handlePasteCode()
         } label: {
-            Icon(.clone2, color: Theme.colors.textPrimary, size: 20)
+            Icon(.copies3Filled, color: Theme.colors.textPrimary, size: 20)
         }
     }
 

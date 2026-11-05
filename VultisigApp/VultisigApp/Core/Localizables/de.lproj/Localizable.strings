@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "Jedes Gerät erstellt ein neues .vult-Backup, das sich von den alten Backups unterscheidet";
 "newBackupsCreatedTitle" = "Neue Backups werden erstellt";
 "newChainDetected" = "Neue Chain erkannt";
+"newExpirationDate" = "Neues Ablaufdatum:";
 "newUpdateAvailable" = "Neues Update verfügbar";
 "newWalletNameDescription" = "Sie können Ihren Tresor später in den Einstellungen umbenennen";
 "next" = "Weiter";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "Für diesen Empfehlungscode ist kein Alias festgelegt. Bitte prüfen Sie ihn und versuchen Sie es erneut.";
 "referralLaunchCodeLengthError" = "Der Empfehlungscode darf höchstens 4 Zeichen lang sein";
 "referralNetworkError" = "Fehler beim Abrufen der Empfehlungsdaten.";
+"referralOnboardingBannerDescription" = "Teilen Sie Ihren persönlichen Empfehlungscode, um Freunde einzuladen. Sie erhalten einen Rabatt – und je mehr sie handeln, desto mehr verdienen Sie.";
 "referralOnboardingBannerTitle1" = "Freunde einladen. ";
 "referralOnboardingBannerTitle2" = "Belohnungen verdienen.\n";
 "referralOnboardingBannerTitle3" = "Gebühren sparen.";
@@ -1392,7 +1394,7 @@
 "save" = "Speichern";
 "saveChanges" = "Änderungen speichern";
 "savedAddresses" = "Gespeicherte Adressen";
-"saveOnSwaps" = "%@ bei Swaps sparen";
+"saveOnSwaps" = "Spare jetzt %@ bei Swaps";
 "saveReferral" = "Empfehlung speichern";
 "saveReferralCardBody" = "Speichern Sie den Empfehlungscode eines Freundes und sparen Sie %@ bei Swaps.";
 "saveReferralCardTitle" = "Empfehlung speichern";
@@ -1465,6 +1467,7 @@
 "selectToken" = "Token auswählen";
 "selectTokensSubtitle" = "Aktivieren Sie mindestens einen Token, um Guthaben anzuzeigen und Positionen zu verwalten.";
 "selectTokensTitle" = "Token auswählen";
+"selectVault" = "Vault auswählen";
 "selectVaults" = "Tresore auswählen";
 "selectVaultsToBackUpSubtitle" = "Wählen Sie, ob Sie nur diesen Tresor oder alle Tresore in Ihrer App sichern möchten.";
 "selectVaultsToBackUpTitle" = "Tresore zum Sichern auswählen";
@@ -1922,10 +1925,9 @@
 "Vote" = "Abstimmen";
 "vult" = "$VULT";
 "vultDiscount" = "Rabatt: %d%%";
-"vultDiscountHeroSubtitle" = "erhalten Sie einen Handelsrabatt";
-"vultDiscountHeroTitle" = "$VULT halten";
 "vultDiscountTiers" = "$VULT Rabattstufen";
 "vultDiscountTiersDescription" = "Halten Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
+"vultDiscountTiersThorguardBoost" = "Der Besitz eines ThorGuard erhöht Ihre Rabattstufe um eine Stufe, bis maximal Platin.";
 "vultiserverPassword" = "Vultiserver-Passwort";
 "vultisig-referrals" = "Vultisig Empfehlungen";
 "vultisigBrandName" = "Vultisig";

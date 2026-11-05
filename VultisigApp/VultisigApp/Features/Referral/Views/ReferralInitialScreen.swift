@@ -133,7 +133,7 @@ private struct ReferralEntryCard: View {
                     HStack(spacing: 8) {
                         Icon(iconName, color: Theme.colors.primaryAccent4, size: 24)
                         Text(title)
-                            .font(Theme.fonts.title3)
+                            .settingsText(.title3)
                             .foregroundStyle(Theme.colors.textPrimary)
                         if showActiveBadge {
                             activeBadge
@@ -145,14 +145,14 @@ private struct ReferralEntryCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Icon(
-                    .chevronRight,
+                    .chevronRightSmall,
                     color: Theme.colors.textPrimary,
                     size: 20
                 )
             }
             .padding(24)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(Theme.radius.xl)
+            .cornerRadius(Theme.radius.lg)
             .contentShape(Rectangle())
         }
     }
@@ -169,10 +169,11 @@ private struct ReferralEntryCard: View {
             } highlightedTextStyle: {
                 $0.foregroundColor = Theme.colors.primaryAccent4
             }
+            .settingsText(.footnote)
             .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             Text(description)
-                .font(Theme.fonts.footnote)
+                .settingsText(.footnote)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -180,7 +181,7 @@ private struct ReferralEntryCard: View {
 
     var activeBadge: some View {
         Text("active".localized)
-            .font(Theme.fonts.footnote)
+            .settingsText(.footnote)
             .foregroundStyle(Theme.colors.alertSuccess)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
@@ -192,6 +193,7 @@ private struct ReferralEntryCard: View {
                 Capsule()
                     .stroke(Theme.colors.alertSuccess, lineWidth: 1)
             )
+            .padding(.vertical, -2) // Keeps the 28pt badge from growing its 24pt row.
     }
 }
 

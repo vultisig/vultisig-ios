@@ -12,17 +12,19 @@ struct SettingsGlowBackground: View {
         case neutral
         /// Red, behind Delete Vault.
         case destructive
+        /// The neutral glow, dimmer, behind the referral guide and My Referral.
+        case referral
 
         var colors: (start: Color, end: Color) {
             switch self {
-            case .neutral: (Theme.colors.turquoise, Theme.colors.primaryAccent2)
+            case .neutral, .referral: (Theme.colors.turquoise, Theme.colors.primaryAccent2)
             case .destructive: (Theme.colors.destructiveGlow, Theme.colors.alertError)
             }
         }
 
         var size: CGSize {
             switch self {
-            case .neutral: CGSize(width: 374, height: 416)
+            case .neutral, .referral: CGSize(width: 374, height: 416)
             case .destructive: CGSize(width: 374, height: 512)
             }
         }
@@ -31,6 +33,7 @@ struct SettingsGlowBackground: View {
             switch self {
             case .neutral: 0.18
             case .destructive: 0.12
+            case .referral: 0.1
             }
         }
     }
