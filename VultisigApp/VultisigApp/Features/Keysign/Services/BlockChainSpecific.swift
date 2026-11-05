@@ -10,7 +10,7 @@ import BigInt
 import VultisigCommonData
 
 enum BlockChainSpecific: Codable, Hashable {
-    /// `zcashBranchId` is the live ZIP-243 consensus branch id (little-endian
+    /// `zcashBranchId` is the live consensus branch id (little-endian
     /// hex, e.g. `30f33754`) fetched at send time for Zcash; nil for every
     /// other UTXO chain and when the RPC was unreachable. Transient: it is NOT
     /// carried by the proto `UTXOSpecific`, so a co-signing device that rebuilds
@@ -175,7 +175,7 @@ enum BlockChainSpecific: Codable, Hashable {
         }
     }
 
-    /// Live ZIP-243 branch id carried on a Zcash payload's UTXO specific, or nil
+    /// Live consensus branch id carried on a Zcash payload's UTXO specific, or nil
     /// for non-Zcash payloads and when the RPC was unreachable.
     var zcashBranchId: String? {
         guard case .UTXO(_, _, let zcashBranchId) = self else {

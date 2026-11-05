@@ -8,7 +8,7 @@ import OSLog
 
 private let logger = Log.chain.service
 
-/// Resolves the active ZIP-243 consensus branch id WalletCore needs on the
+/// Resolves the active consensus branch id carried on the
 /// Zcash transaction plan. The branch id changes at every Zcash network
 /// upgrade, so a compiled-in constant goes stale and makes every ZEC send /
 /// SwapKit swap sign with the wrong id and get rejected chain-wide until the
@@ -32,7 +32,7 @@ actor ZcashService {
     /// all read the same cached value, keeping the digest stable across them.
     private let cacheTTL: TimeInterval = 60 * 60
 
-    /// Resolves the active ZIP-243 consensus branch id for the next block, as
+    /// Resolves the active consensus branch id for the next block, as
     /// the little-endian hex string WalletCore expects on the plan (e.g.
     /// `30f33754`). The node reports it big-endian (`consensus.nextblock`, e.g.
     /// `5437f330`); this reverses the four bytes.

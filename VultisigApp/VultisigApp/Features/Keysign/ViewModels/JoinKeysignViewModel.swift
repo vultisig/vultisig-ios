@@ -318,7 +318,7 @@ class JoinKeysignViewModel: ObservableObject {
         // The proto UTXOSpecific can't carry the live ZEC branch id, so a
         // payload rebuilt from the initiator's QR/relay proto arrives with it
         // nil. Re-resolve the same network-global value the initiator used
-        // before computing sighashes so this co-signer's ZIP-243 digest matches
+        // before computing sighashes so this co-signer's sighash digests match
         // the rest of the committee.
         let keysignPayload = await withZcashBranchId(keysignPayload)
         self.keysignPayload = keysignPayload
@@ -373,7 +373,7 @@ class JoinKeysignViewModel: ObservableObject {
         self.keysignMessages = customMessagePayload.keysignMessages
     }
 
-    /// Re-stamps the live ZIP-243 branch id onto a Zcash UTXO payload rebuilt
+    /// Re-stamps the live consensus branch id onto a Zcash UTXO payload rebuilt
     /// from proto. Returns the payload unchanged for non-Zcash chains, non-UTXO
     /// specifics, or when the RPC is unreachable (the signing helpers then
     /// refuse rather than sign with a stale id).
