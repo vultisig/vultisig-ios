@@ -32,7 +32,11 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(padding(for: size))
             .background(
                 ZStack(alignment: .leadingLastTextBaseline) {
-                    backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled)
+                    let fill = backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled)
+                    fill
+                    if type == .primary, isEnabled {
+                        InnerShadowEdge(radius: radius(for: size), fill: fill)
+                    }
                     Rectangle()
                         .fill(.white.opacity(0.15))
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
@@ -59,8 +63,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 /// Inset bevel used by the 2026 button treatment: a light hairline along the top
 /// inner edge and a dark hairline along the bottom inner edge. Reproduces the
 /// Figma `inset 0 1px 1px rgba(255,255,255,0.10)` + `inset 0 -1px 0.5px #0F1C3E`
-/// shadow pair. Currently applied to `.secondary`; kept as a standalone piece so
-/// the other button types can adopt the same treatment.
+/// shadow pair. Applied to `.secondary`.
 private struct InsetBevelOverlay: View {
     let radius: CornerRadius
 
@@ -79,6 +82,21 @@ private struct InsetBevelOverlay: View {
                 lineWidth: 1
             )
             .allowsHitTesting(false)
+    }
+}
+
+/// The CTA's plastic edge: inner shadows fading in from the top and bottom.
+private struct InnerShadowEdge: View {
+    let radius: CornerRadius
+    let fill: Color
+
+    var body: some View {
+        // Tuned to Figma's pixels: passed straight to SwiftUI, the design's 1.9 and 1.6 blurs render about twice as wide.
+        radius.shape.fill(
+            fill
+                .shadow(.inner(color: Theme.colors.buttonEdgeLight, radius: 0.85, y: 1))
+                .shadow(.inner(color: Theme.colors.buttonEdgeDark, radius: 0.7, y: -1))
+        )
     }
 }
 
@@ -217,8 +235,7 @@ private extension PrimaryButtonStyle {
         }
     }
 
-    /// Whether the inset bevel is applied. Scoped to `.secondary` for now; the
-    /// treatment extends to the other types in a follow-up.
+    /// Whether the inset bevel is applied. Enabled `.primary` uses `InnerShadowEdge` instead.
     func hasBevel(for type: ButtonType) -> Bool {
         switch type {
         case .secondary: return true
