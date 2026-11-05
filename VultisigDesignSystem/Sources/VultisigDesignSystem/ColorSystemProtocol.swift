@@ -14,6 +14,8 @@ public protocol ColorSystemProtocol {
 
     var buttonBevelLight: Color { get }
     var buttonBevelDark: Color { get }
+    var buttonEdgeLight: Color { get }
+    var buttonEdgeDark: Color { get }
     var medallionInsetShadow: Color { get }
 
     var appTileGradientEnd: Color { get }
