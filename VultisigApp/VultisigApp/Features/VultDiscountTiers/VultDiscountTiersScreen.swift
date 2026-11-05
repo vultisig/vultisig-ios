@@ -104,7 +104,7 @@ private extension VultDiscountTiersScreen {
             .overlay(alignment: .top) {
                 VultisigImage("vult-tiers-hero")
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .scaledToFill()
             }
             .clipped()
             .allowsHitTesting(false)
