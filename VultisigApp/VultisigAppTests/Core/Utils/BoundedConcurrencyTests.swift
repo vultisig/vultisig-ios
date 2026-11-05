@@ -24,7 +24,9 @@ final class BoundedConcurrencyTests: XCTestCase {
     /// simply never cancelled and genuinely had nothing to do.
     func testCancelledCallWithEmptyInputThrows() async {
         let task = Task<[Int], Error> {
-            try await withBoundedConcurrency([], maxConcurrent: 4) { $0 }
+            // Don't race the cancel() below: only call once cancellation has landed.
+            while !Task.isCancelled { await Task.yield() }
+            return try await withBoundedConcurrency([], maxConcurrent: 4) { $0 }
         }
         task.cancel()
 
