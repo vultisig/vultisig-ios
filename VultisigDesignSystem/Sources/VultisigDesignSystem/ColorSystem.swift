@@ -61,6 +61,8 @@ struct ColorSystem: ColorSystemProtocol {
     var alertInfo: Color { .vultisig(hex: "5CA7FF") }
 
     var turquoise: Color { .vultisig(hex: "33E6BF") }
+    // Red glow behind Delete Vault.
+    var destructiveGlow: Color { .vultisig(hex: "D32829") }
     // Devices-selection blue glow used by onboarding and reshare.
     var devicesSelectionGlow: Color { .vultisig(hex: "084BFF") }
 

@@ -40,13 +40,13 @@ struct CustomRPCDetailScreen: View {
     private var endpointField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("customRPCEndpointSectionTitle".localized)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textTertiary)
 
             HStack(alignment: .top, spacing: 4) {
                 TextField("", text: $viewModel.urlText, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(Theme.fonts.bodySMedium)
+                    .settingsText(.bodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .focused($fieldFocused)
                     .autocorrectionDisabled()
@@ -57,7 +57,7 @@ struct CustomRPCDetailScreen: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Button(action: paste) {
-                    Icon(.clone, color: Theme.colors.textPrimary, size: 20)
+                    Icon(.copies3Filled, color: Theme.colors.textPrimary, size: 20)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("paste".localized)
@@ -65,50 +65,46 @@ struct CustomRPCDetailScreen: View {
             .padding(16)
             .frame(minHeight: 120, alignment: .topLeading)
             .background(
-                Theme.radius.md.shape
+                Theme.radius.lg.shape
                     .fill(Theme.colors.bgSurface1)
-            )
-            .overlay(
-                Theme.radius.md.shape
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+                    .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
             )
 
             if let saveError = viewModel.saveError {
                 Text(saveError)
-                    .font(Theme.fonts.footnote)
+                    .settingsText(.footnote)
                     .foregroundStyle(Theme.colors.alertError)
             } else {
                 Text("customRPCEndpointHelper".localized)
-                    .font(Theme.fonts.footnote)
+                    .settingsText(.footnote)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
         }
     }
 
     private var defaultEndpointCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 20) {
             Text("customRPCDefaultEndpointSectionTitle".localized)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(viewModel.defaultEndpoint ?? "")
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 15)
         .background(
             Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface1)
-        )
-        .overlay(
-            Theme.radius.md.shape
-                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
     }
 
     private var actions: some View {
         VStack(spacing: 12) {
-            PrimaryButton(title: "customRPCSaveButton".localized, isLoading: viewModel.isSaving) {
+            PrimaryButton(title: "customRPCSaveButton", isLoading: viewModel.isSaving, size: .compact) {
                 Task {
                     if await viewModel.save() {
                         bannerText = String(
@@ -123,7 +119,7 @@ struct CustomRPCDetailScreen: View {
             .disabled(!viewModel.canSave)
 
             if viewModel.hasOverride {
-                PrimaryButton(title: "customRPCResetToDefault".localized, type: .secondary) {
+                PrimaryButton(title: "customRPCResetToDefault", type: .secondary, size: .compact) {
                     viewModel.reset()
                 }
                 .disabled(!viewModel.canReset)

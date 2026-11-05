@@ -19,10 +19,10 @@ enum CommonTextFieldErrorStyle {
     case error, warning
 }
 
-/// `.settings` is the settings forms' field: a 52 tall card with a dim label and
-/// placeholder and no outer gutter. Everywhere else keeps `.standard`.
+/// `.settings`: a 52 tall card with a dim label and placeholder, no outer gutter.
+/// `.settingsInput`: the same card with a normal border that shows validation colours.
 enum CommonTextFieldAppearance {
-    case standard, settings
+    case standard, settings, settingsInput
 }
 
 private struct CommonTextFieldMetrics {
@@ -31,6 +31,7 @@ private struct CommonTextFieldMetrics {
     let horizontalPadding: CGFloat
     let outerPadding: CGFloat
     let cornerRadius: CornerRadius
+    let clearIconSize: CGFloat
 }
 
 struct CommonTextField<TrailingView: View>: View {
@@ -121,7 +122,7 @@ struct CommonTextField<TrailingView: View>: View {
                     Text(label)
                         .foregroundStyle(labelColor)
                         .font(labelFont)
-                case .settings:
+                case .settings, .settingsInput:
                     Text(label)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.bodyS)
@@ -170,7 +171,7 @@ struct CommonTextField<TrailingView: View>: View {
             Icon(
                 .circleXmarkFilled,
                 color: Theme.colors.textTertiary,
-                size: 16
+                size: metrics.clearIconSize
             )
         }
         .buttonStyle(.plain)
@@ -238,7 +239,7 @@ struct CommonTextField<TrailingView: View>: View {
         Group {
             if isSecure {
                 SecureField(placeholder?.localized ?? .empty, text: $text)
-            } else if appearance == .settings {
+            } else if appearance != .standard {
                 TextField(
                     placeholder?.localized ?? .empty,
                     text: $text,
@@ -295,7 +296,8 @@ struct CommonTextField<TrailingView: View>: View {
                 textFont: Theme.fonts.bodyMRegular,
                 horizontalPadding: 12,
                 outerPadding: 1,
-                cornerRadius: Theme.radius.md
+                cornerRadius: Theme.radius.md,
+                clearIconSize: 16
             )
         case .settings:
             CommonTextFieldMetrics(
@@ -303,7 +305,17 @@ struct CommonTextField<TrailingView: View>: View {
                 textFont: Theme.fonts.bodySMedium,
                 horizontalPadding: 16,
                 outerPadding: 0,
-                cornerRadius: Theme.radius.lg
+                cornerRadius: Theme.radius.lg,
+                clearIconSize: 16
+            )
+        case .settingsInput:
+            CommonTextFieldMetrics(
+                height: settingsHeight,
+                textFont: Theme.fonts.bodySMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.lg,
+                clearIconSize: 18
             )
         }
     }
@@ -317,6 +329,16 @@ struct CommonTextField<TrailingView: View>: View {
         case .settings:
             metrics.cornerRadius.shape
                 .strokeBorder(Theme.colors.borderExtraLight, lineWidth: 1)
+        case .settingsInput:
+            metrics.cornerRadius.shape
+                .strokeBorder(settingsInputBorderColor, lineWidth: 1)
         }
+    }
+
+    private var settingsInputBorderColor: Color {
+        if let isValid, isValid {
+            return Theme.colors.alertSuccess
+        }
+        return hasError ? invalidColor : Theme.colors.borderNormal
     }
 }

@@ -21,7 +21,7 @@ enum LockedFeature: Hashable {
     var icon: ImageResource {
         switch self {
         case .customRPC:
-            return .mobileSignal
+            return .signature
         case .swapAdvancedSettings:
             return .slidersVertical
         }

@@ -24,7 +24,8 @@ struct RenameVaultView: View {
             VStack {
                 CommonTextField(
                     text: $name,
-                    placeholder: "typeHere".localized
+                    placeholder: "typeHere".localized,
+                    appearance: .settingsInput
                 )
                 .maxLength($name)
                 Spacer()
@@ -45,7 +46,7 @@ struct RenameVaultView: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "save") {
+        PrimaryButton(title: "save", size: .compactSemibold) {
             rename()
         }
         .disabled(trimmedName.isEmpty)

@@ -18,10 +18,13 @@ public extension View {
 
 public protocol BottomSheetProperties {
     var bgColor: Color? { get }
+    /// Swaps the drawn capsule for the system grabber, on the design's 26pt top inset.
+    var usesSystemGrabber: Bool { get }
 }
 
 extension BottomSheetProperties {
     var bgColor: Color? { nil }
+    var usesSystemGrabber: Bool { false }
 }
 public typealias BottomSheetContentView = View & BottomSheetProperties
 
@@ -64,6 +67,7 @@ private extension BottomSheetModifier {
                 Spacer()
             }
             .presentationDetents(presentationDetents())
+            .presentationDragIndicator(sheetContent.usesSystemGrabber ? .visible : .automatic)
             .presentationBackground(sheetContent.bgColor ?? Theme.colors.bgSurface1)
             .if(!dismissable) {
                 $0.interactiveDismissDisabled()
@@ -80,7 +84,7 @@ private extension BottomSheetModifier {
         guard sizedSheetHeight > 0 else {
             return [.fraction(0.3)]
         }
-        let headerHeight: CGFloat = 20
+        let headerHeight: CGFloat = sheetContent.usesSystemGrabber ? 0 : 20
         return [.height(sizedSheetHeight + headerHeight)]
     }
 }

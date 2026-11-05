@@ -8,11 +8,20 @@
 import SwiftUI
 
 struct SearchTextField: View {
+    enum Appearance {
+        case standard
+        /// 42 tall with a footnote placeholder and a soft inner glow.
+        case settings
+    }
+
+    private static var settingsHeight: CGFloat { 42 }
+
     @Binding var value: String
     @Binding var isFocused: Bool
     let showPasteButton: Bool
     let placeholder: String
     let accessibilityIdentifier: String?
+    let appearance: Appearance
     @FocusState var focusedState: Bool
 
     init(
@@ -20,13 +29,15 @@ struct SearchTextField: View {
         isFocused: Binding<Bool> = .constant(false),
         showPasteButton: Bool = false,
         placeholder: String = "search".localized,
-        accessibilityIdentifier: String? = nil
+        accessibilityIdentifier: String? = nil,
+        appearance: Appearance = .standard
     ) {
         self._value = value
         self._isFocused = isFocused
         self.showPasteButton = showPasteButton
         self.placeholder = placeholder
         self.accessibilityIdentifier = accessibilityIdentifier
+        self.appearance = appearance
     }
 
     var showClearButton: Bool {
@@ -37,11 +48,10 @@ struct SearchTextField: View {
         HStack(spacing: 0) {
             Icon(
                 .magnifier,
-                color: Theme.colors.textSecondary,
+                color: appearance == .settings ? Theme.colors.textPrimary : Theme.colors.textSecondary,
                 size: 16
             )
-            TextField(placeholder, text: $value)
-                .font(Theme.fonts.bodyMMedium)
+            textField
                 .foregroundStyle(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
@@ -63,15 +73,44 @@ struct SearchTextField: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 44)
+        .frame(minHeight: appearance == .settings ? Self.settingsHeight : nil)
+        .frame(height: appearance == .settings ? nil : 44)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSurface1)
+        .background(background)
         .cornerRadius(Theme.radius.pill)
         .onChange(of: focusedState) { _, newValue in
             isFocused = newValue
         }
         .onChange(of: isFocused) { _, newValue in
             focusedState = newValue
+        }
+    }
+
+    @ViewBuilder
+    private var textField: some View {
+        switch appearance {
+        case .standard:
+            TextField(placeholder, text: $value)
+                .font(Theme.fonts.bodyMMedium)
+        case .settings:
+            TextField(
+                placeholder,
+                text: $value,
+                prompt: Text(placeholder).foregroundStyle(Theme.colors.textTertiary)
+            )
+            .font(Theme.fonts.footnote)
+            .tracking(SettingsTextStyle.footnote.tracking)
+        }
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        switch appearance {
+        case .standard:
+            Theme.colors.bgSurface1
+        case .settings:
+            Capsule(style: .circular)
+                .fill(Theme.colors.bgSurface1.shadow(.inner(color: Theme.colors.borderExtraLight, radius: 8)))
         }
     }
 

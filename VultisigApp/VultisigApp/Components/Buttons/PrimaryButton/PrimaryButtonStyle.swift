@@ -95,7 +95,7 @@ private extension PrimaryButtonStyle {
             return EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
         case .squared:
             return EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
-        case .compact:
+        case .compact, .compactSemibold:
             return EdgeInsets(top: 14.5, leading: 0, bottom: 14.5, trailing: 0)
         case .compactHug:
             return EdgeInsets(top: 14.5, leading: 32, bottom: 14.5, trailing: 32)
@@ -108,7 +108,7 @@ private extension PrimaryButtonStyle {
         if type == .secondary {
             switch size {
             case .medium, .small, .smallFixed: return Theme.fonts.buttonSMedium
-            case .mini, .squared, .compact, .compactHug: return font(for: size)
+            case .mini, .squared, .compact, .compactHug, .compactSemibold: return font(for: size)
             }
         }
         return font(for: size)
@@ -118,7 +118,7 @@ private extension PrimaryButtonStyle {
         switch size {
         case .medium, .small, .smallFixed: return Theme.fonts.buttonRegularSemibold
         case .mini: return Theme.fonts.caption12
-        case .squared, .compactHug: return Theme.fonts.buttonSSemibold
+        case .squared, .compactHug, .compactSemibold: return Theme.fonts.buttonSSemibold
         case .compact: return Theme.fonts.buttonSMedium
         }
     }
@@ -129,7 +129,7 @@ private extension PrimaryButtonStyle {
     /// intention instead, and renders the same shape at every button size.
     func radius(for size: ButtonSize) -> CornerRadius {
         switch size {
-        case .medium, .small, .smallFixed, .mini, .compact, .compactHug: Theme.radius.pill
+        case .medium, .small, .smallFixed, .mini, .compact, .compactHug, .compactSemibold: Theme.radius.pill
         case .squared: Theme.radius.md
         }
     }

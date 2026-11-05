@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "Baixar via GitHub";
 "dropFileHere" = "Solte o arquivo aqui...";
 "earn" = "Earn";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "Chave ECDSA";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "Chave EdDSA";
 "editAddress" = "Editar endereço";
 "editAddressBook" = "Editar agenda de endereços";
@@ -440,7 +438,6 @@
 "emptyLPsField" = "Campo de LPs vazio";
 "enable" = "Habilitar";
 "enableAll" = "Ativar todas";
-"enableBiometricsFastSigning" = "Ativar assinatura rápida por biometria";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "enablePushNotifications" = "Ativar notificações push";
 "enableThorchain" = "Ativar THORChain";
@@ -1116,6 +1113,7 @@
 "OnboardingCard6Text2" = "desbloquear seu cofre.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "Segurança na cadeia";
 "openSettings" = "Abrir Configurações";
 "openSystemSettings" = "Abrir Configurações do Sistema";
 "operatorFeeRangeError" = "A taxa do operador deve estar entre 0 e 10000 pontos base";
@@ -1430,7 +1428,7 @@
 "securityScannerHighRiskTitle" = "Transação de alto risco detectada";
 "securityScannerLowRiskTitle" = "Transação de baixo risco detectada";
 "securityScannerMediumRiskTitle" = "Transação de risco médio detectada";
-"securityScannerPoweredBy" = "Tecnologia ";
+"securityScannerPoweredBy" = "Tecnologia";
 "securityScannerSafeDescription" = "Nenhuma atividade maliciosa detectada. Esta transação é segura para assinar.";
 "securityScannerSafeTitle" = "Verificado pela Blockaid";
 "securityScannerTransactionNotScanned" = "Transação não verificada por";
@@ -1489,6 +1487,8 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "Isso exclui permanentemente todo o histórico local de transações e todas as ordens limite acompanhadas em todos os cofres, e para de acompanhá-las. Só limpa o que este app mostra — não afeta seus fundos, chaves nem ordens abertas on-chain. Uma ordem limite ainda aberta na THORChain continua aberta; você só deixa de acompanhá-la aqui. Isso não pode ser desfeito.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "Redefinir o histórico de transações?";
 "settingsAdvancedSwapKitClearTokensCache" = "Limpar cache de tokens do SwapKit";
+"settingsEnterHint" = "Insira uma dica";
+"settingsEnterPassword" = "Digite a senha";
 "share" = "Compartilhar";
 "shareOf" = "parte %d de %d";
 "shareQRCode" = "Compartilhar código QR";
@@ -1502,6 +1502,7 @@
 "showHint" = "Mostrar dica";
 "showTotalBalance" = "Mostrar saldo total";
 "sign" = "Assinar";
+"Sign message" = "Assinar mensagem";
 "signature" = "Assinatura";
 "signCustomMessage" = "Assinar mensagem personalizada";
 "signer" = "Assinante";
@@ -1833,6 +1834,7 @@
 "vaultBackupExportFailed" = "Não foi possível criar o arquivo de backup. Desbloqueie o app e tente novamente.";
 "vaultCreated" = "Cofre criado";
 "vaultDetailsDescription" = "Ver os detalhes do seu cofre";
+"vaultDetailsThisDevice" = "Este dispositivo";
 "vaultDetailsTitle" = "Detalhes";
 "vaultImportWouldOverwriteExisting" = "Este backup não pode ser importado: ele substituiria um cofre que já está neste dispositivo.";
 "vaultInfo" = "Informações do cofre";
@@ -1850,9 +1852,9 @@
 "vaults" = "Cofres";
 "vaultSelected" = "Cofre selecionado";
 "vaultSettings" = "Configurações do cofre";
-"vaultSettingsSecurityScreenContentBottomsheet" = "Desativar a segurança na cadeia significa que o Blockaid não pode verificar as transações. Você estará menos protegido";
+"vaultSettingsSecurityScreenContentBottomsheet" = "Desativar a segurança na cadeia significa que o Blockaid não pode verificar as transações. Você estará menos protegido.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "Segurança na cadeia desativada";
-"vaultSettingsSecurityScreenTitleContent" = "Você pode desativar sua segurança na cadeia em tempo real";
+"vaultSettingsSecurityScreenTitleContent" = "Você pode desativar sua segurança na cadeia em tempo real fornecida pela Blockaid.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Gerencie sua segurança na cadeia";
 "vaultSettingsSecuritySubtitle" = "Gerencie sua segurança na cadeia";
 "vaultSettingsSecurityTitle" = "Segurança na cadeia";

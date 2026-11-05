@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "Descargar vía GitHub";
 "dropFileHere" = "Suelta el archivo aquí...";
 "earn" = "Earn";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "Clave ECDSA";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "Clave EdDSA";
 "editAddress" = "Editar dirección";
 "editAddressBook" = "Editar libreta de direcciones";
@@ -440,7 +438,6 @@
 "emptyLPsField" = "Campo de LPs vacío";
 "enable" = "Permitir";
 "enableAll" = "Activar todas";
-"enableBiometricsFastSigning" = "Activar la firma rápida con biometría";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
 "enablePushNotifications" = "Activar notificaciones push";
 "enableThorchain" = "Activar THORChain";
@@ -1116,6 +1113,7 @@
 "OnboardingCard6Text2" = "desbloquear tu bóveda.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "Seguridad en la cadena";
 "openSettings" = "Abrir Configuración";
 "openSystemSettings" = "Abrir Configuración del Sistema";
 "operatorFeeRangeError" = "La tarifa del operador debe estar entre 0 y 10000 puntos base";
@@ -1430,7 +1428,7 @@
 "securityScannerHighRiskTitle" = "Transacción de alto riesgo detectada";
 "securityScannerLowRiskTitle" = "Transacción de bajo riesgo detectada";
 "securityScannerMediumRiskTitle" = "Transacción de riesgo medio detectado";
-"securityScannerPoweredBy" = "Impulsado por ";
+"securityScannerPoweredBy" = "Impulsado por";
 "securityScannerSafeDescription" = "No se detectó actividad maliciosa. Esta transacción es segura para firmar.";
 "securityScannerSafeTitle" = "Escaneado por Blockaid";
 "securityScannerTransactionNotScanned" = "Transacción no escaneada por";
@@ -1489,6 +1487,8 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "Esto elimina permanentemente todo el historial de transacciones local y todas las órdenes límite rastreadas de todas las bóvedas, y deja de rastrearlas. Solo borra lo que muestra esta app: no afecta a tus fondos, claves ni a ninguna orden abierta en la cadena. Una orden límite aún abierta en THORChain sigue abierta; simplemente dejas de rastrearla aquí. Esto no se puede deshacer.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "¿Restablecer el historial de transacciones?";
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
+"settingsEnterHint" = "Ingresa una pista";
+"settingsEnterPassword" = "Ingresa la contraseña";
 "share" = "Compartir";
 "shareOf" = "fragmento %d de %d";
 "shareQRCode" = "Compartir código QR";
@@ -1502,6 +1502,7 @@
 "showHint" = "Mostrar pista";
 "showTotalBalance" = "Mostrar saldo total";
 "sign" = "Firmar";
+"Sign message" = "Firmar mensaje";
 "signature" = "Firma";
 "signCustomMessage" = "Firmar mensaje personalizado";
 "signer" = "Firmante";
@@ -1833,6 +1834,7 @@
 "vaultBackupExportFailed" = "No se pudo crear el archivo de copia de seguridad. Desbloquea la app e inténtalo de nuevo.";
 "vaultCreated" = "Bóveda creada";
 "vaultDetailsDescription" = "Ver el nombre, la parte y el tipo de la bóveda";
+"vaultDetailsThisDevice" = "Este dispositivo";
 "vaultDetailsTitle" = "Detalles";
 "vaultImportWouldOverwriteExisting" = "Esta copia de seguridad no se puede importar: sobrescribiría una bóveda que ya está en este dispositivo.";
 "vaultInfo" = "Información de bóveda";
@@ -1852,7 +1854,7 @@
 "vaultSettings" = "Configuración de bóveda";
 "vaultSettingsSecurityScreenContentBottomsheet" = "Desactivar la seguridad en cadena significa que Blockaid no puede verificar las transacciones. Estarás menos protegido.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "Seguridad en cadena desactivada";
-"vaultSettingsSecurityScreenTitleContent" = "Puedes desactivar tu seguridad en cadena en tiempo real";
+"vaultSettingsSecurityScreenTitleContent" = "Puedes desactivar tu seguridad en cadena en tiempo real proporcionada por Blockaid.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Gestiona tu seguridad en cadena";
 "vaultSettingsSecuritySubtitle" = "Gestiona tu seguridad en cadena";
 "vaultSettingsSecurityTitle" = "Seguridad en la cadena";

@@ -22,6 +22,14 @@ enum SettingsTextStyle {
     case buttonRegular
     /// Empty and update state subtitles.
     case buttonS
+    /// Big left titles and warning titles on the vault sub-screens.
+    case title2
+    /// Low-emphasis sheet actions.
+    case captionSmall
+    /// Tier requirement and balance lines.
+    case priceFootnote
+    /// Switch state labels.
+    case bodyMRegular
 
     var font: Font {
         switch self {
@@ -32,6 +40,10 @@ enum SettingsTextStyle {
         case .bodyM: Theme.fonts.bodyMMedium
         case .buttonRegular: Theme.fonts.buttonRegularMedium
         case .buttonS: Theme.fonts.buttonSMedium
+        case .title2: Theme.fonts.title2
+        case .captionSmall: Theme.fonts.caption10
+        case .priceFootnote: Theme.fonts.priceFootnote
+        case .bodyMRegular: Theme.fonts.bodyMRegular
         }
     }
 
@@ -41,17 +53,22 @@ enum SettingsTextStyle {
         case .footnote: 13
         case .subtitle: 15
         case .caption: 12
-        case .bodyM, .buttonRegular: 16
+        case .bodyM, .buttonRegular, .bodyMRegular: 16
         case .buttonS: 14
+        case .title2: 22
+        case .captionSmall: 10
+        case .priceFootnote: 13
         }
     }
 
     var tracking: CGFloat {
         switch self {
-        case .bodyS, .bodyM, .buttonRegular, .buttonS: 0
+        case .bodyS, .bodyM, .buttonRegular, .buttonS, .bodyMRegular: 0
         case .footnote: 0.06
         case .subtitle: -0.18
-        case .caption: 0.12
+        case .caption, .captionSmall: 0.12
+        case .title2: -0.36
+        case .priceFootnote: 0.2
         }
     }
 
@@ -61,15 +78,16 @@ enum SettingsTextStyle {
         case .footnote: 18
         case .subtitle: 17
         case .caption: 16
-        case .bodyM: 24
+        case .bodyM, .title2, .bodyMRegular: 24
         case .buttonRegular: 20
-        case .buttonS: 18
+        case .buttonS, .priceFootnote: 18
+        case .captionSmall: 14
         }
     }
 
-    /// Brockmann's ascent plus descent is 1.2 times its point size.
+    /// Brockmann's ascent plus descent is 1.2 times its point size, Satoshi's 1.25.
     var unroundedLineHeight: CGFloat {
-        pointSize * 1.2
+        pointSize * (self == .priceFootnote ? 1.25 : 1.2)
     }
 }
 

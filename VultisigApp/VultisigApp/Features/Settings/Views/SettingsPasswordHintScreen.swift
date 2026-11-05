@@ -19,30 +19,27 @@ struct SettingsPasswordHintScreen: View {
             VStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("editPasswordHintTitle".localized)
-                            .font(Theme.fonts.largeTitle)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .padding(.top, 12)
-
                         Text("editPasswordHintSubtitle".localized)
-                            .font(Theme.fonts.bodySMedium)
+                            .settingsText(.bodyS)
                             .foregroundStyle(Theme.colors.textTertiary)
 
                         CommonTextEditor(
                             value: $viewModel.hint,
-                            placeholder: "enterHint".localized,
-                            isFocused: $isFocused
-                        ) {}
+                            placeholder: "settingsEnterHint".localized,
+                            isFocused: $isFocused,
+                            appearance: .settingsInput
+                        )
                     }
                 }
 
-                PrimaryButton(title: "save".localized) {
+                PrimaryButton(title: "save", size: .compactSemibold) {
                     viewModel.saveHint(vault: vault)
                     dismiss()
                 }
                 .disabled(!viewModel.saveHintEnabled)
             }
         }
+        .screenTitle("editPasswordHintTitle".localized)
         .onAppear(perform: onAppear)
     }
 

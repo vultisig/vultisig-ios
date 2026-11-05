@@ -24,6 +24,12 @@ struct VaultDeletionConfirmView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var appViewModel: AppViewModel
 
+    private static let topContentInset: CGFloat = 17
+    private static let glowOffset: CGFloat = -9.5
+    private static let subtitleMaxWidth: CGFloat = 283
+    private static let firstCheckboxMinHeight: CGFloat = 24
+    private static let checkboxMinHeight: CGFloat = 40
+
     var buttonEnabled: Bool {
         permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
     }
@@ -37,44 +43,60 @@ struct VaultDeletionConfirmView: View {
                         details
                         checkboxes
                     }
+                    .padding(.top, Self.topContentInset)
                 }
                 deleteButton
             }
-            .background(backgroundView)
+            .background(SettingsGlowBackground(tint: .destructive, verticalOffset: Self.glowOffset))
         }
         .screenTitle("deleteVaultTitle".localized)
     }
 
     var header: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 14) {
             Icon(
-                .triangleWarning,
+                .triangleWarningFilled,
                 color: Theme.colors.alertError,
-                size: 22
-            ).padding(.bottom, 6)
+                size: 24
+            )
 
-            Text("deleteVaultTitle".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.alertError)
+            VStack(spacing: 8) {
+                Text("deleteVaultTitle".localized)
+                    .settingsText(.title2)
+                    .foregroundStyle(Theme.colors.alertError)
 
-            Text("youArePermanentlyDeletingVault".localized)
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
+                Text("youArePermanentlyDeletingVault".localized)
+                    .settingsText(.footnote)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: Self.subtitleMaxWidth)
+            }
         }
     }
 
     var checkboxes: some View {
-        VStack(spacing: 16) {
-            Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
-            Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
-            Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
+        VStack(spacing: 2) {
+            Checkbox(
+                isChecked: $permanentDeletionCheck,
+                text: "vaultWillBeDeletedPermanentlyPrompt",
+                appearance: .settings(rowMinHeight: Self.firstCheckboxMinHeight)
+            )
+            Checkbox(
+                isChecked: $canLoseFundCheck,
+                text: "canLoseFundsPrompt",
+                appearance: .settings(rowMinHeight: Self.checkboxMinHeight)
+            )
+            Checkbox(
+                isChecked: $vaultBackupCheck,
+                text: "madeVaultBackupPrompt",
+                appearance: .settings(rowMinHeight: Self.checkboxMinHeight)
+            )
         }
-        .padding(.bottom, 50)
+        .padding(.vertical, 8)
     }
 
     var deleteButton: some View {
-        PrimaryButton(title: "deleteVaultTitle", type: .alert) {
+        PrimaryButton(title: "deleteVaultTitle", type: .alert, size: .compactSemibold) {
             delete()
         }
         .disabled(!buttonEnabled)
@@ -121,14 +143,6 @@ struct VaultDeletionConfirmView: View {
                 Log.wallet.view.error("Error: \(error.localizedDescription, privacy: .public)")
             }
         }
-    }
-
-    var backgroundView: some View {
-        Ellipse()
-            .fill(Color(hex: "D32829"))
-            .aspectRatio(contentMode: .fit)
-            .opacity(0.2)
-            .blur(radius: 120)
     }
 }
 

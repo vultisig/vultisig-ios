@@ -65,7 +65,7 @@ struct SettingsCustomMessageView: View {
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
                 continueButton
-                    .padding(.bottom, isMacOS ? 40 : 0)
+                    .padding(.bottom, isMacOS ? 40 : 12)
             }
         }
     }
@@ -78,13 +78,13 @@ struct SettingsCustomMessageView: View {
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .verify {
                 signButton
-                    .padding(.bottom, isMacOS ? 40 : 0)
+                    .padding(.bottom, isMacOS ? 40 : 12)
             }
         }
     }
 
     var verifyContent: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             verifyRow(title: "signingMethod".localized, value: method)
             verifyRow(title: "messageToSign".localized, value: message)
         }
@@ -94,20 +94,17 @@ struct SettingsCustomMessageView: View {
     private func verifyRow(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.caption)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(value)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(
-                    Theme.radius.md.shape
-                        .fill(Theme.colors.bgSurface2)
-                )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .settingsInfoCard()
     }
 
     var keysign: some View {
@@ -181,7 +178,7 @@ struct SettingsCustomMessageView: View {
     }
 
     func textField(title: String, text: Binding<String>) -> some View {
-        CommonTextField(text: text, placeholder: title)
+        CommonTextField(text: text, placeholder: title, appearance: .settingsInput)
     }
 
     var pair: some View {
@@ -248,7 +245,7 @@ struct SettingsCustomMessageView: View {
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.alertError)
             }
-            PrimaryButton(title: NSLocalizedString("continue", comment: "")) {
+            PrimaryButton(title: "continue", size: .compact) {
                 viewModel.continueIfSignable(customMessagePayload)
             }
             .disabled(!signButtonEnabled)
@@ -262,7 +259,7 @@ struct SettingsCustomMessageView: View {
         SigningCTAButtons(
             isFastVault: vault.offersFastSigning,
             isDisabled: !signButtonEnabled,
-            singleSignTitle: "signTransaction",
+            singleSignTitle: "sign",
             onFastSign: { fastPasswordPresented = true },
             onPairedSign: {
                 fastVaultPassword = .empty

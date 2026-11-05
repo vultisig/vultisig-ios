@@ -19,4 +19,6 @@ enum ButtonSize {
     case compact
     /// 46 tall with a 14pt semibold label that the button hugs.
     case compactHug
+    /// 46 tall with a 14pt semibold label, filling its parent's width.
+    case compactSemibold
 }

@@ -10,71 +10,104 @@ import VultisigUIResources
 
 struct SecurityScannerBottomSheetContent: View {
     let contentStyle: SecurityScannerBottomSheetStyle
-    let securityScannerProvider: String?
+    let securityScannerProvider: String
     let onDismissRequest: () -> Void
     let onContinueAnyway: () -> Void
 
     var body: some View {
         VStack(spacing: 24) {
-            Image(systemName: contentStyle.image)
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(contentStyle.imageColor)
+            HStack(spacing: 4) {
+                Text("securityScannerPoweredBy".localized)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .settingsText(.caption)
+                VultisigImage(securityScannerProvider)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .frame(width: Self.providerLogoSize.width, height: Self.providerLogoSize.height)
+            }
+
+            SecurityWarningBadge(tint: contentStyle.imageColor)
 
             VStack(spacing: 12) {
                 Text(contentStyle.title)
                     .foregroundStyle(contentStyle.imageColor)
-                    .font(Theme.fonts.title2)
+                    .settingsText(.title2)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(contentStyle.description)
                     .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
+                    .settingsText(.bodyS)
                     .multilineTextAlignment(.center)
-                    .frame(height: 60)
-            }
-
-            if let securityScannerProvider = securityScannerProvider {
-                HStack(spacing: 4) {
-                    Spacer()
-                    Text("securityScannerPoweredBy".localized)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .font(Theme.fonts.bodySMedium)
-                    VultisigImage(securityScannerProvider)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    Spacer()
-                }
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             VStack(spacing: 8) {
-                PrimaryButton(title: "securityScannerContinueGoBack".localized) {
+                PrimaryButton(title: "securityScannerContinueGoBack", size: .compact) {
                     onDismissRequest()
                 }
 
-                Button("securityScannerContinueAnyway".localized) {
+                Button {
                     onContinueAnyway()
+                } label: {
+                    Text("securityScannerContinueAnyway".localized)
+                        .settingsText(.captionSmall)
                 }
                 .frame(height: 42, alignment: .center)
                 .foregroundStyle(Theme.colors.textButtonDisabled)
-                .font(Theme.fonts.caption10)
                 .frame(maxWidth: .infinity)
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private static let providerLogoSize = CGSize(width: 52, height: 9)
+}
+
+/// The ringed warning badge at the top of the on-chain security sheet.
+private struct SecurityWarningBadge: View {
+    let tint: Color
+
+    private static let size = CGSize(width: 48, height: 49)
+    private static let ringDiameter: CGFloat = 43
+    private static let glowSize = CGSize(width: 13.3, height: 6.7)
+    private static let glowBlur: CGFloat = 7.7
+    private static let glyphSize: CGFloat = 16
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Theme.colors.bgPrimary)
+                .frame(width: Self.ringDiameter, height: Self.ringDiameter)
+            Rectangle()
+                .fill(tint)
+                .frame(width: Self.glowSize.width, height: Self.glowSize.height)
+                .blur(radius: Self.glowBlur)
+            Circle()
+                .stroke(Theme.colors.buttonBevelLight, lineWidth: 2)
+                .frame(width: Self.ringDiameter, height: Self.ringDiameter)
+            Icon(.circleWarning, color: tint, size: Self.glyphSize)
+        }
+        .frame(width: Self.size.width, height: Self.size.height)
     }
 }
 
 struct SettingsSecurityScannerBottomSheet: View, BottomSheetProperties {
     let onDismissRequest: () -> Void
     let onContinueAnyway: () -> Void
+
+    var bgColor: Color? { Theme.colors.bgPrimary }
+    var usesSystemGrabber: Bool { true }
+
     var body: some View {
         SecurityScannerBottomSheetContent(
             contentStyle: SecurityScannerBottomSheetStyle(
                 title: "vaultSettingsSecurityScreenTitleBottomsheet".localized,
                 description: "vaultSettingsSecurityScreenContentBottomsheet".localized,
-                image: "exclamationmark.circle",
                 imageColor: Theme.colors.alertWarning
             ),
-            securityScannerProvider: nil,
+            securityScannerProvider: "blockaid",
             onDismissRequest: onDismissRequest,
             onContinueAnyway: onContinueAnyway
         )
@@ -84,6 +117,5 @@ struct SettingsSecurityScannerBottomSheet: View, BottomSheetProperties {
 struct SecurityScannerBottomSheetStyle {
     let title: String
     let description: String
-    let image: String
     let imageColor: Color
 }

@@ -57,6 +57,7 @@ public protocol ColorSystemProtocol {
     var alertInfo: Color { get }
 
     var turquoise: Color { get }
+    var destructiveGlow: Color { get }
     var devicesSelectionGlow: Color { get }
 
     // Promotional banner gradient endpoints from the 2026 banner system.

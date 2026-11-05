@@ -416,9 +416,7 @@
 "downloadViaGitHub" = "Scarica via GitHub";
 "dropFileHere" = "Rilascia il file qui...";
 "earn" = "Earn";
-"ECDSA" = "ECDSA";
 "ECDSAKey" = "Chiave ECDSA";
-"EdDSA" = "EdDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "editAddress" = "Modifica indirizzo";
 "editAddressBook" = "Modifica rubrica";
@@ -440,7 +438,6 @@
 "emptyLPsField" = "Campo LPs vuoto";
 "enable" = "Abilita";
 "enableAll" = "Attiva tutte";
-"enableBiometricsFastSigning" = "Attiva la firma rapida con biometria";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
 "enablePushNotifications" = "Attiva notifiche push";
 "enableThorchain" = "Attiva THORChain";
@@ -1116,6 +1113,7 @@
 "OnboardingCard6Text2" = "sbloccare il tuo vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"onChainSecurityScreenTitle" = "Sicurezza on-chain";
 "openSettings" = "Apri Impostazioni";
 "openSystemSettings" = "Apri Impostazioni di Sistema";
 "operatorFeeRangeError" = "La commissione operatore deve essere compresa tra 0 e 10000 punti base";
@@ -1489,6 +1487,8 @@
 "settingsAdvancedResetTransactionHistoryConfirmMessage" = "Questo elimina definitivamente tutta la cronologia delle transazioni locale e tutti gli ordini limite tracciati di ogni vault, e ne interrompe il tracciamento. Cancella solo ciò che questa app mostra: non influisce sui tuoi fondi, sulle chiavi o su eventuali ordini aperti sulla catena. Un ordine limite ancora aperto su THORChain resta aperto; qui smetti solo di tracciarlo. L'operazione non può essere annullata.";
 "settingsAdvancedResetTransactionHistoryConfirmTitle" = "Reimpostare la cronologia delle transazioni?";
 "settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
+"settingsEnterHint" = "Inserisci un suggerimento";
+"settingsEnterPassword" = "Inserisci la password";
 "share" = "Condividi";
 "shareOf" = "quota %d di %d";
 "shareQRCode" = "Condividi codice QR";
@@ -1502,6 +1502,7 @@
 "showHint" = "Mostra suggerimento";
 "showTotalBalance" = "Mostra saldo totale";
 "sign" = "Firma";
+"Sign message" = "Firma messaggio";
 "signature" = "Firma";
 "signCustomMessage" = "Firma messaggio personalizzato";
 "signer" = "Firmatario";
@@ -1833,6 +1834,7 @@
 "vaultBackupExportFailed" = "Non è stato possibile creare il file di backup. Sblocca l'app e riprova.";
 "vaultCreated" = "Vault creato";
 "vaultDetailsDescription" = "Visualizza nome, quota e tipo del vault";
+"vaultDetailsThisDevice" = "Questo dispositivo";
 "vaultDetailsTitle" = "Dettagli";
 "vaultImportWouldOverwriteExisting" = "Questo backup non può essere importato: sovrascriverebbe un vault già presente su questo dispositivo.";
 "vaultInfo" = "Informazioni sul Vault";
@@ -1850,9 +1852,9 @@
 "vaults" = "Vault";
 "vaultSelected" = "Vault selezionato";
 "vaultSettings" = "Impostazioni Vault";
-"vaultSettingsSecurityScreenContentBottomsheet" = "Disattivare la sicurezza on-chain significa che Blockaid non può verificare le transazioni. Sarai meno protetto";
+"vaultSettingsSecurityScreenContentBottomsheet" = "Disattivare la sicurezza on-chain significa che Blockaid non può verificare le transazioni. Sarai meno protetto.";
 "vaultSettingsSecurityScreenTitleBottomsheet" = "Sicurezza on-chain disattivata";
-"vaultSettingsSecurityScreenTitleContent" = "Puoi disabilitare la tua sicurezza in tempo reale";
+"vaultSettingsSecurityScreenTitleContent" = "Puoi disabilitare la tua sicurezza in tempo reale fornita da Blockaid.";
 "vaultSettingsSecurityScreenTitleSwitch" = "Gestisci la sicurezza on-chain";
 "vaultSettingsSecuritySubtitle" = "Gestisci la sicurezza on-chain";
 "vaultSettingsSecurityTitle" = "Sicurezza on-chain";

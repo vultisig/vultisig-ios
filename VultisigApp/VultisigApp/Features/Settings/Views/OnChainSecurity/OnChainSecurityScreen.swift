@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct OnChainSecurityScreen: View {
-    let title = "vaultSettingsSecurityTitle".localized
+    let title = "onChainSecurityScreenTitle".localized
     let service = SecurityScannerSettingsService()
 
     @State var securityScannerEnabled: Bool = false
     @State var showSecurityScannerSheet: Bool = false
+
+    private static let topContentInset: CGFloat = 9
 
     var body: some View {
         Screen {
@@ -38,13 +40,18 @@ struct OnChainSecurityScreen: View {
     }
 
     var securityScannerCell: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("vaultSettingsSecurityScreenTitleSwitch".localized)
-                .font(Theme.fonts.bodyMMedium)
+                .settingsText(.bodyM)
+                .foregroundStyle(Theme.colors.textPrimary)
             Text("vaultSettingsSecurityScreenTitleContent".localized)
-                .font(Theme.fonts.caption12)
-            VultiToggle(isOn: $securityScannerEnabled)
+                .settingsText(.caption)
+                .foregroundStyle(Theme.colors.textSecondary)
+            Toggle("vaultSettingsSecurityScreenTitleSwitch".localized, isOn: $securityScannerEnabled)
+                .labelsHidden()
+                .toggleStyle(SettingsToggleStyle(size: .regular))
         }
+        .padding(.top, Self.topContentInset)
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
     }

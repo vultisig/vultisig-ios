@@ -16,13 +16,21 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
         self.content = content()
     }
 
+    private static var systemGrabberTopInset: CGFloat { 26 }
+
     var body: some View {
         VStack(spacing: 14) {
+            #if os(iOS)
+            if !content.usesSystemGrabber {
+                header
+            }
+            #else
             header
+            #endif
             content
         }
         .background(content.bgColor ?? Theme.colors.bgSurface1)
-        .padding(.top, 24)
+        .padding(.top, content.usesSystemGrabber ? Self.systemGrabberTopInset : 24)
         .padding(.horizontal, 16)
     }
 
