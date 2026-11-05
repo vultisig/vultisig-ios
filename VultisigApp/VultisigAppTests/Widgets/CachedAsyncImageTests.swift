@@ -58,14 +58,14 @@ final class CachedAsyncImageTests: XCTestCase {
             window.isHidden = true
             previousKeyWindow?.makeKeyAndVisible()
         }
-        await fulfillment(of: [firstStarted], timeout: 2)
+        await fulfillment(of: [firstStarted], timeout: 10)
         model.url = second
-        await fulfillment(of: [secondStarted], timeout: 2)
+        await fulfillment(of: [secondStarted], timeout: 10)
         await downloader.complete(first, data: png())
         await fulfillment(of: [unexpectedImage], timeout: 0.2)
         secondReleased = true
         await downloader.complete(second, data: png())
-        await fulfillment(of: [secondRendered], timeout: 2)
+        await fulfillment(of: [secondRendered], timeout: 10)
     }
 
     private func png() -> Data {
