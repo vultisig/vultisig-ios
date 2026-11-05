@@ -85,7 +85,9 @@ class THORChainSwaps {
                 throw HelperError.runtimeError(preSigningOutput.errorMessage)
             }
             return [preSigningOutput.dataHash.hexString]
-        case .bitcoin, .litecoin, .bitcoinCash, .dogecoin, .zcash:
+        case .zcash:
+            return try ZcashV5Transaction.preImageHashes(inputData: inputData).map { $0.hexString }
+        case .bitcoin, .litecoin, .bitcoinCash, .dogecoin:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try BitcoinPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {

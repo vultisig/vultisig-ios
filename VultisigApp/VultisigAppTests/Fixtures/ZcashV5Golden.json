@@ -1,0 +1,190 @@
+{
+  "source": "ZIP-225/ZIP-244 reference vectors; reference implementation validated against mainnet v5 transactions (txid, bytes, signatures)",
+  "fixtures": [
+    {
+      "name": "one_input_with_change_nu63",
+      "consensusBranchIdBigEndian": "37a5165b",
+      "walletCoreBranchIdLittleEndian": "5b16a537",
+      "privateKey": "1111111111111111111111111111111111111111111111111111111111111111",
+      "publicKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "fromAddress": "t1gtRERLXEZ1xS4fPMnR1K8DyHCHUjAgWni",
+      "toAddress": "t1RSr79xfHYE8LALif4h9Puuft9pGgydJv3",
+      "plan": {
+        "amount": 600000,
+        "change": 390000,
+        "memo": null,
+        "utxos": [
+          {
+            "txid": "a0f905b1569d0000000000000000000000000000000000000000000000000000",
+            "vout": 0,
+            "amount": 1000000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac",
+            "sequence": 4294967295
+          }
+        ]
+      },
+      "expected": {
+        "outputs": [
+          {
+            "amount": 600000,
+            "script": "76a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac"
+          },
+          {
+            "amount": 390000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac"
+          }
+        ],
+        "sighashes": [
+          "aa98e618cd3031da546cba885a2057f7086b123531399df6a478c61033b44ade"
+        ],
+        "derSignatures": [
+          "3045022100b8c031941dff7408c51d881f199c1651b05e2dec557ce5e64e6b14c2a619ff9302201860c6205b4dd643ae8fce2376618a1c35a559cfeeafc2f6dc1f261b036f34cb"
+        ],
+        "txid": "7639d114699db7957f772d04f406d4cc6151db24915bb78aa5515f1f201f330c",
+        "raw": "050000800a27a7265b16a53700000000000000000100000000000000000000000000000000000000000000000000009d56b105f9a0000000006b483045022100b8c031941dff7408c51d881f199c1651b05e2dec557ce5e64e6b14c2a619ff9302201860c6205b4dd643ae8fce2376618a1c35a559cfeeafc2f6dc1f261b036f34cb0121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaffffffff02c0270900000000001976a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac70f30500000000001976a914fc7250a211deddc70ee5a2738de5f07817351cef88ac000000"
+      }
+    },
+    {
+      "name": "two_inputs_change_memo_nu7",
+      "consensusBranchIdBigEndian": "77190ad9",
+      "walletCoreBranchIdLittleEndian": "d90a1977",
+      "privateKey": "1111111111111111111111111111111111111111111111111111111111111111",
+      "publicKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "fromAddress": "t1gtRERLXEZ1xS4fPMnR1K8DyHCHUjAgWni",
+      "toAddress": "t1RSr79xfHYE8LALif4h9Puuft9pGgydJv3",
+      "plan": {
+        "amount": 500000,
+        "change": 130000,
+        "memo": "=:ETH.ETH:0x86d526d6624AbC0178cF7296cD538Ecc080A95F1:0/1/0:vi:50",
+        "utxos": [
+          {
+            "txid": "e34ab6d8429a1111111111111111111111111111111111111111111111111111",
+            "vout": 1,
+            "amount": 250000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac",
+            "sequence": 4294967295
+          },
+          {
+            "txid": "a0aa4eed1a002222222222222222222222222222222222222222222222222222",
+            "vout": 3,
+            "amount": 400000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac",
+            "sequence": 4294967295
+          }
+        ]
+      },
+      "expected": {
+        "outputs": [
+          {
+            "amount": 500000,
+            "script": "76a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac"
+          },
+          {
+            "amount": 130000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac"
+          },
+          {
+            "amount": 0,
+            "script": "6a403d3a4554482e4554483a3078383664353236643636323441624330313738634637323936634435333845636330383041393546313a302f312f303a76693a3530"
+          }
+        ],
+        "sighashes": [
+          "20cc5d006929e7120b7e01ea48a7f1b643760ee1582036927002d8354b5f4532",
+          "8ded02ca7eb76da59556589736bb197661c05a5a4b5aa46a33a5b4d1ead44010"
+        ],
+        "derSignatures": [
+          "3044022026c2db5e1994469d809769afead91718312561c5c28e5ced3bff2962ca8eb6a102202d21a2ecb064a1c54ed9a5317379be72883a64127f55d069b04e50c8c6fc5237",
+          "3044022028460a2121a00aca06db4b8d9bf60e5724b35df41e329f009e0a90b3629389f202205e58155281f5821edca59ae8c1de7d2634e744f333a1d31556ed89917be1c6fa"
+        ],
+        "txid": "1db888c674395c8aa6e62136e4fc961a1ee88779be696875f3fefd5bcbfac3c0",
+        "raw": "050000800a27a726d90a197700000000000000000211111111111111111111111111111111111111111111111111119a42d8b64ae3010000006a473044022026c2db5e1994469d809769afead91718312561c5c28e5ced3bff2962ca8eb6a102202d21a2ecb064a1c54ed9a5317379be72883a64127f55d069b04e50c8c6fc52370121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaffffffff2222222222222222222222222222222222222222222222222222001aed4eaaa0030000006a473044022028460a2121a00aca06db4b8d9bf60e5724b35df41e329f009e0a90b3629389f202205e58155281f5821edca59ae8c1de7d2634e744f333a1d31556ed89917be1c6fa0121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaffffffff0320a10700000000001976a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88acd0fb0100000000001976a914fc7250a211deddc70ee5a2738de5f07817351cef88ac0000000000000000426a403d3a4554482e4554483a3078383664353236643636323441624330313738634637323936634435333845636330383041393546313a302f312f303a76693a3530000000"
+      }
+    },
+    {
+      "name": "pushdata1_memo_78_bytes_nu7",
+      "consensusBranchIdBigEndian": "77190ad9",
+      "walletCoreBranchIdLittleEndian": "d90a1977",
+      "privateKey": "1111111111111111111111111111111111111111111111111111111111111111",
+      "publicKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "fromAddress": "t1gtRERLXEZ1xS4fPMnR1K8DyHCHUjAgWni",
+      "toAddress": "t1RSr79xfHYE8LALif4h9Puuft9pGgydJv3",
+      "plan": {
+        "amount": 700000,
+        "change": 180000,
+        "memo": "=:ETH.ETH:0x86d526d6624AbC0178cF7296cD538Ecc080A95F1:1234567890/1/0:vi:50:abc",
+        "utxos": [
+          {
+            "txid": "b1b2b3b4b5b64444444444444444444444444444444444444444444444444444",
+            "vout": 0,
+            "amount": 900000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac",
+            "sequence": 4294967295
+          }
+        ]
+      },
+      "expected": {
+        "outputs": [
+          {
+            "amount": 700000,
+            "script": "76a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac"
+          },
+          {
+            "amount": 180000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac"
+          },
+          {
+            "amount": 0,
+            "script": "6a4c4d3d3a4554482e4554483a3078383664353236643636323441624330313738634637323936634435333845636330383041393546313a313233343536373839302f312f303a76693a35303a616263"
+          }
+        ],
+        "sighashes": [
+          "650de2aeea3aeb0e2d41fb4bb1eb5e0dbfc5c39f6045fc5f1b1c75a9bc1e292e"
+        ],
+        "derSignatures": [
+          "304402205889ec138a75c26a2329a34d33f17cf19d5a2f28925f05964faa47c0e005058802203f24a58b89dcb98a58336b9e3dacd763887e3d7049f03019020fd713173772c7"
+        ],
+        "txid": "179c1b5d1fa8802f516f1318f02a70eafd1b45321adbf0785d707ca463461bd6",
+        "raw": "050000800a27a726d90a19770000000000000000014444444444444444444444444444444444444444444444444444b6b5b4b3b2b1000000006a47304402205889ec138a75c26a2329a34d33f17cf19d5a2f28925f05964faa47c0e005058802203f24a58b89dcb98a58336b9e3dacd763887e3d7049f03019020fd713173772c70121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaffffffff0360ae0a00000000001976a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac20bf0200000000001976a914fc7250a211deddc70ee5a2738de5f07817351cef88ac0000000000000000506a4c4d3d3a4554482e4554483a3078383664353236643636323441624330313738634637323936634435333845636330383041393546313a313233343536373839302f312f303a76693a35303a616263000000"
+      }
+    },
+    {
+      "name": "one_input_no_change_nu7",
+      "consensusBranchIdBigEndian": "77190ad9",
+      "walletCoreBranchIdLittleEndian": "d90a1977",
+      "privateKey": "1111111111111111111111111111111111111111111111111111111111111111",
+      "publicKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "fromAddress": "t1gtRERLXEZ1xS4fPMnR1K8DyHCHUjAgWni",
+      "toAddress": "t1RSr79xfHYE8LALif4h9Puuft9pGgydJv3",
+      "plan": {
+        "amount": 485000,
+        "change": 0,
+        "memo": null,
+        "utxos": [
+          {
+            "txid": "aea2b262ac523333333333333333333333333333333333333333333333333333",
+            "vout": 2,
+            "amount": 500000,
+            "script": "76a914fc7250a211deddc70ee5a2738de5f07817351cef88ac",
+            "sequence": 4294967295
+          }
+        ]
+      },
+      "expected": {
+        "outputs": [
+          {
+            "amount": 485000,
+            "script": "76a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac"
+          }
+        ],
+        "sighashes": [
+          "d06c3e0d626f22ea6e43fcfed2df63abc2efc78f5e870a78abe9a42fcdcd57a5"
+        ],
+        "derSignatures": [
+          "30450221009b0056194f766f84a1893abafaa64c9459007b8c0f16e03b8ce1de5cbebcfde302203ffa8a26e802b7615395b045ff92d176eda6172e32c17d1d5d955d809d59aecf"
+        ],
+        "txid": "5c3f811536b0236ac0c05883a60beda6b13487cddb478dccc1376766c68c9660",
+        "raw": "050000800a27a726d90a1977000000000000000001333333333333333333333333333333333333333333333333333352ac62b2a2ae020000006b4830450221009b0056194f766f84a1893abafaa64c9459007b8c0f16e03b8ce1de5cbebcfde302203ffa8a26e802b7615395b045ff92d176eda6172e32c17d1d5d955d809d59aecf0121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaffffffff0188660700000000001976a914531260aa2a199e228c537dfa42c82bea2c7c1f4d88ac000000"
+      }
+    }
+  ]
+}

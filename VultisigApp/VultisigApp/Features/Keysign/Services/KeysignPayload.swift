@@ -166,7 +166,7 @@ struct KeysignPayload: Codable, Hashable {
     }
 
     /// Returns a copy of the payload with `chainSpecific` swapped. Used by the
-    /// co-signer to re-stamp the live ZEC ZIP-243 branch id onto a payload
+    /// co-signer to re-stamp the live ZEC consensus branch id onto a payload
     /// rebuilt from proto (the proto can't carry it) before computing sighashes.
     func withChainSpecific(_ chainSpecific: BlockChainSpecific) -> KeysignPayload {
         KeysignPayload(

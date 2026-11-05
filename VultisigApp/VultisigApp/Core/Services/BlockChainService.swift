@@ -615,7 +615,7 @@ private extension BlockChainService {
 
         switch coin.chain {
         case .zcash:
-            // Resolve the live ZIP-243 branch id at build time so it travels
+            // Resolve the live consensus branch id at build time so it travels
             // with the payload to the signing helpers (covers native sends and
             // SwapKit ZEC swaps). nil when the RPC is down — signing then
             // refuses rather than producing a network-rejected tx.

@@ -64,7 +64,7 @@ class UTXOChainsHelper {
         return Base58.encode(data: Data([0x1c, 0xb8]) + hash)
     }
 
-    /// Live ZIP-243 branch id WalletCore reads off the plan during preimage
+    /// Live consensus branch id read off the plan during preimage
     /// construction. Resolved at send time and carried on the payload's UTXO
     /// specific — the initiator stamps it (BlockChainService), the co-signer
     /// re-resolves the same network-global value (JoinKeysignViewModel). There
@@ -74,12 +74,12 @@ class UTXOChainsHelper {
         guard let branchId = keysignPayload.chainSpecific.zcashBranchId,
               !branchId.isEmpty,
               let branchData = Data(hexString: branchId) else {
-            throw HelperError.runtimeError("Zcash ZIP-243 consensus branch id is unavailable; cannot sign the ZEC transaction without the live branch id")
+            throw HelperError.runtimeError("Zcash consensus branch id is unavailable; cannot sign the ZEC transaction without the live branch id")
         }
         return branchData
     }
 
-    /// Stamp the live ZIP-243 branch id onto a Zcash plan before signing.
+    /// Stamp the live consensus branch id onto a Zcash plan before signing.
     /// No-op for every other UTXO coin; throws when ZEC's branch id could not
     /// be resolved so signing refuses rather than producing a rejectable tx.
     private func applyZcashBranchID(to plan: inout BitcoinTransactionPlan, keysignPayload: KeysignPayload) throws {
@@ -182,6 +182,10 @@ class UTXOChainsHelper {
                 .sorted()
         }
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
+        // WalletCore only builds Zcash v4, which NU7 rejects.
+        if coin == .zcash {
+            return try ZcashV5Transaction.preImageHashes(inputData: inputData).map { $0.hexString }.sorted()
+        }
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
         if !preSignOutputs.errorMessage.isEmpty {
@@ -357,7 +361,7 @@ class UTXOChainsHelper {
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        // The branch id only affects the ZIP-243 sighash digest, not the
+        // The branch id only affects the sighash digests, not the
         // planned amount/fee/change this method exposes for fee display, so it
         // is deliberately not set here (avoids forcing an RPC resolve on the
         // fee-preview path).
@@ -387,6 +391,9 @@ class UTXOChainsHelper {
         }
 
         do {
+            if coin == .zcash {
+                return try ZcashV5Transaction.compile(inputData: inputData, signatures: signatures, publicKey: publicKey)
+            }
             let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
             let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
             let allSignatures = DataVector()
@@ -412,7 +419,7 @@ class UTXOChainsHelper {
     func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
         // Placeholder tx for Blockaid analysis: only plan amount/change are read
-        // below, so the ZIP-243 branch id (sighash-only) is irrelevant here.
+        // below, so the consensus branch id (sighash-only) is irrelevant here.
         let plan = try planTransaction(&input)
 
         // Build raw transaction manually using plan data

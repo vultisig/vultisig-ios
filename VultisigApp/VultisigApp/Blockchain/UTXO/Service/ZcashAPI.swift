@@ -7,7 +7,7 @@ import Foundation
 
 /// Zcash JSON-RPC endpoints proxied through `api.vultisig.com/zcash`.
 enum ZcashAPI: TargetType {
-    /// `getblockchaininfo` — used to read the active ZIP-243 consensus branch id
+    /// `getblockchaininfo` — used to read the active consensus branch id
     /// (`consensus.nextblock`).
     case getBlockchainInfo
 
