@@ -10,6 +10,7 @@ import SwiftUI
 struct StepsAnimationView<Header: View, CellContent: View>: View {
     @State var contentHeight: CGFloat = .zero
     let cellHeight: CGFloat = 68
+    private let railInset: CGFloat = 33
 
     let title: String
     let steps: Int
@@ -53,22 +54,21 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
 
     @ViewBuilder
     var rectangle: some View {
-        let height = contentHeight - cellHeight / 2 + 1.5
+        let height = contentHeight - 2 * railInset
         if height.isFinite && height > 0 {
             Rectangle()
-                .frame(width: 3, height: height)
-                .foregroundStyle(Theme.colors.borderLight)
-                .offset(x: 1)
+                .frame(width: 2, height: height)
+                .foregroundStyle(Theme.colors.bgSurface1)
+                .padding(.top, railInset)
         }
     }
 
     var content: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 32) {
             headerContent
             titleView
             list
         }
-        .scaledToFit()
         .readSize {
             let currentContentHeight = contentHeight
             contentHeight = $0.height
@@ -88,18 +88,11 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
 
     var titleView: some View {
         Text(title)
+            .settingsText(.largeTitle)
             .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 24)
-    }
-
-    var shadow: some View {
-        Circle()
-            .frame(width: 360, height: 360)
-            .foregroundStyle(Theme.colors.alertInfo)
-            .opacity(0.05)
-            .blur(radius: 20)
+            .padding(.leading, 20)
+            .padding(.bottom, 16)
     }
 
     var list: some View {
@@ -115,19 +108,13 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         let showCell = showCells[index]
         HStack(spacing: 0) {
             Rectangle()
-                .frame(width: 22, height: 3)
-                .foregroundStyle(Theme.colors.borderLight)
+                .frame(width: 22, height: 2)
+                .foregroundStyle(Theme.colors.bgSurface1)
 
             cellContent(index)
                 .padding(16)
-                .frame(height: cellHeight)
-                .background(Theme.colors.bgSurface1)
-                .cornerRadius(Theme.radius.lg)
-                .overlay(
-                    Theme.radius.lg.shape
-                        .inset(by: 1)
-                        .stroke(Theme.colors.borderLight, lineWidth: 1)
-                )
+                .frame(minHeight: cellHeight)
+                .surface(Theme.colors.bgSurface1, radius: Theme.radius.lg)
         }
         .opacity(showCell ? 1 : 0)
         .offset(y: showCell ? 0 : -10)

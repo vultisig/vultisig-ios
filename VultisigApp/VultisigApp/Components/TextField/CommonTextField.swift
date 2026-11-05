@@ -22,8 +22,9 @@ enum CommonTextFieldErrorStyle {
 /// `.settings`: a 52 tall card with a dim label and placeholder, no outer gutter.
 /// `.settingsInput`: the same card with a normal border that shows validation colours.
 /// `.settingsForm`: radius 12 with a light border, for fields inside a form section.
+/// `.settingsCode`: 56 tall, radius 12, showing validation colours, for short codes.
 enum CommonTextFieldAppearance {
-    case standard, settings, settingsInput, settingsForm
+    case standard, settings, settingsInput, settingsForm, settingsCode
 }
 
 private struct CommonTextFieldMetrics {
@@ -33,6 +34,7 @@ private struct CommonTextFieldMetrics {
     let outerPadding: CGFloat
     let cornerRadius: CornerRadius
     let clearIconSize: CGFloat
+    var clearIcon: ImageResource = .circleXmarkFilled
 }
 
 struct CommonTextField<TrailingView: View>: View {
@@ -123,14 +125,14 @@ struct CommonTextField<TrailingView: View>: View {
                     Text(label)
                         .foregroundStyle(labelColor)
                         .font(labelFont)
-                case .settings, .settingsInput, .settingsForm:
+                case .settings, .settingsInput, .settingsForm, .settingsCode:
                     Text(label)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .settingsText(.bodyS)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: appearance == .settingsCode ? 8 : 4) {
                 HStack {
                     textFieldContainer
                         .font(metrics.textFont)
@@ -170,7 +172,7 @@ struct CommonTextField<TrailingView: View>: View {
             text = ""
         } label: {
             Icon(
-                .circleXmarkFilled,
+                metrics.clearIcon,
                 color: Theme.colors.textTertiary,
                 size: metrics.clearIconSize
             )
@@ -215,6 +217,9 @@ struct CommonTextField<TrailingView: View>: View {
     }
 
     var errorCaptionFont: Font {
+        if appearance == .settingsCode {
+            return Theme.fonts.caption12
+        }
         switch errorStyle {
         case .error:
             return Theme.fonts.footnote
@@ -327,6 +332,16 @@ struct CommonTextField<TrailingView: View>: View {
                 cornerRadius: Theme.radius.md,
                 clearIconSize: 18
             )
+        case .settingsCode:
+            CommonTextFieldMetrics(
+                height: standardHeight,
+                textFont: Theme.fonts.bodyMMedium,
+                horizontalPadding: 16,
+                outerPadding: 0,
+                cornerRadius: Theme.radius.md,
+                clearIconSize: 20,
+                clearIcon: .xmark
+            )
         }
     }
 
@@ -345,6 +360,17 @@ struct CommonTextField<TrailingView: View>: View {
         case .settingsForm:
             metrics.cornerRadius.shape
                 .strokeBorder(hasError ? invalidColor : Theme.colors.borderExtraLight, lineWidth: 1)
+        case .settingsCode:
+            metrics.cornerRadius.shape
+                .strokeBorder(settingsCodeBorderColor, lineWidth: 1)
+        }
+    }
+
+    private var settingsCodeBorderColor: Color {
+        switch isValid {
+        case .some(true): Theme.colors.alertSuccess
+        case .some(false): invalidColor
+        case nil: hasError ? invalidColor : Theme.colors.borderLight
         }
     }
 

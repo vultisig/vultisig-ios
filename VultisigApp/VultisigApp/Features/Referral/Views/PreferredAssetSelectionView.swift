@@ -16,7 +16,7 @@ struct PreferredAssetSelectionView: View {
     var body: some View {
         Screen {
             VStack(spacing: 8) {
-                SearchTextField(value: $viewModel.searchText)
+                SearchTextField(value: $viewModel.searchText, appearance: .settings)
                 ScrollView {
                     if viewModel.isLoading {
                         loadingView
@@ -51,7 +51,14 @@ struct PreferredAssetSelectionView: View {
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(viewModel.filteredAssets, id: \.asset) { asset in
-                SwapCoinCell(coin: asset.asset, balance: nil, balanceFiat: nil, isSelected: preferredAsset?.asset == asset.asset) {
+                SwapCoinCell(
+                    coin: asset.asset,
+                    balance: nil,
+                    balanceFiat: nil,
+                    isSelected: preferredAsset?.asset == asset.asset,
+                    showsSeparator: asset.asset != viewModel.filteredAssets.last?.asset,
+                    appearance: .settings
+                ) {
                     preferredAsset = asset
                     onSelect()
                 }

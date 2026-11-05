@@ -11,12 +11,14 @@ struct PickReferralCode: View {
     @Bindable var viewModel: ReferralDetailsViewModel
 
     var body: some View {
-        return VStack(spacing: 8) {
-            pickReferralTitle
+        return VStack(spacing: 14) {
+            VStack(spacing: 8) {
+                pickReferralTitle
 
-            HStack(alignment: .center, spacing: 8) {
-                pickReferralTextfield
-                searchButton
+                HStack(alignment: .top, spacing: 8) {
+                    pickReferralTextfield
+                    searchButton
+                }
             }
 
             status
@@ -27,7 +29,7 @@ struct PickReferralCode: View {
     var pickReferralTitle: some View {
         Text(NSLocalizedString("pickReferralCode", comment: ""))
             .foregroundStyle(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
+            .settingsText(.bodyS)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -37,7 +39,8 @@ struct PickReferralCode: View {
             placeholderText: "enter4Characters",
             action: .None,
             errorMessage: $viewModel.referralAvailabilityErrorMessage,
-            showSuccess: viewModel.availabilityStatus == .available
+            showSuccess: viewModel.availabilityStatus == .available,
+            showInvalid: viewModel.availabilityStatus == .alreadyTaken
         )
         .layoutPriority(1)
         .frame(maxWidth: .infinity)
@@ -52,7 +55,6 @@ struct PickReferralCode: View {
                 await viewModel.verifyReferralCode()
             }
         }
-        .scaledToFit()
         .disabled(viewModel.isLoading)
     }
 
@@ -61,22 +63,19 @@ struct PickReferralCode: View {
         if let status = viewModel.availabilityStatus {
             HStack {
                 Text(NSLocalizedString("status", comment: ""))
+                    .settingsText(.bodyS)
                     .foregroundStyle(Theme.colors.textTertiary)
 
                 Spacer()
 
                 Text(status.description)
+                    .settingsText(.footnote)
                     .foregroundStyle(status.color)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .cornerRadius(Theme.radius.xl)
-                    .overlay(
-                        Theme.radius.xl.shape
-                            .stroke(Theme.colors.border, lineWidth: 1)
-                    )
+                    .surface(Theme.colors.bgSurface1, radius: Theme.radius.pill, borderWidth: 1.5)
             }
-            .font(Theme.fonts.bodySMedium)
-            .padding(.top, 2)
+            .frame(minHeight: 52)
         }
     }
 }

@@ -4,6 +4,7 @@ public protocol ColorSystemProtocol {
     var bgButtonPrimary: Color { get }
     var bgButtonSecondary: Color { get }
     var bgButtonTertiary: Color { get }
+    var bgButtonCtaPrimary: Color { get }
 
     var bgButtonPrimaryPressed: Color { get }
     var bgButtonSecondaryPressed: Color { get }
@@ -13,6 +14,8 @@ public protocol ColorSystemProtocol {
 
     var buttonBevelLight: Color { get }
     var buttonBevelDark: Color { get }
+    var buttonEdgeLight: Color { get }
+    var buttonEdgeDark: Color { get }
     var medallionInsetShadow: Color { get }
 
     var appTileGradientEnd: Color { get }

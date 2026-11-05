@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "Cada dispositivo criará um novo backup .vult, diferente dos backups antigos";
 "newBackupsCreatedTitle" = "Novos backups serão criados";
 "newChainDetected" = "Nova cadeia detectada";
+"newExpirationDate" = "Nova data de expiração:";
 "newUpdateAvailable" = "Nova atualização disponível";
 "newWalletNameDescription" = "Você pode renomear seu cofre mais tarde nas configurações";
 "next" = "Próximo";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "Este código de indicação não tem um alias definido. Verifique e tente novamente.";
 "referralLaunchCodeLengthError" = "O código de indicação pode conter até 4 caracteres";
 "referralNetworkError" = "Erro ao buscar dados de referência.";
+"referralOnboardingBannerDescription" = "Compartilhe seu código de indicação exclusivo para convidar amigos. Eles ganham um desconto e, quanto mais negociarem, mais você ganha.";
 "referralOnboardingBannerTitle1" = "Convide amigos. ";
 "referralOnboardingBannerTitle2" = "Ganhe recompensas.\n";
 "referralOnboardingBannerTitle3" = "Economize nas taxas.";
@@ -1392,7 +1394,7 @@
 "save" = "Salvar";
 "saveChanges" = "Salvar alterações";
 "savedAddresses" = "Endereços salvos";
-"saveOnSwaps" = "Economize %@ em swaps";
+"saveOnSwaps" = "Economize %@ em swaps agora";
 "saveReferral" = "Salvar indicação";
 "saveReferralCardBody" = "Salve o código de indicação de um amigo e economize %@ em swaps.";
 "saveReferralCardTitle" = "Salvar indicação";
@@ -1465,6 +1467,7 @@
 "selectToken" = "Selecionar token";
 "selectTokensSubtitle" = "Ative pelo menos um token para ver saldos e gerenciar posições.";
 "selectTokensTitle" = "Selecionar tokens";
+"selectVault" = "Selecionar cofre";
 "selectVaults" = "Selecionar cofres";
 "selectVaultsToBackUpSubtitle" = "Escolha se deve fazer backup apenas deste cofre ou de todos os cofres em seu aplicativo.";
 "selectVaultsToBackUpTitle" = "Selecione cofres para fazer backup";
@@ -1922,10 +1925,9 @@
 "Vote" = "Votar";
 "vult" = "$VULT";
 "vultDiscount" = "Desconto: %d%%";
-"vultDiscountHeroSubtitle" = "receba um desconto de negociação";
-"vultDiscountHeroTitle" = "Mantenha $VULT";
 "vultDiscountTiers" = "Níveis de Desconto $VULT";
 "vultDiscountTiersDescription" = "Mantenha $VULT para desbloquear taxas de negociação mais baixas.";
+"vultDiscountTiersThorguardBoost" = "Ter um ThorGuard aumenta seu nível de desconto em um nível, até Platina.";
 "vultiserverPassword" = "Senha do Vultiserver";
 "vultisig-referrals" = "Vultisig Indicações";
 "vultisigBrandName" = "Vultisig";

@@ -32,7 +32,11 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(padding(for: size))
             .background(
                 ZStack(alignment: .leadingLastTextBaseline) {
-                    backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled)
+                    let fill = backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled)
+                    fill
+                    if type == .primary, isEnabled {
+                        InnerShadowEdge(radius: radius(for: size), fill: fill)
+                    }
                     Rectangle()
                         .fill(.white.opacity(0.15))
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
@@ -59,8 +63,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 /// Inset bevel used by the 2026 button treatment: a light hairline along the top
 /// inner edge and a dark hairline along the bottom inner edge. Reproduces the
 /// Figma `inset 0 1px 1px rgba(255,255,255,0.10)` + `inset 0 -1px 0.5px #0F1C3E`
-/// shadow pair. Currently applied to `.secondary`; kept as a standalone piece so
-/// the other button types can adopt the same treatment.
+/// shadow pair. Applied to `.secondary`.
 private struct InsetBevelOverlay: View {
     let radius: CornerRadius
 
@@ -82,6 +85,21 @@ private struct InsetBevelOverlay: View {
     }
 }
 
+/// The CTA's plastic edge: inner shadows fading in from the top and bottom.
+private struct InnerShadowEdge: View {
+    let radius: CornerRadius
+    let fill: Color
+
+    var body: some View {
+        // Tuned to Figma's pixels: passed straight to SwiftUI, the design's 1.9 and 1.6 blurs render about twice as wide.
+        radius.shape.fill(
+            fill
+                .shadow(.inner(color: Theme.colors.buttonEdgeLight, radius: 0.85, y: 1))
+                .shadow(.inner(color: Theme.colors.buttonEdgeDark, radius: 0.7, y: -1))
+        )
+    }
+}
+
 private extension PrimaryButtonStyle {
     func padding(for size: ButtonSize) -> EdgeInsets {
         switch size {
@@ -93,12 +111,14 @@ private extension PrimaryButtonStyle {
             return EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0)
         case .mini:
             return EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
-        case .squared:
-            return EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
         case .compact, .compactSemibold:
             return EdgeInsets(top: 14.5, leading: 0, bottom: 14.5, trailing: 0)
         case .compactHug:
             return EdgeInsets(top: 14.5, leading: 32, bottom: 14.5, trailing: 32)
+        case .squared:
+            return EdgeInsets(top: 19.5, leading: 24, bottom: 19.5, trailing: 24)
+        case .pill:
+            return EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
         }
     }
 
@@ -108,7 +128,7 @@ private extension PrimaryButtonStyle {
         if type == .secondary {
             switch size {
             case .medium, .small, .smallFixed: return Theme.fonts.buttonSMedium
-            case .mini, .squared, .compact, .compactHug, .compactSemibold: return font(for: size)
+            case .mini, .squared, .compact, .compactHug, .compactSemibold, .pill: return font(for: size)
             }
         }
         return font(for: size)
@@ -117,7 +137,7 @@ private extension PrimaryButtonStyle {
     func font(for size: ButtonSize) -> Font {
         switch size {
         case .medium, .small, .smallFixed: return Theme.fonts.buttonRegularSemibold
-        case .mini: return Theme.fonts.caption12
+        case .mini, .pill: return Theme.fonts.caption12
         case .squared, .compactHug, .compactSemibold: return Theme.fonts.buttonSSemibold
         case .compact: return Theme.fonts.buttonSMedium
         }
@@ -129,7 +149,7 @@ private extension PrimaryButtonStyle {
     /// intention instead, and renders the same shape at every button size.
     func radius(for size: ButtonSize) -> CornerRadius {
         switch size {
-        case .medium, .small, .smallFixed, .mini, .compact, .compactHug, .compactSemibold: Theme.radius.pill
+        case .medium, .small, .smallFixed, .mini, .compact, .compactHug, .compactSemibold, .pill: Theme.radius.pill
         case .squared: Theme.radius.md
         }
     }
@@ -152,7 +172,7 @@ private extension PrimaryButtonStyle {
             } else if shouldHighlight {
                 return Theme.colors.bgButtonTertiaryPressed
             } else {
-                return Theme.colors.bgButtonTertiary
+                return Theme.colors.bgButtonCtaPrimary
             }
 
         case .secondary:
@@ -192,7 +212,7 @@ private extension PrimaryButtonStyle {
     func borderColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
         case .primary:
-            return isEnabled ? .clear : Theme.colors.bgButtonTertiary.opacity(0.6)
+            return isEnabled ? .clear : Theme.colors.bgButtonCtaPrimary.opacity(0.6)
         case .alert, .primarySuccess:
             return .clear
         case .secondary:
@@ -215,8 +235,7 @@ private extension PrimaryButtonStyle {
         }
     }
 
-    /// Whether the inset bevel is applied. Scoped to `.secondary` for now; the
-    /// treatment extends to the other types in a follow-up.
+    /// Whether the inset bevel is applied. Enabled `.primary` uses `InnerShadowEdge` instead.
     func hasBevel(for type: ButtonType) -> Bool {
         switch type {
         case .secondary: return true

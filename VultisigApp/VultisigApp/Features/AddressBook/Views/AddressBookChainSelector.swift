@@ -22,7 +22,7 @@ struct AddressBookChainSelector: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .settingsText(.bodyS)
                 HStack {
-                    AddressBookChainCellView(chain: selectedChain, style: .field)
+                    AddressBookChainCellView(chain: selectedChain)
                     Spacer()
                     Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 20)
                 }

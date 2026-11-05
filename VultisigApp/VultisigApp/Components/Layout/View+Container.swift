@@ -40,4 +40,17 @@ extension View {
             .padding(1)
             .clipShape(radius.shape)
     }
+
+    /// `containerStyle` without its outer gutter, with an inset border in any colour.
+    func surface(
+        _ background: Color,
+        radius: CornerRadius,
+        border: Color = Theme.colors.borderLight,
+        borderWidth: CGFloat = 1
+    ) -> some View {
+        self
+            .background(background)
+            .cornerRadius(radius)
+            .overlay(radius.shape.strokeBorder(border, lineWidth: borderWidth))
+    }
 }

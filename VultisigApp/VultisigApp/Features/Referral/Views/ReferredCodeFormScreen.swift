@@ -21,7 +21,7 @@ struct ReferredCodeFormScreen: View {
                 button
             }
         }
-        .screenTitle(referredViewModel.title.localized)
+        .screenTitle(screenTitle)
         .withLoading(isLoading: $referredViewModel.isLoading)
         .onAppear {
             setData()
@@ -31,6 +31,10 @@ struct ReferredCodeFormScreen: View {
         }
     }
 
+    private var screenTitle: String {
+        referredViewModel.hasReferredCode ? referredViewModel.title.localized : "saveReferralCardTitle".localized
+    }
+
     var main: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -38,11 +42,12 @@ struct ReferredCodeFormScreen: View {
                     text: String(format: "referredSaveOnSwaps".localized, referralSavePercentage),
                     highlightedText: referralSavePercentage
                 ) {
-                    $0.font = Theme.fonts.bodySMedium
-                    $0.foregroundColor = Theme.colors.textPrimary
+                    $0.font = Theme.fonts.subtitle
+                    $0.foregroundColor = Theme.colors.textSecondary
                 } highlightedTextStyle: {
                     $0.foregroundColor = Theme.colors.primaryAccent4
                 }
+                .frame(maxWidth: .infinity, minHeight: 20, alignment: .leading)
                 .showIf(!referredViewModel.hasReferredCode)
                 textField
             }
@@ -60,7 +65,7 @@ struct ReferredCodeFormScreen: View {
     }
 
     var button: some View {
-        PrimaryButton(title: "saveReferral") {
+        PrimaryButton(title: "saveReferral", size: .compactSemibold) {
             Task { @MainActor in
                 let codeUpdated = await referredViewModel.verifyAndSaveReferredCode()
                 if codeUpdated {

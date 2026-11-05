@@ -13,6 +13,10 @@ struct VultDiscountTierBottomSheet: View {
     var onUnlock: () -> Void
 
     @State var width: CGFloat = 0
+    @State private var contentHeight: CGFloat = 0
+
+    private let minimumSheetHeight: CGFloat = 372
+    private let homeIndicatorHeight: CGFloat = 34
 
     var descriptionText: String {
         switch tier {
@@ -44,64 +48,23 @@ struct VultDiscountTierBottomSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 20) {
-                VultDiscountTierIcon(tier: tier, size: .big)
-                    .padding(.bottom, 6)
-                Group {
-                    if tier == .ultimate {
-                        HighlightedTextWithImage(
-                            text: String(format: "unlockXTier".localized, tier.name.localized),
-                            highlightedText: tier.name.localized,
-                            imageName: "vult-ultimate-text-overlay",
-                            font: Theme.fonts.title1,
-                            foregroundColor: Theme.colors.textPrimary
-                        )
-                    } else {
-                        HighlightedText(
-                            text: String(format: "unlockXTier".localized, tier.name.localized),
-                            highlightedText: tier.name.localized
-                        ) { attrString in
-                            attrString.font = Theme.fonts.title1
-                            attrString.foregroundColor = Theme.colors.textPrimary
-                        } highlightedTextStyle: { attrString in
-                            attrString.foregroundColor = tier.primaryColor
-                        }
-                    }
-                }
-
-                HighlightedText(
-                    text: descriptionText,
-                    highlightedText: highlightedDescriptionText
-                ) { attrString in
-                    attrString.font = Theme.fonts.bodySRegular
-                    attrString.foregroundColor = Theme.colors.textSecondary
-                } highlightedTextStyle: { attrString in
-                    attrString.font = Theme.fonts.bodySMedium
-                    attrString.foregroundColor = Theme.colors.textPrimary
-                }
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 300)
-            }
-            Spacer()
-            PrimaryButton(
-                title: "unlockTier".localized,
-                action: onUnlock
-            )
+        sheetContent
+        .padding(.top, 53)
+        .padding(.horizontal, 30)
+        .padding(.bottom, 33)
+        .fixedSize(horizontal: false, vertical: true)
+        .readSize {
+            width = $0.width
+            contentHeight = $0.height
         }
-        .padding(.top, 40)
-        .padding(.horizontal, 24)
+        .frame(maxHeight: .infinity, alignment: .top)
         #if os(macOS)
-        .padding(.bottom, 24)
-        .applySheetSize(400, 300)
+        .applySheetSize(400, sheetHeight)
         #endif
         .background(ModalBackgroundView(width: width))
         .presentationBackground(Theme.colors.bgSurface1)
-        .presentationDetents([.height(300)])
+        .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
-        .readSize {
-            width = $0.width
-        }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: .xmark) {
@@ -109,6 +72,42 @@ struct VultDiscountTierBottomSheet: View {
                 }
             }
         }
+    }
+
+    private var sheetContent: some View {
+        VStack(spacing: 20) {
+            VStack(spacing: 26) {
+                VultDiscountTierIcon(tier: tier, size: .settingsBig)
+                Text(String(format: "unlockXTier".localized, tier.name.localized))
+                    .settingsText(.title1)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            HighlightedText(
+                text: descriptionText,
+                highlightedText: highlightedDescriptionText
+            ) { attrString in
+                attrString.font = Theme.fonts.bodySRegular
+                attrString.foregroundColor = Theme.colors.textSecondary
+            } highlightedTextStyle: { attrString in
+                attrString.font = Theme.fonts.buttonSSemibold
+                attrString.foregroundColor = Theme.colors.textPrimary
+            }
+            .settingsText(.bodySRegular)
+            .multilineTextAlignment(.center)
+
+            PrimaryButton(
+                title: "unlockTier".localized,
+                size: .compactSemibold,
+                action: onUnlock
+            )
+        }
+    }
+
+    /// Grows past the design's height when a long locale wraps the body.
+    private var sheetHeight: CGFloat {
+        max(minimumSheetHeight, contentHeight + homeIndicatorHeight)
     }
 }
 

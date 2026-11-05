@@ -17,43 +17,32 @@ struct VultDiscountTiersScreen: View {
     @Environment(\.openURL) var openURL
 
     private let service = VultTierService()
+    private let heroHeight: CGFloat = 412
+    private let introductionTop: CGFloat = 277
+    private let homeIndicatorBleed: CGFloat = 60
+    #if os(macOS)
+    private let horizontalPadding: CGFloat = 40
+    private let bottomPadding: CGFloat = 24
+    #else
+    private let horizontalPadding: CGFloat = 16
+    private let bottomPadding: CGFloat = 0
+    #endif
 
     var body: some View {
         Screen {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        heroBanner
-                            .padding(.bottom, 4)
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    heroImage
+                        .frame(height: geometry.safeAreaInsets.top, alignment: .top)
+                        .clipped()
+                        .offset(y: -geometry.safeAreaInsets.top)
 
-                        Text("vultDiscountTiersDescription".localized)
-                            .font(Theme.fonts.bodySRegular)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-
-                        ForEach(VultDiscountTier.allCases) { tier in
-                            VultDiscountTierView(
-                                tier: tier,
-                                isActive: activeTier == tier,
-                                canUnlock: canUnlock(tier: tier)
-                            ) {
-                                onExpand(tier: tier)
-                            } onUnlock: {
-                                showTierSheet = tier
-                            }
-                            .id(tier.name)
-                        }
-                    }
+                    tierList(topInset: geometry.safeAreaInsets.top)
                 }
-                #if os(macOS)
-                .padding(.bottom, 24)
-                #endif
-                .onLoad { scrollProxy = proxy }
             }
         }
         .screenTitle("vultDiscountTiers".localized)
-        .screenEdgeInsets(.init(bottom: 0))
+        .screenEdgeInsets(.zero)
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: .globe2) {
@@ -73,39 +62,66 @@ struct VultDiscountTiersScreen: View {
 }
 
 private extension VultDiscountTiersScreen {
-    var heroBanner: some View {
-        ZStack(alignment: .topTrailing) {
-            LinearGradient(
-                colors: [Theme.colors.bgSurface1, Theme.colors.primaryAccent1],
-                startPoint: .bottomLeading,
-                endPoint: .topTrailing
-            )
-            .overlay(
-                VultisigImage("vult-tiers-hero-coins")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 169)
-                    .offset(x: 8, y: -8),
-                alignment: .topTrailing
-            )
+    /// Scrolls with the list. Only the strip behind the toolbar stays put, so
+    /// the art can never sit under the introduction or the cards.
+    func tierList(topInset: CGFloat) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 12) {
+                    introduction
+                        .padding(.top, introductionTop - topInset)
+                        .padding(.bottom, 1)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("vultDiscountHeroTitle".localized)
-                    .font(Theme.fonts.title1)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Text("vultDiscountHeroSubtitle".localized)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textPrimary)
+                    ForEach(VultDiscountTier.allCases) { tier in
+                        VultDiscountTierView(
+                            tier: tier,
+                            isActive: activeTier == tier,
+                            canUnlock: canUnlock(tier: tier)
+                        ) {
+                            onExpand(tier: tier)
+                        } onUnlock: {
+                            showTierSheet = tier
+                        }
+                        .id(tier.name)
+                    }
+                }
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, bottomPadding)
+                .background(alignment: .top) {
+                    heroImage
+                        .offset(y: -topInset)
+                }
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // Clips the top edge only, so the cards still run under the home indicator.
+            .mask { Rectangle().padding(.bottom, -homeIndicatorBleed) }
+            .onLoad { scrollProxy = proxy }
         }
-        .frame(height: 139)
-        .clipShape(Theme.radius.xl.shape)
-        .overlay(
-            Theme.radius.xl.shape
-                .stroke(Color.white.opacity(0.09), lineWidth: 1)
-        )
+    }
+
+    var heroImage: some View {
+        Color.clear
+            .frame(height: heroHeight)
+            .overlay(alignment: .top) {
+                VultisigImage("vult-tiers-hero")
+                    .resizable()
+                    .scaledToFill()
+            }
+            .clipped()
+            .allowsHitTesting(false)
+    }
+
+    var introduction: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("vultDiscountTiersDescription".localized)
+                .settingsText(.bodySRegular)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Text("vultDiscountTiersThorguardBoost".localized)
+                .settingsText(.caption)
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .multilineTextAlignment(.leading)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     func onExpand(tier: VultDiscountTier) {

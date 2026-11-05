@@ -24,20 +24,24 @@ struct VultDiscountTierView: View {
     /// the bottom edge and the two radii are drawn to sit together.
     private let bottomCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
     private let footerRadius: CornerRadius = Theme.radius.xl
-    private let footerHeight: CGFloat = 48
+    private let footerTopPadding: CGFloat = 32
+    /// One point more than the overlap, so the accent peeks out under the card.
+    private let collapsedFooterHeight: CGFloat = 23
+    private let footerOverlap: CGFloat = 22
 
     var holdAmountText: String {
         "\(tier.balanceToUnlock.formatForDisplay(skipAbbreviation: true)) $VULT"
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            footer
+        VStack(spacing: -footerOverlap) {
             cardBody
                 .clipShape(cardShape)
+                .overlay(cardShape.stroke(Theme.colors.borderLight, lineWidth: 1).opacity(isExpanded ? 1 : 0))
                 .contentShape(cardShape)
+                .zIndex(1)
+            footer
         }
-        .padding(.bottom, isExpanded ? footerHeight : 0)
         .onTapGesture { toggleExpansion() }
         .onLoad { animate(isActive: isActive) }
         .onChange(of: isActive) { _, newValue in
@@ -50,11 +54,12 @@ private extension VultDiscountTierView {
     var cardBody: some View {
         VStack(spacing: 12) {
             headerRow
+                .padding(.bottom, isExpanded ? 12 : 0)
 
             VStack(spacing: 12) {
                 perkPill
                 Text("moreComingSoon".localized)
-                    .font(Theme.fonts.caption12)
+                    .settingsText(.caption)
                     .foregroundStyle(Theme.colors.textTertiary)
             }
             .transition(.verticalGrowAndFade)
@@ -69,9 +74,9 @@ private extension VultDiscountTierView {
 
     var headerRow: some View {
         HStack(spacing: 12) {
-            VultDiscountTierIcon(tier: tier, size: .small)
+            VultDiscountTierIcon(tier: tier, size: .settingsSmall)
             Text(tier.name.localized)
-                .font(Theme.fonts.subtitle)
+                .settingsText(.subtitle)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer(minLength: 0)
             Text(holdAmountText)
@@ -82,7 +87,7 @@ private extension VultDiscountTierView {
 
     var perkPill: some View {
         Text(tier.discountPerkText)
-            .font(Theme.fonts.footnote)
+            .settingsText(.footnote)
             .foregroundStyle(Theme.colors.textPrimary)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
@@ -131,26 +136,19 @@ private extension VultDiscountTierView {
     /// lower tiers show a non-interactive "✓ Unlocked".
     var footer: some View {
         footerContent
-            .frame(maxWidth: .infinity, alignment: .bottom)
-            .frame(height: footerHeight, alignment: .bottom)
+            .frame(maxWidth: .infinity)
+            .padding(.top, footerTopPadding)
             .padding(.bottom, 14)
+            .opacity(isExpanded ? 1 : 0)
+            .frame(height: isExpanded ? nil : collapsedFooterHeight, alignment: .bottom)
             .background(footerGradient)
             .overlay(footerInnerShadow)
-            // Both radii below are the CARD's bottom radius, not the footer's
-            // own: the bar sits behind `cardBody` and peeks out from under it,
-            // so its bottom edge has to trace the edge it emerges from. Written
-            // as a literal `20` they were a silent copy — move the card and the
-            // footer would have cut across the corner it is meant to follow.
             .clipShape(
                 UnevenRoundedRectangle(
-                    bottomLeadingRadius: bottomCornerRadius,
-                    bottomTrailingRadius: bottomCornerRadius
+                    bottomLeadingRadius: footerRadius.points,
+                    bottomTrailingRadius: footerRadius.points,
+                    style: footerRadius.style
                 )
-            )
-            .offset(y: isExpanded ? 48 : 2)
-            .overlay(
-                RoundedRectangle(cornerRadius: bottomCornerRadius)
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .onTapGesture {
                 if isUnlockTappable {
@@ -165,13 +163,15 @@ private extension VultDiscountTierView {
             Text("unlockTier".localized)
                 .font(Theme.fonts.buttonSSemibold)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .padding(.vertical, 3)
         } else {
             HStack(spacing: 5) {
-                Icon(.check, color: Theme.colors.textPrimary, size: 14)
+                Icon(.check2, color: Theme.colors.textPrimary, size: 20)
                 Text((isActiveInternal ? "active" : "unlocked").localized)
                     .font(Theme.fonts.buttonSSemibold)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
+            .padding(.vertical, 5)
             .transaction { $0.animation = nil }
         }
     }

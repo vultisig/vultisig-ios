@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "Svaki će uređaj stvoriti novu .vult sigurnosnu kopiju koja se razlikuje od starih sigurnosnih kopija";
 "newBackupsCreatedTitle" = "Stvorit će se nove sigurnosne kopije";
 "newChainDetected" = "Otkriven novi lanac";
+"newExpirationDate" = "Novi datum isteka:";
 "newUpdateAvailable" = "Dostupno novo ažuriranje";
 "newWalletNameDescription" = "Možete preimenovati svoj trezor kasnije u postavkama";
 "next" = "Sljedeći";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "Ovaj referalni kod nema postavljen alias. Provjerite i pokušajte ponovno.";
 "referralLaunchCodeLengthError" = "Referalni kod može sadržavati do 4 znaka";
 "referralNetworkError" = "Pogreška prilikom dohvaćanja podataka o preporukama.";
+"referralOnboardingBannerDescription" = "Podijelite svoj jedinstveni referalni kod kako biste pozvali prijatelje. Oni dobivaju popust i što više trguju, to više zarađujete.";
 "referralOnboardingBannerTitle1" = "Pozovite prijatelje. ";
 "referralOnboardingBannerTitle2" = "Zaradite nagrade.\n";
 "referralOnboardingBannerTitle3" = "Uštedite na naknadama.";
@@ -1392,7 +1394,7 @@
 "save" = "Spremi";
 "saveChanges" = "Spremi promjene";
 "savedAddresses" = "Spremljene adrese";
-"saveOnSwaps" = "Uštedite %@ na zamjenama";
+"saveOnSwaps" = "Uštedite %@ na zamjenama sada";
 "saveReferral" = "Spremi referalu";
 "saveReferralCardBody" = "Spremite prijateljev kod preporuke i uštedite %@ na zamjenama.";
 "saveReferralCardTitle" = "Spremi preporuku";
@@ -1465,6 +1467,7 @@
 "selectToken" = "Odaberite token";
 "selectTokensSubtitle" = "Omogućite barem jedan token za prikaz stanja i upravljanje pozicijama.";
 "selectTokensTitle" = "Odaberite tokene";
+"selectVault" = "Odaberite trezor";
 "selectVaults" = "Odaberite trezore";
 "selectVaultsToBackUpSubtitle" = "Odaberite hoćete li sigurnosno kopirati samo ovaj trezor ili sve trezore u vašoj aplikaciji.";
 "selectVaultsToBackUpTitle" = "Odaberite trezore za sigurnosnu kopiju";
@@ -1922,10 +1925,9 @@
 "Vote" = "Glasaj";
 "vult" = "$VULT";
 "vultDiscount" = "Popust: %d%%";
-"vultDiscountHeroSubtitle" = "ostvarite popust na trgovanje";
-"vultDiscountHeroTitle" = "Držite $VULT";
 "vultDiscountTiers" = "$VULT Razine Popusta";
 "vultDiscountTiersDescription" = "Držite $VULT da biste otključali niže naknade za trgovanje.";
+"vultDiscountTiersThorguardBoost" = "Posjedovanje ThorGuarda podiže vašu razinu popusta za jednu razinu, najviše do Platine.";
 "vultiserverPassword" = "Vultiserver lozinka";
 "vultisig-referrals" = "Vultisig Preporuke";
 "vultisigBrandName" = "Vultisig";

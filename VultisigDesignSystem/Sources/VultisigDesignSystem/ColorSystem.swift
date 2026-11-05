@@ -4,6 +4,7 @@ struct ColorSystem: ColorSystemProtocol {
     var bgButtonPrimary: Color { .vultisig(hex: "33E6BF") }
     var bgButtonSecondary: Color { .vultisig(hex: "11284A") }
     var bgButtonTertiary: Color { .vultisig(hex: "2155DF") }
+    var bgButtonCtaPrimary: Color { .vultisig(hex: "0B4EFF") }
 
     // Hover in the design source.
     var bgButtonPrimaryPressed: Color { .vultisig(hex: "0FBF93") }
@@ -15,6 +16,8 @@ struct ColorSystem: ColorSystemProtocol {
     // Inset bevel for the 2026 button treatment.
     var buttonBevelLight: Color { .vultisig(hex: "FFFFFF").opacity(0.1) }
     var buttonBevelDark: Color { .vultisig(hex: "0F1C3E") }
+    var buttonEdgeLight: Color { .vultisig(hex: "FFFFFF").opacity(0.24) }
+    var buttonEdgeDark: Color { .vultisig(hex: "0F1C3E").opacity(0.48) }
     var medallionInsetShadow: Color { .vultisig(hex: "000000").opacity(0.25) }
 
     // The app icon tile on the update check states.

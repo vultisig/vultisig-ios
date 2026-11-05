@@ -1029,6 +1029,7 @@
 "newBackupsCreatedDescription" = "每台设备都会创建一个新的 .vult 备份，与旧备份不同";
 "newBackupsCreatedTitle" = "将创建新备份";
 "newChainDetected" = "检测到新链";
+"newExpirationDate" = "新到期日：";
 "newUpdateAvailable" = "有可用更新";
 "newWalletNameDescription" = "您以后可以随时在设置中重命名保险库";
 "next" = "下一步";
@@ -1297,6 +1298,7 @@
 "referralCodeWithoutAlias" = "此推荐码未设置别名。请检查并重试";
 "referralLaunchCodeLengthError" = "推荐码最多 4 个字符";
 "referralNetworkError" = "获取推荐数据时出错";
+"referralOnboardingBannerDescription" = "分享您的专属推荐码邀请好友。好友可享受折扣，他们交易越多，您赚得越多。";
 "referralOnboardingBannerTitle1" = "邀请朋友。";
 "referralOnboardingBannerTitle2" = "赚取奖励。\n";
 "referralOnboardingBannerTitle3" = "节省费用";
@@ -1392,7 +1394,7 @@
 "save" = "保存";
 "saveChanges" = "保存更改";
 "savedAddresses" = "已保存的地址";
-"saveOnSwaps" = "在兑换中节省 %@";
+"saveOnSwaps" = "立即在兑换中节省 %@";
 "saveReferral" = "保存推荐";
 "saveReferralCardBody" = "保存朋友的推荐码，在兑换中节省 %@。";
 "saveReferralCardTitle" = "保存推荐";
@@ -1465,6 +1467,7 @@
 "selectToken" = "选择代币";
 "selectTokensSubtitle" = "启用至少一个代币以查看余额并管理仓位";
 "selectTokensTitle" = "选择代币";
+"selectVault" = "选择保险库";
 "selectVaults" = "选择保险库";
 "selectVaultsToBackUpSubtitle" = "选择是仅备份此保险库还是备份应用中的所有保险库";
 "selectVaultsToBackUpTitle" = "选择要备份的保险库";
@@ -1922,10 +1925,9 @@
 "Vote" = "投票";
 "vult" = "$VULT";
 "vultDiscount" = "折扣：%d%%";
-"vultDiscountHeroSubtitle" = "获享交易折扣";
-"vultDiscountHeroTitle" = "持有 $VULT";
 "vultDiscountTiers" = "$VULT 折扣等级";
 "vultDiscountTiersDescription" = "持有 $VULT 以解锁较低的交易费用";
+"vultDiscountTiersThorguardBoost" = "持有 ThorGuard 可将您的折扣等级提升一级，最高至铂金。";
 "vultiserverPassword" = "Vultiserver 密码";
 "vultisig-referrals" = "Vultisig 推荐";
 "vultisigBrandName" = "Vultisig";

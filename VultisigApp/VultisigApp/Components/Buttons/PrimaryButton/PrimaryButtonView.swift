@@ -37,7 +37,10 @@ struct PrimaryButtonView<LeadingView: View, TrailingView: View>: View {
     @ViewBuilder
     var body: some View {
         if hugsTitle {
-            titleText
+            HStack(spacing: 4) {
+                leadingView
+                titleText
+            }
         } else {
             fillingContent
         }
