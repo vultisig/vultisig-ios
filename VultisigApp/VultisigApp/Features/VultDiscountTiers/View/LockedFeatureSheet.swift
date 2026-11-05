@@ -58,13 +58,13 @@ struct LockedFeatureSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            header
-            requiresCard
+        Group {
+            if isSettings {
+                ScrollView(showsIndicators: false) { sheetContent }
+            } else {
+                sheetContent
+            }
         }
-        .padding(.top, isSettings ? settingsTopInset : 40)
-        .padding(.horizontal, isSettings ? 16 : 24)
-        .padding(.bottom, 24)
         .frame(maxHeight: isSettings ? .infinity : nil, alignment: .top)
         #if os(macOS)
         .applySheetSize(400, isSettings ? settingsDetent : 460)
@@ -80,6 +80,16 @@ struct LockedFeatureSheet: View {
                 }
             }
         }
+    }
+
+    private var sheetContent: some View {
+        VStack(spacing: 20) {
+            header
+            requiresCard
+        }
+        .padding(.top, isSettings ? settingsTopInset : 40)
+        .padding(.horizontal, isSettings ? 16 : 24)
+        .padding(.bottom, 24)
     }
 
     private var isSettings: Bool {

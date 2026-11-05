@@ -22,7 +22,7 @@ struct SecurityScannerBottomSheetContent: View {
                     .settingsText(.caption)
                 VultisigImage(securityScannerProvider)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .foregroundStyle(Theme.colors.textTertiary)
                     .frame(width: Self.providerLogoSize.width, height: Self.providerLogoSize.height)
             }
