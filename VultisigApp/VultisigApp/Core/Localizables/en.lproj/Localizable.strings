@@ -111,6 +111,10 @@
 "backupOptionsBox2Highlighted" = "vault password";
 "backupOptionsBox3" = "Remember: If you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
+"backupOptionsSettingsBox2" = "If you choose to add a password, this will be used to encrypt the backup file.";
+"backupOptionsSettingsBox2Highlighted" = "encrypt";
+"backupOptionsSettingsBox3" = "Remember: if you forget this password, it cannot be reset or recovered.";
+"backupOptionsSettingsBox3Highlighted" = "cannot";
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
 "backupSaveButton" = "Save backup";
@@ -131,6 +135,7 @@
 "backupVaultShareDescription" = "Back up your Vault Share to a preferred location";
 "backupVaultShareTitle" = "Backup Vault Share";
 "backupWithoutPassword" = "Backup without password";
+"backupWithPassword" = "Backup with password";
 "backupYourVaultNow" = "Backup your vault share of this device now!";
 "balance" = "Balance";
 "balanceAvailable" = "Balance available:";
@@ -374,6 +379,8 @@
 "destinationValidator" = "Destination Validator";
 "device" = "device";
 "deviceBackupDescription" = "Store the vault share of this device.";
+"deviceBackupPasswordButton" = "Back up this device now";
+"deviceBackupPasswordTitle" = "Device Backup Password";
 "deviceBackupTitle" = "Device Backup";
 "deviceID" = "Device ID";
 "devices" = "Devices";
@@ -1129,9 +1136,11 @@
 "partOf" = "part %d of %d";
 "passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
-"passcodeBackupPromptBackUpNow" = "Back up now";
+"passcodeBackupPromptBackUpNow" = "Back Up Now";
 "passcodeBackupPromptHasBackup" = "I already have a backup";
-"passcodeBackupPromptSubtitle" = "A passcode encrypts your key shares with a key held on this device. If that key is ever lost, your .vult backup is the only way back — the passcode itself cannot be recovered.";
+"passcodeBackupPromptSubtitle" = "Turning on a passcode encrypts your key shares with a key stored on this device. If that key is ever lost, only a .vult backup can restore the key shares on this device. The passcode itself can't be recovered or reset.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "only a .vult backup can restore the key shares on this device.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "can't be recovered or reset.";
 "passcodeBackupPromptTitle" = "Back up your vault first";
 "passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
 "passcodeBiometricEnableFailed" = "Biometric unlock could not be turned on. Your passcode still works.";
@@ -1141,7 +1150,7 @@
 "passcodeBiometricToggle" = "Unlock with biometrics";
 "passcodeBiometricUnavailable" = "Biometric unlock is no longer available on this device. Enter your passcode.";
 "passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
-"passcodeChangeTitle" = "Change passcode";
+"passcodeChangeTitle" = "Change Passcode";
 "passcodeChooseGuidance" = "Choose a 6-digit passcode. Avoid repeating or sequential digits.";
 "passcodeChooseSubtitle" = "6 digits. You will need it to open the app.";
 "passcodeChooseTitle" = "Choose a passcode";
@@ -1161,7 +1170,7 @@
 "passcodeLockedOutMinutes" = "Too many attempts. Try again in %d minutes.";
 "passcodeLockedOutShortly" = "Too many attempts. Try again shortly.";
 "passcodeManageExplanation" = "Setting a passcode encrypts your vault key shares on this device; removing it decrypts them again. It is not a replacement for your vault backup.";
-"passcodeMismatch" = "Those did not match. Try again.";
+"passcodeMismatch" = "Passcodes didn't match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
 "passcodeSetSheetTitle" = "Set Passcode";
@@ -1489,6 +1498,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "settingsEnterHint" = "Enter hint";
 "settingsEnterPassword" = "Enter password";
+"settingsReEnterPassword" = "Re-enter password";
 "share" = "Share";
 "shareOf" = "share %d of %d";
 "shareQRCode" = "Share QR Code";

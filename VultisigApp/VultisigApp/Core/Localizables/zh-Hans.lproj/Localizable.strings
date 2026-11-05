@@ -111,6 +111,10 @@
 "backupOptionsBox2Highlighted" = "保险库密码";
 "backupOptionsBox3" = "记住：如果您忘记保险库密码，它将无法重置或恢复";
 "backupOptionsBox3Highlighted" = "无法";
+"backupOptionsSettingsBox2" = "如果您选择添加密码，该密码将用于加密备份文件。";
+"backupOptionsSettingsBox2Highlighted" = "加密";
+"backupOptionsSettingsBox3" = "记住：如果您忘记此密码，它将无法重置或恢复。";
+"backupOptionsSettingsBox3Highlighted" = "无法";
 "backupOptionsTitle" = "您想用密码加密备份吗？";
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
 "backupSaveButton" = "保存备份";
@@ -131,6 +135,7 @@
 "backupVaultShareDescription" = "将您的保险库份额备份到首选位置";
 "backupVaultShareTitle" = "备份保险库份额";
 "backupWithoutPassword" = "无密码备份";
+"backupWithPassword" = "使用密码备份";
 "backupYourVaultNow" = "立即备份此设备的保险库份额！";
 "balance" = "余额";
 "balanceAvailable" = "可用余额：";
@@ -374,6 +379,8 @@
 "destinationValidator" = "目标验证人";
 "device" = "设备";
 "deviceBackupDescription" = "存储此设备的保险库份额";
+"deviceBackupPasswordButton" = "立即备份此设备";
+"deviceBackupPasswordTitle" = "设备备份密码";
 "deviceBackupTitle" = "设备备份";
 "deviceID" = "设备 ID";
 "devices" = "设备";
@@ -1131,7 +1138,9 @@
 "passcodeAutoLockTitle" = "自动锁定";
 "passcodeBackupPromptBackUpNow" = "立即备份";
 "passcodeBackupPromptHasBackup" = "我已有备份";
-"passcodeBackupPromptSubtitle" = "密码会使用保存在本设备上的密钥加密您的密钥份额。如果该密钥丢失，您的 .vult 备份是唯一的恢复途径——密码本身无法找回。";
+"passcodeBackupPromptSubtitle" = "开启密码后，您的密钥份额将使用保存在本设备上的密钥加密。如果该密钥丢失，只有 .vult 备份才能恢复本设备上的密钥份额。密码本身无法找回或重置。";
+"passcodeBackupPromptSubtitleHighlightBackup" = "只有 .vult 备份才能恢复本设备上的密钥份额。";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "无法找回或重置。";
 "passcodeBackupPromptTitle" = "请先备份您的保险库";
 "passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
 "passcodeBiometricEnableFailed" = "无法开启生物识别解锁。密码仍然可用。";
@@ -1161,7 +1170,7 @@
 "passcodeLockedOutMinutes" = "尝试次数过多，请在 %d 分钟后再试。";
 "passcodeLockedOutShortly" = "尝试次数过多，请稍后再试。";
 "passcodeManageExplanation" = "设置密码会加密本设备上的保险库密钥份额，移除密码则会将其重新解密。它不能替代保险库备份。";
-"passcodeMismatch" = "两次输入不一致，请重试。";
+"passcodeMismatch" = "两次输入的密码不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
 "passcodeSealedSharesWithoutKey" = "本设备上的保险库已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
 "passcodeSetSheetTitle" = "设置密码";
@@ -1489,6 +1498,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "settingsEnterHint" = "输入提示";
 "settingsEnterPassword" = "输入密码";
+"settingsReEnterPassword" = "再次输入密码";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";
 "shareQRCode" = "分享二维码";

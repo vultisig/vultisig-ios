@@ -111,6 +111,10 @@
 "backupOptionsBox2Highlighted" = "contraseña de tu bóveda";
 "backupOptionsBox3" = "Recuerda: si olvidas la contraseña de tu bóveda, no se puede restablecer ni recuperar.";
 "backupOptionsBox3Highlighted" = "no se puede";
+"backupOptionsSettingsBox2" = "Si decides agregar una contraseña, se usará para cifrar el archivo de copia de seguridad.";
+"backupOptionsSettingsBox2Highlighted" = "cifrar";
+"backupOptionsSettingsBox3" = "Recuerda: si olvidas esta contraseña, no se puede restablecer ni recuperar.";
+"backupOptionsSettingsBox3Highlighted" = "no se puede";
 "backupOptionsTitle" = "¿Quieres cifrar tu copia de seguridad con una contraseña?";
 "backupPasswordDisclaimer" = "Nunca guardes los fragmentos de la bóveda de distintos dispositivos en el mismo lugar";
 "backupSaveButton" = "Guardar respaldo";
@@ -131,6 +135,7 @@
 "backupVaultShareDescription" = "Haz una copia de seguridad de tu fragmento de la bóveda en la ubicación que prefieras";
 "backupVaultShareTitle" = "Respaldar fragmento de la bóveda";
 "backupWithoutPassword" = "Copia de seguridad sin contraseña";
+"backupWithPassword" = "Copia de seguridad con contraseña";
 "backupYourVaultNow" = "¡Haz ahora una copia de seguridad del fragmento de la bóveda de este dispositivo!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponible:";
@@ -374,6 +379,8 @@
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Guarda el fragmento de la bóveda de este dispositivo.";
+"deviceBackupPasswordButton" = "Crear copia de este dispositivo";
+"deviceBackupPasswordTitle" = "Contraseña de copia del dispositivo";
 "deviceBackupTitle" = "Copia de seguridad del dispositivo";
 "deviceID" = "ID del dispositivo";
 "devices" = "Dispositivos";
@@ -1131,7 +1138,9 @@
 "passcodeAutoLockTitle" = "Bloqueo automático";
 "passcodeBackupPromptBackUpNow" = "Crear copia ahora";
 "passcodeBackupPromptHasBackup" = "Ya tengo una copia de seguridad";
-"passcodeBackupPromptSubtitle" = "Un código de acceso cifra tus fragmentos de clave con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia de seguridad .vult es la única forma de recuperarlos: el código de acceso en sí no se puede recuperar.";
+"passcodeBackupPromptSubtitle" = "Al activar un código de acceso, tus fragmentos de clave se cifran con una clave guardada en este dispositivo. Si esa clave se pierde, solo una copia de seguridad .vult puede restaurar los fragmentos de clave de este dispositivo. El código de acceso en sí no se puede recuperar ni restablecer.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "solo una copia de seguridad .vult puede restaurar los fragmentos de clave de este dispositivo.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "no se puede recuperar ni restablecer.";
 "passcodeBackupPromptTitle" = "Primero haz una copia de tu bóveda";
 "passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
 "passcodeBiometricEnableFailed" = "No se pudo activar el desbloqueo biométrico. Tu código sigue funcionando.";
@@ -1161,7 +1170,7 @@
 "passcodeLockedOutMinutes" = "Demasiados intentos. Inténtalo en %d minutos.";
 "passcodeLockedOutShortly" = "Demasiados intentos. Inténtalo en un momento.";
 "passcodeManageExplanation" = "Al establecer un código de acceso, los fragmentos de clave de tu bóveda se cifran en este dispositivo; al quitarlo, se descifran de nuevo. No sustituye a la copia de seguridad de tu bóveda.";
-"passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
+"passcodeMismatch" = "Los códigos no coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus bóvedas ya están cifradas en este dispositivo, pero no se puede leer la clave que las abre. Restáuralas desde una copia de seguridad.";
 "passcodeSetSheetTitle" = "Establecer código";
@@ -1489,6 +1498,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "settingsEnterHint" = "Ingresa una pista";
 "settingsEnterPassword" = "Ingresa la contraseña";
+"settingsReEnterPassword" = "Vuelve a ingresar la contraseña";
 "share" = "Compartir";
 "shareOf" = "fragmento %d de %d";
 "shareQRCode" = "Compartir código QR";

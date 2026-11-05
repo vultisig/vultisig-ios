@@ -52,6 +52,9 @@ struct SecureTextField: View {
                     label: {
                         if appearance != .standard {
                             Icon(isSecure ? .eyeClosed : .eye, color: Theme.colors.textPrimary, size: 20)
+                                .accessibilityRepresentation {
+                                    Image(systemName: isSecure ? "eye.slash" : "eye")
+                                }
                         } else {
                             Image(systemName: isSecure ? "eye.slash": "eye")
                                 .foregroundStyle(Theme.colors.textPrimary)

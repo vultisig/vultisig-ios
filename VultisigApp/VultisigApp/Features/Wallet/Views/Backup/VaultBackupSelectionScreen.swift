@@ -52,11 +52,12 @@ struct VaultBackupSelectionScreen: View {
                             .font(Theme.fonts.title1)
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text("selectVaultsToBackUpSubtitle".localized)
-                            .font(Theme.fonts.bodySMedium)
+                            .settingsText(.bodyS)
                             .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 12)
 
                     VStack(spacing: 16) {
                         backupTypeContainer(type: .single(vault: selectedVault))
@@ -84,10 +85,10 @@ struct VaultBackupSelectionScreen: View {
         VStack(spacing: 12) {
             HStack {
                 Text(title(for: type))
-                    .font(Theme.fonts.bodySMedium)
+                    .settingsText(.bodyS)
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                Icon(.chevronRight, color: Theme.colors.textTertiary)
+                Icon(.chevronRightSmall, color: Theme.colors.textSecondary, size: 16)
             }
             switch type {
             case .single(let vault):
@@ -99,7 +100,9 @@ struct VaultBackupSelectionScreen: View {
                     VStack(spacing: 0) {
                         ForEach(vaults.prefix(vaultsToShow)) { vault in
                             vaultRow(vault: vault)
-                            GradientListSeparator()
+                            Rectangle()
+                                .fill(Theme.colors.borderLight)
+                                .frame(height: 1)
                                 .showIf(vault != vaults.last)
                         }
                     }
@@ -107,26 +110,29 @@ struct VaultBackupSelectionScreen: View {
                     .clipShape(Theme.radius.md.shape)
 
                     Text(String(format: "plusMore".localized, moreVaultsCount))
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                        .settingsText(.footnote)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .showIf(moreVaultsCount > 0)
                 }
             }
         }
-        .containerStyle(padding: 12)
+        .padding(15)
+        .overlay(Theme.radius.xl.shape.strokeBorder(Theme.colors.borderLight, lineWidth: 1))
+        .contentShape(Theme.radius.xl.shape)
     }
 
     func vaultRow(vault: Vault) -> some View {
         HStack {
             Text(vault.name)
-                .font(Theme.fonts.bodySMedium)
+                .settingsText(.bodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
 
-            VaultPartView(vault: vault)
+            VaultPartView(vault: vault, usesFilledIcon: true)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
+        .frame(minHeight: 58)
     }
 
     func title(for type: VaultBackupType) -> String {

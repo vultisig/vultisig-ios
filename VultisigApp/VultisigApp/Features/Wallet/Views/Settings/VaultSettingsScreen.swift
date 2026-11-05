@@ -344,12 +344,13 @@ struct VaultSettingsScreen: View {
 
     func onDeviceBackup() {
         if vaults.count > 1 {
-            router.navigate(to: VaultRoute.backupSelection(vault: vault))
+            router.navigate(to: VaultRoute.backupSelection(vault: vault, origin: .vaultSettings))
         } else {
             router.navigate(to: VaultRoute.backupPasswordOptions(
                 tssType: .Keygen,
                 backupType: .single(vault: vault),
-                isNewVault: false
+                isNewVault: false,
+                origin: .vaultSettings
             ))
         }
     }

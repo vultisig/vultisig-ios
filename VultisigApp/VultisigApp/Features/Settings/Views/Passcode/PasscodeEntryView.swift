@@ -30,6 +30,7 @@ struct PasscodeEntryView: View {
     #endif
 
     private var hasError: Bool { errorMessage?.isEmpty == false }
+    private static let topOffset: CGFloat = 149
 
     var body: some View {
         ZStack {
@@ -57,6 +58,25 @@ struct PasscodeEntryView: View {
     }
 
     private var content: some View {
+        VStack(spacing: 0) {
+            // Shrinks first on short screens, so nothing goes under the keyboard.
+            Spacer()
+                .frame(maxHeight: Self.topOffset)
+                .layoutPriority(1)
+
+            entryContent
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .animation(.easeInOut(duration: 0.28), value: title)
+        .animation(.easeInOut(duration: 0.28), value: subtitle)
+        .animation(.easeInOut(duration: 0.28), value: completedPasscode)
+        .animation(.easeInOut(duration: 0.28), value: activePrompt)
+        .animation(.easeInOut(duration: 0.2), value: isSuccess)
+    }
+
+    private var entryContent: some View {
         VStack(spacing: 24) {
             Icon(.lockPassword, color: Theme.colors.primaryAccent4, size: 46)
 
@@ -69,7 +89,7 @@ struct PasscodeEntryView: View {
 
                 if let subtitle {
                     Text(subtitle)
-                        .font(Theme.fonts.bodySRegular)
+                        .settingsText(.bodySRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .id(subtitle)
@@ -77,7 +97,7 @@ struct PasscodeEntryView: View {
                 }
             }
             .multilineTextAlignment(.center)
-            .frame(maxWidth: 285)
+            .frame(maxWidth: 283)
 
             if let completedPasscode {
                 dots(for: completedPasscode, hasError: false, isSuccess: false)
@@ -87,8 +107,8 @@ struct PasscodeEntryView: View {
             VStack(spacing: 16) {
                 if let activePrompt {
                     Text(activePrompt)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                        .settingsText(.bodySRegular)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
@@ -96,7 +116,7 @@ struct PasscodeEntryView: View {
                     .modifier(PasscodeShakeEffect(travel: shakeTravel))
 
                 Text(errorMessage ?? " ")
-                    .font(Theme.fonts.caption12)
+                    .settingsText(.footnote)
                     .foregroundStyle(Theme.colors.alertError)
                     .multilineTextAlignment(.center)
                     .opacity(hasError ? 1 : 0)
@@ -104,12 +124,6 @@ struct PasscodeEntryView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .animation(.easeInOut(duration: 0.28), value: title)
-        .animation(.easeInOut(duration: 0.28), value: subtitle)
-        .animation(.easeInOut(duration: 0.28), value: completedPasscode)
-        .animation(.easeInOut(duration: 0.28), value: activePrompt)
-        .animation(.easeInOut(duration: 0.2), value: isSuccess)
     }
 
     private func dots(for value: String, hasError: Bool, isSuccess: Bool) -> some View {
@@ -118,7 +132,7 @@ struct PasscodeEntryView: View {
                 let isFilled = index < value.count
                 Circle()
                     .fill(isFilled ? dotColor(isSuccess: isSuccess) : Color.clear)
-                    .frame(width: 13, height: 13)
+                    .frame(width: 13.5, height: 13.5)
                     .overlay {
                         Circle().stroke(
                             hasError ? Theme.colors.alertError : dotColor(isSuccess: isSuccess),
@@ -126,7 +140,6 @@ struct PasscodeEntryView: View {
                         )
                     }
                     .frame(width: 25, height: 25)
-                    .scaleEffect(isFilled ? 1 : 0.82)
                     .animation(.spring(response: 0.22, dampingFraction: 0.55), value: isFilled)
             }
         }

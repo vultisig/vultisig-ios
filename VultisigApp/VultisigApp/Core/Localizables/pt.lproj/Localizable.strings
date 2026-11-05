@@ -111,6 +111,10 @@
 "backupOptionsBox2Highlighted" = "senha do seu cofre";
 "backupOptionsBox3" = "Lembre -se: Se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
 "backupOptionsBox3Highlighted" = "não pode";
+"backupOptionsSettingsBox2" = "Se escolher adicionar uma senha, ela será usada para criptografar o arquivo de backup.";
+"backupOptionsSettingsBox2Highlighted" = "criptografar";
+"backupOptionsSettingsBox3" = "Lembre-se: se você esquecer esta senha, ela não poderá ser redefinida ou recuperada.";
+"backupOptionsSettingsBox3Highlighted" = "não poderá";
 "backupOptionsTitle" = "Deseja criptografar seu backup com uma senha?";
 "backupPasswordDisclaimer" = "Nunca guarde partes do cofre de dispositivos diferentes no mesmo local";
 "backupSaveButton" = "Salvar backup";
@@ -131,6 +135,7 @@
 "backupVaultShareDescription" = "Faça backup da parte do cofre em um local de sua preferência";
 "backupVaultShareTitle" = "Fazer backup da parte do cofre";
 "backupWithoutPassword" = "Backup sem senha";
+"backupWithPassword" = "Backup com senha";
 "backupYourVaultNow" = "Faça o backup da parte do cofre deste dispositivo agora!";
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponível:";
@@ -374,6 +379,8 @@
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Guarde a parte do cofre deste dispositivo.";
+"deviceBackupPasswordButton" = "Fazer backup deste dispositivo";
+"deviceBackupPasswordTitle" = "Senha do backup do dispositivo";
 "deviceBackupTitle" = "Backup de dispositivo";
 "deviceID" = "ID do dispositivo";
 "devices" = "Dispositivos";
@@ -1131,7 +1138,9 @@
 "passcodeAutoLockTitle" = "Bloqueio automático";
 "passcodeBackupPromptBackUpNow" = "Fazer backup agora";
 "passcodeBackupPromptHasBackup" = "Já tenho um backup";
-"passcodeBackupPromptSubtitle" = "O código de acesso criptografa as partes do cofre com uma chave guardada neste dispositivo. Se essa chave se perder, seu backup .vult é a única forma de recuperá-las — o código de acesso em si não pode ser recuperado.";
+"passcodeBackupPromptSubtitle" = "Ao ativar um código de acesso, as partes do cofre são criptografadas com uma chave guardada neste dispositivo. Se essa chave se perder, somente um backup .vult pode restaurar as partes do cofre neste dispositivo. O código de acesso em si não pode ser recuperado nem redefinido.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "somente um backup .vult pode restaurar as partes do cofre neste dispositivo.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "não pode ser recuperado nem redefinido.";
 "passcodeBackupPromptTitle" = "Primeiro, faça backup do seu cofre";
 "passcodeBiometricDisableFailed" = "Não foi possível desativar o desbloqueio biométrico. Tente novamente.";
 "passcodeBiometricEnableFailed" = "Não foi possível ativar o desbloqueio biométrico. Seu código continua funcionando.";
@@ -1161,7 +1170,7 @@
 "passcodeLockedOutMinutes" = "Muitas tentativas. Tente novamente em %d minutos.";
 "passcodeLockedOutShortly" = "Muitas tentativas. Tente novamente em instantes.";
 "passcodeManageExplanation" = "Definir um código de acesso criptografa as partes do cofre neste dispositivo; removê-lo as descriptografa. Não substitui o backup do cofre.";
-"passcodeMismatch" = "Não coincidem. Tente novamente.";
+"passcodeMismatch" = "Os códigos não coincidem. Tente novamente.";
 "passcodeNewTitle" = "Escolha um novo código";
 "passcodeSealedSharesWithoutKey" = "Seus cofres já estão criptografados neste dispositivo, mas a chave que os abre não pode ser lida. Restaure-os a partir de um backup.";
 "passcodeSetSheetTitle" = "Definir código";
@@ -1489,6 +1498,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Limpar cache de tokens do SwapKit";
 "settingsEnterHint" = "Insira uma dica";
 "settingsEnterPassword" = "Digite a senha";
+"settingsReEnterPassword" = "Digite a senha novamente";
 "share" = "Compartilhar";
 "shareOf" = "parte %d de %d";
 "shareQRCode" = "Compartilhar código QR";

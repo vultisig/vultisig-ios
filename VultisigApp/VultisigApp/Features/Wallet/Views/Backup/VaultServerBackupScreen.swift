@@ -32,7 +32,8 @@ struct VaultServerBackupScreen: View {
                         InfoBannerView(
                             description: viewModel.alertErrorDescription ?? "",
                             type: .error,
-                            leadingIcon: .triangleWarning
+                            leadingIcon: .triangleWarningFilled,
+                            appearance: .settings
                         )
                         .transition(.verticalGrowAndFade)
                         .showIf(showAlert)
@@ -79,19 +80,19 @@ struct VaultServerBackupScreen: View {
             value: viewModel.email,
             showValue: true,
             focusedField: $focusedFieldBinding,
-            focusedFieldEquals: .email
+            focusedFieldEquals: .email,
+            plainSeparator: true
         ) {
             focusedFieldBinding = $0 ? .email : .password
         } content: {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("enterVaultEmail".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
+            VStack(spacing: 24) {
+                helpText("enterVaultEmail".localized)
 
                 CommonTextField(
                     text: $viewModel.email,
                     placeholder: "enterYourEmail".localized,
-                    error: $viewModel.emailError
+                    error: $viewModel.emailError,
+                    appearance: .settingsForm
                 )
                 .focused($focusedField, equals: .email)
 #if os(iOS)
@@ -109,25 +110,25 @@ struct VaultServerBackupScreen: View {
             value: viewModel.password,
             showValue: false,
             focusedField: $focusedFieldBinding,
-            focusedFieldEquals: .password
+            focusedFieldEquals: .password,
+            plainSeparator: true
         ) {
             focusedFieldBinding = $0 ? .password : .email
         } content: {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("enterVaultPassword".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
+            VStack(spacing: 24) {
+                helpText("enterVaultPassword".localized)
 
                 SecureTextField(
                     value: $viewModel.password,
                     placeholder: "enterYourPassword".localized,
-                    error: $viewModel.passwordError
+                    error: $viewModel.passwordError,
+                    appearance: .settingsForm
                 )
                 .focused($focusedField, equals: .password)
 
                 Spacer()
 
-                PrimaryButton(title: viewModel.buttonTitle) {
+                PrimaryButton(title: viewModel.buttonTitle, size: .compact) {
                     focusedFieldBinding = nil
                     Task {
                         await viewModel.requestServerVaultShare(vault: vault)
@@ -139,5 +140,13 @@ struct VaultServerBackupScreen: View {
                 .frame(height: 1)
                 .id(passwordBottomId)
         }
+    }
+
+    private func helpText(_ text: String) -> some View {
+        Text(text)
+            .settingsText(.bodyS)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
     }
 }

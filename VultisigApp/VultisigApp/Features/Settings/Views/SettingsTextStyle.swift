@@ -30,6 +30,10 @@ enum SettingsTextStyle {
     case priceFootnote
     /// Switch state labels.
     case bodyMRegular
+    /// Big left titles above a form.
+    case largeTitle
+    /// Passcode guidance and prompts.
+    case bodySRegular
 
     var font: Font {
         switch self {
@@ -44,12 +48,14 @@ enum SettingsTextStyle {
         case .captionSmall: Theme.fonts.caption10
         case .priceFootnote: Theme.fonts.priceFootnote
         case .bodyMRegular: Theme.fonts.bodyMRegular
+        case .largeTitle: Theme.fonts.largeTitle
+        case .bodySRegular: Theme.fonts.bodySRegular
         }
     }
 
     var pointSize: CGFloat {
         switch self {
-        case .bodyS: 14
+        case .bodyS, .bodySRegular: 14
         case .footnote: 13
         case .subtitle: 15
         case .caption: 12
@@ -58,23 +64,25 @@ enum SettingsTextStyle {
         case .title2: 22
         case .captionSmall: 10
         case .priceFootnote: 13
+        case .largeTitle: 34
         }
     }
 
     var tracking: CGFloat {
         switch self {
-        case .bodyS, .bodyM, .buttonRegular, .buttonS, .bodyMRegular: 0
+        case .bodyS, .bodySRegular, .bodyM, .buttonRegular, .buttonS, .bodyMRegular: 0
         case .footnote: 0.06
         case .subtitle: -0.18
         case .caption, .captionSmall: 0.12
         case .title2: -0.36
         case .priceFootnote: 0.2
+        case .largeTitle: -1
         }
     }
 
     var lineHeight: CGFloat {
         switch self {
-        case .bodyS: 20
+        case .bodyS, .bodySRegular: 20
         case .footnote: 18
         case .subtitle: 17
         case .caption: 16
@@ -82,6 +90,7 @@ enum SettingsTextStyle {
         case .buttonRegular: 20
         case .buttonS, .priceFootnote: 18
         case .captionSmall: 14
+        case .largeTitle: 37
         }
     }
 

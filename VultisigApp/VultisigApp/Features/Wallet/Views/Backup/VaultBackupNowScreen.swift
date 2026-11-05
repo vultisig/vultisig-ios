@@ -152,6 +152,7 @@ struct VaultBackupScreen: View {
 /// here prevents the two backup entry points from drifting apart.
 struct VaultBackupContent<Subtitle: View>: View {
     let title: String
+    var titleSpacing: CGFloat = 16
     @ViewBuilder let subtitle: () -> Subtitle
 
     @State private var animation: RiveViewModel?
@@ -165,7 +166,7 @@ struct VaultBackupContent<Subtitle: View>: View {
                 icon: .cloudUpload
             )
 
-            VStack(spacing: 16) {
+            VStack(spacing: titleSpacing) {
                 Text(title)
                     .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textPrimary)

@@ -14,18 +14,37 @@ enum InfoBannerType {
     case success
 }
 
+/// `.settings`: the settings forms' banner, radius 24 with a softer border.
+enum InfoBannerAppearance {
+    case standard, settings
+}
+
 struct InfoBannerView: View {
+    private let settingsFillOpacity = 0.05
+
     let description: String
     let type: InfoBannerType
     let leadingIcon: ImageResource?
     let iconColor: Color?
+    let trailingIcon: ImageResource?
+    let appearance: InfoBannerAppearance
     let onClose: (() -> Void)?
 
-    init(description: String, type: InfoBannerType, leadingIcon: ImageResource?, iconColor: Color? = nil, onClose: (() -> Void)? = nil) {
+    init(
+        description: String,
+        type: InfoBannerType,
+        leadingIcon: ImageResource?,
+        iconColor: Color? = nil,
+        trailingIcon: ImageResource? = nil,
+        appearance: InfoBannerAppearance = .standard,
+        onClose: (() -> Void)? = nil
+    ) {
         self.description = description
         self.type = type
         self.leadingIcon = leadingIcon
         self.iconColor = iconColor
+        self.trailingIcon = trailingIcon
+        self.appearance = appearance
         self.onClose = onClose
     }
 
@@ -35,12 +54,15 @@ struct InfoBannerView: View {
                 Icon(leadingIcon, color: iconColor ?? fontColor, size: 16)
             }
 
-            Text(description)
-                .font(Theme.fonts.footnote)
+            descriptionText
                 .foregroundStyle(fontColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if let trailingIcon {
+                Icon(trailingIcon, color: iconColor ?? fontColor, size: 16)
+            }
 
             if let onClose {
                 Spacer()
@@ -53,12 +75,36 @@ struct InfoBannerView: View {
         }
         .padding(16)
         .background(
-            Theme.radius.md.shape
+            cornerRadius.shape
                 .inset(by: 1)
                 .fill(bgColor)
                 .stroke(borderColor, lineWidth: 1)
         )
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var descriptionText: some View {
+        switch appearance {
+        case .standard:
+            Text(description).font(Theme.fonts.footnote)
+        case .settings:
+            Text(description).settingsText(.footnote)
+        }
+    }
+
+    private var cornerRadius: CornerRadius {
+        switch appearance {
+        case .standard: Theme.radius.md
+        case .settings: Theme.radius.xl
+        }
+    }
+
+    private var alertBorderOpacity: Double {
+        switch appearance {
+        case .standard: 0.35
+        case .settings: 0.25
+        }
     }
 
     var fontColor: Color {
@@ -79,9 +125,9 @@ struct InfoBannerView: View {
         case .info:
             Theme.colors.bgNeutral
         case .warning:
-            Theme.colors.bgAlert
+            appearance == .settings ? Theme.colors.alertWarning.opacity(settingsFillOpacity) : Theme.colors.bgAlert
         case .error:
-            Theme.colors.bgError
+            appearance == .settings ? Theme.colors.alertError.opacity(settingsFillOpacity) : Theme.colors.bgError
         case .success:
             Theme.colors.bgSuccess
         }
@@ -92,9 +138,9 @@ struct InfoBannerView: View {
         case .info:
             Theme.colors.bgSurface2
         case .warning:
-            Theme.colors.alertWarning.opacity(0.35)
+            Theme.colors.alertWarning.opacity(alertBorderOpacity)
         case .error:
-            Theme.colors.alertError.opacity(0.35)
+            Theme.colors.alertError.opacity(alertBorderOpacity)
         case .success:
             Theme.colors.bgSuccess.opacity(0.35)
         }

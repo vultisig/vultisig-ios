@@ -111,6 +111,10 @@
 "backupOptionsBox2Highlighted" = "lozinka vašeg trezora";
 "backupOptionsBox3" = "Zapamtite: Ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
 "backupOptionsBox3Highlighted" = "ne može";
+"backupOptionsSettingsBox2" = "Ako odlučite dodati lozinku, ona će se koristiti za šifriranje datoteke sigurnosne kopije.";
+"backupOptionsSettingsBox2Highlighted" = "šifriranje";
+"backupOptionsSettingsBox3" = "Zapamtite: ako zaboravite ovu lozinku, ona se ne može resetirati ili oporaviti.";
+"backupOptionsSettingsBox3Highlighted" = "ne može";
 "backupOptionsTitle" = "Želite li svoju sigurnosnu kopiju šifrirati lozinkom?";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte udjele trezora s različitih uređaja na istom mjestu";
 "backupSaveButton" = "Spremi sigurnosnu kopiju";
@@ -131,6 +135,7 @@
 "backupVaultShareDescription" = "Napravite sigurnosnu kopiju svog udjela trezora na željenoj lokaciji";
 "backupVaultShareTitle" = "Sigurnosna kopija udjela trezora";
 "backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
+"backupWithPassword" = "Sigurnosna kopija s lozinkom";
 "backupYourVaultNow" = "Napravite sigurnosnu kopiju udjela trezora ovog uređaja odmah!";
 "balance" = "Saldo";
 "balanceAvailable" = "Dostupan saldo:";
@@ -374,6 +379,8 @@
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
+"deviceBackupPasswordButton" = "Napravi kopiju ovog uređaja";
+"deviceBackupPasswordTitle" = "Lozinka sigurnosne kopije uređaja";
 "deviceBackupTitle" = "Sigurnosna kopija uređaja";
 "deviceID" = "ID uređaja";
 "devices" = "Uređaji";
@@ -1131,7 +1138,9 @@
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
 "passcodeBackupPromptBackUpNow" = "Napravi kopiju sada";
 "passcodeBackupPromptHasBackup" = "Već imam sigurnosnu kopiju";
-"passcodeBackupPromptSubtitle" = "Zaporka šifrira vaše udjele ključa ključem koji se nalazi na ovom uređaju. Ako se taj ključ izgubi, vaša .vult sigurnosna kopija jedini je način povratka — sama zaporka ne može se vratiti.";
+"passcodeBackupPromptSubtitle" = "Uključivanjem zaporke vaši se udjeli ključa šifriraju ključem spremljenim na ovom uređaju. Ako se taj ključ izgubi, samo .vult sigurnosna kopija može vratiti udjele ključa na ovom uređaju. Sama zaporka ne može se vratiti ni resetirati.";
+"passcodeBackupPromptSubtitleHighlightBackup" = "samo .vult sigurnosna kopija može vratiti udjele ključa na ovom uređaju.";
+"passcodeBackupPromptSubtitleHighlightPasscode" = "ne može se vratiti ni resetirati.";
 "passcodeBackupPromptTitle" = "Najprije napravite sigurnosnu kopiju trezora";
 "passcodeBiometricDisableFailed" = "Otključavanje biometrijom nije se moglo isključiti. Pokušajte ponovno.";
 "passcodeBiometricEnableFailed" = "Otključavanje biometrijom nije se moglo uključiti. Vaša zaporka i dalje radi.";
@@ -1161,7 +1170,7 @@
 "passcodeLockedOutMinutes" = "Previše pokušaja. Pokušajte ponovno za %d minuta.";
 "passcodeLockedOutShortly" = "Previše pokušaja. Pokušajte uskoro ponovno.";
 "passcodeManageExplanation" = "Postavljanje zaporke šifrira udjele ključa vašeg trezora na ovom uređaju; uklanjanje ih ponovno dešifrira. Ne zamjenjuje sigurnosnu kopiju trezora.";
-"passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
+"passcodeMismatch" = "Zaporke se ne podudaraju. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši trezori već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
 "passcodeSetSheetTitle" = "Postavi zaporku";
@@ -1489,6 +1498,7 @@
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
 "settingsEnterHint" = "Unesite savjet";
 "settingsEnterPassword" = "Unesite lozinku";
+"settingsReEnterPassword" = "Ponovno unesite lozinku";
 "share" = "Podijeli";
 "shareOf" = "udio %d od %d";
 "shareQRCode" = "Podijeli QR kod";

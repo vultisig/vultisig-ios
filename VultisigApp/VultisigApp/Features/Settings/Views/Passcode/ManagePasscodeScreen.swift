@@ -177,13 +177,14 @@ struct ManagePasscodeScreen: View {
     private func toggleRow(title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 12) {
             Text(title)
-                .font(Theme.fonts.bodyMMedium)
+                .settingsText(.bodyM)
                 .foregroundStyle(Theme.colors.textPrimary)
 
             Spacer()
 
-            VultiToggle(isOn: isOn)
+            Toggle(title, isOn: isOn)
                 .labelsHidden()
+                .toggleStyle(SettingsToggleStyle(size: .regular))
         }
         .padding(16)
         .contentShape(Rectangle())
@@ -197,14 +198,14 @@ struct ManagePasscodeScreen: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Text(title)
-                    .font(Theme.fonts.bodyMMedium)
+                    .settingsText(.bodyM)
                     .foregroundStyle(Theme.colors.textPrimary)
 
                 Spacer()
 
                 if let trailingTitle {
                     Text(trailingTitle)
-                        .font(Theme.fonts.bodyMRegular)
+                        .settingsText(.bodyMRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                 } else {
                     Icon(.chevronRightSmall, color: Theme.colors.textSecondary, size: 16)

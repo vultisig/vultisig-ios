@@ -38,10 +38,9 @@ struct BackUpBeforePasscodeScreen: View {
     var body: some View {
         Screen {
             VStack(spacing: 32) {
-                VaultBackupContent(title: "passcodeBackupPromptTitle".localized) {
-                    Text("passcodeBackupPromptSubtitle".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
+                VaultBackupContent(title: "passcodeBackupPromptTitle".localized, titleSpacing: 12) {
+                    Text(subtitle)
+                        .settingsText(.bodyS)
                 }
 
                 Spacer()
@@ -63,14 +62,26 @@ struct BackUpBeforePasscodeScreen: View {
         .screenEdgeInsets(.init(leading: 24, trailing: 24))
     }
 
+    private var subtitle: AttributedString {
+        var text = AttributedString("passcodeBackupPromptSubtitle".localized)
+        text.font = Theme.fonts.bodySMedium
+        text.foregroundColor = Theme.colors.textTertiary
+        for highlight in ["passcodeBackupPromptSubtitleHighlightBackup", "passcodeBackupPromptSubtitleHighlightPasscode"] {
+            guard let range = text.range(of: highlight.localized) else { continue }
+            text[range].foregroundColor = Theme.colors.textPrimary
+        }
+        return text
+    }
+
     var buttons: some View {
         VStack(spacing: 12) {
-            PrimaryButton(title: "passcodeBackupPromptBackUpNow", action: onBackUpNow)
+            PrimaryButton(title: "passcodeBackupPromptBackUpNow", size: .compact, action: onBackUpNow)
                 .accessibilityIdentifier(AccessibilityID.Settings.passcodeBackupPromptBackUpNow)
 
             PrimaryButton(
                 title: "passcodeBackupPromptHasBackup",
                 type: .secondary,
+                size: .compact,
                 action: onContinue
             )
             .accessibilityIdentifier(AccessibilityID.Settings.passcodeBackupPromptHasBackup)
