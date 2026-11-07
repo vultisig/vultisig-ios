@@ -125,7 +125,8 @@ final class TransactionHistoryStorage {
 
     func fetchByChain(pubKeyECDSA: String, chainRawValue: String) throws -> [TransactionHistoryData] {
         let predicate = #Predicate<TransactionHistoryItem> { item in
-            item.pubKeyECDSA == pubKeyECDSA && item.chainRawValue == chainRawValue
+            item.pubKeyECDSA == pubKeyECDSA
+                && (item.chainRawValue == chainRawValue || item.toChainRawValue == chainRawValue)
         }
         let descriptor = FetchDescriptor(
             predicate: predicate,

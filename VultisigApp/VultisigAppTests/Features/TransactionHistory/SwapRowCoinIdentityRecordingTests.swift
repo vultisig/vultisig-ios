@@ -129,6 +129,36 @@ final class SwapRowCoinIdentityRecordingTests: XCTestCase {
         XCTAssertNil(row.toContractAddress)
     }
 
+    /// A swap is one stored row, listed under both its source and destination
+    /// chain, once vault-wide, and not under an unrelated chain.
+    func testSwapRowIsListedOnSourceAndDestinationChain() throws {
+        recorder.recordSwap(
+            txHash: "0xcross",
+            approveTxHash: nil,
+            pubKeyECDSA: Self.vaultPubKey,
+            fromCoin: makeUSDC(),
+            toCoin: makeBTC(),
+            fromAmountCrypto: "100 USDC",
+            fromAmountFiat: "100",
+            toAmountCrypto: "0.001 BTC",
+            toAmountFiat: "100",
+            fromAddress: "0xvault",
+            toAddress: "bc1qvault",
+            feeCrypto: "",
+            feeFiat: "",
+            chain: .ethereum,
+            explorerLink: "",
+            provider: "THORChain"
+        )
+
+        for chain in [Chain.ethereum, .bitcoin] {
+            let rows = try storage.fetchByChain(pubKeyECDSA: Self.vaultPubKey, chainRawValue: chain.rawValue)
+            XCTAssertEqual(rows.map(\.txHash), ["0xcross"])
+        }
+        XCTAssertTrue(try storage.fetchByChain(pubKeyECDSA: Self.vaultPubKey, chainRawValue: Chain.solana.rawValue).isEmpty)
+        XCTAssertEqual(try storage.fetchAll(pubKeyECDSA: Self.vaultPubKey).count, 1)
+    }
+
     // MARK: - Fixtures
 
     private func makeUSDC() -> Coin {
