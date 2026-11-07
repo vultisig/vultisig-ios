@@ -48,12 +48,8 @@ extension Vault {
                 isEddsa: $0.isEddsa
             )
         }
-        // Peers that predate `public_key_mldsa65` stored a 65 key in the legacy
-        // field, so fall back on its length (ML-DSA-65 key = 1952 bytes).
-        let legacy = proto.publicKeyMldsa44.nilIfEmpty
-        let legacyIs65 = legacy?.count == 1952 * 2
-        self.publicKeyMLDSA65 = proto.publicKeyMldsa65.nilIfEmpty ?? (legacyIs65 ? legacy : nil)
-        self.publicKeyMLDSA44 = legacyIs65 ? nil : legacy
+        self.publicKeyMLDSA65 = proto.publicKeyMldsa65.nilIfEmpty
+        self.publicKeyMLDSA44 = proto.publicKeyMldsa44.nilIfEmpty
     }
 
     /// - Throws: `KeyshareProtectionError.locked` when a share cannot be opened,
