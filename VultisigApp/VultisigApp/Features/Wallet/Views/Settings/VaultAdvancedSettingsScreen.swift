@@ -30,7 +30,7 @@ struct VaultAdvancedSettingsScreen: View {
             }
         }
         .task {
-            if vault.publicKeyMLDSA44 == nil { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
+            if vault.publicKeyMLDSA65 == nil { _ = await FastVaultEligibilityRefresher.shared.presenceForRouting(vault) }
         }
         .task(id: routingState) {
             guard routingState == .checking else { return }
@@ -71,13 +71,12 @@ struct VaultAdvancedSettingsScreen: View {
 
     var rows: [Row] {
         var rows: [Row] = []
-        if !vault.isFastVault && vault.publicKeyMLDSA44 == nil {
+        if !vault.isFastVault && vault.publicKeyMLDSA65 == nil {
             rows.append(.reshareVault)
         }
-        // Generating an MLDSA-65 post-quantum key is a one-time action, so hide
-        // the row entirely once the vault already has one rather than surfacing
-        // an entry point that dead-ends at an "already generated" notice.
-        if vault.publicKeyMLDSA44 == nil {
+        // Hide the row once the vault has an ML-DSA-65 key; a legacy ML-DSA-44
+        // key can no longer sign, so it may be regenerated (and is overwritten).
+        if vault.publicKeyMLDSA65 == nil {
             rows.append(.dilithiumKeygen)
         }
         rows.append(contentsOf: [.customMessage, .onChainSecurity, .customRPC])

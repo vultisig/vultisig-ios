@@ -42,7 +42,7 @@ final class KeygenVaultCommitTests: XCTestCase {
     /// rows. Sharing one, which `TestStore.makeVault` does with `pubKeyEdDSA`,
     /// makes SwiftData *upsert* rather than fail, and a fixture built that way
     /// silently collapses to a single row while every assertion still passes.
-    /// (`publicKeyMLDSA44` is unique too but stays `nil`, which does not
+    /// (`publicKeyMLDSA65` is unique too but stays `nil`, which does not
     /// collapse — a unique index treats NULLs as distinct.)
     ///
     /// Every share carries a `keyId`, which is not unique and does not collapse

@@ -575,7 +575,7 @@ class KeysignViewModel: ObservableObject {
                     encryptionKeyHex: self.encryptionKeyHex,
                     chainPath: chainPath,
                     isInitiateDevice: self.isInitiateDevice,
-                    publicKey: vault.publicKeyMLDSA44 ?? ""
+                    publicKey: vault.publicKeyMLDSA65 ?? ""
                 )
                 try await dilithiumKeysign.DilithiumKeysignWithRetry()
                 self.dilithiumSignatures = dilithiumKeysign.getSignatures()
@@ -660,7 +660,7 @@ class KeysignViewModel: ObservableObject {
         case .EdDSA:
             pubkey = vault.pubKeyEdDSA
         case .MLDSA:
-            pubkey = vault.publicKeyMLDSA44 ?? ""
+            pubkey = vault.publicKeyMLDSA65 ?? ""
         }
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,

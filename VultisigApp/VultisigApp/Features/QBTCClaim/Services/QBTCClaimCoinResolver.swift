@@ -13,7 +13,7 @@
 //  the one computed when the chains are enabled.
 //
 //  Bitcoin (ECDSA) derives for any standard vault; QBTC (MLDSA) requires
-//  a non-empty `publicKeyMLDSA44`, so the only genuine failure is a
+//  a non-empty `publicKeyMLDSA65`, so the only genuine failure is a
 //  non-quantum vault — surfaced as `Error.derivationFailed`.
 //
 
@@ -78,7 +78,7 @@ struct QBTCClaimCoinResolver {
                 publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                 hexChainCode: vault.hexChainCode,
                 isDerived: pubKey != nil,
-                publicKeyMLDSA44: vault.publicKeyMLDSA44
+                publicKeyMLDSA65: vault.publicKeyMLDSA65
             )
         } catch {
             throw Error.derivationFailed(chainName: chain.name)

@@ -158,7 +158,7 @@ enum TestStore {
     /// holding one survivor. Assertions shaped `for vault in fetch() { … }`, and
     /// any expectation about ordering or count, then pass vacuously.
     ///
-    /// `publicKeyMLDSA44` is unique too and deliberately stays `nil`: a unique
+    /// `publicKeyMLDSA65` is unique too and deliberately stays `nil`: a unique
     /// index treats NULLs as distinct, so nil fixtures never collapse, while
     /// giving it a value would flip every product branch that reads the field as
     /// "this is a quantum vault" — QBTC coin creation, the MLDSA keysign key,
@@ -217,8 +217,8 @@ enum TestStore {
             if existing.pubKeyEdDSA == candidate.pubKeyEdDSA { collided.append("pubKeyEdDSA") }
             // A nil MLDSA key is not a duplicate — a unique index treats NULLs
             // as distinct, which is why the fixture is allowed to leave it nil.
-            if let mldsa = candidate.publicKeyMLDSA44, existing.publicKeyMLDSA44 == mldsa {
-                collided.append("publicKeyMLDSA44")
+            if let mldsa = candidate.publicKeyMLDSA65, existing.publicKeyMLDSA65 == mldsa {
+                collided.append("publicKeyMLDSA65")
             }
             guard collided.isEmpty else {
                 XCTFail(

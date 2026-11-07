@@ -12,6 +12,9 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
+    @Attribute(.unique) var publicKeyMLDSA65: String? = nil
+    /// Obsolete: ML-DSA-44 keys can no longer sign. Kept only so existing stores
+    /// and backups still load; never read it for signing, use `publicKeyMLDSA65`.
     @Attribute(.unique) var publicKeyMLDSA44: String? = nil
     var circleWalletAddress: String?
 
@@ -148,6 +151,7 @@ final class Vault: ObservableObject, Codable {
         case activeBondedNodes
         case stakePositions
         case lpPositions
+        case publicKeyMLDSA65
         case publicKeyMLDSA44
     }
 
@@ -177,6 +181,7 @@ final class Vault: ObservableObject, Codable {
         }
         enabledKaminoVaults = try container.decodeIfPresent([String].self, forKey: .enabledKaminoVaults) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
+        publicKeyMLDSA65 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA65)
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
 
@@ -231,6 +236,7 @@ final class Vault: ObservableObject, Codable {
         try container.encode(currentDefiProviders(), forKey: .enabledDefiProviders)
         try container.encode(enabledKaminoVaults, forKey: .enabledKaminoVaults)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
+        try container.encodeIfPresent(publicKeyMLDSA65, forKey: .publicKeyMLDSA65)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 

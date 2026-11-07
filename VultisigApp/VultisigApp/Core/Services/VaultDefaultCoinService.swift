@@ -120,7 +120,7 @@ class VaultDefaultCoinService {
                         publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                         hexChainCode: vault.hexChainCode,
                         isDerived: isDerived,
-                        publicKeyMLDSA44: vault.publicKeyMLDSA44
+                        publicKeyMLDSA65: vault.publicKeyMLDSA65
                     )
                 )
             } catch {
