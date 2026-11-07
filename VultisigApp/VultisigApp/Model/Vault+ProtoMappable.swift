@@ -48,14 +48,12 @@ extension Vault {
                 isEddsa: $0.isEddsa
             )
         }
-        // The wire field keeps its legacy name; its length says which level it holds
-        // (ML-DSA-65 key = 1952 bytes).
-        let mldsa = proto.publicKeyMldsa44.nilIfEmpty
-        if mldsa?.count == 1952 * 2 {
-            self.publicKeyMLDSA65 = mldsa
-        } else {
-            self.publicKeyMLDSA44 = mldsa
-        }
+        // Peers that predate `public_key_mldsa65` stored a 65 key in the legacy
+        // field, so fall back on its length (ML-DSA-65 key = 1952 bytes).
+        let legacy = proto.publicKeyMldsa44.nilIfEmpty
+        let legacyIs65 = legacy?.count == 1952 * 2
+        self.publicKeyMLDSA65 = proto.publicKeyMldsa65.nilIfEmpty ?? (legacyIs65 ? legacy : nil)
+        self.publicKeyMLDSA44 = legacyIs65 ? nil : legacy
     }
 
     /// - Throws: `KeyshareProtectionError.locked` when a share cannot be opened,
@@ -72,7 +70,8 @@ extension Vault {
             $0.name = name
             $0.publicKeyEcdsa = pubKeyECDSA
             $0.publicKeyEddsa = pubKeyEdDSA
-            $0.publicKeyMldsa44 = publicKeyMLDSA65 ?? publicKeyMLDSA44 ?? ""
+            $0.publicKeyMldsa44 = publicKeyMLDSA44 ?? ""
+            $0.publicKeyMldsa65 = publicKeyMLDSA65 ?? ""
             $0.signers = signers
             $0.hexChainCode = hexChainCode
             $0.localPartyID = self.localPartyID

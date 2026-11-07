@@ -100,9 +100,11 @@ packages:
     # hash, gas fee), the wire fields a NEAR co-signer needs to sign the same
     # bytes. The pins in between only append fields (`TonGasless`).
     #
-    # This revision is the commit that merged commondata#119
-    # (`KeysignPayload.near_specific`) into upstream `main`.
-    revision: 1d0f4f120c9c19afd142b542c05bea622fcb5f07
+    # Advanced for `Vault.public_key_mldsa65` (commondata#121), which carries the
+    # ML-DSA-65 key; `public_key_mldsa44` stays for the obsolete 44 key.
+    #
+    # This revision is the commit that merged commondata#121 into upstream `main`.
+    revision: a8a517bc448f60ef115c5eb928c8aeef3f1a34a0
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
