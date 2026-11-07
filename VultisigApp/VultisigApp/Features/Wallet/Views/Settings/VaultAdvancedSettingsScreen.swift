@@ -74,7 +74,7 @@ struct VaultAdvancedSettingsScreen: View {
         if !vault.isFastVault && vault.publicKeyMLDSA44 == nil {
             rows.append(.reshareVault)
         }
-        // Generating an MLDSA-44 post-quantum key is a one-time action, so hide
+        // Generating an MLDSA-65 post-quantum key is a one-time action, so hide
         // the row entirely once the vault already has one rather than surfacing
         // an entry point that dead-ends at an "already generated" notice.
         if vault.publicKeyMLDSA44 == nil {

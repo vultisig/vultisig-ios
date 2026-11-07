@@ -87,7 +87,7 @@ enum CosmosStakingSignDataResolver {
     }
 
     /// QBTC variant. QBTC signs with ML-DSA (post-quantum), so its pubkey is
-    /// ~1312 bytes — the secp256k1 33-byte guard above would reject it. The
+    /// ~1952 bytes — the secp256k1 33-byte guard above would reject it. The
     /// staking msg bodies are pubkey-agnostic, so the ONLY differences are
     /// skipping that guard and stamping the ML-DSA pubkey type URL into
     /// AuthInfo. The resulting `signDirect` bytes round-trip through the proto

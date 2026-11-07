@@ -8,6 +8,9 @@
 import Foundation
 import vscore
 
+/// Single ML-DSA level for every keygen/keysign setup and session (one-way switch from 44).
+let mldsaLevel = vscore.MlDsa65
+
 extension Array where Element == UInt8 {
     func to_mldsa_goslice() -> vscore.go_slice {
         let result = self.withUnsafeBufferPointer { bp in

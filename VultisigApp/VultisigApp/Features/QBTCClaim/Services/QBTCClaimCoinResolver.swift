@@ -34,7 +34,7 @@ struct QBTCClaimCoinResolver {
     enum Error: LocalizedError, Equatable {
         /// The native coin for `chainName` is neither enabled nor
         /// derivable from the vault's keys (e.g. a non-quantum vault has
-        /// no MLDSA-44 key to derive the QBTC account).
+        /// no MLDSA-65 key to derive the QBTC account).
         case derivationFailed(chainName: String)
 
         var errorDescription: String? {

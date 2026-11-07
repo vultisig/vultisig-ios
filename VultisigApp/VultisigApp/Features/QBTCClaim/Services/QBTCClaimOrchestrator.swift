@@ -8,7 +8,7 @@
 //  Post-qbtc#158 (proof-service service-side broadcast):
 //    BTC ECDSA MPC round → POST /prove (broadcast=true) → done.
 //
-//  The proof service signs `MsgClaimWithProof` with its own MLDSA-44 key
+//  The proof service signs `MsgClaimWithProof` with its own MLDSA-65 key
 //  and broadcasts it; iOS no longer runs an MLDSA TSS round, builds a
 //  cosmos `SignDoc` / `AuthInfo` / `TxRaw`, or hits the Tendermint RPC.
 //
@@ -117,7 +117,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
 
         // Generate proof + service-side broadcast in one round-trip
         // (qbtc proof-service #158). The service signs `MsgClaimWithProof`
-        // with its own MLDSA-44 key, pays the fee, and returns the on-chain
+        // with its own MLDSA-65 key, pays the fee, and returns the on-chain
         // tx hash; iOS no longer assembles or broadcasts a cosmos tx.
         // Budget: 5 min — proof generation dominates.
         phase = .generatingProofAndBroadcasting

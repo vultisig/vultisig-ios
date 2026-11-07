@@ -388,7 +388,7 @@
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
 "dilithiumKeygen" = "Post-Quantum Key";
-"dilithiumKeygenSubtitle" = "Generate MLDSA-44 key for quantum resistance";
+"dilithiumKeygenSubtitle" = "Generate MLDSA-65 key for quantum resistance";
 "directSign" = "Direct Sign";
 "disabled" = "Disabled";
 "discord" = "Discord";

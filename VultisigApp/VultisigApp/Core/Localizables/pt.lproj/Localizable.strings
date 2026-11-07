@@ -388,7 +388,7 @@
 "devicesOnSameNetwork" = "Conecte todos os dispositivos à mesma\nrede com o aplicativo Vultisig aberto.";
 "devicesOnSameWifi" = "Mantenha dispositivos na mesma rede com Vultisig aberto";
 "dilithiumKeygen" = "Chave Pós-Quântica";
-"dilithiumKeygenSubtitle" = "Gere a chave MLDSA-44 para resistência quântica";
+"dilithiumKeygenSubtitle" = "Gere a chave MLDSA-65 para resistência quântica";
 "directSign" = "Assinatura Direta";
 "disabled" = "Desativado";
 "discord" = "Discord";

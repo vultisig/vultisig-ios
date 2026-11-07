@@ -31,7 +31,7 @@ enum LibType: Int, Codable, CaseIterable {
 |---------|--------|-----------|-------|
 | `godkls` | `import godkls` | ECDSA (secp256k1) | DKLS keygen/keysign |
 | `goschnorr` | `import goschnorr` | EdDSA (Ed25519) | Schnorr keygen/keysign |
-| `vscore` | `import vscore` | ML-DSA-44 (Dilithium) | Post-quantum keygen/keysign |
+| `vscore` | `import vscore` | ML-DSA-65 (Dilithium) | Post-quantum keygen/keysign |
 
 ## Keygen Implementations (3)
 
@@ -55,7 +55,7 @@ enum LibType: Int, Codable, CaseIterable {
 
 **Files:** `Blockchain/Tss/Dilithium/DilithiumKeygen.swift`, `Blockchain/Tss/Dilithium/DilithiumHelper.swift`
 
-- Generates ML-DSA-44 key shares (post-quantum)
+- Generates ML-DSA-65 key shares (post-quantum)
 - Module-Lattice-Based Digital Signature Algorithm
 - Produces `publicKeyMLDSA44` for the vault
 
@@ -78,7 +78,7 @@ enum LibType: Int, Codable, CaseIterable {
 
 **File:** `Blockchain/Tss/Dilithium/DilithiumKeysign.swift`
 
-- Signs with ML-DSA-44 (post-quantum)
+- Signs with ML-DSA-65 (post-quantum)
 
 ## KeygenViewModel
 

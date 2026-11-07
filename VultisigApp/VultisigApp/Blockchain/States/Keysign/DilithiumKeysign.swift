@@ -128,7 +128,7 @@ final class DilithiumKeysign {
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_mldsa_goslice()
         let err: vscore.mldsa_error
-        err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, nil, &msgSlice, &ids, &buf)
+        err = mldsa_sign_setupmsg_new(mldsaLevel, &keyIdSlice, nil, &msgSlice, &ids, &buf)
         if err != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, mldsa error:\(err)")
         }
@@ -349,7 +349,7 @@ final class DilithiumKeysign {
             defer {
                 mldsa_keyshare_free(&keyshareHandle)
             }
-            let sessionResult = mldsa_sign_session_from_setup(vscore.MlDsa44, &decodedSetupMsg,
+            let sessionResult = mldsa_sign_session_from_setup(mldsaLevel, &decodedSetupMsg,
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)
