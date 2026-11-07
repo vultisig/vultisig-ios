@@ -74,8 +74,9 @@ struct VaultAdvancedSettingsScreen: View {
         if !vault.isFastVault && vault.publicKeyMLDSA65 == nil {
             rows.append(.reshareVault)
         }
-        // Hide the row once the vault has an ML-DSA-65 key; a legacy ML-DSA-44
-        // key can no longer sign, so it may be regenerated (and is overwritten).
+        // Hide the row once the vault has an ML-DSA-65 key. A legacy ML-DSA-44
+        // key can no longer sign, so such a vault may generate a 65 key; the
+        // legacy key is left in place (obsolete, kept for stores and backups).
         if vault.publicKeyMLDSA65 == nil {
             rows.append(.dilithiumKeygen)
         }

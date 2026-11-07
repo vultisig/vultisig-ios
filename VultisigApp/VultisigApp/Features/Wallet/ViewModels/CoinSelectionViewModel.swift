@@ -63,7 +63,7 @@ class CoinSelectionViewModel: ObservableObject {
         // here too means a future code path that hands an MLDSA asset
         // straight to the keygen prompt still respects the feature flag.
         guard QBTCConfig.isFeatureEnabled else { return false }
-        return vault.publicKeyMLDSA65 == nil
+        return (vault.publicKeyMLDSA65 ?? "").isEmpty
     }
 
     private func checkSelected(for vault: Vault) {

@@ -49,6 +49,9 @@ extension Vault {
             )
         }
         self.publicKeyMLDSA65 = proto.publicKeyMldsa65.nilIfEmpty
+        if let key = publicKeyMLDSA65, !Vault.isValidMLDSA65Key(key) {
+            throw HelperError.runtimeError("Invalid ML-DSA-65 public key in proto")
+        }
         self.publicKeyMLDSA44 = proto.publicKeyMldsa44.nilIfEmpty
     }
 

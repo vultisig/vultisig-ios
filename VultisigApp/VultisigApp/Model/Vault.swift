@@ -182,7 +182,16 @@ final class Vault: ObservableObject, Codable {
         enabledKaminoVaults = try container.decodeIfPresent([String].self, forKey: .enabledKaminoVaults) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
         publicKeyMLDSA65 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA65)
+        if let key = publicKeyMLDSA65, !key.isEmpty, !Vault.isValidMLDSA65Key(key) {
+            throw DecodingError.dataCorruptedError(forKey: .publicKeyMLDSA65, in: container,
+                debugDescription: "publicKeyMLDSA65 must be a 1952-byte hex key")
+        }
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
+    }
+
+    /// An ML-DSA-65 public key is 1952 bytes of hex.
+    static func isValidMLDSA65Key(_ hex: String) -> Bool {
+        Data(hexString: hex)?.count == 1952
     }
 
     init(name: String, libType: LibType? = nil) {
