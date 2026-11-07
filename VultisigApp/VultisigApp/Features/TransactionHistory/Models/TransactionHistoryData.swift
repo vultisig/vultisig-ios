@@ -159,6 +159,24 @@ struct TransactionHistoryData: Sendable, Hashable, Identifiable {
 }
 
 extension TransactionHistoryData {
+    /// The asset this row represents when viewed from `chain`'s history: the
+    /// destination asset for a swap listed there only as its destination,
+    /// the source asset otherwise.
+    func asset(on chain: Chain?) -> TransactionHistoryCoinAsset {
+        if let chain, chainRawValue != chain.rawValue, toChainRawValue == chain.rawValue,
+           let toCoinTicker {
+            return TransactionHistoryCoinAsset(
+                ticker: toCoinTicker,
+                logo: toCoinLogo ?? "",
+                chainLogo: toCoinChainLogo,
+                network: chain.displayName
+            )
+        }
+        return TransactionHistoryCoinAsset(
+            ticker: coinTicker, logo: coinLogo, chainLogo: coinChainLogo, network: networkDisplayName
+        )
+    }
+
     /// User-facing network label for the stored `network` chain identifier.
     var networkDisplayName: String {
         Chain(name: network)?.displayName ?? network

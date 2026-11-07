@@ -355,7 +355,7 @@ class TransactionHistoryViewModel: ObservableObject {
 
         // Asset filter
         if !selectedAssetFilters.isEmpty {
-            result = result.filter { selectedAssetFilters.contains($0.coinTicker) }
+            result = result.filter { selectedAssetFilters.contains($0.asset(on: chainFilter).ticker) }
         }
 
         return result
@@ -437,14 +437,9 @@ class TransactionHistoryViewModel: ObservableObject {
         var result: [TransactionHistoryCoinAsset] = []
 
         for tx in transactions {
-            if !seen.contains(tx.coinTicker) {
-                seen.insert(tx.coinTicker)
-                result.append(TransactionHistoryCoinAsset(
-                    ticker: tx.coinTicker,
-                    logo: tx.coinLogo,
-                    chainLogo: tx.coinChainLogo,
-                    network: tx.networkDisplayName
-                ))
+            let asset = tx.asset(on: chainFilter)
+            if seen.insert(asset.ticker).inserted {
+                result.append(asset)
             }
         }
 
