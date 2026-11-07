@@ -670,8 +670,14 @@ class KeygenViewModel: ObservableObject {
                     throw HelperError.runtimeError("not all parties finished MLDSA keygen successfully")
                 }
 
-                self.vault.publicKeyMLDSA44 = keyshare.PubKey
+                // The legacy ML-DSA-44 key/share stay untouched; the QBTC coin
+                // is re-derived because its address comes from the new key.
+                self.vault.publicKeyMLDSA65 = keyshare.PubKey
                 self.vault.keyshares.append(mldsaShare)
+                for coin in self.vault.coins where coin.chain.signingKeyType == .MLDSA {
+                    coin.address = try CoinFactory.generateQBTCAddress(publicKeyMLDSA65: keyshare.PubKey)
+                    coin.hexPublicKey = keyshare.PubKey
+                }
                 self.vault.isBackedUp = false
             }
 

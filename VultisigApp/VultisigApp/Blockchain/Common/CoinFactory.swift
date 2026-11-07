@@ -18,14 +18,14 @@ struct CoinFactory {
         publicKeyEdDSA: String,
         hexChainCode: String,
         isDerived: Bool,
-        publicKeyMLDSA44: String? = nil
+        publicKeyMLDSA65: String? = nil
     ) throws -> Coin {
         // MLDSA chains use a completely separate address derivation path
         if asset.chain.signingKeyType == .MLDSA {
-            guard let mldsaKey = publicKeyMLDSA44, !mldsaKey.isEmpty else {
+            guard let mldsaKey = publicKeyMLDSA65, !mldsaKey.isEmpty else {
                 throw Errors.invalidPublicKey(pubKey: "MLDSA public key required for \(asset.chain.name)")
             }
-            return try createMLDSACoin(asset: asset, publicKeyMLDSA44: mldsaKey)
+            return try createMLDSACoin(asset: asset, publicKeyMLDSA65: mldsaKey)
         }
 
         let publicKey = try publicKey(

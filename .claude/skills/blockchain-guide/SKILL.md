@@ -14,7 +14,7 @@ Vultisig supports 40+ blockchains using threshold signature schemes (TSS) with t
 |-----------|---------|-------|--------|
 | ECDSA | `godkls` | secp256k1 | Bitcoin, EVM, THORChain, Cosmos, Ripple, Tron (34 chains) |
 | EdDSA | `goschnorr` | Ed25519 | Solana, Cardano, Polkadot, Ton, Sui (6 chains) |
-| ML-DSA | `vscore` | ML-DSA-44 | Post-quantum support (future) |
+| ML-DSA | `vscore` | ML-DSA-65 | Post-quantum support (future) |
 
 ## Key Coordination
 

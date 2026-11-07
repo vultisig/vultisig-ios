@@ -12,7 +12,7 @@
 //  Post-qbtc#158: only one MPC round (BTC ECDSA). The initiator
 //  takes over after the round completes — POSTs `/prove` with
 //  `broadcast: true` and the proof service signs + broadcasts the
-//  cosmos tx with its own MLDSA-44 key. The peer device doesn't see
+//  cosmos tx with its own MLDSA-65 key. The peer device doesn't see
 //  the broadcast directly; it just shows "Signing complete!" once
 //  round 1 ends.
 //

@@ -4,7 +4,7 @@
 //
 //  Pre-keygen intro for the QBTC quantum-security flow. Shown when
 //  the user wants to use QBTC but the vault doesn't yet have an
-//  ML-DSA-44 key pair (W2 token selection + W3 BTC claim banner).
+//  ML-DSA-65 key pair (W2 token selection + W3 BTC claim banner).
 //  "Get started" forwards to the existing keygen route for the
 //  vault type — `KeygenRoute.fastVaultPassword(...singleKeygenType:
 //  .MLDSA)` for FastVault, `KeygenRoute.peerDiscovery(...)` for

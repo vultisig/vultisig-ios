@@ -22,7 +22,7 @@ final class CoinSelectionViewModelTests: XCTestCase {
     ) -> [Chain: [CoinMeta]] {
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
         let enableThorchainChainnet = UserDefaults.standard.bool(forKey: "thorchainChainnet")
-        let hasMLDSAKey = vault.publicKeyMLDSA44 != nil && !(vault.publicKeyMLDSA44 ?? "").isEmpty
+        let hasMLDSAKey = vault.publicKeyMLDSA65 != nil && !(vault.publicKeyMLDSA65 ?? "").isEmpty
 
         let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
             if asset.chain == .ethereumSepolia { return enableETHSepolia }

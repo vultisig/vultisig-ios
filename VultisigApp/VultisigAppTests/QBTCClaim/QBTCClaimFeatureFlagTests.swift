@@ -108,7 +108,7 @@ final class QBTCClaimFeatureFlagTests: XCTestCase {
             resharePrefix: nil,
             libType: .GG20
         )
-        vault.publicKeyMLDSA44 = "mldsa44-pubkey"
+        vault.publicKeyMLDSA65 = "mldsa44-pubkey"
         return vault
     }
 
