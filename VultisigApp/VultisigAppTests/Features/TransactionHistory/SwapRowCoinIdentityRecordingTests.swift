@@ -129,6 +129,91 @@ final class SwapRowCoinIdentityRecordingTests: XCTestCase {
         XCTAssertNil(row.toContractAddress)
     }
 
+    /// A swap is one stored row, listed under both its source and destination
+    /// chain, once vault-wide, and not under an unrelated chain.
+    func testSwapRowIsListedOnSourceAndDestinationChain() throws {
+        recorder.recordSwap(
+            txHash: "0xcross",
+            approveTxHash: nil,
+            pubKeyECDSA: Self.vaultPubKey,
+            fromCoin: makeUSDC(),
+            toCoin: makeBTC(),
+            fromAmountCrypto: "100 USDC",
+            fromAmountFiat: "100",
+            toAmountCrypto: "0.001 BTC",
+            toAmountFiat: "100",
+            fromAddress: "0xvault",
+            toAddress: "bc1qvault",
+            feeCrypto: "",
+            feeFiat: "",
+            chain: .ethereum,
+            explorerLink: "",
+            provider: "THORChain"
+        )
+
+        for chain in [Chain.ethereum, .bitcoin] {
+            let rows = try storage.fetchByChain(pubKeyECDSA: Self.vaultPubKey, chainRawValue: chain.rawValue)
+            XCTAssertEqual(rows.map(\.txHash), ["0xcross"])
+        }
+        XCTAssertTrue(try storage.fetchByChain(pubKeyECDSA: Self.vaultPubKey, chainRawValue: Chain.solana.rawValue).isEmpty)
+        XCTAssertEqual(try storage.fetchAll(pubKeyECDSA: Self.vaultPubKey).count, 1)
+    }
+
+    /// A limit order may never execute, so it stays on its source chain only.
+    func testLimitOrderIsNotListedOnDestinationChain() throws {
+        try insertRow(txHash: "0xlimit", type: .limit, chain: .ethereum, toChain: .bitcoin)
+
+        XCTAssertEqual(try fetch(.ethereum), ["0xlimit"])
+        XCTAssertTrue(try fetch(.bitcoin).isEmpty)
+    }
+
+    /// A same-chain swap matches both clauses but must still come back once.
+    func testSameChainSwapIsListedOnce() throws {
+        try insertRow(txHash: "0xsame", type: .swap, chain: .ethereum, toChain: .ethereum)
+
+        XCTAssertEqual(try fetch(.ethereum), ["0xsame"])
+    }
+
+    /// On the destination chain's history the row stands for the asset
+    /// received there, so the asset filter offers and matches BTC, not USDC.
+    func testRowAssetOnDestinationChainIsTheReceivedAsset() throws {
+        try insertRow(txHash: "0xasset", type: .swap, chain: .ethereum, toChain: .bitcoin)
+        let row = try XCTUnwrap(storage.fetchAll(pubKeyECDSA: Self.vaultPubKey).first)
+
+        XCTAssertEqual(row.asset(on: .bitcoin).ticker, "BTC")
+        XCTAssertEqual(row.asset(on: .bitcoin).network, Chain.bitcoin.displayName)
+        XCTAssertEqual(row.asset(on: .ethereum).ticker, "USDC")
+        XCTAssertEqual(row.asset(on: nil).ticker, "USDC")
+    }
+
+    private func fetch(_ chain: Chain) throws -> [String] {
+        try storage.fetchByChain(pubKeyECDSA: Self.vaultPubKey, chainRawValue: chain.rawValue).map(\.txHash)
+    }
+
+    private func insertRow(txHash: String, type: TransactionHistoryType, chain: Chain, toChain: Chain) throws {
+        container.mainContext.insert(TransactionHistoryItem(
+            txHash: txHash,
+            pubKeyECDSA: Self.vaultPubKey,
+            typeRawValue: type.rawValue,
+            statusRawValue: TransactionHistoryStatus.inProgress.rawValue,
+            chainRawValue: chain.rawValue,
+            coinTicker: "USDC",
+            coinLogo: "usdc",
+            amountCrypto: "100 USDC",
+            amountFiat: "100",
+            fromAddress: "0xvault",
+            toAddress: "bc1qvault",
+            toCoinTicker: "BTC",
+            toCoinLogo: "btc",
+            toChainRawValue: toChain.rawValue,
+            feeCrypto: "",
+            feeFiat: "",
+            network: chain.name,
+            explorerLink: ""
+        ))
+        try container.mainContext.save()
+    }
+
     // MARK: - Fixtures
 
     private func makeUSDC() -> Coin {
