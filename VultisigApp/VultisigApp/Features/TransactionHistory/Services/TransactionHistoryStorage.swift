@@ -124,9 +124,13 @@ final class TransactionHistoryStorage {
     // MARK: - Fetch by Chain
 
     func fetchByChain(pubKeyECDSA: String, chainRawValue: String) throws -> [TransactionHistoryData] {
+        // A swap is also listed on its destination chain. Limit orders are not:
+        // an order that may never execute hasn't touched that chain.
+        let swapRaw = TransactionHistoryType.swap.rawValue
         let predicate = #Predicate<TransactionHistoryItem> { item in
             item.pubKeyECDSA == pubKeyECDSA
-                && (item.chainRawValue == chainRawValue || item.toChainRawValue == chainRawValue)
+                && (item.chainRawValue == chainRawValue
+                    || (item.toChainRawValue == chainRawValue && item.typeRawValue == swapRaw))
         }
         let descriptor = FetchDescriptor(
             predicate: predicate,
