@@ -99,12 +99,59 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         )
     }
 
+    private func makeSolanaCoin() -> Coin {
+        let asset = CoinMeta(
+            chain: .solana,
+            ticker: "SOL",
+            logo: "solana",
+            decimals: 9,
+            priceProviderId: "solana",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        return Coin(
+            asset: asset,
+            address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+            hexPublicKey: "7f8a7e2b5c1d3e4f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f"
+        )
+    }
+
     private func makePayload() -> KeysignPayload {
-        KeysignPayload(
+        makePayload(
             coin: makeBitcoinCoin(),
             toAddress: "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
             toAmount: BigInt(10_000),
-            chainSpecific: .UTXO(byteFee: 20, sendMaxAmount: false),
+            chainSpecific: .UTXO(byteFee: 20, sendMaxAmount: false)
+        )
+    }
+
+    private func makeSolanaPayload() -> KeysignPayload {
+        makePayload(
+            coin: makeSolanaCoin(),
+            toAddress: "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T",
+            toAmount: BigInt(1_000_000),
+            chainSpecific: .Solana(
+                recentBlockHash: "6VjnGjZWnCyLtCd5FZTLpqm9GNjnzDrGGjyEfKNXfPKa",
+                priorityFee: BigInt(1_000_000),
+                priorityLimit: BigInt(100_000),
+                fromAddressPubKey: nil,
+                toAddressPubKey: nil,
+                hasProgramId: false
+            )
+        )
+    }
+
+    private func makePayload(
+        coin: Coin,
+        toAddress: String,
+        toAmount: BigInt,
+        chainSpecific: BlockChainSpecific
+    ) -> KeysignPayload {
+        KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: toAmount,
+            chainSpecific: chainSpecific,
             utxos: [],
             memo: nil,
             swapPayload: nil,
@@ -123,9 +170,9 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         )
     }
 
-    private func makeViewModel(checker: TransactionStatusChecking) -> KeysignViewModel {
+    private func makeViewModel(checker: TransactionStatusChecking, payload: KeysignPayload? = nil) -> KeysignViewModel {
         let vm = KeysignViewModel()
-        vm.keysignPayload = makePayload()
+        vm.keysignPayload = payload ?? makePayload()
         vm.transactionStatusChecker = checker
         return vm
     }
@@ -286,6 +333,48 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         }
 
         XCTAssertEqual(vm.status, .KeysignBroadcastUnconfirmed, "finish guard must not overwrite the unconfirmed state")
+    }
+
+    // MARK: - Retryable (stale blockhash) errors verify on-chain first
+
+    private static let staleBlockhashError = SolanaRetryableError.blockhashExpired(
+        message: "Transaction simulation failed: Blockhash not found"
+    )
+
+    func testRetryableErrorWithHashOnChainEndsInSuccessWithoutRetry() async {
+        let checker = FakeStatusChecker(.confirmed)
+        let vm = makeViewModel(checker: checker, payload: makeSolanaPayload())
+
+        await vm.handleBroadcastError(error: Self.staleBlockhashError, transactionType: makeTransactionType())
+
+        XCTAssertEqual(vm.txid, Self.txHash)
+        XCTAssertNotEqual(vm.status, .KeysignRetryRequested, "a landed tx must not be offered for re-signing")
+        XCTAssertNotEqual(vm.status, .KeysignFailed)
+        XCTAssertGreaterThan(checker.callCount, 0)
+    }
+
+    func testRetryableErrorWithHashNotFoundRequestsRetry() async {
+        let checker = FakeStatusChecker(.notFound)
+        let vm = makeViewModel(checker: checker, payload: makeSolanaPayload())
+
+        await vm.handleBroadcastError(error: Self.staleBlockhashError, transactionType: makeTransactionType())
+
+        XCTAssertEqual(vm.status, .KeysignRetryRequested)
+        XCTAssertEqual(vm.retryReason, .staleBlockhash)
+        XCTAssertEqual(vm.txid, "")
+        XCTAssertGreaterThan(checker.callCount, 0)
+    }
+
+    // An unreachable status RPC is not proof the tx landed, so the re-sign stays on offer.
+    func testRetryableErrorWithLookupFailingRequestsRetry() async {
+        let checker = FakeStatusChecker(.throwError(StubBroadcastError()))
+        let vm = makeViewModel(checker: checker, payload: makeSolanaPayload())
+
+        await vm.handleBroadcastError(error: Self.staleBlockhashError, transactionType: makeTransactionType())
+
+        XCTAssertEqual(vm.status, .KeysignRetryRequested)
+        XCTAssertEqual(vm.txid, "")
+        XCTAssertGreaterThan(checker.callCount, 0)
     }
 
     // MARK: - Classifier unit coverage

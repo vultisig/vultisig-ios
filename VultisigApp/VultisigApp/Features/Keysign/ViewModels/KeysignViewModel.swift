@@ -1267,6 +1267,12 @@ class KeysignViewModel: ObservableObject {
 
         if let retryable = error as? RetryableBroadcastError,
            broadcastRetryCount < Self.maxBroadcastRetries {
+            // A retryable error doesn't prove absence: an earlier send may have landed.
+            if await isAlreadyOnChain(transactionType: transactionType) {
+                logger.info("retryable broadcast error, but tx already on-chain — using hash \(transactionType.transactionHash, privacy: .public)")
+                await applyBroadcastSuccess(transactionType: transactionType)
+                return
+            }
             broadcastRetryCount += 1
             logger.warning("broadcast failed with retryable error (\(retryable.retryReason.userFacingMessage, privacy: .public)); requesting retry")
             self.retryReason = retryable.retryReason
