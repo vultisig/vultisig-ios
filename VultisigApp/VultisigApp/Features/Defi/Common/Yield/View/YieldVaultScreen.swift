@@ -411,7 +411,7 @@ struct YieldVaultScreen: View {
             let payload = try await model.provider.buildClaimPayload(vault: vault, recipient: recipient, redemption: redemption)
             let displayTx = SendTransaction.empty(coin: usdcCoin, vault: vault).with(
                 toAddress: recipient,
-                amount: redemption.amount.description
+                amount: redemption.amount.formatToDecimal(digits: usdcCoin.decimals)
             )
             reviewPresenter.present(
                 .send(
