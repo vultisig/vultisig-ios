@@ -126,7 +126,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
 
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
             referralDiscountBps: 0
         )
         let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
@@ -137,7 +137,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
                 referralDiscountBps: 0
             ),
             Decimal(5).formatToFiat(includeCurrencySymbol: true)
@@ -150,7 +150,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = makeOneInchQuote(swapFee: "3000")
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: eth, toCoin: eth, feeCoin: eth,
-            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
             referralDiscountBps: 5
         )
         let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: eth, toCoin: eth, feeCoin: eth)
@@ -168,7 +168,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = makeJupiterQuote(platformFee: 0, feeOnInput: false)
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
             referralDiscountBps: 5
         )
 
@@ -183,7 +183,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
                 referralDiscountBps: 5
             ),
             Decimal(0).formatToFiat(includeCurrencySymbol: true)
@@ -196,7 +196,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "250000"))
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
             referralDiscountBps: 5
         )
         let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
@@ -213,14 +213,14 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "500000"))
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 0
         )
 
         XCTAssertEqual(breakdown, .init(vult: 0, referral: 0))
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+                fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 0
             ),
             Decimal(5).formatToFiat(includeCurrencySymbol: true)
         )
@@ -232,7 +232,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "0"))
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: Int.max, referralDiscountBps: 0
         )
 
         XCTAssertEqual(breakdown.vult, 5)
@@ -240,7 +240,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 5
+                fromAmount: 1, vultDiscountBps: Int.max, referralDiscountBps: 5
             ),
             Decimal(5).formatToFiat(includeCurrencySymbol: true)
         )
@@ -252,7 +252,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "100000"))
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 5
+            fromAmount: 1, vultDiscountBps: Int.max, referralDiscountBps: 5
         )
         let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc)
 
@@ -267,15 +267,15 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         setPrice(1000, for: btc)
         let thor = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: .thorchain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 5
         )
         let maya = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: .mayachain(makeThorQuote()), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 5
         )
         let swapKit = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 5
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 5
         )
 
         XCTAssertEqual(thor.referral, Decimal(string: "0.5") ?? 0)
@@ -288,7 +288,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = makeJupiterQuote(platformFee: 0, feeOnInput: true)
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: sol, toCoin: sol, feeCoin: sol,
-            fromAmount: "1", vultDiscountBps: 20, referralDiscountBps: 5
+            fromAmount: 1, vultDiscountBps: 20, referralDiscountBps: 5
         )
 
         XCTAssertEqual(breakdown, .init(vult: 0, referral: 0))
@@ -304,7 +304,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "1000000", outbound: "0", total: "9000000"))
         let value = SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 0
         )
         XCTAssertEqual(value, Decimal(10).formatToFiat(includeCurrencySymbol: true))
         XCTAssertNotEqual(value, Decimal(90).formatToFiat(includeCurrencySymbol: true))
@@ -318,7 +318,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "0", outbound: "0", total: "0"))
         let value = SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: Int.max, referralDiscountBps: 0
         )
         XCTAssertFalse(value.isEmpty)
         XCTAssertEqual(value, Decimal(5).formatToFiat(includeCurrencySymbol: true))
@@ -328,7 +328,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let btc = makeCoin(.bitcoin, ticker: "BTCSK2", decimals: 8, isNative: true)
         let value = SwapCryptoLogic.baseAffiliateFee(
             quote: makeSwapKitQuote(), fromCoin: btc, toCoin: btc, feeCoin: btc,
-            fromAmount: "1", vultDiscountBps: 0, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: 0, referralDiscountBps: 0
         )
         XCTAssertEqual(value, "swap.included_in_rate".localized)
     }
@@ -342,7 +342,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         let quote = makeJupiterQuote(platformFee: Decimal(2) / Decimal(100), feeOnInput: false)
         let value = SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-            fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+            fromAmount: 0, vultDiscountBps: 0, referralDiscountBps: 0
         )
         XCTAssertEqual(value, (Decimal(4) / Decimal(100)).formatToFiat(includeCurrencySymbol: true))
     }
@@ -387,7 +387,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         setPrice(2, for: usdc)
         let value = SwapCryptoLogic.baseAffiliateFee(
             quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), fromCoin: sol, toCoin: usdc, feeCoin: sol,
-            fromAmount: "1", vultDiscountBps: Int.max, referralDiscountBps: 0
+            fromAmount: 1, vultDiscountBps: Int.max, referralDiscountBps: 0
         )
         XCTAssertEqual(value, Decimal(5).formatToFiat(includeCurrencySymbol: true))
     }
@@ -404,7 +404,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-                fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+                fromAmount: 0, vultDiscountBps: 0, referralDiscountBps: 0
             ),
             expected
         )
@@ -416,7 +416,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertNotEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-                fromAmount: "0", vultDiscountBps: 0, referralDiscountBps: 0
+                fromAmount: 0, vultDiscountBps: 0, referralDiscountBps: 0
             ),
             Decimal(0).formatToFiat(includeCurrencySymbol: true)
         )
@@ -448,7 +448,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         )
         let breakdown = SwapCryptoLogic.affiliateDiscountBreakdown(
             quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol,
-            fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+            fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
             referralDiscountBps: 5
         )
         let net = SwapCryptoLogic.affiliateFeeFiat(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol)
@@ -509,7 +509,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
+                fromAmount: 1, vultDiscountBps: VultDiscountTier.gold.bpsDiscount,
                 referralDiscountBps: 0
             ),
             Decimal(5).formatToFiat(includeCurrencySymbol: true)
@@ -550,7 +550,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
                 fromCoin: transaction.fromCoin,
                 toCoin: transaction.toCoin,
                 feeCoin: transaction.feeCoin,
-                fromAmount: transaction.fromAmount.description,
+                fromAmount: transaction.fromAmount,
                 vultDiscountBps: transaction.vultDiscountBps,
                 referralDiscountBps: transaction.referralDiscountBps
             )
@@ -560,7 +560,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             fromCoin: transaction.fromCoin,
             toCoin: transaction.toCoin,
             feeCoin: transaction.feeCoin,
-            fromAmount: transaction.fromAmount.description,
+            fromAmount: transaction.fromAmount,
             vultDiscountBps: transaction.vultDiscountBps,
             referralDiscountBps: transaction.referralDiscountBps
         )
@@ -587,7 +587,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             fromCoin: ultimate.fromCoin,
             toCoin: ultimate.toCoin,
             feeCoin: ultimate.feeCoin,
-            fromAmount: ultimate.fromAmount.description,
+            fromAmount: ultimate.fromAmount,
             vultDiscountBps: ultimate.vultDiscountBps,
             referralDiscountBps: ultimate.referralDiscountBps
         )

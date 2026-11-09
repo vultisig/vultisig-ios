@@ -189,7 +189,7 @@ final class SwapVerifyViewModel {
             if let balanceError = SwapCryptoLogic.balanceError(
                 fromCoin: updated.fromCoin,
                 feeCoin: updated.feeCoin,
-                fromAmount: updated.fromAmount.description,
+                amount: updated.fromAmount,
                 fee: validationFee
             ) {
                 throw balanceError
@@ -310,7 +310,7 @@ final class SwapVerifyViewModel {
                 if let balanceError = SwapCryptoLogic.balanceError(
                     fromCoin: transaction.fromCoin,
                     feeCoin: transaction.feeCoin,
-                    fromAmount: transaction.fromAmount.description,
+                    amount: transaction.fromAmount,
                     fee: transaction.networkFeeEstimate
                 ) {
                     throw balanceError
@@ -340,7 +340,7 @@ final class SwapVerifyViewModel {
                 if let balanceError = SwapCryptoLogic.balanceError(
                     fromCoin: transaction.fromCoin,
                     feeCoin: transaction.feeCoin,
-                    fromAmount: transaction.fromAmount.description,
+                    amount: transaction.fromAmount,
                     fee: signTimeFee
                 ) {
                     throw balanceError

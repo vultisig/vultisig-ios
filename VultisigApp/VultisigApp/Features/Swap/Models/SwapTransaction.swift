@@ -222,8 +222,6 @@ extension SwapTransaction {
 // reads `transaction.baseAffiliateFee` instead of spelling out the args.
 
 extension SwapTransaction {
-    private var fromAmountString: String { fromAmount.description }
-
     var fee: BigInt {
         SwapCryptoLogic.fee(
             quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee,
@@ -242,7 +240,7 @@ extension SwapTransaction {
     }
 
     var amountInCoinDecimal: BigInt {
-        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmountString, fromCoin: fromCoin)
+        SwapCryptoLogic.amountInCoinDecimal(fromAmount: fromAmount, fromCoin: fromCoin)
     }
 
     var toAmountDecimal: Decimal {
@@ -327,7 +325,7 @@ extension SwapTransaction {
     // MARK: - Display
 
     var fromFiatAmount: String {
-        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmountString)
+        SwapCryptoLogic.fromFiatAmount(fromCoin: fromCoin, fromAmount: fromAmount)
     }
 
     var toFiatAmount: String {
@@ -410,7 +408,7 @@ extension SwapTransaction {
     var baseAffiliateFee: String {
         SwapCryptoLogic.baseAffiliateFee(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -437,7 +435,7 @@ extension SwapTransaction {
     var vultDiscount: String {
         SwapCryptoLogic.vultDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }
@@ -445,7 +443,7 @@ extension SwapTransaction {
     var referralDiscount: String {
         SwapCryptoLogic.referralDiscount(
             quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps
         )
     }

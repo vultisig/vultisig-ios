@@ -64,19 +64,14 @@ enum SwapCryptoLogic {
 
     // MARK: - Amount conversions
 
-    static func fromAmountDecimal(fromAmount: String) -> Decimal {
-        fromAmount.toDecimal()
-    }
-
-    static func amountInCoinDecimal(fromAmount: String, fromCoin: Coin) -> BigInt {
-        let amount = fromAmount.toDecimal()
+    /// The broadcast amount, from the `Decimal` the form parsed. Never a String:
+    /// re-parsing `Decimal.description` in de_DE reads "12.345" as 12345.
+    static func amountInCoinDecimal(fromAmount amount: Decimal, fromCoin: Coin) -> BigInt {
         let raw = fromCoin.raw(for: amount)
 
-        // `raw(for:)` rounds UP, and the amount text round-trips through
-        // `NumberFormatter`, which keeps only ~16 significant digits and rounds
-        // half-up. A 100% preset on an 18-decimal asset therefore parses back a
-        // hair ABOVE the balance and would broadcast more base units than the
-        // wallet holds — a transaction the chain rejects.
+        // `raw(for:)` rounds UP, so an amount carrying more precision than the
+        // coin (or a preset rounded above the balance) would broadcast more base
+        // units than the wallet holds — a transaction the chain rejects.
         //
         // This is the broadcast amount, so the invariant is simply that it can
         // never exceed the balance. Over-spends are caught elsewhere, on a
@@ -277,10 +272,6 @@ enum SwapCryptoLogic {
     /// signing or validation — only the firm `quote` does. Returns nil when the
     /// input amount is non-positive or, without a model, when either price is
     /// missing, so the view can fall back to empty/0.
-    static func toAmountIndicative(fromCoin: Coin, toCoin: Coin, fromAmount: String) -> Decimal? {
-        toAmountIndicative(fromCoin: fromCoin, toCoin: toCoin, fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero)
-    }
-
     static func toAmountIndicative(
         fromCoin: Coin,
         toCoin: Coin,
@@ -436,8 +427,8 @@ enum SwapCryptoLogic {
 
     // MARK: - Display: amounts
 
-    static func fromFiatAmount(fromCoin: Coin, fromAmount: String) -> String {
-        let fiatDecimal = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
+    static func fromFiatAmount(fromCoin: Coin, fromAmount: Decimal) -> String {
+        let fiatDecimal = fromCoin.fiat(decimal: fromAmount)
         return fiatDecimal.formatForDisplay()
     }
 
@@ -594,22 +585,6 @@ enum SwapCryptoLogic {
     /// discounts reconstructs the undiscounted amount while `totalFeeString`
     /// deliberately remains net. SwapKit's affiliate is embedded in the quoted
     /// rate and therefore stays a note rather than a fabricated line-item value.
-    static func baseAffiliateFee(
-        quote: SwapQuote?,
-        fromCoin: Coin,
-        toCoin: Coin,
-        feeCoin: Coin,
-        fromAmount: String,
-        vultDiscountBps: Int,
-        referralDiscountBps: Int
-    ) -> String {
-        baseAffiliateFee(
-            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps
-        )
-    }
-
     static func baseAffiliateFee(
         quote: SwapQuote?,
         fromCoin: Coin,
@@ -785,22 +760,6 @@ enum SwapCryptoLogic {
         fromCoin: Coin,
         toCoin: Coin,
         feeCoin: Coin,
-        fromAmount: String,
-        vultDiscountBps: Int,
-        referralDiscountBps: Int
-    ) -> String {
-        vultDiscount(
-            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps
-        )
-    }
-
-    static func vultDiscount(
-        quote: SwapQuote?,
-        fromCoin: Coin,
-        toCoin: Coin,
-        feeCoin: Coin,
         fromAmount: Decimal,
         vultDiscountBps: Int,
         referralDiscountBps: Int
@@ -822,22 +781,6 @@ enum SwapCryptoLogic {
         fromCoin: Coin,
         toCoin: Coin,
         feeCoin: Coin,
-        fromAmount: String,
-        vultDiscountBps: Int,
-        referralDiscountBps: Int
-    ) -> String {
-        referralDiscount(
-            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps
-        )
-    }
-
-    static func referralDiscount(
-        quote: SwapQuote?,
-        fromCoin: Coin,
-        toCoin: Coin,
-        feeCoin: Coin,
         fromAmount: Decimal,
         vultDiscountBps: Int,
         referralDiscountBps: Int
@@ -852,22 +795,6 @@ enum SwapCryptoLogic {
             referralDiscountBps: referralDiscountBps
         )
         return formatDiscount(breakdown.referral)
-    }
-
-    static func affiliateDiscountBreakdown(
-        quote: SwapQuote?,
-        fromCoin: Coin,
-        toCoin: Coin,
-        feeCoin: Coin,
-        fromAmount: String,
-        vultDiscountBps: Int,
-        referralDiscountBps: Int
-    ) -> AffiliateDiscountBreakdown {
-        affiliateDiscountBreakdown(
-            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
-            fromAmount: SwapAmountInput.parseToken(fromAmount) ?? .zero, vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps
-        )
     }
 
     static func affiliateDiscountBreakdown(
@@ -1025,17 +952,7 @@ enum SwapCryptoLogic {
 
     /// Returns the specific balance error, or nil if balance is sufficient.
     /// Differentiates between insufficient token balance and insufficient gas.
-    static func balanceError(fromCoin: Coin, feeCoin: Coin, fromAmount: String, fee: BigInt) -> Errors? {
-        balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmount.toDecimal(), fee: fee)
-    }
-
-    /// The same rule, entered with an amount that is already a `Decimal`.
-    ///
-    /// The limit form holds its sell amount as a `BigInt` in the source coin's
-    /// base units, so routing it through the `String` entry point above would
-    /// format it and immediately re-parse it through a locale-aware parser for
-    /// nothing. Both swap tabs therefore share ONE affordability rule — there is
-    /// no second implementation to drift.
+    /// Both swap tabs share this one rule, entered with the parsed `Decimal`.
     static func balanceError(fromCoin: Coin, feeCoin: Coin, amount: Decimal, fee: BigInt) -> Errors? {
         let fromFee = feeCoin.decimal(for: fee)
         let fromBalance = fromCoin.balanceDecimal
