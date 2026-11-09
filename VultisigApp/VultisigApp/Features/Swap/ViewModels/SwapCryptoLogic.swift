@@ -924,12 +924,17 @@ enum SwapCryptoLogic {
         return AffiliateDiscountBreakdown(vult: vult, referral: referral)
     }
 
+    /// Same precision as the gross Vultisig Fee and Total Fee rows, so the rows subtract on screen.
     private static func formatDiscount(_ saving: Decimal) -> String {
         guard saving > 0 else { return .empty }
-        if saving < 0.01 {
-            return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
-        }
-        return "-" + saving.formatToFiat(includeCurrencySymbol: true)
+        return "-" + saving.formatToFiatForFee(includeCurrencySymbol: true)
+    }
+
+    /// SwapKit folds the affiliate fee into its quoted rate, so there is no
+    /// Vultisig Fee amount for a discount row to subtract from.
+    static func showsDiscountAmounts(quote: SwapQuote?) -> Bool {
+        if case .swapkit = quote { return false }
+        return true
     }
 
     // MARK: - Price impact

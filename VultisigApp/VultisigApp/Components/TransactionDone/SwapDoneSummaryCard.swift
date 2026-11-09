@@ -375,6 +375,7 @@ struct SwapDoneSummaryCard: View {
                     vultTierIcon(transaction)
                     Text(transaction.vultDiscountLabel)
                         .foregroundStyle(Theme.colors.textTertiary)
+                    discountAmount(transaction.vultDiscount, transaction)
                 }
                 .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -387,11 +388,23 @@ struct SwapDoneSummaryCard: View {
                         .foregroundStyle(Theme.colors.primaryAccent4)
                     Text(transaction.referralDiscountLabel)
                         .foregroundStyle(Theme.colors.textTertiary)
+                    discountAmount(transaction.referralDiscount, transaction)
                 }
                 .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 8)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func discountAmount(_ amount: String, _ transaction: SwapTransaction) -> some View {
+        if transaction.showsDiscountAmounts {
+            Spacer()
+            Text(amount)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
+                .layoutPriority(1)
         }
     }
 
