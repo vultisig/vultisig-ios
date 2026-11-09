@@ -45,6 +45,17 @@ final class CosmosUndelegateTransactionViewModelTests: XCTestCase {
         )
     }
 
+    /// The field pre-fills the whole stake as display text ("1,000"); undelegating
+    /// it must sign 1000 QBTC, not the 1 QBTC a re-parse of that text produced.
+    func testFullUndelegateSignsTheWholeStake() throws {
+        let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: 1))
+        vm.onLoad()
+
+        let builder = try XCTUnwrap(vm.transactionBuilder)
+
+        XCTAssertEqual(builder.cosmosStakingPayload?.amount, "100000000000")
+    }
+
     func testFeeDecimalMatchesConfig() {
         let vm = Self.makeVM(coin: Self.makeQbtcCoin(balance: 1))
         // 800 / 10^8
