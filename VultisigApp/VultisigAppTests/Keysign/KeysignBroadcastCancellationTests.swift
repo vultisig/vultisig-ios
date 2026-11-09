@@ -31,7 +31,8 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
             case throwError(Error)
         }
 
-        let behavior: Behavior
+        /// One entry per call; the last one repeats once the list runs out.
+        private let behaviors: [Behavior]
         private let callCountLock = OSAllocatedUnfairLock(initialState: 0)
         var callCount: Int {
             callCountLock.withLock { $0 }
@@ -43,8 +44,14 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         private let firstCall: XCTestExpectation?
 
         init(_ behavior: Behavior, firstCall: XCTestExpectation? = nil) {
-            self.behavior = behavior
+            self.behaviors = [behavior]
             self.firstCall = firstCall
+        }
+
+        init(sequence behaviors: [Behavior]) {
+            precondition(!behaviors.isEmpty)
+            self.behaviors = behaviors
+            self.firstCall = nil
         }
 
         func checkTransactionStatus(
@@ -53,13 +60,13 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
             chain _: Chain
         ) async throws -> TransactionStatusResult {
             await Task.yield()
-            let isFirst = callCountLock.withLock { count in
+            let call = callCountLock.withLock { count in
                 count += 1
-                return count == 1
+                return count
             }
-            if isFirst { firstCall?.fulfill() }
+            if call == 1 { firstCall?.fulfill() }
 
-            switch behavior {
+            switch behaviors[min(call, behaviors.count) - 1] {
             case .confirmed:
                 return TransactionStatusResult(status: .confirmed, blockNumber: 1, confirmations: 1)
             case .pending:
@@ -363,6 +370,17 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         XCTAssertEqual(vm.retryReason, .staleBlockhash)
         XCTAssertEqual(vm.txid, "")
         XCTAssertGreaterThan(checker.callCount, 0)
+    }
+
+    func testRetryableErrorWithHashSeenOnLaterLookupEndsInSuccessWithoutRetry() async {
+        let checker = FakeStatusChecker(sequence: [.notFound, .confirmed])
+        let vm = makeViewModel(checker: checker, payload: makeSolanaPayload())
+
+        await vm.handleBroadcastError(error: Self.staleBlockhashError, transactionType: makeTransactionType())
+
+        XCTAssertEqual(vm.txid, Self.txHash)
+        XCTAssertNotEqual(vm.status, .KeysignRetryRequested, "a tx that shows up on a later lookup must not be offered for re-signing")
+        XCTAssertEqual(checker.callCount, 2)
     }
 
     // An unreachable status RPC is not proof the tx landed, so the re-sign stays on offer.
