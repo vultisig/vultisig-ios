@@ -99,7 +99,8 @@ struct TronViewLogic {
 
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: coin.address,
-            amount: claimable.description,
+            // Locale text: SendTransaction parses it in the device locale (see TronFreezeViewModel).
+            amount: claimable.formatToDecimal(digits: coin.decimals),
             memo: TronHelper.withdrawExpireUnfreezeMemo,
             isStakingOperation: true
         )
