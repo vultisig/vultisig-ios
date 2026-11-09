@@ -73,8 +73,7 @@ final class TronFreezeViewModel: ObservableObject, Form {
         validateErrors()
         guard validForm, let coin = trxCoin else { return nil }
 
-        let amountDecimal = amountField.value.toDecimal()
-        guard amountDecimal > 0 else { return nil }
+        guard amountField.value.toDecimal() > 0 else { return nil }
 
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
 
@@ -86,7 +85,9 @@ final class TronFreezeViewModel: ObservableObject, Form {
 
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: coin.address,
-            amount: amountDecimal.description,
+            // The field's text: SendTransaction parses it in the device locale, and
+            // `Decimal.description` ("100.125") would read as 100125 in de_DE.
+            amount: amountField.value,
             memo: memo,
             isStakingOperation: true
         )
