@@ -28,7 +28,7 @@ final class CosmosRedelegateTransactionBuilderTests: XCTestCase {
     func testRedelegatePayloadCarriesSrcAndDst() {
         let builder = CosmosRedelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorSrcAddress: "terravaloper1src",
             validatorDstAddress: "terravaloper1dst"
@@ -45,7 +45,7 @@ final class CosmosRedelegateTransactionBuilderTests: XCTestCase {
     func testToAddressIsDestination() {
         let builder = CosmosRedelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorSrcAddress: "terravaloper1src",
             validatorDstAddress: "terravaloper1dst"

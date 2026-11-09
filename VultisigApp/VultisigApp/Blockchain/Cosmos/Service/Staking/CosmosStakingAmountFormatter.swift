@@ -17,16 +17,11 @@
 import Foundation
 
 enum CosmosStakingAmountFormatter {
-    /// Converts a human-decimal amount string (e.g. `"1.5"` or `"1,5"`) to
-    /// the chain's base-unit string (e.g. `"1500000"` for 6-decimal LUNA).
-    /// Returns `"0"` on any parse failure rather than throwing, so the
-    /// downstream form validator surfaces "amount required" rather than a
-    /// hard error from the builder.
-    static func baseUnitsString(amount: String, decimals: Int) -> String {
-        let normalized = amount.replacingOccurrences(of: ",", with: ".")
-        guard let parsed = Decimal(string: normalized) else { return "0" }
-        let multiplier = pow(Decimal(10), decimals)
-        let raw = parsed * multiplier
+    /// Converts an amount to the chain's base-unit string (e.g. `"1500000"` for
+    /// 1.5 LUNA at 6 decimals). Takes the `Decimal` the form parsed: re-parsing
+    /// display text breaks on grouping ("1,234.5" read as 1.234).
+    static func baseUnitsString(amount: Decimal, decimals: Int) -> String {
+        let raw = amount * pow(Decimal(10), decimals)
         let handler = NSDecimalNumberHandler(
             roundingMode: .down,
             scale: 0,

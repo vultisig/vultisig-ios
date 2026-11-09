@@ -33,7 +33,7 @@ final class CosmosDelegateTransactionBuilderTests: XCTestCase {
     func testBuilderProducesDelegatePayloadWithCanonicalBondDenom() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1.5",
+            amountDecimal: Decimal(string: "1.5") ?? 0,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
@@ -47,27 +47,29 @@ final class CosmosDelegateTransactionBuilderTests: XCTestCase {
     func testBuilderConvertsHumanDecimalToBaseUnits() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1.5",
+            amountDecimal: Decimal(string: "1.5") ?? 0,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
         XCTAssertEqual(builder.cosmosStakingPayload?.amount, "1500000")
     }
 
-    func testBuilderHandlesCommaAsDecimalSeparator() {
+    /// 1234.5 displays as "1,234.5" (or "1.234,5"); the signed amount must
+    /// still be 1234.5, not the 1.234 a re-parse of that text produced.
+    func testBuilderSignsAmountsAboveAThousandInFull() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "0,5",
+            amountDecimal: Decimal(string: "1234.5") ?? 0,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
-        XCTAssertEqual(builder.cosmosStakingPayload?.amount, "500000")
+        XCTAssertEqual(builder.cosmosStakingPayload?.amount, "1234500000")
     }
 
     func testBuilderEmitsEmptyMemoForCosmosStaking() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
@@ -77,7 +79,7 @@ final class CosmosDelegateTransactionBuilderTests: XCTestCase {
     func testToAddressDefaultsToValidatorForVerifyScreenDisplay() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
@@ -87,7 +89,7 @@ final class CosmosDelegateTransactionBuilderTests: XCTestCase {
     func testBuildSendTransactionPropagatesStakingPayload() {
         let builder = CosmosDelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )

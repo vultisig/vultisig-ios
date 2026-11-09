@@ -34,7 +34,7 @@ final class CosmosUndelegateTransactionBuilderTests: XCTestCase {
     func testBuilderProducesUndelegatePayloadDiscriminator() {
         let builder = CosmosUndelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "0.5",
+            amountDecimal: Decimal(string: "0.5") ?? 0,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )
@@ -50,7 +50,7 @@ final class CosmosUndelegateTransactionBuilderTests: XCTestCase {
     func testBuilderDefaultsToZeroMemoAndUnspecifiedTransactionType() {
         let builder = CosmosUndelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: true,
             validatorAddress: "terravaloper1abc"
         )
@@ -62,7 +62,7 @@ final class CosmosUndelegateTransactionBuilderTests: XCTestCase {
     func testToAddressMirrorsValidatorOperator() {
         let builder = CosmosUndelegateTransactionBuilder(
             coin: Self.makeLunaCoin(),
-            amount: "1",
+            amountDecimal: 1,
             sendMaxAmount: false,
             validatorAddress: "terravaloper1abc"
         )

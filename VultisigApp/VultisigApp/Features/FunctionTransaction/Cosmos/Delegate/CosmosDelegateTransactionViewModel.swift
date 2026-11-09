@@ -40,6 +40,7 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
 
     func onLoad() {
         setupForm()
+        amountField.validators.append(HumanDecimalAmountValidator(decimals: coin.decimals))
         amountField.validators.append(AmountBalanceValidator(balance: stakeableBalance))
     }
 
@@ -74,11 +75,12 @@ final class CosmosDelegateTransactionViewModel: ObservableObject, Form {
 
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, hasSufficientBalanceForFee, let validator = selectedValidator else { return nil }
+        guard validForm, hasSufficientBalanceForFee, let validator = selectedValidator,
+              let amount = HumanDecimalAmount.parse(amountField.value, decimals: coin.decimals) else { return nil }
         guard !validator.jailed else { return nil }
         return CosmosDelegateTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals),
+            amountDecimal: amount,
             sendMaxAmount: isMaxAmount,
             validatorAddress: validator.operatorAddress
         )

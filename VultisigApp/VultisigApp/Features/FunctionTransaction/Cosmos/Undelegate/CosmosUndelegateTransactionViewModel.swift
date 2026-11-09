@@ -56,6 +56,7 @@ final class CosmosUndelegateTransactionViewModel: ObservableObject, Form {
 
     func onLoad() {
         setupForm()
+        amountField.validators.append(HumanDecimalAmountValidator(decimals: coin.decimals))
         amountField.validators.append(AmountBalanceValidator(balance: stakedBalance))
         amountField.value = stakedBalance.formatToDecimal(digits: coin.decimals)
         isMaxAmount = true
@@ -83,10 +84,11 @@ final class CosmosUndelegateTransactionViewModel: ObservableObject, Form {
 
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, hasSufficientBalanceForFee else { return nil }
+        guard validForm, hasSufficientBalanceForFee,
+              let amount = HumanDecimalAmount.parse(amountField.value, decimals: coin.decimals) else { return nil }
         return CosmosUndelegateTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals),
+            amountDecimal: amount,
             sendMaxAmount: isMaxAmount,
             validatorAddress: validatorAddress
         )
