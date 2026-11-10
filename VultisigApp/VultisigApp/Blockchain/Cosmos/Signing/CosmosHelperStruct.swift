@@ -128,6 +128,7 @@ struct CosmosHelperStruct {
             return try CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
+                $0.timeoutHeight = CosmosSignDataBuilder.getTimeoutHeight(keysignPayload: keysignPayload)
                 $0.chainID = coin.chainId
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
@@ -145,6 +146,7 @@ struct CosmosHelperStruct {
                 return try CosmosSigningInput.with {
                     $0.publicKey = pubKeyData
                     $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
+                    $0.timeoutHeight = CosmosSignDataBuilder.getTimeoutHeight(keysignPayload: keysignPayload)
                     $0.chainID = coin.chainId
                     $0.accountNumber = accountNumber
                     $0.sequence = sequence

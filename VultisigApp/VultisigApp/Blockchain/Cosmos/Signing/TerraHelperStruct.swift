@@ -45,6 +45,7 @@ struct TerraHelperStruct {
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
+                $0.timeoutHeight = CosmosSignDataBuilder.getTimeoutHeight(keysignPayload: keysignPayload)
                 $0.chainID = coinType.chainId
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
