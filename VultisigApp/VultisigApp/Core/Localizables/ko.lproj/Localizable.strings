@@ -269,6 +269,8 @@
 "copyContractAddress" = "컨트랙트 주소 복사";
 "copyLink" = "링크 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
+"cosmosPartialSummaryTitle" = "경고";
+"cosmosPartialSummaryWarning" = "이 요청의 일부는 여기에 요약되지 않았습니다. 아래의 전체 트랜잭션을 확인하세요.";
 "cosmosStakingActionClaim" = "청구";
 "cosmosStakingActionDelegate" = "위임";
 "cosmosStakingActionRedelegate" = "재위임";

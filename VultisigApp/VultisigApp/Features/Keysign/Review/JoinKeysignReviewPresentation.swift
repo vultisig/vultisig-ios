@@ -101,6 +101,7 @@ enum JoinKeysignReviewPresentation {
         let lpDetails = liquidityDetails(for: payload)
         let isSignDirect = payload?.signDirect != nil
         let signedTransfer = payload.flatMap(Self.signedTransfer)
+        let batch = payload.flatMap(Self.transferBatch)
         let isPlainRipplePayment = payload?.coin.chain == .ripple && payload?.swapPayload == nil
         let placement = LimitOrderPlacementPresentation.display(for: payload)
         var additionalRows: [SendCryptoVerifySummaryRow] = []
@@ -115,11 +116,12 @@ enum JoinKeysignReviewPresentation {
                 value: "\(dust.amount) \(dust.ticker)"
             ))
         }
+        if let batch { additionalRows += partialWarning(batch) }
 
         return SendCryptoVerifySummary(
             fromName: viewModel.vault.name,
             fromAddress: payload?.coin.address ?? .empty,
-            toAddress: signedTransfer.map(\.recipient) ?? (isSignDirect ? .empty : payload?.toAddress ?? .empty),
+            toAddress: batch?.recipients.joined(separator: "\n") ?? signedTransfer.map(\.recipient) ?? (isSignDirect ? .empty : payload?.toAddress ?? .empty),
             network: payload?.coin.chain.displayName ?? .empty,
             networkImage: payload?.coin.chain.logo ?? .empty,
             memo: isPlainRipplePayment
@@ -139,11 +141,11 @@ enum JoinKeysignReviewPresentation {
             amountFiat: lpDetails == nil && !isSignDirect ? viewModel.getAmountFiat() : .empty,
             coinTicker: payload?.coin.ticker ?? .empty,
             keysignPayload: payload,
-            hero: TransactionHeroResolver.hero(
+            hero: batch != nil ? nil : TransactionHeroResolver.hero(
                 on: .keysignConfirm,
                 for: .cosigning(payload: payload, simulated: { viewModel.verifyHeroContent })
             ),
-            tokenDisplay: viewModel.decodedTokenDisplay,
+            tokenDisplay: batch.flatMap { batch in payload.map { totalsText(of: batch, payload: $0) } } ?? viewModel.decodedTokenDisplay,
             tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
             vault: viewModel.vault,
             dappMetadata: viewModel.dappMetadata,
@@ -233,7 +235,12 @@ enum JoinKeysignReviewPresentation {
         let ballot = decoded.operation == .vote
             ? payload.signDirect.flatMap { CosmosSignDocReader.ballot(bodyBytes: $0.bodyBytes) }
             : nil
-        if let ballot {
+        let batch = transferBatch(of: payload)
+        if let batch {
+            rows.append(.init(label: "to".localized, value: batch.recipients.joined(separator: "\n"), isMultiline: true))
+            rows.append(.init(label: "amount".localized, value: totalsText(of: batch, payload: payload)))
+            rows += partialWarning(batch).map { .init(label: $0.title.localized, value: $0.value, isMultiline: true) }
+        } else if let ballot {
             rows.append(.init(label: "proposalID".localized, value: String(ballot.proposalID)))
             rows.append(.init(label: "governanceVoteAction".localized, value: voteTitle(ballot.option)))
         } else if case .validator(let address) = decoded.counterparty {
@@ -298,6 +305,30 @@ enum JoinKeysignReviewPresentation {
               let value = Decimal(string: raw.description)
         else { return nil }
         return (recipient, value / pow(10, payload.coin.decimals))
+    }
+
+    /// Every transfer of a multi-message `signDirect` / `signAmino` request, read
+    /// from the signed data. Nil for a lone transfer, which `signedTransfer` handles.
+    static func transferBatch(of payload: KeysignPayload) -> CosmosSignDocReader.TransferBatch? {
+        let batch = payload.signDirect.flatMap { CosmosSignDocReader.transfers(bodyBytes: $0.bodyBytes) }
+            ?? payload.signAmino.flatMap { CosmosSignDocReader.transfers(aminoMessages: $0.msgs) }
+        return batch?.needsListing == true ? batch : nil
+    }
+
+    /// "1001 ATOM, 5 uosmo" — the payload coin's own denom is scaled, any other stays raw.
+    private static func totalsText(of batch: CosmosSignDocReader.TransferBatch, payload: KeysignPayload) -> String {
+        let ownDenom = payload.coin.isNativeToken ? payload.coin.chain.feeUnit : payload.coin.contractAddress
+        return batch.totals.map { total in
+            guard total.denom == ownDenom, let value = Decimal(string: total.amount.description) else {
+                return "\(total.amount) \(total.denom)"
+            }
+            return "\((value / pow(10, payload.coin.decimals)).formatForDisplay()) \(payload.coin.ticker)"
+        }.joined(separator: ", ")
+    }
+
+    private static func partialWarning(_ batch: CosmosSignDocReader.TransferBatch) -> [SendCryptoVerifySummaryRow] {
+        guard batch.isPartial else { return [] }
+        return [.init(title: "cosmosPartialSummaryTitle", value: "cosmosPartialSummaryWarning".localized)]
     }
 
     private static func voteTitle(_ option: Int) -> String {

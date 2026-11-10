@@ -99,7 +99,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     getValueCell(
                         for: "to",
                         with: input.toAlias ?? input.toAddress,
-                        bracketValue: input.toAlias != nil ? input.toAddress : nil
+                        bracketValue: input.toAlias != nil ? input.toAddress : nil,
+                        isMultiLine: input.toAddress.contains("\n")
                     )
                     Separator()
                 }

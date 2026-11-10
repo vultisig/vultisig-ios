@@ -82,6 +82,12 @@ struct SendReviewSummaryView: View {
     /// never gets them; what it sets up is listed in the rows instead.
     private var showsAddressCards: Bool {
         !input.isRippleTrustSet && input.fromAddress.isNotEmpty && input.toAddress.isNotEmpty
+            && !hasSeveralRecipients
+    }
+
+    /// A multi-transfer request lists every recipient in one row, not on a card.
+    private var hasSeveralRecipients: Bool {
+        input.toAddress.contains("\n")
     }
 
     // MARK: - Rows
@@ -98,6 +104,8 @@ struct SendReviewSummaryView: View {
 
             if input.isRippleTrustSet {
                 trustSetRows
+            } else if hasSeveralRecipients {
+                KeysignReviewRow(label: "to".localized, value: input.toAddress, isMultiline: true)
             } else if !showsAddressCards, input.toAddress.isNotEmpty {
                 KeysignReviewRow(label: "to".localized) {
                     namedAddress(name: input.toAlias, address: input.toAddress)

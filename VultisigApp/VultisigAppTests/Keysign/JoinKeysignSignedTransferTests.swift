@@ -60,7 +60,59 @@ final class JoinKeysignSignedTransferTests: XCTestCase {
         XCTAssertNil(signedTransfer(coins: [("uatom", "5000000")], coin: coin))
     }
 
+    // MARK: - Multi-message requests
+
+    func testListsEveryRecipientAndTotalOfTwoSends() throws {
+        let body = Self.body([Self.send(to: "cosmos1a", amount: "1000000"), Self.send(to: "cosmos1b", amount: "1000000000")])
+        let batch = try XCTUnwrap(JoinKeysignReviewPresentation.transferBatch(of: Self.payload(body: body)))
+        XCTAssertEqual(batch.recipients, ["cosmos1a", "cosmos1b"])
+        XCTAssertEqual(batch.totals, [.init(denom: "uatom", amount: BigInt(1_001_000_000))])
+        XCTAssertFalse(batch.isPartial)
+    }
+
+    func testFlagsPartialWhenAMessageIsNotSummarized() throws {
+        var other = Data()
+        other.appendProtoString(fieldNumber: 1, value: "/cosmos.gov.v1beta1.MsgDeposit")
+        let body = Self.body([Self.send(to: "cosmos1a", amount: "5"), other])
+        let batch = try XCTUnwrap(CosmosSignDocReader.transfers(bodyBytes: body.base64EncodedString()))
+        XCTAssertTrue(batch.isPartial)
+        XCTAssertEqual(batch.recipients, ["cosmos1a"])
+    }
+
+    func testReadsAminoBatch() throws {
+        let msgs = [
+            CosmosMessage(type: "cosmos-sdk/MsgSend", value: #"{"amount":[{"amount":"1","denom":"uatom"}],"to_address":"cosmos1a"}"#),
+            CosmosMessage(type: "cosmos-sdk/MsgSend", value: #"{"amount":[{"amount":"1000","denom":"uatom"}],"to_address":"cosmos1b"}"#)
+        ]
+        let batch = try XCTUnwrap(CosmosSignDocReader.transfers(aminoMessages: msgs))
+        XCTAssertEqual(batch.recipients, ["cosmos1a", "cosmos1b"])
+        XCTAssertEqual(batch.totals, [.init(denom: "uatom", amount: 1001)])
+    }
+
+    func testLoneTransferIsNotABatch() {
+        let body = Self.body([Self.send(to: "cosmos1a", amount: "5")])
+        XCTAssertNil(JoinKeysignReviewPresentation.transferBatch(of: Self.payload(body: body)))
+    }
+
     // MARK: - Helpers
+
+    private static func send(to: String, amount: String) -> Data {
+        var coin = Data()
+        coin.appendProtoString(fieldNumber: 1, value: "uatom")
+        coin.appendProtoString(fieldNumber: 2, value: amount)
+        var message = Data()
+        message.appendProtoString(fieldNumber: 1, value: "cosmos1sender")
+        message.appendProtoString(fieldNumber: 2, value: to)
+        message.appendProtoBytes(fieldNumber: 3, data: coin)
+        var any = Data()
+        any.appendProtoString(fieldNumber: 1, value: "/cosmos.bank.v1beta1.MsgSend")
+        any.appendProtoBytes(fieldNumber: 2, data: message)
+        return any
+    }
+
+    private static func body(_ anys: [Data]) -> Data {
+        CosmosStakingHelper.buildTxBodyMulti(msgsAny: anys)
+    }
 
     private func signedTransfer(
         coins: [(denom: String, amount: String)],

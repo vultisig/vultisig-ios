@@ -19,6 +19,100 @@ enum CosmosSignDocReader {
         let counterparty: DecodedCounterparty?
     }
 
+    /// Every transfer a body carries, read from the signed data.
+    struct TransferBatch: Hashable {
+        struct Total: Hashable {
+            let denom: String
+            let amount: BigInt
+        }
+
+        /// Distinct recipients in signing order.
+        let recipients: [String]
+        /// One entry per denom, in first-seen order.
+        let totals: [Total]
+        /// Transfer messages summarized.
+        let count: Int
+        /// True when some message was left out of the summary.
+        let isPartial: Bool
+
+        /// More than one message, or a message the summary skips.
+        var needsListing: Bool { count > 1 || isPartial }
+    }
+
+    /// Bank sends, IBC transfers and delegations of a `signDirect` body.
+    static func transfers(bodyBytes base64: String) -> TransferBatch? {
+        guard let messages = messages(inBase64: base64) else { return nil }
+        return batch(messages.map(transfer))
+    }
+
+    /// Same for the JSON messages of a `signAmino` request.
+    static func transfers(aminoMessages: [CosmosMessage]) -> TransferBatch? {
+        guard aminoMessages.count <= maximumMessages else { return nil }
+        return batch(aminoMessages.map(aminoTransfer))
+    }
+
+    private typealias Transfer = (recipient: String, coins: [(denom: String, amount: BigInt)])
+
+    /// A nil item is a message the summary cannot read; none readable is refused.
+    private static func batch(_ items: [Transfer?]) -> TransferBatch? {
+        let read = items.compactMap { $0 }
+        guard !read.isEmpty else { return nil }
+
+        var recipients: [String] = []
+        var totals: [TransferBatch.Total] = []
+        for item in read {
+            if !recipients.contains(item.recipient) { recipients.append(item.recipient) }
+            for coin in item.coins {
+                if let index = totals.firstIndex(where: { $0.denom == coin.denom }) {
+                    totals[index] = .init(denom: coin.denom, amount: totals[index].amount + coin.amount)
+                } else {
+                    totals.append(.init(denom: coin.denom, amount: coin.amount))
+                }
+            }
+        }
+        return TransferBatch(recipients: recipients, totals: totals, count: read.count, isPartial: read.count < items.count)
+    }
+
+    private static func transfer(_ message: (url: String, value: Data)) -> Transfer? {
+        switch message.url {
+        case "/cosmos.bank.v1beta1.MsgSend", "/cosmos.staking.v1beta1.MsgDelegate":
+            // MsgSend: to 2, amount 3 (repeated). MsgDelegate: validator 2, amount 3.
+            return addressAndCoins(message.value, addressField: 2, amountField: 3)
+        case "/ibc.applications.transfer.v1.MsgTransfer":
+            // token 3, receiver 5
+            return addressAndCoins(message.value, addressField: 5, amountField: 3)
+        default:
+            return nil
+        }
+    }
+
+    private static func aminoTransfer(_ message: CosmosMessage) -> Transfer? {
+        guard let data = message.value.data(using: .utf8),
+              let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        else { return nil }
+
+        let address: Any?
+        let coins: Any?
+        switch message.type {
+        case "cosmos-sdk/MsgSend": (address, coins) = (json["to_address"], json["amount"])
+        case "cosmos-sdk/MsgDelegate": (address, coins) = (json["validator_address"], json["amount"])
+        case "cosmos-sdk/MsgTransfer": (address, coins) = (json["receiver"], json["token"])
+        default: return nil
+        }
+
+        let list = (coins as? [[String: Any]]) ?? (coins as? [String: Any]).map { [$0] }
+        guard let address = address as? String, !address.isEmpty, let list else { return nil }
+
+        var parsed: [(denom: String, amount: BigInt)] = []
+        for entry in list {
+            guard let denom = entry["denom"] as? String, !denom.isEmpty,
+                  let text = entry["amount"] as? String,
+                  let amount = BigInt(text), amount >= 0 else { return nil }
+            parsed.append((denom, amount))
+        }
+        return (address, parsed)
+    }
+
     // MARK: - Refusal limits
 
     /// Real staking bodies are well below this limit.
@@ -216,6 +310,26 @@ enum CosmosSignDocReader {
         validatorField: UInt64,
         amountField: UInt64?
     ) -> Reading? {
+        guard let (address, coins) = addressAndCoins(body, addressField: validatorField, amountField: amountField)
+        else { return nil }
+
+        // Multi-denom sends have no single amount.
+        let amount: DecodedAmount = coins.count == 1
+            ? .units(coins[0].amount, of: .denom(coins[0].denom))
+            : .unstated
+        return Reading(
+            operation: operation,
+            amount: amount,
+            counterparty: operation == .transfer ? .contract(address) : .validator(address)
+        )
+    }
+
+    /// An absent address proves nothing, so it is refused.
+    private static func addressAndCoins(
+        _ body: Data,
+        addressField: UInt64,
+        amountField: UInt64?
+    ) -> Transfer? {
         var reader = ByteReader(body)
         var address: String?
         var coins: [(denom: String, amount: BigInt)] = []
@@ -226,7 +340,7 @@ enum CosmosSignDocReader {
             guard fields <= maximumFields else { return nil }
             guard let (field, wire) = reader.readTag() else { return nil }
 
-            if field == validatorField, wire == .lengthDelimited {
+            if field == addressField, wire == .lengthDelimited {
                 guard let raw = reader.readLengthDelimited(),
                       let text = String(data: raw, encoding: .utf8) else { return nil }
                 address = text
@@ -238,17 +352,8 @@ enum CosmosSignDocReader {
             }
         }
 
-        // Multi-denom sends have no single amount; an absent address proves nothing.
         guard let address, !address.isEmpty else { return nil }
-
-        let amount: DecodedAmount = coins.count == 1
-            ? .units(coins[0].amount, of: .denom(coins[0].denom))
-            : .unstated
-        return Reading(
-            operation: operation,
-            amount: amount,
-            counterparty: operation == .transfer ? .contract(address) : .validator(address)
-        )
+        return (address, coins)
     }
 
     /// `cosmos.base.v1beta1.Coin` — denom 1, amount 2, both strings.
