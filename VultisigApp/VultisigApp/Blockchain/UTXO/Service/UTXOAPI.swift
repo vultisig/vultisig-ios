@@ -119,6 +119,25 @@ struct BlockchairBroadcastResponse: Decodable {
     }
 }
 
+// MARK: - mempool.space projected blocks (Bitcoin fee rate, through the proxy)
+
+enum MempoolAPI: TargetType {
+    case projectedBlocks
+
+    var baseURL: URL { vultisigProxyBaseURL }
+    var path: String { "/mempool/v1/fees/mempool-blocks" }
+    var method: HTTPMethod { .get }
+    var task: HTTPTask { .requestPlain }
+    var timeoutInterval: TimeInterval { 5 }
+
+    // A 404 means the proxy has no route yet; the caller falls back without logging an error.
+    var validationType: ValidationType { .customCodes([200, 404]) }
+}
+
+struct MempoolProjectedBlock: Decodable {
+    let medianFee: Double
+}
+
 // MARK: - Dash JSON-RPC (`getaddressutxos` etc.)
 
 enum DashRpcAPI: TargetType {

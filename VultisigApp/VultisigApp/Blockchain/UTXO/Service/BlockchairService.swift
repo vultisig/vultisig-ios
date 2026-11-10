@@ -246,6 +246,22 @@ actor BlockchairService {
         }
     }
 
+    /// Median fee rate (sat/vB) of the projected next Bitcoin block, or `nil`
+    /// when the proxy gives no usable answer. Throws only on cancellation.
+    func fetchNextBlockMedianFee() async throws -> Double? {
+        do {
+            let response = try await httpClient.request(MempoolAPI.projectedBlocks)
+            guard response.response.statusCode == 200 else { return nil }
+            let blocks = try JSONDecoder().decode([MempoolProjectedBlock].self, from: response.data)
+            return blocks.first?.medianFee
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            logger.debug("Projected-block fee unavailable: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
     func getByKey(key: String) -> Blockchair? {
         return blockchairData.get(key)
     }

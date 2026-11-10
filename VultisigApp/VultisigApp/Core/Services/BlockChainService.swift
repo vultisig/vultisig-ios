@@ -23,6 +23,30 @@ final class BlockChainService {
         return value * 2 + value / 2 // x2.5 fee
     }
 
+    private static let bitcoinMinimumByteFee = BigInt(2)
+    private static let bitcoinMaxNextBlockMedianFee = 5_000.0
+    private static let bitcoinFeeMarginPercent = BigInt(125)
+    private static let millisPerUnit = 1_000
+
+    /// Bitcoin sat/vB rate before the fee tier: the projected next block's
+    /// median fee, never below Blockchair's suggestion, plus a 25% margin.
+    /// Integer math so every platform derives the same rate.
+    static func bitcoinByteFee(blockchairSatsPerByte blockchair: BigInt, nextBlockMedianFee: Double?) -> BigInt {
+        guard let nextBlockMedianFee,
+              nextBlockMedianFee.isFinite,
+              nextBlockMedianFee > 0,
+              nextBlockMedianFee <= bitcoinMaxNextBlockMedianFee else {
+            // No usable projection: sign Blockchair x2.5, what every platform signs today.
+            return normalizeUTXOFee(blockchair)
+        }
+        let milliMedian = BigInt(Int((nextBlockMedianFee * Double(millisPerUnit)).rounded(.up)))
+        let milliRate = max(milliMedian, blockchair * BigInt(millisPerUnit))
+        let divisor = BigInt(millisPerUnit * 100)
+        let rate = (milliRate * bitcoinFeeMarginPercent + divisor - 1) / divisor
+        // 2 sat/vB floor: a near-empty mempool must not price below what relays reliably.
+        return max(bitcoinMinimumByteFee, rate)
+    }
+
     /// Dogecoin's `suggested_transaction_fee_per_byte_sat` from Blockchair is
     /// reported at the chain's relay-floor scale (~500k sats/byte), an order of
     /// magnitude above the rate other UTXO chains report. Android scales it by
@@ -334,6 +358,7 @@ final class BlockChainService {
     ) async throws -> BlockChainSpecific {
         let quoteHash = "\(String(describing: quote?.hashValue))"
         let isDeposit = SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+        let feeMode = fromCoin.chain.startingFeeMode
         let cacheKey = getCacheKey(
             for: fromCoin,
             action: .swap,
@@ -343,7 +368,7 @@ final class BlockChainService {
             fromAddress: fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast,
+            feeMode: feeMode,
             customByteFee: nil,  // Swaps never carry the send form's pinned rate
             quote: quoteHash
         )
@@ -384,7 +409,7 @@ final class BlockChainService {
             fromAddress: fromCoin.address,
             toAddress: swapRecipient,
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast,
+            feeMode: feeMode,
             amount: nil
         )
         setCacheIfAllowed(for: fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
@@ -400,8 +425,14 @@ final class BlockChainService {
             // next-block rate and apply the fee mode tier (see dogeByteFee).
             result = Self.dogeByteFee(suggestedSatsPerByte: sats, feeMode: feeMode)
         } else {
-            // For other chains, use normal normalization and multipliers
-            let normalized = Self.normalizeUTXOFee(sats)
+            // Other chains: the chain's base rate, then the fee tier multiplier
+            let normalized: BigInt
+            if coin.chain == .bitcoin {
+                let nextBlockMedianFee = try await utxo.fetchNextBlockMedianFee()
+                normalized = Self.bitcoinByteFee(blockchairSatsPerByte: sats, nextBlockMedianFee: nextBlockMedianFee)
+            } else {
+                normalized = Self.normalizeUTXOFee(sats)
+            }
             let prioritized = Float(normalized) * feeMode.utxoMultiplier
             result = BigInt(prioritized)
         }
