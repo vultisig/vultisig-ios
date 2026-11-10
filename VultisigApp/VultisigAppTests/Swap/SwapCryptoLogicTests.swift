@@ -15,17 +15,51 @@ final class SwapCryptoLogicTests: XCTestCase {
 
     // MARK: - Amount conversions
 
-    func testFromAmountDecimalParsesString() {
-        XCTAssertEqual(SwapCryptoLogic.fromAmountDecimal(fromAmount: "1.5"), Decimal(string: "1.5"))
-    }
-
-    func testFromAmountDecimalEmptyReturnsZero() {
-        XCTAssertEqual(SwapCryptoLogic.fromAmountDecimal(fromAmount: ""), .zero)
-    }
-
     func testAmountInCoinDecimalScalesByCoinDecimals() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
-        XCTAssertEqual(SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc), BigInt(150_000_000))
+        XCTAssertEqual(SwapCryptoLogic.amountInCoinDecimal(fromAmount: Decimal(string: "1.5") ?? 0, fromCoin: btc), BigInt(150_000_000))
+    }
+
+    /// The signed amount is the form's `Decimal`. The locale guard is the type:
+    /// no String overload is left to re-parse it (de_DE read "12.345" as 12345).
+    func testBroadcastAmountIsTheParsedDecimal() throws {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        rune.rawBalance = "100000000000"
+        let amount = try XCTUnwrap(Decimal(string: "12.345"))
+        let transaction = SwapTransaction(
+            fromCoin: rune,
+            toCoin: makeBTC(),
+            fromAmount: amount,
+            kind: .market(nil),
+            gas: 0,
+            gasLimit: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: rune,
+            advancedSettings: .default
+        )
+
+        XCTAssertEqual(transaction.amountInCoinDecimal, BigInt(1_234_500_000))
+        XCTAssertNil(SwapCryptoLogic.balanceError(
+            fromCoin: rune, feeCoin: rune, amount: transaction.fromAmount, fee: 0
+        ))
+    }
+
+    /// Locale-independent: the de_DE form input "12,345" must reach the broadcast
+    /// amount as 12.345, and the dot-decimal `description` must never be fed back
+    /// through a de_DE parse (which reads it as 12345).
+    func testGermanFormInputBroadcastsParsedDecimalNotReparse() throws {
+        let de = Locale(identifier: "de_DE")
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        rune.rawBalance = "100000000000"
+
+        let parsed = try XCTUnwrap("12,345".parseInput(locale: de))
+        XCTAssertEqual(parsed, try XCTUnwrap(Decimal(string: "12.345")))
+        XCTAssertEqual(SwapCryptoLogic.amountInCoinDecimal(fromAmount: parsed, fromCoin: rune), BigInt(1_234_500_000))
+
+        // The hazard the old String overloads had: documents why the type guard exists.
+        XCTAssertEqual(try XCTUnwrap(parsed.description.parseInput(locale: de)), 12_345)
     }
 
     // MARK: - fee

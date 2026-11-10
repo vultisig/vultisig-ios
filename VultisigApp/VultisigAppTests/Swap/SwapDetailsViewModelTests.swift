@@ -266,8 +266,8 @@ final class SwapDetailsViewModelTests: XCTestCase {
     func testIndicativeReturnsNilForNonPositiveAmount() {
         let from = makeCoin(.ethereum, ticker: "ETH")
         let to = makeCoin(.bitcoin, ticker: "BTC")
-        XCTAssertNil(SwapCryptoLogic.toAmountIndicative(fromCoin: from, toCoin: to, fromAmount: ""))
-        XCTAssertNil(SwapCryptoLogic.toAmountIndicative(fromCoin: from, toCoin: to, fromAmount: "0"))
+        XCTAssertNil(SwapCryptoLogic.toAmountIndicative(fromCoin: from, toCoin: to, fromAmount: 0))
+        XCTAssertNil(SwapCryptoLogic.toAmountIndicative(fromCoin: from, toCoin: to, fromAmount: -1))
     }
 
     // MARK: - Item 2: stale-while-revalidate skeleton gating

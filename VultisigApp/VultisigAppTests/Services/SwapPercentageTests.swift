@@ -141,7 +141,7 @@ final class SwapPercentageTests: XCTestCase {
             "precondition: the unclamped conversion overshoots the balance"
         )
         XCTAssertEqual(
-            SwapCryptoLogic.amountInCoinDecimal(fromAmount: amount, fromCoin: dai),
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: amount.toDecimal(), fromCoin: dai),
             expected
         )
     }
@@ -149,7 +149,10 @@ final class SwapPercentageTests: XCTestCase {
     func testHundredPercentOfEightDecimalBalanceConvertsToExactlyRawBalance() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
         XCTAssertEqual(
-            SwapCryptoLogic.amountInCoinDecimal(fromAmount: text(100, btc) ?? "", fromCoin: btc),
+            SwapCryptoLogic.amountInCoinDecimal(
+                fromAmount: SwapAmountInput.parseToken(text(100, btc) ?? "") ?? 0,
+                fromCoin: btc
+            ),
             BigInt(21_322)
         )
     }
@@ -159,7 +162,7 @@ final class SwapPercentageTests: XCTestCase {
     func testAmountAboveBalanceNeverBroadcastsMoreThanTheBalance() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
         XCTAssertEqual(
-            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "0.001", fromCoin: btc),
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: Decimal(string: "0.001") ?? 0, fromCoin: btc),
             BigInt(21_322)
         )
     }
@@ -170,7 +173,7 @@ final class SwapPercentageTests: XCTestCase {
     func testCappingDoesNotHideOverSpendFromTheBalanceCheck() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
         XCTAssertEqual(
-            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, fromAmount: "0.001", fee: 0),
+            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, amount: Decimal(string: "0.001") ?? 0, fee: 0),
             .insufficientFunds
         )
     }
@@ -181,7 +184,7 @@ final class SwapPercentageTests: XCTestCase {
     func testUnloadedBalanceDoesNotCapTheAmount() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "")
         XCTAssertEqual(
-            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc),
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: Decimal(string: "1.5") ?? 0, fromCoin: btc),
             BigInt(150_000_000)
         )
     }
@@ -193,7 +196,7 @@ final class SwapPercentageTests: XCTestCase {
     func testZeroRawBalanceDoesNotCapTheAmount() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "0")
         XCTAssertEqual(
-            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc),
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: Decimal(string: "1.5") ?? 0, fromCoin: btc),
             BigInt(150_000_000)
         )
     }

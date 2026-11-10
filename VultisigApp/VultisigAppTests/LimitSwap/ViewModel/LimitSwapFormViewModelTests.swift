@@ -1302,7 +1302,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         let marketVerdict = SwapCryptoLogic.balanceError(
             fromCoin: btc,
             feeCoin: btc,
-            fromAmount: "0.99999",
+            amount: Decimal(string: "0.99999") ?? 0,
             fee: BigInt(10_000)
         )
         XCTAssertEqual(marketVerdict, .insufficientGas)

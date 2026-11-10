@@ -35,13 +35,13 @@ final class SwapValidationTests: XCTestCase {
 
     func testBalanceErrorNilWhenAmountPlusFeeFits() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "100000000") // 1 BTC
-        XCTAssertNil(SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, fromAmount: "0.5", fee: BigInt(1_000)))
+        XCTAssertNil(SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, amount: Decimal(string: "0.5") ?? 0, fee: BigInt(1_000)))
     }
 
     func testBalanceErrorInsufficientFundsWhenAmountAlreadyExceedsBalance() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "50000000") // 0.5 BTC
         XCTAssertEqual(
-            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, fromAmount: "1.0", fee: .zero),
+            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, amount: 1, fee: .zero),
             .insufficientFunds
         )
     }
@@ -49,7 +49,7 @@ final class SwapValidationTests: XCTestCase {
     func testBalanceErrorInsufficientGasWhenAmountFitsButFeeOverflows() {
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "100000000") // 1 BTC
         XCTAssertEqual(
-            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, fromAmount: "1.0", fee: BigInt(1_000)),
+            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, amount: 1, fee: BigInt(1_000)),
             .insufficientGas
         )
     }
@@ -59,14 +59,14 @@ final class SwapValidationTests: XCTestCase {
     func testBalanceErrorNilForERC20WhenBothBalancesSufficient() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "200000000") // 200 USDC
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, rawBalance: "1000000000000000000") // 1 ETH
-        XCTAssertNil(SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, fromAmount: "100", fee: BigInt(100_000_000_000_000)))
+        XCTAssertNil(SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, amount: 100, fee: BigInt(100_000_000_000_000)))
     }
 
     func testBalanceErrorInsufficientFundsForERC20WhenAmountExceedsTokenBalance() {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "50000000") // 50 USDC
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, rawBalance: "1000000000000000000")
         XCTAssertEqual(
-            SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, fromAmount: "100", fee: .zero),
+            SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, amount: 100, fee: .zero),
             .insufficientFunds
         )
     }
@@ -75,7 +75,7 @@ final class SwapValidationTests: XCTestCase {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "200000000") // 200 USDC
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, rawBalance: "0") // 0 ETH
         XCTAssertEqual(
-            SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, fromAmount: "100", fee: BigInt(100_000_000_000_000)),
+            SwapCryptoLogic.balanceError(fromCoin: usdc, feeCoin: eth, amount: 100, fee: BigInt(100_000_000_000_000)),
             .insufficientGas
         )
     }
