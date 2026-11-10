@@ -929,8 +929,6 @@
 "loadingSecuredAssets" = "Caricamento asset garantiti...";
 "localModeWaitingOnDevices" = "Modalità locale, in attesa dei dispositivi...";
 "lockAfterTitle" = "Blocca dopo";
-"lockTime" = "Tempo di blocco";
-"lockTimeSubtitle" = "Imposta il tempo prima che l'app si blocchi automaticamente";
 "loginUsingFaceID" = "Accedi usando Face ID";
 "loginUsingOpticID" = "Accedi con Optic ID";
 "loginUsingTouchID" = "Accedi con Touch ID";

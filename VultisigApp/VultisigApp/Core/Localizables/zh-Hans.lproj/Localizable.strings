@@ -929,8 +929,6 @@
 "loadingSecuredAssets" = "加载担保资产中...";
 "localModeWaitingOnDevices" = "本地模式，等待设备...";
 "lockAfterTitle" = "自动锁定时间";
-"lockTime" = "锁定时间";
-"lockTimeSubtitle" = "设置应用自动锁定前的时间";
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";

@@ -929,8 +929,6 @@
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Local mode, waiting on devices...";
 "lockAfterTitle" = "Lock after";
-"lockTime" = "Lock time";
-"lockTimeSubtitle" = "Set the time until the app locks automatically";
 "loginUsingFaceID" = "Login using Face ID";
 "loginUsingOpticID" = "Login using Optic ID";
 "loginUsingTouchID" = "Login using Touch ID";
