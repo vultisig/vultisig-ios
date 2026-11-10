@@ -163,9 +163,13 @@ private extension SendGasSettingsViewModel {
 
     func fetchEVM() async throws {
         let service = try EvmService.getService(forChain: chain)
+        let feeService = try EthereumFeeService(chain: chain)
         async let baseFeeWeiTask = service.getBaseFee()
         async let tmpFeeMapTask =  service.fetchMaxPriorityFeesPerGas()
-        let (baseFeeWei, tmpFeeMap) = try await (baseFeeWeiTask, tmpFeeMapTask)
+        async let marketRewardsTask = feeService.ethereumMarketRewards()
+        let (baseFeeWei, tmpFeeMap, marketRewards) = try await (baseFeeWeiTask, tmpFeeMapTask, marketRewardsTask)
+        // Ethereum mainnet lists the tips a send signs; other chains keep the fee-history map.
+        let feeMap = marketRewards.flatMap(EthereumFeeService.ethereumSendPriorityFees) ?? tmpFeeMap
         let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
 
         // Seed the editable Gas Limit with the real `eth_estimateGas` result
@@ -189,7 +193,7 @@ private extension SendGasSettingsViewModel {
 
         await MainActor.run {
             baseFee = baseFeeGwei.description
-            priorityFeesMap = tmpFeeMap
+            priorityFeesMap = feeMap
             if let resolvedGasLimit {
                 gasLimit = resolvedGasLimit.description
                 hasEstimatedGasLimit = true

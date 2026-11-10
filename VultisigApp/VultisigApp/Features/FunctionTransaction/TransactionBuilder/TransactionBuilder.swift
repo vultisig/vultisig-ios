@@ -102,7 +102,7 @@ extension TransactionBuilder {
             memo: memo,
             gas: .zero,
             fee: .zero,
-            feeMode: .default,
+            feeMode: coin.chain.startingFeeMode,
             estimatedGasLimit: nil,
             customGasLimit: nil,
             customByteFee: nil,

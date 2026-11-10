@@ -157,6 +157,10 @@ enum EvmService {
         return try await (try service).fetchMaxPriorityFeesPerGas()
     }
 
+    func getFeeHistory(rewardPercentile: Int) async throws -> [BigInt] {
+        return try await (try service).getFeeHistory(rewardPercentile: rewardPercentile)
+    }
+
     func getBaseFee() async throws -> BigInt {
         return try await (try service).getBaseFee()
     }

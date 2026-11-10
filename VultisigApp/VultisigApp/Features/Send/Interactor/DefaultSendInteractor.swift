@@ -80,6 +80,7 @@ nonisolated struct DefaultSendInteractor: SendInteractor {
             chain: request.coin.chain,
             limit: resolvedGasLimit,
             isSwap: false,
+            usesSwapPriorityFeeFloor: false,
             fromAddress: request.fromAddress,
             feeMode: request.feeMode
         )

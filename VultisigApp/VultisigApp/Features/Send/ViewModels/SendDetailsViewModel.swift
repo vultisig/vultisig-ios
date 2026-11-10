@@ -1471,6 +1471,21 @@ final class SendDetailsViewModel {
 
     // MARK: - Reset
 
+    /// A tier the user saved in the gas sheet; it carries across a coin switch.
+    @ObservationIgnored private var isFeeModeUserPicked = false
+
+    func pickFeeMode(_ mode: FeeMode) {
+        feeMode = mode
+        isFeeModeUserPicked = true
+    }
+
+    /// After a coin switch: keeps a tier the user picked, otherwise starts on
+    /// the new chain's starting tier.
+    func adoptStartingFeeMode() {
+        guard !isFeeModeUserPicked else { return }
+        feeMode = coin.chain.startingFeeMode
+    }
+
     /// Clear validation state ahead of an async check (matches legacy parity).
     private func resetStates() {
         errorTitle = ""
@@ -1498,7 +1513,8 @@ final class SendDetailsViewModel {
         amountInFiat = ""
         memo = ""
         rippleTag.reset()
-        feeMode = .default
+        feeMode = newCoin.chain.startingFeeMode
+        isFeeModeUserPicked = false
         sendMaxAmount = false
         isStakingOperation = false
         transactionType = .unspecified

@@ -114,7 +114,8 @@ enum ThorchainRouterDepositBuilder {
         let toAddress = try await resolveInboundDestination(coin: fromCoin, thorchainService: thorchainService)
         let tx = securedMintTransaction(fromCoin: fromCoin, amount: amount, vault: vault, thorAddress: thorAddress, toAddress: toAddress)
 
-        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+        // Swap screen prices this mint through `fetchSwapBlockChainSpecific`; sign with the same tip floor.
+        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx, usesSwapPriorityFeeFloor: true)
         let (swapPayload, approvePayload) = try await synthesizeRouterDeposit(
             tx: tx,
             approvalDecision: approvalDecision,

@@ -27,6 +27,8 @@ extension Chain {
         /// User-facing network label (not localized: same in every locale). `name` stays the wire/storage identifier.
         let displayName: String
         var typedAddressCompleteLength: Int?
+        /// Fee tier a send or swap starts on before the user picks one.
+        var startingFeeMode: FeeMode = .default
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -78,6 +80,9 @@ extension Chain {
     /// prefix can decode to 32 bytes.
     var typedAddressCompleteLength: Int? { config.typedAddressCompleteLength }
 
+    /// Fee tier a send or swap starts on before the user picks one.
+    var startingFeeMode: FeeMode { config.startingFeeMode }
+
     // MARK: - Row definitions
     //
     // One row per chain, in `Chain` declaration order. These are the single
@@ -95,7 +100,7 @@ extension Chain {
         case .solana:
             return ChainConfig(name: "Solana", ticker: "SOL", feeUnit: "SOL", swapAsset: "SOL", logo: "solana", chainID: 1_151_111_081_099_710, coinType: .solana, chainType: .Solana, banxaBlockchainCode: "SOL", minimumSendAmount: nil, displayName: "Solana", typedAddressCompleteLength: 44)
         case .ethereum:
-            return ChainConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil, displayName: "Ethereum")
+            return ChainConfig(name: "Ethereum", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ETH", logo: "eth", chainID: 1, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "ETH", minimumSendAmount: nil, displayName: "Ethereum", startingFeeMode: .normal)
         case .avalanche:
             return ChainConfig(name: "Avalanche", ticker: "AVAX", feeUnit: "Gwei", swapAsset: "AVAX", logo: "avax", chainID: 43114, coinType: .avalancheCChain, chainType: .EVM, banxaBlockchainCode: "AVAX-C", minimumSendAmount: nil, displayName: "Avalanche")
         case .base:

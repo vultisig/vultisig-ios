@@ -105,7 +105,7 @@ private extension SecurityScannerTransactionFactory {
         guard Base58.decodeNoCheck(string: transaction.fromAddress) != nil else {
             throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromAddress)
         }
-        var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
+        var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction, usesSwapPriorityFeeFloor: false)
         let type: SecurityTransactionType
 
         if transaction.coin.isNativeToken {
@@ -160,7 +160,7 @@ private extension SecurityScannerTransactionFactory {
     }
 
     func createSUISecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
-        var specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
+        var specific = try await BlockChainService.shared.fetchSpecific(tx: transaction, usesSwapPriorityFeeFloor: false)
         guard case let .Sui(referenceGasPrice, specificCoins, gasBudget) = specific else {
             throw HelperError.runtimeError("Error Blockchain Specific is not SUI")
         }
@@ -193,7 +193,7 @@ private extension SecurityScannerTransactionFactory {
     }
 
     func createBTCSecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
-        let specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
+        let specific = try await BlockChainService.shared.fetchSpecific(tx: transaction, usesSwapPriorityFeeFloor: false)
         let keySignPayload = try await KeysignPayloadFactory().buildTransfer(
             coin: transaction.coin,
             toAddress: transaction.toAddress,

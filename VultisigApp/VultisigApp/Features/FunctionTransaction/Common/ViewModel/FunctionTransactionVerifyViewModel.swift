@@ -64,7 +64,7 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
             Task { @MainActor in isLoading = false }
         }
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx, usesSwapPriorityFeeFloor: false)
 
             let keysignPayloadFactory = KeysignPayloadFactory()
 

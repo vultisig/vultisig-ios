@@ -68,7 +68,7 @@ struct EvmServiceStruct {
     }
 
     func fetchMaxPriorityFeesPerGas() async throws -> [FeeMode: BigInt] {
-        let history = try await getFeeHistory()
+        let history = try await getFeeHistory(rewardPercentile: Self.defaultRewardPercentile)
 
         func priorityFeesMap(low: BigInt, normal: BigInt, fast: BigInt) -> [FeeMode: BigInt] {
             return [.safeLow: low, .normal: normal, .fast: fast]
@@ -85,8 +85,12 @@ struct EvmServiceStruct {
         return priorityFeesMap(low: low, normal: normal, fast: fast)
     }
 
-    func getFeeHistory() async throws -> [BigInt] {
-        return try await rpcService.sendRPCRequest(method: "eth_feeHistory", params: [10, "latest", [5]]) { result in
+    /// Reward percentile the per-tier tip map reads from recent blocks.
+    static let defaultRewardPercentile = 5
+
+    /// The `rewardPercentile` reward of each of the last 10 blocks, sorted ascending.
+    func getFeeHistory(rewardPercentile: Int) async throws -> [BigInt] {
+        return try await rpcService.sendRPCRequest(method: "eth_feeHistory", params: [10, "latest", [rewardPercentile]]) { result in
             guard
                 let result = result as? [String: Any],
                 let rewards = result["reward"] as? [[String]] else {

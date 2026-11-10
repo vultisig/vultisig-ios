@@ -58,7 +58,7 @@ struct FunctionTransactionFeePricer {
     init(
         interactor: SendInteractor = DefaultSendInteractor.live,
         fetchSigningChainSpecific: @escaping SigningChainSpecificFetch = {
-            try await BlockChainService.shared.fetchSpecific(tx: $0)
+            try await BlockChainService.shared.fetchSpecific(tx: $0, usesSwapPriorityFeeFloor: false)
         }
     ) {
         self.logic = SendCryptoVerifyLogic(interactor: interactor)

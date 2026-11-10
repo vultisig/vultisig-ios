@@ -58,6 +58,7 @@ struct SendDetailsScreen: View {
                 viewModel.initializePendingTransactionState(for: newValue.chain)
                 PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
                 viewModel.refreshPendingTransactionState()
+                viewModel.adoptStartingFeeMode()
                 // Clear any previously-typed memo when switching into a coin
                 // whose signer cannot carry it so it doesn't ride invisibly.
                 if !newValue.supportsMemo {
@@ -354,7 +355,7 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         default:
             return
         }
-        viewModel.feeMode = mode
+        viewModel.pickFeeMode(mode)
     }
 }
 
