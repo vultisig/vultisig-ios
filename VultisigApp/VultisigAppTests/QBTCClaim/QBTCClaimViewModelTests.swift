@@ -23,7 +23,7 @@ final class QBTCClaimViewModelTests: XCTestCase {
         let vault = Vault(name: "v")
         vault.pubKeyECDSA = Self.pubKeyECDSA
         vault.hexChainCode = Self.hexChainCode
-        vault.publicKeyMLDSA44 = nil
+        vault.publicKeyMLDSA65 = nil
 
         let viewModel = QBTCClaimViewModel(vault: vault)
         await viewModel.load()

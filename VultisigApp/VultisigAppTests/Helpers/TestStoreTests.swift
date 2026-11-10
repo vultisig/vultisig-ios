@@ -56,9 +56,9 @@ final class TestStoreTests: XCTestCase {
         _ = TestStore.makeVault(pubKey: "duplicate")
     }
 
-    /// A nil `publicKeyMLDSA44` is not a collision — a unique index treats NULLs
+    /// A nil `publicKeyMLDSA65` is not a collision — a unique index treats NULLs
     /// as distinct. That is why the fixture leaves it nil rather than inventing
-    /// a value, which would flip every `publicKeyMLDSA44 == nil` product branch
+    /// a value, which would flip every `publicKeyMLDSA65 == nil` product branch
     /// for callers that only wanted a parent row.
     func testMakeVaultLeavesTheMLDSAKeyNilWithoutCollapsing() throws {
         _ = TestStore.makeVault(pubKey: "mldsa-a")
@@ -69,6 +69,6 @@ final class TestStoreTests: XCTestCase {
 
         let stored = try context.fetch(FetchDescriptor<Vault>())
         XCTAssertEqual(stored.count, 2)
-        XCTAssertTrue(stored.allSatisfy { $0.publicKeyMLDSA44 == nil })
+        XCTAssertTrue(stored.allSatisfy { $0.publicKeyMLDSA65 == nil })
     }
 }

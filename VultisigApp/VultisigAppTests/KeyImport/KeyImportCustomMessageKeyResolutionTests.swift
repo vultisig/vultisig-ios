@@ -116,7 +116,7 @@ final class KeyImportCustomMessageKeyResolutionTests: XCTestCase {
     ///
     /// Neither platform's write path can actually produce this state for a chain that
     /// reaches this helper: QBTC is the only chain whose `isEddsa` the two platforms
-    /// disagree on, and the `.MLDSA` branch signs with `vault.publicKeyMLDSA44` instead of
+    /// disagree on, and the `.MLDSA` branch signs with `vault.publicKeyMLDSA65` instead of
     /// this helper's result. The test pins the intent so the check is not "fixed" later.
     func testExactMatchWithInconsistentCurveMetadataStillWins() {
         let vault = makeKeyImportVault(keys: [(.ethereum, ethKey)], isEddsaOverride: true)

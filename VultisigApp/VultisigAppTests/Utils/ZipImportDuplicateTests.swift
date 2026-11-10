@@ -4,7 +4,7 @@
 //
 //  Duplicate and unique-attribute collision handling during vault import.
 //
-//  `Vault` marks `name`, `pubKeyECDSA`, `pubKeyEdDSA` and `publicKeyMLDSA44`
+//  `Vault` marks `name`, `pubKeyECDSA`, `pubKeyEdDSA` and `publicKeyMLDSA65`
 //  `@Attribute(.unique)`, and SwiftData turns a colliding insert into an
 //  *upsert* — the incoming vault replaces the stored one and takes its key
 //  shares with it. These tests pin both halves of the gate: "is this a
@@ -91,7 +91,7 @@ final class ZipImportDuplicateTests: XCTestCase {
         // all duplicates of each other.
         let existing = makeVault(name: "Vault A", ecdsa: "key1", eddsa: "key2")
         let other = makeVault(name: "Vault B", ecdsa: "key3", eddsa: "key4")
-        XCTAssertNil(existing.publicKeyMLDSA44)
+        XCTAssertNil(existing.publicKeyMLDSA65)
         XCTAssertTrue(viewModel.isVaultUnique(backupVault: other, vaults: [existing]))
     }
 
@@ -105,7 +105,7 @@ final class ZipImportDuplicateTests: XCTestCase {
     }
 
     func testIsVaultUniqueTreatsEmptyMldsaAsNoIdentity() {
-        // The JSON backup path decodes `publicKeyMLDSA44` verbatim, so `""` can
+        // The JSON backup path decodes `publicKeyMLDSA65` verbatim, so `""` can
         // reach here where the proto path would have produced `nil`.
         let existing = makeVault(name: "Vault A", ecdsa: "key1", eddsa: "key2", mldsa: "")
         let other = makeVault(name: "Vault B", ecdsa: "key3", eddsa: "key4", mldsa: "")
@@ -465,7 +465,7 @@ final class ZipImportDuplicateTests: XCTestCase {
         let vault = Vault(name: name)
         vault.pubKeyECDSA = ecdsa
         vault.pubKeyEdDSA = eddsa
-        vault.publicKeyMLDSA44 = mldsa
+        vault.publicKeyMLDSA65 = mldsa
         return vault
     }
 

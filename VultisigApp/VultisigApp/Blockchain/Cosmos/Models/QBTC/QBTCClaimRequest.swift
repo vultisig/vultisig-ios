@@ -32,7 +32,7 @@ extension ClaimProofUtxoRef {
 ///
 /// `broadcast` enables service-side submission of the resulting
 /// `MsgClaimWithProof` (qbtc proof-service PR #158): the service signs the
-/// cosmos tx with its own MLDSA-44 key, pays the fee, and returns `tx_hash`
+/// cosmos tx with its own MLDSA-65 key, pays the fee, and returns `tx_hash`
 /// on the response. iOS no longer needs to run an MLDSA TSS round or build
 /// the cosmos `SignDoc` / `AuthInfo` / `TxRaw` envelope. Defaults to `true`;
 /// callers that need the old "proof only" mode can set it to `false`.

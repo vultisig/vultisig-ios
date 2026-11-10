@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 //  Cross-flow signal fired when the user successfully generates their
-//  vault's ML-DSA-44 key pair. Both the token-selection intercept (W2)
+//  vault's ML-DSA-65 key pair. Both the token-selection intercept (W2)
 //  and the BTC chain-detail Claim banner (W3) listen for it so they
 //  can complete their pending "add QBTC + show claim" follow-ups
 //  without threading a closure through the keygen routes.

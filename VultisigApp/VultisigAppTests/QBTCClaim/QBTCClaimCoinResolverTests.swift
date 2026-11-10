@@ -19,7 +19,7 @@ final class QBTCClaimCoinResolverTests: XCTestCase {
     private static let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
     /// A non-empty hex string standing in for the ML-DSA-44 public key —
     /// QBTC address derivation hashes the raw bytes, so any valid hex works.
-    private static let publicKeyMLDSA44 = String(repeating: "ab", count: 1312)
+    private static let publicKeyMLDSA65 = String(repeating: "ab", count: 1312)
 
     private let resolver = QBTCClaimCoinResolver()
 
@@ -56,7 +56,7 @@ final class QBTCClaimCoinResolverTests: XCTestCase {
         let vault = Vault(name: "v")
         vault.pubKeyECDSA = Self.pubKeyECDSA
         vault.hexChainCode = Self.hexChainCode
-        vault.publicKeyMLDSA44 = Self.publicKeyMLDSA44
+        vault.publicKeyMLDSA65 = Self.publicKeyMLDSA65
 
         let result = try resolver.resolve(vault: vault)
 
@@ -77,7 +77,7 @@ final class QBTCClaimCoinResolverTests: XCTestCase {
         let vault = Vault(name: "v")
         vault.pubKeyECDSA = Self.pubKeyECDSA
         vault.hexChainCode = Self.hexChainCode
-        vault.publicKeyMLDSA44 = Self.publicKeyMLDSA44
+        vault.publicKeyMLDSA65 = Self.publicKeyMLDSA65
 
         let qbtc = try resolver.resolve(vault: vault, chain: .qbtc)
 
@@ -91,7 +91,7 @@ final class QBTCClaimCoinResolverTests: XCTestCase {
         let vault = Vault(name: "v")
         vault.pubKeyECDSA = Self.pubKeyECDSA
         vault.hexChainCode = Self.hexChainCode
-        vault.publicKeyMLDSA44 = nil
+        vault.publicKeyMLDSA65 = nil
 
         XCTAssertThrowsError(try resolver.resolve(vault: vault)) { error in
             XCTAssertEqual(

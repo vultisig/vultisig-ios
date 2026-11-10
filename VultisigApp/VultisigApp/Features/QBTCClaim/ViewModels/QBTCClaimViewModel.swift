@@ -195,7 +195,7 @@ final class QBTCClaimViewModel: ObservableObject {
         // they're derived in-memory from the vault's keys when missing, so
         // a quantum vault can claim regardless of which chains it has
         // added. Only a genuine derivation failure (a non-quantum vault
-        // lacking the MLDSA-44 key for QBTC) still blocks.
+        // lacking the MLDSA-65 key for QBTC) still blocks.
         let coins: QBTCClaimCoinResolver.Coins
         do {
             coins = try coinResolver.resolve(vault: vault)

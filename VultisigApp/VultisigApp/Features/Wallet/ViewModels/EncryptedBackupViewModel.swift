@@ -15,7 +15,7 @@ import UniformTypeIdentifiers
 /// What to do with an incoming backup vault, decided before it ever reaches
 /// `modelContext.insert`.
 ///
-/// `Vault` marks `name`, `pubKeyECDSA`, `pubKeyEdDSA` and `publicKeyMLDSA44` as
+/// `Vault` marks `name`, `pubKeyECDSA`, `pubKeyEdDSA` and `publicKeyMLDSA65` as
 /// `@Attribute(.unique)`. SwiftData turns an insert that collides on any one of
 /// them into an *upsert*: the incoming row replaces the stored one and the
 /// stored vault's key shares go with it, with nothing thrown and nothing logged.
@@ -896,12 +896,12 @@ class EncryptedBackupViewModel: ObservableObject {
     func isVaultUnique(backupVault: Vault, vaults: [Vault]) -> Bool {
         let ecdsa = backupVault.pubKeyECDSA.nilIfEmpty
         let eddsa = backupVault.pubKeyEdDSA.nilIfEmpty
-        let mldsa = backupVault.publicKeyMLDSA44?.nilIfEmpty
+        let mldsa = backupVault.publicKeyMLDSA65?.nilIfEmpty
 
         for vault in vaults {
             if let ecdsa, vault.pubKeyECDSA == ecdsa { return false }
             if let eddsa, vault.pubKeyEdDSA == eddsa { return false }
-            if let mldsa, vault.publicKeyMLDSA44?.nilIfEmpty == mldsa { return false }
+            if let mldsa, vault.publicKeyMLDSA65?.nilIfEmpty == mldsa { return false }
         }
         return true
     }
@@ -980,7 +980,7 @@ class EncryptedBackupViewModel: ObservableObject {
             vault.name == name
                 || vault.pubKeyECDSA == backupVault.pubKeyECDSA
                 || vault.pubKeyEdDSA == backupVault.pubKeyEdDSA
-                || (vault.publicKeyMLDSA44 != nil && vault.publicKeyMLDSA44 == backupVault.publicKeyMLDSA44)
+                || (vault.publicKeyMLDSA65 != nil && vault.publicKeyMLDSA65 == backupVault.publicKeyMLDSA65)
         }
     }
 
@@ -1035,13 +1035,13 @@ class EncryptedBackupViewModel: ObservableObject {
 
         guard preserves(stored.pubKeyECDSA, in: backupVault.pubKeyECDSA),
               preserves(stored.pubKeyEdDSA, in: backupVault.pubKeyEdDSA),
-              preserves(stored.publicKeyMLDSA44, in: backupVault.publicKeyMLDSA44) else {
+              preserves(stored.publicKeyMLDSA65, in: backupVault.publicKeyMLDSA65) else {
             return nil
         }
 
         let carried = Set(backupVault.keyshares.map(\.pubkey))
         let declared = Set(
-            [backupVault.pubKeyECDSA, backupVault.pubKeyEdDSA, backupVault.publicKeyMLDSA44 ?? ""]
+            [backupVault.pubKeyECDSA, backupVault.pubKeyEdDSA, backupVault.publicKeyMLDSA65 ?? ""]
                 .compactMap(\.nilIfEmpty)
         )
         guard !backupVault.keyshares.isEmpty,

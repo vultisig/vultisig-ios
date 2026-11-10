@@ -56,7 +56,7 @@ struct ChainDetailScreen: View {
     }
 
     private var hasMLDSAKey: Bool {
-        let key = vault.publicKeyMLDSA44
+        let key = vault.publicKeyMLDSA65
         return key != nil && !(key?.isEmpty ?? true)
     }
 

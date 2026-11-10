@@ -48,6 +48,10 @@ extension Vault {
                 isEddsa: $0.isEddsa
             )
         }
+        self.publicKeyMLDSA65 = proto.publicKeyMldsa65.nilIfEmpty
+        if let key = publicKeyMLDSA65, !Vault.isValidMLDSA65Key(key) {
+            throw HelperError.runtimeError("Invalid ML-DSA-65 public key in proto")
+        }
         self.publicKeyMLDSA44 = proto.publicKeyMldsa44.nilIfEmpty
     }
 
@@ -66,6 +70,7 @@ extension Vault {
             $0.publicKeyEcdsa = pubKeyECDSA
             $0.publicKeyEddsa = pubKeyEdDSA
             $0.publicKeyMldsa44 = publicKeyMLDSA44 ?? ""
+            $0.publicKeyMldsa65 = publicKeyMLDSA65 ?? ""
             $0.signers = signers
             $0.hexChainCode = hexChainCode
             $0.localPartyID = self.localPartyID

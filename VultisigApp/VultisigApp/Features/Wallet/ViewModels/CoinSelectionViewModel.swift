@@ -63,7 +63,7 @@ class CoinSelectionViewModel: ObservableObject {
         // here too means a future code path that hands an MLDSA asset
         // straight to the keygen prompt still respects the feature flag.
         guard QBTCConfig.isFeatureEnabled else { return false }
-        return vault.publicKeyMLDSA44 == nil || vault.publicKeyMLDSA44?.isEmpty == true
+        return (vault.publicKeyMLDSA65 ?? "").isEmpty
     }
 
     private func checkSelected(for vault: Vault) {
@@ -80,7 +80,7 @@ class CoinSelectionViewModel: ObservableObject {
         // the feature flag is on AND the vault has an MLDSA key (or the caller
         // opted into showing it before keygen).
         let defaults = UserDefaults.standard
-        let hasMLDSAKey = !(vault.publicKeyMLDSA44 ?? "").isEmpty
+        let hasMLDSAKey = !(vault.publicKeyMLDSA65 ?? "").isEmpty
 
         let filteredAssets: [CoinMeta] = Chain.supportedCases.flatMap { chain -> [CoinMeta] in
             if chain.signingKeyType == .MLDSA, !(hasMLDSAKey || showMldsaChainsWithoutKey) {

@@ -247,7 +247,7 @@ final class OrphanedVaultReplacementTests: XCTestCase {
     func testABackupWithNoShareForOneOfItsOwnKeysCannotReplace() throws {
         let orphan = try storeOrphanedVault()
         let overclaiming = makeVault(shares: [ecdsaShare, eddsaShare])
-        overclaiming.publicKeyMLDSA44 = "mldsa-with-no-share"
+        overclaiming.publicKeyMLDSA65 = "mldsa-with-no-share"
 
         let sut = makeViewModel()
 

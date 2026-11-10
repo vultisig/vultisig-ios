@@ -4,7 +4,7 @@
 //
 //  Production wiring for the orchestrator's BTC ECDSA round (the only
 //  MPC round under post-qbtc#158: the proof service signs and broadcasts
-//  `MsgClaimWithProof` with its own MLDSA-44 key). Provisions a fresh
+//  `MsgClaimWithProof` with its own MLDSA-65 key). Provisions a fresh
 //  MPC session (sessionId + encryption key), POSTs
 //  `FastVaultService.sign(...)` to wake Vultiserver, awaits the server
 //  peer via `ParticipantDiscovery`, kicks off the committee, then runs
@@ -102,7 +102,7 @@ extension QBTCClaimOrchestrator {
     /// Production wiring for the FastVault path. The orchestrator runs
     /// one DKLS BTC ECDSA round and then POSTs `/prove` with
     /// `broadcast: true`; the proof service signs the cosmos tx with
-    /// its own MLDSA-44 key and broadcasts.
+    /// its own MLDSA-65 key and broadcasts.
     @MainActor
     static func makeFastVault() -> QBTCClaimOrchestrator {
         let proofService = QBTCProofService()

@@ -26,7 +26,7 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
     /// on the fly, so the resolver succeeds even with empty `coins`.
     private static let pubKeyECDSA = "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b"
     private static let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
-    private static let publicKeyMLDSA44 = String(repeating: "ab", count: 1312)
+    private static let publicKeyMLDSA65 = String(repeating: "ab", count: 1312)
 
     /// Returns a vault that has BTC + QBTC coins. BTC carries a valid
     /// 33-byte compressed pubkey so `QBTCClaimHashes.computeAll` succeeds;
@@ -74,7 +74,7 @@ final class QBTCClaimJoinDriverTests: XCTestCase {
         let vault = Vault(name: "TestVault")
         vault.pubKeyECDSA = Self.pubKeyECDSA
         vault.hexChainCode = Self.hexChainCode
-        vault.publicKeyMLDSA44 = Self.publicKeyMLDSA44
+        vault.publicKeyMLDSA65 = Self.publicKeyMLDSA65
         return vault
     }
 
