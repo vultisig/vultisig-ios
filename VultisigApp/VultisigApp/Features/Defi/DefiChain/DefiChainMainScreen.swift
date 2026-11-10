@@ -73,8 +73,9 @@ struct DefiChainMainScreen: View {
             }
             .padding(.top, isMacOS ? 60 : 16)
             .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            .padding(.bottom, 32 + HomeTabBarSpace.scrollContentPadding)
         }
+        .scrollsUnderHomeTabBar()
         .background(MainBackgroundWithNotification())
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
@@ -487,6 +488,7 @@ private extension DefiChainMainScreen {
         )
         .ignoresSafeArea()
         .frame(height: 30)
+        .allowsHitTesting(false)
     }
 }
 

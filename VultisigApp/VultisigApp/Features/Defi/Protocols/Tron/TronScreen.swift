@@ -33,7 +33,8 @@ struct TronScreen: View {
                 TronDashboardView(vault: vault, model: model, onRefresh: { await loadData(forceRefresh: true) })
             }
             .screenTitle("tronTitle".localized)
-            .screenEdgeInsets(.init(top: 0, leading: 0, trailing: 0))
+            // On macOS the dashboard scrolls under the tab bar, which a bottom edge inset would stop.
+            .screenEdgeInsets(.init(top: 0, leading: 0, bottom: isMacOS ? 0 : nil, trailing: 0))
         }
     }
 

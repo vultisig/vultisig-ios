@@ -57,9 +57,10 @@ struct VaultMainScreenScrollView<Content: View>: View {
                                 }
                         }
                     )
-                insetView(length: bottomInset)
+                insetView(length: bottomInset + HomeTabBarSpace.scrollContentPadding)
             }
         }
+        .scrollsUnderHomeTabBar()
     }
 }
 
