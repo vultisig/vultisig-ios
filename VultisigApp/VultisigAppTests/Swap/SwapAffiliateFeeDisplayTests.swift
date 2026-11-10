@@ -566,11 +566,11 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         )
         XCTAssertEqual(
             transaction.vultDiscount,
-            "-" + breakdown.vult.formatToFiat(includeCurrencySymbol: true)
+            "-" + breakdown.vult.formatToFiatForFee(includeCurrencySymbol: true)
         )
         XCTAssertEqual(
             transaction.referralDiscount,
-            "-" + breakdown.referral.formatToFiat(includeCurrencySymbol: true)
+            "-" + breakdown.referral.formatToFiatForFee(includeCurrencySymbol: true)
         )
         XCTAssertTrue(transaction.hasAppliedDiscounts)
 
@@ -595,11 +595,11 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(ultimateBreakdown.referral, Decimal(string: "0.5"))
         XCTAssertEqual(
             ultimate.vultDiscount,
-            "-" + ultimateBreakdown.vult.formatToFiat(includeCurrencySymbol: true)
+            "-" + ultimateBreakdown.vult.formatToFiatForFee(includeCurrencySymbol: true)
         )
         XCTAssertEqual(
             ultimate.referralDiscount,
-            "-" + ultimateBreakdown.referral.formatToFiat(includeCurrencySymbol: true)
+            "-" + ultimateBreakdown.referral.formatToFiatForFee(includeCurrencySymbol: true)
         )
 
         let undiscounted = makeNativeThorchainTransaction(
@@ -608,6 +608,68 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             referralDiscountBps: 0
         )
         XCTAssertFalse(undiscounted.hasAppliedDiscounts)
+    }
+
+    func testReviewDiscountLinesStateTheAmountTheyTakeOff() {
+        let quote = makeThorQuote(affiliate: "100000")
+        let transaction = makeNativeThorchainTransaction(
+            quote: quote,
+            vultDiscountBps: Int.max,
+            referralDiscountBps: 5
+        )
+        setPrice(1000, for: transaction.fromCoin)
+        setPrice(1000, for: transaction.toCoin)
+
+        let summary = SwapReviewSummary(
+            transaction: transaction,
+            vault: makeVault(),
+            depositRecipient: .success(nil)
+        )
+        let value = { (label: String) in
+            summary.feeLines.first { $0.label == label }?.value
+        }
+
+        XCTAssertEqual(
+            value(transaction.vultDiscountLabel),
+            "-" + (Decimal(string: "3.5") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            value(transaction.referralDiscountLabel),
+            "-" + (Decimal(string: "0.5") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
+        )
+    }
+
+    /// $246.91 × 50 bps = $1.23455 gross, Silver's 10 bps = $0.24691 off,
+    /// 0.004 BTC = $0.98764 charged: the discount needs the fee rows' precision.
+    func testDiscountAmountReconcilesGrossAndNetAtFeePrecision() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCPRECISE", decimals: 8, isNative: true)
+        setPrice(246.91, for: btc)
+        let quote = SwapQuote.thorchain(makeThorQuote(affiliate: "400000"))
+        let tierBps = VultDiscountTier.silver.bpsDiscount
+
+        XCTAssertEqual(
+            SwapCryptoLogic.baseAffiliateFee(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: tierBps, referralDiscountBps: 0
+            ),
+            (Decimal(string: "1.23455") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.vultDiscount(
+                quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
+                fromAmount: "1", vultDiscountBps: tierBps, referralDiscountBps: 0
+            ),
+            "-" + (Decimal(string: "0.24691") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
+        )
+        XCTAssertEqual(
+            SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc, fee: .zero),
+            (Decimal(string: "0.98764") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
+        )
+    }
+
+    func testSwapKitDiscountRowsStateNoAmount() {
+        XCTAssertFalse(SwapCryptoLogic.showsDiscountAmounts(quote: makeSwapKitQuote()))
+        XCTAssertTrue(SwapCryptoLogic.showsDiscountAmounts(quote: .thorchain(makeThorQuote())))
     }
 
     func testAuthoritativeDecimalFeedsIndicativeAndDiscountCalculationsExactly() throws {

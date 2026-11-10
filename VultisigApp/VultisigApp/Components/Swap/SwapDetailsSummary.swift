@@ -185,6 +185,8 @@ struct SwapDetailsSummary: View {
             Text(vm.vultDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
+
+            discountAmount(vm.vultDiscount)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -219,8 +221,23 @@ struct SwapDetailsSummary: View {
             Text(vm.referralDiscountLabel)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
+
+            discountAmount(vm.referralDiscount)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func discountAmount(_ amount: String) -> some View {
+        if vm.showsDiscountAmounts {
+            Spacer()
+
+            Text(amount)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .font(Theme.fonts.caption12)
+                .lineLimit(1)
+                .layoutPriority(1)
+        }
     }
 
     var priceImpact: some View {

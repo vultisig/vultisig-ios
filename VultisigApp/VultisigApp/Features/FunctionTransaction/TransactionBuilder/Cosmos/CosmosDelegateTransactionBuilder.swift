@@ -18,9 +18,11 @@ import VultisigCommonData
 
 struct CosmosDelegateTransactionBuilder: TransactionBuilder {
     let coin: Coin
-    let amount: String
+    let amountDecimal: Decimal
     let sendMaxAmount: Bool
     let validatorAddress: String
+
+    var amount: String { amountDecimal.formatToDecimal(digits: coin.decimals) }
 
     var memo: String { "" }
 
@@ -38,7 +40,7 @@ struct CosmosDelegateTransactionBuilder: TransactionBuilder {
     var cosmosStakingPayload: CosmosStakingPayload? {
         let denom = (try? CosmosStakingConfig.bondDenom(for: coin.chain)) ?? ""
         let baseAmount = CosmosStakingAmountFormatter.baseUnitsString(
-            amount: amount,
+            amount: amountDecimal,
             decimals: coin.decimals
         )
         return CosmosStakingPayload.delegate(

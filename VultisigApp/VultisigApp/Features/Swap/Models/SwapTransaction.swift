@@ -452,6 +452,10 @@ extension SwapTransaction {
         !vultDiscount.isEmpty || !referralDiscount.isEmpty
     }
 
+    var showsDiscountAmounts: Bool {
+        SwapCryptoLogic.showsDiscountAmounts(quote: quote)
+    }
+
     var priceImpactString: String {
         SwapCryptoLogic.priceImpactString(quote: quote)
     }

@@ -108,8 +108,8 @@ extension SwapReviewSummary {
                 value: "\(transaction.swapGasString) (\(transaction.approveFeeString))"
             ))
         }
-        // Gross list-rate Vultisig fee; applied savings are itemised below and
-        // the total stays the net charge.
+        // Gross list-rate Vultisig fee; each applied saving below states the
+        // money it takes off, so the rows subtract to the net total.
         if transaction.showAffiliateFeeRow {
             lines.append(FeeLine(label: transaction.swapFeeLabel, value: transaction.baseAffiliateFee))
         }
@@ -119,12 +119,16 @@ extension SwapReviewSummary {
         if !transaction.vultDiscount.isEmpty {
             lines.append(FeeLine(
                 label: transaction.vultDiscountLabel,
-                value: nil,
+                value: transaction.showsDiscountAmounts ? transaction.vultDiscount : nil,
                 icon: .vultTier(VultDiscountTier.from(bpsDiscount: transaction.vultDiscountBps)?.icon)
             ))
         }
         if !transaction.referralDiscount.isEmpty {
-            lines.append(FeeLine(label: transaction.referralDiscountLabel, value: nil, icon: .referral))
+            lines.append(FeeLine(
+                label: transaction.referralDiscountLabel,
+                value: transaction.showsDiscountAmounts ? transaction.referralDiscount : nil,
+                icon: .referral
+            ))
         }
         if !transaction.priceImpactString.isEmpty {
             lines.append(FeeLine(
