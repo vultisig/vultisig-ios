@@ -650,14 +650,14 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertEqual(
             SwapCryptoLogic.baseAffiliateFee(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: tierBps, referralDiscountBps: 0
+                fromAmount: 1, vultDiscountBps: tierBps, referralDiscountBps: 0
             ),
             (Decimal(string: "1.23455") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
         )
         XCTAssertEqual(
             SwapCryptoLogic.vultDiscount(
                 quote: quote, fromCoin: btc, toCoin: btc, feeCoin: btc,
-                fromAmount: "1", vultDiscountBps: tierBps, referralDiscountBps: 0
+                fromAmount: 1, vultDiscountBps: tierBps, referralDiscountBps: 0
             ),
             "-" + (Decimal(string: "0.24691") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)
         )
