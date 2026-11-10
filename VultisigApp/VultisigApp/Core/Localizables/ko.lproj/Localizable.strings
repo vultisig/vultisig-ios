@@ -312,6 +312,7 @@
 "cosmosStakingValidatorCommission" = "수수료";
 "cosmosStakingValidatorJailed" = "제재됨";
 "cosmosStakingValidatorPicker" = "검증인";
+"cosmosTransaction" = "Cosmos 트랜잭션";
 "costs" = "비용";
 "createFolder" = "폴더 생성";
 "createNewVault" = "새 볼트 생성";

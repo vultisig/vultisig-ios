@@ -312,6 +312,7 @@
 "cosmosStakingValidatorCommission" = "Comissão";
 "cosmosStakingValidatorJailed" = "Suspenso";
 "cosmosStakingValidatorPicker" = "Validador";
+"cosmosTransaction" = "Transação Cosmos";
 "costs" = "Custos";
 "createFolder" = "Criar pasta";
 "createNewVault" = "Criar novo cofre";

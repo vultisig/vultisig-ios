@@ -312,6 +312,7 @@
 "cosmosStakingValidatorCommission" = "Provision";
 "cosmosStakingValidatorJailed" = "Gesperrt";
 "cosmosStakingValidatorPicker" = "Validator";
+"cosmosTransaction" = "Cosmos-Transaktion";
 "costs" = "Kosten";
 "createFolder" = "Ordner erstellen";
 "createNewVault" = "Neuen Tresor erstellen";
