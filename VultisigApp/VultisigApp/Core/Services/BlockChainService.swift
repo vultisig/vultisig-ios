@@ -334,6 +334,7 @@ final class BlockChainService {
     ) async throws -> BlockChainSpecific {
         let quoteHash = "\(String(describing: quote?.hashValue))"
         let isDeposit = SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
+        let feeMode = fromCoin.chain.startingFeeMode
         let cacheKey = getCacheKey(
             for: fromCoin,
             action: .swap,
@@ -343,7 +344,7 @@ final class BlockChainService {
             fromAddress: fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast,
+            feeMode: feeMode,
             customByteFee: nil,  // Swaps never carry the send form's pinned rate
             quote: quoteHash
         )
@@ -384,7 +385,7 @@ final class BlockChainService {
             fromAddress: fromCoin.address,
             toAddress: swapRecipient,
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast,
+            feeMode: feeMode,
             amount: nil
         )
         setCacheIfAllowed(for: fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)

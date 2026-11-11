@@ -27,6 +27,8 @@ extension Chain {
         /// User-facing network label (not localized: same in every locale). `name` stays the wire/storage identifier.
         let displayName: String
         var typedAddressCompleteLength: Int?
+        /// Fee tier a send or swap starts on before the user picks one.
+        var startingFeeMode: FeeMode = .default
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -78,6 +80,9 @@ extension Chain {
     /// prefix can decode to 32 bytes.
     var typedAddressCompleteLength: Int? { config.typedAddressCompleteLength }
 
+    /// Fee tier a send or swap starts on before the user picks one.
+    var startingFeeMode: FeeMode { config.startingFeeMode }
+
     // MARK: - Row definitions
     //
     // One row per chain, in `Chain` declaration order. These are the single
@@ -113,7 +118,7 @@ extension Chain {
         case .bscChain:
             return ChainConfig(name: "BSC", ticker: "BNB", feeUnit: "Gwei", swapAsset: "BSC", logo: "bsc", chainID: 56, coinType: .smartChain, chainType: .EVM, banxaBlockchainCode: "BSC", minimumSendAmount: nil, displayName: "BSC")
         case .bitcoin:
-            return ChainConfig(name: "Bitcoin", ticker: "BTC", feeUnit: "BTC/vbyte", swapAsset: "BTC", logo: "btc", chainID: nil, coinType: .bitcoin, chainType: .UTXO, banxaBlockchainCode: "BTC", minimumSendAmount: nil, displayName: "Bitcoin")
+            return ChainConfig(name: "Bitcoin", ticker: "BTC", feeUnit: "BTC/vbyte", swapAsset: "BTC", logo: "btc", chainID: nil, coinType: .bitcoin, chainType: .UTXO, banxaBlockchainCode: "BTC", minimumSendAmount: nil, displayName: "Bitcoin", startingFeeMode: .normal)
         case .bitcoinCash:
             return ChainConfig(name: "Bitcoin-Cash", ticker: "BCH", feeUnit: "BCH/vbyte", swapAsset: "BCH", logo: "bch", chainID: nil, coinType: .bitcoinCash, chainType: .UTXO, banxaBlockchainCode: "BCH", minimumSendAmount: nil, displayName: "Bitcoin Cash")
         case .litecoin:

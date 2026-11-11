@@ -48,7 +48,7 @@ final class SendTransactionTests: XCTestCase {
         XCTAssertEqual(tx.memo, "")
         XCTAssertEqual(tx.gas, .zero)
         XCTAssertEqual(tx.fee, .zero)
-        XCTAssertEqual(tx.feeMode, .default)
+        XCTAssertEqual(tx.feeMode, .normal)
         XCTAssertFalse(tx.sendMaxAmount)
         XCTAssertNil(tx.customGasLimit)
         XCTAssertNil(tx.customByteFee)
