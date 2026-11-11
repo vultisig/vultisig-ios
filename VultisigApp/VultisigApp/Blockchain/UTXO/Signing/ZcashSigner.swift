@@ -38,6 +38,11 @@ enum ZcashSigner {
     /// WalletCore's `MaxOpReturnLength`: longer memos produce no OP_RETURN script.
     static let maxMemoLength = 80
 
+    /// Low byte of Zcash's 2-byte transparent address prefixes (`0x1CB8` t1…, `0x1CBD` t3…),
+    /// the form WalletCore's V2 `ChainInfo` takes. Same values as WalletCore's Zcash context.
+    private static let p2pkhPrefix: UInt32 = 184
+    private static let p2shPrefix: UInt32 = 189
+
     private static let sighashAll = UInt32(BitcoinSigHashType.all.rawValue)
 
     /// The per-input ZIP-244 SIGHASH_ALL digests, in input order.
@@ -141,8 +146,8 @@ enum ZcashSigner {
                 }
             }
             $0.chainInfo = BitcoinV2ChainInfo.with {
-                $0.p2PkhPrefix = 184
-                $0.p2ShPrefix = 189
+                $0.p2PkhPrefix = p2pkhPrefix
+                $0.p2ShPrefix = p2shPrefix
             }
         }
         return try BitcoinSigningInput.with {
