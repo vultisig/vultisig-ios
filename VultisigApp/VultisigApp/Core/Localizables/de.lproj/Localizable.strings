@@ -930,8 +930,6 @@
 "loadingSecuredAssets" = "Secured Assets werden geladen …";
 "localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
 "lockAfterTitle" = "Sperren nach";
-"lockTime" = "Sperrzeit";
-"lockTimeSubtitle" = "Legen Sie fest, wann die App automatisch gesperrt wird";
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";

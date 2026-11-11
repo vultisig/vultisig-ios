@@ -930,8 +930,6 @@
 "loadingSecuredAssets" = "보안 자산 로딩 중...";
 "localModeWaitingOnDevices" = "로컬 모드, 기기 대기 중...";
 "lockAfterTitle" = "자동 잠금 시간";
-"lockTime" = "잠금 시간";
-"lockTimeSubtitle" = "앱이 자동으로 잠기기까지의 시간 설정";
 "loginUsingFaceID" = "Face ID로 로그인";
 "loginUsingOpticID" = "Optic ID로 로그인";
 "loginUsingTouchID" = "Touch ID로 로그인";

@@ -930,8 +930,6 @@
 "loadingSecuredAssets" = "Učitavanje osigurane imovine...";
 "localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
 "lockAfterTitle" = "Zaključaj nakon";
-"lockTime" = "Vrijeme zaključavanja";
-"lockTimeSubtitle" = "Postavite vrijeme do automatskog zaključavanja aplikacije";
 "loginUsingFaceID" = "Prijava pomoću Face ID";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
