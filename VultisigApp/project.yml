@@ -105,12 +105,7 @@ packages:
     revision: d72ee89b5948ed78792d344f1146cb2bfdd1e377
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
-    # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
-    # 628900b25d…, walletcore-spm main), which adds the Cardano
-    # `CardanoSigningInput.auxiliaryData` field this feature needs. Do NOT use
-    # `exactVersion: 4.7.0` — that tag is mis-cut and resolves to the old
-    # 4.6.13 commit (6fe770f97…).
-    exactVersion: 4.7.1
+    exactVersion: 4.9.3
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation
     from: 0.9.0
