@@ -63,6 +63,8 @@ private extension VultiTabBarControls {
         )
         .opacity(0.7)
         .frame(height: 80)
+        // Lets clicks reach pages that scroll under the bar on macOS.
+        .allowsHitTesting(!isMacOS)
     }
 
     var customTabBar: some View {

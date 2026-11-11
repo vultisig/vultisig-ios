@@ -71,9 +71,10 @@ struct TronDashboardView: View {
                 pendingWithdrawalsCard
             }
             .padding(.top, TronConstants.Design.mainViewTopPadding)
-            .padding(.bottom, TronConstants.Design.mainViewBottomPadding)
+            .padding(.bottom, TronConstants.Design.mainViewBottomPadding + HomeTabBarSpace.scrollContentPadding)
             .padding(.horizontal, TronConstants.Design.horizontalPadding)
         }
+        .scrollsUnderHomeTabBar()
         #if os(iOS)
         .refreshable {
             await onRefresh()
