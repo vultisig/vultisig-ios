@@ -269,6 +269,8 @@
 "copyContractAddress" = "复制合约地址";
 "copyLink" = "复制链接";
 "correctAmountCheck" = "金额正确";
+"cosmosPartialSummaryTitle" = "警告";
+"cosmosPartialSummaryWarning" = "此请求的部分内容未在此汇总，请查看下方的完整交易。";
 "cosmosStakingActionClaim" = "领取";
 "cosmosStakingActionDelegate" = "质押";
 "cosmosStakingActionRedelegate" = "重新委托";

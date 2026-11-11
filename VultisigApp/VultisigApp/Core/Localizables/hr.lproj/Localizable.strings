@@ -269,6 +269,8 @@
 "copyContractAddress" = "Kopiraj adresu ugovora";
 "copyLink" = "Kopiraj poveznicu";
 "correctAmountCheck" = "Iznos je točan";
+"cosmosPartialSummaryTitle" = "Upozorenje";
+"cosmosPartialSummaryWarning" = "Dio ovog zahtjeva nije sažet ovdje. Provjerite cijelu transakciju u nastavku.";
 "cosmosStakingActionClaim" = "Preuzmi";
 "cosmosStakingActionDelegate" = "Uloži";
 "cosmosStakingActionRedelegate" = "Premjesti";

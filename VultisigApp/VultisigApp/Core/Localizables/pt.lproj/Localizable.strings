@@ -269,6 +269,8 @@
 "copyContractAddress" = "Copiar endereço do contrato";
 "copyLink" = "Copiar link";
 "correctAmountCheck" = "A quantidade está correta";
+"cosmosPartialSummaryTitle" = "Aviso";
+"cosmosPartialSummaryWarning" = "Parte deste pedido não está resumida aqui. Verifique a transação completa abaixo.";
 "cosmosStakingActionClaim" = "Reivindicar";
 "cosmosStakingActionDelegate" = "Stake";
 "cosmosStakingActionRedelegate" = "Mover";
