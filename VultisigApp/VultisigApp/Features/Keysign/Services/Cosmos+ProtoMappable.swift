@@ -122,24 +122,30 @@ struct SignDirect: Codable, Hashable {
 struct SignAmino: Codable, Hashable {
     let fee: CosmosFee
     let msgs: [CosmosMessage]
+    /// Tx-level `timeout_height` of the dApp's sign doc. `nil` and `0` mean the same: unset.
+    let timeoutHeight: UInt64?
 
     init(proto: VSSignAmino) {
         self.fee = CosmosFee(proto: proto.fee)
         self.msgs = proto.msgs.map { CosmosMessage(proto: $0) }
+        self.timeoutHeight = proto.hasTimeoutHeight ? proto.timeoutHeight : nil
     }
 
     init(
         fee: CosmosFee,
-        msgs: [CosmosMessage]
+        msgs: [CosmosMessage],
+        timeoutHeight: UInt64? = nil
     ) {
         self.fee = fee
         self.msgs = msgs
+        self.timeoutHeight = timeoutHeight
     }
 
     func mapToProtobuff() -> VSSignAmino {
         .with {
             $0.fee = fee.mapToProtobuff()
             $0.msgs = msgs.map { $0.mapToProtobuff() }
+            if let timeoutHeight { $0.timeoutHeight = timeoutHeight }
         }
     }
 }
