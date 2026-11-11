@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Pins `JoinKeysignReviewPresentation.signedTransfer(of:)`: the co-sign review
-//  shows the recipient and amount of the signed `signDirect` body, never the
+//  shows the recipient and amount of the signed `signDirect` body or `signAmino` messages, never the
 //  initiator's `toAddress` / `toAmount` copy.
 //
 
@@ -60,6 +60,49 @@ final class JoinKeysignSignedTransferTests: XCTestCase {
         XCTAssertNil(signedTransfer(coins: [("uatom", "5000000")], coin: coin))
     }
 
+    // MARK: - signAmino
+
+    func testAminoReadsSingleSendIgnoringPayloadCopy() throws {
+        let transfer = try XCTUnwrap(JoinKeysignReviewPresentation.signedTransfer(
+            of: Self.aminoPayload(msgs: [Self.aminoSend(to: "cosmos1signed", denom: "uatom", amount: "1000000000")],
+                                  toAddress: "cosmos1spoofed", toAmount: 1000000)
+        ))
+        XCTAssertEqual(transfer.recipient, "cosmos1signed")
+        XCTAssertEqual(transfer.amount, Decimal(1000))
+    }
+
+    func testAminoRejectsUnreadableBodies() {
+        let send = Self.aminoSend(to: "cosmos1signed", denom: "uatom", amount: "1")
+        let cases: [[CosmosMessage]] = [
+            [],
+            [send, send],
+            [CosmosMessage(type: "cosmos-sdk/MsgDelegate", value: send.value)],
+            [CosmosMessage(type: "cosmos-sdk/MsgSend", value: "not json")],
+            [Self.aminoSend(to: "cosmos1signed", denom: "uosmo", amount: "1")],
+            [Self.aminoSend(to: "cosmos1signed", denom: "uatom", amount: "-1")]
+        ]
+        for msgs in cases {
+            XCTAssertNil(JoinKeysignReviewPresentation.signedTransfer(of: Self.aminoPayload(msgs: msgs)))
+        }
+    }
+
+    private static func aminoSend(to: String, denom: String, amount: String) -> CosmosMessage {
+        CosmosMessage(
+            type: "cosmos-sdk/MsgSend",
+            value: #"{"from_address":"cosmos1sender","to_address":"\#(to)","amount":[{"denom":"\#(denom)","amount":"\#(amount)"}]}"#
+        )
+    }
+
+    private static func aminoPayload(msgs: [CosmosMessage], toAddress: String = "cosmos1destination", toAmount: BigInt = 1) -> KeysignPayload {
+        payload(
+            signData: .signAmino(SignAmino(
+                fee: CosmosFee(payer: "", granter: "", feePayer: "", amount: [], gas: "1"), msgs: msgs
+            )),
+            toAddress: toAddress,
+            toAmount: toAmount
+        )
+    }
+
     // MARK: - Helpers
 
     private func signedTransfer(
@@ -111,6 +154,24 @@ final class JoinKeysignSignedTransferTests: XCTestCase {
         toAddress: String = "cosmos1destination",
         toAmount: BigInt = 1
     ) -> KeysignPayload {
+        payload(
+            signData: body.map {
+                .signDirect(SignDirect(
+                    bodyBytes: $0.base64EncodedString(), authInfoBytes: "", chainID: "cosmoshub-4", accountNumber: "1"
+                ))
+            },
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: toAmount
+        )
+    }
+
+    private static func payload(
+        signData: SignData?,
+        coin: Coin = JoinKeysignSignedTransferTests.coin(),
+        toAddress: String = "cosmos1destination",
+        toAmount: BigInt = 1
+    ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
             toAddress: toAddress,
@@ -132,11 +193,7 @@ final class JoinKeysignSignedTransferTests: XCTestCase {
             qbtcClaimPayload: nil,
             isQbtcClaim: false,
             skipBroadcast: false,
-            signData: body.map {
-                .signDirect(SignDirect(
-                    bodyBytes: $0.base64EncodedString(), authInfoBytes: "", chainID: "cosmoshub-4", accountNumber: "1"
-                ))
-            }
+            signData: signData
         )
     }
 }
