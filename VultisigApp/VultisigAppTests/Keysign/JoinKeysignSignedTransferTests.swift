@@ -89,6 +89,13 @@ final class JoinKeysignSignedTransferTests: XCTestCase {
         XCTAssertEqual(batch.totals, [.init(denom: "uatom", amount: 1001)])
     }
 
+    func testBodyOverTheMessageLimitIsFlaggedNotDropped() throws {
+        let body = Self.body(Array(repeating: Self.send(to: "cosmos1a", amount: "1"), count: 65))
+        let batch = try XCTUnwrap(JoinKeysignReviewPresentation.transferBatch(of: Self.payload(body: body)))
+        XCTAssertTrue(batch.isPartial)
+        XCTAssertTrue(batch.recipients.isEmpty)
+    }
+
     func testLoneTransferIsNotABatch() {
         let body = Self.body([Self.send(to: "cosmos1a", amount: "5")])
         XCTAssertNil(JoinKeysignReviewPresentation.transferBatch(of: Self.payload(body: body)))

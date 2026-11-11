@@ -37,17 +37,21 @@ enum CosmosSignDocReader {
 
         /// More than one message, or a message the summary skips.
         var needsListing: Bool { count > 1 || isPartial }
+
+        /// A body the reader refuses (over its size or message limits, or malformed):
+        /// nothing is listed, and the partial warning tells the signer why.
+        static let unsummarized = TransferBatch(recipients: [], totals: [], count: 0, isPartial: true)
     }
 
     /// Bank sends, IBC transfers and delegations of a `signDirect` body.
     static func transfers(bodyBytes base64: String) -> TransferBatch? {
-        guard let messages = messages(inBase64: base64) else { return nil }
+        guard let messages = messages(inBase64: base64) else { return .unsummarized }
         return batch(messages.map(transfer))
     }
 
     /// Same for the JSON messages of a `signAmino` request.
     static func transfers(aminoMessages: [CosmosMessage]) -> TransferBatch? {
-        guard aminoMessages.count <= maximumMessages else { return nil }
+        guard aminoMessages.count <= maximumMessages else { return .unsummarized }
         return batch(aminoMessages.map(aminoTransfer))
     }
 
