@@ -1345,6 +1345,7 @@
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";
 "rewardHistoryNodeAddress" = "Node: %@";
+"rewardHistoryPartial" = "Some rewards couldn't be loaded";
 "rewardHistoryUnavailable" = "Reward History Unavailable";
 "rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";

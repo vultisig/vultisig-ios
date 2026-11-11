@@ -1345,6 +1345,7 @@
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";
 "rewardHistoryNodeAddress" = "노드: %@";
+"rewardHistoryPartial" = "일부 보상을 불러올 수 없습니다";
 "rewardHistoryUnavailable" = "보상 내역을 불러올 수 없습니다";
 "rippleCustomTokenInvalidFormat" = "XRP 토큰을 currency.issuer 형식으로 입력하세요 — 토큰 코드(예: USD 또는 SOLO) 다음에 발행자 주소를 입력합니다.";
 "rippleFieldAmount" = "금액";

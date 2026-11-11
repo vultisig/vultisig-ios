@@ -50,6 +50,13 @@ struct BondRewardHistorySheet: View {
             Text(viewModel.subtitle)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
+
+            if !viewModel.isHistoryComplete {
+                Text("rewardHistoryPartial".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
     }

@@ -83,6 +83,27 @@ final class BondRewardHistoryViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.history.isEmpty)
     }
 
+    /// A partial history keeps its rows and is flagged for the sheet.
+    func testIncompleteHistoryKeepsItsRowsAndIsFlagged() async {
+        let interactor = MockBondInteractor()
+        interactor.rewardHistoryStub = [BondRewardHistoryEntry(churnHeight: 300, churnDate: Date(), amount: 10)]
+        interactor.rewardHistoryIsComplete = false
+        let viewModel = BondRewardHistoryViewModel(
+            vault: .example,
+            chain: .thorChain,
+            coin: .example,
+            node: makeNode(),
+            interactor: interactor
+        )
+
+        viewModel.load()
+        await waitUntil { !viewModel.isLoading }
+
+        XCTAssertEqual(viewModel.history.count, 1)
+        XCTAssertFalse(viewModel.isHistoryComplete)
+        XCTAssertNil(viewModel.loadError)
+    }
+
     func testLoadIfNeededDoesNotRefetchOnceHistoryIsLoaded() async {
         let interactor = MockBondInteractor()
         interactor.rewardHistoryStub = [BondRewardHistoryEntry(churnHeight: 100, churnDate: Date(), amount: 1)]

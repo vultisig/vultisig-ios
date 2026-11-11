@@ -58,7 +58,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         XCTAssertEqual(history.map(\.id), [300, 200], "stops before the churn the vault wasn't bonded for yet")
         XCTAssertEqual(history.map(\.amount), [500, 500])
@@ -77,7 +77,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         XCTAssertEqual(history.map(\.id), [300, 200, 100])
     }
@@ -92,7 +92,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         let expected = Date(timeIntervalSince1970: Double(nanos) / 1_000_000_000)
         XCTAssertEqual(history.first?.date.timeIntervalSince1970 ?? 0, expected.timeIntervalSince1970, accuracy: 0.001)
@@ -108,7 +108,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let stub = StubBondsHTTPClient(churns: churnsJSON(churns), nodeDetailsByHeight: byHeight)
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, limit: 3)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, limit: 3).entries
 
         XCTAssertEqual(history.count, 3)
         XCTAssertEqual(history.map(\.id), [500, 400, 300], "the 3 newest, not an arbitrary 3")
@@ -123,7 +123,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         XCTAssertTrue(history.isEmpty)
     }
@@ -145,29 +145,61 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         }
     }
 
-    /// A transient network/decode failure on ONE historical height must not
-    /// be read the same as "confirmed not a provider here" — that would
-    /// silently truncate (or empty out) otherwise-valid history. Height 199
-    /// is simply missing from the fixture (simulating a 404/network error),
-    /// distinct from height 99 which DOES decode successfully but omits the
-    /// address — only the latter is a legitimate stop signal.
-    func testTransientQueryFailureThrowsRatherThanTruncatingHistory() async {
+    /// A failed query (199 is missing from the fixture, so the stub 404s) keeps
+    /// the rewards that loaded and marks them incomplete.
+    func testTransientQueryFailureKeepsLoadedRewardsAndMarksThemIncomplete() async throws {
         let stub = StubBondsHTTPClient(
             churns: churnsJSON([(300, 300_000_000_000), (200, 200_000_000_000), (100, 100_000_000_000)]),
             nodeDetailsByHeight: [
                 299: nodeDetailsJSON(currentAward: 1000, feeBps: 0, providers: [(myAddress, 50), ("other", 50)])
-                // 199 intentionally absent -> the stub throws 404 for it.
-                // 99 is also absent, so it would throw too if ever reached.
             ]
+        )
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+
+        XCTAssertEqual(history.entries.map(\.id), [300])
+        XCTAssertFalse(history.isComplete)
+    }
+
+    /// Nothing loaded is an error, not an empty history.
+    func testEveryQueryFailingStillThrows() async {
+        let stub = StubBondsHTTPClient(
+            churns: churnsJSON([(300, 300_000_000_000), (200, 200_000_000_000)]),
+            nodeDetailsByHeight: [:]
         )
         let service = THORChainAPIService(httpClient: stub)
 
         do {
             _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
-            XCTFail("a query failure must propagate, not silently truncate to the first successful entry")
+            XCTFail("with no reward loaded the failure must surface")
         } catch {
-            // Expected: the ambiguous failure is surfaced rather than guessed at.
+            // Expected.
         }
+    }
+
+    /// A saved reward is never re-queried: 299 is absent from the fixture, so
+    /// querying it would fail the walk.
+    func testSavedRewardsAreNotQueriedAgain() async throws {
+        let stub = StubBondsHTTPClient(
+            churns: churnsJSON([(300, 300_000_000_000), (200, 200_000_000_000), (100, 100_000_000_000)]),
+            nodeDetailsByHeight: [
+                199: nodeDetailsJSON(currentAward: 1000, feeBps: 0, providers: [(myAddress, 50), ("other", 50)]),
+                99: nodeDetailsJSON(currentAward: 1000, feeBps: 0, providers: [("other", 100)])
+            ]
+        )
+        let service = THORChainAPIService(httpClient: stub)
+        let saved = BondRewardHistoryEntry(churnHeight: 300, churnDate: Date(timeIntervalSince1970: 300), amount: 777)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [300: saved]
+        )
+
+        XCTAssertEqual(history.entries.map(\.id), [300, 200])
+        XCTAssertEqual(history.entries.map(\.amount), [777, 500])
+        XCTAssertTrue(history.isComplete)
     }
 
     /// Cancelling before batch 1 resolves must prevent every later batch

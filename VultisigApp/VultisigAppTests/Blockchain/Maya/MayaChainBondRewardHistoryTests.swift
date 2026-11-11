@@ -51,7 +51,7 @@ final class MayaChainBondRewardHistoryTests: XCTestCase {
         )
         let service = MayaChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         XCTAssertEqual(history.map(\.id), [300, 200])
         XCTAssertEqual(history.map(\.amount), [500, 500])
@@ -64,7 +64,7 @@ final class MayaChainBondRewardHistoryTests: XCTestCase {
         )
         let service = MayaChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
 
         XCTAssertTrue(history.isEmpty)
     }
@@ -83,10 +83,9 @@ final class MayaChainBondRewardHistoryTests: XCTestCase {
         }
     }
 
-    /// Mirrors THORChainBondRewardHistoryTests' identical case: a query
-    /// failure (height 199 missing from the fixture) must not be read the
-    /// same as "confirmed not a provider" — it should throw, not truncate.
-    func testTransientQueryFailureThrowsRatherThanTruncatingHistory() async {
+    /// Mirrors the THORChain case: a failed query keeps the rewards that loaded
+    /// and marks the history incomplete.
+    func testTransientQueryFailureKeepsLoadedRewardsAndMarksThemIncomplete() async throws {
         let stub = StubMayaBondsHTTPClient(
             churns: churnsJSON([(300, 300_000_000_000), (200, 200_000_000_000), (100, 100_000_000_000)]),
             nodeDetailsByHeight: [
@@ -95,12 +94,10 @@ final class MayaChainBondRewardHistoryTests: XCTestCase {
         )
         let service = MayaChainAPIService(httpClient: stub)
 
-        do {
-            _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
-            XCTFail("a query failure must propagate, not silently truncate to the first successful entry")
-        } catch {
-            // Expected.
-        }
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+
+        XCTAssertEqual(history.entries.map(\.id), [300])
+        XCTAssertFalse(history.isComplete)
     }
 }
 

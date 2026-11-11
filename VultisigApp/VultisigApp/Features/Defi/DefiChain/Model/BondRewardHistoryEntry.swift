@@ -9,7 +9,7 @@
 
 import Foundation
 
-struct BondRewardHistoryEntry: Identifiable, Equatable, Sendable {
+struct BondRewardHistoryEntry: Identifiable, Equatable, Sendable, Codable {
     /// Unique within one history: the churn height for a bond, the payout's
     /// unix second for TCY staking (Midgard sends no height for those).
     let id: Int
@@ -24,11 +24,19 @@ extension BondRewardHistoryEntry {
     }
 }
 
+/// The rewards a history sheet can show, and whether that is all of them.
+struct BondRewardHistory: Equatable, Sendable {
+    /// Newest first.
+    let entries: [BondRewardHistoryEntry]
+    /// `false` when a reward that should be in `entries` could not be loaded,
+    /// so the sheet's total may be short.
+    let isComplete: Bool
+}
+
 /// The outcome of one historical `?height=` query, distinguishing a
 /// successfully decoded "not a bond provider here" snapshot (the legitimate
-/// stop-walking-backward signal) from a network/decode failure (which must
-/// propagate as an error rather than being read as the same signal — see
-/// `getBondRewardHistory` on both chain API services).
+/// stop-walking-backward signal) from a network/decode failure, which marks
+/// the history incomplete instead — see `BondRewardHistoryWalker`.
 enum BondRewardHistoryQueryResult: Sendable {
     case found(BondRewardHistoryEntry)
     case notAProvider
