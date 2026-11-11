@@ -910,6 +910,9 @@ class KeygenViewModel: ObservableObject {
             var chainKey: Data?
             if isInitiateDevice {
                 chainKey = getChainKey(for: chain, wallet: wallet)
+                if chainKey == nil {
+                    throw HelperError.runtimeError("Failed to derive key for chain \(chain.name)")
+                }
             }
 
             // Parallel path: setup goes to chain.name, exchange to p-{chain.name}
