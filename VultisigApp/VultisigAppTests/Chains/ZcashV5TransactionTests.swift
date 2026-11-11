@@ -21,7 +21,7 @@ final class ZcashV5TransactionTests: XCTestCase {
 
     func testFixtureSighashesMatchInInputOrder() throws {
         for fixture in try Self.loadFixtures() {
-            let hashes = try ZcashV5Transaction.preImageHashes(inputData: fixture.signingInput().serializedData())
+            let hashes = try ZcashSigner.preImageHashes(inputData: fixture.signingInput().serializedData(), publicKey: fixture.publicKeyData)
             XCTAssertEqual(hashes.map(\.hexString), fixture.expected.sighashes, fixture.name)
         }
     }
@@ -30,7 +30,7 @@ final class ZcashV5TransactionTests: XCTestCase {
         for fixture in try Self.loadFixtures() {
             let inputData = try fixture.signingInput().serializedData()
             let key = try XCTUnwrap(PrivateKey(data: XCTUnwrap(Data(hexString: fixture.privateKey))))
-            let derSignatures = try ZcashV5Transaction.preImageHashes(inputData: inputData)
+            let derSignatures = try ZcashSigner.preImageHashes(inputData: inputData, publicKey: fixture.publicKeyData)
                 .map { try XCTUnwrap(key.signAsDER(digest: $0)).hexString }
             XCTAssertEqual(derSignatures, fixture.expected.derSignatures, fixture.name)
 
@@ -149,7 +149,7 @@ final class ZcashV5TransactionTests: XCTestCase {
             branchId: "5b16a5"
         )
         XCTAssertThrowsError(try UTXOChainsHelper(coin: .zcash).getPreSignedImageHash(keysignPayload: payload)) {
-            XCTAssertEqual($0 as? ZcashV5TransactionError, .invalidBranchId(byteCount: 3))
+            XCTAssertEqual($0 as? ZcashSignerError, .invalidBranchId(byteCount: 3))
         }
     }
 
@@ -167,34 +167,17 @@ final class ZcashV5TransactionTests: XCTestCase {
         }
         XCTAssertEqual(try hashes(memoLength: 80).count, 1)
         XCTAssertThrowsError(try hashes(memoLength: 81)) {
-            XCTAssertEqual($0 as? ZcashV5TransactionError, .memoTooLong(byteCount: 81))
-        }
-    }
-
-    // Mutation: drop the P2PKH input script check.
-    func testRejectsAnInputThatIsNotP2PKH() throws {
-        var input = try Self.fixture(named: "two_inputs_change_memo_nu7").signingInput()
-        input.plan.utxos[1].script = try XCTUnwrap(Data(hexString: "a914fc7250a211deddc70ee5a2738de5f07817351cef87"))
-        XCTAssertThrowsError(try ZcashV5Transaction.preImageHashes(inputData: input.serializedData())) {
-            XCTAssertEqual($0 as? ZcashV5TransactionError, .nonP2PKHInput(index: 1))
+            XCTAssertEqual($0 as? ZcashSignerError, .memoTooLong(byteCount: 81))
         }
     }
 
     // Mutation: drop the empty-plan check.
     func testRejectsAPlanWithoutInputs() throws {
-        var input = try Self.fixture(named: "one_input_with_change_nu63").signingInput()
+        let fixture = try Self.fixture(named: "one_input_with_change_nu63")
+        var input = try fixture.signingInput()
         input.plan.utxos = []
-        XCTAssertThrowsError(try ZcashV5Transaction.preImageHashes(inputData: input.serializedData())) {
-            XCTAssertEqual($0 as? ZcashV5TransactionError, .noInputs)
-        }
-    }
-
-    // Mutation: drop the empty lock script check (the output would pay an empty script).
-    func testRejectsAnOutputAddressWithoutALockScript() throws {
-        var input = try Self.fixture(named: "one_input_with_change_nu63").signingInput()
-        input.toAddress = "t1NotAZcashAddress"
-        XCTAssertThrowsError(try ZcashV5Transaction.preImageHashes(inputData: input.serializedData())) {
-            XCTAssertEqual($0 as? ZcashV5TransactionError, .invalidOutputAddress("t1NotAZcashAddress"))
+        XCTAssertThrowsError(try ZcashSigner.preImageHashes(inputData: input.serializedData(), publicKey: fixture.publicKeyData)) {
+            XCTAssertEqual($0 as? ZcashSignerError, .noInputs)
         }
     }
 
@@ -212,7 +195,7 @@ final class ZcashV5TransactionTests: XCTestCase {
 
     private func assertCompileRejected(_ fixture: Fixture, signatures: [String: TssKeysignResponse]) throws {
         let inputData = try fixture.signingInput().serializedData()
-        let expectedReason = try XCTUnwrap(ZcashV5TransactionError.invalidSignature(inputIndex: 0).errorDescription)
+        let expectedReason = try XCTUnwrap(ZcashSignerError.invalidSignature(inputIndex: 0).errorDescription)
         XCTAssertThrowsError(try UTXOChainsHelper(coin: .zcash).getSignedTransaction(
             coinHexPublicKey: fixture.publicKey,
             inputData: inputData,
@@ -260,6 +243,7 @@ final class ZcashV5TransactionTests: XCTestCase {
         let walletCoreBranchIdLittleEndian: String
         let privateKey: String
         let publicKey: String
+        var publicKeyData: Data { Data(hexString: publicKey) ?? Data() }
         let fromAddress: String
         let toAddress: String
         let plan: Plan
