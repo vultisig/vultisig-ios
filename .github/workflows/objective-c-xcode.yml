@@ -146,7 +146,7 @@ jobs:
           xcodebuild build analyze test \
             -scheme "$SCHEME" \
             -project "$PROJECT" \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5' \
+            -destination 'platform=iOS Simulator,name=iPhone 18 Pro Max' \
             -derivedDataPath DerivedData \
             -skipMacroValidation \
             -skipPackagePluginValidation \
