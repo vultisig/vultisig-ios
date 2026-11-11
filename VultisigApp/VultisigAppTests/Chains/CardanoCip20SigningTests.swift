@@ -188,8 +188,8 @@ final class CardanoCip20SigningTests: XCTestCase {
         ) else {
             return XCTFail("failed to derive HDWallet")
         }
-        let ownerAddress = wallet.getAddressForCoin(coin: .cardano)
-        let key = wallet.getKeyForCoin(coin: .cardano)
+        let ownerAddress = wallet.getAddressForCoin(coin: .cardano) ?? ""
+        guard let key = wallet.getKeyForCoin(coin: .cardano) else { return XCTFail("failed to derive key") }
 
         let (auxDataCbor, auxDataHash) = CardanoCIP20.buildAuxData(memo: "hello world")
         let forcedFee: UInt64 = 180_000

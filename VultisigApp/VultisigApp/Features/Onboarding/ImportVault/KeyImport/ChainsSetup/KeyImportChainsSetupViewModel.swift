@@ -303,21 +303,27 @@ private extension KeyImportChainsSetupViewModel {
         var derivationResults = [DerivationBalanceResult]()
 
         // Check default derivation
-        let defaultAddress = wallet.getAddressForCoin(coin: chain.coinType).description
-        logger.debug("   📍 [\(chain.ticker)] Checking default derivation: \(defaultAddress)")
-        let defaultResult = await fetchBalanceForDerivation(
-            address: defaultAddress,
-            nativeCoin: nativeCoin,
-            derivationPath: nil
-        )
-        derivationResults.append(defaultResult)
+        if let defaultAddress = wallet.getAddressForCoin(coin: chain.coinType) {
+            logger.debug("   📍 [\(chain.ticker)] Checking default derivation: \(defaultAddress)")
+            let defaultResult = await fetchBalanceForDerivation(
+                address: defaultAddress,
+                nativeCoin: nativeCoin,
+                derivationPath: nil
+            )
+            derivationResults.append(defaultResult)
 
-        logger.debug("   💰 [\(chain.ticker)] Default derivation has balance: \(defaultResult.hasBalance)")
+            logger.debug("   💰 [\(chain.ticker)] Default derivation has balance: \(defaultResult.hasBalance)")
+        } else {
+            logger.error("[\(chain.ticker)] Failed to derive default address")
+        }
 
         // Check all alternative derivations for this chain
         if let alternatives = alternativeDerivations[chain] {
             for option in alternatives {
-                let address = wallet.getAddressDerivation(coin: chain.coinType, derivation: option.derivation)
+                guard let address = wallet.getAddressDerivation(coin: chain.coinType, derivation: option.derivation) else {
+                    logger.error("[\(chain.ticker)] Failed to derive \(option.derivationPath.rawValue) address")
+                    continue
+                }
                 logger.debug("   📍 [\(chain.ticker)] Checking \(option.derivationPath.rawValue) derivation: \(address)")
                 let result = await fetchBalanceForDerivation(
                     address: address,

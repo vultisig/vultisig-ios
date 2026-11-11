@@ -234,14 +234,15 @@ struct ImportSeedphraseScreen: View {
         for chain in chainsToCheck {
             for derivationPath in derivationPaths {
                 // Generate address for this chain and derivation path
-                let address: String
+                let derived: String?
                 if derivationPath == .phantom && chain == .solana {
                     // Use phantom derivation for Solana
-                    address = wallet.getAddressDerivation(coin: chain.coinType, derivation: .solanaSolana)
+                    derived = wallet.getAddressDerivation(coin: chain.coinType, derivation: .solanaSolana)
                 } else {
                     // Use default derivation
-                    address = wallet.getAddressForCoin(coin: chain.coinType).description
+                    derived = wallet.getAddressForCoin(coin: chain.coinType)
                 }
+                guard let address = derived else { continue }
 
                 // Check if this address exists in any vault
                 if existingAddresses.contains(address.lowercased()) {

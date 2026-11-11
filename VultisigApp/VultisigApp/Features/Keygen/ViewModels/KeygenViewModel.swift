@@ -715,7 +715,11 @@ class KeygenViewModel: ObservableObject {
             throw HelperError.runtimeError("KeyImportInput should have at least one chain")
         }
 
-        let ecdsaHex = wallet?.getMasterKey(curve: .secp256k1).data.hexString
+        let ecdsaKey = wallet?.getMasterKey(curve: .secp256k1)
+        if wallet != nil && ecdsaKey == nil {
+            throw HelperError.runtimeError("failed to derive ECDSA master key")
+        }
+        let ecdsaHex = ecdsaKey?.data.hexString
         var eddsaHex: String?
         if let edDSAKey = wallet?.getMasterKey(curve: .ed25519) {
             eddsaHex = Data.clampThenUniformScalar(from: edDSAKey.data)?.hexString
@@ -995,11 +999,11 @@ class KeygenViewModel: ObservableObject {
         // Check if this chain has an alternative derivation configured
         if let derivationPath = keyImportInput?.derivationPath(for: chain),
            let walletCoreDerivation = walletCoreDerivations[chain]?[derivationPath] {
-            return wallet.getKeyDerivation(coin: chain.coinType, derivation: walletCoreDerivation).data
+            return wallet.getKeyDerivation(coin: chain.coinType, derivation: walletCoreDerivation)?.data
         }
 
         // Use default derivation
-        return wallet.getKeyForCoin(coin: chain.coinType).data
+        return wallet.getKeyForCoin(coin: chain.coinType)?.data
     }
 
     private struct KeyImportChainJob: @unchecked Sendable {
