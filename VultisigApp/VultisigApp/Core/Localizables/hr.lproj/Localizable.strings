@@ -314,6 +314,7 @@
 "cosmosStakingValidatorCommission" = "Provizija";
 "cosmosStakingValidatorJailed" = "Zatvoren";
 "cosmosStakingValidatorPicker" = "Validator";
+"cosmosTransaction" = "Cosmos transakcija";
 "costs" = "Troškovi";
 "createFolder" = "Kreiraj mapu";
 "createNewVault" = "Stvori novi trezor";

@@ -99,7 +99,7 @@ enum JoinKeysignReviewPresentation {
             ? (feeCrypto: "loading".localized, feeFiat: String.empty)
             : viewModel.getCalculatedNetworkFee()
         let lpDetails = liquidityDetails(for: payload)
-        let isSignDirect = payload?.signDirect != nil
+        let hasSignedBody = payload?.hasSignedCosmosBody == true
         let signedTransfer = payload.flatMap(Self.signedTransfer)
         let batch = payload.flatMap(Self.transferBatch)
         let isPlainRipplePayment = payload?.coin.chain == .ripple && payload?.swapPayload == nil
@@ -121,7 +121,7 @@ enum JoinKeysignReviewPresentation {
         return SendCryptoVerifySummary(
             fromName: viewModel.vault.name,
             fromAddress: payload?.coin.address ?? .empty,
-            toAddress: batch?.recipients.joined(separator: "\n") ?? signedTransfer.map(\.recipient) ?? (isSignDirect ? .empty : payload?.toAddress ?? .empty),
+            toAddress: batch?.recipients.joined(separator: "\n") ?? signedTransfer.map(\.recipient) ?? (hasSignedBody ? .empty : payload?.toAddress ?? .empty),
             network: payload?.coin.chain.displayName ?? .empty,
             networkImage: payload?.coin.chain.logo ?? .empty,
             memo: isPlainRipplePayment
@@ -135,10 +135,10 @@ enum JoinKeysignReviewPresentation {
             feeFiat: fees.feeFiat,
             isCalculatingFee: viewModel.solanaAtaRentState == .loading,
             coinImage: payload?.coin.logo ?? .empty,
-            amount: isSignDirect
+            amount: hasSignedBody
                 ? (signedTransfer?.amount.formatForDisplay() ?? .empty)
                 : liquidityAmount(for: payload, details: lpDetails),
-            amountFiat: lpDetails == nil && !isSignDirect ? viewModel.getAmountFiat() : .empty,
+            amountFiat: lpDetails == nil && !hasSignedBody ? viewModel.getAmountFiat() : .empty,
             coinTicker: payload?.coin.ticker ?? .empty,
             keysignPayload: payload,
             hero: batch != nil ? nil : TransactionHeroResolver.hero(
@@ -247,7 +247,7 @@ enum JoinKeysignReviewPresentation {
             rows.append(.init(label: "validator".localized, value: address))
         } else if let transfer = signedTransfer(of: payload) {
             rows.append(.init(label: "to".localized, value: transfer.recipient))
-        } else if !isStakingReview, payload.signDirect == nil, payload.toAddress.isNotEmpty {
+        } else if !isStakingReview, !payload.hasSignedCosmosBody, payload.toAddress.isNotEmpty {
             rows.append(.init(label: "to".localized, value: payload.toAddress))
         }
         if let details {
@@ -269,7 +269,7 @@ enum JoinKeysignReviewPresentation {
         ) ?? ballot.map { .title(text: "governanceVoteAction".localized, caption: voteTitle($0.option)) } ?? .send(
             title: nil,
             coin: HeroCoinAmount(
-                amount: payload.signDirect == nil
+                amount: !payload.hasSignedCosmosBody
                     ? liquidityAmount(for: payload, details: details)
                     : (signedTransfer(of: payload)?.amount.formatForDisplay() ?? .empty),
                 ticker: details == nil ? payload.coin.ticker : .empty,
@@ -292,19 +292,46 @@ enum JoinKeysignReviewPresentation {
         )
     }
 
-    /// Recipient and amount of a `signDirect` single `MsgSend`, read from the
-    /// signed body rather than the initiator's display copy. Nil for any other
-    /// body, or when the denom is not the payload coin's own.
+    /// Recipient and amount of a single Cosmos send, read from the signed
+    /// `signDirect` body or `signAmino` messages rather than the initiator's
+    /// display copy. Nil for anything else, or when the denom is not the
+    /// payload coin's own.
     static func signedTransfer(of payload: KeysignPayload) -> (recipient: String, amount: Decimal)? {
-        guard let direct = payload.signDirect,
-              let reading = CosmosSignDocReader.read(bodyBytes: direct.bodyBytes),
-              reading.operation == .transfer,
-              case .contract(let recipient)? = reading.counterparty,
-              case .units(let raw, .denom(let denom)) = reading.amount,
-              denom == (payload.coin.isNativeToken ? payload.coin.chain.feeUnit : payload.coin.contractAddress),
-              let value = Decimal(string: raw.description)
+        let send: (recipient: String, denom: String, raw: String)?
+        if let direct = payload.signDirect {
+            guard let reading = CosmosSignDocReader.read(bodyBytes: direct.bodyBytes),
+                  reading.operation == .transfer,
+                  case .contract(let recipient)? = reading.counterparty,
+                  case .units(let raw, .denom(let denom)) = reading.amount
+            else { return nil }
+            send = (recipient, denom, raw.description)
+        } else if let amino = payload.signAmino {
+            send = aminoSend(amino)
+        } else {
+            return nil
+        }
+        guard let send,
+              send.denom == (payload.coin.isNativeToken ? payload.coin.chain.feeUnit : payload.coin.contractAddress),
+              let value = Decimal(string: send.raw)
         else { return nil }
-        return (recipient, value / pow(10, payload.coin.decimals))
+        return (send.recipient, value / pow(10, payload.coin.decimals))
+    }
+
+    /// The one `cosmos-sdk/MsgSend` of an amino body; nil for batches, other
+    /// message types, multi-coin sends, or malformed JSON.
+    private static func aminoSend(_ amino: SignAmino) -> (recipient: String, denom: String, raw: String)? {
+        struct Send: Decodable {
+            struct Coin: Decodable { let denom: String; let amount: String }
+            let toAddress: String
+            let amount: [Coin]
+            enum CodingKeys: String, CodingKey { case toAddress = "to_address", amount }
+        }
+        guard amino.msgs.count == 1, amino.msgs[0].type == "cosmos-sdk/MsgSend",
+              let send = try? JSONDecoder().decode(Send.self, from: Data(amino.msgs[0].value.utf8)),
+              !send.toAddress.isEmpty, send.amount.count == 1,
+              !send.amount[0].amount.isEmpty, send.amount[0].amount.allSatisfy({ ("0"..."9").contains($0) })
+        else { return nil }
+        return (send.toAddress, send.amount[0].denom, send.amount[0].amount)
     }
 
     /// Every transfer of a multi-message `signDirect` / `signAmino` request, read
@@ -367,4 +394,9 @@ enum JoinKeysignReviewPresentation {
         guard let payload, let pool = details?["pool"], !pool.isEmpty else { return amount }
         return "\(amount) \(payload.coin.ticker) → \(ThorchainService.cleanPoolName(pool)) LP"
     }
+}
+
+private extension KeysignPayload {
+    /// To and amount of these payloads come from the signed content, never `toAddress` / `toAmount`.
+    var hasSignedCosmosBody: Bool { signDirect != nil || signAmino != nil }
 }
