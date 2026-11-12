@@ -153,6 +153,7 @@ enum THORChainHelper {
         let input = try CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
+            $0.timeoutHeight = CosmosSignDataBuilder.getTimeoutHeight(keysignPayload: keysignPayload)
             $0.chainID = chainID
             $0.accountNumber = accountNumber
             $0.sequence = sequence

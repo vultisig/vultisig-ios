@@ -22,16 +22,12 @@ struct VaultSettingsScreen: View {
     @State var presentFastSigningBiometricsSheet = false
 
     @State var isFastSigningBiometricsEnabled: Bool = false
-    @State var isPasscodeSet = false
     @State var showReferralBannerSheet = false
     @StateObject var viewModel = SettingsBiometryViewModel()
     @StateObject var referredViewModel = ReferredViewModel()
 
-    private let passcodeService: PasscodeService
-
-    init(vault: Vault, passcodeService: PasscodeService = .shared) {
+    init(vault: Vault) {
         self.vault = vault
-        self.passcodeService = passcodeService
     }
 
     var body: some View {
@@ -50,16 +46,6 @@ struct VaultSettingsScreen: View {
         .screenTitle("vaultSettings".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .onLoad(perform: onLoad)
-        // The passcode is set or removed on a screen pushed from here, and returning
-        // from it does not re-run `.task`.
-        .task { await refreshPasscodeState() }
-        .onAppear { Task { await refreshPasscodeState() } }
-        // On macOS `.task` does not re-run when a pushed screen pops.
-        #if os(macOS)
-        .onReceive(router.$navPath) { _ in
-            Task { await refreshPasscodeState() }
-        }
-        #endif
         .crossPlatformSheet(isPresented: $showReferralBannerSheet) {
             ReferralOnboardingBanner {
                 showReferralBannerSheet = false
@@ -109,7 +95,6 @@ struct VaultSettingsScreen: View {
         case referralCode
         case fastSigningBiometrics
         case security
-        case lockTime
         case passwordHint
         case backupVault
         case migrateVault
@@ -126,9 +111,6 @@ struct VaultSettingsScreen: View {
 
     var securityRows: [Row] {
         var rows: [Row] = [.security]
-        if isPasscodeSet {
-            rows.append(.lockTime)
-        }
         if vault.isFastVault {
             rows.append(.passwordHint)
         }
@@ -163,8 +145,6 @@ struct VaultSettingsScreen: View {
             fastSigningBiometrics
         case .security:
             security
-        case .lockTime:
-            lockTime
         case .passwordHint:
             passwordHint
         case .backupVault:
@@ -229,20 +209,6 @@ struct VaultSettingsScreen: View {
             )
         }
         .accessibilityIdentifier(AccessibilityID.Settings.managePasscodeCell)
-    }
-
-    var lockTime: some View {
-        Button {
-            router.navigate(to: SettingsRoute.autoLock)
-        } label: {
-            SettingsCommonOptionView(
-                icon: .lockFilled,
-                title: "lockTime".localized,
-                subtitle: "lockTimeSubtitle".localized,
-                titleStyle: .footnote
-            )
-        }
-        .accessibilityIdentifier(AccessibilityID.Settings.autoLockCell)
     }
 
     var vaultDetails: some View {
@@ -336,10 +302,6 @@ struct VaultSettingsScreen: View {
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
         }
-    }
-
-    private func refreshPasscodeState() async {
-        isPasscodeSet = await passcodeService.isSet
     }
 
     func onDeviceBackup() {

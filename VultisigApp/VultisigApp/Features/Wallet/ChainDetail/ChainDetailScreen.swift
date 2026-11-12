@@ -122,8 +122,9 @@ struct ChainDetailScreen: View {
                 .animation(.interpolatingSpring(duration: 0.25), value: showsQbtcBanner)
                 .padding(.bottom, showsQbtcClaimButton ? claimButtonReservedHeight : 0)
                 .padding(.horizontal, 16)
-                .padding(.bottom, isMacOS ? 120 : 0)
+                .padding(.bottom, HomeTabBarSpace.scrollContentPadding)
             }
+            .scrollsUnderHomeTabBar()
             .onLoad {
                 scrollProxy = proxy
             }

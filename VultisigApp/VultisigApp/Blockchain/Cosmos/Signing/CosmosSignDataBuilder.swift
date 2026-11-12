@@ -93,6 +93,12 @@ enum CosmosSignDataBuilder {
         }
     }
 
+    /// The amino sign doc's tx-level `timeout_height`. 0 (unset) makes WalletCore omit the key,
+    /// so docs without one keep byte-identical preimages.
+    static func getTimeoutHeight(keysignPayload: KeysignPayload) -> UInt64 {
+        keysignPayload.signAmino?.timeoutHeight ?? 0
+    }
+
     static func getMessages(keysignPayload: KeysignPayload) throws -> (messages: [WalletCore.CosmosMessage], memo: String?)? {
         if let signAmino = keysignPayload.signAmino {
             let messages = signAmino.msgs.map { msg in

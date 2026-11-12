@@ -269,6 +269,8 @@
 "copyContractAddress" = "Contract-Adresse kopieren";
 "copyLink" = "Link kopieren";
 "correctAmountCheck" = "Der Betrag ist korrekt";
+"cosmosPartialSummaryTitle" = "Warnung";
+"cosmosPartialSummaryWarning" = "Ein Teil dieser Anfrage wird hier nicht zusammengefasst. Prüfe die vollständige Transaktion unten.";
 "cosmosStakingActionClaim" = "Einfordern";
 "cosmosStakingActionDelegate" = "Staken";
 "cosmosStakingActionRedelegate" = "Verschieben";
@@ -312,6 +314,7 @@
 "cosmosStakingValidatorCommission" = "Provision";
 "cosmosStakingValidatorJailed" = "Gesperrt";
 "cosmosStakingValidatorPicker" = "Validator";
+"cosmosTransaction" = "Cosmos-Transaktion";
 "costs" = "Kosten";
 "createFolder" = "Ordner erstellen";
 "createNewVault" = "Neuen Tresor erstellen";
@@ -929,8 +932,6 @@
 "loadingSecuredAssets" = "Secured Assets werden geladen …";
 "localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
 "lockAfterTitle" = "Sperren nach";
-"lockTime" = "Sperrzeit";
-"lockTimeSubtitle" = "Legen Sie fest, wann die App automatisch gesperrt wird";
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";

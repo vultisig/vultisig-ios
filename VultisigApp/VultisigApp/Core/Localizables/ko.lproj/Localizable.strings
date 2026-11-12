@@ -269,6 +269,8 @@
 "copyContractAddress" = "컨트랙트 주소 복사";
 "copyLink" = "링크 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
+"cosmosPartialSummaryTitle" = "경고";
+"cosmosPartialSummaryWarning" = "이 요청의 일부는 여기에 요약되지 않았습니다. 아래의 전체 트랜잭션을 확인하세요.";
 "cosmosStakingActionClaim" = "청구";
 "cosmosStakingActionDelegate" = "위임";
 "cosmosStakingActionRedelegate" = "재위임";
@@ -312,6 +314,7 @@
 "cosmosStakingValidatorCommission" = "수수료";
 "cosmosStakingValidatorJailed" = "제재됨";
 "cosmosStakingValidatorPicker" = "검증인";
+"cosmosTransaction" = "Cosmos 트랜잭션";
 "costs" = "비용";
 "createFolder" = "폴더 생성";
 "createNewVault" = "새 볼트 생성";
@@ -929,8 +932,6 @@
 "loadingSecuredAssets" = "보안 자산 로딩 중...";
 "localModeWaitingOnDevices" = "로컬 모드, 기기 대기 중...";
 "lockAfterTitle" = "자동 잠금 시간";
-"lockTime" = "잠금 시간";
-"lockTimeSubtitle" = "앱이 자동으로 잠기기까지의 시간 설정";
 "loginUsingFaceID" = "Face ID로 로그인";
 "loginUsingOpticID" = "Optic ID로 로그인";
 "loginUsingTouchID" = "Touch ID로 로그인";

@@ -17,43 +17,13 @@ struct HomeTabPager<Content: View>: View {
     /// Never read here: written every swipe frame and observed only by the bar.
     @State private var progress = HomePagerProgress()
 
-    // 40pt bar bottom-padding + 64pt bar pill + 16pt visual breathing room.
-    private let barReservedHeight: CGFloat = 120
     /// Lands a little past the tab and settles back, which the pill's stretch
     /// and overshoot ride on.
     private let tabSwitchAnimation = Animation.spring(response: 0.5, dampingFraction: 0.72)
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            ScrollView(.horizontal) {
-                HStack(spacing: 0) {
-                    ForEach(tabs) { tab in
-                        content(tab)
-                            // The bar is an overlay, so nothing reserves room
-                            // for it; each page publishes its own inset.
-                            .safeAreaInset(edge: .bottom, spacing: 0) {
-                                Color.clear.frame(height: barReservedHeight)
-                            }
-                            .containerRelativeFrame(.horizontal)
-                            // Only the page on screen is readable or tappable, as in a `TabView`.
-                            .accessibilityHidden(tab != selectedTab)
-                            .allowsHitTesting(tab == selectedTab)
-                            .id(tab)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $scrolledTab)
-            .scrollIndicators(.hidden)
-            .trackPageProgress(progress, restingIndex: index(of: selectedTab))
-
-            HomePagerTabBar(
-                selectedTab: $selectedTab,
-                tabs: tabs,
-                progress: progress,
-                onAccessory: onAccessory
-            )
+        GeometryReader { geometry in
+            pager(horizontalInsets: geometry.safeAreaInsets)
         }
         // Only the bottom: the pages still need the top inset.
         .ignoresSafeArea(.container, edges: .bottom)
@@ -71,6 +41,45 @@ struct HomeTabPager<Content: View>: View {
             withAnimation(tabSwitchAnimation) {
                 scrolledTab = tab
             }
+        }
+    }
+
+    private func pager(horizontalInsets: EdgeInsets) -> some View {
+        ZStack(alignment: .bottom) {
+            ScrollView(.horizontal) {
+                HStack(spacing: 0) {
+                    ForEach(tabs) { tab in
+                        content(tab)
+                            .padding(.leading, horizontalInsets.leading)
+                            .padding(.trailing, horizontalInsets.trailing)
+                            // The bar is an overlay, so nothing reserves room
+                            // for it; each page publishes its own inset.
+                            .safeAreaInset(edge: .bottom, spacing: 0) {
+                                Color.clear.frame(height: HomeTabBarSpace.height)
+                            }
+                            .containerRelativeFrame(.horizontal)
+                            // Only the page on screen is readable or tappable, as in a `TabView`.
+                            .accessibilityHidden(tab != selectedTab)
+                            .allowsHitTesting(tab == selectedTab)
+                            .id(tab)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $scrolledTab)
+            .scrollIndicators(.hidden)
+            // A page is as wide as the viewport, which runs under the side
+            // insets (landscape cutout); otherwise the next page shows there.
+            .ignoresSafeArea(.container, edges: .horizontal)
+            .trackPageProgress(progress, restingIndex: index(of: selectedTab))
+
+            HomePagerTabBar(
+                selectedTab: $selectedTab,
+                tabs: tabs,
+                progress: progress,
+                onAccessory: onAccessory
+            )
         }
     }
 
@@ -150,6 +159,26 @@ private struct HomePageVisibleRefresh: ViewModifier {
 extension View {
     func refreshWhenVisible(on page: HomeTab, interval: TimeInterval, action: @escaping () -> Void) -> some View {
         modifier(HomePageVisibleRefresh(page: page, interval: interval, action: action))
+    }
+}
+
+/// The room `HomeTabPager` reserves at the bottom of each page for its tab bar.
+enum HomeTabBarSpace {
+    /// 40pt bar bottom-padding + 64pt bar pill + 16pt visual breathing room.
+    static let height: CGFloat = 120
+    /// Padding a page's scroll content adds at its end; non-zero on macOS, where the scroll view runs under the bar.
+    static let scrollContentPadding: CGFloat = isMacOS ? height : 0
+}
+
+extension View {
+    /// On macOS a page scroll view runs under the bar, since content inside a scroll view's inset takes no clicks there.
+    @ViewBuilder
+    func scrollsUnderHomeTabBar() -> some View {
+        #if os(macOS)
+        ignoresSafeArea(.container, edges: .bottom)
+        #else
+        self
+        #endif
     }
 }
 

@@ -269,6 +269,8 @@
 "copyContractAddress" = "复制合约地址";
 "copyLink" = "复制链接";
 "correctAmountCheck" = "金额正确";
+"cosmosPartialSummaryTitle" = "警告";
+"cosmosPartialSummaryWarning" = "此请求的部分内容未在此汇总，请查看下方的完整交易。";
 "cosmosStakingActionClaim" = "领取";
 "cosmosStakingActionDelegate" = "质押";
 "cosmosStakingActionRedelegate" = "重新委托";
@@ -312,6 +314,7 @@
 "cosmosStakingValidatorCommission" = "佣金";
 "cosmosStakingValidatorJailed" = "已监禁";
 "cosmosStakingValidatorPicker" = "验证人";
+"cosmosTransaction" = "Cosmos 交易";
 "costs" = "成本";
 "createFolder" = "创建文件夹";
 "createNewVault" = "创建新保险库";
@@ -929,8 +932,6 @@
 "loadingSecuredAssets" = "加载担保资产中...";
 "localModeWaitingOnDevices" = "本地模式，等待设备...";
 "lockAfterTitle" = "自动锁定时间";
-"lockTime" = "锁定时间";
-"lockTimeSubtitle" = "设置应用自动锁定前的时间";
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";

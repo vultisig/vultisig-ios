@@ -99,7 +99,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     getValueCell(
                         for: "to",
                         with: input.toAlias ?? input.toAddress,
-                        bracketValue: input.toAlias != nil ? input.toAddress : nil
+                        bracketValue: input.toAlias != nil ? input.toAddress : nil,
+                        isMultiLine: input.toAddress.contains("\n")
                     )
                     Separator()
                 }
@@ -305,6 +306,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // baked into the PTB bytes. Show a neutral title instead of a
             // misleading "0 SUI" send card; the decoded PTB renders below.
             Text("suiTransaction".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyMMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
+        } else if input.keysignPayload?.signDirect != nil, input.amount.isEmpty {
+            // A signDirect with no single readable recipient and amount (e.g. two
+            // sends to different addresses) would otherwise read as "You're
+            // sending" an empty amount. The decoded messages render below.
+            Text("cosmosTransaction".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyMMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)

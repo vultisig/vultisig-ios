@@ -182,9 +182,9 @@ class UTXOChainsHelper {
                 .sorted()
         }
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-        // WalletCore only builds Zcash v4, which NU7 rejects.
+        // The legacy compiler only builds Zcash v4, which NU7 rejects; use signing V2.
         if coin == .zcash {
-            return try ZcashV5Transaction.preImageHashes(inputData: inputData).map { $0.hexString }.sorted()
+            return try ZcashSigner.preImageHashes(inputData: inputData, publicKey: Data(hexString: keysignPayload.coin.hexPublicKey) ?? Data()).map { $0.hexString }.sorted()
         }
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
@@ -392,7 +392,7 @@ class UTXOChainsHelper {
 
         do {
             if coin == .zcash {
-                return try ZcashV5Transaction.compile(inputData: inputData, signatures: signatures, publicKey: publicKey)
+                return try ZcashSigner.compile(inputData: inputData, signatures: signatures, publicKey: publicKey)
             }
             let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
             let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)

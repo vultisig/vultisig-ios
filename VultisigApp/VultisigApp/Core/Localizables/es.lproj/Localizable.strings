@@ -269,6 +269,8 @@
 "copyContractAddress" = "Copiar dirección del contrato";
 "copyLink" = "Copiar enlace";
 "correctAmountCheck" = "La cantidad es correcta";
+"cosmosPartialSummaryTitle" = "Advertencia";
+"cosmosPartialSummaryWarning" = "Una parte de esta solicitud no se resume aquí. Revisa la transacción completa a continuación.";
 "cosmosStakingActionClaim" = "Reclamar";
 "cosmosStakingActionDelegate" = "Hacer Staking";
 "cosmosStakingActionRedelegate" = "Mover";
@@ -312,6 +314,7 @@
 "cosmosStakingValidatorCommission" = "Comisión";
 "cosmosStakingValidatorJailed" = "Encarcelado";
 "cosmosStakingValidatorPicker" = "Validador";
+"cosmosTransaction" = "Transacción Cosmos";
 "costs" = "Costos";
 "createFolder" = "Crear carpeta";
 "createNewVault" = "Crear nueva bóveda";
@@ -929,8 +932,6 @@
 "loadingSecuredAssets" = "Cargando activos asegurados...";
 "localModeWaitingOnDevices" = "Modo local, esperando dispositivos...";
 "lockAfterTitle" = "Bloquear después de";
-"lockTime" = "Tiempo de bloqueo";
-"lockTimeSubtitle" = "Define el tiempo hasta que la app se bloquee automáticamente";
 "loginUsingFaceID" = "Iniciar sesión usando Face ID";
 "loginUsingOpticID" = "Iniciar sesión con Optic ID";
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
