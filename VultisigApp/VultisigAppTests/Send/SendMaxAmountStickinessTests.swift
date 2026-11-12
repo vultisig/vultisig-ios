@@ -351,8 +351,8 @@ final class SendMaxAmountStickinessTests: XCTestCase {
         XCTAssertEqual(vm.amount, "0.01", "a superseded commit must not undo a QR fill")
     }
 
-    /// `SendDetailsAmountTextField`'s `.onChange(of: viewModel.coin)` — the
-    /// amount now describes a different asset, so the max intent lapses.
+    /// `SendDetailsScreen`'s `.onChange(of: viewModel.coin)` — the amount now
+    /// describes a different asset, so the max intent lapses.
     func testACoinSwitchClearsTheIntent() async {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
         let vm = SendFormFixture.make(coin: btc)

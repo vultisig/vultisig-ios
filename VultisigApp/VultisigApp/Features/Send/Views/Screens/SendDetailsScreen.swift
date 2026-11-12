@@ -78,7 +78,8 @@ struct SendDetailsScreen: View {
                 // amount warning when the selected coin changes.
                 viewModel.debouncedValidateAmount()
                 if oldValue.chain != newValue.chain {
-                    Task { await revalidateRecipient() }
+                    // Re-check so the header cannot offer Amount with an address the new chain rejects.
+                    Task { await viewModel.recheckRecipient(clearingSetupFirst: true) }
                 }
             }
             .onChange(of: viewModel.toAddress) { _, _ in
@@ -372,20 +373,6 @@ struct SendDetailsScreen: View {
         await BalanceService.shared.updateBalance(for: viewModel.coin)
         await pendingCheck
     }
-
-    /// Re-checks the recipient after a chain change, so the header cannot offer
-    /// Amount with an address the new chain rejects.
-    private func revalidateRecipient() async {
-        guard !viewModel.toAddress.isEmpty else { return }
-        viewModel.addressSetupDone = false
-        guard let isValid = await viewModel.validateToAddressIfUnchanged() else { return }
-        viewModel.addressSetupDone = isValid
-        guard !isValid else { return }
-        viewModel.markInvalidRecipient()
-        if viewModel.selectedTab == .amount {
-            viewModel.onSelect(tab: .address)
-        }
-    }
 }
 
 extension SendDetailsScreen: SendGasSettingsOutput {
@@ -488,6 +475,7 @@ import SwiftUI
 
 extension SendDetailsScreen {
     static let horizontalInset: CGFloat = 40
+    private static let macButtonExtraInset: CGFloat = 8
     private static let bottomPadding: CGFloat = 65
 
     var panesBottomPadding: CGFloat { Self.bottomPadding }
@@ -504,8 +492,7 @@ extension SendDetailsScreen {
         VStack {
             tabs
             button
-                .padding(.horizontal, 8)
-                .padding(.horizontal, Self.horizontalInset)
+                .padding(.horizontal, Self.horizontalInset + Self.macButtonExtraInset)
         }
     }
 }

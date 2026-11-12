@@ -596,6 +596,23 @@ final class SendDetailsViewModel {
         await validateToAddressIfUnchanged() ?? false
     }
 
+    /// Re-resolves a non-empty recipient and records the verdict; a rejected one is
+    /// marked invalid and, if Amount is shown, sends the user back to Address. A
+    /// superseded check changes nothing beyond the optional up-front clear.
+    func recheckRecipient(clearingSetupFirst: Bool) async {
+        guard !toAddress.isEmpty else { return }
+        if clearingSetupFirst {
+            addressSetupDone = false
+        }
+        guard let isValid = await validateToAddressIfUnchanged() else { return }
+        addressSetupDone = isValid
+        guard !isValid else { return }
+        markInvalidRecipient()
+        if selectedTab == .amount {
+            onSelect(tab: .address)
+        }
+    }
+
     /// Resolves the recipient and commits the result, or returns `nil` without
     /// committing anything when the recipient or chain changed during the lookup:
     /// the newer input's own check owns the verdict.
@@ -908,8 +925,8 @@ final class SendDetailsViewModel {
     ///   `sendMaxAmount` as it does so — a keystroke included, which drops the
     ///   intent synchronously in `onAmountFieldEdited` rather than waiting for
     ///   its debounced commit;
-    /// - the coin picker replaces the *asset* under an unchanged max intent
-    ///   without cancelling anything, so the asset the user tapped Max on is
+    /// - the coin picker replaces the *asset* without cancelling anything (the screen drops
+    ///   the max intent only on its next update), so the asset the user tapped Max on is
     ///   compared against the one the form is on (`isStillOn(_:)`) — twice:
     ///   before the request is built, and again before its result is written.
     ///
@@ -954,8 +971,8 @@ final class SendDetailsViewModel {
     /// Whether the form is still on the asset an in-flight request asked about.
     ///
     /// A fee result describes the asset it was requested for, and the coin
-    /// picker can replace that asset mid-flight: it cancels nothing and it
-    /// leaves the max intent alone, so neither of the other two guards catches
+    /// picker can replace that asset mid-flight: it cancels nothing and the max
+    /// intent drops only on the screen's next update, so neither of the other two guards catches
     /// it. Without this, a result for the old asset would be written — and,
     /// worse, *stamped* — against the new one, which is exactly the leak the
     /// asset stamp exists to close.

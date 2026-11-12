@@ -39,20 +39,7 @@ struct SendDetailsAddressTab: View {
         guard oldValue != newValue, !newValue else {
             return
         }
-        if !viewModel.toAddress.isEmpty {
-            guard let isValid = await viewModel.validateToAddressIfUnchanged() else { return }
-            guard isValid else {
-                // Collapsing the address tab on an unresolved recipient is a
-                // definitive failure — surface the inline reason rather than
-                // just leaving Next disabled.
-                viewModel.markInvalidRecipient()
-                viewModel.addressSetupDone = false
-                if viewModel.selectedTab == .amount {
-                    viewModel.onSelect(tab: .address)
-                }
-                return
-            }
-            viewModel.addressSetupDone = true
-        }
+        // Leaving the address step on an unresolved recipient is a definitive failure: show the inline reason.
+        await viewModel.recheckRecipient(clearingSetupFirst: false)
     }
 }

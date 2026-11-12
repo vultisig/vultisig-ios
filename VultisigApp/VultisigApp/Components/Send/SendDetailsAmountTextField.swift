@@ -194,7 +194,7 @@ private struct ScalingAmountLine<Field: View>: View {
 
     /// Fits an 18-decimal amount with four whole digits and a six-letter ticker on an iPhone 17 Pro.
     private static var minimumScale: CGFloat { 0.36 }
-    /// The point size behind `Theme.fonts.largeTitle`.
+    /// `Theme.fonts.largeTitle`'s point size; the design system exposes only the `Font`, so it is restated to scale it.
     private static var baseFontSize: CGFloat { 34 }
     private static var baseSpacing: CGFloat { 8 }
     /// Room for the caret, so a line that just fits does not scroll.
