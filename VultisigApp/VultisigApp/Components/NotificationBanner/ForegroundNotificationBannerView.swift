@@ -55,7 +55,7 @@ struct ForegroundNotificationBannerView: View {
     // MARK: - Subviews
 
     private var iconCircle: some View {
-        VaultSetupStepIcon(state: .active, icon: data.iconName, isSmall: true)
+        VaultSetupStepIcon(state: .active, icon: data.iconName, size: .small)
     }
 
     private var titleLabel: some View {

@@ -51,6 +51,7 @@ struct CommonTextField<TrailingView: View>: View {
     let size: CommonTextFieldSize
     let errorStyle: CommonTextFieldErrorStyle
     let appearance: CommonTextFieldAppearance
+    let background: Color
 
     let trailingView: () -> TrailingView
 
@@ -69,6 +70,7 @@ struct CommonTextField<TrailingView: View>: View {
         size: CommonTextFieldSize = .normal,
         errorStyle: CommonTextFieldErrorStyle = .error,
         appearance: CommonTextFieldAppearance = .standard,
+        background: Color = Theme.colors.bgSurface1,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -83,6 +85,7 @@ struct CommonTextField<TrailingView: View>: View {
         self.size = size
         self.errorStyle = errorStyle
         self.appearance = appearance
+        self.background = background
         self._isValid = isValid
     }
 
@@ -98,7 +101,8 @@ struct CommonTextField<TrailingView: View>: View {
         labelStyle: TextFieldLabelStyle = .primary,
         size: CommonTextFieldSize = .normal,
         errorStyle: CommonTextFieldErrorStyle = .error,
-        appearance: CommonTextFieldAppearance = .standard
+        appearance: CommonTextFieldAppearance = .standard,
+        background: Color = Theme.colors.bgSurface1
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
@@ -113,6 +117,7 @@ struct CommonTextField<TrailingView: View>: View {
             size: size,
             errorStyle: errorStyle,
             appearance: appearance,
+            background: background,
             trailingView: { EmptyView() }
         )
     }
@@ -148,7 +153,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, metrics.horizontalPadding)
-                .background(Theme.colors.bgSurface1)
+                .background(background)
                 .cornerRadius(metrics.cornerRadius)
                 .overlay(border)
                 .autocorrectionDisabled()
@@ -264,6 +269,8 @@ struct CommonTextField<TrailingView: View>: View {
             Theme.fonts.bodySMedium
         case .secondary:
             Theme.fonts.footnote
+        case .caption:
+            Theme.fonts.caption12
         }
     }
 
@@ -271,7 +278,7 @@ struct CommonTextField<TrailingView: View>: View {
         switch labelStyle {
         case .primary:
             Theme.colors.textPrimary
-        case .secondary:
+        case .secondary, .caption:
             Theme.colors.textTertiary
         }
     }
@@ -279,6 +286,7 @@ struct CommonTextField<TrailingView: View>: View {
     enum TextFieldLabelStyle {
         case primary
         case secondary
+        case caption
     }
 
     var height: CGFloat {

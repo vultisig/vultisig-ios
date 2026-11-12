@@ -18,6 +18,7 @@ struct AddressFieldAccessoryButton: View {
         bottomTrailing: Theme.radius.sm.points,
         topTrailing: Theme.radius.sm.points
     )
+    var fill = Theme.colors.bgSurface1
     let action: () -> Void
 
     var body: some View {
@@ -29,7 +30,7 @@ struct AddressFieldAccessoryButton: View {
                 .background(
                     UnevenRoundedRectangle(cornerRadii: cornerRadii, style: Theme.radius.sm.style)
                         .inset(by: 0.5)
-                        .fill(Theme.colors.bgSurface1)
+                        .fill(fill)
                         .stroke(Theme.colors.borderLight)
                 )
         }

@@ -417,6 +417,36 @@ final class SendValidationTests: XCTestCase {
         XCTAssertEqual(result?.toDecimal(), Decimal(string: "0.05"))
     }
 
+    func testFiatToCoinAmountKeepsFiveSignificantDigitsRoundedDown() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        setPrice(3_500, for: eth)
+        // $25 / $3500 = 0.00714285714… ETH
+        let result = SendCryptoLogic.fiatToCoinAmount(fiat: "25", coin: eth)
+        XCTAssertEqual(result?.toDecimal(), Decimal(string: "0.0071428"))
+    }
+
+    func testRoundedDownKeepsSignificantDigitsWithoutRoundingUp() {
+        let cases: [(input: String, expected: String)] = [
+            ("0.000339871234", "0.00033987"),
+            ("0.00714285714", "0.0071428"),
+            ("25.000000", "25"),
+            ("1234.56789", "1234.5"),
+            ("0.999999", "0.99999"),
+            ("1234567.89", "1234567")
+        ]
+        for (input, expected) in cases {
+            let value = Decimal(string: input) ?? .nan
+            let rounded = SendCryptoLogic.roundedDown(value, significantDigits: 5, maxPlaces: 18)
+            XCTAssertEqual(rounded, Decimal(string: expected), "\(input)")
+        }
+    }
+
+    func testRoundedDownNeverExceedsTheCoinsDecimals() {
+        let value = Decimal(string: "0.000123456") ?? .nan
+        let rounded = SendCryptoLogic.roundedDown(value, significantDigits: 5, maxPlaces: 6)
+        XCTAssertEqual(rounded, Decimal(string: "0.000123"))
+    }
+
     // MARK: - coinAmountToFiat
 
     func testCoinAmountToFiatReturnsNilForEmptyInput() {

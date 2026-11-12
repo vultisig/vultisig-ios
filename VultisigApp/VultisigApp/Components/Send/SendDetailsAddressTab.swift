@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct SendDetailsAddressTab: View {
-    let isExpanded: Bool
+    let isShown: Bool
+    let transition: AnyTransition
     @Bindable var viewModel: SendDetailsViewModel
     @FocusState.Binding var focusedField: Field?
 
     var body: some View {
         content
-            .onChange(of: isExpanded) { oldValue, newValue in
+            .onChange(of: isShown) { oldValue, newValue in
                 Task {
                     await handleClose(oldValue, newValue)
                 }
@@ -22,53 +23,12 @@ struct SendDetailsAddressTab: View {
     }
 
     var content: some View {
-        SendFormExpandableSection(
-            isExpanded: isExpanded,
-            backgroundColor: Theme.colors.bgPrimary
-        ) {
-            titleSection
-        } content: {
-            VStack(spacing: 16) {
-                separator
+        VStack(spacing: 0) {
+            if isShown {
                 fields
+                    .transition(transition)
             }
         }
-    }
-
-    var titleSection: some View {
-        HStack {
-            Text(NSLocalizedString("address", comment: ""))
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            if viewModel.addressSetupDone {
-                selectedAddress
-                Spacer()
-                doneEditTools
-            } else {
-                Spacer()
-            }
-        }
-        .background(Background().opacity(0.01))
-        .onTapGesture {
-            viewModel.onSelect(tab: .address)
-        }
-    }
-
-    var separator: some View {
-        Separator(color: Theme.colors.borderLight, opacity: 1)
-    }
-
-    var selectedAddress: some View {
-        Text("\(viewModel.toAddress)")
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-            .lineLimit(1)
-            .truncationMode(.middle)
-    }
-
-    var doneEditTools: some View {
-        SendDetailsTabEditTools(forTab: .address, viewModel: viewModel)
     }
 
     var fields: some View {
@@ -80,7 +40,8 @@ struct SendDetailsAddressTab: View {
             return
         }
         if !viewModel.toAddress.isEmpty {
-            guard await viewModel.validateToAddress() else {
+            guard let isValid = await viewModel.validateToAddressIfUnchanged() else { return }
+            guard isValid else {
                 // Collapsing the address tab on an unresolved recipient is a
                 // definitive failure — surface the inline reason rather than
                 // just leaving Next disabled.

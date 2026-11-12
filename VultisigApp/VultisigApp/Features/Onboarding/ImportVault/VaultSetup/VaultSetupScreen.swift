@@ -141,27 +141,12 @@ struct VaultSetupScreen: View {
     // MARK: - Step Indicator
 
     private var stepIndicator: some View {
-        HStack(spacing: 12) {
-            ForEach(Array(stepIcons.enumerated()), id: \.offset) { index, icon in
-                if index > 0 {
-                    // Off the scale on purpose: the fillet on a 16×1 hairline
-                    // joining two step icons. A line, not a surface — no step of
-                    // the scale describes it, and at 1pt thick the corner is
-                    // already past the clamp, so the connector renders fully
-                    // round whatever number is written here.
-                    RoundedRectangle(cornerRadius: 1) // swiftlint:disable:this no_raw_corner_radius
-                        .fill(Theme.colors.border)
-                        .frame(width: 16, height: 1)
-                }
-                Button {
-                    navigateToStep(index)
-                } label: {
-                    VaultSetupStepIcon(state: stepState(for: index), icon: icon)
-                }
-                .buttonStyle(.plain)
-                .disabled(!canNavigateToStep(index))
-            }
-        }
+        StepIndicatorView(
+            icons: stepIcons,
+            state: stepState(for:),
+            canSelect: canNavigateToStep,
+            onSelect: navigateToStep
+        )
     }
 
     private func stepState(for index: Int) -> VaultSetupStepState {

@@ -14,6 +14,7 @@ import CodeScanner
 struct AddressFieldAccessoryStack: View {
     @Environment(\.router) var router
     let coin: Coin
+    var style: AddressFieldStyle = .standard
     var onResult: (AddressResult?) -> Void
 
     @State var showScanner = false
@@ -32,26 +33,22 @@ struct AddressFieldAccessoryStack: View {
         HStack(spacing: 8) {
             AddressFieldAccessoryButton(
                 icon: .copies3Filled,
-                cornerRadii: RectangleCornerRadii(
-                    topLeading: Theme.radius.sm.points,
-                    bottomLeading: Theme.radius.lg.points,
-                    bottomTrailing: Theme.radius.sm.points,
-                    topTrailing: Theme.radius.sm.points
-                )
+                cornerRadii: cornerRadii(roundedBottom: .leading),
+                fill: buttonFill
             ) {
                 pasteAddress()
             }
-            AddressFieldAccessoryButton(icon: .cameraFilled) {
+            AddressFieldAccessoryButton(
+                icon: .cameraFilled,
+                cornerRadii: cornerRadii(roundedBottom: nil),
+                fill: buttonFill
+            ) {
                 showScanner.toggle()
             }
             AddressFieldAccessoryButton(
                 icon: .bookBookmarkFilled,
-                cornerRadii: RectangleCornerRadii(
-                    topLeading: Theme.radius.sm.points,
-                    bottomLeading: Theme.radius.sm.points,
-                    bottomTrailing: Theme.radius.lg.points,
-                    topTrailing: Theme.radius.sm.points
-                )
+                cornerRadii: cornerRadii(roundedBottom: .trailing),
+                fill: buttonFill
             ) {
                 showAddressBookSheet.toggle()
             }
@@ -83,6 +80,27 @@ struct AddressFieldAccessoryStack: View {
             deliverScannedResult()
         }
         #endif
+    }
+
+    private var buttonFill: Color {
+        style == .card ? Theme.colors.bgSurface12 : Theme.colors.bgSurface1
+    }
+
+    /// In the standard style the row's two outer bottom corners round off so
+    /// it reads as one block; in a card every button is evenly rounded.
+    private func cornerRadii(roundedBottom edge: HorizontalEdge?) -> RectangleCornerRadii {
+        if style == .card {
+            let radius = Theme.radius.md.points
+            return RectangleCornerRadii(topLeading: radius, bottomLeading: radius, bottomTrailing: radius, topTrailing: radius)
+        }
+        let small = Theme.radius.sm.points
+        let large = Theme.radius.lg.points
+        return RectangleCornerRadii(
+            topLeading: small,
+            bottomLeading: edge == .leading ? large : small,
+            bottomTrailing: edge == .trailing ? large : small,
+            topTrailing: small
+        )
     }
 
     func pasteAddress() {

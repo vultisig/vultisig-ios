@@ -21,8 +21,15 @@ struct SendCryptoAmountTextField: View {
     /// undoes the newer write.
     var onChange: (String) -> Void
     var onMaxPressed: (() -> Void)?
+    var font: Font = Theme.fonts.largeTitle
+    /// Draws the digits in an overlay that rolls on change, while the field
+    /// itself stays transparent and keeps input, caret and selection.
+    var rendersAnimatedDigits = false
 
     @Environment(\.isEnabled) var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private static var placeholder: String { NSLocalizedString("0", comment: "").capitalized }
 
     var body: some View {
         textField
@@ -49,15 +56,40 @@ struct SendCryptoAmountTextField: View {
     }
 
     var textField: some View {
-        TextField(NSLocalizedString("0", comment: "").capitalized, text: editedBinding)
+        TextField(Self.placeholder, text: editedBinding, prompt: prompt)
         .borderlessTextFieldStyle()
-        .font(Theme.fonts.largeTitle)
+        .font(font)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
-        .foregroundStyle(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
+        .foregroundStyle(rendersAnimatedDigits ? .clear : textColor)
         .maxLength(editedBinding)
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
+        .overlay {
+            if rendersAnimatedDigits {
+                animatedDigits
+            }
+        }
+    }
+
+    private var textColor: Color {
+        isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary
+    }
+
+    /// The overlay draws the placeholder too, so the field's own goes clear.
+    private var prompt: Text? {
+        rendersAnimatedDigits ? Text(Self.placeholder).foregroundStyle(.clear) : nil
+    }
+
+    private var animatedDigits: some View {
+        Text(amount.isEmpty ? Self.placeholder : amount)
+            .font(font)
+            .foregroundStyle(amount.isEmpty ? Theme.colors.textTertiary : textColor)
+            .lineLimit(1)
+            .contentTransition(reduceMotion ? .identity : .numericText())
+            .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: amount)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     var maxButton: some View {

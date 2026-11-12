@@ -8,19 +8,44 @@
 import SwiftUI
 
 struct VaultSetupStepIcon: View {
+    enum Size {
+        /// 44pt circle, 24pt glyph.
+        case regular
+        /// 44pt circle, 16pt glyph.
+        case small
+        /// 36pt circle, 20pt glyph.
+        case compact
+
+        var iconSize: CGFloat {
+            switch self {
+            case .regular: 24
+            case .small: 16
+            case .compact: 20
+            }
+        }
+
+        var padding: CGFloat {
+            switch self {
+            case .regular: 10
+            case .small: 14
+            case .compact: 8
+            }
+        }
+    }
+
     let state: VaultSetupStepState
     let icon: ImageResource
-    let isSmall: Bool
+    let size: Size
 
-    init(state: VaultSetupStepState, icon: ImageResource, isSmall: Bool = false) {
+    init(state: VaultSetupStepState, icon: ImageResource, size: Size = .regular) {
         self.state = state
         self.icon = icon
-        self.isSmall = isSmall
+        self.size = size
     }
 
     var body: some View {
-        Icon(icon, color: iconColor, size: iconSize)
-            .padding(padding)
+        Icon(icon, color: iconColor, size: size.iconSize)
+            .padding(size.padding)
             .if(state == .active) {
                 $0.background(alignment: .bottom) { shadowView }
             }
@@ -68,14 +93,6 @@ struct VaultSetupStepIcon: View {
         case .inactive:
             Theme.colors.borderLight
         }
-    }
-
-    var padding: CGFloat {
-        isSmall ? 14 : 10
-    }
-
-    var iconSize: CGFloat {
-        isSmall ? 16 : 24
     }
 }
 

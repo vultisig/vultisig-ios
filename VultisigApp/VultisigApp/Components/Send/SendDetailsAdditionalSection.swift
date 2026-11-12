@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SendDetailsAdditionalSection: View {
     @Bindable var viewModel: SendDetailsViewModel
+    @FocusState.Binding var focusedField: Field?
 
     @State var isMemoExpanded = false
     @State var isDestinationTagExpanded = false
@@ -88,7 +89,7 @@ struct SendDetailsAdditionalSection: View {
                 addMemoTitle
             }
 
-            MemoTextField(memo: $viewModel.memo)
+            MemoTextField(memo: $viewModel.memo, focusedField: $focusedField)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
         }
@@ -109,7 +110,7 @@ struct SendDetailsAdditionalSection: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                DestinationTagTextField(destinationTag: $rippleTag.destinationTag)
+                DestinationTagTextField(destinationTag: $rippleTag.destinationTag, focusedField: $focusedField)
                     .disabled(rippleTag.isDestinationTagLocked)
 
                 if rippleTag.isDestinationTagLocked {

@@ -149,7 +149,35 @@ enum SendCryptoLogic {
         let fiatDecimal = fiat.toDecimal()
         guard fiatDecimal > 0, coin.price > 0 else { return nil }
         let coinDecimal = fiatDecimal / Decimal(coin.price)
-        return formatAmountInput(coinDecimal.truncated(toPlaces: coin.decimals), digits: coin.decimals)
+        let rounded = roundedDown(
+            coinDecimal,
+            significantDigits: fiatDerivedSignificantDigits,
+            maxPlaces: coin.decimals
+        )
+        return formatAmountInput(rounded, digits: coin.decimals)
+    }
+
+    /// Significant digits kept in a coin amount derived from a fiat entry.
+    static let fiatDerivedSignificantDigits = 5
+
+    /// `value` rounded down to `significantDigits` significant digits, with no
+    /// more than `maxPlaces` decimals; whole units are never cut. Rounding down
+    /// keeps a derived amount from buying more than the fiat entered.
+    /// Non-positive values pass through.
+    static func roundedDown(_ value: Decimal, significantDigits: Int, maxPlaces: Int) -> Decimal {
+        guard value > 0 else { return value }
+        var magnitude = 0
+        var scaled = value
+        while scaled >= 10 {
+            scaled /= 10
+            magnitude += 1
+        }
+        while scaled < 1 {
+            scaled *= 10
+            magnitude -= 1
+        }
+        let places = max(min(significantDigits - 1 - magnitude, maxPlaces), 0)
+        return value.truncated(toPlaces: places)
     }
 
     /// Convert a coin-typed value into its fiat equivalent string (2-decimal

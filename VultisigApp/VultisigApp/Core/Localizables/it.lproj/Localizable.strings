@@ -38,6 +38,7 @@
 "advancedDescription" = "Reshare, gestisci la sicurezza o firma messaggi.";
 "advancedSettings" = "Impostazioni avanzate";
 "advancedSwap" = "Swap avanzato";
+"allChains" = "Tutte le chain";
 "allDevicesUpgradeTitle1" = "Assicurati che";
 "allDevicesUpgradeTitle2" = " tutti i dispositivi iniziali siano presenti ";
 "allDevicesUpgradeTitle3" = "durante l’aggiornamento";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "Verifica aggiornamenti in corso...";
 "checkUpdate" = "Controlla aggiornamenti";
 "Chinese" = "Cinese";
+"chooseAnAsset" = "Scegli un asset";
 "chooseAPassword" = "Scegli una password";
 "chooseBackupMethod" = "Scegli il metodo di backup";
 "chooseChains" = "Scegli le chain";
@@ -464,6 +466,8 @@
 "enterHint" = "Inserisci un suggerimento";
 "enterMemo" = "Inserisci memo";
 "enterPassword" = "Inserisci la password";
+"enterTheAddress" = "Inserisci l'indirizzo";
+"enterTheAmount" = "Inserisci l'importo";
 "enterUpto4Characters" = "Inserisci fino a 4 caratteri";
 "enterValidAmount" = "Inserisci un importo valido maggiore di zero.";
 "enterValidFolderName" = "Inserisci un nome di cartella valido e riprova.";

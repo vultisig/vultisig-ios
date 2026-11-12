@@ -38,6 +38,7 @@
 "advancedDescription" = "重新共享、管理安全或签署消息";
 "advancedSettings" = "高级设置";
 "advancedSwap" = "高级兑换";
+"allChains" = "所有链";
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "正在检查更新...";
 "checkUpdate" = "检查更新";
 "Chinese" = "中文";
+"chooseAnAsset" = "选择资产";
 "chooseAPassword" = "选择密码";
 "chooseBackupMethod" = "选择备份方法";
 "chooseChains" = "选择链";
@@ -464,6 +466,8 @@
 "enterHint" = "输入提示";
 "enterMemo" = "输入备忘录";
 "enterPassword" = "输入密码";
+"enterTheAddress" = "输入地址";
+"enterTheAmount" = "输入金额";
 "enterUpto4Characters" = "输入最多 4 个字符";
 "enterValidAmount" = "请输入大于零的有效金额。";
 "enterValidFolderName" = "请输入有效的文件夹名称并重试";

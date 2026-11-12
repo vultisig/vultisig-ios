@@ -14,6 +14,7 @@ enum Field: Int, Hashable {
     case amount
     case amountInFiat
     case memo
+    case destinationTag
 }
 
 struct SendDetailsScreen: View {
@@ -22,13 +23,17 @@ struct SendDetailsScreen: View {
     let vault: Vault
     @State var settingsPresented: Bool = false
 
-    @StateObject var keyboardObserver = KeyboardObserver()
-
     @FocusState var focusedField: Field?
-    @State var scrollProxy: ScrollViewProxy?
+    @State private var displayedTab: SendDetailsFocusedTab?
+    @State private var isNavigatingForward = true
+    #if os(iOS)
+    @State private var scrollViewMaxY: CGFloat = 0
+    @State private var floatingButtonMinY: CGFloat = 0
+    #endif
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     @Environment(\.router) private var router
 
@@ -70,6 +75,9 @@ struct SendDetailsScreen: View {
                 // Re-evaluate (or clear, when no validator applies) the inline
                 // amount warning when the selected coin changes.
                 viewModel.debouncedValidateAmount()
+                if oldValue.chain != newValue.chain {
+                    Task { await revalidateRecipient() }
+                }
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.handleToAddressChange()
@@ -105,32 +113,12 @@ struct SendDetailsScreen: View {
                     output: self
                 )
             }
-            .crossPlatformSheet(isPresented: $viewModel.showChainPickerSheet) {
-                SwapChainPickerView(
-                    vault: vault,
-                    showSheet: $viewModel.showChainPickerSheet,
-                    selectedChain: $viewModel.selectedChain
-                )
-                .environmentObject(coinSelectionViewModel)
-            }
-            .crossPlatformSheet(isPresented: $viewModel.showCoinPickerSheet) {
-                SwapCoinPickerView(
-                    vault: vault,
-                    showSheet: $viewModel.showCoinPickerSheet,
-                    selectedCoin: $viewModel.coin,
-                    selectedChain: viewModel.selectedChain
-                )
-                .environmentObject(coinSelectionViewModel)
-            }
     }
 
     var content: some View {
         view
             .onChange(of: viewModel.coin) { _, _ in
                 setData()
-            }
-            .onChange(of: focusedField) { _, focusedField in
-                onChange(focusedField: focusedField)
             }
             .alert(isPresented: $viewModel.showAlert) {
                 alert
@@ -159,6 +147,9 @@ struct SendDetailsScreen: View {
 
     private func getButtonDisabled() -> Bool {
         if viewModel.continueButtonDisabled {
+            return true
+        }
+        if viewModel.selectedTab == .asset, !viewModel.isCoinShownOnAssetStep {
             return true
         }
         if viewModel.coin.chain.supportsPendingTransactions {
@@ -216,69 +207,101 @@ struct SendDetailsScreen: View {
             }
     }
 
+    /// Fixed gap between the title and the scroll viewport; it does not scroll.
+    private static let titleToScrollGap: CGFloat = 12
+    /// Height of the viewport's top-edge fade; the panes start this far down so nothing is dimmed at rest.
+    private static let scrollEdgeFadeHeight: CGFloat = 12
+
     var tabsContent: some View {
-        ScrollViewReader { proxy in
+        VStack(spacing: 0) {
+            SendDetailsStepHeader(viewModel: viewModel, displayedTab: displayedTab, horizontalInset: Self.horizontalInset)
+
             ScrollView {
-                VStack(spacing: 12) {
-                    SendDetailsAssetTab(
-                        isExpanded: viewModel.selectedTab == .asset,
-                        viewModel: viewModel
-                    )
-                    .id(SendDetailsFocusedTab.asset.rawValue)
-
-                    SendDetailsAddressTab(
-                        isExpanded: viewModel.selectedTab == .address,
-                        viewModel: viewModel,
-                        focusedField: $focusedField
-                    )
-                    .id(SendDetailsFocusedTab.address.rawValue)
-
-                    SendDetailsAmountTab(
-                        isExpanded: viewModel.selectedTab == .amount,
-                        viewModel: viewModel,
-                        validateForm: validateForm,
-                        focusedField: $focusedField,
-                        settingsPresented: $settingsPresented
-                    )
-                    .id(SendDetailsFocusedTab.amount.rawValue)
-                }
+                panes
+                    .padding(.top, Self.scrollEdgeFadeHeight)
+                    .padding(.bottom, panesBottomPadding)
             }
+            // Only the asset search drops the keyboard on scroll; the amount field keeps it.
+            .scrollDismissesKeyboard(displayedTab == .asset ? .immediately : .automatic)
             .refreshable {
                 await onRefresh()
             }
-            .onLoad {
-                scrollProxy = proxy
-            }
-            .onChange(of: viewModel.selectedTab) { oldValue, newValue in
-                handleScroll(newValue: newValue, oldValue: oldValue)
-                onSelectedTabChange(newTab: newValue)
-            }
+            .mask { scrollEdgeMask }
+            .padding(.top, Self.titleToScrollGap)
+            #if os(iOS)
+            .ignoresSafeArea(.container, edges: .bottom)
+            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { scrollViewMaxY = $0 }
+            #endif
+        }
+        .onChange(of: viewModel.selectedTab) { oldValue, newValue in
+            onSelectedTabChange(oldTab: oldValue, newTab: newValue)
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: viewModel.selectedTab) { oldTab, newTab in
+            guard let oldTab, let newTab else { return false }
+            return newTab > oldTab
         }
     }
 
-    func onChange(focusedField: Field?) {
-        if focusedField == .toAddress {
-            handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)
+    /// Content scrolled under the title dissolves instead of being cut.
+    private var scrollEdgeMask: some View {
+        VStack(spacing: 0) {
+            LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                .frame(height: Self.scrollEdgeFadeHeight)
+            Rectangle()
         }
     }
 
-    func onSelectedTabChange(newTab: SendDetailsFocusedTab?) {
+    /// All steps stay mounted so each `isShown` handler runs on enter and leave; only the shown one has content.
+    var panes: some View {
+        ZStack(alignment: .top) {
+            SendDetailsAssetTab(
+                isShown: displayedTab == .asset,
+                transition: paneTransition,
+                horizontalInset: Self.horizontalInset,
+                viewModel: viewModel
+            )
+
+            SendDetailsAddressTab(
+                isShown: displayedTab == .address,
+                transition: paneTransition,
+                viewModel: viewModel,
+                focusedField: $focusedField
+            )
+            .padding(.horizontal, Self.horizontalInset)
+
+            SendDetailsAmountTab(
+                isShown: displayedTab == .amount,
+                transition: paneTransition,
+                viewModel: viewModel,
+                validateForm: validateForm,
+                focusedField: $focusedField,
+                settingsPresented: $settingsPresented
+            )
+            .padding(.horizontal, Self.horizontalInset)
+        }
+    }
+
+    var paneTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        return .asymmetric(
+            insertion: .move(edge: isNavigatingForward ? .trailing : .leading).combined(with: .opacity),
+            removal: .move(edge: isNavigatingForward ? .leading : .trailing).combined(with: .opacity)
+        )
+    }
+
+    func onSelectedTabChange(oldTab: SendDetailsFocusedTab?, newTab: SendDetailsFocusedTab?) {
         if newTab != .address && newTab != .amount {
             focusedField = nil
         }
-    }
-
-    func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
-            if newValue != .amount {
-                withAnimation(.easeInOut) {
-                    scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
-                }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                withAnimation(.easeInOut) {
-                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .bottom)
-                }
+        guard let oldTab, let newTab else {
+            displayedTab = newTab
+            return
+        }
+        isNavigatingForward = newTab > oldTab
+        // A leaving pane slides with the transition it last rendered, so render the new direction first.
+        Task {
+            withAnimation(.easeInOut(duration: reduceMotion ? 0.2 : 0.3)) {
+                displayedTab = viewModel.selectedTab
             }
         }
     }
@@ -334,12 +357,32 @@ struct SendDetailsScreen: View {
         await BalanceService.shared.updateBalance(for: viewModel.coin)
     }
 
+    func setData() {
+        Task {
+            await getBalance()
+        }
+    }
+
     private func onRefresh() async {
         async let pendingCheck: Void = viewModel.forceCheckPendingTransactions()
         // Awaited here rather than in an `async let`: a child task would read
         // the coin off the main actor before `updateBalance` hops back to it.
         await BalanceService.shared.updateBalance(for: viewModel.coin)
         await pendingCheck
+    }
+
+    /// Re-checks the recipient after a chain change, so the header cannot offer
+    /// Amount with an address the new chain rejects.
+    private func revalidateRecipient() async {
+        guard !viewModel.toAddress.isEmpty else { return }
+        viewModel.addressSetupDone = false
+        guard let isValid = await viewModel.validateToAddressIfUnchanged() else { return }
+        viewModel.addressSetupDone = isValid
+        guard !isValid else { return }
+        viewModel.markInvalidRecipient()
+        if viewModel.selectedTab == .amount {
+            viewModel.onSelect(tab: .address)
+        }
     }
 }
 
@@ -388,7 +431,7 @@ extension SendDetailsScreen {
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
             } else {
-                let resolved = await viewModel.validateToAddress()
+                guard let resolved = await viewModel.validateToAddressIfUnchanged() else { return }
                 viewModel.addressSetupDone = resolved
                 if resolved {
                     viewModel.onSelect(tab: .amount)
@@ -405,13 +448,18 @@ import SwiftUI
 extension SendDetailsScreen {
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
+    static let horizontalInset: CGFloat = 24
+    private static let floatingButtonGap: CGFloat = 16
+
     var container: some View {
         Screen {
             content
         }
         .screenTitle("send".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(leading: 0, bottom: 0, trailing: 0))
     }
 
+    /// The panes scroll under the floating Continue button to the screen edge.
     var view: some View {
         ZStack(alignment: .bottom) {
             tabs
@@ -419,18 +467,16 @@ extension SendDetailsScreen {
         }
     }
 
+    /// Lets the last row and the fee row scroll clear of the floating button, keyboard up or not.
+    var panesBottomPadding: CGFloat {
+        max(scrollViewMaxY - floatingButtonMinY, 0) + Self.floatingButtonGap
+    }
+
     var buttonContainer: some View {
         button
             .padding(.vertical, 8)
-            .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
-            .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
-    }
-
-    func setData() {
-        keyboardObserver.keyboardHeight = 0
-        Task {
-            await getBalance()
-        }
+            .padding(.horizontal, Self.horizontalInset)
+            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { floatingButtonMinY = $0 }
     }
 }
 #endif
@@ -439,11 +485,17 @@ extension SendDetailsScreen {
 import SwiftUI
 
 extension SendDetailsScreen {
+    static let horizontalInset: CGFloat = 40
+    private static let bottomPadding: CGFloat = 65
+
+    var panesBottomPadding: CGFloat { Self.bottomPadding }
+
     var container: some View {
         Screen {
             content
         }
         .screenTitle("send".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(leading: 0, trailing: 0))
     }
 
     var view: some View {
@@ -451,12 +503,7 @@ extension SendDetailsScreen {
             tabs
             button
                 .padding(.horizontal, 8)
-        }
-    }
-
-    func setData() {
-        Task {
-            await getBalance()
+                .padding(.horizontal, Self.horizontalInset)
         }
     }
 }

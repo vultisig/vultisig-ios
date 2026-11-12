@@ -38,6 +38,7 @@
 "advancedDescription" = "재공유, 보안 관리 또는 메시지 서명.";
 "advancedSettings" = "고급 설정";
 "advancedSwap" = "고급 스왑";
+"allChains" = "모든 체인";
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "업데이트 확인 중...";
 "checkUpdate" = "업데이트 확인";
 "Chinese" = "중국어";
+"chooseAnAsset" = "자산 선택";
 "chooseAPassword" = "비밀번호 선택";
 "chooseBackupMethod" = "백업 방법 선택";
 "chooseChains" = "체인 선택";
@@ -464,6 +466,8 @@
 "enterHint" = "힌트 입력";
 "enterMemo" = "메모 입력";
 "enterPassword" = "비밀번호 입력";
+"enterTheAddress" = "주소 입력";
+"enterTheAmount" = "금액 입력";
 "enterUpto4Characters" = "최대 4자 입력";
 "enterValidAmount" = "0보다 큰 유효한 금액을 입력하세요.";
 "enterValidFolderName" = "유효한 폴더 이름을 입력하고 다시 시도하세요.";

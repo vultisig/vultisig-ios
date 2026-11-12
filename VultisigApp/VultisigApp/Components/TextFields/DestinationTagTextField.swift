@@ -12,6 +12,7 @@ import SwiftUI
 /// standard `isEnabled` environment.
 struct DestinationTagTextField: View {
     @Binding var destinationTag: String
+    @FocusState.Binding var focusedField: Field?
 
     @Environment(\.isEnabled) private var isEnabled
 
@@ -48,6 +49,7 @@ struct DestinationTagTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
+            .focused($focusedField, equals: .destinationTag)
             .foregroundStyle(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
     }
 
@@ -65,7 +67,8 @@ struct DestinationTagTextField: View {
 }
 
 #Preview {
-    DestinationTagTextField(destinationTag: .constant(""))
+    @Previewable @FocusState var focusedField: Field?
+    DestinationTagTextField(destinationTag: .constant(""), focusedField: $focusedField)
 }
 
 #if os(iOS)

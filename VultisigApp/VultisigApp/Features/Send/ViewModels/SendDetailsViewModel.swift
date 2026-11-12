@@ -21,7 +21,8 @@ import OSLog
 import SwiftUI
 import VultisigCommonData
 
-enum SendDetailsFocusedTab: String {
+/// The Send steps, in the order the flow walks them.
+enum SendDetailsFocusedTab: CaseIterable, Comparable {
     case asset
     case address
     case amount
@@ -49,13 +50,19 @@ final class SendDetailsViewModel {
     let rippleTag: RippleDestinationTagViewModel
 
     // MARK: - UI state (merged from the deleted UI-only SendDetailsViewModel)
-    var selectedChain: Chain? = nil
     private(set) var selectedTab: SendDetailsFocusedTab?
     var assetSetupDone: Bool = false
     var addressSetupDone: Bool = false
     var amountSetupDone: Bool = false
-    var showCoinPickerSheet: Bool = false
-    var showChainPickerSheet: Bool = false
+    var assetFilter: SendChainFilter = .all
+    var assetSearchText = ""
+
+    /// Whether the asset list shows the coin Continue would carry on with, so a
+    /// chain filter or search that hides it cannot pass it off as the user's pick.
+    var isCoinShownOnAssetStep: Bool {
+        SendAssetListRule.isSendable(coin, sendableChains: Set(vault.chains))
+            && SendAssetListRule.matches(coin, filter: assetFilter, query: SendAssetListRule.query(from: assetSearchText))
+    }
 
     // MARK: - Form fields
     var coin: Coin
@@ -294,6 +301,31 @@ final class SendDetailsViewModel {
         }
     }
 
+    /// Whether the step header may jump to `tab`: every earlier step is
+    /// complete and `tab` is not the step already shown.
+    func canNavigate(to tab: SendDetailsFocusedTab) -> Bool {
+        guard tab != selectedTab else { return false }
+        switch tab {
+        case .asset:
+            return true
+        case .address:
+            return assetSetupDone
+        case .amount:
+            return assetSetupDone && addressSetupDone
+        }
+    }
+
+    /// The step header icon state for `tab`.
+    func stepState(for tab: SendDetailsFocusedTab) -> VaultSetupStepState {
+        if tab == selectedTab { return .active }
+        let isDone = switch tab {
+        case .asset: assetSetupDone
+        case .address: addressSetupDone
+        case .amount: amountSetupDone
+        }
+        return isDone ? .valid : .inactive
+    }
+
     /// Detects the chain from a scanned/pasted address and switches the form
     /// to the detected chain's native coin (if the vault has it). Used by the
     /// QR scanner sheet on Details.
@@ -304,7 +336,6 @@ final class SendDetailsViewModel {
         guard let detectedCoin = vault.coins.first(where: { $0.chain == detectedChain && $0.isNativeToken }) else {
             return nil
         }
-        selectedChain = detectedChain
         coin = detectedCoin
         fromAddress = detectedCoin.address
         return detectedCoin
@@ -559,46 +590,49 @@ final class SendDetailsViewModel {
         markInvalidRecipient()
     }
 
+    /// Resolves the recipient for Continue; `false` also when the recipient or
+    /// chain changed during the lookup, so a superseded check fails closed.
     func validateToAddress() async -> Bool {
-        guard !toAddress.isEmpty else { return false }
-        normalizeRippleXAddressIfNeeded()
-        let originalInput = toAddress
-        do {
-            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
-            commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
-            return true
-        } catch {
-            isNamespaceResolved = false
-            return false
-        }
+        await validateToAddressIfUnchanged() ?? false
     }
 
-    /// Generation-guarded resolution for the debounced background task. Resolves
-    /// the current input but commits *nothing* — neither the address rewrite nor
-    /// the verdict — when a newer request has bumped `addressResolutionGeneration`
-    /// during the (possibly network-bound) await. Because `addressResolver` may
-    /// not honor `Task` cancellation, this guard is what prevents a late verdict
-    /// from clobbering a recipient the user has since re-typed. Returns `nil`
-    /// when the request was superseded.
+    /// Resolves the recipient and commits the result, or returns `nil` without
+    /// committing anything when the recipient or chain changed during the lookup:
+    /// the newer input's own check owns the verdict.
+    func validateToAddressIfUnchanged() async -> Bool? {
+        await resolveRecipient { true }
+    }
+
+    /// Generation-guarded resolution for the debounced background task: also
+    /// `nil` when a newer request bumped `addressResolutionGeneration` during
+    /// the await, since `addressResolver` may not honor `Task` cancellation.
     private func resolveToAddressIfCurrent(generation: Int) async -> Bool? {
+        await resolveRecipient { addressResolutionGeneration == generation }
+    }
+
+    /// Commits neither the address rewrite nor the verdict unless, after the
+    /// await, `isCurrent` holds and the input and chain are the ones resolved.
+    private func resolveRecipient(isCurrent: () -> Bool) async -> Bool? {
         guard !toAddress.isEmpty else { return false }
         normalizeRippleXAddressIfNeeded()
         let originalInput = toAddress
+        let chain = coin.chain
+        func isSuperseded() -> Bool {
+            !isCurrent() || toAddress != originalInput || coin.chain != chain
+        }
         do {
-            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
-            guard addressResolutionGeneration == generation else { return nil }
+            let resolvedAddress = try await addressResolver(originalInput, chain)
+            guard !isSuperseded() else { return nil }
             commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
             return true
         } catch {
-            guard addressResolutionGeneration == generation else { return nil }
+            guard !isSuperseded() else { return nil }
             isNamespaceResolved = false
             return false
         }
     }
 
-    /// Applies a successful resolution to the address fields. Shared by the
-    /// synchronous-await path (`validateToAddress`) and the generation-guarded
-    /// background path so both commit identically.
+    /// Applies a successful resolution to the address fields.
     private func commitResolvedAddress(originalInput: String, resolvedAddress: String) {
         if originalInput != resolvedAddress {
             toAddress = resolvedAddress
@@ -1072,6 +1106,102 @@ final class SendDetailsViewModel {
             gas = .zero
             fee = .zero
             errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Fee estimate (display only)
+
+    /// The form fields a fee estimate was priced from.
+    struct FeeEstimateInputs: Hashable {
+        let coinId: String
+        let amount: String
+        let toAddress: String
+        let memo: String
+        let feeMode: FeeMode
+        let sendMaxAmount: Bool
+        let gas: BigInt
+        let fee: BigInt
+        let estimatedGasLimit: BigInt?
+        let customGasLimit: BigInt?
+        let customByteFee: BigInt?
+    }
+
+    /// A network fee formatted as the review shows it, with the inputs it was priced from.
+    struct FeeEstimate: Equatable {
+        let inputs: FeeEstimateInputs
+        let crypto: String
+        let fiat: String
+    }
+
+    private var latestFeeEstimate: FeeEstimate?
+    private(set) var isEstimatingFee = false
+    @ObservationIgnored private var feeEstimateGeneration = 0
+
+    var feeEstimateInputs: FeeEstimateInputs {
+        FeeEstimateInputs(
+            coinId: coin.uniqueId,
+            amount: amount,
+            toAddress: toAddress,
+            memo: memo,
+            feeMode: feeMode,
+            sendMaxAmount: sendMaxAmount,
+            gas: gas,
+            fee: fee,
+            estimatedGasLimit: estimatedGasLimit,
+            customGasLimit: customGasLimit,
+            customByteFee: customByteFee
+        )
+    }
+
+    /// The latest estimate, only while the form is on the asset it was priced for.
+    var feeEstimate: FeeEstimate? {
+        guard let latestFeeEstimate, latestFeeEstimate.inputs.coinId == coin.uniqueId else { return nil }
+        return latestFeeEstimate
+    }
+
+    /// Whether the shown estimate is about to be replaced: a newer one is
+    /// loading, or the form changed since it was priced.
+    var isFeeEstimateOutdated: Bool {
+        guard let feeEstimate else { return false }
+        return isEstimatingFee || feeEstimate.inputs != feeEstimateInputs
+    }
+
+    /// Prices the current form through the review's fee calculation, for display
+    /// on the amount step. Writes only the estimate state above: the review
+    /// recomputes the fee it signs, and validation and `makeTransaction()` never
+    /// read the estimate.
+    func estimateFee() async {
+        feeEstimateGeneration &+= 1
+        let generation = feeEstimateGeneration
+        let inputs = feeEstimateInputs
+        // Pricing a UTXO send clears and refetches the UTXO cache that Max plans against.
+        guard coin.chainType != .UTXO, let snapshot = try? makeTransaction() else {
+            latestFeeEstimate = nil
+            isEstimatingFee = false
+            return
+        }
+        isEstimatingFee = true
+        defer {
+            if generation == feeEstimateGeneration { isEstimatingFee = false }
+        }
+        func isStillCurrent() -> Bool {
+            !Task.isCancelled && generation == feeEstimateGeneration && inputs == feeEstimateInputs
+        }
+        do {
+            let result = try await SendCryptoVerifyLogic(interactor: interactor).calculateFee(tx: snapshot)
+            guard isStillCurrent() else { return }
+            let priced = snapshot.with(gas: result.gas, fee: result.fee)
+            latestFeeEstimate = FeeEstimate(
+                inputs: inputs,
+                crypto: priced.gasInReadable,
+                fiat: CryptoAmountFormatter.feesInReadable(tx: priced)
+            )
+        } catch is CancellationError {
+            return
+        } catch {
+            logger.debug("Fee estimate failed: \(error.localizedDescription, privacy: .public)")
+            guard isStillCurrent() else { return }
+            latestFeeEstimate = nil
         }
     }
 

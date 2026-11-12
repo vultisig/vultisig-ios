@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MemoTextField: View {
     @Binding var memo: String
+    @FocusState.Binding var focusedField: Field?
 
     @Environment(\.isEnabled) private var isEnabled
 
@@ -39,6 +40,7 @@ struct MemoTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
+            .focused($focusedField, equals: .memo)
             .foregroundStyle(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
     }
 
@@ -56,7 +58,8 @@ struct MemoTextField: View {
 }
 
 #Preview {
-    MemoTextField(memo: .constant(""))
+    @Previewable @FocusState var focusedField: Field?
+    MemoTextField(memo: .constant(""), focusedField: $focusedField)
 }
 
 #if os(iOS)

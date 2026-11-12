@@ -18,10 +18,13 @@ struct SendDetailsAddressFields: View {
             fromField
             toField
         }
+        .padding(16)
+        .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
+        .overlay(Theme.radius.xl.shape.strokeBorder(Theme.colors.borderLight, lineWidth: 1))
     }
 
     var fromField: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Text("from".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
@@ -46,7 +49,7 @@ struct SendDetailsAddressFields: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
-        .background(Theme.colors.bgSurface1)
+        .background(Theme.colors.bgSurface12)
         .cornerRadius(Theme.radius.md)
         .overlay(
             Theme.radius.md.shape
@@ -64,7 +67,8 @@ struct SendDetailsAddressFields: View {
                 get: { viewModel.showAddressAlert ? viewModel.errorMessage : nil },
                 set: { _ in }
             ),
-            errorStyle: .warning
+            errorStyle: .warning,
+            style: .card
         ) {
             handle(addressResult: $0)
         }

@@ -38,6 +38,7 @@
 "advancedDescription" = "Ponovno dijeljenje, upravljanje sigurnošću ili potpisivanje poruka.";
 "advancedSettings" = "Napredne postavke";
 "advancedSwap" = "Napredni swap";
+"allChains" = "Svi lanci";
 "allDevicesUpgradeTitle1" = "Provjerite da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "Provjeravanje ažuriranja...";
 "checkUpdate" = "Provjeri ažuriranja";
 "Chinese" = "Kineski";
+"chooseAnAsset" = "Odaberite imovinu";
 "chooseAPassword" = "Odaberite lozinku";
 "chooseBackupMethod" = "Odaberite metodu sigurnosne kopije";
 "chooseChains" = "Odaberite lance";
@@ -464,6 +466,8 @@
 "enterHint" = "Unesite savjet";
 "enterMemo" = "Unesite bilješku";
 "enterPassword" = "Unesite lozinku";
+"enterTheAddress" = "Unesite adresu";
+"enterTheAmount" = "Unesite iznos";
 "enterUpto4Characters" = "Unesite do 4 znaka";
 "enterValidAmount" = "Unesite valjan iznos veći od nule.";
 "enterValidFolderName" = "Unesite ispravan naziv mape i pokušajte ponovno.";

@@ -38,6 +38,7 @@
 "advancedDescription" = "Reshare, manage security or sign messages.";
 "advancedSettings" = "Advanced Settings";
 "advancedSwap" = "Advanced swap";
+"allChains" = "All chains";
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "Checking for update...";
 "checkUpdate" = "Check Updates";
 "Chinese" = "Chinese";
+"chooseAnAsset" = "Choose an asset";
 "chooseAPassword" = "Choose a password";
 "chooseBackupMethod" = "Choose Backup Method";
 "chooseChains" = "Choose Chains";
@@ -464,6 +466,8 @@
 "enterHint" = "Enter a hint";
 "enterMemo" = "Enter Memo";
 "enterPassword" = "Enter Password";
+"enterTheAddress" = "Enter the address";
+"enterTheAmount" = "Enter the amount";
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidAmount" = "Please enter a valid amount greater than zero.";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";

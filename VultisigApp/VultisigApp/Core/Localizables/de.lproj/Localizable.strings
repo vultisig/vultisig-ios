@@ -38,6 +38,7 @@
 "advancedDescription" = "Reshare, Sicherheit verwalten oder Nachrichten signieren.";
 "advancedSettings" = "Erweiterte Einstellungen";
 "advancedSwap" = "Erweiterter Swap";
+"allChains" = "Alle Chains";
 "allDevicesUpgradeTitle1" = "Stellen Sie sicher, dass";
 "allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte bereitliegen, ";
 "allDevicesUpgradeTitle3" = "wenn Sie das Upgrade durchführen";
@@ -196,6 +197,7 @@
 "checkingForUpdate" = "Suche nach Updates...";
 "checkUpdate" = "Updates prüfen";
 "Chinese" = "Chinesisch";
+"chooseAnAsset" = "Asset auswählen";
 "chooseAPassword" = "Passwort wählen";
 "chooseBackupMethod" = "Backup-Methode wählen";
 "chooseChains" = "Chains auswählen";
@@ -464,6 +466,8 @@
 "enterHint" = "Hinweis eingeben";
 "enterMemo" = "Memo eingeben";
 "enterPassword" = "Passwort eingeben";
+"enterTheAddress" = "Adresse eingeben";
+"enterTheAmount" = "Betrag eingeben";
 "enterUpto4Characters" = "Bis zu 4 Zeichen eingeben";
 "enterValidAmount" = "Bitte geben Sie einen gültigen Betrag größer als null ein.";
 "enterValidFolderName" = "Bitte geben Sie einen gültigen Ordnernamen ein und versuchen Sie es erneut.";
