@@ -24,16 +24,22 @@ struct VultDiscountTiersScreen: View {
     private let homeIndicatorBleed: CGFloat = 60
     #if os(macOS)
     private let horizontalPadding: CGFloat = 40
+    /// A desktop window is far wider than the art; sized to it, the hero would outgrow the screen.
+    /// The height is derived from this width, and the art fills the full width, cropped.
+    private let maxHeroWidth: CGFloat = 520
+    private let heroArtAlignment: Alignment = .center
     private let bottomPadding: CGFloat = 24
     #else
     private let horizontalPadding: CGFloat = 16
+    private let maxHeroWidth: CGFloat = .infinity
+    private let heroArtAlignment: Alignment = .top
     private let bottomPadding: CGFloat = 0
     #endif
 
     var body: some View {
         Screen {
             GeometryReader { geometry in
-                let heroHeight = geometry.size.width * heroAspectRatio
+                let heroHeight = min(geometry.size.width, maxHeroWidth) * heroAspectRatio
                 ZStack(alignment: .top) {
                     heroImage(height: heroHeight)
                         .frame(height: geometry.safeAreaInsets.top, alignment: .top)
@@ -104,7 +110,7 @@ private extension VultDiscountTiersScreen {
     func heroImage(height: CGFloat) -> some View {
         Color.clear
             .frame(height: height)
-            .overlay(alignment: .top) {
+            .overlay(alignment: heroArtAlignment) {
                 VultisigImage("vult-tiers-hero")
                     .resizable()
                     .scaledToFill()
