@@ -72,6 +72,8 @@ struct SendDetailsScreen: View {
                 if !newValue.chain.supportsDestinationTag {
                     viewModel.rippleTag.clearForUnsupportedChain()
                 }
+                // The amount now describes another asset, so its max-send intent and pending commit lapse.
+                viewModel.convertToFiat(newValue: viewModel.amount)
                 // Re-evaluate (or clear, when no validator applies) the inline
                 // amount warning when the selected coin changes.
                 viewModel.debouncedValidateAmount()

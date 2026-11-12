@@ -79,7 +79,7 @@ struct SendDetailsAmountTab: View {
         HStack(spacing: 4) {
             VultisigImage(viewModel.coin.chain.logo)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: 16, height: 16)
             Text(viewModel.coin.chain.displayName)
                 .font(Theme.fonts.bodySMedium)

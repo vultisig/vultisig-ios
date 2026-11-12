@@ -91,7 +91,7 @@ struct SendChainFilterCarousel: View {
         case .chain(let chain):
             VultisigImage(chain.logo)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: iconSize, height: iconSize)
         }
     }
