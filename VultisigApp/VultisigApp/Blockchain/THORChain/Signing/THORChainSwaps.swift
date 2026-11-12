@@ -86,7 +86,7 @@ class THORChainSwaps {
             }
             return [preSigningOutput.dataHash.hexString]
         case .zcash:
-            return try ZcashV5Transaction.preImageHashes(inputData: inputData).map { $0.hexString }
+            return try ZcashSigner.preImageHashes(inputData: inputData, publicKey: Data(hexString: keysignPayload.coin.hexPublicKey) ?? Data()).map { $0.hexString }
         case .bitcoin, .litecoin, .bitcoinCash, .dogecoin:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try BitcoinPreSigningOutput(serializedBytes: hashes)
