@@ -694,8 +694,8 @@
 "joinSend" = "加入发送";
 "joinSwap" = "加入兑换";
 "joinTransactionSigning" = "加入交易签名";
-"kaminoBannerSubtitle" = "通过 Kamino 开始赚取收益";
-"kaminoBannerTitle" = "Solana 新功能";
+"kaminoBannerSubtitle" = "让闲置的 USDC 发挥作用";
+"kaminoBannerTitle" = "借助 Kamino";
 "kaminoDepositMinimum" = "最低存入金额为 %@ %@。";
 "kaminoDepositMissingCoin" = "存入前请先将 Solana 上的 %@ 添加到您的保险库。";
 "kaminoDepositTitle" = "存入";
