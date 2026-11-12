@@ -17,27 +17,36 @@ struct VultDiscountTiersScreen: View {
     @Environment(\.openURL) var openURL
 
     private let service = VultTierService()
-    private let heroHeight: CGFloat = 412
-    private let introductionTop: CGFloat = 277
+    /// Height over width of `vult-tiers-hero` (1179 × 1236 px).
+    private let heroAspectRatio: CGFloat = 1236 / 1179
+    /// Where the introduction starts, as a share of the hero's height (277pt of 412pt).
+    private let introductionTopRatio: CGFloat = 277 / 412
     private let homeIndicatorBleed: CGFloat = 60
     #if os(macOS)
     private let horizontalPadding: CGFloat = 40
+    /// A desktop window is far wider than the art; sized to it, the hero would outgrow the screen.
+    /// The height is derived from this width, and the art fills the full width, cropped.
+    private let maxHeroWidth: CGFloat = 520
+    private let heroArtAlignment: Alignment = .center
     private let bottomPadding: CGFloat = 24
     #else
     private let horizontalPadding: CGFloat = 16
+    private let maxHeroWidth: CGFloat = .infinity
+    private let heroArtAlignment: Alignment = .top
     private let bottomPadding: CGFloat = 0
     #endif
 
     var body: some View {
         Screen {
             GeometryReader { geometry in
+                let heroHeight = min(geometry.size.width, maxHeroWidth) * heroAspectRatio
                 ZStack(alignment: .top) {
-                    heroImage
+                    heroImage(height: heroHeight)
                         .frame(height: geometry.safeAreaInsets.top, alignment: .top)
                         .clipped()
                         .offset(y: -geometry.safeAreaInsets.top)
 
-                    tierList(topInset: geometry.safeAreaInsets.top)
+                    tierList(topInset: geometry.safeAreaInsets.top, heroHeight: heroHeight)
                 }
             }
         }
@@ -64,12 +73,12 @@ struct VultDiscountTiersScreen: View {
 private extension VultDiscountTiersScreen {
     /// Scrolls with the list. Only the strip behind the toolbar stays put, so
     /// the art can never sit under the introduction or the cards.
-    func tierList(topInset: CGFloat) -> some View {
+    func tierList(topInset: CGFloat, heroHeight: CGFloat) -> some View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
                     introduction
-                        .padding(.top, introductionTop - topInset)
+                        .padding(.top, heroHeight * introductionTopRatio - topInset)
                         .padding(.bottom, 1)
 
                     ForEach(VultDiscountTier.allCases) { tier in
@@ -88,7 +97,7 @@ private extension VultDiscountTiersScreen {
                 .padding(.horizontal, horizontalPadding)
                 .padding(.bottom, bottomPadding)
                 .background(alignment: .top) {
-                    heroImage
+                    heroImage(height: heroHeight)
                         .offset(y: -topInset)
                 }
             }
@@ -98,10 +107,10 @@ private extension VultDiscountTiersScreen {
         }
     }
 
-    var heroImage: some View {
+    func heroImage(height: CGFloat) -> some View {
         Color.clear
-            .frame(height: heroHeight)
-            .overlay(alignment: .top) {
+            .frame(height: height)
+            .overlay(alignment: heroArtAlignment) {
                 VultisigImage("vult-tiers-hero")
                     .resizable()
                     .scaledToFill()
