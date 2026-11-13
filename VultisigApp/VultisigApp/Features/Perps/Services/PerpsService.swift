@@ -104,7 +104,11 @@ struct PerpsAccountSnapshot: Hashable, Sendable {
     func triggers(coin: String) -> [HLFrontendOrder] { triggerOrders.filter { $0.coin == coin && $0.isTrigger == true } }
 
     var unrealizedPnl: Decimal { positions.reduce(0) { $0 + $1.unrealizedPnl.value } }
-    var isEmpty: Bool { accountValue == 0 && positions.isEmpty && openOrders.isEmpty }
+    /// Nothing in the account at all. Unified accounts hold their collateral
+    /// as spot USDC, so perps `accountValue` alone can read 0 while funded.
+    var isEmpty: Bool {
+        accountValue == 0 && (spotUsdcTotal ?? 0) == 0 && positions.isEmpty && openOrders.isEmpty
+    }
 }
 
 /// One row in Activity: a trade, a transfer, or a day's funding.
@@ -207,11 +211,17 @@ final class HyperliquidPerpsRepository: PerpsRepository {
         return (orders + transfers + fundingDays).sorted { $0.date > $1.date }
     }
 
+    /// Hyperliquid lists 50x at most; anything outside 1...200 is malformed
+    /// metadata and would only feed overflowing or meaningless margin math.
+    static let plausibleLeverage = 1...200
+
     static func marginTiers(for meta: HLAssetMeta, tables: [HLMarginTableEntry]?) -> [PerpsMarginTier] {
         guard let id = meta.marginTableId else { return [] }
-        if id < 50 { return [PerpsMarginTier(lowerBound: 0, maxLeverage: id)] }
+        if id < 50 { return plausibleLeverage.contains(id) ? [PerpsMarginTier(lowerBound: 0, maxLeverage: id)] : [] }
         let table = tables?.first { $0.id == id }?.table
-        return table?.marginTiers.map { PerpsMarginTier(lowerBound: $0.lowerBound.value, maxLeverage: $0.maxLeverage) } ?? []
+        return table?.marginTiers
+            .filter { plausibleLeverage.contains($0.maxLeverage) }
+            .map { PerpsMarginTier(lowerBound: $0.lowerBound.value, maxLeverage: $0.maxLeverage) } ?? []
     }
 
     static func markets(from response: HLMetaAndAssetContexts) -> [PerpsMarket] {
@@ -219,7 +229,7 @@ final class HyperliquidPerpsRepository: PerpsRepository {
             let (meta, context) = pair
             // Skip delisted assets and metadata the math cannot use safely
             // (leverage ranges, maintenance = 1 / (2 * maxLeverage), lot sizes).
-            guard meta.isDelisted != true, meta.maxLeverage >= 1, (0...6).contains(meta.szDecimals),
+            guard meta.isDelisted != true, plausibleLeverage.contains(meta.maxLeverage), (0...6).contains(meta.szDecimals),
                   context.markPx.value > 0 else { return nil }
             return PerpsMarket(
                 assetIndex: index,

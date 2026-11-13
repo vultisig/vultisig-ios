@@ -1268,6 +1268,7 @@
 "perpsInPositions" = "포지션 내";
 "perpsIntroBody" = "BTC, ETH 등을 거래하세요.";
 "perpsIntroTitle" = "무기한 선물 거래";
+"perpsInvalidPrice" = "올바른 가격을 입력하세요.";
 "perpsInYourVault" = "볼트에 %@";
 "perpsIsolated" = "격리";
 "perpsIsolatedOnly" = "이 마켓은 격리 마진만 지원합니다.";

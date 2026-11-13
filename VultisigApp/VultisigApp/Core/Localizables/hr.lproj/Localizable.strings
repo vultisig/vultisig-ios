@@ -1268,6 +1268,7 @@
 "perpsInPositions" = "U pozicijama";
 "perpsIntroBody" = "Trgujte BTC, ETH i drugima.";
 "perpsIntroTitle" = "Trgujte perpsima";
+"perpsInvalidPrice" = "Unesite valjanu cijenu.";
 "perpsInYourVault" = "%@ u vašem trezoru";
 "perpsIsolated" = "izolirana";
 "perpsIsolatedOnly" = "Ovo tržište podržava samo izoliranu maržu.";

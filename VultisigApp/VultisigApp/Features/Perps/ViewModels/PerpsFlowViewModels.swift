@@ -269,19 +269,45 @@ final class PerpsAutoCloseViewModel: ObservableObject {
         self.reference = reference
         self.size = size
         self.liquidation = liquidation
-        takeText = takeProfit.map(PerpsInput.priceText) ?? ""
-        stopText = stopLoss.map(PerpsInput.priceText) ?? ""
+        initialTake = takeProfit
+        initialStop = stopLoss
+        // Exact and ungrouped, so opening the sheet never moves a live trigger.
+        let take = takeProfit.map(HLWireFormat.decimalString) ?? ""
+        let stop = stopLoss.map(HLWireFormat.decimalString) ?? ""
+        takeText = take
+        stopText = stop
+        initialTakeText = take
+        initialStopText = stop
     }
 
-    var takeProfit: Decimal? { PerpsInput.decimal(takeText).map(PerpsFormat.roundedPrice) }
-    var stopLoss: Decimal? { PerpsInput.decimal(stopText).map(PerpsFormat.roundedPrice) }
+    private let initialTake: Decimal?
+    private let initialStop: Decimal?
+    private let initialTakeText: String
+    private let initialStopText: String
+
+    /// An untouched field keeps the existing trigger exactly; an edited one is
+    /// rounded to what the UI shows.
+    var takeProfit: Decimal? { Self.trigger(takeText, initialText: initialTakeText, initial: initialTake) }
+    var stopLoss: Decimal? { Self.trigger(stopText, initialText: initialStopText, initial: initialStop) }
+
+    /// Text that is there but is not a number. It must block Done / Review:
+    /// read as "no trigger", it would cancel the existing one.
+    var hasInvalidInput: Bool {
+        [takeText, stopText].contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty && PerpsInput.decimal($0) == nil }
+    }
+
+    private static func trigger(_ text: String, initialText: String, initial: Decimal?) -> Decimal? {
+        if text == initialText, let initial { return initial }
+        return PerpsInput.decimal(text).map(PerpsFormat.roundedPrice)
+    }
 
     func outcome(_ trigger: Decimal?) -> Decimal? {
         trigger.map { PerpsTriggerRules.outcome(side: side, entry: entry, trigger: $0, size: size) }
     }
 
     var issue: String? {
-        PerpsTriggerRules.issue(side: side, reference: reference, liquidation: liquidation, takeProfit: takeProfit, stopLoss: stopLoss)
+        if hasInvalidInput { return "perpsInvalidPrice".localized }
+        return PerpsTriggerRules.issue(side: side, reference: reference, liquidation: liquidation, takeProfit: takeProfit, stopLoss: stopLoss)
     }
 }
 

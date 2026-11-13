@@ -1268,6 +1268,7 @@
 "perpsInPositions" = "In posizioni";
 "perpsIntroBody" = "Fai trading di BTC, ETH e altro.";
 "perpsIntroTitle" = "Fai trading di perps";
+"perpsInvalidPrice" = "Inserisci un prezzo valido.";
 "perpsInYourVault" = "%@ nel tuo vault";
 "perpsIsolated" = "isolato";
 "perpsIsolatedOnly" = "Questo mercato supporta solo il margine isolato.";

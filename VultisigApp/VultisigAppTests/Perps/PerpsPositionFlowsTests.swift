@@ -195,14 +195,22 @@ final class PerpsPositionFlowsTests: XCTestCase {
     func testPendingWithdrawalPersistsAndTurnsSlowAfterTenMinutes() throws {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: "perps-pending-\(UUID().uuidString)"))
         let start = Date(timeIntervalSince1970: 1_000_000)
-        PerpsPendingWithdrawalStore.save(PerpsPendingWithdrawal(amount: 100, receive: 98, startedAt: start), defaults)
-        let loaded = try XCTUnwrap(PerpsPendingWithdrawalStore.load(defaults))
+        PerpsPendingWithdrawalStore.save(PerpsPendingWithdrawal(amount: 100, receive: 98, startedAt: start, account: "0xabc"), defaults)
+        XCTAssertNil(PerpsPendingWithdrawalStore.load(account: "0xdef", defaults), "never shown on another trading account")
+        let loaded = try XCTUnwrap(PerpsPendingWithdrawalStore.load(account: "0xABC", defaults))
         XCTAssertEqual(loaded.receive, 98)
         XCTAssertFalse(loaded.isSlow(now: start.addingTimeInterval(9 * 60)))
         XCTAssertTrue(loaded.isSlow(now: start.addingTimeInterval(14 * 60)))
         XCTAssertEqual(loaded.minutesAgo(now: start.addingTimeInterval(14 * 60 + 30)), 14)
         PerpsPendingWithdrawalStore.clear(defaults)
-        XCTAssertNil(PerpsPendingWithdrawalStore.load(defaults))
+        XCTAssertNil(PerpsPendingWithdrawalStore.load(account: "0xabc", defaults))
+    }
+
+    func testDemoPendingWithdrawalOnlyComesBackToTheDemo() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "perps-pending-demo-\(UUID().uuidString)"))
+        PerpsPendingWithdrawalStore.save(PerpsPendingWithdrawal(amount: 100, receive: 98, startedAt: Date(), account: "0xabc", isDemo: true), defaults)
+        XCTAssertNil(PerpsPendingWithdrawalStore.load(account: "0xabc", defaults))
+        XCTAssertNotNil(PerpsPendingWithdrawalStore.load(account: "0xabc", includeDemo: true, defaults))
     }
 
     @MainActor

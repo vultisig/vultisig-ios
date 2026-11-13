@@ -1268,6 +1268,7 @@
 "perpsInPositions" = "持仓中";
 "perpsIntroBody" = "交易 BTC、ETH 等。";
 "perpsIntroTitle" = "交易永续合约";
+"perpsInvalidPrice" = "请输入有效价格。";
 "perpsInYourVault" = "您的保险库中有 %@";
 "perpsIsolated" = "逐仓";
 "perpsIsolatedOnly" = "此市场仅支持逐仓保证金。";

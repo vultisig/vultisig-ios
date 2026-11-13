@@ -1268,6 +1268,7 @@
 "perpsInPositions" = "En posiciones";
 "perpsIntroBody" = "Opera BTC, ETH y más.";
 "perpsIntroTitle" = "Opera perps";
+"perpsInvalidPrice" = "Introduce un precio válido.";
 "perpsInYourVault" = "%@ en tu bóveda";
 "perpsIsolated" = "aislado";
 "perpsIsolatedOnly" = "Este mercado solo admite margen aislado.";

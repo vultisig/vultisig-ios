@@ -31,7 +31,7 @@ struct PerpsMarginTier: Equatable, Hashable, Sendable {
     let lowerBound: Decimal
     let maxLeverage: Int
 
-    var maintenanceRate: Decimal { maxLeverage > 0 ? 1 / Decimal(2 * maxLeverage) : 0 }
+    var maintenanceRate: Decimal { maxLeverage > 0 ? 1 / (Decimal(2) * Decimal(maxLeverage)) : 0 }
 }
 
 /// A market's margin table. Ids below 50 are a single tier at that leverage.
@@ -78,7 +78,7 @@ enum PerpsMath {
 
     static func maintenanceRate(maxLeverage: Int) -> Decimal {
         guard maxLeverage > 0 else { return 0 }
-        return 1 / (Decimal(2 * maxLeverage))
+        return 1 / (Decimal(2) * Decimal(maxLeverage))
     }
 
     /// Size bought by `margin` at `leverage`, rounded down to the asset's lot size.

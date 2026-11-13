@@ -374,7 +374,8 @@ struct PerpsHubScreen: View {
         if PerpsConfig.usesDemoAccount {
             if state.contains(.withdrawSlow) {
                 PerpsPendingWithdrawalStore.save(PerpsPendingWithdrawal(amount: before.amount, receive: before.receive,
-                                                                        startedAt: Date().addingTimeInterval(-14 * 60)))
+                                                                        startedAt: Date().addingTimeInterval(-14 * 60),
+                                                                        account: account.address.lowercased(), isDemo: true))
             } else {
                 PerpsPendingWithdrawalStore.clear()
             }
@@ -385,8 +386,18 @@ struct PerpsHubScreen: View {
     /// A withdrawal that left the trading account more than ten minutes ago
     /// and has not arrived: kept across launches, shown once per visit.
     private func presentSlowWithdrawal() {
-        guard sheet == nil, let pending = PerpsPendingWithdrawalStore.load(), pending.isSlow() else { return }
+        guard sheet == nil, let account = viewModel.account?.address,
+              let pending = PerpsPendingWithdrawalStore.load(account: account, includeDemo: includesDemoWithdrawals),
+              pending.isSlow() else { return }
         sheet = .withdrawSlow(pending)
+    }
+
+    private var includesDemoWithdrawals: Bool {
+        #if DEBUG
+        PerpsConfig.usesDemoAccount
+        #else
+        false
+        #endif
     }
 
     private func switchSheet(to next: SheetKind) {

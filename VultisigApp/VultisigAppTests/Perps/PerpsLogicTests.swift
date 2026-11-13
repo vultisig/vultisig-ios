@@ -34,6 +34,11 @@ final class PerpsLogicTests: XCTestCase {
         // f"{12344.5:.5g}" == "12344" and f"{12345.5:.5g}" == "12346" (banker's rounding on exact ties).
         XCTAssertEqual(HLWireFormat.price(dec("12344.5"), szDecimals: 5), dec("12344"))
         XCTAssertEqual(HLWireFormat.price(dec("12345.5"), szDecimals: 5), dec("12346"))
+        // Not a tie in binary: 1.23445 is stored as 1.2344500000000000250..., so Python gives 1.2345.
+        XCTAssertEqual(HLWireFormat.price(dec("1.23445"), szDecimals: 2), dec("1.2345"))
+        // Large and tiny magnitudes go through %.5g's exponent form.
+        XCTAssertEqual(HLWireFormat.price(dec("123456.7"), szDecimals: 0), dec("123460"))
+        XCTAssertEqual(HLWireFormat.price(dec("0.0000123456"), szDecimals: 0), dec("0.000012"))
     }
 
     func testPriceRoundsToFiveSignificantFiguresAndMaxDecimals() {

@@ -286,14 +286,19 @@ enum HLWireFormat {
 
     /// Perp price rule: at most 5 significant figures and at most
     /// `6 - szDecimals` decimals. Mirrors the Python SDK's
-    /// `round(float(f"{px:.5g}"), 6 - szDecimals)`, ties to even like Python.
+    /// `round(float(f"{px:.5g}"), 6 - szDecimals)`, step for step on a
+    /// binary double: C's `%.5g` / `%.*f` and Python's format / `round` all
+    /// round the exact binary value, ties to even, so the result is the same.
+    /// (Formats without a locale: `String(format:locale:)` rounds differently.)
     static func price(_ value: Decimal, szDecimals: Int) -> Decimal {
         guard value > 0 else { return 0 }
         let maxDecimals = max(0, 6 - szDecimals)
-        let magnitude = Int(floor(log10(NSDecimalNumber(decimal: value).doubleValue)))
-        let significantScale = 4 - magnitude
-        let fiveSignificant = round(value, scale: significantScale, mode: .bankers)
-        return round(fiveSignificant, scale: maxDecimals, mode: .bankers)
+        let posix = Locale(identifier: "en_US_POSIX")
+        // Parse the decimal text: NSDecimalNumber.doubleValue is not correctly rounded.
+        guard let double = Double(NSDecimalNumber(decimal: value).stringValue),
+              let fiveSignificant = Double(String(format: "%.5g", double)) else { return 0 }
+        let rounded = String(format: "%.*f", maxDecimals, fiveSignificant)
+        return Decimal(string: rounded, locale: posix) ?? 0
     }
 
     /// Aggressive IOC price for a "market" order: mid ± slippage, then rounded to a valid tick.

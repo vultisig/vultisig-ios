@@ -284,6 +284,10 @@ struct PerpsPendingWithdrawal: Codable, Equatable, Sendable {
     let amount: Decimal
     let receive: Decimal
     let startedAt: Date
+    /// The trading account it left, lowercased: a record never shows on another vault.
+    var account: String = ""
+    /// Written by the debug demo; never shown outside it.
+    var isDemo = false
 
     /// No arrival after ten minutes reads as slow.
     static let slowAfter: TimeInterval = 600
@@ -295,8 +299,12 @@ struct PerpsPendingWithdrawal: Codable, Equatable, Sendable {
 enum PerpsPendingWithdrawalStore {
     static let key = "perpsPendingWithdrawal"
 
-    static func load(_ defaults: UserDefaults = .standard) -> PerpsPendingWithdrawal? {
-        defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(PerpsPendingWithdrawal.self, from: $0) }
+    /// The pending withdrawal for this trading account, if any. Demo records
+    /// only come back when the caller is the demo.
+    static func load(account: String, includeDemo: Bool = false, _ defaults: UserDefaults = .standard) -> PerpsPendingWithdrawal? {
+        guard let pending = defaults.data(forKey: key).flatMap({ try? JSONDecoder().decode(PerpsPendingWithdrawal.self, from: $0) }),
+              pending.account == account.lowercased(), !pending.isDemo || includeDemo else { return nil }
+        return pending
     }
 
     static func save(_ pending: PerpsPendingWithdrawal, _ defaults: UserDefaults = .standard) {
