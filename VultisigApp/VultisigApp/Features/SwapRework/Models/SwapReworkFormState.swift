@@ -80,6 +80,9 @@ struct SwapReworkFeeWarning: Equatable {
     /// "7.2%"
     let shareText: String
     let gasPart: Double
+    /// The protocol's outbound fee, when the route has one, and its bar part.
+    var protocolPart: Double = 0
+    var protocolText: String?
     let gasText: String
     let vultisigText: String
     let receiveText: String

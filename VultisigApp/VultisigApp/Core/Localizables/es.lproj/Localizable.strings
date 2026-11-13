@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Comisiones";
 "swapReworkFeeShareTitle" = "%@ de este intercambio va a comisiones";
+"swapReworkFeesPlusGas" = "comisiones %@ + gas";
 "swapReworkFeesShort" = "comisiones %@";
 "swapReworkFlip" = "Invertir pago y recepción";
 "swapReworkGas" = "%@ de gas";
+"swapReworkGasPlusRate" = "gas %@ + comisiones en la tasa";
 "swapReworkGasShortfall" = "Tienes %1$@. Añade %2$@ (%3$@) para pagar el gas.";
 "swapReworkGasUseMax" = "El importe más %@ de gas supera tu saldo. Toca Máx. para reservar el gas.";
 "swapReworkGetNewQuote" = "Nueva cotización";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "No hay suficiente %@ para gas";
 "swapReworkNoTier" = "Tarifa base %@. Ten VULT para reducirla.";
 "swapReworkNotifyDeniedBody" = "Las notificaciones de Vultisig están desactivadas. Actívalas para saber cuándo llega.";
-"swapReworkNotifyLandedBody" = "%1$@ llegó a %2$@.";
-"swapReworkNotifyLandedTitle" = "Tu %@ ha llegado";
+"swapReworkNotifyDoneBody" = "Tu intercambio %1$@ → %2$@ terminó. Abre Vultisig para ver lo que llegó.";
+"swapReworkNotifyDoneTitle" = "Intercambio completado";
 "swapReworkNotifyLocalOnly" = "Mientras Vultisig esté abierto en este dispositivo.";
 "swapReworkNotifyMe" = "Avisarme";
 "swapReworkNotifyOffBody" = "Puedes salir cuando quieras. ¿Te avisamos cuando llegue %@?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Revisar con %@";
 "swapReworkRoutes" = "Rutas";
 "swapReworkRoutesFooter" = "Ordenadas por lo que llega a tu bóveda tras las comisiones del proveedor. El gas de red de la ruta elegida está en la tarjeta de comisiones. Una ruta elegida se mantiene al actualizar mientras siga cotizando.";
-"swapReworkRoutesFooterGas" = "Total = comisiones de ruta + Vultisig + %@ (mismo envío en cada ruta). Los tiempos son estimaciones de cada proveedor. La ruta que elijas se mantiene al actualizar.";
+"swapReworkRoutesFooterGas" = "%@ es el gas de la ruta del formulario; las demás rutas muestran sus comisiones y su gas se estima al elegirlas. Los tiempos son estimaciones de cada proveedor. Una ruta elegida se mantiene al actualizar.";
 "swapReworkSearchPrompt" = "Buscar nombre, ticker o dirección";
 "swapReworkSmallBalances" = "Saldos pequeños";
 "swapReworkStageReceived" = "Recibiendo en %@";

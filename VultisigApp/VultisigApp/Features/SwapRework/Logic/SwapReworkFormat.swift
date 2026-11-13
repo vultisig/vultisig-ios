@@ -35,6 +35,23 @@ enum SwapReworkFormat {
         "\(amount(value)) \(ticker)"
     }
 
+    /// An amount the user must send or hold, rounded up so it is never short:
+    /// "0.000948" for 0.00094784. Same digits as `amount`.
+    static func amountUp(_ value: Decimal, ticker: String) -> String {
+        guard value > 0 else { return "0 \(ticker)" }
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = true
+        formatter.groupingSeparator = ","
+        formatter.decimalSeparator = "."
+        formatter.roundingMode = .up
+        formatter.usesSignificantDigits = true
+        formatter.maximumSignificantDigits = value >= 1 ? 8 : 6
+        formatter.minimumSignificantDigits = 1
+        return (formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0") + " " + ticker
+    }
+
     /// A fee in fiat. A real fee under a cent reads "<$0.01", never "$0.00",
     /// which would claim the swap is free.
     static func fee(_ value: Decimal) -> String {

@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Fees";
 "swapReworkFeeShareTitle" = "%@ of this swap goes to fees";
+"swapReworkFeesPlusGas" = "fees %@ + gas";
 "swapReworkFeesShort" = "fees %@";
 "swapReworkFlip" = "Flip pay and receive";
 "swapReworkGas" = "%@ gas";
+"swapReworkGasPlusRate" = "gas %@ + fees in rate";
 "swapReworkGasShortfall" = "You have %1$@. Add %2$@ (%3$@) to pay for gas.";
 "swapReworkGasUseMax" = "The amount plus %@ of gas is more than your balance. Tap Max to keep gas behind.";
 "swapReworkGetNewQuote" = "Get new quote";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "Not enough %@ for gas";
 "swapReworkNoTier" = "List rate %@. Hold VULT to lower it.";
 "swapReworkNotifyDeniedBody" = "Notifications are off for Vultisig. Turn them on to hear when it lands.";
-"swapReworkNotifyLandedBody" = "%1$@ arrived in %2$@.";
-"swapReworkNotifyLandedTitle" = "Your %@ landed";
+"swapReworkNotifyDoneBody" = "Your %1$@ → %2$@ swap finished. Open Vultisig to see what arrived.";
+"swapReworkNotifyDoneTitle" = "Swap complete";
 "swapReworkNotifyLocalOnly" = "While Vultisig is running on this device.";
 "swapReworkNotifyMe" = "Notify me";
 "swapReworkNotifyOffBody" = "Leave anytime. Get a notification when the %@ lands?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Review with %@";
 "swapReworkRoutes" = "Routes";
 "swapReworkRoutesFooter" = "Ranked by what reaches your vault after provider fees. Network gas for the route you pick is on the fee card. A route you pick stays picked on refresh while it still quotes.";
-"swapReworkRoutesFooterGas" = "All-in = route fees + Vultisig + %@ (same send for every route). Times are each provider's estimate. A route you pick stays picked on refresh.";
+"swapReworkRoutesFooterGas" = "%@ is the gas for the route on your form; other routes show their route fees, and their gas is estimated when you pick one. Times are each provider's estimate. A route you pick stays picked on refresh.";
 "swapReworkSearchPrompt" = "Search name, ticker or address";
 "swapReworkSmallBalances" = "Small balances";
 "swapReworkStageReceived" = "Receiving on %@";

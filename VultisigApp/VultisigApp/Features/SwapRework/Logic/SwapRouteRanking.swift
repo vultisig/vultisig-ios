@@ -23,19 +23,34 @@ struct SwapRouteOption: Equatable, Identifiable {
     let feesFiat: Decimal?
     /// Estimated seconds to land, when the provider states it.
     let etaSeconds: Int?
-    /// Source-chain gas for this route, in fiat, when known.
+    /// Source-chain gas for this route, in fiat. Only known for the route the
+    /// form quoted (each route has its own gas parameters and approvals).
     var gasFiat: Decimal?
 
-    /// Route fees plus gas: what the row calls "all-in fees".
-    var allInFeesFiat: Decimal? {
-        guard let feesFiat else { return gasFiat }
-        return feesFiat + (gasFiat ?? 0)
+    /// What the fees add up to, and whether that is everything.
+    var feesEstimate: SwapRouteFeesEstimate? {
+        switch (feesFiat, gasFiat) {
+        case let (fees?, gas?): return .complete(fees + gas)
+        case let (fees?, nil): return .gasUnknown(fees: fees)
+        case let (nil, gas?): return .feesInRate(gas: gas)
+        case (nil, nil): return nil
+        }
     }
 
-    /// What reaches the vault, net of gas, in fiat. Nil without a fiat value.
+    /// What reaches the vault, net of gas, in fiat. Nil unless both are known:
+    /// a missing gas figure is unknown, never zero.
     var netFiat: Decimal? {
-        receivedFiat.map { $0 - (gasFiat ?? 0) }
+        guard let receivedFiat, let gasFiat else { return nil }
+        return receivedFiat - gasFiat
     }
+}
+
+/// Route fees with gas when both are known; otherwise the known part and
+/// what is missing, so the sheet never calls a partial sum "all-in".
+enum SwapRouteFeesEstimate: Equatable {
+    case complete(Decimal)
+    case gasUnknown(fees: Decimal)
+    case feesInRate(gas: Decimal)
 }
 
 enum SwapRouteSort: String, CaseIterable, Identifiable {
@@ -80,9 +95,13 @@ enum SwapRouteRanking {
             var tags: [SwapRouteTag] = []
             if option.id == best.id { tags.append(.bestReturn) }
             if option.id == fastestID { tags.append(.fastest) }
+            // Net of gas when every route's gas is known, otherwise the output
+            // difference alone.
             var shortfallFiat: Decimal?
-            if let bestNet = best.netFiat, let net = option.netFiat {
+            if comparesNet, let bestNet = best.netFiat, let net = option.netFiat {
                 shortfallFiat = max(bestNet - net, 0)
+            } else if let bestFiat = best.receivedFiat, let fiat = option.receivedFiat {
+                shortfallFiat = max(bestFiat - fiat, 0)
             }
             return SwapRankedRoute(
                 option: option,

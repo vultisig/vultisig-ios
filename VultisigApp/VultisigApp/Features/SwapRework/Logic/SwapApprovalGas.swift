@@ -28,3 +28,28 @@ enum SwapApprovalGas {
         swapGas * Decimal(1 + max(legs, 0))
     }
 }
+
+/// What the fee coin has to cover, in the fee coin: the funding fee the
+/// existing balance gate checks (signed bond, Solana headroom, storage
+/// reserve), every approve leg, and the amount itself when it is the fee coin.
+/// One value feeds the gas check, the shortfall card and the Add ETH sheet, so
+/// they always agree.
+struct SwapGasRequirement: Equatable {
+    let gas: Decimal
+    let spend: Decimal
+    let have: Decimal
+
+    var needed: Decimal { gas + spend }
+    var shortfall: Decimal { max(needed - have, 0) }
+    var isShort: Bool { have < needed }
+
+    /// Share of the gas added on top when asking the user to top up, so a fee
+    /// that moves while they wait does not leave them short again.
+    static let topUpMargin: Decimal = Decimal(string: "0.1") ?? 0
+
+    /// What the Add ETH sheet asks for: the shortfall plus the margin. Zero
+    /// when nothing is short.
+    var topUp: Decimal {
+        shortfall > 0 ? shortfall + gas * Self.topUpMargin : 0
+    }
+}

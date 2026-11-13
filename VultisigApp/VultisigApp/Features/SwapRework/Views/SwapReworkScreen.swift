@@ -27,6 +27,8 @@ struct SwapReworkScreen: View {
     @State private var showAddGas = false
     @State private var showReceiveGas = false
     @State private var addressToCopy: Coin?
+    /// Set when Buy pushes the Banxa flow, so coming back re-reads balances.
+    @State private var isAwayForFunding = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let tierService = VultTierService()
@@ -140,6 +142,7 @@ struct SwapReworkScreen: View {
                     showAddGas = false
                     guard !viewModel.isDemo else { return }
                     let feeCoin = details.feeCoin
+                    isAwayForFunding = true
                     router.navigate(to: HomeRoute.vaultAction(
                         action: .buy(address: feeCoin.address, blockChainCode: feeCoin.chain.banxaBlockchainCode, coinType: feeCoin.ticker),
                         vault: vault
@@ -148,7 +151,7 @@ struct SwapReworkScreen: View {
             )
             .sheetStyle(padding: 0, detents: [.medium])
         }
-        .crossPlatformSheet(isPresented: $showReceiveGas) {
+        .crossPlatformSheet(isPresented: $showReceiveGas, onDismiss: refreshFunding) {
             ReceiveQRCodeBottomSheet(
                 coin: details.feeCoin,
                 isNativeCoin: true,
@@ -162,7 +165,12 @@ struct SwapReworkScreen: View {
         }
         .withAddressCopy(coin: $addressToCopy)
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { viewModel.refreshAfterForeground(vault: vault) }
+            if phase == .active { refreshFunding() }
+        }
+        .onAppear {
+            guard isAwayForFunding else { return }
+            isAwayForFunding = false
+            refreshFunding()
         }
         .crossPlatformSheet(isPresented: $showApprovalSteps) {
             if let approval = state.approval {
@@ -287,7 +295,8 @@ struct SwapReworkScreen: View {
         }
         if let warning = state.feeWarning {
             SwapReworkFeeWarningCard(warning: warning)
-        } else if let loss = state.valueLossText {
+        }
+        if let loss = state.valueLossText {
             SwapReworkValueLossCard(lossText: loss)
         }
         if let route = state.route, state.issue != .noRoute {
@@ -333,6 +342,10 @@ struct SwapReworkScreen: View {
         }
         .padding(16)
         .swapReworkCard(highlighted: false)
+    }
+
+    private func refreshFunding() {
+        Task { await viewModel.refreshFunding(vault: vault) }
     }
 
     private var demoGasToAdd: String? {

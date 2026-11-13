@@ -87,10 +87,29 @@ final class SwapRouteRankingTests: XCTestCase {
         ])
         XCTAssertEqual(ranked.map(\.id), ["A", "B"])
         XCTAssertEqual(ranked[1].shortfallFiat, dec("4"))
-        XCTAssertEqual(ranked[0].option.allInFeesFiat, dec("2"))
+        XCTAssertEqual(ranked[0].option.feesEstimate, .complete(dec("2")))
         XCTAssertTrue(ranked[0].isBest)
         XCTAssertEqual(SwapRouteRanking.sorted(ranked, by: .fastest).map(\.id), ["B", "A"])
         XCTAssertEqual(SwapRouteRanking.sorted(ranked, by: .bestReturn).map(\.id), ["A", "B"])
+    }
+
+    func testUnknownGasIsNeverZero() {
+        // Only the active route has gas: rank on output, label partial totals.
+        let active = SwapRouteOption(id: "A", providerName: "A", providerLogo: nil, receivedAmount: dec("1.00"),
+                                     receivedFiat: dec("100"), feesFiat: dec("1"), etaSeconds: nil, gasFiat: dec("30"))
+        let other = SwapRouteOption(id: "B", providerName: "B", providerLogo: nil, receivedAmount: dec("0.99"),
+                                    receivedFiat: dec("99"), feesFiat: nil, etaSeconds: nil)
+        let ranked = SwapRouteRanking.rank([other, active])
+        XCTAssertEqual(ranked.map(\.id), ["A", "B"])
+        XCTAssertNil(other.netFiat)
+        XCTAssertEqual(other.feesEstimate, nil)
+        XCTAssertEqual(ranked[1].shortfallFiat, dec("1"))
+        let feesOnly = SwapRouteOption(id: "C", providerName: "C", providerLogo: nil, receivedAmount: 1,
+                                       receivedFiat: nil, feesFiat: dec("2"), etaSeconds: nil)
+        XCTAssertEqual(feesOnly.feesEstimate, .gasUnknown(fees: dec("2")))
+        let rateOnly = SwapRouteOption(id: "D", providerName: "D", providerLogo: nil, receivedAmount: 1,
+                                       receivedFiat: nil, feesFiat: nil, etaSeconds: nil, gasFiat: dec("0.8"))
+        XCTAssertEqual(rateOnly.feesEstimate, .feesInRate(gas: dec("0.8")))
     }
 
     func testGapReadsSatsForBitcoin() {
@@ -212,8 +231,29 @@ final class SwapFeeBreakdownTests: XCTestCase {
         XCTAssertEqual(fees.feeShare.map(SwapFeeBreakdown.shareText), "7.2%")
         XCTAssertEqual(fees.feeShare(atScale: 10).map(SwapFeeBreakdown.shareText), "1.0%")
         XCTAssertEqual(fees.fixedGasFiat, dec("1.49"))
-        XCTAssertEqual(fees.variableFeesFiat, dec("0.06"))
+        XCTAssertEqual(fees.vultisigFiat, dec("0.06"))
         XCTAssertGreaterThan(fees.gasPartOfFees, dec("0.9"))
+        XCTAssertTrue(fees.isFeeShareHigh)
+    }
+
+    func testProtocolFeeIsHeldFixedInTheProjection() {
+        // $100, gas $1, protocol $4, Vultisig $0.50. At 10x: (1 + 4 + 5) / 1001.
+        let fees = breakdown(network: "1", protocolFee: "4", net: "0.5", list: "0.5", discountBps: 0, tier: nil, pay: "100", receive: "94")
+        XCTAssertEqual(fees.feeShare(atScale: 10).map(SwapFeeBreakdown.shareText), "1.0%")
+        XCTAssertEqual(fees.fixedFeesFiat, dec("5"))
+        XCTAssertNil(breakdown(net: "0", list: "0", includedInRate: true).feeShare(atScale: 10))
+    }
+
+    func testFeeCardTriggersOnFeeShareNotTotalLoss() {
+        // Exactly 5% of the debit in fees: no card.
+        let atFive = breakdown(network: "5", protocolFee: "0", net: "0", list: "0", discountBps: 0, tier: nil, pay: "95", receive: "95")
+        XCTAssertEqual(atFive.feeShare, dec("0.05"))
+        XCTAssertFalse(atFive.isFeeShareHigh)
+        // 1% fees but 20% lost to impact: no fee card, the impact share shows it.
+        let impact = breakdown(network: "1", protocolFee: "0", net: "0", list: "0", discountBps: 0, tier: nil, pay: "99", receive: "79")
+        XCTAssertFalse(impact.isFeeShareHigh)
+        XCTAssertTrue(impact.isValueLossHigh)
+        XCTAssertGreaterThan(impact.impactLossShare ?? 0, dec("0.15"))
     }
 
     func testAllInChangeIncludesGas() {
@@ -455,6 +495,14 @@ final class SwapTokenTrustTests: XCTestCase {
         XCTAssertEqual(split.small.map(\.asset.ticker), ["SOL", "DOGE"])
     }
 
+    func testUnpricedCoinsStayUnfolded() {
+        var unpriced = row("NEWTKN", chain: "Ethereum", fiat: "0")
+        unpriced.isPriced = false
+        let split = SwapReworkPickerFilter.split([row("ETH", chain: "Ethereum", fiat: "2512"), unpriced])
+        XCTAssertEqual(split.main.map(\.asset.ticker), ["ETH", "NEWTKN"])
+        XCTAssertTrue(split.small.isEmpty)
+    }
+
     private func row(_ ticker: String, chain: String, fiat: String, contract: String = "") -> SwapReworkPickerRow {
         SwapReworkPickerRow(
             asset: SwapReworkAsset(coinID: ticker, ticker: ticker, logo: "", chainLogo: nil, chainName: chain, isNative: contract.isEmpty),
@@ -532,6 +580,22 @@ final class SwapDeliveredAmountTests: XCTestCase {
         XCTAssertEqual(SwapApprovalGas.legs(for: .resetThenApprove), 2)
         XCTAssertEqual(SwapApprovalGas.fiat(legs: 2, perLegFiat: dec("1.06")), dec("2.12"))
         XCTAssertEqual(SwapApprovalGas.totalGas(swapGas: dec("0.00054"), legs: 1), dec("0.00108"))
+    }
+
+    func testGasRequirementAndTopUpMargin() {
+        // Swap funding 0.00054 + one approve leg 0.00054 = 0.00108 ETH gas.
+        let requirement = SwapGasRequirement(gas: dec("0.00108"), spend: 0, have: dec("0.0002"))
+        XCTAssertTrue(requirement.isShort)
+        XCTAssertEqual(requirement.shortfall, dec("0.00088"))
+        XCTAssertEqual(requirement.topUp, dec("0.000988"))
+        XCTAssertEqual(SwapGasRequirement(gas: 1, spend: 0, have: 2).topUp, 0)
+        // Paying in the fee coin: the amount counts too.
+        XCTAssertTrue(SwapGasRequirement(gas: dec("0.01"), spend: 1, have: 1).isShort)
+    }
+
+    func testAmountUpNeverRoundsShort() {
+        XCTAssertEqual(SwapReworkFormat.amountUp(dec("0.00094784231"), ticker: "ETH"), "0.000947843 ETH")
+        XCTAssertEqual(SwapReworkFormat.amountUp(dec("0.00003280011"), ticker: "BTC"), "0.0000328002 BTC")
     }
 
     func testApprovalGasCountsInTotalsAndDebit() {

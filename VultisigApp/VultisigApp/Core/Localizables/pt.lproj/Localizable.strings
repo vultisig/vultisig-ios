@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Taxas";
 "swapReworkFeeShareTitle" = "%@ deste swap vai para taxas";
+"swapReworkFeesPlusGas" = "taxas %@ + gas";
 "swapReworkFeesShort" = "taxas %@";
 "swapReworkFlip" = "Inverter pagar e receber";
 "swapReworkGas" = "%@ de gás";
+"swapReworkGasPlusRate" = "gas %@ + taxas na cotação";
 "swapReworkGasShortfall" = "Você tem %1$@. Adicione %2$@ (%3$@) para pagar o gás.";
 "swapReworkGasUseMax" = "O valor mais %@ de gás excede seu saldo. Toque em Máx. para reservar o gás.";
 "swapReworkGetNewQuote" = "Nova cotação";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "%@ insuficiente para gás";
 "swapReworkNoTier" = "Taxa base %@. Tenha VULT para reduzi-la.";
 "swapReworkNotifyDeniedBody" = "As notificações do Vultisig estão desativadas. Ative para saber quando chegar.";
-"swapReworkNotifyLandedBody" = "%1$@ chegou em %2$@.";
-"swapReworkNotifyLandedTitle" = "Seu %@ chegou";
+"swapReworkNotifyDoneBody" = "Seu swap %1$@ → %2$@ terminou. Abra a Vultisig para ver o que chegou.";
+"swapReworkNotifyDoneTitle" = "Swap concluído";
 "swapReworkNotifyLocalOnly" = "Enquanto o Vultisig estiver aberto neste dispositivo.";
 "swapReworkNotifyMe" = "Me avise";
 "swapReworkNotifyOffBody" = "Pode sair quando quiser. Receber uma notificação quando %@ chegar?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Revisar com %@";
 "swapReworkRoutes" = "Rotas";
 "swapReworkRoutesFooter" = "Ordenadas pelo que chega ao seu cofre após as taxas do provedor. O gás de rede da rota escolhida está no cartão de taxas. Uma rota escolhida continua selecionada ao atualizar enquanto tiver cotação.";
-"swapReworkRoutesFooterGas" = "Total = taxas da rota + Vultisig + %@ (mesmo envio em toda rota). Os tempos são estimativas de cada provedor. A rota escolhida continua escolhida ao atualizar.";
+"swapReworkRoutesFooterGas" = "%@ é o gas da rota do formulário; as outras rotas mostram as taxas delas, e o gas é estimado quando você escolhe uma. Os tempos são estimativas de cada provedor. A rota escolhida continua escolhida ao atualizar.";
 "swapReworkSearchPrompt" = "Buscar nome, ticker ou endereço";
 "swapReworkSmallBalances" = "Saldos pequenos";
 "swapReworkStageReceived" = "Recebendo em %@";

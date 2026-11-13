@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Commissioni";
 "swapReworkFeeShareTitle" = "Il %@ di questo swap va in commissioni";
+"swapReworkFeesPlusGas" = "commissioni %@ + gas";
 "swapReworkFeesShort" = "commissioni %@";
 "swapReworkFlip" = "Inverti paghi e ricevi";
 "swapReworkGas" = "%@ di gas";
+"swapReworkGasPlusRate" = "gas %@ + commissioni nel tasso";
 "swapReworkGasShortfall" = "Hai %1$@. Aggiungi %2$@ (%3$@) per pagare il gas.";
 "swapReworkGasUseMax" = "L'importo più %@ di gas supera il tuo saldo. Tocca Max per lasciare il gas.";
 "swapReworkGetNewQuote" = "Nuova quotazione";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "%@ insufficiente per il gas";
 "swapReworkNoTier" = "Tariffa base %@. Tieni VULT per ridurla.";
 "swapReworkNotifyDeniedBody" = "Le notifiche di Vultisig sono disattivate. Attivale per sapere quando arriva.";
-"swapReworkNotifyLandedBody" = "%1$@ è arrivato in %2$@.";
-"swapReworkNotifyLandedTitle" = "Il tuo %@ è arrivato";
+"swapReworkNotifyDoneBody" = "Il tuo swap %1$@ → %2$@ è terminato. Apri Vultisig per vedere cosa è arrivato.";
+"swapReworkNotifyDoneTitle" = "Swap completato";
 "swapReworkNotifyLocalOnly" = "Finché Vultisig è attivo su questo dispositivo.";
 "swapReworkNotifyMe" = "Avvisami";
 "swapReworkNotifyOffBody" = "Puoi uscire quando vuoi. Ricevere una notifica quando arriva %@?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Rivedi con %@";
 "swapReworkRoutes" = "Rotte";
 "swapReworkRoutesFooter" = "Ordinate per ciò che arriva nel tuo vault dopo le commissioni del fornitore. Il gas di rete della rotta scelta è nella scheda commissioni. Una rotta scelta resta selezionata all'aggiornamento finché è quotata.";
-"swapReworkRoutesFooterGas" = "Tutto incluso = commissioni del percorso + Vultisig + %@ (stesso invio per ogni percorso). I tempi sono stime dei provider. Il percorso scelto resta scelto all'aggiornamento.";
+"swapReworkRoutesFooterGas" = "%@ è il gas del percorso nel modulo; gli altri percorsi mostrano le loro commissioni e il loro gas viene stimato quando li scegli. I tempi sono stime dei fornitori. Un percorso scelto resta scelto all'aggiornamento.";
 "swapReworkSearchPrompt" = "Cerca nome, ticker o indirizzo";
 "swapReworkSmallBalances" = "Saldi piccoli";
 "swapReworkStageReceived" = "Ricezione su %@";

@@ -79,8 +79,8 @@ enum SwapReworkDemo {
     static var ethToBtcRoutes: [SwapRankedRoute] {
         SwapRouteRanking.rank([
             SwapRouteOption(id: "THORChain", providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, receivedAmount: dec("0.0140218"), receivedFiat: dec("972.41"), feesFiat: dec("5.79"), etaSeconds: 600, gasFiat: dec("0.84")),
-            SwapRouteOption(id: "SwapKit", providerName: "SwapKit", providerLogo: SwapProviderKind.swapkit.providerLogo, receivedAmount: dec("0.013989"), receivedFiat: dec("970.14"), feesFiat: dec("8.06"), etaSeconds: 390, gasFiat: dec("0.84")),
-            SwapRouteOption(id: "LI.FI", providerName: "LI.FI", providerLogo: SwapProviderKind.lifi.providerLogo, receivedAmount: dec("0.0139412"), receivedFiat: dec("966.82"), feesFiat: dec("9.10"), etaSeconds: 1080, gasFiat: dec("0.84"))
+            SwapRouteOption(id: "SwapKit", providerName: "SwapKit", providerLogo: SwapProviderKind.swapkit.providerLogo, receivedAmount: dec("0.013989"), receivedFiat: dec("970.14"), feesFiat: dec("8.06"), etaSeconds: 390),
+            SwapRouteOption(id: "LI.FI", providerName: "LI.FI", providerLogo: SwapProviderKind.lifi.providerLogo, receivedAmount: dec("0.0139412"), receivedFiat: dec("966.82"), feesFiat: dec("9.10"), etaSeconds: 1080)
         ])
     }
 

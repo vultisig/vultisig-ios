@@ -358,8 +358,9 @@ final class SwapReworkViewModel {
             fees: fees,
             approval: approval,
             issue: issue,
-            // Unsigned: the title already says "lost".
-            valueLossText: issue == nil && (fees?.breakdown.isValueLossHigh ?? false)
+            // Unsigned: the title already says "lost". Shown for losses the fee
+            // card does not explain (price impact), alongside it if both apply.
+            valueLossText: issue == nil && showsValueLoss(fees?.breakdown)
                 ? fees?.breakdown.allInChangeText.map { String($0.drop(while: { $0 == "-" })) }
                 : nil,
             minimumText: minimumAmountText,
@@ -442,9 +443,9 @@ final class SwapReworkViewModel {
 
     var rankedRoutes: [SwapRankedRoute] {
         let toCoin = details.toCoin
-        // The source send is the same for every route on this chain, so the
-        // active quote's gas stands for all of them (the sheet says so).
-        let sharedGas: Decimal? = {
+        // Gas is estimated for the quote on the form only; other routes have
+        // their own gas parameters and approvals, so theirs stays unknown.
+        let activeGas: Decimal? = {
             guard details.quote != nil, details.displayedNetworkFeeWei > 0 else { return nil }
             let feeCoin = details.feeCoin
             return feeCoin.fiat(decimal: feeCoin.decimal(for: details.displayedNetworkFeeWei))
@@ -465,7 +466,7 @@ final class SwapReworkViewModel {
                 receivedFiat: toCoin.fiat(decimal: received),
                 feesFiat: providerFees,
                 etaSeconds: quote.totalSwapSeconds,
-                gasFiat: sharedGas
+                gasFiat: quote == details.quote ? activeGas : nil
             )
         }
         return SwapRouteRanking.rank(options)
@@ -557,22 +558,41 @@ final class SwapReworkViewModel {
     /// "0.00088 ETH ($1.72)": the fee coin still missing for swap plus
     /// approval gas, the same sum as the shortfall card. Nil when nothing is.
     private var gasToAddText: String? {
+        guard let requirement = gasRequirement, requirement.topUp > 0 else { return nil }
         let feeCoin = details.feeCoin
-        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
-        let swapGas = feeCoin.decimal(for: details.displayedNetworkFeeWei)
-        let needed = SwapApprovalGas.totalGas(swapGas: swapGas, legs: legs) + feeCoin.decimal(for: details.storageReserve)
-            + (feeCoin.id == details.fromCoin.id ? details.fromAmountDecimal : 0)
-        let short = needed - feeCoin.balanceDecimal
-        guard swapGas > 0, short > 0 else { return nil }
-        return "\(SwapReworkFormat.amount(short, ticker: feeCoin.ticker)) (\(feeCoin.fiat(decimal: short).formatToFiat()))"
+        return "\(SwapReworkFormat.amountUp(requirement.topUp, ticker: feeCoin.ticker)) (\(feeCoin.fiat(decimal: requirement.topUp).formatToFiat()))"
     }
 
-    /// Back from Receive or Buy: read the fee coin's balance again and
-    /// re-quote, so the not-enough-gas card clears on its own.
-    func refreshAfterForeground(vault: Vault) {
+    /// See `SwapGasRequirement`. Nil until a fee is known.
+    private var gasRequirement: SwapGasRequirement? {
+        let feeCoin = details.feeCoin
+        let funding = SwapCryptoLogic.fundingNetworkFee(
+            displayedFee: details.displayedNetworkFeeWei,
+            gasEstimate: details.gas,
+            storageReserve: details.storageReserve,
+            chain: details.fromCoin.chain
+        )
+        guard funding > 0 else { return nil }
+        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        let approval = details.displayedNetworkFeeWei * BigInt(legs)
+        return SwapGasRequirement(
+            gas: feeCoin.decimal(for: funding + approval),
+            spend: feeCoin.id == details.fromCoin.id ? details.fromAmountDecimal : 0,
+            have: feeCoin.balanceDecimal
+        )
+    }
+
+    /// Back from Receive or Buy: read the balances again (the same
+    /// `BalanceService` the swap interactor uses), and only then re-quote, so
+    /// the gas check runs against the new balance.
+    func refreshFunding(vault: Vault) async {
         guard !isDemo, details.fromAmountDecimal > 0 else { return }
-        details.updateBalance(for: details.feeCoin)
-        details.updateBalance(for: details.fromCoin)
+        let feeCoin = details.feeCoin
+        let fromCoin = details.fromCoin
+        _ = await BalanceService.shared.updateBalance(for: feeCoin)
+        if fromCoin.id != feeCoin.id {
+            _ = await BalanceService.shared.updateBalance(for: fromCoin)
+        }
         details.refreshData(vault: vault)
     }
 
@@ -580,33 +600,23 @@ final class SwapReworkViewModel {
     /// says approve legs come first, the fee coin must also cover their gas.
     private var approvalGasShortfall: SwapCryptoLogic.Errors? {
         let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
-        guard legs > 0 else { return nil }
-        let feeCoin = details.feeCoin
-        let swapGas = feeCoin.decimal(for: details.displayedNetworkFeeWei)
-        let needed = SwapApprovalGas.totalGas(swapGas: swapGas, legs: legs) + feeCoin.decimal(for: details.storageReserve)
-        let spendsFeeCoin = feeCoin.id == details.fromCoin.id ? details.fromAmountDecimal : 0
-        return feeCoin.balanceDecimal < needed + spendsFeeCoin ? .insufficientGas : nil
+        guard legs > 0, let requirement = gasRequirement else { return nil }
+        return requirement.isShort ? .insufficientGas : nil
     }
 
     /// "You have 0.00020 ETH. Add 0.00088 ETH ($1.72) to pay for gas." Only
     /// meaningful while `.notEnoughGas` is the issue.
     var gasShortfallText: String? {
+        guard let requirement = gasRequirement else { return nil }
         let feeCoin = details.feeCoin
-        // Swap gas plus every approve leg the allowance check asked for.
-        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
-        let swapGas = feeCoin.decimal(for: details.displayedNetworkFeeWei)
-        let needed = SwapApprovalGas.totalGas(swapGas: swapGas, legs: legs) + feeCoin.decimal(for: details.storageReserve)
-        guard needed > 0 else { return nil }
         if feeCoin.id == details.fromCoin.id {
-            return String(format: "swapReworkGasUseMax".localized, SwapReworkFormat.amount(needed, ticker: feeCoin.ticker))
+            return String(format: "swapReworkGasUseMax".localized, SwapReworkFormat.amountUp(requirement.gas, ticker: feeCoin.ticker))
         }
-        let have = feeCoin.balanceDecimal
-        let short = max(needed - have, 0)
         return String(
             format: "swapReworkGasShortfall".localized,
-            SwapReworkFormat.amount(have, ticker: feeCoin.ticker),
-            SwapReworkFormat.amount(short, ticker: feeCoin.ticker),
-            feeCoin.fiat(decimal: short).formatToFiat()
+            SwapReworkFormat.amount(requirement.have, ticker: feeCoin.ticker),
+            SwapReworkFormat.amountUp(requirement.shortfall, ticker: feeCoin.ticker),
+            feeCoin.fiat(decimal: requirement.shortfall).formatToFiat()
         )
     }
 
@@ -629,10 +639,16 @@ final class SwapReworkViewModel {
         setAmount(SwapKeypadInput.normalized(minimum, maxFractionDigits: maxFractionDigits), vault: vault, immediate: true)
     }
 
-    /// The fees-over-5% card: shown with the value-loss trigger, built from the
-    /// same breakdown so its numbers match the fee rows.
+    private func showsValueLoss(_ breakdown: SwapFeeBreakdown?) -> Bool {
+        guard let breakdown, breakdown.isValueLossHigh else { return false }
+        guard breakdown.isFeeShareHigh else { return true }
+        return (breakdown.impactLossShare ?? 0) > SwapFeeBreakdown.feeShareWarningThreshold
+    }
+
+    /// The fees-over-5% card: fees strictly above 5% of what leaves the vault,
+    /// built from the same breakdown as the fee rows.
     private func feeWarning(_ fees: SwapReworkFeeRows?) -> SwapReworkFeeWarning? {
-        guard let fees, fees.breakdown.isValueLossHigh, let share = fees.breakdown.feeShare else { return nil }
+        guard let fees, fees.breakdown.isFeeShareHigh, let share = fees.breakdown.feeShare else { return nil }
         let breakdown = fees.breakdown
         let scale: Decimal = 10
         let atScale = breakdown.feeShare(atScale: scale).map { scaled in
@@ -645,8 +661,12 @@ final class SwapReworkViewModel {
         return SwapReworkFeeWarning(
             shareText: SwapFeeBreakdown.shareText(share),
             gasPart: NSDecimalNumber(decimal: breakdown.gasPartOfFees).doubleValue,
+            protocolPart: NSDecimalNumber(decimal: breakdown.protocolPartOfFees).doubleValue,
+            protocolText: breakdown.input.protocolFiat > 0
+                ? "\(fees.protocolLabel ?? "") \(SwapReworkFormat.fee(breakdown.input.protocolFiat))"
+                : nil,
             gasText: SwapReworkFormat.fee(breakdown.fixedGasFiat),
-            vultisigText: SwapReworkFormat.fee(breakdown.variableFeesFiat),
+            vultisigText: SwapReworkFormat.fee(breakdown.vultisigFiat),
             receiveText: breakdown.input.receiveFiat.formatToFiat(),
             atScaleText: breakdown.fixedGasFiat > 0 ? atScale : nil,
             gasLabel: fees.networkLabel
@@ -722,7 +742,8 @@ extension SwapReworkViewModel {
                     curated: Self.curatedTokens
                 )
             )
-            if side == .pay { row.unswappableReason = gasExceedsValueReason(for: coin, value: fiat) }
+            row.isPriced = RateProvider.shared.rate(for: coin) != nil
+            if side == .pay, row.isPriced { row.unswappableReason = gasExceedsValueReason(for: coin, value: fiat) }
             return row
         }
     }

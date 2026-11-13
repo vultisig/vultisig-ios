@@ -18,6 +18,9 @@ struct SwapReworkPickerRow: Equatable, Identifiable {
     /// Why swapping this row makes no sense right now ("Allow + swap gas $2.12
     /// is more than it is worth"). Shown, never hidden: the row stays pickable.
     var unswappableReason: String?
+    /// False when the app has no price for the coin: its fiat reads zero but
+    /// its value is unknown, so it is never folded as dust or judged by value.
+    var isPriced = true
     var id: String { asset.coinID }
 }
 
@@ -44,7 +47,8 @@ enum SwapReworkPickerFilter {
     static let smallBalanceThreshold: Decimal = 1
 
     static func split(_ rows: [SwapReworkPickerRow], threshold: Decimal = smallBalanceThreshold) -> (main: [SwapReworkPickerRow], small: [SwapReworkPickerRow]) {
-        (rows.filter { $0.fiatValue >= threshold }, rows.filter { $0.fiatValue < threshold })
+        let isSmall: (SwapReworkPickerRow) -> Bool = { $0.isPriced && $0.fiatValue < threshold }
+        return (rows.filter { !isSmall($0) }, rows.filter(isSmall))
     }
 
     /// Recents that are still in the list, in recency order.

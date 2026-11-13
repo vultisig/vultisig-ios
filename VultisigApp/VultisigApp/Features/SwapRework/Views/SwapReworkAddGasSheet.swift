@@ -5,7 +5,7 @@
 //  "Add ETH for gas" (R4 1_05): two existing ways in. Receive opens the
 //  vault's existing `ReceiveQRCodeBottomSheet` for the fee coin; Buy opens the
 //  existing Banxa buy flow. Back on the form, the balance and quote are read
-//  again on their own (`SwapReworkViewModel.refreshAfterForeground`).
+//  again on their own (`SwapReworkViewModel.refreshFunding`).
 //
 
 import SwiftUI

@@ -142,12 +142,16 @@ struct SwapFeeBreakdown: Equatable {
     /// form warns (without blocking), as R3's high price impact state does.
     static let valueLossWarningThreshold: Decimal = Decimal(string: "-0.05") ?? 0
 
-    /// Gas for the swap and its approvals: the part of the fee that does not
-    /// grow with the amount.
+    /// Gas for the swap and its approvals.
     var fixedGasFiat: Decimal { input.networkFiat + input.approvalFiat }
 
-    /// Fees that scale with the amount (protocol payout, Vultisig).
-    var variableFeesFiat: Decimal { totalFiat - fixedGasFiat }
+    /// The Vultisig fee actually charged: a rate on the amount, so the only
+    /// part of the fee known to scale with it.
+    var vultisigFiat: Decimal { input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat }
+
+    /// Everything that does not scale with the amount: gas and the protocol's
+    /// outbound fee (a network fee, not a rate).
+    var fixedFeesFiat: Decimal { fixedGasFiat + input.protocolFiat }
 
     /// Share of everything that leaves the vault taken by fees (0.072 = 7.2%).
     var feeShare: Decimal? {
@@ -155,19 +159,34 @@ struct SwapFeeBreakdown: Equatable {
         return totalFiat / totalDebitFiat
     }
 
-    /// The same share if the amount were `scale` times larger, gas held fixed
-    /// and the scaling fees scaled with it: "at 200 USDC this would be 1.0%".
+    /// The same share if the amount were `scale` times larger: gas and the
+    /// protocol fee held fixed, only the Vultisig rate scaled. Nil when a fee
+    /// is folded into the rate (SwapKit), since its scaling is not known.
     func feeShare(atScale scale: Decimal) -> Decimal? {
-        guard scale > 0, input.payFiat > 0 else { return nil }
-        let fees = fixedGasFiat + variableFeesFiat * scale
+        guard scale > 0, input.payFiat > 0, !input.vultisigIncludedInRate else { return nil }
+        let fees = fixedFeesFiat + vultisigFiat * scale
         let debit = input.payFiat * scale + fixedGasFiat
         return debit > 0 ? fees / debit : nil
     }
 
-    /// Gas's and Vultisig's parts of all fees, for the share bar (0...1 each).
-    var gasPartOfFees: Decimal {
-        totalFiat > 0 ? fixedGasFiat / totalFiat : 0
+    /// Fees take more than this share of what leaves the vault.
+    static let feeShareWarningThreshold: Decimal = Decimal(string: "0.05") ?? 0
+
+    /// Strictly above 5%, on the unrounded share: exactly 5% does not warn.
+    var isFeeShareHigh: Bool {
+        guard let feeShare else { return false }
+        return feeShare > Self.feeShareWarningThreshold
     }
+
+    /// Loss beyond the fees: price impact and slippage (positive share).
+    var impactLossShare: Decimal? {
+        guard let change = allInChange, let feeShare else { return nil }
+        return max(-change - feeShare, 0)
+    }
+
+    /// Parts of all fees for the share bar (0...1 each).
+    var gasPartOfFees: Decimal { totalFiat > 0 ? fixedGasFiat / totalFiat : 0 }
+    var protocolPartOfFees: Decimal { totalFiat > 0 ? input.protocolFiat / totalFiat : 0 }
 
     /// "7.2%", one decimal, "." separator.
     static func shareText(_ share: Decimal) -> String {

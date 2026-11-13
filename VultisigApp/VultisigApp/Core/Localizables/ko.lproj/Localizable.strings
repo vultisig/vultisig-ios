@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "수수료";
 "swapReworkFeeShareTitle" = "이 스왑의 %@이(가) 수수료입니다";
+"swapReworkFeesPlusGas" = "수수료 %@ + 가스";
 "swapReworkFeesShort" = "수수료 %@";
 "swapReworkFlip" = "지불/받기 전환";
 "swapReworkGas" = "%@ 가스";
+"swapReworkGasPlusRate" = "가스 %@ + 환율 포함 수수료";
 "swapReworkGasShortfall" = "보유: %1$@. 가스비로 %2$@ (%3$@)를 추가하세요.";
 "swapReworkGasUseMax" = "금액과 가스 %@의 합이 잔액보다 많습니다. 최대를 눌러 가스를 남기세요.";
 "swapReworkGetNewQuote" = "새 견적 받기";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "가스용 %@ 부족";
 "swapReworkNoTier" = "기본 요율 %@. VULT를 보유하면 낮아집니다.";
 "swapReworkNotifyDeniedBody" = "Vultisig 알림이 꺼져 있습니다. 도착 알림을 받으려면 켜세요.";
-"swapReworkNotifyLandedBody" = "%1$@이(가) %2$@에 도착했습니다.";
-"swapReworkNotifyLandedTitle" = "%@ 도착";
+"swapReworkNotifyDoneBody" = "%1$@ → %2$@ 스왑이 끝났습니다. Vultisig를 열어 도착한 내역을 확인하세요.";
+"swapReworkNotifyDoneTitle" = "스왑 완료";
 "swapReworkNotifyLocalOnly" = "이 기기에서 Vultisig가 실행 중인 동안.";
 "swapReworkNotifyMe" = "알림 받기";
 "swapReworkNotifyOffBody" = "언제든 나가도 됩니다. %@ 도착 시 알림을 받을까요?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "%@로 검토";
 "swapReworkRoutes" = "경로";
 "swapReworkRoutesFooter" = "공급자 수수료 차감 후 볼트에 도착하는 금액순으로 정렬됩니다. 선택한 경로의 네트워크 가스는 수수료 카드에 표시됩니다. 선택한 경로는 견적이 유지되는 동안 새로고침해도 유지됩니다.";
-"swapReworkRoutesFooterGas" = "총액 = 경로 수수료 + Vultisig + %@ (모든 경로 동일 전송). 시간은 각 제공자의 추정치입니다. 선택한 경로는 새로고침해도 유지됩니다.";
+"swapReworkRoutesFooterGas" = "%@는 양식에 있는 경로의 가스입니다. 다른 경로는 경로 수수료만 표시되며, 선택하면 가스가 추정됩니다. 시간은 각 제공업체의 추정치입니다. 선택한 경로는 새로고침 후에도 유지됩니다.";
 "swapReworkSearchPrompt" = "이름, 티커 또는 주소 검색";
 "swapReworkSmallBalances" = "소액 잔액";
 "swapReworkStageReceived" = "%@에서 수령 중";

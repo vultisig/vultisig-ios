@@ -28,7 +28,7 @@ struct SwapReworkDoneScreen: View {
     /// When each stage was first seen done, for the tracker's time column.
     @State private var stageDoneAt: [SwapTrackerStage.Kind: Date] = [:]
 
-    @State private var notifier = SwapLandingNotifier()
+    @State private var notifier: SwapLandingNotifier
     @Environment(\.router) private var router
 
     private let deliveredService = SwapDeliveredAmountService()
@@ -47,6 +47,7 @@ struct SwapReworkDoneScreen: View {
         self.onTryAgain = onTryAgain
         self.onDone = onDone
         _statusService = StateObject(wrappedValue: statusService())
+        _notifier = State(initialValue: SwapLandingNotifier(hash: hash))
     }
 
     var body: some View {
@@ -62,7 +63,7 @@ struct SwapReworkDoneScreen: View {
                                 SwapReworkNotifyCard(
                                     state: notifier.state,
                                     ticker: transaction.toCoin.ticker,
-                                    onTurnOn: { Task { await notifier.turnOn() } },
+                                    onTurnOn: { Task { await turnOnNotify() } },
                                     onTurnOff: { notifier.turnOff() },
                                     onOpenSettings: { router.navigate(to: SettingsRoute.notifications) }
                                 )
@@ -90,10 +91,6 @@ struct SwapReworkDoneScreen: View {
             guard status == .confirmed, confirmedAt == nil else { return }
             confirmedAt = Date()
             loadDelivered()
-            notifier.swapCompleted(
-                title: String(format: "swapReworkNotifyLandedTitle".localized, transaction.toCoin.ticker),
-                body: String(format: "swapReworkNotifyLandedBody".localized, receiveText, vault.name)
-            )
         }
     }
 
@@ -152,6 +149,17 @@ struct SwapReworkDoneScreen: View {
             times[active.kind] = "swapReworkNow".localized
         }
         return times
+    }
+
+    /// The watcher gets its own poller, so the notification still comes after
+    /// the user leaves this screen. Neutral copy: posted on completion, before
+    /// any delivered amount is known, and never naming a destination.
+    private func turnOnNotify() async {
+        await notifier.turnOn(
+            makeService: { DoneStatusServiceFactory.swap(txHash: hash, transaction: transaction, vault: vault) },
+            title: "swapReworkNotifyDoneTitle".localized,
+            body: String(format: "swapReworkNotifyDoneBody".localized, transaction.fromCoin.ticker, transaction.toCoin.ticker)
+        )
     }
 
     private func loadDelivered() {

@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Naknade";
 "swapReworkFeeShareTitle" = "%@ ove zamjene ide na naknade";
+"swapReworkFeesPlusGas" = "naknade %@ + plin";
 "swapReworkFeesShort" = "naknade %@";
 "swapReworkFlip" = "Zamijeni plaćanje i primanje";
 "swapReworkGas" = "%@ plina";
+"swapReworkGasPlusRate" = "plin %@ + naknade u tečaju";
 "swapReworkGasShortfall" = "Imaš %1$@. Dodaj %2$@ (%3$@) za plaćanje plina.";
 "swapReworkGasUseMax" = "Iznos plus %@ plina premašuje tvoj saldo. Dodirni Maks. da ostaviš za plin.";
 "swapReworkGetNewQuote" = "Nova ponuda";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "Nedovoljno %@ za plin";
 "swapReworkNoTier" = "Osnovna stopa %@. Drži VULT da je smanjiš.";
 "swapReworkNotifyDeniedBody" = "Obavijesti za Vultisig su isključene. Uključi ih da saznaš kad stigne.";
-"swapReworkNotifyLandedBody" = "%1$@ stiglo je u %2$@.";
-"swapReworkNotifyLandedTitle" = "Tvoj %@ je stigao";
+"swapReworkNotifyDoneBody" = "Vaša zamjena %1$@ → %2$@ je završena. Otvorite Vultisig da vidite što je stiglo.";
+"swapReworkNotifyDoneTitle" = "Zamjena dovršena";
 "swapReworkNotifyLocalOnly" = "Dok Vultisig radi na ovom uređaju.";
 "swapReworkNotifyMe" = "Obavijesti me";
 "swapReworkNotifyOffBody" = "Možeš izaći kad god želiš. Obavijest kad %@ stigne?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Pregledaj s %@";
 "swapReworkRoutes" = "Rute";
 "swapReworkRoutesFooter" = "Poredano po iznosu koji stiže u tvoj trezor nakon naknada davatelja. Mrežni plin za odabranu rutu je na kartici naknada. Odabrana ruta ostaje odabrana pri osvježavanju dok god daje ponudu.";
-"swapReworkRoutesFooterGas" = "Ukupno = naknade rute + Vultisig + %@ (isto slanje za svaku rutu). Vremena su procjene pružatelja. Odabrana ruta ostaje odabrana pri osvježavanju.";
+"swapReworkRoutesFooterGas" = "%@ je plin za rutu u obrascu; ostale rute prikazuju svoje naknade, a njihov plin procjenjuje se kad ih odaberete. Vremena su procjene pružatelja. Odabrana ruta ostaje odabrana pri osvježavanju.";
 "swapReworkSearchPrompt" = "Traži naziv, oznaku ili adresu";
 "swapReworkSmallBalances" = "Mali saldi";
 "swapReworkStageReceived" = "Primanje na %@";

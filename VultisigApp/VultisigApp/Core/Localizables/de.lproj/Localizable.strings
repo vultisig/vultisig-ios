@@ -1931,9 +1931,11 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Gebühren";
 "swapReworkFeeShareTitle" = "%@ dieses Swaps gehen an Gebühren";
+"swapReworkFeesPlusGas" = "Gebühren %@ + Gas";
 "swapReworkFeesShort" = "Gebühren %@";
 "swapReworkFlip" = "Zahlen und Erhalten tauschen";
 "swapReworkGas" = "%@ Gas";
+"swapReworkGasPlusRate" = "Gas %@ + Gebühren im Kurs";
 "swapReworkGasShortfall" = "Du hast %1$@. Füge %2$@ (%3$@) für Gas hinzu.";
 "swapReworkGasUseMax" = "Betrag plus %@ Gas übersteigt dein Guthaben. Tippe auf Max, um Gas übrig zu lassen.";
 "swapReworkGetNewQuote" = "Neues Angebot holen";
@@ -1966,8 +1968,8 @@
 "swapReworkNotEnoughGasCTA" = "Nicht genug %@ für Gas";
 "swapReworkNoTier" = "Listenpreis %@. Halte VULT, um ihn zu senken.";
 "swapReworkNotifyDeniedBody" = "Mitteilungen für Vultisig sind aus. Schalte sie ein, um zu erfahren, wann es ankommt.";
-"swapReworkNotifyLandedBody" = "%1$@ ist in %2$@ angekommen.";
-"swapReworkNotifyLandedTitle" = "Dein %@ ist angekommen";
+"swapReworkNotifyDoneBody" = "Dein Swap %1$@ → %2$@ ist fertig. Öffne Vultisig, um zu sehen, was angekommen ist.";
+"swapReworkNotifyDoneTitle" = "Swap abgeschlossen";
 "swapReworkNotifyLocalOnly" = "Solange Vultisig auf diesem Gerät läuft.";
 "swapReworkNotifyMe" = "Benachrichtigen";
 "swapReworkNotifyOffBody" = "Du kannst jederzeit gehen. Mitteilung, wenn %@ ankommt?";
@@ -1990,7 +1992,7 @@
 "swapReworkReviewWith" = "Mit %@ prüfen";
 "swapReworkRoutes" = "Routen";
 "swapReworkRoutesFooter" = "Sortiert nach dem, was nach Anbietergebühren in deinem Tresor ankommt. Netzwerk-Gas der gewählten Route steht auf der Gebührenkarte. Eine gewählte Route bleibt beim Aktualisieren gewählt, solange sie ein Angebot liefert.";
-"swapReworkRoutesFooterGas" = "Inkl. allem = Routengebühren + Vultisig + %@ (gleicher Versand für jede Route). Zeiten sind Schätzungen der Anbieter. Eine gewählte Route bleibt beim Aktualisieren gewählt.";
+"swapReworkRoutesFooterGas" = "%@ ist das Gas für die Route im Formular; andere Routen zeigen ihre Routengebühren, ihr Gas wird bei Auswahl geschätzt. Zeiten sind Schätzungen der Anbieter. Eine gewählte Route bleibt beim Aktualisieren gewählt.";
 "swapReworkSearchPrompt" = "Name, Ticker oder Adresse suchen";
 "swapReworkSmallBalances" = "Kleine Guthaben";
 "swapReworkStageReceived" = "Empfang auf %@";

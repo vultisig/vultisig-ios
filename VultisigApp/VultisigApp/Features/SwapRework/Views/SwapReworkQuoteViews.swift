@@ -500,6 +500,10 @@ struct SwapReworkFeeWarningCard: View {
                 HStack(spacing: 2) {
                     Capsule().fill(Theme.colors.alertWarning)
                         .frame(width: max(4, proxy.size.width * warning.gasPart))
+                    if warning.protocolText != nil {
+                        Capsule().fill(Theme.colors.primaryAccent4)
+                            .frame(width: max(4, proxy.size.width * warning.protocolPart))
+                    }
                     Capsule().fill(Theme.colors.alertError.opacity(0.8))
                 }
             }
@@ -507,14 +511,17 @@ struct SwapReworkFeeWarningCard: View {
             .accessibilityHidden(true)
             HStack(spacing: 10) {
                 legend(color: Theme.colors.alertWarning, text: "\(warning.gasLabel) \(warning.gasText)")
+                if let protocolText = warning.protocolText {
+                    legend(color: Theme.colors.primaryAccent4, text: protocolText)
+                }
                 legend(color: Theme.colors.alertError.opacity(0.8), text: String(format: "swapReworkFeeOther".localized, warning.vultisigText))
                 Spacer(minLength: 4)
-                Text(String(format: "swapReworkYouGet".localized, warning.receiveText))
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textSecondary)
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.75)
+            .minimumScaleFactor(0.7)
+            Text(String(format: "swapReworkYouGet".localized, warning.receiveText))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
             if let atScale = warning.atScaleText {
                 Text(atScale)
                     .font(Theme.fonts.bodySRegular)
@@ -690,9 +697,14 @@ struct SwapReworkRouteSheet: View {
     private func detail(_ route: SwapRankedRoute) -> String {
         var parts: [String] = []
         if let eta = route.option.etaSeconds { parts.append(SwapReworkFormat.eta(seconds: eta)) }
-        if let allIn = route.option.allInFeesFiat {
-            parts.append(String(format: "swapReworkAllInFees".localized, SwapReworkFormat.fee(allIn)))
-        } else {
+        switch route.option.feesEstimate {
+        case .complete(let total)?:
+            parts.append(String(format: "swapReworkAllInFees".localized, SwapReworkFormat.fee(total)))
+        case .gasUnknown(let fees)?:
+            parts.append(String(format: "swapReworkFeesPlusGas".localized, SwapReworkFormat.fee(fees)))
+        case .feesInRate(let gas)?:
+            parts.append(String(format: "swapReworkGasPlusRate".localized, SwapReworkFormat.fee(gas)))
+        case nil:
             parts.append("swap.included_in_rate".localized)
         }
         return parts.joined(separator: " · ")
