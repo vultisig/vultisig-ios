@@ -233,7 +233,10 @@ final class PerpsDemoRepository: PerpsRepository {
             liquidationPx: liquidation.map(HLDecimal.init), marginUsed: HLDecimal(initialMargin + pnl), maxLeverage: 40,
             cumFunding: HLCumFunding(sinceOpen: HLDecimal(Decimal(string: "0.02") ?? 0))
         )
-        let stop = HLWireFormat.price(PerpsFormat.roundedPrice(entry * (1 - PerpsConfig.defaultStopDistance)), szDecimals: 5)
+        let defaultStop = HLWireFormat.price(PerpsFormat.roundedPrice(entry * (1 - PerpsConfig.defaultStopDistance)), szDecimals: 5)
+        // `-perpsDemoStopBTC <price>|liquidation` pins the stop, to show every explainer case.
+        let stop = PerpsDemoStory.pinnedStop == "liquidation" ? (liquidation ?? defaultStop)
+            : (PerpsDemoStory.pinnedStop.flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) } ?? defaultStop)
         let stopOrder = HLFrontendOrder(
             coin: "BTC", oid: 1, side: "A", sz: HLDecimal(0), limitPx: HLDecimal(stop), triggerPx: HLDecimal(stop), isTrigger: true,
             isPositionTpsl: true, reduceOnly: true, orderType: "Stop Market", timestamp: Int64(now.timeIntervalSince1970 * 1000)
@@ -347,6 +350,7 @@ enum PerpsDemoStory {
 
     static func pinnedMark(_ coin: String) -> Decimal? { decimal("perpsDemoMark\(coin)") }
     static var pinnedEntry: Decimal? { decimal("perpsDemoEntryBTC") }
+    static var pinnedStop: String? { PerpsConfig.usesDemoAccount ? UserDefaults.standard.string(forKey: "perpsDemoStopBTC") : nil }
 
     private static func decimal(_ key: String) -> Decimal? {
         guard PerpsConfig.usesDemoAccount, let raw = UserDefaults.standard.string(forKey: key) else { return nil }
