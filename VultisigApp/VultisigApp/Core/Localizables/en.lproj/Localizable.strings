@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "This route doesn't report the exact amount delivered.";
 "swapReworkDifference" = "Difference";
 "swapReworkEnterAmount" = "Enter an amount";
+"swapReworkEstimatingGas" = "Estimating gas...";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
 "swapReworkFailed" = "This swap didn't go through";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "The amount plus %@ of gas is more than your balance. Tap Max to keep gas behind.";
 "swapReworkGetNewQuote" = "Get new quote";
 "swapReworkGettingPrice" = "Getting best price...";
+"swapReworkHistory" = "Swap history";
 "swapReworkIssueExpired" = "Quote expired";
 "swapReworkIssueExpiredBody" = "Get a fresh one to review the swap.";
 "swapReworkIssueGasTitle" = "Not enough for gas";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "native coin";
 "swapReworkNotEnoughGasCTA" = "Not enough %@ for gas";
 "swapReworkNoTier" = "List rate %@. Hold VULT to lower it.";
+"swapReworkNow" = "now";
 "swapReworkOnChain" = "on %@";
 "swapReworkPayWith" = "You pay with";
 "swapReworkPickReal" = "Pick real %@";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "Ranked by what reaches your vault after provider fees. Network gas for the route you pick is on the fee card. A route you pick stays picked on refresh while it still quotes.";
 "swapReworkSearchPrompt" = "Search name, ticker or address";
 "swapReworkStageReceived" = "Receiving on %@";
+"swapReworkStageReceivedDone" = "Received on %@";
+"swapReworkStageSending" = "Sending from %@";
 "swapReworkStageSent" = "Sent from %@";
 "swapReworkStageSwapped" = "Swapped on %@";
+"swapReworkStageSwapping" = "Swapping on %@";
 "swapReworkStepAllow" = "Allow %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Lets %@ spend exactly this amount, nothing more.";
 "swapReworkStepsFooter" = "Only when needed: if an existing allowance already covers it, there is no approval. Both are shown on the review and signed in the same session.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "Unverified token";
 "swapReworkUseAnyway" = "Use anyway";
 "swapReworkUsuallyMore" = "Usually %1$d-%2$d min more";
+"swapReworkValueLossBody" = "Fees and price impact take a large share of this swap. A larger amount or another route may cost less.";
+"swapReworkValueLossTitle" = "%@ of the value lost to fees and impact";
 "swapReworkVultisigFee" = "Vultisig fee %@";
 "swapReworkVultisigFeeLabel" = "Vultisig fee";
 "swapReworkYoullReceive" = "You'll receive";

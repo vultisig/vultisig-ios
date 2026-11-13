@@ -25,6 +25,8 @@ struct SwapReworkDoneScreen: View {
     /// Read from the chain after completion; nil when the route does not
     /// state it, and the summary then shows no delivered row or difference.
     @State private var delivered: Decimal?
+    /// When each stage was first seen done, for the tracker's time column.
+    @State private var stageDoneAt: [SwapTrackerStage.Kind: Date] = [:]
 
     private let deliveredService = SwapDeliveredAmountService()
 
@@ -72,6 +74,7 @@ struct SwapReworkDoneScreen: View {
         .onDisappear { statusService.stop() }
         .swapRefreshTick { now = Date() }
         .onChange(of: statusService.status) { _, status in
+            recordStageTimes(status: status)
             guard status == .confirmed, confirmedAt == nil else { return }
             confirmedAt = Date()
             loadDelivered()
@@ -105,9 +108,27 @@ struct SwapReworkDoneScreen: View {
                 .map { String(format: "swapReworkUsuallyMore".localized, $0.lowerBound, $0.upperBound) },
             sentDetail: "\(SwapReworkFormat.amount(transaction.fromAmount, ticker: transaction.fromCoin.ticker)) · \(SwapTokenTrust.shortContract(hash))",
             swappedDetail: "\(transaction.fromCoin.ticker) → \(transaction.toCoin.ticker)",
-            receivedDetail: "\(receiveText) → \(SwapTokenTrust.shortContract(transaction.toCoin.address))",
-            isCrossChain: isCrossChain
+            receivedDetail: "\(receiveText) → \(SwapTokenTrust.shortContract(transaction.recipientAddress))",
+            isCrossChain: isCrossChain,
+            stageTimes: stageTimes
         )
+    }
+
+    private func recordStageTimes(status: TransactionStatus) {
+        let now = Date()
+        for stage in SwapTrackerModel.stages(status: status, isCrossChain: isCrossChain)
+        where stage.status == .done && stageDoneAt[stage.kind] == nil {
+            stageDoneAt[stage.kind] = now
+        }
+    }
+
+    private var stageTimes: [SwapTrackerStage.Kind: String] {
+        var times = stageDoneAt.mapValues { $0.formatted(date: .omitted, time: .shortened) }
+        if let active = SwapTrackerModel.stages(status: statusService.status, isCrossChain: isCrossChain)
+            .first(where: { $0.status == .active }) {
+            times[active.kind] = "swapReworkNow".localized
+        }
+        return times
     }
 
     private func loadDelivered() {

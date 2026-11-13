@@ -18,11 +18,11 @@ struct SwapReworkPayCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            SwapReworkAdaptiveRow {
                 Text("swapReworkYouPay".localized)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
+            } trailing: {
                 HStack(spacing: 4) {
                     Text("swapReworkBalance".localized)
                         .foregroundStyle(Theme.colors.textTertiary)
@@ -34,7 +34,7 @@ struct SwapReworkPayCard: View {
                 .minimumScaleFactor(0.8)
             }
 
-            HStack(alignment: .center, spacing: 12) {
+            SwapReworkAdaptiveRow {
                 Button(action: onTapAmount) {
                     HStack(spacing: 2) {
                         Text(SwapKeypadInput.display(state.amountText))
@@ -52,12 +52,12 @@ struct SwapReworkPayCard: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("swapReworkPayAmount")
-
+            } trailing: {
                 SwapReworkTokenPill(asset: state.pay, action: onTapToken)
                     .accessibilityIdentifier("swapReworkPayToken")
             }
 
-            HStack(alignment: .center, spacing: 8) {
+            SwapReworkAdaptiveRow {
                 if let reserve = state.gasReserveText {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("swapReworkReservedForGas".localized)
@@ -76,7 +76,7 @@ struct SwapReworkPayCard: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                         .lineLimit(1)
                 }
-                Spacer(minLength: 4)
+            } trailing: {
                 SwapReworkPercentChips(isMaxActive: state.gasReserveText != nil, onPercent: onPercent)
                     .fixedSize()
             }
@@ -92,27 +92,28 @@ struct SwapReworkReceiveCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            SwapReworkAdaptiveRow {
                 Text("swapReworkYouReceive".localized)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
+            } trailing: {
                 Text(String(format: "swapReworkOnChain".localized, state.receive.chainName))
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
             }
 
-            HStack(alignment: .center, spacing: 12) {
+            SwapReworkAdaptiveRow {
                 receiveAmount
                     .frame(maxWidth: .infinity, alignment: .leading)
+            } trailing: {
                 SwapReworkTokenPill(asset: state.receive, action: onTapToken)
                     .accessibilityIdentifier("swapReworkReceiveToken")
             }
 
             if state.isQuoteLoading {
                 SwapReworkSkeleton(width: 120, height: 12)
-            } else if !state.receiveFiatText.isEmpty {
+            } else if !state.receiveFiatText.isEmpty, state.issue != .noRoute {
                 HStack(spacing: 4) {
                     Text(state.receiveFiatText)
                     if let allIn = state.allInText {
@@ -155,6 +156,30 @@ struct SwapReworkReceiveCard: View {
     private var receiveColor: Color {
         if state.isReceiveIndicative || state.receiveAmountText == "0" { return Theme.colors.textTertiary }
         return Theme.colors.textSecondary
+    }
+}
+
+/// Side by side, or stacked at accessibility text sizes, where a token amount
+/// next to its pill would otherwise truncate. An amount must never truncate.
+struct SwapReworkAdaptiveRow<Leading: View, Trailing: View>: View {
+    @ViewBuilder let leading: () -> Leading
+    @ViewBuilder let trailing: () -> Trailing
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                leading()
+                trailing()
+            }
+        } else {
+            HStack(alignment: .center, spacing: 8) {
+                leading()
+                Spacer(minLength: 4)
+                trailing()
+            }
+        }
     }
 }
 

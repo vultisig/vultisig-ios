@@ -35,6 +35,14 @@ enum SwapReworkFormat {
         "\(amount(value)) \(ticker)"
     }
 
+    /// A fee in fiat. A real fee under a cent reads "<$0.01", never "$0.00",
+    /// which would claim the swap is free.
+    static func fee(_ value: Decimal) -> String {
+        let cent = Decimal(string: "0.01") ?? 0
+        guard value > 0, value < cent else { return value.formatToFiat() }
+        return "<" + cent.formatToFiat()
+    }
+
     /// "8-12 min", "~45 s", from a provider estimate in seconds.
     static func eta(seconds: Int) -> String {
         guard seconds >= 60 else { return String(format: "swapReworkEtaSeconds".localized, max(seconds, 1)) }

@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "이 경로는 정확한 수령 금액을 제공하지 않습니다.";
 "swapReworkDifference" = "차이";
 "swapReworkEnterAmount" = "금액 입력";
+"swapReworkEstimatingGas" = "가스 추정 중...";
 "swapReworkEtaMinutes" = "%1$d-%2$d분";
 "swapReworkEtaSeconds" = "~%d초";
 "swapReworkFailed" = "스왑이 완료되지 않았습니다";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "금액과 가스 %@의 합이 잔액보다 많습니다. 최대를 눌러 가스를 남기세요.";
 "swapReworkGetNewQuote" = "새 견적 받기";
 "swapReworkGettingPrice" = "최적 가격 찾는 중...";
+"swapReworkHistory" = "스왑 내역";
 "swapReworkIssueExpired" = "견적 만료";
 "swapReworkIssueExpiredBody" = "스왑을 검토하려면 새 견적을 받으세요.";
 "swapReworkIssueGasTitle" = "가스 부족";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "네이티브 코인";
 "swapReworkNotEnoughGasCTA" = "가스용 %@ 부족";
 "swapReworkNoTier" = "기본 요율 %@. VULT를 보유하면 낮아집니다.";
+"swapReworkNow" = "지금";
 "swapReworkOnChain" = "%@에서";
 "swapReworkPayWith" = "지불 수단";
 "swapReworkPickReal" = "진짜 %@ 선택";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "공급자 수수료 차감 후 볼트에 도착하는 금액순으로 정렬됩니다. 선택한 경로의 네트워크 가스는 수수료 카드에 표시됩니다. 선택한 경로는 견적이 유지되는 동안 새로고침해도 유지됩니다.";
 "swapReworkSearchPrompt" = "이름, 티커 또는 주소 검색";
 "swapReworkStageReceived" = "%@에서 수령 중";
+"swapReworkStageReceivedDone" = "%@에서 수령 완료";
+"swapReworkStageSending" = "%@에서 보내는 중";
 "swapReworkStageSent" = "%@에서 전송됨";
 "swapReworkStageSwapped" = "%@에서 스왑됨";
+"swapReworkStageSwapping" = "%@에서 스왑 중";
 "swapReworkStepAllow" = "%1$@ %2$@ 허용";
 "swapReworkStepAllowDetail" = "%@가 정확히 이 금액만 사용하도록 허용합니다.";
 "swapReworkStepsFooter" = "필요할 때만: 기존 허용량으로 충분하면 승인이 없습니다. 둘 다 검토 화면에 표시되고 같은 세션에서 서명됩니다.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "미확인 토큰";
 "swapReworkUseAnyway" = "그래도 사용";
 "swapReworkUsuallyMore" = "보통 %1$d-%2$d분 더 걸림";
+"swapReworkValueLossBody" = "수수료와 가격 영향이 이 스왑의 큰 부분을 차지합니다. 더 큰 금액이나 다른 경로가 더 저렴할 수 있습니다.";
+"swapReworkValueLossTitle" = "가치의 %@가 수수료와 가격 영향으로 손실";
 "swapReworkVultisigFee" = "Vultisig 수수료 %@";
 "swapReworkVultisigFeeLabel" = "Vultisig 수수료";
 "swapReworkYoullReceive" = "받을 금액";

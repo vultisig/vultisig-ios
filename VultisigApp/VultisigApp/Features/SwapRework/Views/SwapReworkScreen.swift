@@ -40,6 +40,7 @@ struct SwapReworkScreen: View {
                 if !isProgressDemo {
                     swapModeTabs
                         .fixedSize()
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
                 }
@@ -55,7 +56,10 @@ struct SwapReworkScreen: View {
         .screenTitle("swap".localized)
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
-                advancedSettingsButton
+                HStack(spacing: 8) {
+                    historyButton
+                    advancedSettingsButton
+                }
             }
         }
         .crossPlatformSheet(isPresented: advancedSheetBinding) {
@@ -141,6 +145,9 @@ struct SwapReworkScreen: View {
             guard !viewModel.isDemo else { return }
             viewModel.refreshApproval()
         }
+        .onChange(of: details.isLoadingFees) { wasLoading, isLoading in
+            if wasLoading && !isLoading { viewModel.feesSettled(vault: vault) }
+        }
         .onChange(of: details.isLoadingQuotes) { wasLoading, isLoading in
             if wasLoading && !isLoading { viewModel.quoteFetchSettled(vault: vault) }
         }
@@ -176,15 +183,25 @@ struct SwapReworkScreen: View {
 
             VStack(spacing: 8) {
                 ctaButton
-                if isEditingAmount {
+                    // A one-line control: at accessibility sizes its label
+                    // would widen the whole form past the screen.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                if showsKeypad {
                     PerpsKeypad { viewModel.press($0, vault: vault) }
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
-            .animation(.easeInOut(duration: 0.2), value: isEditingAmount)
+            .animation(.easeInOut(duration: 0.2), value: showsKeypad)
         }
+    }
+
+    /// The keypad is up while typing, and always when there is no amount yet:
+    /// an empty form has nothing else to do.
+    private var showsKeypad: Bool {
+        isEditingAmount || state.isEmpty
     }
 
     private var amountCards: some View {
@@ -192,14 +209,19 @@ struct SwapReworkScreen: View {
         VStack(spacing: -14) {
             SwapReworkPayCard(
                 state: state,
-                isEditing: isEditingAmount,
+                isEditing: showsKeypad,
                 onTapAmount: { isEditingAmount = true },
                 onTapToken: { viewModel.pickerSide = .pay },
-                onPercent: { viewModel.selectPercent($0, vault: vault) }
+                onPercent: { percentage in
+                    // The amount is set: put the quote in view, as R3 does.
+                    isEditingAmount = false
+                    viewModel.selectPercent(percentage, vault: vault)
+                }
             )
             SwapReworkFlipButton {
                 guard !viewModel.isDemo else { return }
                 viewModel.flip(vault: vault)
+                isEditingAmount = true
             }
             .zIndex(1)
             SwapReworkReceiveCard(state: state, onTapToken: { viewModel.pickerSide = .receive })
@@ -214,6 +236,9 @@ struct SwapReworkScreen: View {
                 pair: (state.pay.ticker, state.receive.ticker),
                 gasDetail: gasDetail
             )
+        }
+        if let loss = state.valueLossText {
+            SwapReworkValueLossCard(lossText: loss)
         }
         if let route = state.route, state.issue != .noRoute {
             SwapReworkRouteCard(
@@ -358,6 +383,18 @@ struct SwapReworkScreen: View {
             get: { details.showAdvancedSettingsSheet },
             set: { details.showAdvancedSettingsSheet = $0 }
         )
+    }
+
+    /// Past swaps, as in R3's header: the vault's history.
+    private var historyButton: some View {
+        ToolbarButton(image: .clockRotateClockwise, type: .outline) {
+            router.navigate(to: TransactionHistoryRoute.list(
+                pubKeyECDSA: vault.pubKeyECDSA,
+                vaultName: vault.name,
+                chainFilter: nil
+            ))
+        }
+        .accessibilityLabel("swapReworkHistory".localized)
     }
 
     private var advancedSettingsButton: some View {

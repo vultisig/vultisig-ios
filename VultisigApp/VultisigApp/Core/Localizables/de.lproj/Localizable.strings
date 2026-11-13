@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "Diese Route meldet den genau gelieferten Betrag nicht.";
 "swapReworkDifference" = "Differenz";
 "swapReworkEnterAmount" = "Betrag eingeben";
+"swapReworkEstimatingGas" = "Gas wird geschätzt...";
 "swapReworkEtaMinutes" = "%1$d-%2$d Min.";
 "swapReworkEtaSeconds" = "~%d s";
 "swapReworkFailed" = "Dieser Swap ist fehlgeschlagen";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "Betrag plus %@ Gas übersteigt dein Guthaben. Tippe auf Max, um Gas übrig zu lassen.";
 "swapReworkGetNewQuote" = "Neues Angebot holen";
 "swapReworkGettingPrice" = "Bester Preis wird ermittelt...";
+"swapReworkHistory" = "Swap-Verlauf";
 "swapReworkIssueExpired" = "Angebot abgelaufen";
 "swapReworkIssueExpiredBody" = "Hol ein neues, um den Swap zu prüfen.";
 "swapReworkIssueGasTitle" = "Nicht genug für Gas";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "native Coin";
 "swapReworkNotEnoughGasCTA" = "Nicht genug %@ für Gas";
 "swapReworkNoTier" = "Listenpreis %@. Halte VULT, um ihn zu senken.";
+"swapReworkNow" = "jetzt";
 "swapReworkOnChain" = "auf %@";
 "swapReworkPayWith" = "Du zahlst mit";
 "swapReworkPickReal" = "Echtes %@ wählen";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "Sortiert nach dem, was nach Anbietergebühren in deinem Tresor ankommt. Netzwerk-Gas der gewählten Route steht auf der Gebührenkarte. Eine gewählte Route bleibt beim Aktualisieren gewählt, solange sie ein Angebot liefert.";
 "swapReworkSearchPrompt" = "Name, Ticker oder Adresse suchen";
 "swapReworkStageReceived" = "Empfang auf %@";
+"swapReworkStageReceivedDone" = "Auf %@ erhalten";
+"swapReworkStageSending" = "Wird von %@ gesendet";
 "swapReworkStageSent" = "Gesendet von %@";
 "swapReworkStageSwapped" = "Getauscht auf %@";
+"swapReworkStageSwapping" = "Swap auf %@ läuft";
 "swapReworkStepAllow" = "%1$@ %2$@ erlauben";
 "swapReworkStepAllowDetail" = "Erlaubt %@, genau diesen Betrag auszugeben, nicht mehr.";
 "swapReworkStepsFooter" = "Nur wenn nötig: Deckt eine bestehende Freigabe den Betrag, entfällt sie. Beides wird in der Überprüfung gezeigt und in derselben Sitzung signiert.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "Nicht verifizierter Token";
 "swapReworkUseAnyway" = "Trotzdem nutzen";
 "swapReworkUsuallyMore" = "Meist %1$d-%2$d Min. länger";
+"swapReworkValueLossBody" = "Gebühren und Preiseinfluss nehmen einen großen Teil dieses Swaps. Ein größerer Betrag oder eine andere Route kann günstiger sein.";
+"swapReworkValueLossTitle" = "%@ des Werts gehen an Gebühren und Preiseinfluss";
 "swapReworkVultisigFee" = "Vultisig-Gebühr %@";
 "swapReworkVultisigFeeLabel" = "Vultisig-Gebühr";
 "swapReworkYoullReceive" = "Du erhältst";

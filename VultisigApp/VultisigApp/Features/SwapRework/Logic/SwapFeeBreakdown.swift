@@ -131,9 +131,20 @@ struct SwapFeeBreakdown: Equatable {
     /// "-0.68%", two decimals, always signed.
     var allInChangeText: String? {
         guard let change = allInChange else { return nil }
-        let percent = (change * 100).rounded(scale: 2)
+        var percent = (change * 100).rounded(scale: 2)
+        // Something still arrives: never round that to a total loss.
+        if percent <= -100, change > -1 { percent = Decimal(string: "-99.99") ?? percent }
         let formatted = Self.decimalFormatter.string(from: NSDecimalNumber(decimal: abs(percent))) ?? "0.00"
         return (percent < 0 ? "-" : "+") + formatted + "%"
+    }
+
+    /// Fees and price impact take more than this share of the value: the
+    /// form warns (without blocking), as R3's high price impact state does.
+    static let valueLossWarningThreshold: Decimal = Decimal(string: "-0.05") ?? 0
+
+    var isValueLossHigh: Bool {
+        guard let change = allInChange else { return false }
+        return change < Self.valueLossWarningThreshold
     }
 
     static func percent(bps: Int) -> String {

@@ -38,6 +38,7 @@ struct SwapReworkRouteCard: View {
                             .font(Theme.fonts.bodyMMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                         if let tag = route.tag {
                             SwapReworkRouteTagView(tag: tag)
                         }
@@ -456,6 +457,35 @@ struct SwapReworkIssueCard: View {
     }
 }
 
+/// Fees and price impact take a large share of the value. A warning, not a
+/// block: the numbers above are honest, this makes sure they are read.
+struct SwapReworkValueLossCard: View {
+    let lossText: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.alertWarning)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(format: "swapReworkValueLossTitle".localized, lossText))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                Text("swapReworkValueLossBody".localized)
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .background(Theme.colors.alertWarning.opacity(0.10))
+        .swapReworkCard(highlighted: false)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("swapReworkValueLoss")
+    }
+}
+
 // MARK: - Route sheet
 
 struct SwapReworkRouteSheet: View {
@@ -539,9 +569,9 @@ struct SwapReworkRouteSheet: View {
     private func detail(_ route: SwapRankedRoute) -> String {
         var parts: [String] = []
         if let eta = route.option.etaSeconds { parts.append(SwapReworkFormat.eta(seconds: eta)) }
-        if let fees = route.option.feesFiat { parts.append(String(format: "swapReworkProviderFees".localized, fees.formatToFiat())) }
+        if let fees = route.option.feesFiat { parts.append(String(format: "swapReworkProviderFees".localized, SwapReworkFormat.fee(fees))) }
         if route.shortfall > 0 {
-            parts.append("-" + SwapReworkFormat.amount(route.shortfall))
+            parts.append("-" + SwapReworkFormat.amount(route.shortfall, ticker: receiveTicker))
         }
         return parts.joined(separator: " · ")
     }

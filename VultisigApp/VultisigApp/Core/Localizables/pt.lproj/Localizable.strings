@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "Esta rota não informa o valor exato entregue.";
 "swapReworkDifference" = "Diferença";
 "swapReworkEnterAmount" = "Insira um valor";
+"swapReworkEstimatingGas" = "Estimando gas...";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
 "swapReworkFailed" = "Este swap não foi concluído";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "O valor mais %@ de gás excede seu saldo. Toque em Máx. para reservar o gás.";
 "swapReworkGetNewQuote" = "Nova cotação";
 "swapReworkGettingPrice" = "Buscando o melhor preço...";
+"swapReworkHistory" = "Histórico de swaps";
 "swapReworkIssueExpired" = "Cotação expirada";
 "swapReworkIssueExpiredBody" = "Obtenha uma nova para revisar o swap.";
 "swapReworkIssueGasTitle" = "Saldo insuficiente para gás";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "moeda nativa";
 "swapReworkNotEnoughGasCTA" = "%@ insuficiente para gás";
 "swapReworkNoTier" = "Taxa base %@. Tenha VULT para reduzi-la.";
+"swapReworkNow" = "agora";
 "swapReworkOnChain" = "em %@";
 "swapReworkPayWith" = "Você paga com";
 "swapReworkPickReal" = "Escolher %@ real";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "Ordenadas pelo que chega ao seu cofre após as taxas do provedor. O gás de rede da rota escolhida está no cartão de taxas. Uma rota escolhida continua selecionada ao atualizar enquanto tiver cotação.";
 "swapReworkSearchPrompt" = "Buscar nome, ticker ou endereço";
 "swapReworkStageReceived" = "Recebendo em %@";
+"swapReworkStageReceivedDone" = "Recebido na %@";
+"swapReworkStageSending" = "Enviando de %@";
 "swapReworkStageSent" = "Enviado de %@";
 "swapReworkStageSwapped" = "Swap feito em %@";
+"swapReworkStageSwapping" = "Fazendo swap na %@";
 "swapReworkStepAllow" = "Permitir %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Permite que %@ gaste exatamente este valor, nada mais.";
 "swapReworkStepsFooter" = "Só quando preciso: se uma autorização existente já cobre o valor, não há aprovação. Ambas aparecem na revisão e são assinadas na mesma sessão.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "Token não verificado";
 "swapReworkUseAnyway" = "Usar mesmo assim";
 "swapReworkUsuallyMore" = "Geralmente %1$d-%2$d min a mais";
+"swapReworkValueLossBody" = "Taxas e impacto levam grande parte deste swap. Um valor maior ou outra rota pode custar menos.";
+"swapReworkValueLossTitle" = "%@ do valor vai para taxas e impacto";
 "swapReworkVultisigFee" = "Taxa Vultisig %@";
 "swapReworkVultisigFeeLabel" = "Taxa da Vultisig";
 "swapReworkYoullReceive" = "Você receberá";

@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "Questo percorso non indica l'importo esatto consegnato.";
 "swapReworkDifference" = "Differenza";
 "swapReworkEnterAmount" = "Inserisci un importo";
+"swapReworkEstimatingGas" = "Stima del gas...";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
 "swapReworkFailed" = "Questo swap non è andato a buon fine";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "L'importo più %@ di gas supera il tuo saldo. Tocca Max per lasciare il gas.";
 "swapReworkGetNewQuote" = "Nuova quotazione";
 "swapReworkGettingPrice" = "Cerco il prezzo migliore...";
+"swapReworkHistory" = "Cronologia swap";
 "swapReworkIssueExpired" = "Quotazione scaduta";
 "swapReworkIssueExpiredBody" = "Ottienine una nuova per rivedere lo swap.";
 "swapReworkIssueGasTitle" = "Non abbastanza per il gas";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "moneta nativa";
 "swapReworkNotEnoughGasCTA" = "%@ insufficiente per il gas";
 "swapReworkNoTier" = "Tariffa base %@. Tieni VULT per ridurla.";
+"swapReworkNow" = "ora";
 "swapReworkOnChain" = "su %@";
 "swapReworkPayWith" = "Paghi con";
 "swapReworkPickReal" = "Scegli il vero %@";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "Ordinate per ciò che arriva nel tuo vault dopo le commissioni del fornitore. Il gas di rete della rotta scelta è nella scheda commissioni. Una rotta scelta resta selezionata all'aggiornamento finché è quotata.";
 "swapReworkSearchPrompt" = "Cerca nome, ticker o indirizzo";
 "swapReworkStageReceived" = "Ricezione su %@";
+"swapReworkStageReceivedDone" = "Ricevuto su %@";
+"swapReworkStageSending" = "Invio da %@";
 "swapReworkStageSent" = "Inviato da %@";
 "swapReworkStageSwapped" = "Scambiato su %@";
+"swapReworkStageSwapping" = "Swap in corso su %@";
 "swapReworkStepAllow" = "Consenti %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Permette a %@ di spendere esattamente questo importo, niente di più.";
 "swapReworkStepsFooter" = "Solo se serve: se un'autorizzazione esistente lo copre già, non c'è approvazione. Entrambe compaiono nella revisione e si firmano nella stessa sessione.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "Token non verificato";
 "swapReworkUseAnyway" = "Usa comunque";
 "swapReworkUsuallyMore" = "Di solito %1$d-%2$d min in più";
+"swapReworkValueLossBody" = "Commissioni e impatto sul prezzo prendono gran parte di questo swap. Un importo maggiore o un altro percorso può costare meno.";
+"swapReworkValueLossTitle" = "%@ del valore va in commissioni e impatto";
 "swapReworkVultisigFee" = "Commissione Vultisig %@";
 "swapReworkVultisigFeeLabel" = "Commissione Vultisig";
 "swapReworkYoullReceive" = "Riceverai";

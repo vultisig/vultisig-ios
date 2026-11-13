@@ -100,6 +100,8 @@ struct SwapReworkFormState: Equatable {
     var fees: SwapReworkFeeRows?
     var approval: SwapReworkApproval?
     var issue: SwapReworkIssue?
+    /// "-85.99%": fees and impact take a large share. Shown, never blocking.
+    var valueLossText: String?
     var cta: SwapReworkCTA
     var isCTAEnabled: Bool
 

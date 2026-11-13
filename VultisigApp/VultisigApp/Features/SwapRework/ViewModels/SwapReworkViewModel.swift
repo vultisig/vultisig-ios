@@ -26,6 +26,15 @@ final class SwapReworkViewModel {
     private(set) var priceMove: SwapPriceMove = .unchanged
     /// Max was tapped on a native coin: the amount keeps the network fee behind.
     private(set) var keepsGasReserve = false
+    /// Max was tapped before any fee was known. A provisional amount fetches a
+    /// quote (and with it the real fee); Max then re-applies once against it.
+    private(set) var isMaxAwaitingFee = false
+    /// Which provisional share is being quoted. Near the whole balance first,
+    /// so a provider minimum is cleared; lower only if the provider rejects it.
+    @ObservationIgnored private var provisionalStep = 0
+    static let provisionalMaxShares: [Decimal] = [
+        Decimal(string: "0.95") ?? 0, Decimal(string: "0.75") ?? 0, Decimal(string: "0.5") ?? 0
+    ]
 
     /// Approve legs from the existing allowance check (0, 1, or 2 for a
     /// reset), for the quote on screen. Nil while unknown.
@@ -72,23 +81,52 @@ final class SwapReworkViewModel {
         let updated = SwapKeypadInput.apply(key, to: amountText, maxFractionDigits: maxFractionDigits)
         guard updated != amountText else { return }
         keepsGasReserve = false
+        isMaxAwaitingFee = false
         setAmount(updated, vault: vault, immediate: false)
     }
 
     /// 25 / 50 / 100 (Max). Max on a native coin leaves the network fee and any
     /// balance the chain makes the account keep.
     func selectPercent(_ percentage: Int, vault: Vault) {
+        let isNativeMax = percentage == 100 && details.fromCoin.isNativeToken
+        // A native Max with no fee known yet would spend the whole balance and
+        // leave nothing for gas. Quote a provisional share first to learn it.
+        let awaitingFee = isNativeMax && fundingReserve == 0
+        if awaitingFee {
+            provisionalStep = 0
+            applyProvisionalMax(vault: vault)
+            return
+        }
         guard let text = SwapCryptoLogic.percentageAmountText(
             percentage: percentage,
             fromCoin: details.fromCoin,
             fee: fundingReserve
         ), let amount = SwapAmountInput.parseToken(text) else { return }
-        keepsGasReserve = percentage == 100 && details.fromCoin.isNativeToken
+        keepsGasReserve = isNativeMax
         let normalized = SwapKeypadInput.normalized(amount, maxFractionDigits: maxFractionDigits)
         // Re-applying Max with an unchanged reserve would re-quote the same
         // amount forever; only a different amount is worth a fetch.
-        guard normalized != amountText else { return }
+        guard normalized != amountText else {
+            isMaxAwaitingFee = false
+            return
+        }
         setAmount(normalized, vault: vault, immediate: true)
+    }
+
+    /// Quotes `provisionalMaxShares[provisionalStep]` of the balance while the
+    /// fee is unknown. Gives up (keeping the last provisional amount on screen,
+    /// with the provider's error) when every share has been rejected.
+    private func applyProvisionalMax(vault: Vault) {
+        guard provisionalStep < Self.provisionalMaxShares.count else {
+            isMaxAwaitingFee = false
+            return
+        }
+        let share = Self.provisionalMaxShares[provisionalStep]
+        let amount = details.fromCoin.balanceDecimal * share
+        let normalized = SwapKeypadInput.normalized(amount, maxFractionDigits: maxFractionDigits)
+        keepsGasReserve = true
+        setAmount(normalized, vault: vault, immediate: true)
+        isMaxAwaitingFee = true
     }
 
     /// What Max leaves behind: the same funding fee `balanceError` validates
@@ -103,6 +141,7 @@ final class SwapReworkViewModel {
     }
 
     private func setAmount(_ text: String, vault: Vault, immediate: Bool) {
+        isMaxAwaitingFee = false
         resetApproval()
         amountText = text
         acknowledgedReceive = nil
@@ -181,6 +220,12 @@ final class SwapReworkViewModel {
     /// Called when a quote fetch settles. A fresh quote restarts the clock and
     /// is checked against the payout the user last accepted.
     func quoteFetchSettled(vault: Vault) {
+        if isMaxAwaitingFee, details.quote == nil, details.error != nil {
+            // The provider rejected the provisional amount: try a lower share.
+            provisionalStep += 1
+            applyProvisionalMax(vault: vault)
+            return
+        }
         guard details.quote != nil, details.error == nil else { return }
         clock.quoteReceived(at: Date())
         let current = details.toAmountDecimal
@@ -200,6 +245,19 @@ final class SwapReworkViewModel {
     private func reapplyMaxIfFeeGrew(vault: Vault) {
         guard keepsGasReserve, details.balanceError == .insufficientGas else { return }
         selectPercent(100, vault: vault)
+    }
+
+    /// Fees landed (a quote fetch, or a route pick's fee refresh). Finishes a
+    /// Max that was waiting for its fee, and re-runs Max if a route with more
+    /// gas made it overspend.
+    func feesSettled(vault: Vault) {
+        guard !isDemo, keepsGasReserve else { return }
+        if isMaxAwaitingFee {
+            guard fundingReserve > 0 else { return }
+            selectPercent(100, vault: vault)
+            return
+        }
+        reapplyMaxIfFeeGrew(vault: vault)
     }
 
     func confirmNewAmount() {
@@ -256,7 +314,7 @@ final class SwapReworkViewModel {
         let activeID = details.quote.map(Self.routeID(for:))
         let issue = SwapReworkIssue.resolve(.init(
             hasAmount: hasAmount,
-            balanceError: details.quote == nil ? nil : details.balanceError,
+            balanceError: details.quote == nil ? nil : (details.balanceError ?? approvalGasShortfall),
             quoteError: details.error,
             isQuoteExpired: clock.isExpired(at: now) && !details.isLoadingQuotes,
             priceMove: priceMove,
@@ -289,6 +347,7 @@ final class SwapReworkViewModel {
             fees: fees,
             approval: approval,
             issue: issue,
+            valueLossText: issue == nil && (fees?.breakdown.isValueLossHigh ?? false) ? fees?.breakdown.allInChangeText : nil,
             cta: cta,
             isCTAEnabled: isCTAEnabled(cta)
         )
@@ -330,6 +389,7 @@ final class SwapReworkViewModel {
 
     private var gasReserveText: String? {
         guard keepsGasReserve else { return nil }
+        if isMaxAwaitingFee { return "swapReworkEstimatingGas".localized }
         let reserve = fundingReserve
         guard reserve > 0 else { return nil }
         let feeCoin = details.feeCoin
@@ -395,7 +455,7 @@ final class SwapReworkViewModel {
             providerLogo: quote.kind.providerLogo,
             tag: tag,
             etaText: quote.totalSwapSeconds.map(SwapReworkFormat.eta(seconds:)) ?? "",
-            feesText: details.isLoadingFees ? "" : (fees?.breakdown.displayTotalFiat.formatToFiat() ?? ""),
+            feesText: details.isLoadingFees ? "" : (fees.map { SwapReworkFormat.fee(feeTotal($0.breakdown)) } ?? ""),
             isSelectable: ranked.count > 1
         )
     }
@@ -453,6 +513,12 @@ final class SwapReworkViewModel {
         )
     }
 
+    /// The displayed total, or the raw one when every row truncates to $0.00
+    /// but something is charged, so the card can say "<$0.01".
+    private func feeTotal(_ breakdown: SwapFeeBreakdown) -> Decimal {
+        breakdown.displayTotalFiat > 0 ? breakdown.displayTotalFiat : breakdown.totalFiat
+    }
+
     private func leavesVaultText(networkCrypto: Decimal, totalFiat: Decimal) -> String {
         let fromCoin = details.fromCoin
         let feeCoin = details.feeCoin
@@ -462,6 +528,18 @@ final class SwapReworkViewModel {
             ? "\(amount) + \(gas) \(fromCoin.ticker)"
             : "\(amount) \(fromCoin.ticker) + \(gas) \(feeCoin.ticker)"
         return "\(crypto) · \(totalFiat.formatToFiat())"
+    }
+
+    /// The existing balance gate counts swap gas only. Once the allowance check
+    /// says approve legs come first, the fee coin must also cover their gas.
+    private var approvalGasShortfall: SwapCryptoLogic.Errors? {
+        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        guard legs > 0 else { return nil }
+        let feeCoin = details.feeCoin
+        let swapGas = feeCoin.decimal(for: details.displayedNetworkFeeWei)
+        let needed = SwapApprovalGas.totalGas(swapGas: swapGas, legs: legs) + feeCoin.decimal(for: details.storageReserve)
+        let spendsFeeCoin = feeCoin.id == details.fromCoin.id ? details.fromAmountDecimal : 0
+        return feeCoin.balanceDecimal < needed + spendsFeeCoin ? .insufficientGas : nil
     }
 
     /// "You have 0.00020 ETH. Add 0.00088 ETH ($1.72) to pay for gas." Only

@@ -169,6 +169,13 @@ final class SwapFeeBreakdownTests: XCTestCase {
         XCTAssertEqual(breakdown(network: "0.849", protocolFee: "2.861", net: "2.937").displayTotalFiat, dec("6.63"))
     }
 
+    func testAllInNeverRoundsToTotalLossAndFlagsHighLoss() {
+        let huge = breakdown(network: "0", protocolFee: "0", net: "0", list: "0", pay: "1000000000000", receive: "12441104.54")
+        XCTAssertEqual(huge.allInChangeText, "-99.99%")
+        XCTAssertTrue(huge.isValueLossHigh)
+        XCTAssertFalse(breakdown().isValueLossHigh)
+    }
+
     func testAllInChangeIncludesGas() {
         // (972.41 - 979.04) / 979.04 = -0.677...%
         XCTAssertEqual(breakdown().allInChangeText, "-0.68%")

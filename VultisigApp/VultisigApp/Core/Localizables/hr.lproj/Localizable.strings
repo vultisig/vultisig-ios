@@ -1911,6 +1911,7 @@
 "swapReworkDeliveredUnreported" = "Ova ruta ne prijavljuje točan isporučeni iznos.";
 "swapReworkDifference" = "Razlika";
 "swapReworkEnterAmount" = "Unesi iznos";
+"swapReworkEstimatingGas" = "Procjena plina...";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
 "swapReworkFailed" = "Ova zamjena nije uspjela";
@@ -1923,6 +1924,7 @@
 "swapReworkGasUseMax" = "Iznos plus %@ plina premašuje tvoj saldo. Dodirni Maks. da ostaviš za plin.";
 "swapReworkGetNewQuote" = "Nova ponuda";
 "swapReworkGettingPrice" = "Tražimo najbolju cijenu...";
+"swapReworkHistory" = "Povijest zamjena";
 "swapReworkIssueExpired" = "Ponuda je istekla";
 "swapReworkIssueExpiredBody" = "Dohvati novu za pregled zamjene.";
 "swapReworkIssueGasTitle" = "Nedovoljno za plin";
@@ -1944,6 +1946,7 @@
 "swapReworkNativeCoin" = "izvorni coin";
 "swapReworkNotEnoughGasCTA" = "Nedovoljno %@ za plin";
 "swapReworkNoTier" = "Osnovna stopa %@. Drži VULT da je smanjiš.";
+"swapReworkNow" = "sada";
 "swapReworkOnChain" = "na %@";
 "swapReworkPayWith" = "Plaćaš s";
 "swapReworkPickReal" = "Odaberi pravi %@";
@@ -1961,8 +1964,11 @@
 "swapReworkRoutesFooter" = "Poredano po iznosu koji stiže u tvoj trezor nakon naknada davatelja. Mrežni plin za odabranu rutu je na kartici naknada. Odabrana ruta ostaje odabrana pri osvježavanju dok god daje ponudu.";
 "swapReworkSearchPrompt" = "Traži naziv, oznaku ili adresu";
 "swapReworkStageReceived" = "Primanje na %@";
+"swapReworkStageReceivedDone" = "Primljeno na %@";
+"swapReworkStageSending" = "Slanje s %@";
 "swapReworkStageSent" = "Poslano s %@";
 "swapReworkStageSwapped" = "Zamijenjeno na %@";
+"swapReworkStageSwapping" = "Zamjena na %@";
 "swapReworkStepAllow" = "Dopusti %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Dopušta %@ da potroši točno ovaj iznos, ništa više.";
 "swapReworkStepsFooter" = "Samo kad je potrebno: ako postojeće odobrenje već pokriva iznos, nema novog. Oboje se prikazuje u pregledu i potpisuje u istoj sesiji.";
@@ -1982,6 +1988,8 @@
 "swapReworkUnverifiedTitle" = "Neprovjereni token";
 "swapReworkUseAnyway" = "Ipak koristi";
 "swapReworkUsuallyMore" = "Obično %1$d-%2$d min dulje";
+"swapReworkValueLossBody" = "Naknade i utjecaj na cijenu uzimaju velik dio ove zamjene. Veći iznos ili druga ruta mogu koštati manje.";
+"swapReworkValueLossTitle" = "%@ vrijednosti odlazi na naknade i utjecaj";
 "swapReworkVultisigFee" = "Vultisig naknada %@";
 "swapReworkVultisigFeeLabel" = "Vultisig naknada";
 "swapReworkYoullReceive" = "Primit ćeš";

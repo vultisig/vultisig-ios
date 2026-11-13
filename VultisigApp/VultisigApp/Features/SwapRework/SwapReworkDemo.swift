@@ -111,6 +111,7 @@ enum SwapReworkDemo {
             fees: feeRows(fees),
             approval: nil,
             issue: nil,
+            valueLossText: nil,
             cta: .review,
             isCTAEnabled: true
         )
@@ -268,7 +269,8 @@ enum SwapReworkDemo {
             sentDetail: "0.5 ETH · 0x8a1f…07c3",
             swappedDetail: "ETH → BTC",
             receivedDetail: "0.0140218 BTC → bc1q…7xk9",
-            isCrossChain: true
+            isCrossChain: true,
+            stageTimes: [.sent: "9:41", .swapped: "swapReworkNow".localized]
         )
     }
 

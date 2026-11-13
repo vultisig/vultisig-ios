@@ -65,6 +65,8 @@ struct SwapReworkTrackerState: Equatable {
     let swappedDetail: String
     let receivedDetail: String
     let isCrossChain: Bool
+    /// "9:41" when a stage was first seen done, "now" for the active one.
+    var stageTimes: [SwapTrackerStage.Kind: String] = [:]
 }
 
 struct SwapReworkSuccessState: Equatable {

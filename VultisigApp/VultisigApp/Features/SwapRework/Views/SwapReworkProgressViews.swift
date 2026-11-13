@@ -78,9 +78,17 @@ struct SwapReworkTrackerView: View {
                         }
                     }
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(title(for: stage.kind))
-                            .font(Theme.fonts.bodyMMedium)
-                            .foregroundStyle(stage.status == .waiting ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(title(for: stage))
+                                .font(Theme.fonts.bodyMMedium)
+                                .foregroundStyle(stage.status == .waiting ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                            Spacer(minLength: 8)
+                            if let time = state.stageTimes[stage.kind] {
+                                Text(time)
+                                    .font(Theme.fonts.priceCaption)
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                            }
+                        }
                         Text(detail(for: stage.kind))
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
@@ -131,11 +139,16 @@ struct SwapReworkTrackerView: View {
         }
     }
 
-    private func title(for kind: SwapTrackerStage.Kind) -> String {
-        switch kind {
-        case .sent: return String(format: "swapReworkStageSent".localized, state.pay.chainName)
-        case .swapped: return String(format: "swapReworkStageSwapped".localized, state.providerName)
-        case .received: return String(format: "swapReworkStageReceived".localized, state.receive.chainName)
+    /// Past tense once a stage is done, progressive while it runs or waits.
+    private func title(for stage: SwapTrackerStage) -> String {
+        let done = stage.status == .done
+        switch stage.kind {
+        case .sent:
+            return String(format: (done ? "swapReworkStageSent" : "swapReworkStageSending").localized, state.pay.chainName)
+        case .swapped:
+            return String(format: (done ? "swapReworkStageSwapped" : "swapReworkStageSwapping").localized, state.providerName)
+        case .received:
+            return String(format: (done ? "swapReworkStageReceivedDone" : "swapReworkStageReceived").localized, state.receive.chainName)
         }
     }
 
