@@ -169,7 +169,9 @@ final class PerpsTicketViewModel: ObservableObject {
     /// margin + margin x leverage x fee rate fits in what is there.
     var affordableMargin: Decimal {
         let fromAccount = availableToTrade > 0
-        var base = fromAccount ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0)
+        // The vault side is floored to cents first: the deposit is rounded up to
+        // cents, so a fractional-cent balance must not let Max ask for more.
+        var base = fromAccount ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0).rounded(scale: 2, mode: .down)
         if !fromAccount { base -= HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0) }
         guard base > 0 else { return 0 }
         let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate
