@@ -47,7 +47,10 @@ enum ZcashSigner {
 
     /// The per-input ZIP-244 SIGHASH_ALL digests, in input order.
     static func preImageHashes(inputData: Data, publicKey: Data) throws -> [Data] {
-        let v2 = try signingInputV2(from: inputData, publicKey: publicKey)
+        try preImageHashes(v2Input: signingInputV2(from: inputData, publicKey: publicKey))
+    }
+
+    static func preImageHashes(v2Input v2: Data) throws -> [Data] {
         let output = try BitcoinPreSigningOutput(
             serializedBytes: TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: v2)
         ).preSigningResultV2
@@ -64,11 +67,18 @@ enum ZcashSigner {
         signatures: [String: TssKeysignResponse],
         publicKey: PublicKey
     ) throws -> SignedTransactionResult {
-        let v2 = try signingInputV2(from: inputData, publicKey: publicKey.data)
+        try compile(v2Input: signingInputV2(from: inputData, publicKey: publicKey.data), signatures: signatures, publicKey: publicKey)
+    }
+
+    static func compile(
+        v2Input v2: Data,
+        signatures: [String: TssKeysignResponse],
+        publicKey: PublicKey
+    ) throws -> SignedTransactionResult {
         let provider = SignatureProvider(signatures: signatures)
         let derSignatures = DataVector()
         let publicKeys = DataVector()
-        for (index, sighash) in try preImageHashes(inputData: inputData, publicKey: publicKey.data).enumerated() {
+        for (index, sighash) in try preImageHashes(v2Input: v2).enumerated() {
             guard publicKey.verifyAsDER(signature: provider.getDerSignature(preHash: sighash), message: sighash) else {
                 throw ZcashSignerError.invalidSignature(inputIndex: index)
             }
@@ -120,12 +130,33 @@ enum ZcashSigner {
             })
         }
 
+        return try signingInputV2(
+            utxos: plan.utxos, outputs: outputs, lockTime: input.lockTime, expiryHeight: 0,
+            branchID: plan.branchID, publicKey: publicKey
+        )
+    }
+
+    /// v5 signing input over explicit P2PKH inputs of `publicKey` and outputs, kept in the given order.
+    static func signingInputV2(
+        utxos: [BitcoinUnspentTransaction],
+        outputs: [BitcoinV2Output],
+        lockTime: UInt32,
+        expiryHeight: UInt32,
+        branchID: Data,
+        publicKey: Data
+    ) throws -> Data {
+        guard branchID.count == 4 else {
+            throw ZcashSignerError.invalidBranchId(byteCount: branchID.count)
+        }
+        guard !utxos.isEmpty else {
+            throw ZcashSignerError.noInputs
+        }
         let signingV2 = BitcoinV2SigningInput.with {
             $0.publicKeys = [publicKey]
             $0.builder = BitcoinV2TransactionBuilder.with {
                 $0.version = .useDefault
-                $0.lockTime = input.lockTime
-                $0.inputs = plan.utxos.map { utxo in
+                $0.lockTime = lockTime
+                $0.inputs = utxos.map { utxo in
                     BitcoinV2Input.with {
                         $0.outPoint = UtxoOutPoint.with {
                             $0.hash = utxo.outPoint.hash
@@ -141,7 +172,8 @@ enum ZcashSigner {
                 $0.inputSelector = .useAll
                 $0.fixedDustThreshold = 0
                 $0.zcashExtraData = ZcashTransactionBuilderExtraData.with {
-                    $0.branchID = plan.branchID
+                    $0.branchID = branchID
+                    $0.expiryHeight = expiryHeight
                     $0.txVersion = .v5
                 }
             }

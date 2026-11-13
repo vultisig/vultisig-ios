@@ -2,20 +2,16 @@
 //  SwapKitZcashTests.swift
 //  VultisigAppTests
 //
-//  ZEC source via SwapKit NEAR-Intents: Sapling-v4 transparent PSBT signed
-//  through WalletCore's `CoinType.zcash` with the branchID required by
-//  ZIP-243. Fixture body is the byte-level structure documented in the ZEC
-//  source plan §"PSBT byte-level structure" (real probe against
-//  `t1bnxtY7aLCjWx9Ru1YcGwRWch3eEWUFK7u`).
+//  ZEC source via SwapKit: NU5 v5 (ZIP-225) transparent PSBT signed with
+//  ZIP-244 sighashes through `ZcashSigner`. Fixture
+//  `v3-real-zec-v5-swap` is a real SwapKit `/swap` response (ZEC.ZEC → ETH.ETH,
+//  Maya route, deposit + OP_RETURN memo + change). Expected sighash and txid
+//  come from an independent Python ZIP-244 implementation run over the same
+//  bytes with the input rebound to the golden key (`goldenOwnedFixture`).
 //
-//  Sapling header parser asserts:
-//    - `version == 0x80000004` (overwinter + v4) — rejects v5 (NU5)
-//    - `nVersionGroupId == 0x892F2085` (Sapling)
-//    - All shielded fields zero — rejects any shielded-bundle transaction
-//
-//  Hard rejects ride a localized error (`swapKitErrorUnsupportedZcashVersion`,
-//  `swapKitErrorUnsupportedShieldedTransaction`) so users see "we can't
-//  sign this" rather than a cryptic WalletCore error string.
+//  Refused before any keysign: Sapling v4, shielded bundles, non-P2PKH
+//  inputs, inputs the vault doesn't own, and a branch id that is missing or
+//  differs from the live one.
 //
 
 import BigInt
@@ -27,136 +23,107 @@ import XCTest
 @MainActor
 final class SwapKitZcashTests: XCTestCase {
 
-    /// Sample little-endian ZIP-243 branch id passed into the signer in place of
-    /// the (now removed) compiled-in constant; the signer must land it verbatim
-    /// on the plan.
-    private let testBranchID = "30f33754"
+    /// The fixture's consensus branch id (raw LE bytes), standing in for the live one.
+    private let testBranchID = "d90a1977"
 
-    // MARK: - Decoder
+    // MARK: - v5 body parser
 
-    func testZcashSwapFixtureDecodesAsZcashPsbt() throws {
-        let response = try SwapKitFixtureLoader.decode(
-            SwapKitSwapResponse.self,
-            from: "v3-real-zec-swap"
-        )
-        XCTAssertEqual(response.meta.txType, "PSBT")
-        XCTAssertEqual(response.providers, ["NEAR"])
-        guard case let .zcashPsbt(base64) = response.tx else {
-            return XCTFail("expected .zcashPsbt, got \(response.tx)")
-        }
-        XCTAssertTrue(base64.hasPrefix("cHNidP8B"))
-        XCTAssertTrue(response.targetAddress.hasPrefix("t1"),
-                      "ZEC target address must be transparent (`t1…`)")
-        XCTAssertEqual(response.inboundAddress, response.targetAddress)
-    }
-
-    // MARK: - Payload builder
-
-    func testZcashPayloadBuilderProducesPSBTZECTxType() throws {
-        let response = try SwapKitFixtureLoader.decode(
-            SwapKitSwapResponse.self,
-            from: "v3-real-zec-swap"
-        )
-        guard case let .zcashPsbt(base64) = response.tx else {
-            return XCTFail("expected .zcashPsbt")
-        }
-        let payload = try SwapCryptoLogic.buildSwapKitLegacyPSBTPayload(
-            fromCoin: makeZcashCoin(),
-            toCoin: makeUsdcCoin(),
-            fromAmountInCoin: BigInt(100_000_000),
-            toAmountDecimal: Decimal(string: "655.026517") ?? 0,
-            base64PSBT: base64,
-            txType: "PSBT_ZEC",
-            swapResponse: response
-        )
-        XCTAssertEqual(payload.txType, "PSBT_ZEC")
-        XCTAssertEqual(payload.targetAddress, response.targetAddress)
-        XCTAssertEqual(payload.txPayload.base64EncodedString(), base64)
-    }
-
-    // MARK: - Sapling header parser
-
-    func testSaplingHeaderParserAcceptsV4() throws {
-        let response = try SwapKitFixtureLoader.decode(
-            SwapKitSwapResponse.self,
-            from: "v3-real-zec-swap"
-        )
-        guard case let .zcashPsbt(base64) = response.tx else {
-            return XCTFail("expected .zcashPsbt")
-        }
-        let psbtBytes = try XCTUnwrap(Data(base64Encoded: base64))
-        // The unsigned-tx body lives at the value of global key 0x00. We
-        // re-extract it through SwapKitPSBTParser for the test.
-        let framing = try SwapKitPSBTParser.parseFraming(psbtBytes: psbtBytes)
-        let parsed = try SwapKitZcashSigner.parseSaplingUnsignedTx(framing.unsignedTxBytes)
-        XCTAssertEqual(parsed.version, 0x80000004, "Sapling v4 with overwinter bit")
-        XCTAssertEqual(parsed.versionGroupID, 0x892F2085, "Sapling consensus group ID")
+    func testParserAcceptsV5() throws {
+        let parsed = try SwapKitZcashSigner.parseUnsignedTx(try unsignedTx(fixture: "v3-real-zec-v5-swap"))
+        XCTAssertEqual(parsed.version, 0x80000005)
+        XCTAssertEqual(parsed.versionGroupID, 0x26A7270A)
+        XCTAssertEqual(parsed.branchID.hexString, testBranchID)
+        XCTAssertEqual(parsed.expiryHeight, 0)
         XCTAssertEqual(parsed.inputs.count, 1)
-        XCTAssertEqual(parsed.outputs.count, 2)
-        XCTAssertEqual(parsed.outputs[0].amount, 100_000_000, "Deposit output: 1 ZEC")
+        XCTAssertEqual(parsed.outputs.count, 3, "deposit + OP_RETURN memo + change")
+        XCTAssertEqual(parsed.outputs[0].amount, 100_000)
     }
 
-    func testSaplingHeaderParserRejectsV5() {
-        // Hand-mutate the version field of the unsigned-tx body to 0x80000005
-        // (overwinter + v5 = NU5). Parser must throw `unsupportedZcashVersion`.
-        var body = Data()
-        body.append(contentsOf: [0x05, 0x00, 0x00, 0x80])  // version = 0x80000005
-        body.append(contentsOf: [0x85, 0x20, 0x2f, 0x89])  // group ID unchanged
-        // ...rest doesn't matter; parser stops at version+group check.
-        XCTAssertThrowsError(try SwapKitZcashSigner.parseSaplingUnsignedTx(body)) { err in
+    func testParserRefusesSaplingV4() throws {
+        let body = try unsignedTx(fixture: "v3-real-zec-swap")
+        XCTAssertThrowsError(try SwapKitZcashSigner.parseUnsignedTx(body)) { err in
             guard case SwapKitZcashSignerError.unsupportedZcashVersion(let v, let g) = err else {
                 return XCTFail("expected .unsupportedZcashVersion, got \(err)")
             }
-            XCTAssertEqual(v, 0x80000005)
+            XCTAssertEqual(v, 0x80000004)
             XCTAssertEqual(g, 0x892F2085)
         }
     }
 
-    func testSaplingHeaderParserRejectsNu5VersionGroup() {
-        var body = Data()
-        body.append(contentsOf: [0x04, 0x00, 0x00, 0x80])  // version = v4 (good)
-        body.append(contentsOf: [0x0a, 0x27, 0xa7, 0x26])  // group ID = 0x26A7270A (NU5 — bad)
-        XCTAssertThrowsError(try SwapKitZcashSigner.parseSaplingUnsignedTx(body)) { err in
-            guard case SwapKitZcashSignerError.unsupportedZcashVersion = err else {
-                return XCTFail("expected .unsupportedZcashVersion, got \(err)")
+    func testParserRefusesShieldedBundle() throws {
+        var body = try unsignedTx(fixture: "v3-real-zec-v5-swap")
+        body[body.count - 3] = 0x01  // one Sapling spend
+        XCTAssertThrowsError(try SwapKitZcashSigner.parseUnsignedTx(body)) { err in
+            guard case SwapKitZcashSignerError.unsupportedShieldedTransaction = err else {
+                return XCTFail("expected .unsupportedShieldedTransaction, got \(err)")
             }
         }
     }
 
-    // MARK: - Signer structural coverage
+    func testParserRefusesTrailingBytes() throws {
+        var body = try unsignedTx(fixture: "v3-real-zec-v5-swap")
+        body.append(0x00)
+        XCTAssertThrowsError(try SwapKitZcashSigner.parseUnsignedTx(body)) { err in
+            guard case SwapKitZcashSignerError.unsupportedShieldedTransaction = err else {
+                return XCTFail("expected .unsupportedShieldedTransaction, got \(err)")
+            }
+        }
+    }
 
-    func testZcashSignerProducesOneHashPerInput() throws {
-        let payload = try makeVaultOwnedPayload()
+    // MARK: - Signer
+
+    func testSighashMatchesIndependentZIP244Reference() throws {
+        let hashes = try SwapKitZcashSigner.preSigningHashes(
+            payload: try ownedPayload(),
+            zcashBranchId: testBranchID,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )
+        XCTAssertEqual(hashes, ["c5b43b0a5497473f5649361d45111ad815ba951b1fec5946ae2ea5c907139ab3"])
+    }
+
+    func testSignedTransactionIsV5WithZIP244TxidAndUntouchedOutputs() throws {
+        let payload = try ownedPayload()
         let hashes = try SwapKitZcashSigner.preSigningHashes(
             payload: payload,
             zcashBranchId: testBranchID,
             pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
         )
-        XCTAssertEqual(hashes.count, 1, "Fixture has 1 input → 1 preimage hash")
-        for hash in hashes {
-            XCTAssertEqual(hash.count, 64)
-        }
+        let signed = try SwapKitZcashSigner.compileSignedTransaction(
+            payload: payload,
+            signatures: try SigningGoldenSigner.signatures(forImageHashes: hashes, curve: .secp256k1),
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex,
+            zcashBranchId: testBranchID
+        )
+        XCTAssertEqual(signed.transactionHash, "46af32ccd24138fb5d51a1790e899f90aff72451785d19b262fb2abfaffd7292")
+        let raw = try XCTUnwrap(Data(hexString: signed.rawTransaction))
+        XCTAssertEqual(raw.prefix(12).hexString, "050000800a27a726d90a1977", "v5 header, group, branch")
+        // Outputs (deposit, OP_RETURN memo, change) are SwapKit's, byte for byte and in order.
+        let unsigned = try unsignedTx(fixture: "v3-real-zec-v5-swap")
+        let outputs = unsigned.suffix(from: 20 + 1 + 41 + 1).dropLast(3)
+        let rebound = SwapKitVaultOwnedPSBT.replacing(
+            script: Data(hexString: "76a9147b187e37a86ebb966feb9e83b2fd489e1601b71788ac")!,
+            with: SwapKitVaultOwnedPSBT.goldenP2PKHScript,
+            in: Data(outputs)
+        )
+        XCTAssertNotNil(raw.range(of: rebound))
     }
 
-    func testZcashPreSigningHashesRefuseInputsThisVaultDoesNotOwn() throws {
-        let payload = try makePayload()
+    func testPreSigningHashesRefuseInputsThisVaultDoesNotOwn() throws {
         XCTAssertThrowsError(try SwapKitZcashSigner.preSigningHashes(
-            payload: payload,
+            payload: try makePayload(),
             zcashBranchId: testBranchID,
             pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
         )) { err in
-            guard case SwapKitZcashSignerError.underlying(let inner) = err,
-                  case SwapKitLegacyP2PKHSignerError.pubkeyDoesNotMatchInput(let index) = inner else {
+            guard case SwapKitZcashSignerError.underlying(.pubkeyDoesNotMatchInput(let index)) = err else {
                 return XCTFail("expected .pubkeyDoesNotMatchInput, got \(err)")
             }
             XCTAssertEqual(index, 0)
         }
     }
 
-    func testZcashCompileRefusesInputsThisVaultDoesNotOwn() throws {
-        let payload = try makePayload()
+    func testCompileRefusesInputsThisVaultDoesNotOwn() throws {
         XCTAssertThrowsError(try SwapKitZcashSigner.compileSignedTransaction(
-            payload: payload,
+            payload: try makePayload(),
             signatures: [:],
             pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex,
             zcashBranchId: testBranchID
@@ -167,22 +134,20 @@ final class SwapKitZcashTests: XCTestCase {
         }
     }
 
-    func testZcashSignerBuildsBitcoinSigningInputWithSaplingBranchID() throws {
-        let payload = try makePayload()
-        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: testBranchID)
-        XCTAssertEqual(input.coinType, CoinType.zcash.rawValue)
-        XCTAssertEqual(input.utxo.count, 1)
-        XCTAssertEqual(input.plan.utxos.count, 1)
-        // The branch id passed in must land verbatim on the plan, or WalletCore
-        // derives the wrong ZIP-243 digest.
-        XCTAssertEqual(input.plan.branchID.hexString, testBranchID)
+    func testSignerRefusesSaplingV4PSBT() throws {
+        XCTAssertThrowsError(try SwapKitZcashSigner.preSigningHashes(
+            payload: try makePayload(fixture: "v3-real-zec-swap"),
+            zcashBranchId: testBranchID,
+            pubKeyHex: SwapKitVaultOwnedPSBT.goldenPubKeyHex
+        )) { err in
+            guard case SwapKitZcashSignerError.unsupportedZcashVersion = err else {
+                return XCTFail("expected .unsupportedZcashVersion, got \(err)")
+            }
+        }
     }
 
-    func testZcashSignerRejectsMissingBranchID() throws {
-        // No branch id supplied (RPC unavailable) — must refuse rather than sign
-        // with a stale value (there is no compiled-in fallback).
-        let payload = try makePayload()
-        XCTAssertThrowsError(try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: nil)) { err in
+    func testSignerRefusesMissingBranchID() throws {
+        XCTAssertThrowsError(try SwapKitZcashSigner.parsePSBT(try makePayload().txPayload, zcashBranchId: nil)) { err in
             guard case SwapKitZcashSignerError.underlying(let inner) = err else {
                 return XCTFail("expected underlying plan error, got \(err)")
             }
@@ -190,28 +155,21 @@ final class SwapKitZcashTests: XCTestCase {
         }
     }
 
-    func testZcashSignerDerivesToAddressFromPSBTOutputScriptNotTargetAddress() throws {
-        // The ZEC spike fixture's `targetAddress`
-        // (`t1MMyqcyYHTFRcXSDVFKmJBuUBmAjcEvBMf`, hash160
-        // `26463fc7c0e1687c41d0937d22cc64d22b29f35d`) does NOT match output
-        // 0's P2PKH hash (`19fb7ab04f2de927ced3b8337ab45d5d046db6cf` =
-        // `t1LEzADVN42PMeGGE8y2AxPydsdFNyAvpE3`) — the SwapKit-declared
-        // address differs from the actual on-chain deposit recipient. The
-        // ZIP-243 sighash includes the prevout scripts, but more
-        // importantly WalletCore reconstructs the tx body from
-        // `toAddress` + `changeAddress`, so we MUST derive both from the
-        // PSBT's actual scriptPubKeys or the signed tx routes funds to
-        // the wrong recipient. Regression pin.
-        let payload = try makePayload()
-        let input = try SwapKitZcashSigner.buildSigningInput(payload: payload, zcashBranchId: testBranchID)
-        XCTAssertEqual(
-            input.toAddress, "t1LEzADVN42PMeGGE8y2AxPydsdFNyAvpE3",
-            "toAddress must be derived from PSBT output 0's hash160 (not from SwapKit's targetAddress)"
-        )
-        XCTAssertEqual(
-            input.changeAddress, "t1bnxtY7aLCjWx9Ru1YcGwRWch3eEWUFK7u",
-            "changeAddress must be derived from PSBT output 1's hash160 (source address)"
-        )
+    func testSignerRefusesBranchIDThatDiffersFromLive() throws {
+        XCTAssertThrowsError(try SwapKitZcashSigner.parsePSBT(try makePayload().txPayload, zcashBranchId: "30f33754")) { err in
+            guard case SwapKitZcashSignerError.underlying(let inner) = err else {
+                return XCTFail("expected underlying plan error, got \(err)")
+            }
+            XCTAssertTrue(inner.errorDescription?.contains("differs from the live branch id") ?? false)
+        }
+    }
+
+    func testParsedPSBTKeepsSwapKitOutputsVerbatimAndInOrder() throws {
+        let parsed = try SwapKitZcashSigner.parsePSBT(try makePayload().txPayload, zcashBranchId: testBranchID)
+        XCTAssertEqual(parsed.outputs.map(\.value), [100_000, 0, 196_432])
+        XCTAssertEqual(parsed.outputs[0].customScriptPubkey.hexString, "76a9147b1670a888fc6a8437917bbff3b7f9c64091efce88ac")
+        XCTAssertEqual(parsed.outputs[1].customScriptPubkey.first, 0x6a, "OP_RETURN memo stays second")
+        XCTAssertEqual(parsed.outputs[2].customScriptPubkey.hexString, "76a9147b187e37a86ebb966feb9e83b2fd489e1601b71788ac")
     }
 
     // MARK: - EVM builder defence-in-depth
@@ -231,10 +189,15 @@ final class SwapKitZcashTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makePayload() throws -> SwapKitSwapPayload {
+    private func unsignedTx(fixture: String) throws -> Data {
+        let bytes = try makePayload(fixture: fixture).txPayload
+        return try SwapKitPSBTParser.parseFraming(psbtBytes: bytes).unsignedTxBytes
+    }
+
+    private func makePayload(fixture: String = "v3-real-zec-v5-swap") throws -> SwapKitSwapPayload {
         let response = try SwapKitFixtureLoader.decode(
             SwapKitSwapResponse.self,
-            from: "v3-real-zec-swap"
+            from: fixture
         )
         guard case let .zcashPsbt(base64) = response.tx else {
             throw NSError(domain: "test", code: 0)
@@ -243,7 +206,7 @@ final class SwapKitZcashTests: XCTestCase {
         return SwapKitSwapPayload(
             fromCoin: makeZcashCoin(),
             toCoin: makeUsdcCoin(),
-            fromAmount: BigInt(100_000_000),
+            fromAmount: BigInt(100_000),
             toAmountDecimal: 0,
             txType: "PSBT_ZEC",
             txPayload: bytes,
@@ -255,11 +218,10 @@ final class SwapKitZcashTests: XCTestCase {
         )
     }
 
-    /// The captured ZEC PSBT with its P2PKH input rebound to the golden key.
-    private func makeVaultOwnedPayload() throws -> SwapKitSwapPayload {
+    /// The captured PSBT with its P2PKH input (and the change output paying back to it)
+    /// rebound to the golden key.
+    private func ownedPayload() throws -> SwapKitSwapPayload {
         let base = try makePayload()
-        let input = try SwapKitZcashSigner.buildSigningInput(payload: base, zcashBranchId: testBranchID)
-        let original = try XCTUnwrap(input.utxo.first?.script)
         return SwapKitSwapPayload(
             fromCoin: base.fromCoin,
             toCoin: base.toCoin,
@@ -267,7 +229,7 @@ final class SwapKitZcashTests: XCTestCase {
             toAmountDecimal: base.toAmountDecimal,
             txType: base.txType,
             txPayload: SwapKitVaultOwnedPSBT.replacing(
-                script: original,
+                script: Data(hexString: "76a9147b187e37a86ebb966feb9e83b2fd489e1601b71788ac")!,
                 with: SwapKitVaultOwnedPSBT.goldenP2PKHScript,
                 in: base.txPayload
             ),

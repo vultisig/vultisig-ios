@@ -1673,7 +1673,7 @@
 "swapKitErrorUnableToBuildTransaction" = "Diese Route ist derzeit nicht verfügbar, bitte einen anderen Anbieter wählen";
 "swapKitErrorUnsupportedShieldedTransaction" = "Vultisig kann abgeschirmte Zcash-Transaktionen nicht signieren";
 "swapKitErrorUnsupportedTxType" = "SwapKit-Transaktionstyp %@ wird auf iOS noch nicht unterstützt";
-"swapKitErrorUnsupportedZcashVersion" = "Zcash-Transaktionsversion nicht unterstützt (Version %1$@, Gruppe %2$@) — nur Sapling v4 ist signierbar";
+"swapKitErrorUnsupportedZcashVersion" = "Zcash-Transaktionsversion nicht unterstützt (Version %1$@, Gruppe %2$@) — nur v5 (NU5) ist signierbar";
 "swapKitStatusFailedReason" = "Swap im SwapKit-Tracker fehlgeschlagen";
 "swapKitStatusRefundedReason" = "Der Swap wurde an Ihre Quelladresse erstattet";
 "swapKitViewOnTracker" = "In SwapKit Tracker ansehen";
