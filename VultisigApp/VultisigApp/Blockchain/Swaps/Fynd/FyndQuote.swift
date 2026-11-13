@@ -162,7 +162,7 @@ struct FyndRouterCall: Equatable {
             return BigInt(String(args[start..<(start + 64)]), radix: 16)
         }
         func address(_ base: Int, _ index: Int) -> String? {
-            guard let value = word(base, index), value.bitWidth <= 161 else { return nil }
+            guard let value = word(base, index), value >= 0, value < (BigInt(1) << 160) else { return nil }
             let hex = String(value, radix: 16)
             return "0x" + String(repeating: "0", count: 40 - hex.count) + hex
         }

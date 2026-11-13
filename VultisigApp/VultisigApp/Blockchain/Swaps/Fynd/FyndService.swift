@@ -224,7 +224,8 @@ struct FyndService {
 
     static func mapHTTPError(statusCode: Int, body: Data?) -> Error {
         if statusCode == 429 { return FyndError.rateLimited }
-        if let body, let error = try? JSONDecoder().decode(FyndErrorResponse.self, from: body) {
+        // Keep 5xx as an HTTP status so the shared transient-retry path sees it.
+        if statusCode < 500, let body, let error = try? JSONDecoder().decode(FyndErrorResponse.self, from: body) {
             return FyndError.apiError(code: error.code, message: error.error)
         }
         return HTTPError.statusCode(statusCode, body)
