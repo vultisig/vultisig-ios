@@ -59,6 +59,43 @@ final class EVMSwapTxGuardTests: XCTestCase {
         assertRouterRejected(payload(provider: .kyberSwap, to: attacker))
     }
 
+    // MARK: - Fynd routers
+
+    private let fyndEthereum = "0x1644d2477f809cc2c71bccfd6dc9497e3f83210d"
+    private let fyndBase = "0xaba5b53b03eafad1c5fc8bd5fc765fc85bb3de67"
+    private let fyndArbitrum = "0x924f147c50ea59f5180a26031a8b65b2aa1e81cd"
+
+    func testFyndAcceptsEachChainsDesignatedRouterOnly() throws {
+        try swapFor(payload(provider: .fynd, chain: .ethereum, to: fyndEthereum))
+        try swapFor(payload(provider: .fynd, chain: .base, to: fyndBase))
+        try swapFor(payload(provider: .fynd, chain: .arbitrum, to: fyndArbitrum))
+        assertRouterRejected(payload(provider: .fynd, chain: .ethereum, to: fyndBase))
+        assertRouterRejected(payload(provider: .fynd, chain: .base, to: fyndEthereum))
+        assertRouterRejected(payload(provider: .fynd, chain: .ethereum, to: attacker))
+        assertRouterRejected(payload(provider: .fynd, chain: .ethereum, to: kyber))
+    }
+
+    func testFyndRejectsChainsWithoutAPinnedRouter() {
+        assertRouterRejected(payload(provider: .fynd, chain: .polygon, to: fyndEthereum))
+        assertRouterRejected(payload(provider: .fynd, chain: .bscChain, to: fyndEthereum))
+    }
+
+    func testFyndBoundsNativeValueToTheQuotedAmount() {
+        XCTAssertThrowsError(try swapFor(payload(provider: .fynd, to: fyndEthereum, value: "1000000000000000001"))) {
+            guard case .valueExceedsQuotedAmount = $0 as? EVMSwapTxGuardError else {
+                return XCTFail("Expected valueExceedsQuotedAmount, got \($0)")
+            }
+        }
+        XCTAssertThrowsError(try swapFor(payload(provider: .fynd, to: fyndEthereum, native: false, value: "1"))) {
+            XCTAssertEqual($0 as? EVMSwapTxGuardError, .valueFromTokenSource(value: "1"))
+        }
+    }
+
+    func testFyndWireIdRoundTrips() {
+        XCTAssertEqual(SwapProviderId.from(rawValue: "fynd"), .fynd)
+        XCTAssertEqual(SwapProviderId.fynd.rawValue, "fynd")
+    }
+
     // MARK: - LI.FI routers
 
     func testLiFiAcceptsDiamondOnStandardChain() throws {

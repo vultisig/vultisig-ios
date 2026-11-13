@@ -30,6 +30,9 @@ extension Coin {
 
     var swapProviders: [SwapProvider] {
         var providers = naturalSwapProviders
+        if FyndService.isEnabled, FyndService.chainName(for: chain) != nil {
+            providers.append(.fynd(chain))
+        }
         if SwapKitCapability.canReceive(on: chain) {
             providers.append(.swapkit)
         }
@@ -55,6 +58,8 @@ extension Coin {
         case ("oneInch", .oneinch):
             return true
         case ("kyberSwap", .kyberswap):
+            return true
+        case ("fynd", .fynd):
             return true
         case ("lifi", .lifi):
             return true

@@ -15,6 +15,10 @@ enum SwapQuote: Hashable {
     case mayachain(ThorchainSwapQuote)
     case oneinch(EVMQuote, fee: BigInt?)
     case kyberswap(EVMQuote, fee: BigInt?)
+    /// Fynd same-chain EVM swap. `EVMQuote.dstAmount` is net of Fynd's router
+    /// fee and the Vultisig client fee; `tx.swapFee` is Vultisig's share in
+    /// `toCoin` units, absent when the quote carries no client fee.
+    case fynd(EVMQuote, fee: BigInt?)
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
     /// Jupiter Solana swap. `EVMQuote.tx.data` carries the base64 Solana wire
@@ -36,7 +40,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return true
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return false
         }
     }
@@ -49,6 +53,8 @@ enum SwapQuote: Hashable {
             return .oneInch
         case .kyberswap:
             return .kyberSwap
+        case .fynd:
+            return .fynd
         case .lifi:
             return .lifi
         case .swapkit:
@@ -76,6 +82,8 @@ enum SwapQuote: Hashable {
             return .oneinch(fromChain)
         case .kyberswap:
             return .kyberswap(fromChain)
+        case .fynd:
+            return .fynd(fromChain)
         case .lifi:
             return .lifi
         case .swapkit:
@@ -98,6 +106,8 @@ enum SwapQuote: Hashable {
             return .oneInch
         case .kyberswap:
             return .kyberSwap
+        case .fynd:
+            return .fynd
         case .lifi:
             return .lifi
         case .swapkit:
@@ -114,6 +124,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
+                .fynd(let quote, _),
                 .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
@@ -125,7 +136,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.totalSwapSeconds
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -137,6 +148,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
+                .fynd(let quote, _),
                 .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
@@ -178,7 +190,7 @@ enum SwapQuote: Hashable {
             // Jupiter's affiliate platform fee is already denominated in toCoin
             // units (0 when none is charged or the fee is taken on the input mint).
             return platformFee
-        case .oneinch, .kyberswap, .swapkit:
+        case .oneinch, .kyberswap, .fynd, .swapkit:
             // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
         }
@@ -186,7 +198,7 @@ enum SwapQuote: Hashable {
 
     var evmSwapFeeBigInt: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .fynd(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
             guard let raw = quote.tx.swapFee, let fee = BigInt(raw), fee >= 0 else { return nil }
             return fee
         case .swapkit:
@@ -205,7 +217,7 @@ enum SwapQuote: Hashable {
     /// `nil` for THORChain/Maya/SwapKit, which expose no router gas at quote time.
     var sourceGasWei: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .fynd(let quote, _), .lifi(let quote, _, _):
             guard let gasPrice = BigInt(quote.tx.gasPrice), gasPrice > 0 else { return nil }
             return BigInt(quote.tx.gas) * gasPrice
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit, .jupiter:
@@ -223,7 +235,7 @@ enum SwapQuote: Hashable {
     /// time.
     var evmRouteGas: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .fynd(let quote, _), .lifi(let quote, _, _):
             return BigInt(quote.tx.gas)
         case .swapkit(let response, _, _):
             guard case .evm(let tx) = response.tx else { return nil }
@@ -240,7 +252,7 @@ enum SwapQuote: Hashable {
     /// with no EVM gas price at quote time.
     var evmQuoteGasPriceWei: BigInt? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .fynd(let quote, _), .lifi(let quote, _, _):
             return EVMSwapFee.quoteGasPriceWei(quote.tx.gasPrice)
         case .swapkit(let response, _, _):
             guard case .evm(let tx) = response.tx else { return nil }
@@ -252,7 +264,7 @@ enum SwapQuote: Hashable {
 
     var swapFeeTokenContract: String? {
         switch self {
-        case .oneinch(let quote, _), .kyberswap(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
+        case .oneinch(let quote, _), .kyberswap(let quote, _), .fynd(let quote, _), .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
             let contract = quote.tx.swapFeeTokenContract
             return contract.isEmpty ? nil : contract
         default:
@@ -264,7 +276,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.memo
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -274,7 +286,7 @@ enum SwapQuote: Hashable {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             guard let slippageBps = quote.fees.slippageBps else { return nil }
             return Decimal(slippageBps) / 10000
-        case .oneinch, .kyberswap, .lifi, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .jupiter:
             return nil
         case .swapkit(let response, _, _):
             guard let impact = response.meta.priceImpact else { return nil }
@@ -286,7 +298,7 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.fees.total
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return nil
         }
     }
@@ -305,6 +317,9 @@ enum SwapQuote: Hashable {
             hasher.combine(quote)
             hasher.combine(fee)
         case .kyberswap(let quote, let fee):
+            hasher.combine(quote)
+            hasher.combine(fee)
+        case .fynd(let quote, let fee):
             hasher.combine(quote)
             hasher.combine(fee)
         case .lifi(let quote, let fee, let integratorFee):

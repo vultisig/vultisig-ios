@@ -238,7 +238,7 @@ private extension SecurityScannerTransactionFactory {
             }
             base64Transaction = base64
         case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet,
-                .oneinch, .kyberswap:
+                .oneinch, .kyberswap, .fynd:
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
         }
 
@@ -277,7 +277,7 @@ private extension SecurityScannerTransactionFactory {
                 data: quote.tx.data,
                 precedingTransactions: try approveScanTransactions(transaction: transaction)
             )
-        case .kyberswap(let quote, _):
+        case .kyberswap(let quote, _), .fynd(let quote, _):
             return try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,

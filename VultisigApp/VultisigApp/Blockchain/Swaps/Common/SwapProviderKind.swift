@@ -17,12 +17,13 @@ enum SwapProviderKind: Equatable {
     case maya
     case oneInch
     case kyberSwap
+    case fynd
     case lifi
     case swapkit
     case jupiter
 
     /// Brand-logo imageset name (in `Crypto/`), matching the imageset filenames.
-    /// kyberswap/swapkit/jupiter have no bundled asset on purpose, so
+    /// kyberswap/fynd/swapkit/jupiter have no bundled asset on purpose, so
     /// `AsyncImageView` falls back to a monogram built from the ticker.
     var providerLogo: String {
         switch self {
@@ -36,6 +37,8 @@ enum SwapProviderKind: Equatable {
             return "LI.FI"
         case .kyberSwap:
             return "kyberswap"
+        case .fynd:
+            return "fynd"
         case .swapkit:
             return "swapkit"
         case .jupiter:
@@ -56,6 +59,8 @@ enum SwapProviderKind: Equatable {
             return "1Inch"
         case .kyberSwap:
             return "KyberSwap"
+        case .fynd:
+            return "Fynd"
         case .lifi:
             return "LI.FI"
         case .swapkit:
@@ -91,6 +96,7 @@ enum SwapProviderKind: Equatable {
             ("maya", .maya),
             ("1inch", .oneInch),
             ("kyberswap", .kyberSwap),
+            ("fynd", .fynd),
             ("li.fi", .lifi),
             ("jupiter", .jupiter)
         ]
