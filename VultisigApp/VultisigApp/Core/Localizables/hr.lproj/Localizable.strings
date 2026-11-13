@@ -1892,7 +1892,12 @@
 "swapReworkAllIn" = "%@ ukupno";
 "swapReworkAllowSwap" = "Dopusti + zamijeni";
 "swapReworkApprovalBody" = "Ako %3$@ još ne može trošiti %1$@ %2$@, pregled dodaje odobrenje prije zamjene. Njegov plin procjenjuje se tamo.";
+"swapReworkApprovalBodyNeeded" = "Prvo dopustite %3$@ trošenje %1$@ %2$@, zatim zamjena. Plin je u naknadama.";
+"swapReworkApprovalBodyReset" = "%1$@ traži da se staro odobrenje za %2$@ postavi na nulu prije novog. Plin za oba je u naknadama.";
+"swapReworkApprovalGas" = "Plin za odobrenje (%d tx)";
 "swapReworkApprovalTitle" = "Možda je potrebno odobrenje";
+"swapReworkApprovalTitleNeeded" = "Potrebno je odobrenje";
+"swapReworkApprovalTitleReset" = "Potrebna su 2 odobrenja";
 "swapReworkArrived" = "Stiglo u tvoj trezor";
 "swapReworkBackToVault" = "Natrag na trezor";
 "swapReworkBalance" = "Saldo";
@@ -1903,12 +1908,11 @@
 "swapReworkChooseAnother" = "Odaberi drugi novčić";
 "swapReworkConfirmNewAmount" = "Prihvati novi iznos";
 "swapReworkDeliveredLabel" = "Isporučeno";
-"swapReworkDeliveredPending" = "Točan isporučeni iznos još nije prijavljen. Provjerite transakciju u povijesti.";
+"swapReworkDeliveredUnreported" = "Ova ruta ne prijavljuje točan isporučeni iznos.";
 "swapReworkDifference" = "Razlika";
 "swapReworkEnterAmount" = "Unesi iznos";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
-"swapReworkExpectedIn" = "Očekuje se u %@";
 "swapReworkFailed" = "Ova zamjena nije uspjela";
 "swapReworkFastest" = "Najbrže";
 "swapReworkFees" = "Naknade";

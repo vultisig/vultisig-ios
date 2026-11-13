@@ -382,3 +382,80 @@ final class SwapTokenTrustTests: XCTestCase {
         )
     }
 }
+
+final class SwapDeliveredAmountTests: XCTestCase {
+    private let vaultBTC = "bc1qexamplevaultaddress0000000000000000"
+
+    private func action(_ type: String, inHash: String = "ABC123", out: [MidgardTransaction]) -> MidgardAction {
+        MidgardAction(
+            pools: [], type: type, status: "success",
+            in: [MidgardTransaction(txID: inHash, address: nil, coins: nil)],
+            out: out, date: "0", height: "0", metadata: nil
+        )
+    }
+
+    func testMidgardSumsSwapOutsToTheVaultInTheDestinationAsset() {
+        let actions = [action("swap", out: [
+            MidgardTransaction(txID: "OUT1", address: vaultBTC, coins: [MidgardCoin(asset: "BTC.BTC", amount: "1402370")]),
+            MidgardTransaction(txID: "", address: "thor1affiliate", coins: [MidgardCoin(asset: "THOR.RUNE", amount: "99")])
+        ])]
+        let delivered = SwapDeliveredAmount.fromMidgard(
+            actions: actions, inboundHash: "0xabc123", recipient: vaultBTC.uppercased(),
+            assetPrefix: "BTC.BTC", divisor: 100_000_000
+        )
+        XCTAssertEqual(delivered, dec("0.0140237"))
+    }
+
+    func testMidgardIgnoresRefundsAndOtherAssets() {
+        let refunded = [
+            action("swap", out: [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "BTC.BTC", amount: "10")])]),
+            action("refund", out: [])
+        ]
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: refunded, inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "BTC.BTC", divisor: 1e8))
+        let wrongAsset = [action("swap", out: [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "ETH.USDT-0XDAC", amount: "10")])])]
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: wrongAsset, inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "ETH.USDC", divisor: 1e8))
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [], inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "BTC.BTC", divisor: 1e8))
+    }
+
+    func testAssetPrefixMatchesTokenSuffixes() {
+        XCTAssertTrue(SwapDeliveredAmount.matches(asset: "ETH.USDC-0XA0B86991", prefix: "ETH.USDC"))
+        XCTAssertTrue(SwapDeliveredAmount.matches(asset: "btc.btc", prefix: "BTC.BTC"))
+        XCTAssertFalse(SwapDeliveredAmount.matches(asset: "ETH.USDCX-0X1", prefix: "ETH.USDC"))
+    }
+
+    func testReceiptSumsTokenTransfersToTheVault() {
+        let token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        let vault = "0x9D2a7C1b3E4f5A6b7C8d9E0f1A2b3C4d5E6f3003"
+        let vaultWord = SwapDeliveredAmount.topicWord(vault) ?? ""
+        let other = SwapDeliveredAmount.topicWord("0x1111111111111111111111111111111111111111") ?? ""
+        let logs = [
+            SwapDeliveredAmount.Log(address: token.lowercased(), topics: [SwapDeliveredAmount.transferTopic, other, vaultWord], data: "0x3b9aca00"),
+            SwapDeliveredAmount.Log(address: token, topics: [SwapDeliveredAmount.transferTopic, vaultWord, other], data: "0x10"),
+            SwapDeliveredAmount.Log(address: "0xdead000000000000000000000000000000000000", topics: [SwapDeliveredAmount.transferTopic, other, vaultWord], data: "0x10")
+        ]
+        // 0x3b9aca00 = 1,000,000,000 base units = 1,000 USDC (6 decimals).
+        XCTAssertEqual(SwapDeliveredAmount.fromReceiptLogs(logs, token: token, recipient: vault, decimals: 6), 1000)
+        XCTAssertNil(SwapDeliveredAmount.fromReceiptLogs([], token: token, recipient: vault, decimals: 6))
+        XCTAssertNil(SwapDeliveredAmount.fromReceiptLogs(logs, token: "", recipient: vault, decimals: 6))
+    }
+
+    func testApprovalGasLegs() {
+        XCTAssertEqual(SwapApprovalGas.legs(for: .notRequired), 0)
+        XCTAssertEqual(SwapApprovalGas.legs(for: .approve), 1)
+        XCTAssertEqual(SwapApprovalGas.legs(for: .resetThenApprove), 2)
+        XCTAssertEqual(SwapApprovalGas.fiat(legs: 2, perLegFiat: dec("1.06")), dec("2.12"))
+        XCTAssertEqual(SwapApprovalGas.totalGas(swapGas: dec("0.00054"), legs: 1), dec("0.00108"))
+    }
+
+    func testApprovalGasCountsInTotalsAndDebit() {
+        let fees = SwapFeeBreakdown(.init(
+            networkFiat: dec("1.06"), networkCrypto: "", approvalFiat: dec("1.06"), protocolFiat: 0,
+            vultisigNetFiat: dec("3.00"), vultisigListFiat: dec("5.00"), listBps: 50, tierDiscountBps: 20,
+            tier: .gold, vultisigIncludedInRate: false, payFiat: 1000, receiveFiat: dec("996.60")
+        ))
+        XCTAssertEqual(fees.totalFiat, dec("5.12"))
+        XCTAssertEqual(fees.displayTotalFiat, dec("5.12"))
+        XCTAssertEqual(fees.totalDebitFiat, dec("1002.12"))
+        XCTAssertEqual(fees.allInChangeText, "-0.55%")
+    }
+}

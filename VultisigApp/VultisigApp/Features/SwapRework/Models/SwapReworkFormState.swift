@@ -36,6 +36,8 @@ struct SwapReworkFeeRows: Equatable {
     let networkLabel: String
     /// "0.00043 ETH"
     let networkCrypto: String
+    /// "Approval gas (1 tx)", nil when no approval leg is known to be needed.
+    var approvalLabel: String?
     /// "THORChain swap + payout", nil when the route has no protocol fee.
     let protocolLabel: String?
     let tierName: String?
@@ -50,6 +52,9 @@ struct SwapReworkApproval: Equatable {
     let ticker: String
     let amountText: String
     let spenderName: String
+    /// Approve transactions ahead of the swap from the allowance check: 1, or
+    /// 2 when the token needs its allowance reset first. Nil until it answers.
+    var legs: Int?
 }
 
 struct SwapReworkQuoteTimer: Equatable {

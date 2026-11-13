@@ -1892,7 +1892,12 @@
 "swapReworkAllIn" = "%@ no total";
 "swapReworkAllowSwap" = "Permitir + swap";
 "swapReworkApprovalBody" = "Se %3$@ ainda não puder gastar %1$@ %2$@, a revisão adiciona uma aprovação antes do swap. O gas dela é estimado lá.";
+"swapReworkApprovalBodyNeeded" = "Primeiro permita que %3$@ gaste %1$@ %2$@, depois o swap. O gas está nas taxas.";
+"swapReworkApprovalBodyReset" = "%1$@ exige zerar a autorização antiga para %2$@ antes de uma nova. O gas das duas está nas taxas.";
+"swapReworkApprovalGas" = "Gas de aprovação (%d tx)";
 "swapReworkApprovalTitle" = "Pode precisar de aprovação";
+"swapReworkApprovalTitleNeeded" = "Precisa de aprovação";
+"swapReworkApprovalTitleReset" = "Precisa de 2 aprovações";
 "swapReworkArrived" = "Chegou ao seu cofre";
 "swapReworkBackToVault" = "Voltar ao cofre";
 "swapReworkBalance" = "Saldo";
@@ -1903,12 +1908,11 @@
 "swapReworkChooseAnother" = "Escolha outra moeda";
 "swapReworkConfirmNewAmount" = "Aceitar novo valor";
 "swapReworkDeliveredLabel" = "Entregue";
-"swapReworkDeliveredPending" = "O valor exato entregue ainda não foi informado. Confira a transação no seu histórico.";
+"swapReworkDeliveredUnreported" = "Esta rota não informa o valor exato entregue.";
 "swapReworkDifference" = "Diferença";
 "swapReworkEnterAmount" = "Insira um valor";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
-"swapReworkExpectedIn" = "Previsto em %@";
 "swapReworkFailed" = "Este swap não foi concluído";
 "swapReworkFastest" = "Mais rápido";
 "swapReworkFees" = "Taxas";

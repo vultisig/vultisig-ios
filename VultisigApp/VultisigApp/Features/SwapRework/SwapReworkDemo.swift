@@ -30,6 +30,10 @@ enum SwapReworkDemoScenario: String, CaseIterable {
     case expired
     case tracker
     case success
+    /// Success on a route that does not report the delivered amount.
+    case received
+    /// Approval needed, fee card open with the approval gas row.
+    case approvalFees
 }
 
 enum SwapReworkDemo {
@@ -74,6 +78,7 @@ enum SwapReworkDemo {
             breakdown: breakdown,
             networkLabel: String(format: "swapReworkGas".localized, "Ethereum"),
             networkCrypto: breakdown.input.networkCrypto,
+            approvalLabel: approval ? String(format: "swapReworkApprovalGas".localized, 1) : nil,
             protocolLabel: breakdown.input.protocolFiat > 0 ? String(format: "swapReworkProtocolFee".localized, "THORChain") : nil,
             tierName: breakdown.input.tier?.name,
             minimumReceived: approval ? "0.504311 ETH" : "0.0138816 BTC",
@@ -115,8 +120,10 @@ enum SwapReworkDemo {
     static func formState(for scenario: SwapReworkDemoScenario) -> SwapReworkFormState {
         var state = baseQuote
         switch scenario {
-        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success:
+        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success, .received:
             break
+        case .approvalFees:
+            state = formState(for: .approval)
         case .empty:
             state.amountText = ""
             state.payFiatText = "$0.00"
@@ -145,7 +152,8 @@ enum SwapReworkDemo {
             state.isCTAEnabled = false
         case .approval, .steps:
             let fees = SwapFeeBreakdown(.init(
-                networkFiat: dec("2.12"), networkCrypto: "0.00108 ETH",
+                networkFiat: dec("1.06"), networkCrypto: "0.00054 ETH",
+                approvalFiat: dec("1.06"),
                 protocolFiat: 0,
                 vultisigNetFiat: dec("3.00"), vultisigListFiat: dec("5.00"),
                 listBps: 50, tierDiscountBps: 20, tier: .gold,
@@ -163,7 +171,7 @@ enum SwapReworkDemo {
             state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: false)
             state.routes = []
             state.fees = feeRows(fees, approval: true)
-            state.approval = SwapReworkApproval(ticker: "USDC", amountText: "1,000", spenderName: "1inch")
+            state.approval = SwapReworkApproval(ticker: "USDC", amountText: "1,000", spenderName: "1inch", legs: 1)
         case .overBalance:
             state.amountText = "2.5"
             state.payFiatText = "$4,891.00"
@@ -261,6 +269,24 @@ enum SwapReworkDemo {
             swappedDetail: "ETH → BTC",
             receivedDetail: "0.0140218 BTC → bc1q…7xk9",
             isCrossChain: true
+        )
+    }
+
+    /// What the live screen shows when the route reports no delivered amount.
+    static var received: SwapReworkSuccessState {
+        SwapReworkSuccessState(
+            receive: eth,
+            vaultName: "Main vault",
+            isDeliveredKnown: false,
+            deliveredText: "≈ 0.509405 ETH",
+            deliveredFiatText: "$996.60",
+            quotedText: "0.509405 ETH",
+            outcome: nil,
+            differenceText: nil,
+            tookText: "1 min",
+            feesText: "$5.12",
+            tierName: "Gold",
+            tierSavedText: nil
         )
     }
 

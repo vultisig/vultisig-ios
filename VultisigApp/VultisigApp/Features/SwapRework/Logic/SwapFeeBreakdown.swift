@@ -20,6 +20,10 @@ struct SwapFeeBreakdown: Equatable {
         let networkFiat: Decimal
         /// The same gas in the fee coin, e.g. "0.00043 ETH".
         let networkCrypto: String
+        /// Gas for the ERC-20 approval legs ahead of the swap, once the
+        /// allowance check says how many there are. Zero when none are needed
+        /// or not known yet.
+        var approvalFiat: Decimal = 0
         /// Protocol payout fee (THORChain/Maya outbound). Zero for aggregators,
         /// whose swap cost is already inside the quoted rate.
         let protocolFiat: Decimal
@@ -99,19 +103,23 @@ struct SwapFeeBreakdown: Equatable {
     /// Network + protocol + Vultisig. Price impact and slippage are already in
     /// the quoted amount and are never added again.
     var totalFiat: Decimal {
-        input.networkFiat + input.protocolFiat + (input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat)
+        input.networkFiat + input.approvalFiat + input.protocolFiat
+            + (input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat)
     }
 
     /// The total as the rows display it: each row truncated to cents (as
     /// `formatToFiat` shows it) before adding, so the rows on screen always
     /// add up to the total on screen.
     var displayTotalFiat: Decimal {
-        let rows = [input.networkFiat, input.protocolFiat, input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat]
+        let rows = [
+            input.networkFiat, input.approvalFiat, input.protocolFiat,
+            input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat
+        ]
         return rows.reduce(0) { $0 + $1.truncated(toPlaces: 2) }
     }
 
     /// Everything that leaves the vault, in fiat: the amount plus gas.
-    var totalDebitFiat: Decimal { input.payFiat + input.networkFiat }
+    var totalDebitFiat: Decimal { input.payFiat + input.networkFiat + input.approvalFiat }
 
     /// Received against everything that left, gas included. Negative is a
     /// loss. Nil until both sides are known.

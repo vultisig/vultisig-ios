@@ -161,7 +161,7 @@ struct SwapReworkSuccessView: View {
                     .background(Circle().fill(Theme.colors.bgPrimary))
                     .offset(x: 8, y: -6)
             }
-            Text(String(format: (state.isDeliveredKnown ? "swapReworkReceivedIn" : "swapReworkExpectedIn").localized, state.vaultName))
+            Text(String(format: "swapReworkReceivedIn".localized, state.vaultName))
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(state.deliveredText)
@@ -179,7 +179,7 @@ struct SwapReworkSuccessView: View {
                 if state.isDeliveredKnown {
                     row("swapReworkDeliveredLabel".localized, String(state.deliveredText.drop(while: { $0 == "+" })), color: Theme.colors.alertSuccess)
                 } else {
-                    Text("swapReworkDeliveredPending".localized)
+                    Text("swapReworkDeliveredUnreported".localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)

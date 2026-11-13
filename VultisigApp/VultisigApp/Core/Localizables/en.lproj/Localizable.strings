@@ -1892,7 +1892,12 @@
 "swapReworkAllIn" = "%@ all-in";
 "swapReworkAllowSwap" = "Allow + swap";
 "swapReworkApprovalBody" = "If %3$@ can't already spend %1$@ %2$@, the review adds an approval before the swap. Its gas is estimated there.";
+"swapReworkApprovalBodyNeeded" = "First allow %3$@ to spend %1$@ %2$@, then the swap. Its gas is in the fees.";
+"swapReworkApprovalBodyReset" = "%1$@ needs its old allowance for %2$@ set to zero before a new one. Both approvals' gas is in the fees.";
+"swapReworkApprovalGas" = "Approval gas (%d tx)";
 "swapReworkApprovalTitle" = "May need an approval";
+"swapReworkApprovalTitleNeeded" = "Needs an approval";
+"swapReworkApprovalTitleReset" = "Needs 2 approvals";
 "swapReworkArrived" = "Arrived in your vault";
 "swapReworkBackToVault" = "Back to vault";
 "swapReworkBalance" = "Balance";
@@ -1903,12 +1908,11 @@
 "swapReworkChooseAnother" = "Choose another coin";
 "swapReworkConfirmNewAmount" = "Accept new amount";
 "swapReworkDeliveredLabel" = "Delivered";
-"swapReworkDeliveredPending" = "The exact amount delivered isn't reported yet. Check the transaction in your history.";
+"swapReworkDeliveredUnreported" = "This route doesn't report the exact amount delivered.";
 "swapReworkDifference" = "Difference";
 "swapReworkEnterAmount" = "Enter an amount";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
-"swapReworkExpectedIn" = "Expected in %@";
 "swapReworkFailed" = "This swap didn't go through";
 "swapReworkFastest" = "Fastest";
 "swapReworkFees" = "Fees";

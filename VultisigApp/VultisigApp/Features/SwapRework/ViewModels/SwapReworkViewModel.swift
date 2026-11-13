@@ -27,6 +27,15 @@ final class SwapReworkViewModel {
     /// Max was tapped on a native coin: the amount keeps the network fee behind.
     private(set) var keepsGasReserve = false
 
+    /// Approve legs from the existing allowance check (0, 1, or 2 for a
+    /// reset), for the quote on screen. Nil while unknown.
+    private(set) var approvalLegs: Int?
+    @ObservationIgnored private var approvalTask: Task<Void, Never>?
+    /// The spend `approvalLegs` answers for; a refresh of the same spend keeps
+    /// the answer instead of re-reading the allowance every quote cycle.
+    @ObservationIgnored private var approvalQuery: ERC20ApprovalQuery?
+    @ObservationIgnored private let approvalResolver: ERC20ApprovalResolving
+
     var showRouteSheet = false
     var showFeeDetails = false
     var pickerSide: SwapReworkPickerSide?
@@ -37,7 +46,8 @@ final class SwapReworkViewModel {
     let demoState: SwapReworkFormState?
     #endif
 
-    init(details: SwapDetailsViewModel? = nil) {
+    init(details: SwapDetailsViewModel? = nil, approvalResolver: ERC20ApprovalResolving = ERC20ApprovalResolver()) {
+        self.approvalResolver = approvalResolver
         // Resolved here, not as a default argument, which would be evaluated
         // outside the main actor the details view model is isolated to.
         self.details = details ?? SwapDetailsViewModel()
@@ -93,6 +103,7 @@ final class SwapReworkViewModel {
     }
 
     private func setAmount(_ text: String, vault: Vault, immediate: Bool) {
+        resetApproval()
         amountText = text
         acknowledgedReceive = nil
         priceMove = .unchanged
@@ -118,7 +129,39 @@ final class SwapReworkViewModel {
         resetQuoteTracking()
     }
 
+    private func resetApproval() {
+        approvalTask?.cancel()
+        approvalTask = nil
+        approvalQuery = nil
+        approvalLegs = nil
+    }
+
+    /// Reads the allowance the same way the review's hand-off does
+    /// (`ERC20ApprovalResolver` on `SwapCryptoLogic.approvalQuery`), read-only,
+    /// so the form can count approval legs and their gas before review. The
+    /// review still reads it again and signs what it decides.
+    private func refreshApproval() {
+        guard details.isApproveRequired,
+              let query = try? SwapCryptoLogic.approvalQuery(
+                fromCoin: details.fromCoin, amount: details.amountInCoinDecimal, quote: details.quote
+              ) else {
+            resetApproval()
+            return
+        }
+        guard query != approvalQuery else { return }
+        resetApproval()
+        approvalQuery = query
+        approvalTask = Task { [weak self, approvalResolver] in
+            let requirement = try? await approvalResolver.requirement(for: query)
+            guard !Task.isCancelled, let self else { return }
+            self.approvalLegs = requirement.map(SwapApprovalGas.legs(for:))
+            // An unanswered read stays unknown and is retried next refresh.
+            if requirement == nil { self.approvalQuery = nil }
+        }
+    }
+
     private func resetQuoteTracking() {
+        resetApproval()
         acknowledgedReceive = nil
         priceMove = .unchanged
         clock.reset()
@@ -148,6 +191,7 @@ final class SwapReworkViewModel {
             acknowledgedReceive = current
         }
         reapplyMaxIfFeeGrew(vault: vault)
+        refreshApproval()
     }
 
     /// Max is computed against the fee known when it was tapped; the first
@@ -292,11 +336,12 @@ final class SwapReworkViewModel {
     }
 
     private var approval: SwapReworkApproval? {
-        guard details.isApproveRequired, let quote = details.quote else { return nil }
+        guard details.isApproveRequired, let quote = details.quote, approvalLegs != 0 else { return nil }
         return SwapReworkApproval(
             ticker: details.fromCoin.ticker,
             amountText: SwapReworkFormat.amount(details.fromAmountDecimal),
-            spenderName: quote.displayName ?? quote.kind.displayName
+            spenderName: quote.displayName ?? quote.kind.displayName,
+            legs: approvalLegs
         )
     }
 
@@ -354,9 +399,12 @@ final class SwapReworkViewModel {
             referralDiscountBps: details.referralDiscountBps
         )
         let outbound = SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: toCoin)
+        let networkFiat = feeCoin.fiat(decimal: networkCrypto)
+        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
         let breakdown = SwapFeeBreakdown(.init(
-            networkFiat: feeCoin.fiat(decimal: networkCrypto),
+            networkFiat: networkFiat,
             networkCrypto: SwapReworkFormat.amount(networkCrypto, ticker: feeCoin.ticker),
+            approvalFiat: SwapApprovalGas.fiat(legs: legs, perLegFiat: networkFiat),
             protocolFiat: outbound,
             vultisigNetFiat: net,
             vultisigListFiat: net + discounts.total,
@@ -375,12 +423,16 @@ final class SwapReworkViewModel {
             breakdown: breakdown,
             networkLabel: String(format: "swapReworkGas".localized, feeCoin.chain.name),
             networkCrypto: breakdown.input.networkCrypto,
+            approvalLabel: legs > 0 ? String(format: "swapReworkApprovalGas".localized, legs) : nil,
             protocolLabel: outbound > 0 ? String(format: "swapReworkProtocolFee".localized, providerName) : nil,
             tierName: breakdown.input.tier?.name,
             minimumReceived: minimum.map { SwapReworkFormat.amount($0, ticker: toCoin.ticker) } ?? "",
             slippageText: details.advancedSettings.slippage.displayValue,
             priceImpactText: details.priceImpactString,
-            leavesVaultText: leavesVaultText(networkCrypto: networkCrypto, totalFiat: breakdown.totalDebitFiat)
+            leavesVaultText: leavesVaultText(
+                networkCrypto: SwapApprovalGas.totalGas(swapGas: networkCrypto, legs: legs),
+                totalFiat: breakdown.totalDebitFiat
+            )
         )
     }
 
@@ -399,7 +451,10 @@ final class SwapReworkViewModel {
     /// meaningful while `.notEnoughGas` is the issue.
     var gasShortfallText: String? {
         let feeCoin = details.feeCoin
-        let needed = feeCoin.decimal(for: details.displayedNetworkFeeWei + details.storageReserve)
+        // Swap gas plus every approve leg the allowance check asked for.
+        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        let swapGas = feeCoin.decimal(for: details.displayedNetworkFeeWei)
+        let needed = SwapApprovalGas.totalGas(swapGas: swapGas, legs: legs) + feeCoin.decimal(for: details.storageReserve)
         guard needed > 0 else { return nil }
         if feeCoin.id == details.fromCoin.id {
             return String(format: "swapReworkGasUseMax".localized, SwapReworkFormat.amount(needed, ticker: feeCoin.ticker))

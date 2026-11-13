@@ -240,6 +240,9 @@ struct SwapReworkFeeCard: View {
                 Separator(color: Theme.colors.borderLight, opacity: 1)
                 VStack(alignment: .leading, spacing: 12) {
                     row(fees.networkLabel, value: breakdown.input.networkFiat.formatToFiat(), detail: fees.networkCrypto)
+                    if let approvalLabel = fees.approvalLabel {
+                        row(approvalLabel, value: breakdown.input.approvalFiat.formatToFiat())
+                    }
                     if let protocolLabel = fees.protocolLabel {
                         row(protocolLabel, value: breakdown.input.protocolFiat.formatToFiat())
                     }
@@ -333,10 +336,10 @@ struct SwapReworkApprovalCard: View {
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.primaryAccent4)
             VStack(alignment: .leading, spacing: 4) {
-                Text("swapReworkApprovalTitle".localized)
+                Text(titleText)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
-                Text(String(format: "swapReworkApprovalBody".localized, approval.amountText, approval.ticker, approval.spenderName))
+                Text(bodyText)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -346,6 +349,22 @@ struct SwapReworkApprovalCard: View {
         .padding(16)
         .swapReworkCard(highlighted: false)
         .accessibilityIdentifier("swapReworkApprovalCard")
+    }
+
+    private var titleText: String {
+        switch approval.legs {
+        case 2?: return "swapReworkApprovalTitleReset".localized
+        case 1?: return "swapReworkApprovalTitleNeeded".localized
+        default: return "swapReworkApprovalTitle".localized
+        }
+    }
+
+    private var bodyText: String {
+        switch approval.legs {
+        case 2?: return String(format: "swapReworkApprovalBodyReset".localized, approval.ticker, approval.spenderName)
+        case 1?: return String(format: "swapReworkApprovalBodyNeeded".localized, approval.amountText, approval.ticker, approval.spenderName)
+        default: return String(format: "swapReworkApprovalBody".localized, approval.amountText, approval.ticker, approval.spenderName)
+        }
     }
 }
 

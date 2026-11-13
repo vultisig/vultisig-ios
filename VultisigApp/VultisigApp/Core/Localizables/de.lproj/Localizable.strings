@@ -1892,7 +1892,12 @@
 "swapReworkAllIn" = "%@ inkl. allem";
 "swapReworkAllowSwap" = "Erlauben + Swap";
 "swapReworkApprovalBody" = "Falls %3$@ %1$@ %2$@ noch nicht ausgeben darf, fügt die Überprüfung vor dem Swap eine Freigabe hinzu. Deren Gas wird dort geschätzt.";
+"swapReworkApprovalBodyNeeded" = "Erst %3$@ erlauben, %1$@ %2$@ auszugeben, dann der Swap. Das Gas steht bei den Gebühren.";
+"swapReworkApprovalBodyReset" = "%1$@ verlangt, dass die alte Freigabe für %2$@ erst auf null gesetzt wird. Das Gas beider Freigaben steht bei den Gebühren.";
+"swapReworkApprovalGas" = "Freigabe-Gas (%d Tx)";
 "swapReworkApprovalTitle" = "Eventuell Freigabe nötig";
+"swapReworkApprovalTitleNeeded" = "Freigabe nötig";
+"swapReworkApprovalTitleReset" = "2 Freigaben nötig";
 "swapReworkArrived" = "In deinem Tresor angekommen";
 "swapReworkBackToVault" = "Zurück zum Tresor";
 "swapReworkBalance" = "Guthaben";
@@ -1903,12 +1908,11 @@
 "swapReworkChooseAnother" = "Andere Münze wählen";
 "swapReworkConfirmNewAmount" = "Neuen Betrag akzeptieren";
 "swapReworkDeliveredLabel" = "Geliefert";
-"swapReworkDeliveredPending" = "Der genau gelieferte Betrag ist noch nicht gemeldet. Prüfe die Transaktion in deinem Verlauf.";
+"swapReworkDeliveredUnreported" = "Diese Route meldet den genau gelieferten Betrag nicht.";
 "swapReworkDifference" = "Differenz";
 "swapReworkEnterAmount" = "Betrag eingeben";
 "swapReworkEtaMinutes" = "%1$d-%2$d Min.";
 "swapReworkEtaSeconds" = "~%d s";
-"swapReworkExpectedIn" = "Erwartet in %@";
 "swapReworkFailed" = "Dieser Swap ist fehlgeschlagen";
 "swapReworkFastest" = "Am schnellsten";
 "swapReworkFees" = "Gebühren";

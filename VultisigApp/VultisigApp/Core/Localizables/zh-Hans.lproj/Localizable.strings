@@ -1892,7 +1892,12 @@
 "swapReworkAllIn" = "%@ 总计";
 "swapReworkAllowSwap" = "授权 + 兑换";
 "swapReworkApprovalBody" = "如果 %3$@ 尚无法使用 %1$@ %2$@，审核时会在兑换前添加一笔授权，其燃料费在那里估算。";
+"swapReworkApprovalBodyNeeded" = "先允许 %3$@ 使用 %1$@ %2$@，然后兑换。燃料费已计入费用。";
+"swapReworkApprovalBodyReset" = "%1$@ 要求先将 %2$@ 的旧额度清零再重新授权。两次授权的燃料费已计入费用。";
+"swapReworkApprovalGas" = "授权燃料费（%d 笔）";
 "swapReworkApprovalTitle" = "可能需要授权";
+"swapReworkApprovalTitleNeeded" = "需要授权";
+"swapReworkApprovalTitleReset" = "需要 2 次授权";
 "swapReworkArrived" = "已到达你的保险库";
 "swapReworkBackToVault" = "返回保险库";
 "swapReworkBalance" = "余额";
@@ -1903,12 +1908,11 @@
 "swapReworkChooseAnother" = "选择其他币种";
 "swapReworkConfirmNewAmount" = "接受新金额";
 "swapReworkDeliveredLabel" = "已到账";
-"swapReworkDeliveredPending" = "尚未报告确切到账金额。请在历史记录中查看该交易。";
+"swapReworkDeliveredUnreported" = "该路由不提供确切到账金额。";
 "swapReworkDifference" = "差额";
 "swapReworkEnterAmount" = "输入金额";
 "swapReworkEtaMinutes" = "%1$d-%2$d 分钟";
 "swapReworkEtaSeconds" = "约 %d 秒";
-"swapReworkExpectedIn" = "预计到账 %@";
 "swapReworkFailed" = "此次兑换未成功";
 "swapReworkFastest" = "最快";
 "swapReworkFees" = "费用";

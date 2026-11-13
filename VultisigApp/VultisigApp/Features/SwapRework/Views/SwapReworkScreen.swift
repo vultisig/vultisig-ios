@@ -23,6 +23,9 @@ struct SwapReworkScreen: View {
     @State private var catalogSide: SwapReworkPickerSide?
     @State private var catalogChain: Chain?
     @State private var showApprovalSteps = false
+    @State private var showAdvancedLockedSheet = false
+
+    private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(KeysignReviewPresenter.self) private var reviewPresenter
@@ -50,6 +53,43 @@ struct SwapReworkScreen: View {
             }
         }
         .screenTitle("swap".localized)
+        .screenToolbar {
+            CustomToolbarItem(placement: .trailing) {
+                advancedSettingsButton
+            }
+        }
+        .crossPlatformSheet(isPresented: advancedSheetBinding) {
+            @Bindable var vm = details
+            AdvancedSwapSheet(
+                isPresented: $vm.showAdvancedSettingsSheet,
+                coin: details.toCoin,
+                isGasLimitSupported: details.isGasLimitSupported,
+                settings: $vm.advancedSettings,
+                detailsViewModel: details,
+                vault: vault
+            )
+        }
+        .crossPlatformSheet(isPresented: $showAdvancedLockedSheet) {
+            LockedFeatureSheet(
+                feature: .swapAdvancedSettings,
+                vault: vault,
+                isPresented: $showAdvancedLockedSheet
+            ) {
+                showAdvancedLockedSheet = false
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: tierService.getVultToken(for: vault),
+                    vault: vault
+                ))
+            }
+        }
+        .onChange(of: details.showAdvancedSettingsSheet) { wasPresented, isPresented in
+            // Same contract as the old form: re-quote on close only when a
+            // quote-affecting setting changed (the details view model decides).
+            if wasPresented && !isPresented {
+                details.advancedSettingsSheetDidClose(vault: vault)
+            }
+        }
         .crossPlatformSheet(item: $viewModel.pickerSide) { side in
             SwapReworkTokenPicker(
                 title: (side == .pay ? "swapReworkPayWith" : "swapReworkReceiveTitle").localized,
@@ -106,7 +146,7 @@ struct SwapReworkScreen: View {
     @ViewBuilder
     private var marketContent: some View {
         #if DEBUG
-        if let scenario = SwapReworkConfig.demoScenario, scenario == .tracker || scenario == .success {
+        if let scenario = SwapReworkConfig.demoScenario, [.tracker, .success, .received].contains(scenario) {
             progressDemo(scenario)
         } else {
             form
@@ -305,6 +345,54 @@ struct SwapReworkScreen: View {
         .environmentObject(coinSelectionViewModel)
     }
 
+    // MARK: - Advanced settings
+
+    private var advancedSheetBinding: Binding<Bool> {
+        Binding(
+            get: { details.showAdvancedSettingsSheet },
+            set: { details.showAdvancedSettingsSheet = $0 }
+        )
+    }
+
+    private var advancedSettingsButton: some View {
+        ToolbarButton(image: .slidersVertical, type: .outline) {
+            handleAdvancedSettingsTap()
+        }
+        .accessibilityLabel("advancedSettings".localized)
+    }
+
+    /// The old form's gate, unchanged: Silver and up open the existing
+    /// advanced sheet (slippage, gas limit, recipient, route); below that the
+    /// locked-feature sheet explains the tier.
+    private func handleAdvancedSettingsTap() {
+        guard !viewModel.isDemo else { return }
+        isEditingAmount = false
+        Task {
+            await TierGatedTap.handle(
+                required: .silver,
+                show: lockedSheetBinding,
+                for: vault,
+                isUnlocked: { tier, vault in
+                    guard let cached = await tierService.fetchDiscountTier(for: vault, cached: true) else {
+                        return false
+                    }
+                    return cached >= tier
+                },
+                onUnlocked: {
+                    details.snapshotAdvancedSettings()
+                    details.showAdvancedSettingsSheet = true
+                }
+            )
+        }
+    }
+
+    private var lockedSheetBinding: Binding<VultDiscountTier?> {
+        Binding(
+            get: { showAdvancedLockedSheet ? .silver : nil },
+            set: { showAdvancedLockedSheet = $0 != nil }
+        )
+    }
+
     // MARK: - Tabs
 
     private var swapModeTabs: some View {
@@ -346,7 +434,7 @@ struct SwapReworkScreen: View {
     private var isProgressDemo: Bool {
         #if DEBUG
         guard let scenario = SwapReworkConfig.demoScenario else { return false }
-        return scenario == .tracker || scenario == .success
+        return [.tracker, .success, .received].contains(scenario)
         #else
         false
         #endif
@@ -356,8 +444,8 @@ struct SwapReworkScreen: View {
     private func applyDemo(_ scenario: SwapReworkDemoScenario) {
         isEditingAmount = [.empty, .quote, .maxGas].contains(scenario)
         switch scenario {
-        case .fees, .approval, .noGas:
-            viewModel.showFeeDetails = scenario == .fees
+        case .fees, .approval, .noGas, .approvalFees:
+            viewModel.showFeeDetails = scenario == .fees || scenario == .approvalFees
         case .routes:
             viewModel.showRouteSheet = true
         case .picker, .unverified:
@@ -374,16 +462,16 @@ struct SwapReworkScreen: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 Group {
-                    if scenario == .tracker {
-                        SwapReworkTrackerView(state: SwapReworkDemo.tracker)
-                    } else {
-                        SwapReworkSuccessView(state: SwapReworkDemo.success)
+                    switch scenario {
+                    case .tracker: SwapReworkTrackerView(state: SwapReworkDemo.tracker)
+                    case .received: SwapReworkSuccessView(state: SwapReworkDemo.received)
+                    default: SwapReworkSuccessView(state: SwapReworkDemo.success)
                     }
                 }
                 .padding(16)
             }
             HStack(spacing: 10) {
-                if scenario == .success {
+                if scenario != .tracker {
                     PrimaryButton(title: "swapReworkSwapAgain".localized, type: .secondary) {}
                 }
                 PrimaryButton(title: (scenario == .tracker ? "swapReworkBackToVault" : "done").localized) {}

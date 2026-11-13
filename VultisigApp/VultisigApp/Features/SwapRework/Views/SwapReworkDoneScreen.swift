@@ -22,6 +22,11 @@ struct SwapReworkDoneScreen: View {
     @State private var now = Date()
     /// Frozen when the pollers first report completion, so "Took" stops.
     @State private var confirmedAt: Date?
+    /// Read from the chain after completion; nil when the route does not
+    /// state it, and the summary then shows no delivered row or difference.
+    @State private var delivered: Decimal?
+
+    private let deliveredService = SwapDeliveredAmountService()
 
     init(
         vault: Vault,
@@ -67,7 +72,9 @@ struct SwapReworkDoneScreen: View {
         .onDisappear { statusService.stop() }
         .swapRefreshTick { now = Date() }
         .onChange(of: statusService.status) { _, status in
-            if status == .confirmed, confirmedAt == nil { confirmedAt = Date() }
+            guard status == .confirmed, confirmedAt == nil else { return }
+            confirmedAt = Date()
+            loadDelivered()
         }
     }
 
@@ -103,24 +110,40 @@ struct SwapReworkDoneScreen: View {
         )
     }
 
-    /// The pollers report completion, not the delivered amount, so the summary
-    /// shows the quoted amount as expected and never calls it delivered.
+    private func loadDelivered() {
+        guard let request = SwapDeliveredAmountService.request(for: transaction, hash: hash) else { return }
+        Task {
+            delivered = await deliveredService.deliveredAmount(request)
+        }
+    }
+
+    /// With a delivered amount from the chain: quoted against delivered. Without
+    /// one: "Received", the quote marked approximate, and no difference.
     private var successState: SwapReworkSuccessState {
         let end = confirmedAt ?? now
         let minutes = max(1, Int((end.timeIntervalSince(startedAt) / 60).rounded(.up)))
+        let toCoin = transaction.toCoin
+        let outcome = delivered.map { SwapOutcome(quoted: transaction.toAmountDecimal, delivered: $0) }
         return SwapReworkSuccessState(
-            receive: SwapReworkViewModel.asset(transaction.toCoin),
+            receive: SwapReworkViewModel.asset(toCoin),
             vaultName: vault.name,
-            isDeliveredKnown: false,
-            deliveredText: "≈ " + receiveText,
-            deliveredFiatText: transaction.toFiatAmount,
+            isDeliveredKnown: outcome != nil,
+            deliveredText: delivered.map { "+" + SwapReworkFormat.amount($0, ticker: toCoin.ticker) } ?? "≈ " + receiveText,
+            deliveredFiatText: delivered.map { toCoin.fiat(decimal: $0).formatToFiat() } ?? transaction.toFiatAmount,
             quotedText: receiveText,
-            outcome: nil,
-            differenceText: nil,
+            outcome: outcome,
+            differenceText: outcome.flatMap { SwapReworkDoneScreen.differenceText($0, ticker: toCoin.ticker) },
             tookText: String(format: "swapReworkMinutes".localized, minutes),
             feesText: transaction.totalFeeString,
             tierName: VultDiscountTier.from(bpsDiscount: transaction.vultDiscountBps)?.name,
             tierSavedText: nil
         )
+    }
+
+    /// "+0.0000019 BTC · +0.01%"
+    static func differenceText(_ outcome: SwapOutcome, ticker: String) -> String? {
+        guard let share = outcome.differenceShareText else { return nil }
+        let sign = outcome.difference < 0 ? "-" : "+"
+        return "\(sign)\(SwapReworkFormat.amount(abs(outcome.difference), ticker: ticker)) · \(share)"
     }
 }
