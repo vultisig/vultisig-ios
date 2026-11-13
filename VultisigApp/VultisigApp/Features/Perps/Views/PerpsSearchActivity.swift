@@ -172,10 +172,10 @@ struct PerpsActivityScreen: View {
         return Self.dayFormatter.string(from: day)
     }
 
-    /// "Wed 12 Nov".
+    /// "Wed 12 Nov", in the user's locale ("Mi., 12. Nov.").
     private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEE d MMM"
+        formatter.setLocalizedDateFormatFromTemplate("EEEdMMM")
         return formatter
     }()
 }

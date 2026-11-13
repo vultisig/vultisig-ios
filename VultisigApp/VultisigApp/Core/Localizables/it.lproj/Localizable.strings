@@ -1341,6 +1341,7 @@
 "perpsRemoveMargin" = "Rimuovi margine";
 "perpsRestDidntFill" = "Il resto non è stato eseguito. Non è stato addebitato nulla.";
 "perpsReview" = "Rivedi";
+"perpsReviewUnavailable" = "Impossibile rivedere questo ordine. Modifica l'importo e riprova.";
 "perpsRoseTo" = "è salito a";
 "perpsSeeAll" = "Vedi tutto";
 "perpsSentFromVault" = "Inviato dal vault";
@@ -1350,6 +1351,7 @@
 "perpsShortfallLine" = "%@ necessari · %@ nel tuo vault";
 "perpsShortTitle" = "Short";
 "perpsSigning" = "Account firmatario";
+"perpsSigningNotAvailable" = "La firma dei perps non è ancora disponibile.";
 "perpsStartedMinAgo" = "Iniziato %d min fa";
 "perpsStatusDone" = "Fatto";
 "perpsStatusInProgress" = "In corso";

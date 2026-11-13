@@ -1341,6 +1341,7 @@
 "perpsRemoveMargin" = "Margin entfernen";
 "perpsRestDidntFill" = "Der Rest wurde nicht ausgeführt. Dafür wurde nichts berechnet.";
 "perpsReview" = "Überprüfen";
+"perpsReviewUnavailable" = "Diese Order kann nicht überprüft werden. Ändern Sie den Betrag und versuchen Sie es erneut.";
 "perpsRoseTo" = "stieg auf";
 "perpsSeeAll" = "Alle anzeigen";
 "perpsSentFromVault" = "Vom Tresor gesendet";
@@ -1350,6 +1351,7 @@
 "perpsShortfallLine" = "%@ benötigt · %@ in Ihrem Tresor";
 "perpsShortTitle" = "Short";
 "perpsSigning" = "Signierendes Konto";
+"perpsSigningNotAvailable" = "Das Signieren von Perps ist noch nicht verfügbar.";
 "perpsStartedMinAgo" = "Vor %d Min. gestartet";
 "perpsStatusDone" = "Fertig";
 "perpsStatusInProgress" = "In Bearbeitung";

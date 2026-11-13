@@ -1341,6 +1341,7 @@
 "perpsRemoveMargin" = "减少保证金";
 "perpsRestDidntFill" = "其余部分未成交，未收取任何费用。";
 "perpsReview" = "审核";
+"perpsReviewUnavailable" = "无法审核此订单。请修改金额后重试。";
 "perpsRoseTo" = "涨至";
 "perpsSeeAll" = "查看全部";
 "perpsSentFromVault" = "从保险库发送";
@@ -1350,6 +1351,7 @@
 "perpsShortfallLine" = "需要 %@ · 保险库中有 %@";
 "perpsShortTitle" = "做空";
 "perpsSigning" = "签名账户";
+"perpsSigningNotAvailable" = "永续合约签名暂不可用。";
 "perpsStartedMinAgo" = "%d 分钟前开始";
 "perpsStatusDone" = "完成";
 "perpsStatusInProgress" = "进行中";

@@ -94,20 +94,14 @@ struct PerpsAccountSheet: View {
                 PerpsFootnote(text: "perpsOnlyAvailableWithdraws".localized)
             }
             HStack(spacing: 10) {
-                PrimaryButton(title: "perpsAddFunds".localized, leadingView: { Self.icon("plus") }, type: .secondary, action: onAddFunds)
+                PrimaryButton(title: "perpsAddFunds".localized, leadingView: { Icon(.plus, color: Theme.colors.textPrimary, size: 16) }, type: .secondary, action: onAddFunds)
                     .accessibilityIdentifier("perpsAccountAddFunds")
-                PrimaryButton(title: "perpsWithdraw".localized, leadingView: { Self.icon("arrow.up") }, type: .secondary, action: onWithdraw)
+                PrimaryButton(title: "perpsWithdraw".localized, leadingView: { Icon(.upload, color: Theme.colors.textPrimary, size: 16) }, type: .secondary, action: onWithdraw)
                     .accessibilityIdentifier("perpsAccountWithdraw")
             }
             .padding(.top, 8)
         }
         .perpsSheetChrome()
-    }
-
-    private static func icon(_ name: String) -> some View {
-        Image(systemName: name)
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(Theme.colors.textPrimary)
     }
 }
 

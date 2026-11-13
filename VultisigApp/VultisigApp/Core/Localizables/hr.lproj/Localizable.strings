@@ -1341,6 +1341,7 @@
 "perpsRemoveMargin" = "Ukloni maržu";
 "perpsRestDidntFill" = "Ostatak nije izvršen. Za njega ništa nije naplaćeno.";
 "perpsReview" = "Pregled";
+"perpsReviewUnavailable" = "Ovaj nalog nije moguće pregledati. Promijenite iznos i pokušajte ponovno.";
 "perpsRoseTo" = "porastao na";
 "perpsSeeAll" = "Prikaži sve";
 "perpsSentFromVault" = "Poslano iz trezora";
@@ -1350,6 +1351,7 @@
 "perpsShortfallLine" = "Potrebno %@ · %@ u vašem trezoru";
 "perpsShortTitle" = "Short";
 "perpsSigning" = "Račun za potpisivanje";
+"perpsSigningNotAvailable" = "Potpisivanje perps još nije dostupno.";
 "perpsStartedMinAgo" = "Započeto prije %d min";
 "perpsStatusDone" = "Gotovo";
 "perpsStatusInProgress" = "U tijeku";

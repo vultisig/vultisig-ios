@@ -204,7 +204,8 @@ struct PerpsReviewContent: View {
         return rows
     }
 
-    /// Only what blocks the review, if anything.
+    /// What blocks the review, if anything; otherwise, while signing is not
+    /// switched on, why the buttons below are disabled.
     @ViewBuilder
     private var footnote: some View {
         if let issue = blockingIssue {
@@ -214,6 +215,13 @@ struct PerpsReviewContent: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("perpsReviewFootnote")
+        } else if !PerpsConfig.allowsSigning {
+            Text("perpsSigningNotAvailable".localized)
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("perpsSigningNotAvailable")
         }
     }
 

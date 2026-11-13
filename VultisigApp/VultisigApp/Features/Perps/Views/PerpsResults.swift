@@ -136,9 +136,7 @@ struct PerpsResultSheet: View {
                 .fill(Theme.colors.primaryAccent3.opacity(0.16))
                 .frame(width: 64, height: 64)
                 .overlay(
-                    Image(systemName: "clock")
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(Theme.colors.primaryAccent4)
+                    Icon(.clock, color: Theme.colors.primaryAccent4, size: 26)
                 )
         case .pending:
             ProgressView()
@@ -148,15 +146,5 @@ struct PerpsResultSheet: View {
         case nil:
             EmptyView()
         }
-    }
-}
-
-/// Within this fraction of the liquidation price, a position shows the warning.
-extension PerpsMath {
-    static let nearLiquidationThreshold: Decimal = Decimal(string: "0.02") ?? 0
-
-    static func isNearLiquidation(markPrice: Decimal, liquidationPrice: Decimal?) -> Bool {
-        guard let liquidationPrice, markPrice > 0 else { return false }
-        return liquidationDistance(markPrice: markPrice, liquidationPrice: liquidationPrice) / 100 <= nearLiquidationThreshold
     }
 }

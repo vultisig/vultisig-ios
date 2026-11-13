@@ -27,6 +27,19 @@ struct PerpsWithdrawScreen: View {
                     didPresentReview = true
                     reviewPresenter.present(.perps(request: PerpsReviewRequest(document: document), vaultPubKeyECDSA: vault.pubKeyECDSA))
                 }
+            } else if let error = loader.errorMessage {
+                // A failed load says so and offers a retry, instead of spinning forever.
+                VStack(spacing: 16) {
+                    Text(error)
+                        .font(Theme.fonts.bodySRegular)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                    PrimaryButton(title: "perpsTryAgain".localized, type: .secondary) {
+                        Task { await loader.load(vault: vault) }
+                    }
+                    .fixedSize()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }

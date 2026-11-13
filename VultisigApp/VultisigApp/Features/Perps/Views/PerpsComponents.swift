@@ -125,9 +125,7 @@ struct PerpsSheetBackButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Theme.colors.textPrimary)
+            Icon(.chevronLeft, color: Theme.colors.textPrimary, size: 18)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Theme.colors.bgSheetControl))
                 .frame(width: 44, height: 44)
@@ -144,9 +142,7 @@ struct PerpsSheetCloseButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "xmark")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Theme.colors.textSecondary)
+            Icon(.xmark, color: Theme.colors.textSecondary, size: 16)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Theme.colors.bgSheetControl))
                 .frame(width: 44, height: 44)

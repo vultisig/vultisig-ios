@@ -1341,6 +1341,7 @@
 "perpsRemoveMargin" = "마진 제거";
 "perpsRestDidntFill" = "나머지는 체결되지 않았습니다. 해당 부분에는 요금이 부과되지 않았습니다.";
 "perpsReview" = "검토";
+"perpsReviewUnavailable" = "이 주문은 검토할 수 없습니다. 금액을 바꾼 뒤 다시 시도하세요.";
 "perpsRoseTo" = "상승 →";
 "perpsSeeAll" = "모두 보기";
 "perpsSentFromVault" = "볼트에서 전송됨";
@@ -1350,6 +1351,7 @@
 "perpsShortfallLine" = "%@ 필요 · 볼트에 %@";
 "perpsShortTitle" = "숏";
 "perpsSigning" = "서명 계정";
+"perpsSigningNotAvailable" = "무기한 선물 서명은 아직 사용할 수 없습니다.";
 "perpsStartedMinAgo" = "%d분 전 시작";
 "perpsStatusDone" = "완료";
 "perpsStatusInProgress" = "진행 중";
