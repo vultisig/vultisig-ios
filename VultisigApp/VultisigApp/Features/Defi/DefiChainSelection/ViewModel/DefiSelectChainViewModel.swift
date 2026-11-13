@@ -56,7 +56,10 @@ class DefiSelectChainViewModel: ObservableObject {
     }
 
     private func checkSelected(for vault: Vault) {
-        selection = Set(vault.defiChains)
+        // Only preselect chains the picker can offer: a vault may still hold a
+        // gated chain (e.g. `.qbtc` while `QBTCConfig.isDefiEnabled` is off)
+        // that `save` would otherwise try to enable and fail on.
+        selection = Set(vault.defiChains.filter { CoinAction.defiChains.contains($0) })
         enabledProviders = Set(DefiYieldProviderID.allCases.filter { vault.isDefiProviderEnabled($0) })
     }
 
@@ -81,8 +84,9 @@ class DefiSelectChainViewModel: ObservableObject {
 
     func save(for vault: Vault) async throws {
         do {
+            let offeredSelection = selection.filter { CoinAction.defiChains.contains($0) }
             let coinsMeta = TokensStore.TokenSelectionAssets
-                .filter { $0.isNativeToken && selection.contains($0.chain) }
+                .filter { $0.isNativeToken && offeredSelection.contains($0.chain) }
 
             let vaultCoinsMeta = vault.coins.map { $0.toCoinMeta() }
             // Enable chains that are not included in vault yet
@@ -91,8 +95,7 @@ class DefiSelectChainViewModel: ObservableObject {
             // Enable chains on vault
             try await CoinService.addNewlySelectedCoins(vault: vault, selection: Set(vaultChainsToEnable))
 
-            vault.defiChains = Array(selection)
-                .filter { CoinAction.defiChains.contains($0) }
+            vault.defiChains = Array(offeredSelection)
 
             // Persist each yield provider's enabled state into the provider array.
             for id in DefiYieldProviderID.allCases {

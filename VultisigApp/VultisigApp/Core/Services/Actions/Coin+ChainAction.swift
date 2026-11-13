@@ -28,16 +28,25 @@ extension CoinAction {
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
 
-    static var defiChains: [Chain] = [
-        .thorChain,
-        .mayaChain,
-        .tron,
-        .terra,
-        .terraClassic,
-        .qbtc,
-        .ton,
-        .solana
-    ]
+    /// Chains surfaced in the DeFi tab. QBTC is gated behind
+    /// `QBTCConfig.isDefiEnabled`, so a vault that already saved `.qbtc` in
+    /// `vault.defiChains` stops showing it: every DeFi read path filters
+    /// through this list.
+    static var defiChains: [Chain] {
+        var chains: [Chain] = [
+            .thorChain,
+            .mayaChain,
+            .tron,
+            .terra,
+            .terraClassic,
+            .ton,
+            .solana
+        ]
+        if QBTCConfig.isDefiEnabled {
+            chains.insert(.qbtc, at: 5)
+        }
+        return chains
+    }
 
 }
 

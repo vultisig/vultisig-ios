@@ -25,4 +25,12 @@ enum QBTCConfig {
     static var isFeatureEnabled: Bool {
         true
     }
+
+    /// Gates QBTC as a DeFi chain (DeFi tab chain picker, DeFi home list,
+    /// DeFi balances). Off while QBTC is pre-launch: selecting it in the DeFi
+    /// chain picker and saving fails for vaults without a valid MLDSA key.
+    /// Flip to re-enable QBTC in DeFi. Claim and governance code stay intact.
+    static var isDefiEnabled: Bool {
+        false
+    }
 }
