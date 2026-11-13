@@ -78,6 +78,10 @@ struct SwapService {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuotes {
+        // Background refresh: the next quote picks up a flipped `fynd-swap` flag
+        // without adding a request to this one.
+        Task { await FyndService.refreshRemoteFlag() }
+
         // THORChain / MayaChain are offered at the chain level, so provider
         // overlap here decides which native + aggregator routes are attempted;
         // the live quote prunes a native route with no real pool.

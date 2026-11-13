@@ -137,6 +137,8 @@ struct FyndRouterCall: Equatable {
     let maxClientContribution: BigInt
     let clientFeeDeadline: BigInt
     let clientSignature: String
+    /// Byte offset of `clientSignature` in the calldata, selector included.
+    let clientSignatureOffset: Int
 
     static let splitSwapSelector = "fe745a0f"
     static let sequentialSwapSelector = "3c226834"
@@ -202,7 +204,8 @@ struct FyndRouterCall: Equatable {
             clientFeeReceiver: feeReceiver,
             maxClientContribution: maxContribution,
             clientFeeDeadline: deadline,
-            clientSignature: String(args[signatureStart..<signatureEnd])
+            clientSignature: String(args[signatureStart..<signatureEnd]),
+            clientSignatureOffset: 4 + signatureStart / 2
         )
     }
 }

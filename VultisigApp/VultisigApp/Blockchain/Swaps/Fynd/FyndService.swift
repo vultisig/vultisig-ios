@@ -60,11 +60,11 @@ struct FyndService {
 
     /// Same base fee as KyberSwap/1inch, before the VULT tier discount.
     static let baseAffiliateFeeBps = 50
-    /// TODO-confirm: must be the address of the proxy's fee-signer key, which is
-    /// the only key that can sign Fynd's `ClientFee` message for it. Defaults to
-    /// the treasury every other EVM aggregator pays. Fees accrue to this
-    /// address's vault inside the router and must be swept.
-    static let feeReceiver = KyberSwapService.referrerAddress
+    /// TODO-confirm: the address of the proxy's fee-signer key, the only key that
+    /// can sign Fynd's `ClientFee` message for it. Fees accrue to its vault
+    /// inside the router and must be swept to the treasury. Unset until infra
+    /// creates it; while unset, Fynd is never quoted through the proxy.
+    static let feeReceiver: String? = nil
     /// Fynd keeps 20% of the client fee: Vultisig receives `bps × 8000 / 10000`.
     static let integratorShareBps = 8000
     static let clientFeeSignatureBytes = 65
@@ -76,6 +76,8 @@ struct FyndService {
     static let routerGasOverhead: Int64 = 150_000
 
     static let enabledDefaultsKey = "fyndSwapEnabled"
+    /// Last value of the remote `fynd-swap` flag, refreshed in the background.
+    static let remoteFlagDefaultsKey = "fyndSwapRemoteFlag"
 
     private let httpClient: HTTPClientProtocol
 
@@ -83,17 +85,31 @@ struct FyndService {
         self.httpClient = httpClient
     }
 
-    /// Off in release builds until the proxy route and its fee signer are live.
-    /// Debug builds turn it on with Settings → Advanced → force "Fynd", the
-    /// `fyndSwapEnabled` default, or `FYND_ENABLED=1`.
+    /// Fynd is quoted when the remote `fynd-swap` flag is on (default off) or a
+    /// debug build forces it, and only where it can charge correctly: the debug
+    /// direct-key path (zero fee) or the proxy with a configured fee receiver.
+    /// Matches Android's `FyndFeatureGate`.
     static var isEnabled: Bool {
+        let flagged = isDebugForced || UserDefaults.standard.bool(forKey: remoteFlagDefaultsKey)
+        return flagged && (endpoint.apiKey != nil || feeReceiver != nil)
+    }
+
+    private static var isDebugForced: Bool {
         #if DEBUG
         let defaults = UserDefaults.standard
-        if defaults.string(forKey: "forcedSwapProvider") == "fynd" { return true }
-        if defaults.bool(forKey: enabledDefaultsKey) { return true }
-        if ProcessInfo.processInfo.environment["FYND_ENABLED"] == "1" { return true }
-        #endif
+        return defaults.string(forKey: "forcedSwapProvider") == "fynd"
+            || defaults.bool(forKey: enabledDefaultsKey)
+            || ProcessInfo.processInfo.environment["FYND_ENABLED"] == "1"
+        #else
         return false
+        #endif
+    }
+
+    /// Caches the remote flag so the synchronous provider list can read it.
+    /// A failed fetch reads as off, so the flag fails closed.
+    static func refreshRemoteFlag(service: FeatureFlagService = FeatureFlagService()) async {
+        let enabled = await service.isFeatureEnabled(feature: .fyndSwap)
+        UserDefaults.standard.set(enabled, forKey: remoteFlagDefaultsKey)
     }
 
     static var endpoint: Endpoint {
@@ -165,6 +181,9 @@ struct FyndService {
         let endpoint = Self.endpoint
         let affiliateBps = endpoint.signsClientFee ? Self.affiliateBps(vultTierDiscount: vultTierDiscount) : 0
         let clientFeeBps = Self.clientFeeBps(affiliateBps: affiliateBps)
+        let feeReceiver = Self.feeReceiver ?? ""
+        // Never drop a fee the vault owes to zero because no receiver is set.
+        guard clientFeeBps == 0 || !feeReceiver.isEmpty else { throw FyndError.notEnabled }
         let slippage = slippageBps ?? Self.defaultSlippageBps
 
         let request = FyndQuoteRequest(
@@ -185,7 +204,7 @@ struct FyndService {
                     slippage: Self.slippageString(bps: slippage),
                     transferType: "transfer_from",
                     clientFeeParams: clientFeeBps > 0
-                        ? .init(bps: clientFeeBps, receiver: Self.feeReceiver)
+                        ? .init(bps: clientFeeBps, receiver: feeReceiver)
                         : nil
                 )
             )
@@ -200,7 +219,7 @@ struct FyndService {
             sellAmount: amount,
             slippageBps: slippage,
             clientFeeBps: clientFeeBps,
-            feeReceiver: Self.feeReceiver,
+            feeReceiver: feeReceiver,
             now: Date()
         )
         let validated = try Self.validate(order, context: context)
@@ -269,14 +288,19 @@ extension FyndService {
     static let routerNativeAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     static let feeUnitsPerBps = 10_000
 
+    /// A fee signature must outlive multi-device keysign; one expiring sooner
+    /// would revert on-chain.
+    static let minFeeDeadlineSeconds: TimeInterval = 15 * 60
+
     static func isNative(_ token: String) -> Bool {
-        let lower = token.lowercased()
-        return lower == nativeTokenAddress || lower == routerNativeAddress
+        token.lowercased() == nativeTokenAddress
     }
 
-    static func sameToken(_ lhs: String, _ rhs: String) -> Bool {
-        if isNative(lhs) || isNative(rhs) { return isNative(lhs) && isNative(rhs) }
-        return lhs.lowercased() == rhs.lowercased()
+    /// The API names the native coin with the zero address, but TychoRouterV3
+    /// takes `ETH_ADDRESS` (0xEeee…) as the outer token and reverts on zero.
+    static func calldataToken(matches requestToken: String, _ calldataToken: String) -> Bool {
+        let expected = isNative(requestToken) ? routerNativeAddress : requestToken.lowercased()
+        return calldataToken.lowercased() == expected
     }
 
     /// Rejects any quote whose calldata does not perform exactly the swap that
@@ -318,7 +342,8 @@ extension FyndService {
         guard call.amountIn == context.sellAmount, BigInt(order.amountIn ?? "") == context.sellAmount else {
             throw FyndError.invalidResponse("sell amount differs from \(context.sellAmount)")
         }
-        guard sameToken(call.tokenIn, context.tokenIn), sameToken(call.tokenOut, context.tokenOut) else {
+        guard calldataToken(matches: context.tokenIn, call.tokenIn),
+              calldataToken(matches: context.tokenOut, call.tokenOut) else {
             throw FyndError.invalidResponse("calldata swaps \(call.tokenIn) for \(call.tokenOut)")
         }
         guard call.receiver.lowercased() == context.recipient.lowercased() else {
@@ -330,11 +355,15 @@ extension FyndService {
 
         let netAmountOut = amountOut - routerFee - clientFee
         let outputFloor = netAmountOut * BigInt(10_000 - context.slippageBps) / 10_000
-        guard netAmountOut > 0, minReceived > 0, minReceived >= outputFloor, minReceived <= netAmountOut,
+        // One unit of slack for the floor's rounding, as on Android.
+        guard netAmountOut > 0, minReceived > 0, minReceived >= outputFloor - 1, minReceived <= netAmountOut,
               call.minAmountOut == minReceived, call.expectedAmountOut == amountOut else {
             throw FyndError.invalidResponse("output floor does not match the requested slippage")
         }
 
+        if let reported = tx.clientFeeSignatureOffset, reported != call.clientSignatureOffset {
+            throw FyndError.invalidResponse("signature offset \(reported) disagrees with the calldata")
+        }
         try validateClientFee(call: call, clientFee: clientFee, amountOut: amountOut, deadline: order.clientFeeDeadline, context: context)
 
         let gasEstimate = Int64(order.gasEstimate ?? "") ?? 0
@@ -370,8 +399,8 @@ extension FyndService {
             throw FyndError.invalidResponse("calldata charges \(call.clientFeeUnits) fee units, not \(context.clientFeeBps) bps")
         }
         let expected = expectedClientFee(amountOut: amountOut, clientFeeBps: context.clientFeeBps)
-        // One unit of rounding either way; more is a different fee than asked.
-        guard (clientFee - expected).magnitude <= 1 else {
+        // Fynd mirrors the router's integer arithmetic, so the share is exact.
+        guard clientFee == expected else {
             throw FyndError.invalidResponse("client fee \(clientFee) does not match \(context.clientFeeBps) bps (expected \(expected))")
         }
         guard call.clientFeeReceiver.lowercased() == context.feeReceiver.lowercased() else {
@@ -385,8 +414,8 @@ extension FyndService {
             throw FyndError.invalidResponse("client fee signature is missing or the unsigned placeholder")
         }
         guard let deadline, BigInt(deadline) == call.clientFeeDeadline,
-              TimeInterval(deadline) > context.now.timeIntervalSince1970 else {
-            throw FyndError.invalidResponse("client fee deadline missing, mismatched or expired")
+              TimeInterval(deadline) >= context.now.timeIntervalSince1970 + minFeeDeadlineSeconds else {
+            throw FyndError.invalidResponse("client fee deadline missing, mismatched or too soon")
         }
     }
 
