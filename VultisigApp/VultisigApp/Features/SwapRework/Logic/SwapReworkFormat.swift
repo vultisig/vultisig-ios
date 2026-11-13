@@ -43,6 +43,21 @@ enum SwapReworkFormat {
         return "<" + cent.formatToFiat()
     }
 
+    /// A route's gap to the best: "-3,280 sats" for Bitcoin, "-0.0021 USDC"
+    /// otherwise.
+    static func gap(_ shortfall: Decimal, ticker: String, isBitcoin: Bool) -> String {
+        guard shortfall > 0 else { return "0" }
+        if isBitcoin {
+            let sats = NSDecimalNumber(decimal: (shortfall * 100_000_000).rounded(scale: 0)).intValue
+            let formatter = NumberFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.numberStyle = .decimal
+            formatter.groupingSeparator = ","
+            return "-" + (formatter.string(from: NSNumber(value: sats)) ?? "\(sats)") + " sats"
+        }
+        return "-" + amount(shortfall, ticker: ticker)
+    }
+
     /// "8-12 min", "~45 s", from a provider estimate in seconds.
     static func eta(seconds: Int) -> String {
         guard seconds >= 60 else { return String(format: "swapReworkEtaSeconds".localized, max(seconds, 1)) }
@@ -50,5 +65,21 @@ enum SwapReworkFormat {
         let low = max(1, Int((minutes * 0.8).rounded(.down)))
         let high = max(low + 1, Int((minutes * 1.2).rounded(.up)))
         return String(format: "swapReworkEtaMinutes".localized, low, high)
+    }
+}
+
+extension SwapQuote {
+    /// The native quote's leg times; nil for aggregator routes, which state none.
+    var legTimes: SwapLegTimes? {
+        switch self {
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+            return SwapLegTimes(
+                inbound: quote.inboundConfirmationSeconds,
+                outbound: quote.outboundDelaySeconds,
+                total: quote.totalSwapSeconds
+            )
+        default:
+            return nil
+        }
     }
 }

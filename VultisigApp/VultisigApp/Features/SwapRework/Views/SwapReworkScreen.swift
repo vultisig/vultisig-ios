@@ -24,6 +24,10 @@ struct SwapReworkScreen: View {
     @State private var catalogChain: Chain?
     @State private var showApprovalSteps = false
     @State private var showAdvancedLockedSheet = false
+    @State private var showAddGas = false
+    @State private var showReceiveGas = false
+    @State private var addressToCopy: Coin?
+    @Environment(\.scenePhase) private var scenePhase
 
     private let tierService = VultTierService()
 
@@ -114,10 +118,51 @@ struct SwapReworkScreen: View {
                 routes: state.routes,
                 selectedID: state.selectedRouteID,
                 receiveTicker: state.receive.ticker,
+                receiveIsBitcoin: state.receive.chainName == Chain.bitcoin.name && state.receive.isNative,
                 timer: state.timer,
+                gasNote: state.routeGasNote,
                 onSelect: { viewModel.selectRoute(id: $0, vault: vault) }
             )
             .sheetStyle(padding: 0, detents: [.medium])
+        }
+        .crossPlatformSheet(isPresented: $showAddGas) {
+            SwapReworkAddGasSheet(
+                ticker: state.feeTicker,
+                chainName: details.feeCoin.chain.name,
+                amountText: state.gasToAddText ?? demoGasToAdd,
+                addressText: SwapTokenTrust.shortContract(details.feeCoin.address),
+                onReceive: {
+                    showAddGas = false
+                    guard !viewModel.isDemo else { return }
+                    showReceiveGas = true
+                },
+                onBuy: {
+                    showAddGas = false
+                    guard !viewModel.isDemo else { return }
+                    let feeCoin = details.feeCoin
+                    router.navigate(to: HomeRoute.vaultAction(
+                        action: .buy(address: feeCoin.address, blockChainCode: feeCoin.chain.banxaBlockchainCode, coinType: feeCoin.ticker),
+                        vault: vault
+                    ))
+                }
+            )
+            .sheetStyle(padding: 0, detents: [.medium])
+        }
+        .crossPlatformSheet(isPresented: $showReceiveGas) {
+            ReceiveQRCodeBottomSheet(
+                coin: details.feeCoin,
+                isNativeCoin: true,
+                onClose: { showReceiveGas = false },
+                onShare: { showReceiveGas = false },
+                onCopy: { coin in
+                    showReceiveGas = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { addressToCopy = coin }
+                }
+            )
+        }
+        .withAddressCopy(coin: $addressToCopy)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { viewModel.refreshAfterForeground(vault: vault) }
         }
         .crossPlatformSheet(isPresented: $showApprovalSteps) {
             if let approval = state.approval {
@@ -159,7 +204,7 @@ struct SwapReworkScreen: View {
     @ViewBuilder
     private var marketContent: some View {
         #if DEBUG
-        if let scenario = SwapReworkConfig.demoScenario, [.tracker, .success, .received].contains(scenario) {
+        if let scenario = SwapReworkConfig.demoScenario, [.tracker, .success, .received, .notifyOn, .notifyDenied].contains(scenario) {
             progressDemo(scenario)
         } else {
             form
@@ -234,10 +279,15 @@ struct SwapReworkScreen: View {
             SwapReworkIssueCard(
                 issue: issue,
                 pair: (state.pay.ticker, state.receive.ticker),
-                gasDetail: gasDetail
+                gasDetail: gasDetail,
+                minimumText: state.minimumText,
+                gasActionTitle: String(format: "swapReworkAddGasChip".localized, state.feeTicker),
+                onGasAction: { showAddGas = true }
             )
         }
-        if let loss = state.valueLossText {
+        if let warning = state.feeWarning {
+            SwapReworkFeeWarningCard(warning: warning)
+        } else if let loss = state.valueLossText {
             SwapReworkValueLossCard(lossText: loss)
         }
         if let route = state.route, state.issue != .noRoute {
@@ -285,6 +335,13 @@ struct SwapReworkScreen: View {
         .swapReworkCard(highlighted: false)
     }
 
+    private var demoGasToAdd: String? {
+        #if DEBUG
+        if viewModel.isDemo { return "0.00088 ETH ($1.72)" }
+        #endif
+        return nil
+    }
+
     private var gasDetail: String? {
         #if DEBUG
         if let scenario = SwapReworkConfig.demoScenario { return SwapReworkDemo.gasShortfallText(for: scenario) }
@@ -314,6 +371,7 @@ struct SwapReworkScreen: View {
         case .chooseAnotherCoin: return "swapReworkChooseAnother".localized
         case .insufficient(let ticker): return String(format: "swapInsufficientTokenBalance".localized, ticker)
         case .fixGas(let ticker): return String(format: "swapReworkNotEnoughGasCTA".localized, ticker)
+        case .useMinimum(let amount): return String(format: "swapReworkUseMinimum".localized, amount)
         }
     }
 
@@ -327,6 +385,8 @@ struct SwapReworkScreen: View {
             viewModel.requestNewQuote(vault: vault)
         case .chooseAnotherCoin:
             viewModel.pickerSide = .receive
+        case .useMinimum:
+            viewModel.useMinimum(vault: vault)
         case .enterAmount, .loading, .insufficient, .fixGas:
             break
         }
@@ -482,7 +542,7 @@ struct SwapReworkScreen: View {
     private var isProgressDemo: Bool {
         #if DEBUG
         guard let scenario = SwapReworkConfig.demoScenario else { return false }
-        return [.tracker, .success, .received].contains(scenario)
+        return [.tracker, .success, .received, .notifyOn, .notifyDenied].contains(scenario)
         #else
         false
         #endif
@@ -496,8 +556,10 @@ struct SwapReworkScreen: View {
             viewModel.showFeeDetails = scenario == .fees || scenario == .approvalFees
         case .routes:
             viewModel.showRouteSheet = true
-        case .picker, .unverified:
+        case .picker, .unverified, .pickerSmall:
             viewModel.pickerSide = .pay
+        case .addGas:
+            showAddGas = true
         case .steps:
             showApprovalSteps = true
         default:
@@ -511,7 +573,15 @@ struct SwapReworkScreen: View {
             ScrollView(showsIndicators: false) {
                 Group {
                     switch scenario {
-                    case .tracker: SwapReworkTrackerView(state: SwapReworkDemo.tracker)
+                    case .tracker, .notifyOn, .notifyDenied:
+                        VStack(spacing: 16) {
+                            SwapReworkTrackerView(state: SwapReworkDemo.tracker)
+                            SwapReworkNotifyCard(
+                                state: scenario == .notifyOn ? .on : (scenario == .notifyDenied ? .permissionDenied : .off),
+                                ticker: "BTC",
+                                onTurnOn: {}, onTurnOff: {}, onOpenSettings: {}
+                            )
+                        }
                     case .received: SwapReworkSuccessView(state: SwapReworkDemo.received)
                     default: SwapReworkSuccessView(state: SwapReworkDemo.success)
                     }
@@ -519,10 +589,10 @@ struct SwapReworkScreen: View {
                 .padding(16)
             }
             HStack(spacing: 10) {
-                if scenario != .tracker {
+                if [.success, .received].contains(scenario) {
                     PrimaryButton(title: "swapReworkSwapAgain".localized, type: .secondary) {}
                 }
-                PrimaryButton(title: (scenario == .tracker ? "swapReworkBackToVault" : "done").localized) {}
+                PrimaryButton(title: ([.success, .received].contains(scenario) ? "done" : "swapReworkBackToVault").localized) {}
             }
             .padding(16)
         }

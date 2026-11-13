@@ -34,6 +34,17 @@ enum SwapReworkDemoScenario: String, CaseIterable {
     case received
     /// Approval needed, fee card open with the approval gas row.
     case approvalFees
+    /// R4: fees take over 5% (gas vs Vultisig bar, the 10x line).
+    case feeWarning
+    /// R4: not enough ETH for gas, the Add ETH sheet open.
+    case addGas
+    /// R4: picker with small balances folded open.
+    case pickerSmall
+    /// R4: too small, with the provider's minimum as the button.
+    case tooSmallMin
+    /// R4: tracker with Notify me on / blocked by the OS permission.
+    case notifyOn
+    case notifyDenied
 }
 
 enum SwapReworkDemo {
@@ -67,9 +78,9 @@ enum SwapReworkDemo {
 
     static var ethToBtcRoutes: [SwapRankedRoute] {
         SwapRouteRanking.rank([
-            SwapRouteOption(id: "THORChain", providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, receivedAmount: dec("0.0140218"), receivedFiat: dec("972.41"), feesFiat: dec("5.79"), etaSeconds: 600),
-            SwapRouteOption(id: "SwapKit", providerName: "SwapKit", providerLogo: SwapProviderKind.swapkit.providerLogo, receivedAmount: dec("0.013989"), receivedFiat: dec("970.14"), feesFiat: dec("8.06"), etaSeconds: 390),
-            SwapRouteOption(id: "LI.FI", providerName: "LI.FI", providerLogo: SwapProviderKind.lifi.providerLogo, receivedAmount: dec("0.0139412"), receivedFiat: dec("966.82"), feesFiat: dec("9.10"), etaSeconds: nil)
+            SwapRouteOption(id: "THORChain", providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, receivedAmount: dec("0.0140218"), receivedFiat: dec("972.41"), feesFiat: dec("5.79"), etaSeconds: 600, gasFiat: dec("0.84")),
+            SwapRouteOption(id: "SwapKit", providerName: "SwapKit", providerLogo: SwapProviderKind.swapkit.providerLogo, receivedAmount: dec("0.013989"), receivedFiat: dec("970.14"), feesFiat: dec("8.06"), etaSeconds: 390, gasFiat: dec("0.84")),
+            SwapRouteOption(id: "LI.FI", providerName: "LI.FI", providerLogo: SwapProviderKind.lifi.providerLogo, receivedAmount: dec("0.0139412"), receivedFiat: dec("966.82"), feesFiat: dec("9.10"), etaSeconds: 1080, gasFiat: dec("0.84"))
         ])
     }
 
@@ -104,14 +115,19 @@ enum SwapReworkDemo {
             isReceiveIndicative: false,
             isQuoteLoading: false,
             highlightsReceive: false,
-            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: true),
+            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .bestReturn, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: true),
             routes: routes,
+            routeGasNote: "Ethereum gas $0.84",
+            feeTicker: "ETH",
+            gasToAddText: nil,
             selectedRouteID: "THORChain",
             timer: SwapReworkQuoteTimer(state: .live(secondsLeft: 47), fraction: 47.0 / 59),
             fees: feeRows(fees),
             approval: nil,
             issue: nil,
             valueLossText: nil,
+            minimumText: nil,
+            feeWarning: nil,
             cta: .review,
             isCTAEnabled: true
         )
@@ -121,8 +137,51 @@ enum SwapReworkDemo {
     static func formState(for scenario: SwapReworkDemoScenario) -> SwapReworkFormState {
         var state = baseQuote
         switch scenario {
-        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success, .received:
+        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success, .received, .pickerSmall, .notifyOn, .notifyDenied:
             break
+        case .addGas:
+            state = formState(for: .noGas)
+        case .tooSmallMin:
+            state.amountText = "0.002"
+            state.payFiatText = "$3.91"
+            state.receiveAmountText = "~0.0000561"
+            state.receiveFiatText = "≈ $3.89"
+            state.isReceiveIndicative = true
+            state.allInText = nil
+            state.route = nil
+            state.routes = []
+            state.fees = nil
+            state.timer = SwapReworkQuoteTimer(state: .idle, fraction: 0)
+            state.issue = .amountTooSmall
+            state.minimumText = "0.0035 ETH"
+            state.cta = .useMinimum(amountText: "0.0035 ETH")
+        case .feeWarning:
+            let fees = SwapFeeBreakdown(.init(
+                networkFiat: dec("1.49"), networkCrypto: "0.00076 ETH", protocolFiat: 0,
+                vultisigNetFiat: dec("0.06"), vultisigListFiat: dec("0.10"),
+                listBps: 50, tierDiscountBps: 20, tier: .gold, vultisigIncludedInRate: false,
+                payFiat: dec("20"), receiveFiat: dec("19.94")
+            ))
+            state.pay = usdc
+            state.receive = eth
+            state.amountText = "20"
+            state.payFiatText = "$20.00"
+            state.balanceText = "2,410.55 USDC"
+            state.receiveAmountText = "0.010192"
+            state.receiveFiatText = "≈ $19.94"
+            state.allInText = fees.allInChangeText.map { String(format: "swapReworkAllIn".localized, $0) }
+            state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestReturn, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: false)
+            state.routes = []
+            state.fees = feeRows(fees)
+            state.feeWarning = SwapReworkFeeWarning(
+                shareText: fees.feeShare.map(SwapFeeBreakdown.shareText) ?? "",
+                gasPart: NSDecimalNumber(decimal: fees.gasPartOfFees).doubleValue,
+                gasText: "$1.49",
+                vultisigText: "$0.06",
+                receiveText: "$19.94",
+                atScaleText: fees.feeShare(atScale: 10).map { String(format: "swapReworkFeeAtScale".localized, "200 USDC", SwapFeeBreakdown.shareText($0)) },
+                gasLabel: String(format: "swapReworkGas".localized, "Ethereum")
+            )
         case .approvalFees:
             state = formState(for: .approval)
         case .empty:
@@ -169,7 +228,7 @@ enum SwapReworkDemo {
             state.receiveAmountText = "0.509405"
             state.receiveFiatText = "≈ $996.60"
             state.allInText = fees.allInChangeText.map { String(format: "swapReworkAllIn".localized, $0) }
-            state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: false)
+            state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestReturn, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: false)
             state.routes = []
             state.fees = feeRows(fees, approval: true)
             state.approval = SwapReworkApproval(ticker: "USDC", amountText: "1,000", spenderName: "1inch", legs: 1)
@@ -241,11 +300,22 @@ enum SwapReworkDemo {
             SwapReworkPickerRow(
                 asset: fakeUSDC, contract: fakeUSDCContract, balanceText: "5,000", fiatText: "",
                 fiatValue: 0, trust: .unverified(genuineContract: realUSDCContract)
-            )
+            ),
+            dust(SwapReworkAsset(coinID: "demo-sol-dust", ticker: "SOL", logo: "solana", chainLogo: nil, chainName: "Solana", isNative: true), balance: "0.0021", fiat: "0.41", reason: nil),
+            dust(SwapReworkAsset(coinID: "demo-link", ticker: "LINK", logo: "link", chainLogo: "eth", chainName: "Ethereum", isNative: false), balance: "0.031", fiat: "0.44", reason: String(format: "swapReworkDustAllowSwapGas".localized, "$2.12")),
+            dust(SwapReworkAsset(coinID: "demo-uni", ticker: "UNI", logo: "uni", chainLogo: "eth", chainName: "Ethereum", isNative: false), balance: "0.05", fiat: "0.35", reason: String(format: "swapReworkDustAllowSwapGas".localized, "$2.12"))
         ]
     }
 
     static let recentIDs = ["demo-eth", "demo-btc", "demo-usdc", "demo-rune"]
+
+    private static func dust(_ asset: SwapReworkAsset, balance: String, fiat: String, reason: String?) -> SwapReworkPickerRow {
+        let value = dec(fiat)
+        return SwapReworkPickerRow(
+            asset: asset, contract: asset.isNative ? "" : "0xdemo\(asset.ticker)", balanceText: balance,
+            fiatText: value.formatToFiat(), fiatValue: value, trust: .verified, unswappableReason: reason
+        )
+    }
 
     private static func row(_ asset: SwapReworkAsset, contract: String = "", balance: String, fiat: String) -> SwapReworkPickerRow {
         let value = dec(fiat)
@@ -270,7 +340,12 @@ enum SwapReworkDemo {
             swappedDetail: "ETH → BTC",
             receivedDetail: "0.0140218 BTC → bc1q…7xk9",
             isCrossChain: true,
-            stageTimes: [.sent: "9:41", .swapped: "swapReworkNow".localized]
+            stageTimes: [.sent: "9:41", .swapped: "swapReworkNow".localized],
+            legNotes: SwapTrackerLegNotes.make(
+                stages: SwapTrackerModel.stages(status: .pending, isCrossChain: true),
+                times: SwapLegTimes(inbound: 60, outbound: 120, total: 600),
+                sourceChain: "Ethereum", providerName: "THORChain", destinationIsBitcoin: true
+            )
         )
     }
 

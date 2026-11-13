@@ -24,6 +24,7 @@ struct SwapReworkTokenPicker: View {
     @State private var query = ""
     @State private var pendingUnverified: SwapReworkPickerRow?
     @State private var acknowledged = false
+    @State private var showsSmallBalances = false
 
     private var filtered: [SwapReworkPickerRow] {
         SwapReworkPickerFilter.rows(rows, chainName: chainFilter, query: query)
@@ -43,11 +44,7 @@ struct SwapReworkTokenPicker: View {
                         recentsRow
                     }
                     sectionTitle("swapReworkYourAssets".localized)
-                    VStack(spacing: 4) {
-                        ForEach(filtered) { row in
-                            assetRow(row)
-                        }
-                    }
+                    assetList
                     browseCatalogButton
                 }
                 .padding(.horizontal, 16)
@@ -58,6 +55,7 @@ struct SwapReworkTokenPicker: View {
         .background(Theme.colors.bgPrimary)
         #if DEBUG
         .onAppear {
+            if SwapReworkConfig.demoScenario == .pickerSmall { showsSmallBalances = true }
             guard SwapReworkConfig.demoScenario == .unverified else { return }
             pendingUnverified = rows.first { $0.trust != .verified }
         }
@@ -77,6 +75,61 @@ struct SwapReworkTokenPicker: View {
             )
             .sheetStyle(padding: 0, detents: [.medium])
         }
+    }
+
+    /// Searching shows every match; otherwise rows under $1 fold into one
+    /// "Small balances" row, as in R4.
+    @ViewBuilder
+    private var assetList: some View {
+        let split = query.isEmpty ? SwapReworkPickerFilter.split(filtered) : (main: filtered, small: [])
+        VStack(spacing: 4) {
+            ForEach(split.main) { row in
+                assetRow(row)
+            }
+            if !split.small.isEmpty {
+                smallBalancesHeader(split.small)
+                if showsSmallBalances {
+                    ForEach(split.small) { row in
+                        assetRow(row)
+                    }
+                }
+            }
+        }
+    }
+
+    private func smallBalancesHeader(_ rows: [SwapReworkPickerRow]) -> some View {
+        let total = rows.reduce(Decimal(0)) { $0 + $1.fiatValue }
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) { showsSmallBalances.toggle() }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "circle.grid.2x2")
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .frame(width: 40)
+                Text("swapReworkSmallBalances".localized)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                Text("\(rows.count)")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(Theme.colors.bgSurface2)
+                    .clipShape(Capsule())
+                Spacer()
+                Text(total.formatToFiat())
+                    .font(Theme.fonts.priceBodyS)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                Image(systemName: showsSmallBalances ? "chevron.up" : "chevron.down")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("swapReworkSmallBalances")
     }
 
     private var header: some View {
@@ -147,6 +200,12 @@ struct SwapReworkTokenPicker: View {
                         }
                     }
                     chainChip(row.asset.chainName, logo: row.asset.chainLogo ?? (row.asset.isNative ? row.asset.logo : nil))
+                    if let reason = row.unswappableReason {
+                        Text(reason)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.alertWarning)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 2) {

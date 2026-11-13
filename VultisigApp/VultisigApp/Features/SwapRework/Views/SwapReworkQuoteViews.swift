@@ -135,14 +135,14 @@ struct SwapReworkRouteTagView: View {
 
     private var title: String {
         switch tag {
-        case .bestPrice: return "swapReworkBestPrice".localized
+        case .bestReturn: return "swapReworkBestReturn".localized
         case .fastest: return "swapReworkFastest".localized
         }
     }
 
     private var color: Color {
         switch tag {
-        case .bestPrice: return Theme.colors.alertSuccess
+        case .bestReturn: return Theme.colors.alertSuccess
         case .fastest: return Theme.colors.primaryAccent4
         }
     }
@@ -375,6 +375,10 @@ struct SwapReworkIssueCard: View {
     let issue: SwapReworkIssue
     let pair: (pay: String, receive: String)
     let gasDetail: String?
+    var minimumText: String?
+    /// "Add ETH": opens the add-gas sheet from the not-enough-gas card.
+    var gasActionTitle: String?
+    var onGasAction: (() -> Void)?
 
     var body: some View {
         VStack(alignment: issue == .noRoute ? .center : .leading, spacing: 8) {
@@ -402,6 +406,24 @@ struct SwapReworkIssueCard: View {
                     }
                 }
                 if issue != .noRoute { Spacer(minLength: 0) }
+            }
+            if issue == .notEnoughGas, let gasActionTitle, let onGasAction {
+                Button(action: onGasAction) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "plus.circle.fill")
+                        Text(gasActionTitle)
+                    }
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 36)
+                    .background(Theme.colors.bgSurface2)
+                    .clipShape(Capsule())
+                    .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 30)
+                .accessibilityIdentifier("swapReworkAddGas")
             }
         }
         .frame(maxWidth: .infinity)
@@ -447,12 +469,72 @@ struct SwapReworkIssueCard: View {
         switch issue {
         case .overBalance: return "swapReworkIssueOverBalanceBody".localized
         case .notEnoughGas: return gasDetail
-        case .amountTooSmall: return "swapReworkIssueTooSmallBody".localized
+        case .amountTooSmall:
+            return minimumText.map { String(format: "swapReworkIssueTooSmallMinimum".localized, $0) }
+                ?? "swapReworkIssueTooSmallBody".localized
         case .tradingHalted: return "swapReworkIssueHaltedBody".localized
         case .noRoute: return "swapReworkIssueNoRouteBody".localized
         case .priceMoved: return "swapReworkIssuePriceMovedBody".localized
         case .quoteExpired: return "swapReworkIssueExpiredBody".localized
         case .other(_, let message): return message
+        }
+    }
+}
+
+/// R4's fees-over-5% card: how much of the swap goes to fees, a gas vs
+/// Vultisig share bar, and what the share would be at ten times the amount
+/// (gas is fixed, so it shrinks). Review stays enabled.
+struct SwapReworkFeeWarningCard: View {
+    let warning: SwapReworkFeeWarning
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundStyle(Theme.colors.alertWarning)
+                Text(String(format: "swapReworkFeeShareTitle".localized, warning.shareText))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertWarning)
+            }
+            GeometryReader { proxy in
+                HStack(spacing: 2) {
+                    Capsule().fill(Theme.colors.alertWarning)
+                        .frame(width: max(4, proxy.size.width * warning.gasPart))
+                    Capsule().fill(Theme.colors.alertError.opacity(0.8))
+                }
+            }
+            .frame(height: 8)
+            .accessibilityHidden(true)
+            HStack(spacing: 10) {
+                legend(color: Theme.colors.alertWarning, text: "\(warning.gasLabel) \(warning.gasText)")
+                legend(color: Theme.colors.alertError.opacity(0.8), text: String(format: "swapReworkFeeOther".localized, warning.vultisigText))
+                Spacer(minLength: 4)
+                Text(String(format: "swapReworkYouGet".localized, warning.receiveText))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            if let atScale = warning.atScaleText {
+                Text(atScale)
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .background(Theme.colors.alertWarning.opacity(0.10))
+        .swapReworkCard(highlighted: false)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("swapReworkFeeWarning")
+    }
+
+    private func legend(color: Color, text: String) -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(color).frame(width: 6, height: 6)
+            Text(text)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
     }
 }
@@ -488,15 +570,23 @@ struct SwapReworkValueLossCard: View {
 
 // MARK: - Route sheet
 
+/// R4 route sheet: Best return / Fastest tabs, each row with its all-in fees
+/// (route fees plus gas), the best row marked "Most to your vault" and every
+/// other row its gap to the best in destination units and fiat.
 struct SwapReworkRouteSheet: View {
     let routes: [SwapRankedRoute]
     let selectedID: String?
     let receiveTicker: String
+    let receiveIsBitcoin: Bool
     let timer: SwapReworkQuoteTimer
+    /// "Ethereum gas $0.84", shared by every route; nil when not known.
+    let gasNote: String?
     let onSelect: (String) -> Void
 
+    @State private var sort: SwapRouteSort = .bestReturn
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("swapReworkRoutes".localized)
                     .font(Theme.fonts.title3)
@@ -504,14 +594,15 @@ struct SwapReworkRouteSheet: View {
                 Spacer()
                 SwapReworkCountdown(timer: timer)
             }
+            sortTabs
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 10) {
-                    ForEach(routes) { route in
+                    ForEach(SwapRouteRanking.sorted(routes, by: sort)) { route in
                         routeRow(route)
                     }
                 }
             }
-            Text("swapReworkRoutesFooter".localized)
+            Text(footer)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -519,6 +610,34 @@ struct SwapReworkRouteSheet: View {
         .padding(.horizontal, 16)
         .padding(.top, 20)
         .padding(.bottom, 16)
+    }
+
+    private var footer: String {
+        guard let gasNote else { return "swapReworkRoutesFooter".localized }
+        return String(format: "swapReworkRoutesFooterGas".localized, gasNote)
+    }
+
+    private var sortTabs: some View {
+        HStack(spacing: 4) {
+            ForEach(SwapRouteSort.allCases) { option in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { sort = option }
+                } label: {
+                    Text(option == .bestReturn ? "swapReworkBestReturn".localized : "swapReworkFastest".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(sort == option ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .background(sort == option ? Theme.colors.bgSurface2 : .clear)
+                        .clipShape(Theme.radius.md.shape)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("swapReworkRouteSort-\(option.rawValue)")
+            }
+        }
+        .padding(4)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(Theme.radius.lg.shape)
     }
 
     private func routeRow(_ route: SwapRankedRoute) -> some View {
@@ -531,6 +650,7 @@ struct SwapReworkRouteSheet: View {
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     ForEach(route.tags, id: \.self) { tag in
                         SwapReworkRouteTagView(tag: tag)
                     }
@@ -541,17 +661,18 @@ struct SwapReworkRouteSheet: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
-                HStack {
+                HStack(alignment: .firstTextBaseline) {
                     Text(detail(route))
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .lineLimit(1)
-                    Spacer()
-                    if let fiat = route.option.receivedFiat {
-                        Text("≈ " + fiat.formatToFiat())
-                            .font(Theme.fonts.priceCaption)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    }
+                        .minimumScaleFactor(0.8)
+                    Spacer(minLength: 6)
+                    Text(gap(route))
+                        .font(Theme.fonts.priceCaption)
+                        .foregroundStyle(route.isBest ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
             }
             .padding(14)
@@ -569,9 +690,19 @@ struct SwapReworkRouteSheet: View {
     private func detail(_ route: SwapRankedRoute) -> String {
         var parts: [String] = []
         if let eta = route.option.etaSeconds { parts.append(SwapReworkFormat.eta(seconds: eta)) }
-        if let fees = route.option.feesFiat { parts.append(String(format: "swapReworkProviderFees".localized, SwapReworkFormat.fee(fees))) }
-        if route.shortfall > 0 {
-            parts.append("-" + SwapReworkFormat.amount(route.shortfall, ticker: receiveTicker))
+        if let allIn = route.option.allInFeesFiat {
+            parts.append(String(format: "swapReworkAllInFees".localized, SwapReworkFormat.fee(allIn)))
+        } else {
+            parts.append("swap.included_in_rate".localized)
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private func gap(_ route: SwapRankedRoute) -> String {
+        guard !route.isBest else { return "swapReworkMostToVault".localized }
+        var parts = [SwapReworkFormat.gap(route.shortfall, ticker: receiveTicker, isBitcoin: receiveIsBitcoin)]
+        if let fiat = route.shortfallFiat, fiat > 0 {
+            parts.append("-" + SwapReworkFormat.fee(fiat))
         }
         return parts.joined(separator: " · ")
     }

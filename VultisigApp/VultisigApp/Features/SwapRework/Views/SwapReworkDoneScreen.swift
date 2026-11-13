@@ -28,6 +28,9 @@ struct SwapReworkDoneScreen: View {
     /// When each stage was first seen done, for the tracker's time column.
     @State private var stageDoneAt: [SwapTrackerStage.Kind: Date] = [:]
 
+    @State private var notifier = SwapLandingNotifier()
+    @Environment(\.router) private var router
+
     private let deliveredService = SwapDeliveredAmountService()
 
     init(
@@ -54,7 +57,16 @@ struct SwapReworkDoneScreen: View {
                         if statusService.status == .confirmed {
                             SwapReworkSuccessView(state: successState)
                         } else {
-                            SwapReworkTrackerView(state: trackerState)
+                            VStack(spacing: 16) {
+                                SwapReworkTrackerView(state: trackerState)
+                                SwapReworkNotifyCard(
+                                    state: notifier.state,
+                                    ticker: transaction.toCoin.ticker,
+                                    onTurnOn: { Task { await notifier.turnOn() } },
+                                    onTurnOff: { notifier.turnOff() },
+                                    onOpenSettings: { router.navigate(to: SettingsRoute.notifications) }
+                                )
+                            }
                         }
                     }
                     .padding(16)
@@ -78,6 +90,10 @@ struct SwapReworkDoneScreen: View {
             guard status == .confirmed, confirmedAt == nil else { return }
             confirmedAt = Date()
             loadDelivered()
+            notifier.swapCompleted(
+                title: String(format: "swapReworkNotifyLandedTitle".localized, transaction.toCoin.ticker),
+                body: String(format: "swapReworkNotifyLandedBody".localized, receiveText, vault.name)
+            )
         }
     }
 
@@ -110,7 +126,14 @@ struct SwapReworkDoneScreen: View {
             swappedDetail: "\(transaction.fromCoin.ticker) → \(transaction.toCoin.ticker)",
             receivedDetail: "\(receiveText) → \(SwapTokenTrust.shortContract(transaction.recipientAddress))",
             isCrossChain: isCrossChain,
-            stageTimes: stageTimes
+            stageTimes: stageTimes,
+            legNotes: SwapTrackerLegNotes.make(
+                stages: SwapTrackerModel.stages(status: status, isCrossChain: isCrossChain),
+                times: transaction.quote?.legTimes,
+                sourceChain: transaction.fromCoin.chain.name,
+                providerName: providerName,
+                destinationIsBitcoin: transaction.toCoin.chain == .bitcoin
+            )
         )
     }
 

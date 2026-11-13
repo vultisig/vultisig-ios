@@ -71,7 +71,21 @@ enum SwapReworkCTA: Equatable {
     case getNewQuote
     case chooseAnotherCoin
     case insufficient(ticker: String)
+    /// Raise the amount to the provider's stated minimum ("Use 0.0035 ETH").
+    case useMinimum(amountText: String)
     case fixGas(ticker: String)
+}
+
+struct SwapReworkFeeWarning: Equatable {
+    /// "7.2%"
+    let shareText: String
+    let gasPart: Double
+    let gasText: String
+    let vultisigText: String
+    let receiveText: String
+    /// "At 200 USDC this would be 1.0%."
+    let atScaleText: String?
+    let gasLabel: String
 }
 
 struct SwapReworkFormState: Equatable {
@@ -95,6 +109,12 @@ struct SwapReworkFormState: Equatable {
 
     var route: SwapReworkRouteSummary?
     var routes: [SwapRankedRoute]
+    /// "Ethereum gas $0.84": the source gas every route pays, for the sheet.
+    var routeGasNote: String?
+    /// The fee coin, for "Add ETH" and its sheet.
+    var feeTicker: String = ""
+    /// "0.00088 ETH ($1.72)": what the add-gas sheet asks for.
+    var gasToAddText: String?
     var selectedRouteID: String?
     var timer: SwapReworkQuoteTimer
     var fees: SwapReworkFeeRows?
@@ -102,6 +122,10 @@ struct SwapReworkFormState: Equatable {
     var issue: SwapReworkIssue?
     /// "-85.99%": fees and impact take a large share. Shown, never blocking.
     var valueLossText: String?
+    /// The provider's minimum when it states one, for the "too small" card.
+    var minimumText: String?
+    /// The fee warning's numbers (share, gas part, at 10x), when it shows.
+    var feeWarning: SwapReworkFeeWarning?
     var cta: SwapReworkCTA
     var isCTAEnabled: Bool
 

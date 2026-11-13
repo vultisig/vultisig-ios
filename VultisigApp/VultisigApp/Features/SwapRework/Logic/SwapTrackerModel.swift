@@ -95,6 +95,38 @@ enum SwapTrackerModel {
     }
 }
 
+/// A native THORChain / Maya quote's own time split: inbound confirmations,
+/// the outbound delay (it grows with swap size) and the streaming remainder of
+/// `total_swap_seconds`. Shown per pending leg instead of one range.
+struct SwapLegTimes: Equatable {
+    let inboundSeconds: Int?
+    let outboundSeconds: Int?
+    let streamingSeconds: Int?
+
+    init(inbound: Int?, outbound: Int?, total: Int?) {
+        inboundSeconds = inbound.flatMap { $0 > 0 ? $0 : nil }
+        let outboundValue = outbound.flatMap { $0 > 0 ? $0 : nil }
+        outboundSeconds = outboundValue
+        if let total {
+            let rest = total - (inbound ?? 0) - (outbound ?? 0)
+            streamingSeconds = rest > 0 ? rest : nil
+        } else {
+            streamingSeconds = nil
+        }
+    }
+
+    /// The swap leg's wait: outbound delay plus any streaming time.
+    var swapLegSeconds: Int? {
+        let sum = (outboundSeconds ?? 0) + (streamingSeconds ?? 0)
+        return sum > 0 ? sum : nil
+    }
+
+    /// "~1 min", never "~0 min".
+    static func minutesText(seconds: Int) -> String {
+        "~\(max(1, Int((Double(seconds) / 60).rounded(.up)))) min"
+    }
+}
+
 /// Quoted against delivered, on the success screen.
 struct SwapOutcome: Equatable {
     let quoted: Decimal

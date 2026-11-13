@@ -105,6 +105,16 @@ enum SwapReworkIssue: Equatable {
         )
     }
 
+    /// The provider's stated minimum, from `SwapError.lessThenMinSwapAmount`
+    /// ("0.0035 ETH", a `Decimal` description, so always "." decimals). Nil
+    /// when the provider gave none: the copy then just says "too small".
+    static func minimumAmount(for error: Error?) -> Decimal? {
+        guard case let .lessThenMinSwapAmount(text)? = error as? SwapError,
+              let number = text.split(separator: " ").first else { return nil }
+        let value = Decimal(string: String(number), locale: Locale(identifier: "en_US_POSIX"))
+        return (value ?? 0) > 0 ? value : nil
+    }
+
     static func == (lhs: SwapReworkIssue, rhs: SwapReworkIssue) -> Bool {
         switch (lhs, rhs) {
         case (.overBalance, .overBalance), (.notEnoughGas, .notEnoughGas),

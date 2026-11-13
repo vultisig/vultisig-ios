@@ -94,6 +94,12 @@ struct SwapReworkTrackerView: View {
                             .foregroundStyle(Theme.colors.textTertiary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
+                        if let note = state.legNotes[stage.kind] {
+                            Text(note)
+                                .font(Theme.fonts.caption10)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     Spacer(minLength: 0)
                 }
@@ -276,6 +282,73 @@ struct SwapReworkApprovalStepsView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+}
+
+/// "Notify me" under the tracker: off, on (with Undo), or blocked by the OS
+/// permission (with a way to the app's notification settings).
+struct SwapReworkNotifyCard: View {
+    let state: SwapLandingNotifier.State
+    let ticker: String
+    let onTurnOn: () -> Void
+    let onTurnOff: () -> Void
+    let onOpenSettings: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: state == .on ? "bell.fill" : "bell")
+                .foregroundStyle(state == .on ? Theme.colors.alertSuccess : Theme.colors.textSecondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(message)
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if state == .on {
+                    Text("swapReworkNotifyLocalOnly".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 8)
+            Button(action: action) {
+                Text(actionTitle)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(state == .on ? Theme.colors.alertSuccess : Theme.colors.primaryAccent4)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("swapReworkNotify")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(state == .on ? Theme.colors.alertSuccess.opacity(0.12) : .clear)
+        .swapReworkCard(highlighted: false)
+    }
+
+    private var message: String {
+        switch state {
+        case .off: return String(format: "swapReworkNotifyOffBody".localized, ticker)
+        case .on: return String(format: "swapReworkNotifyOnBody".localized, ticker)
+        case .permissionDenied: return "swapReworkNotifyDeniedBody".localized
+        }
+    }
+
+    private var actionTitle: String {
+        switch state {
+        case .off: return "swapReworkNotifyMe".localized
+        case .on: return "swapReworkNotifyUndo".localized
+        case .permissionDenied: return "swapReworkNotifySettings".localized
+        }
+    }
+
+    private func action() {
+        switch state {
+        case .off: onTurnOn()
+        case .on: onTurnOff()
+        case .permissionDenied: onOpenSettings()
         }
     }
 }

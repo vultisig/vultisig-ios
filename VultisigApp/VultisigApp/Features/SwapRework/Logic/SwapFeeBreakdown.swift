@@ -142,6 +142,44 @@ struct SwapFeeBreakdown: Equatable {
     /// form warns (without blocking), as R3's high price impact state does.
     static let valueLossWarningThreshold: Decimal = Decimal(string: "-0.05") ?? 0
 
+    /// Gas for the swap and its approvals: the part of the fee that does not
+    /// grow with the amount.
+    var fixedGasFiat: Decimal { input.networkFiat + input.approvalFiat }
+
+    /// Fees that scale with the amount (protocol payout, Vultisig).
+    var variableFeesFiat: Decimal { totalFiat - fixedGasFiat }
+
+    /// Share of everything that leaves the vault taken by fees (0.072 = 7.2%).
+    var feeShare: Decimal? {
+        guard totalDebitFiat > 0 else { return nil }
+        return totalFiat / totalDebitFiat
+    }
+
+    /// The same share if the amount were `scale` times larger, gas held fixed
+    /// and the scaling fees scaled with it: "at 200 USDC this would be 1.0%".
+    func feeShare(atScale scale: Decimal) -> Decimal? {
+        guard scale > 0, input.payFiat > 0 else { return nil }
+        let fees = fixedGasFiat + variableFeesFiat * scale
+        let debit = input.payFiat * scale + fixedGasFiat
+        return debit > 0 ? fees / debit : nil
+    }
+
+    /// Gas's and Vultisig's parts of all fees, for the share bar (0...1 each).
+    var gasPartOfFees: Decimal {
+        totalFiat > 0 ? fixedGasFiat / totalFiat : 0
+    }
+
+    /// "7.2%", one decimal, "." separator.
+    static func shareText(_ share: Decimal) -> String {
+        let percent = (share * 100).rounded(scale: 1)
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        formatter.minimumIntegerDigits = 1
+        return (formatter.string(from: NSDecimalNumber(decimal: percent)) ?? "0.0") + "%"
+    }
+
     var isValueLossHigh: Bool {
         guard let change = allInChange else { return false }
         return change < Self.valueLossWarningThreshold

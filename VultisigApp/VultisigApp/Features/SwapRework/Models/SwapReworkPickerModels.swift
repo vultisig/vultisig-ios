@@ -15,6 +15,9 @@ struct SwapReworkPickerRow: Equatable, Identifiable {
     let fiatText: String
     let fiatValue: Decimal
     let trust: SwapTokenTrust
+    /// Why swapping this row makes no sense right now ("Allow + swap gas $2.12
+    /// is more than it is worth"). Shown, never hidden: the row stays pickable.
+    var unswappableReason: String?
     var id: String { asset.coinID }
 }
 
@@ -35,6 +38,13 @@ enum SwapReworkPickerFilter {
                 if lhs.fiatValue != rhs.fiatValue { return lhs.fiatValue > rhs.fiatValue }
                 return lhs.asset.ticker < rhs.asset.ticker
             }
+    }
+
+    /// Rows under `threshold` in fiat fold into one "Small balances" row.
+    static let smallBalanceThreshold: Decimal = 1
+
+    static func split(_ rows: [SwapReworkPickerRow], threshold: Decimal = smallBalanceThreshold) -> (main: [SwapReworkPickerRow], small: [SwapReworkPickerRow]) {
+        (rows.filter { $0.fiatValue >= threshold }, rows.filter { $0.fiatValue < threshold })
     }
 
     /// Recents that are still in the list, in recency order.
@@ -67,6 +77,39 @@ struct SwapReworkTrackerState: Equatable {
     let isCrossChain: Bool
     /// "9:41" when a stage was first seen done, "now" for the active one.
     var stageTimes: [SwapTrackerStage.Kind: String] = [:]
+    /// What a pending leg is waiting on: "~1 min · Ethereum confirmations".
+    var legNotes: [SwapTrackerStage.Kind: String] = [:]
+}
+
+enum SwapTrackerLegNotes {
+    /// Notes for the legs not done yet, from the quote's own leg times and
+    /// what is known about the destination chain's blocks.
+    static func make(
+        stages: [SwapTrackerStage],
+        times: SwapLegTimes?,
+        sourceChain: String,
+        providerName: String,
+        destinationIsBitcoin: Bool
+    ) -> [SwapTrackerStage.Kind: String] {
+        var notes: [SwapTrackerStage.Kind: String] = [:]
+        for stage in stages where stage.status != .done {
+            switch stage.kind {
+            case .sent:
+                if let seconds = times?.inboundSeconds {
+                    notes[.sent] = String(format: "swapReworkLegConfirmations".localized, SwapLegTimes.minutesText(seconds: seconds), sourceChain)
+                }
+            case .swapped:
+                if let seconds = times?.swapLegSeconds {
+                    notes[.swapped] = String(format: "swapReworkLegOutbound".localized, SwapLegTimes.minutesText(seconds: seconds), providerName)
+                }
+            case .received:
+                if destinationIsBitcoin {
+                    notes[.received] = "swapReworkLegBitcoinBlocks".localized
+                }
+            }
+        }
+        return notes
+    }
 }
 
 struct SwapReworkSuccessState: Equatable {
