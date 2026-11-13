@@ -140,7 +140,7 @@ struct PerpsReviewContent: View {
     /// The hand-off to the shared `SigningRoute` lands with the live client.
     private func beginSigning(_ mode: HLSigningMode) {
         guard PerpsConfig.allowsSigning, blockingIssue == nil else { return }
-        var sequence = signingSteps ?? HLStepSequence(steps: document.steps)
+        var sequence = signingSteps ?? HLStepSequence(document: document)
         let stamper = HLStamper(nonces: HyperliquidExchangeDryRunClient.shared.nonces)
         do {
             let request = try sequence.stampNext(with: stamper, mode: mode, freshMid: document.coin.flatMap(PerpsMarketCache.shared.mid))

@@ -286,8 +286,10 @@ enum PerpsFlows {
         nonce: UInt64,
         strategy: PerpsExitEditStrategy = PerpsConfig.exitEditStrategy
     ) throws -> PerpsReviewDocument {
-        let currentStop = existing.first(where: \.isStopLoss)
-        let currentTake = existing.first(where: \.isTakeProfit)
+        let stops = existing.filter(\.isStopLoss)
+        let takes = existing.filter(\.isTakeProfit)
+        let currentStop = stops.first
+        let currentTake = takes.first
         let size = try HLWireFormat.wire(abs(position.szi.value))
         var modifies: [(oid: Int64, order: HLOrderWire)] = []
         var adds: [HLOrderWire] = []
@@ -312,6 +314,11 @@ enum PerpsFlows {
             case (nil, nil):
                 continue
             }
+        }
+        // A second trigger of the same kind (left by a failed place-then-cancel)
+        // would still fire at its old price: it goes with the final cancel.
+        for extra in stops.dropFirst() + takes.dropFirst() where !cancels.contains(where: { $0.oid == extra.oid }) {
+            cancels.append((market.assetIndex, extra.oid))
         }
         var steps: [HLUnsignedStep] = []
         if !modifies.isEmpty {

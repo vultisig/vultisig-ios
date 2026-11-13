@@ -9,9 +9,10 @@
 //  - the signed body is persisted before the first POST,
 //  - "try again" while uncertain resends that exact body (the venue applies
 //    a nonce at most once, so a duplicate is refused, never paid twice),
-//  - an uncertain record is reconciled against the ledger, and only a
+//  - an uncertain record is reconciled against the ledger (by nonce only), and only a
 //    definitive answer (`rejected`, or the nonce out of HL's window) lets a
-//    new withdrawal be signed.
+//    new withdrawal be signed. `ensureCanSign` runs before the ceremony;
+//    `record` re-checks atomically after it.
 //  The body carries a signature: it is never logged.
 //
 
@@ -138,17 +139,27 @@ actor HLWithdrawSubmitter {
         self.nowMs = nowMs
     }
 
+    /// One lock for every submitter in the process, so the check for an
+    /// open record and the append of a new one are a single step even if
+    /// two instances share the store.
+    private static let storeLock = NSLock()
+
     /// The record that blocks a new withdrawal, if any.
     func openRecord(signer: String) throws -> HLPendingSubmission? {
-        try store.load(signer: signer).first { $0.state.isOpen }
+        try Self.storeLock.withLock { try store.load(signer: signer).first { $0.state.isOpen } }
+    }
+
+    /// The check BEFORE a withdrawal is signed: throws while one is not settled,
+    /// so no second ceremony starts. `record` checks again, atomically.
+    func ensureCanSign(signer: String) throws {
+        guard try openRecord(signer: signer) == nil else { throw HLWithdrawSubmitterError.withdrawalPending }
     }
 
     /// At launch: a record left `posting` (the app died mid-request) is uncertain.
     func recoverAfterLaunch(signer: String) throws {
-        var records = try store.load(signer: signer)
-        guard records.contains(where: { $0.state == .posting }) else { return }
-        for index in records.indices where records[index].state == .posting { records[index].state = .uncertain }
-        try store.save(records, signer: signer)
+        try mutate(signer: signer) { records in
+            for index in records.indices where records[index].state == .posting { records[index].state = .uncertain }
+        }
     }
 
     /// Persists the guarded signature before anything is posted.
@@ -156,13 +167,15 @@ actor HLWithdrawSubmitter {
         guard request.kind == .withdraw3 else { throw HLWithdrawSubmitterError.notWithdraw }
         guard case .signed = request.signature else { throw HLWithdrawSubmitterError.notSigned }
         try request.verifySigner(expected: signer)
-        guard try openRecord(signer: signer) == nil else { throw HLWithdrawSubmitterError.withdrawalPending }
         let record = HLPendingSubmission(
             id: UUID(), kind: request.kind.rawValue, nonce: request.nonce, digest: "0x" + request.digest.hexString,
             body: request.jsonBody, signer: signer.lowercased(), amount: amount,
             createdAt: Date(timeIntervalSince1970: TimeInterval(nowMs()) / 1000), state: .signed
         )
-        try mutate(signer: signer) { $0.append(record) }
+        try mutate(signer: signer) { records in
+            guard !records.contains(where: { $0.state.isOpen }) else { throw HLWithdrawSubmitterError.withdrawalPending }
+            records.append(record)
+        }
         return record
     }
 
@@ -206,21 +219,18 @@ actor HLWithdrawSubmitter {
         return state
     }
 
-    /// The ledger's `withdraw` entry for this record: by nonce when the venue
-    /// reports it, otherwise by amount within ten minutes of the nonce.
+    /// The ledger's `withdraw` entry for this record, by nonce only. An
+    /// amount-and-time match could settle the record on an unrelated
+    /// withdrawal of the same size and let a second one be signed while this
+    /// body is still live, so an entry without a nonce never matches.
     static func matches(_ update: HLLedgerUpdate, _ record: HLPendingSubmission) -> Bool {
-        guard update.delta.type.lowercased() == "withdraw" else { return false }
-        if let nonce = update.delta.nonce { return nonce == record.nonce }
-        guard let usdc = update.delta.usdc?.value, let amount = Decimal(string: record.amount, locale: Locale(identifier: "en_US_POSIX")) else {
-            return false
-        }
-        let fee = update.delta.fee?.value ?? 0
-        let closeInTime = abs(update.time - Int64(record.nonce)) <= 600_000
-        return closeInTime && (usdc == amount || usdc + fee == amount)
+        update.delta.type.lowercased() == "withdraw" && update.delta.nonce == record.nonce
     }
 
     private func find(_ id: UUID, signer: String) throws -> HLPendingSubmission {
-        guard let record = try store.load(signer: signer).first(where: { $0.id == id }) else { throw HLWithdrawSubmitterError.unknownRecord }
+        guard let record = try Self.storeLock.withLock({ try store.load(signer: signer).first(where: { $0.id == id }) }) else {
+            throw HLWithdrawSubmitterError.unknownRecord
+        }
         return record
     }
 
@@ -231,9 +241,11 @@ actor HLWithdrawSubmitter {
         }
     }
 
-    private func mutate(signer: String, _ change: (inout [HLPendingSubmission]) -> Void) throws {
-        var records = try store.load(signer: signer)
-        change(&records)
-        try store.save(records, signer: signer)
+    private func mutate(signer: String, _ change: (inout [HLPendingSubmission]) throws -> Void) throws {
+        try Self.storeLock.withLock {
+            var records = try store.load(signer: signer)
+            try change(&records)
+            try store.save(records, signer: signer)
+        }
     }
 }

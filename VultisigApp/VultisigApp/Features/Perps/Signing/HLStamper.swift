@@ -35,6 +35,9 @@ enum HLStampError: Error, Equatable {
     case signatureExpired
     /// The previous step has not been posted yet.
     case previousStepPending
+    /// Place-then-cancel: the new trigger is not confirmed resting, so the
+    /// old one is never cancelled.
+    case replacementNotConfirmed
     case noStepsLeft
 }
 
@@ -101,11 +104,19 @@ struct HLStamper {
 /// The steps of one review, stamped strictly in order.
 struct HLStepSequence: Sendable {
     let steps: [HLUnsignedStep]
+    /// Place-then-cancel exit edits: the cancel step waits for `confirmReplacement`.
+    let cancelGate: PerpsExitCancelGate?
     private(set) var nextIndex = 0
     private var awaitingPost = false
+    private var replacementConfirmed = false
 
-    init(steps: [HLUnsignedStep]) {
+    init(steps: [HLUnsignedStep], cancelGate: PerpsExitCancelGate? = nil) {
         self.steps = steps
+        self.cancelGate = cancelGate
+    }
+
+    init(document: PerpsReviewDocument) {
+        self.init(steps: document.steps, cancelGate: document.cancelGate)
     }
 
     var isFinished: Bool { nextIndex >= steps.count && !awaitingPost }
@@ -113,6 +124,9 @@ struct HLStepSequence: Sendable {
     mutating func stampNext(with stamper: HLStamper, mode: HLSigningMode, freshMid: Decimal? = nil) throws -> HLExchangeRequest {
         guard !awaitingPost else { throw HLStampError.previousStepPending }
         guard nextIndex < steps.count else { throw HLStampError.noStepsLeft }
+        if cancelGate != nil, steps[nextIndex].kind == .cancel, !replacementConfirmed {
+            throw HLStampError.replacementNotConfirmed
+        }
         let request = try stamper.stamp(steps[nextIndex], mode: mode, freshMid: freshMid)
         awaitingPost = true
         return request
@@ -123,6 +137,16 @@ struct HLStepSequence: Sendable {
         guard awaitingPost else { return }
         awaitingPost = false
         nextIndex += 1
+    }
+
+    /// Feeds the place step's resting oids and a fresh `frontendOpenOrders`
+    /// read into the gate. Only `.cancelOld` unlocks the cancel step.
+    @discardableResult
+    mutating func confirmReplacement(placed: [Int64]?, openOrders: [HLFrontendOrder]) -> PerpsExitCancelGate.Decision? {
+        guard let cancelGate else { return nil }
+        let decision = cancelGate.decide(placed: placed, openOrders: openOrders)
+        replacementConfirmed = decision == .cancelOld
+        return decision
     }
 
     /// Signing or posting failed before the venue saw it: the same step is

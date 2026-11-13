@@ -108,8 +108,8 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         let stamper = stamper(at: Self.nonce)
         let requoted = try stamper.stamp(order, mode: .fastVault, freshMid: 100_500)
         guard case .array(let orders)? = requoted.action["orders"] else { return XCTFail("orders") }
-        // mid 100,500 + 1% slippage, 5 significant figures.
-        XCTAssertEqual(orders[0]["p"], .string("101500"))
+        // mid 100,500 + 1% slippage; an integer price keeps every digit.
+        XCTAssertEqual(orders[0]["p"], .string("101505"))
         guard case .array(let reviewed)? = plan.steps.last?.action["orders"] else { return XCTFail("reviewed orders") }
         XCTAssertEqual(orders[0]["s"], reviewed[0]["s"], "the reviewed size is kept")
         XCTAssertThrowsError(try stamper.stamp(order, mode: .fastVault, freshMid: 101_500)) {
@@ -204,6 +204,31 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         XCTAssertEqual(gate.decide(placed: [900], openOrders: [stop, try trigger(oid: 900, price: "62000", stop: true)]), .cancelOld)
         XCTAssertEqual(gate.outcome(cancelSucceeded: false), .bothActive)
         XCTAssertEqual(gate.outcome(cancelSucceeded: true), .replaced)
+
+        // The sequence itself refuses to stamp the cancel before the gate opens.
+        var sequence = HLStepSequence(document: document)
+        let stamper = stamper(at: Self.nonce)
+        XCTAssertEqual(try sequence.stampNext(with: stamper, mode: .paired).kind, .order)
+        sequence.markPosted()
+        XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired)) {
+            XCTAssertEqual($0 as? HLStampError, .replacementNotConfirmed)
+        }
+        XCTAssertEqual(sequence.confirmReplacement(placed: [900], openOrders: [stop]), .waitForNewTrigger)
+        XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired))
+        sequence.confirmReplacement(placed: [900], openOrders: [stop, try trigger(oid: 900, price: "62000", stop: true)])
+        XCTAssertEqual(try sequence.stampNext(with: stamper, mode: .paired).kind, .cancel)
+    }
+
+    /// Both stops left live by a failed cancel: an edit retargets one and
+    /// cancels the stale one last, so it cannot fire at the old price.
+    func testDuplicateStopIsCancelledAfterTheEdit() throws {
+        let document = try PerpsFlows.editExits(position: try position(), market: market(),
+                                                existing: [try trigger(oid: 77, price: "60000", stop: true),
+                                                           try trigger(oid: 79, price: "61000", stop: true)],
+                                                stopLoss: 62_000, takeProfit: nil, nonce: 0)
+        XCTAssertEqual(document.steps.map(\.kind), [.batchModify, .cancel])
+        guard case .array(let cancels)? = document.requests[1].action["cancels"] else { return XCTFail("cancels") }
+        XCTAssertEqual(cancels.compactMap { $0["o"] }, [.int(79)])
     }
 
     func testOrderStatusesParse() throws {
@@ -361,13 +386,36 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         XCTAssertEqual(open?.state, .uncertain)
     }
 
-    func testLedgerMatchFallsBackToAmountAndTime() throws {
+    /// Only the nonce settles a record: a same-amount withdrawal nearby is not proof.
+    func testLedgerMatchesByNonceOnly() throws {
         let record = HLPendingSubmission(id: UUID(), kind: "withdraw3", nonce: Self.nonce, digest: "", body: "", signer: "0x1",
                                          amount: "49.5", createdAt: Date(), state: .uncertain)
-        XCTAssertTrue(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: nil), record))
-        XCTAssertTrue(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: nil, usdc: "48.5"), record), "amount net of the 1 USDC fee")
-        XCTAssertFalse(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: Self.nonce + 1), record), "a reported nonce must match")
-        XCTAssertFalse(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: nil, usdc: "10"), record))
+        XCTAssertTrue(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: Self.nonce), record))
+        XCTAssertFalse(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: nil), record))
+        XCTAssertFalse(HLWithdrawSubmitter.matches(try ledgerWithdraw(nonce: Self.nonce + 1), record))
+    }
+
+    func testNoSecondCeremonyStartsWhileOneIsOpen() async throws {
+        let (request, signer) = try signedWithdraw()
+        let store = MemoryStore()
+        let first = submitter(FakePoster([.transportFailure]), store: store)
+        let second = submitter(FakePoster([]), store: store)
+        try await first.ensureCanSign(signer: signer)
+        let record = try await first.record(request, signer: signer, amount: "49.5")
+        _ = try await first.post(id: record.id, signer: signer)
+        do {
+            try await second.ensureCanSign(signer: signer)
+            XCTFail("a second ceremony could start")
+        } catch {
+            XCTAssertEqual(error as? HLWithdrawSubmitterError, .withdrawalPending)
+        }
+        let (other, _) = try signedWithdraw(nonce: Self.nonce + 9)
+        do {
+            _ = try await second.record(other, signer: signer, amount: "49.5")
+            XCTFail("another submitter on the same store recorded a second withdrawal")
+        } catch {
+            XCTAssertEqual(error as? HLWithdrawSubmitterError, .withdrawalPending)
+        }
     }
 
     func testPostOutcomeClassification() {

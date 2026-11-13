@@ -183,6 +183,12 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
         var late = context
         late.nowMs = Self.nonce + 600_001
         assertRefused(try l1Payload(try orderAction()), .nonceOutOfRange, context: late)
+        // A nonce far in the future would stretch how long the signature stays live.
+        var early = context
+        early.nowMs = Self.nonce - 30_001
+        assertRefused(try l1Payload(try orderAction()), .nonceOutOfRange, context: early)
+        early.nowMs = Self.nonce - 30_000
+        XCTAssertNotNil(try HyperliquidCoSignVerifier.verify(try l1Payload(try orderAction()), context: early))
     }
 
     func testExitEditActionsRender() throws {
@@ -192,6 +198,16 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
             try l1Payload(HLActions.batchModify([(77, stop)]), kind: .batchModify), context: context))
         XCTAssertTrue(modify.lines[0].contains("77"))
         XCTAssertTrue(modify.lines[0].contains("62,000"))
+        XCTAssertTrue(modify.lines[0].contains("0.002"), "the trigger line shows side and size, not only the price")
+
+        // A limit trigger can sit unfillable; a non-reduce-only one can open a position.
+        let limitStop = HLOrderWire(asset: 0, isBuy: false, price: "1", size: "0.002", reduceOnly: true,
+                                    type: .trigger(isMarket: false, triggerPrice: "62000", kind: .stopLoss))
+        assertRefused(try l1Payload(HLActions.batchModify([(77, limitStop)]), kind: .batchModify), .unsupportedTrigger)
+        let opening = HLOrderWire(asset: 0, isBuy: false, price: "62000", size: "5", reduceOnly: false,
+                                  type: .trigger(isMarket: true, triggerPrice: "62000", kind: .stopLoss))
+        assertRefused(try l1Payload(HLActions.batchModify([(77, opening)]), kind: .batchModify), .unsupportedTrigger)
+
         let cancel = try XCTUnwrap(HyperliquidCoSignVerifier.verify(
             try l1Payload(HLActions.cancel([(0, 77)]), kind: .cancel), context: context))
         XCTAssertEqual(cancel.lines, [String(format: "perpsCoSignCancel".localized, "77", "BTC")])

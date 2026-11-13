@@ -43,6 +43,8 @@ enum HyperliquidCoSignRefusal: Error, Equatable, LocalizedError {
     case withdrawTimeMismatch
     case maxFeeTooHigh
     case emptyAgentName
+    /// Perps only places reduce-only market triggers.
+    case unsupportedTrigger
 
     var errorDescription: String? {
         self == .missingPreimage ? "perpsCoSignCannotVerify".localized : "perpsCoSignRefused".localized
@@ -69,7 +71,12 @@ struct PerpsCoSignSummary: Equatable, Sendable {
 
 enum HyperliquidCoSignVerifier {
     static let maxExpiryMs: UInt64 = 180_000
+    /// How far the nonce may lag this device's clock (a slow paired ceremony,
+    /// clock drift between phones).
     static let maxClockSkewMs: UInt64 = 600_000
+    /// How far ahead it may be. Kept small: the expiry is bounded from the
+    /// nonce, so a future nonce would stretch how long a signature stays live.
+    static let maxFutureSkewMs: UInt64 = 30_000
 
     enum Shape: Equatable {
         case l1
@@ -113,8 +120,11 @@ enum HyperliquidCoSignVerifier {
     }
 
     private static func checkNonceTime(_ nonce: UInt64, context: HyperliquidCoSignContext) throws {
-        let skew = nonce > context.nowMs ? nonce - context.nowMs : context.nowMs - nonce
-        guard skew <= maxClockSkewMs else { throw HyperliquidCoSignRefusal.nonceOutOfRange }
+        if nonce > context.nowMs {
+            guard nonce - context.nowMs <= maxFutureSkewMs else { throw HyperliquidCoSignRefusal.nonceOutOfRange }
+        } else {
+            guard context.nowMs - nonce <= maxClockSkewMs else { throw HyperliquidCoSignRefusal.nonceOutOfRange }
+        }
     }
 
     // MARK: - L1
@@ -243,19 +253,25 @@ struct HLCoSignActionReader {
         guard case .bool(let isBuy)? = order["b"], case .string(let price)? = order["p"], case .string(let size)? = order["s"],
               case .bool(let reduceOnly)? = order["r"], let type = order["t"] else { throw HyperliquidCoSignRefusal.malformed }
         let coin = coin(try int(order["a"]))
+        let side = String(format: (isBuy ? "perpsCoSignBuy" : "perpsCoSignSell").localized, size, coin)
         if let trigger = type["trigger"] {
             try keys(type, required: ["trigger"])
             try keys(trigger, required: ["isMarket", "triggerPx", "tpsl"])
             guard case .string(let triggerPx)? = trigger["triggerPx"], case .string(let tpsl)? = trigger["tpsl"],
-                  let kind = HLOrderType.Kind(rawValue: tpsl) else { throw HyperliquidCoSignRefusal.malformed }
+                  let kind = HLOrderType.Kind(rawValue: tpsl), case .bool(let isMarket)? = trigger["isMarket"] else {
+                throw HyperliquidCoSignRefusal.malformed
+            }
+            // A limit trigger can sit unfillable, and a trigger that is not
+            // reduce-only can open a position: neither is what perps signs.
+            guard isMarket, reduceOnly else { throw HyperliquidCoSignRefusal.unsupportedTrigger }
             let key = kind == .stopLoss ? "perpsCoSignStopAt" : "perpsCoSignTakeAt"
-            return String(format: key.localized, PerpsFormat.plainPrice(Self.decimal(triggerPx), grouped: true))
+            return [String(format: key.localized, PerpsFormat.plainPrice(Self.decimal(triggerPx), grouped: true)), side,
+                    "perpsCoSignReduceOnly".localized].joined(separator: ", ")
         }
         try keys(type, required: ["limit"])
         guard let limit = type["limit"] else { throw HyperliquidCoSignRefusal.malformed }
         try keys(limit, required: ["tif"])
         guard case .string(let tif)? = limit["tif"], let timeInForce = HLTimeInForce(rawValue: tif) else { throw HyperliquidCoSignRefusal.malformed }
-        let side = String(format: (isBuy ? "perpsCoSignBuy" : "perpsCoSignSell").localized, size, coin)
         let priceText = PerpsFormat.plainPrice(Self.decimal(price), grouped: true)
         var parts = [side, String(format: (timeInForce == .ioc ? "perpsCoSignMarket" : "perpsCoSignLimit").localized, priceText)]
         if reduceOnly { parts.append("perpsCoSignReduceOnly".localized) }

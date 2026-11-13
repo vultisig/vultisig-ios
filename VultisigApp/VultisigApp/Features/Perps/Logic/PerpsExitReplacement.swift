@@ -63,14 +63,12 @@ struct HLOrderStatuses: Decodable, Equatable, Sendable {
         let error: String?
     }
 
-    private struct Envelope: Decodable {
-        struct Response: Decodable {
-            struct DataField: Decodable { let statuses: [Status] }
-            let data: DataField?
-        }
-        let status: String
-        let response: Response?
+    private struct Response: Decodable {
+        struct DataField: Decodable { let statuses: [Status] }
+        let data: DataField?
     }
+
+    private enum CodingKeys: String, CodingKey { case status, response }
 
     let isOk: Bool
     let statuses: [Status]
@@ -80,10 +78,11 @@ struct HLOrderStatuses: Decodable, Equatable, Sendable {
         self.statuses = statuses
     }
 
+    /// An error answer carries a plain string in `response`: no statuses.
     init(from decoder: Decoder) throws {
-        let envelope = try Envelope(from: decoder)
-        isOk = envelope.status == "ok"
-        statuses = envelope.response?.data?.statuses ?? []
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isOk = try container.decode(String.self, forKey: .status) == "ok"
+        statuses = (try? container.decode(Response.self, forKey: .response))?.data?.statuses ?? []
     }
 
     /// Resting trigger oids; nil unless the whole response is `ok` and every
