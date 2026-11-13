@@ -265,9 +265,15 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     let reference: Decimal
     let size: Decimal
     let liquidation: Decimal?
+    /// The market's lot decimals: an edited trigger is snapped to a valid
+    /// Hyperliquid price before it is checked, so the price validated, shown
+    /// in the review and signed is the same number.
+    let szDecimals: Int
 
-    init(side: PerpsSide, entry: Decimal, reference: Decimal, size: Decimal, liquidation: Decimal?, takeProfit: Decimal?, stopLoss: Decimal?) {
+    init(side: PerpsSide, entry: Decimal, reference: Decimal, size: Decimal, liquidation: Decimal?, szDecimals: Int,
+         takeProfit: Decimal?, stopLoss: Decimal?) {
         self.side = side
+        self.szDecimals = szDecimals
         self.entry = entry
         self.reference = reference
         self.size = size
@@ -290,8 +296,8 @@ final class PerpsAutoCloseViewModel: ObservableObject {
 
     /// An untouched field keeps the existing trigger exactly; an edited one is
     /// rounded to what the UI shows.
-    var takeProfit: Decimal? { Self.trigger(takeText, initialText: initialTakeText, initial: initialTake) }
-    var stopLoss: Decimal? { Self.trigger(stopText, initialText: initialStopText, initial: initialStop) }
+    var takeProfit: Decimal? { trigger(takeText, initialText: initialTakeText, initial: initialTake) }
+    var stopLoss: Decimal? { trigger(stopText, initialText: initialStopText, initial: initialStop) }
 
     /// Text that is there but is not a number. It must block Done / Review:
     /// read as "no trigger", it would cancel the existing one.
@@ -299,9 +305,9 @@ final class PerpsAutoCloseViewModel: ObservableObject {
         [takeText, stopText].contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty && PerpsInput.decimal($0) == nil }
     }
 
-    private static func trigger(_ text: String, initialText: String, initial: Decimal?) -> Decimal? {
+    private func trigger(_ text: String, initialText: String, initial: Decimal?) -> Decimal? {
         if text == initialText, let initial { return initial }
-        return PerpsInput.decimal(text).map(PerpsFormat.roundedPrice)
+        return PerpsInput.decimal(text).map { HLWireFormat.price(PerpsFormat.roundedPrice($0), szDecimals: szDecimals) }
     }
 
     func outcome(_ trigger: Decimal?) -> Decimal? {

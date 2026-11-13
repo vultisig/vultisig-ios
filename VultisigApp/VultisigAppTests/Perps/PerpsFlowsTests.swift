@@ -200,6 +200,20 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertNotNil(unchanged.blockingIssue)
     }
 
+    /// An edited trigger is snapped to a valid price before it is validated,
+    /// so rounding on the wire can never move it across the mark.
+    @MainActor
+    func testEditedTriggerIsSnappedBeforeValidation() {
+        let viewModel = PerpsAutoCloseViewModel(side: .short, entry: 100_000, reference: Decimal(string: "100000.5") ?? 0, size: 1,
+                                                liquidation: nil, szDecimals: 5, takeProfit: nil, stopLoss: nil)
+        viewModel.stopText = "100001"
+        XCTAssertEqual(viewModel.stopLoss, 100_000, "5 significant figures, the price that would be signed")
+        XCTAssertNotNil(viewModel.issue, "a short's stop at or under the mark is refused, not signed")
+        viewModel.stopText = "100060"
+        XCTAssertEqual(viewModel.stopLoss, 100_060)
+        XCTAssertNil(viewModel.issue)
+    }
+
     func testInputAcceptsCommaDecimals() {
         XCTAssertEqual(PerpsInput.decimal("76,5"), Decimal(string: "76.5"))
         XCTAssertEqual(PerpsInput.decimal("1,250.75"), Decimal(string: "1250.75"))

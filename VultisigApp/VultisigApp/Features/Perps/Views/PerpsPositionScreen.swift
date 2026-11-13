@@ -351,7 +351,8 @@ struct PerpsPositionScreen: View {
             case .autoClose:
                 PerpsAutoCloseSheet(viewModel: PerpsAutoCloseViewModel(
                     side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
-                    size: abs(position.szi.value), liquidation: position.liquidationPx?.value, takeProfit: take, stopLoss: stop
+                    size: abs(position.szi.value), liquidation: position.liquidationPx?.value, szDecimals: market.szDecimals,
+                    takeProfit: take, stopLoss: stop
                 )) { newTake, newStop in
                     let document = try? PerpsFlows.editExits(position: position, market: market, existing: viewModel.triggers,
                                                              stopLoss: newStop, takeProfit: newTake,

@@ -107,7 +107,7 @@ struct PerpsModifySheet: View {
         _page = State(initialValue: startsOnMargin ? .margin : .main)
         _exits = StateObject(wrappedValue: PerpsAutoCloseViewModel(
             side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
-            size: abs(position.szi.value), liquidation: position.liquidationPx?.value,
+            size: abs(position.szi.value), liquidation: position.liquidationPx?.value, szDecimals: market.szDecimals,
             takeProfit: triggers.first(where: \.isTakeProfit)?.triggerPx?.value,
             stopLoss: triggers.first(where: \.isStopLoss)?.triggerPx?.value
         ))

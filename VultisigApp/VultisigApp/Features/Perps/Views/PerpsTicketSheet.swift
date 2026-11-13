@@ -123,6 +123,7 @@ struct PerpsTicketSheet: View {
                 PerpsAutoCloseSheet(viewModel: PerpsAutoCloseViewModel(
                     side: viewModel.side, entry: viewModel.referencePrice, reference: viewModel.referencePrice,
                     size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice,
+                    szDecimals: viewModel.market.szDecimals,
                     takeProfit: viewModel.takeProfit, stopLoss: viewModel.stopLoss
                 )) { take, stop in
                     viewModel.applyAutoClose(takeProfit: take, stopLoss: stop)
