@@ -32,7 +32,6 @@ struct TonLiquidStakeTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: "tonstakersStakeTitle".localized,
-            validForm: $viewModel.validForm,
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {

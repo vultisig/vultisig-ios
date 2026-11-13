@@ -13,8 +13,6 @@ struct TonLiquidUnstakeTransactionScreen: View {
     @StateObject private var viewModel: TonLiquidUnstakeTransactionViewModel
     let onVerify: (TransactionBuilder) -> Void
 
-    @State private var validForm: Bool = true
-
     init(
         viewModel: TonLiquidUnstakeTransactionViewModel,
         onVerify: @escaping (TransactionBuilder) -> Void
@@ -31,7 +29,6 @@ struct TonLiquidUnstakeTransactionScreen: View {
         FormScreen(
             title: "tonstakersUnstakeTitle".localized,
             fixedHeight: false,
-            validForm: $validForm,
             isContinueDisabled: !viewModel.canContinue,
             onContinue: onContinue
         ) {

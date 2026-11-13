@@ -117,7 +117,7 @@ final class DefiChainScreenModel: ObservableObject {
     /// action is a no-op (a TON unstake with no pool address to unwind).
     func unstakeTransactionType(for position: StakePosition) -> FunctionTransactionType? {
         if position.type == .liquid {
-            guard position.availableToUnstake > 0 else { return nil }
+            guard (position.availableToUnstake ?? 0) > 0 else { return nil }
             return .tonLiquidUnstake(coin: TokensStore.ton)
         }
         if position.coin.chain == .ton {
