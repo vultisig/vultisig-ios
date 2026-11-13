@@ -45,6 +45,8 @@ enum SwapReworkDemoScenario: String, CaseIterable {
     /// R4: tracker with Notify me on / blocked by the OS permission.
     case notifyOn
     case notifyDenied
+    /// Success while the delivered amount is still being read.
+    case checkingDelivered
 }
 
 enum SwapReworkDemo {
@@ -137,7 +139,7 @@ enum SwapReworkDemo {
     static func formState(for scenario: SwapReworkDemoScenario) -> SwapReworkFormState {
         var state = baseQuote
         switch scenario {
-        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success, .received, .pickerSmall, .notifyOn, .notifyDenied:
+        case .quote, .fees, .routes, .picker, .unverified, .tracker, .success, .received, .pickerSmall, .notifyOn, .notifyDenied, .checkingDelivered:
             break
         case .addGas:
             state = formState(for: .noGas)

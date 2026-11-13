@@ -213,7 +213,7 @@ struct SwapReworkScreen: View {
     @ViewBuilder
     private var marketContent: some View {
         #if DEBUG
-        if let scenario = SwapReworkConfig.demoScenario, [.tracker, .success, .received, .notifyOn, .notifyDenied].contains(scenario) {
+        if let scenario = SwapReworkConfig.demoScenario, [.tracker, .success, .received, .notifyOn, .notifyDenied, .checkingDelivered].contains(scenario) {
             progressDemo(scenario)
         } else {
             form
@@ -556,7 +556,7 @@ struct SwapReworkScreen: View {
     private var isProgressDemo: Bool {
         #if DEBUG
         guard let scenario = SwapReworkConfig.demoScenario else { return false }
-        return [.tracker, .success, .received, .notifyOn, .notifyDenied].contains(scenario)
+        return [.tracker, .success, .received, .notifyOn, .notifyDenied, .checkingDelivered].contains(scenario)
         #else
         false
         #endif
@@ -597,16 +597,22 @@ struct SwapReworkScreen: View {
                             )
                         }
                     case .received: SwapReworkSuccessView(state: SwapReworkDemo.received)
+                    case .checkingDelivered:
+                        SwapReworkSuccessView(state: {
+                            var state = SwapReworkDemo.received
+                            state.isCheckingDelivered = true
+                            return state
+                        }())
                     default: SwapReworkSuccessView(state: SwapReworkDemo.success)
                     }
                 }
                 .padding(16)
             }
             HStack(spacing: 10) {
-                if [.success, .received].contains(scenario) {
+                if [.success, .received, .checkingDelivered].contains(scenario) {
                     PrimaryButton(title: "swapReworkSwapAgain".localized, type: .secondary) {}
                 }
-                PrimaryButton(title: ([.success, .received].contains(scenario) ? "done" : "swapReworkBackToVault").localized) {}
+                PrimaryButton(title: ([.success, .received, .checkingDelivered].contains(scenario) ? "done" : "swapReworkBackToVault").localized) {}
             }
             .padding(16)
         }
