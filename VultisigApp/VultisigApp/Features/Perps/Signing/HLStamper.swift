@@ -43,6 +43,7 @@ enum HLStampError: Error, Equatable {
     /// old one is never cancelled.
     case replacementNotConfirmed
     case noStepsLeft
+    case missingClientOrderId
 }
 
 /// One action of a review, not yet tied to a nonce.
@@ -61,6 +62,9 @@ struct HLUnsignedStep: Sendable {
     /// stamp of this step carries the same one: an ambiguous POST can be
     /// looked up with `orderStatus` by cloid instead of guessed at.
     var clientOrderId: String?
+    /// Set on entry and close orders: stamping refuses without a cloid (the
+    /// random source failed) rather than sign an order it could not look up.
+    var requiresClientOrderId = false
 
     static func l1(_ kind: HLExchangeRequest.Kind, action: HLValue) -> HLUnsignedStep {
         HLUnsignedStep(kind: kind, build: .l1 { _ in action })
@@ -75,6 +79,7 @@ struct HLUnsignedStep: Sendable {
         switch build {
         case .l1(let make):
             var action = try make(freshMid)
+            if requiresClientOrderId && clientOrderId == nil { throw HLStampError.missingClientOrderId }
             if kind == .order, let clientOrderId { action = HLActions.settingClientOrderId(clientOrderId, on: action) }
             return try .l1(kind, action: action, nonce: nonce, isMainnet: isMainnet, expiresAfter: nonce + expiryBudgetMs)
         case .userSigned(let make):

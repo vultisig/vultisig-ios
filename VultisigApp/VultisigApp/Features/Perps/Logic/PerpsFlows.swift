@@ -434,7 +434,7 @@ enum PerpsFlows {
         let step = HLUnsignedStep(kind: .order, build: .l1 { freshMid in
             try HLActions.order([PerpsFlows.closeOrder(position: position, market: market, size: closeSize, freshMid: freshMid)],
                                 builder: PerpsConfig.builderFee)
-        }, clientOrderId: HLActions.randomClientOrderId())
+        }, clientOrderId: HLActions.randomClientOrderId(), requiresClientOrderId: true)
         let net = PerpsCloseFlows.netProfit(estimate)
         return PerpsReviewDocument(
             sheetTitle: "perpsReview".localized,

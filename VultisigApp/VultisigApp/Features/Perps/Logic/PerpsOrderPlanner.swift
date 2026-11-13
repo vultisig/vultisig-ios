@@ -70,13 +70,15 @@ struct PerpsOrderPlan: Equatable, Sendable {
                 return .l1(.updateLeverage, action: step.action)
             case .order:
                 let cloid = HLActions.randomClientOrderId()
-                guard isMarket else { return HLUnsignedStep(kind: .order, build: .l1 { _ in step.action }, clientOrderId: cloid) }
+                guard isMarket else {
+                    return HLUnsignedStep(kind: .order, build: .l1 { _ in step.action }, clientOrderId: cloid, requiresClientOrderId: true)
+                }
                 let market = market, ticket = ticket, size = estimate.size, reference = reference, builder = builder
                 return HLUnsignedStep(kind: .order, build: .l1 { freshMid in
                     let price = try HLRequote.marketPrice(reviewMid: reference, freshMid: freshMid, isBuy: ticket.side.isBuy,
                                                           slippage: ticket.slippage, szDecimals: market.szDecimals)
                     return try PerpsOrderPlanner.orderAction(market: market, ticket: ticket, size: size, price: price, builder: builder)
-                }, clientOrderId: cloid)
+                }, clientOrderId: cloid, requiresClientOrderId: true)
             }
         }
     }

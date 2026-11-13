@@ -186,6 +186,11 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         XCTAssertEqual(one[0]["c"], .string(cloid))
         XCTAssertEqual(two[0]["c"], .string(cloid))
         XCTAssertNil(one[1]["c"], "the stop loss trigger has no cloid")
+        var noRandom = order
+        noRandom.clientOrderId = nil
+        XCTAssertThrowsError(try stamper.stamp(noRandom, mode: .paired)) {
+            XCTAssertEqual($0 as? HLStampError, .missingClientOrderId, "never an entry order without a cloid")
+        }
     }
 
     func testUnchangedLeverageSkipsTheLeverageCeremony() throws {
