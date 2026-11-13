@@ -1196,6 +1196,7 @@
 "pendingIncomingBalance" = "+%@ na čekanju";
 "pendingRewards" = "Nagrade na čekanju";
 "perpsAboutFiveMin" = "Oko 5 min";
+"perpsAboveNow" = "%@ iznad trenutne cijene";
 "perpsActivationFee" = "Aktivacija računa (jednokratno)";
 "perpsActivationFootnote" = "Naknade uključuju jednokratnih %@ pri vašem prvom povlačenju.";
 "perpsActivity" = "Aktivnost";
@@ -1220,6 +1221,7 @@
 "perpsAvailableToTrade" = "Dostupno za trgovanje";
 "perpsBack" = "Natrag";
 "perpsBackToTradingAccount" = "Natrag na račun za trgovanje";
+"perpsBelowNow" = "%@ ispod trenutne cijene";
 "perpsBetaTag" = "Beta";
 "perpsCantConnect" = "Nema veze. Cijene su od prije %d min.";
 "perpsClose" = "Zatvori";
@@ -1227,11 +1229,14 @@
 "perpsClosed" = "Zatvoreno";
 "perpsClosedAt" = "Zatvoreno po";
 "perpsClosedAtPrice" = "Zatvoreno po %@";
+"perpsCloseIfDrops" = "Zatvori ako %@ padne";
+"perpsCloseIfRises" = "Zatvori ako %@ naraste";
 "perpsClosePosition" = "Zatvori poziciju";
 "perpsCloseSide" = "Zatvori %@ %@";
 "perpsClosingEllipsis" = "Zatvaranje…";
 "perpsClosingOf" = "Zatvaranje %1$@ od %2$@";
 "perpsClosingSize" = "Zatvaranje %@";
+"perpsCoinNow" = "%@ sada";
 "perpsCross" = "unakrsna";
 "perpsDayVolume" = "Volumen 24h";
 "perpsDefiSubtitle" = "Hyperliquid perpetuali";
@@ -1290,6 +1295,10 @@
 "perpsLiquidatedNothingBack" = "Ništa nije vraćeno.";
 "perpsLiquidatedTitle" = "%@ %@ likvidirano";
 "perpsLiquidation" = "Likvidacija";
+"perpsLiquidationExplainFalls" = "Ako %1$@ padne na %2$@, ova se trgovina sama zatvara i gubite većinu njezine margine.";
+"perpsLiquidationExplainMargin" = "Dodavanje margine udaljava likvidaciju.";
+"perpsLiquidationExplainRises" = "Ako %1$@ naraste na %2$@, ova se trgovina sama zatvara i gubite većinu njezine margine.";
+"perpsLiquidationExplainStop" = "Vaš stop loss na %@ zatvara je prije.";
 "perpsLiquidationPrice" = "Cijena likvidacije";
 "perpsLoadFailed" = "Učitavanje Hyperliquid podataka nije uspjelo. Povucite za ponovni pokušaj.";
 "perpsLong" = "long";
@@ -1303,12 +1312,13 @@
 "perpsMax" = "Maks.";
 "perpsMaxFee" = "Vultisig naknada";
 "perpsMaxLeverage" = "Maks. poluga";
+"perpsMaxLeverageChip" = "Do %d× poluge";
 "perpsMinimumNotional" = "Pozicija mora vrijediti najmanje $10.";
 "perpsModify" = "Izmijeni";
 "perpsMoreThanAvailable" = "To je više nego što imate na raspolaganju.";
 "perpsMoreThanWithdrawable" = "To je više nego što možete povući.";
 "perpsNearLiquidationBody" = "%@ %@ · Likvidacija %@";
-"perpsNearLiquidationTitle" = "Vaša %@ pozicija blizu je likvidacije";
+"perpsNearLiquidationTitle" = "%1$@ je %2$@ od likvidacije";
 "perpsNoActivity" = "Još nema aktivnosti";
 "perpsNoChanges" = "Ništa nije promijenjeno.";
 "perpsNoMarketsFound" = "Nema pronađenih tržišta";
@@ -1331,6 +1341,8 @@
 "perpsPairName" = "%@-USD";
 "perpsPartlyClosedLoss" = "Djelomično zatvoreno · gubitak";
 "perpsPartlyClosedProfit" = "Djelomično zatvoreno · dobit";
+"perpsPercentAbove" = "%@ više";
+"perpsPercentBelow" = "%@ niže";
 "perpsPerHour" = "%@ po satu";
 "perpsPositionClosedTitle" = "%@ pozicija zatvorena";
 "perpsPositions" = "Pozicije";
@@ -1384,6 +1396,7 @@
 "perpsTriggerPrice" = "Okidna cijena";
 "perpsTryAgain" = "Pokušaj ponovno";
 "perpsUpTo" = "Do %@";
+"perpsUpToOnCoin" = "Do %1$@ na %2$@";
 "perpsUsdcOnArbitrum" = "USDC na Arbitrumu";
 "perpsUsuallyFewSeconds" = "Obično traje nekoliko sekundi.";
 "perpsValue" = "Vrijednost";

@@ -1196,6 +1196,7 @@
 "pendingIncomingBalance" = "+%@ 待确认";
 "pendingRewards" = "待领取奖励";
 "perpsAboutFiveMin" = "约 5 分钟";
+"perpsAboveNow" = "比现价高 %@";
 "perpsActivationFee" = "账户激活（一次性）";
 "perpsActivationFootnote" = "费用包含首次提取时一次性收取的 %@。";
 "perpsActivity" = "活动";
@@ -1220,6 +1221,7 @@
 "perpsAvailableToTrade" = "可交易";
 "perpsBack" = "返回";
 "perpsBackToTradingAccount" = "返回交易账户";
+"perpsBelowNow" = "比现价低 %@";
 "perpsBetaTag" = "测试版";
 "perpsCantConnect" = "无法连接。价格为 %d 分钟前的数据。";
 "perpsClose" = "平仓";
@@ -1227,11 +1229,14 @@
 "perpsClosed" = "已平仓";
 "perpsClosedAt" = "平仓价";
 "perpsClosedAtPrice" = "平仓价 %@";
+"perpsCloseIfDrops" = "%@ 下跌时平仓";
+"perpsCloseIfRises" = "%@ 上涨时平仓";
 "perpsClosePosition" = "平仓";
 "perpsCloseSide" = "平仓 %@ %@";
 "perpsClosingEllipsis" = "正在平仓…";
 "perpsClosingOf" = "正在平仓 %2$@ 中的 %1$@";
 "perpsClosingSize" = "正在平仓 %@";
+"perpsCoinNow" = "%@ 现价";
 "perpsCross" = "全仓";
 "perpsDayVolume" = "24 小时成交量";
 "perpsDefiSubtitle" = "Hyperliquid 永续合约";
@@ -1290,6 +1295,10 @@
 "perpsLiquidatedNothingBack" = "未退回任何资金。";
 "perpsLiquidatedTitle" = "%@ %@ 已被强平";
 "perpsLiquidation" = "强平";
+"perpsLiquidationExplainFalls" = "如果 %1$@ 跌至 %2$@，此交易将自动平仓，你将损失大部分保证金。";
+"perpsLiquidationExplainMargin" = "追加保证金可让强平价更远。";
+"perpsLiquidationExplainRises" = "如果 %1$@ 涨至 %2$@，此交易将自动平仓，你将损失大部分保证金。";
+"perpsLiquidationExplainStop" = "你在 %@ 的止损会先平仓。";
 "perpsLiquidationPrice" = "强平价";
 "perpsLoadFailed" = "无法加载 Hyperliquid 数据。下拉重试。";
 "perpsLong" = "多";
@@ -1303,12 +1312,13 @@
 "perpsMax" = "最大";
 "perpsMaxFee" = "Vultisig 费用";
 "perpsMaxLeverage" = "最高杠杆";
+"perpsMaxLeverageChip" = "最高 %d× 杠杆";
 "perpsMinimumNotional" = "仓位价值至少需要 $10。";
 "perpsModify" = "修改";
 "perpsMoreThanAvailable" = "超出您的可用余额。";
 "perpsMoreThanWithdrawable" = "超出您可提取的金额。";
 "perpsNearLiquidationBody" = "%@ %@ · 强平 %@";
-"perpsNearLiquidationTitle" = "您的 %@ 仓位接近强平";
+"perpsNearLiquidationTitle" = "%1$@ 距强平 %2$@";
 "perpsNoActivity" = "暂无活动";
 "perpsNoChanges" = "没有任何更改。";
 "perpsNoMarketsFound" = "未找到市场";
@@ -1331,6 +1341,8 @@
 "perpsPairName" = "%@-USD";
 "perpsPartlyClosedLoss" = "部分平仓 · 亏损";
 "perpsPartlyClosedProfit" = "部分平仓 · 盈利";
+"perpsPercentAbove" = "高 %@";
+"perpsPercentBelow" = "低 %@";
 "perpsPerHour" = "每小时 %@";
 "perpsPositionClosedTitle" = "%@ 仓位已平仓";
 "perpsPositions" = "仓位";
@@ -1384,6 +1396,7 @@
 "perpsTriggerPrice" = "触发价";
 "perpsTryAgain" = "重试";
 "perpsUpTo" = "最高 %@";
+"perpsUpToOnCoin" = "%2$@ 最高 %1$@";
 "perpsUsdcOnArbitrum" = "Arbitrum 上的 USDC";
 "perpsUsuallyFewSeconds" = "通常只需几秒钟。";
 "perpsValue" = "价值";

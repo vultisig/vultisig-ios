@@ -42,6 +42,14 @@ struct PerpsTicketSheet: View {
                 Text(viewModel.summaryLine)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
+                PerpsQuickPicks(titles: ["25%", "50%", "perpsMax".localized]) { index in
+                    switch index {
+                    case 0: viewModel.applyFraction(Decimal(string: "0.25") ?? 0)
+                    case 1: viewModel.applyFraction(Decimal(string: "0.5") ?? 0)
+                    default: viewModel.applyMax()
+                    }
+                }
+                .padding(.top, 4)
                 if let issue = viewModel.issue, viewModel.fundingShortfall == nil {
                     Text(issue)
                         .font(Theme.fonts.footnote)
@@ -121,11 +129,14 @@ struct PerpsTicketSheet: View {
         .crossPlatformSheet(item: $subSheet) { kind in
             switch kind {
             case .leverage:
-                PerpsLeverageSheet(selected: viewModel.leverage, options: viewModel.leverageOptions,
-                                   maxAllowed: viewModel.maxAllowedLeverage, marketMax: viewModel.market.maxLeverage) { value in
-                    viewModel.leverage = value
-                    subSheet = nil
-                }
+                PerpsLeverageSheet(coin: viewModel.market.coin, side: viewModel.side, selected: viewModel.leverage,
+                                   options: viewModel.leverageOptions, maxAllowed: viewModel.maxAllowedLeverage,
+                                   marketMax: viewModel.market.maxLeverage, referencePrice: viewModel.referencePrice,
+                                   preview: viewModel.preview(leverage:), onBack: { subSheet = nil },
+                                   onDone: { value in
+                                       viewModel.leverage = value
+                                       subSheet = nil
+                                   })
             case .addFunds:
                 PerpsFundsSheet(account: viewModel.account, vault: viewModel.vault, prefill: viewModel.fundingShortfall) { document in
                     subSheet = nil
@@ -137,7 +148,7 @@ struct PerpsTicketSheet: View {
                     size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice,
                     szDecimals: viewModel.market.szDecimals,
                     takeProfit: viewModel.takeProfit, stopLoss: viewModel.stopLoss
-                )) { take, stop in
+                ), coin: viewModel.market.coin) { take, stop in
                     viewModel.applyAutoClose(takeProfit: take, stopLoss: stop)
                     subSheet = nil
                 }
@@ -164,41 +175,148 @@ struct PerpsOfflineBanner: View {
     }
 }
 
-/// Leverage chips; anything above the first-trade cap is shown but disabled.
+/// Leverage: the big value, a slider with evenly spaced stops (1/2/3/5/10/20/40×,
+/// capped at the market's max), and the position size and liquidation it
+/// would give, live. Stops above the first-trade cap show but do not take.
 struct PerpsLeverageSheet: View {
-    let selected: Int
+    let coin: String
+    let side: PerpsSide
     let options: [Int]
     let maxAllowed: Int
     let marketMax: Int
-    let onSelect: (Int) -> Void
+    let referencePrice: Decimal
+    let preview: (Int) -> (size: Decimal, liquidation: Decimal?)
+    let onBack: () -> Void
+    let onDone: (Int) -> Void
+
+    @State private var index: Int
+
+    init(coin: String, side: PerpsSide, selected: Int, options: [Int], maxAllowed: Int, marketMax: Int, referencePrice: Decimal,
+         preview: @escaping (Int) -> (size: Decimal, liquidation: Decimal?), onBack: @escaping () -> Void, onDone: @escaping (Int) -> Void) {
+        self.coin = coin
+        self.side = side
+        self.options = options
+        self.maxAllowed = maxAllowed
+        self.marketMax = marketMax
+        self.referencePrice = referencePrice
+        self.preview = preview
+        self.onBack = onBack
+        self.onDone = onDone
+        _index = State(initialValue: options.firstIndex(of: selected) ?? 0)
+    }
+
+    private var value: Int { options[min(index, options.count - 1)] }
+    private var maxIndex: Int { options.lastIndex { $0 <= maxAllowed } ?? 0 }
 
     var body: some View {
+        let live = preview(value)
         VStack(spacing: 20) {
-            PerpsSheetTitle(title: "perpsLeverage".localized)
-            HStack(spacing: 8) {
-                ForEach(options, id: \.self) { value in
-                    Button { onSelect(value) } label: {
-                        Text("\(value)×")
-                            .font(Theme.fonts.priceBodyL)
-                            .foregroundStyle(value == selected ? Theme.colors.textPrimary : Theme.colors.textSecondary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(Capsule().fill(value == selected ? Theme.colors.primaryAccent3 : Theme.colors.bgSurface2))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(value > maxAllowed)
-                    .opacity(value > maxAllowed ? 0.35 : 1)
-                    .accessibilityIdentifier("perpsLeverage-\(value)")
+            ZStack {
+                PerpsSheetTitle(title: "perpsLeverage".localized)
+                HStack {
+                    PerpsSheetBackButton(action: onBack)
+                    Spacer()
                 }
             }
-            if maxAllowed < marketMax {
-                Text(String(format: "perpsFirstTradeCap".localized, maxAllowed))
-                    .font(Theme.fonts.caption12)
+            VStack(spacing: 6) {
+                Text("\(value)×")
+                    .font(Theme.fonts.priceLargeTitle)
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .accessibilityIdentifier("perpsLeverageValue")
+                Text(maxAllowed < marketMax
+                     ? String(format: "perpsFirstTradeCap".localized, maxAllowed)
+                     : String(format: "perpsUpToOnCoin".localized, "\(marketMax)×", coin))
+                    .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            PerpsStopSlider(labels: options.map { "\($0)×" }, index: $index, maxIndex: maxIndex)
+            PerpsCard {
+                PerpsRow(title: "perpsPositionSize".localized, value: PerpsFormat.usd(live.size))
+                PerpsRow(title: "perpsLiquidationPrice".localized, value: live.liquidation.map(PerpsFormat.price) ?? "-", showsDivider: true) {
+                    if let distance = PerpsFormat.liquidationDistance(price: referencePrice, liquidation: live.liquidation, isLong: side == .long) {
+                        Text(distance)
+                            .font(Theme.fonts.footnote)
+                            .monospacedDigit()
+                            .foregroundStyle(Theme.colors.textTertiary)
+                    }
+                }
+            }
+            PrimaryButton(title: "perpsDone".localized) { onDone(value) }
+                .accessibilityIdentifier("perpsLeverageDone")
         }
         .perpsSheetChrome()
+    }
+}
+
+/// A slider that snaps to evenly spaced stops, each label centred under its
+/// dot. Stops past `maxIndex` are drawn dimmed and cannot be selected.
+struct PerpsStopSlider: View {
+    let labels: [String]
+    @Binding var index: Int
+    let maxIndex: Int
+
+    private let thumb: CGFloat = 26
+
+    var body: some View {
+        VStack(spacing: 10) {
+            GeometryReader { geometry in
+                let width = geometry.size.width - thumb
+                let step = labels.count > 1 ? width / CGFloat(labels.count - 1) : 0
+                let x = thumb / 2 + step * CGFloat(index)
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Theme.colors.bgSurface2)
+                        .frame(height: 4)
+                        .padding(.horizontal, thumb / 2)
+                    Capsule()
+                        .fill(Theme.colors.primaryAccent4)
+                        .frame(width: max(0, x - thumb / 2), height: 4)
+                        .offset(x: thumb / 2)
+                    ForEach(labels.indices, id: \.self) { stop in
+                        Circle()
+                            .fill(stop <= index ? Theme.colors.primaryAccent4 : Theme.colors.textTertiary)
+                            .frame(width: 6, height: 6)
+                            .opacity(stop > maxIndex ? 0.35 : 1)
+                            .position(x: thumb / 2 + step * CGFloat(stop), y: thumb / 2)
+                    }
+                    Circle()
+                        .fill(Theme.colors.textPrimary)
+                        .frame(width: thumb, height: thumb)
+                        .position(x: x, y: thumb / 2)
+                }
+                .frame(height: thumb)
+                .contentShape(Rectangle())
+                .gesture(DragGesture(minimumDistance: 0).onChanged { drag in
+                    guard step > 0 else { return }
+                    let nearest = Int(((drag.location.x - thumb / 2) / step).rounded())
+                    index = min(max(0, nearest), maxIndex)
+                })
+            }
+            .frame(height: thumb)
+            // Labels centred on their stops.
+            GeometryReader { geometry in
+                let width = geometry.size.width - thumb
+                let step = labels.count > 1 ? width / CGFloat(labels.count - 1) : 0
+                ForEach(labels.indices, id: \.self) { stop in
+                    Button { if stop <= maxIndex { index = stop } } label: {
+                        Text(labels[stop])
+                            .font(Theme.fonts.caption12)
+                            .monospacedDigit()
+                            .foregroundStyle(stop == index ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                            .opacity(stop > maxIndex ? 0.35 : 1)
+                            .fixedSize()
+                            .frame(minWidth: 32, minHeight: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("perpsLeverage-\(labels[stop])")
+                    .position(x: thumb / 2 + step * CGFloat(stop), y: 16)
+                }
+            }
+            .frame(height: 32)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("perpsLeverageSlider")
     }
 }
 
@@ -206,16 +324,33 @@ struct PerpsLeverageSheet: View {
 struct PerpsAutoCloseSheet: View {
     @StateObject private var viewModel: PerpsAutoCloseViewModel
     @State private var focus: PerpsTriggerField?
+    let coin: String
     let onDone: (Decimal?, Decimal?) -> Void
 
-    init(viewModel: PerpsAutoCloseViewModel, onDone: @escaping (Decimal?, Decimal?) -> Void) {
+    init(viewModel: PerpsAutoCloseViewModel, coin: String, onDone: @escaping (Decimal?, Decimal?) -> Void) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.coin = coin
         self.onDone = onDone
+    }
+
+    /// "Close if BTC drops" 5% / 7% / 10% / 25%, one tap each.
+    private var stopPresets: some View {
+        VStack(spacing: 8) {
+            Text(String(format: (viewModel.side == .long ? "perpsCloseIfDrops" : "perpsCloseIfRises").localized, coin))
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textTertiary)
+            let titles = PerpsAutoCloseViewModel.stopPresets.map { PerpsFormat.percent($0, digits: 0, signed: false) }
+            PerpsQuickPicks(titles: titles,
+                            selected: viewModel.selectedStopPreset.map { PerpsFormat.percent($0, digits: 0, signed: false) },
+                            onPick: { viewModel.applyStopPreset(PerpsAutoCloseViewModel.stopPresets[$0]) },
+                            accessibilityPrefix: "perpsStopPreset")
+        }
     }
 
     var body: some View {
         VStack(spacing: 16) {
             PerpsSheetTitle(title: "perpsStopLoss".localized)
+            stopPresets
             PerpsCard {
                 // The stop first, take profit second and optional.
                 PerpsTriggerRow(title: "perpsStopLoss".localized, text: viewModel.stopText, outcome: viewModel.outcome(viewModel.stopLoss),

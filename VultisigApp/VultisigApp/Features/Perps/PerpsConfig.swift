@@ -74,7 +74,7 @@ enum PerpsConfig {
 
     /// Ticket leverage presets, and the cap on the first trade. Presets above
     /// the cap render disabled.
-    static let leveragePresets = [1, 2, 3, 5, 10]
+    static let leveragePresets = [1, 2, 3, 5, 10, 20, 40]
     static let firstTradeMaxLeverage = 3
     static let defaultLeverage = 2
     /// Default stop distance from entry, clamped to stay inside liquidation.

@@ -1196,6 +1196,7 @@
 "pendingIncomingBalance" = "+%@ 대기 중";
 "pendingRewards" = "대기 중인 보상";
 "perpsAboutFiveMin" = "약 5분";
+"perpsAboveNow" = "현재가보다 %@ 위";
 "perpsActivationFee" = "계정 활성화 (1회)";
 "perpsActivationFootnote" = "수수료에는 첫 출금 시 1회 %@이(가) 포함됩니다.";
 "perpsActivity" = "활동";
@@ -1220,6 +1221,7 @@
 "perpsAvailableToTrade" = "거래 가능";
 "perpsBack" = "뒤로";
 "perpsBackToTradingAccount" = "트레이딩 계정으로 돌아가기";
+"perpsBelowNow" = "현재가보다 %@ 아래";
 "perpsBetaTag" = "베타";
 "perpsCantConnect" = "연결할 수 없습니다. %d분 전 가격입니다.";
 "perpsClose" = "종료";
@@ -1227,11 +1229,14 @@
 "perpsClosed" = "종료됨";
 "perpsClosedAt" = "종료 가격";
 "perpsClosedAtPrice" = "%@에 종료됨";
+"perpsCloseIfDrops" = "%@ 하락 시 종료";
+"perpsCloseIfRises" = "%@ 상승 시 종료";
 "perpsClosePosition" = "포지션 종료";
 "perpsCloseSide" = "%@ %@ 종료";
 "perpsClosingEllipsis" = "종료 중…";
 "perpsClosingOf" = "%2$@ 중 %1$@ 종료 중";
 "perpsClosingSize" = "%@ 종료 중";
+"perpsCoinNow" = "현재 %@";
 "perpsCross" = "교차";
 "perpsDayVolume" = "24시간 거래량";
 "perpsDefiSubtitle" = "Hyperliquid 무기한 선물";
@@ -1290,6 +1295,10 @@
 "perpsLiquidatedNothingBack" = "반환된 금액이 없습니다.";
 "perpsLiquidatedTitle" = "%@ %@ 청산됨";
 "perpsLiquidation" = "청산";
+"perpsLiquidationExplainFalls" = "%1$@ 가격이 %2$@까지 떨어지면 이 거래는 자동으로 종료되고 마진 대부분을 잃습니다.";
+"perpsLiquidationExplainMargin" = "마진을 추가하면 청산 가격이 더 멀어집니다.";
+"perpsLiquidationExplainRises" = "%1$@ 가격이 %2$@까지 오르면 이 거래는 자동으로 종료되고 마진 대부분을 잃습니다.";
+"perpsLiquidationExplainStop" = "%@의 손절이 먼저 종료합니다.";
 "perpsLiquidationPrice" = "청산 가격";
 "perpsLoadFailed" = "Hyperliquid 데이터를 불러오지 못했습니다. 당겨서 다시 시도하세요.";
 "perpsLong" = "롱";
@@ -1303,12 +1312,13 @@
 "perpsMax" = "최대";
 "perpsMaxFee" = "Vultisig 수수료";
 "perpsMaxLeverage" = "최대 레버리지";
+"perpsMaxLeverageChip" = "최대 %d× 레버리지";
 "perpsMinimumNotional" = "포지션 가치는 최소 $10 이상이어야 합니다.";
 "perpsModify" = "수정";
 "perpsMoreThanAvailable" = "사용 가능한 금액보다 많습니다.";
 "perpsMoreThanWithdrawable" = "출금 가능한 금액보다 많습니다.";
 "perpsNearLiquidationBody" = "%@ %@ · 청산 %@";
-"perpsNearLiquidationTitle" = "%@ 포지션이 청산에 가까워졌습니다";
+"perpsNearLiquidationTitle" = "%1$@ 청산까지 %2$@";
 "perpsNoActivity" = "아직 활동이 없습니다";
 "perpsNoChanges" = "변경된 내용이 없습니다.";
 "perpsNoMarketsFound" = "마켓을 찾을 수 없습니다";
@@ -1331,6 +1341,8 @@
 "perpsPairName" = "%@-USD";
 "perpsPartlyClosedLoss" = "일부 종료 · 손실";
 "perpsPartlyClosedProfit" = "일부 종료 · 수익";
+"perpsPercentAbove" = "%@ 위";
+"perpsPercentBelow" = "%@ 아래";
 "perpsPerHour" = "시간당 %@";
 "perpsPositionClosedTitle" = "%@ 포지션 종료됨";
 "perpsPositions" = "포지션";
@@ -1384,6 +1396,7 @@
 "perpsTriggerPrice" = "발동 가격";
 "perpsTryAgain" = "다시 시도";
 "perpsUpTo" = "최대 %@";
+"perpsUpToOnCoin" = "%2$@ 최대 %1$@";
 "perpsUsdcOnArbitrum" = "Arbitrum의 USDC";
 "perpsUsuallyFewSeconds" = "보통 몇 초 걸립니다.";
 "perpsValue" = "가치";

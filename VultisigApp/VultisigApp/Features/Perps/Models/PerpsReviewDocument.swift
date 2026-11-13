@@ -19,6 +19,8 @@ struct PerpsReviewRow: Identifiable, Sendable {
     let value: String
     var tone: Tone = .normal
     var style: Style = .plain
+    /// A quiet suffix after the value ("49% below").
+    var note: String?
 
     var id: String { label + value }
 

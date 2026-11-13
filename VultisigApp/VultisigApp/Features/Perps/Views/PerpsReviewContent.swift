@@ -149,10 +149,13 @@ struct PerpsReviewContent: View {
                 Text(row.label).keysignReviewText(.footnote).foregroundStyle(Theme.colors.textTertiary).fixedSize()
                 Spacer(minLength: 8)
                 Text(row.value).keysignReviewText(.bodyS).monospacedDigit().foregroundStyle(row.color).fixedSize()
+                if let note = row.note {
+                    Text(note).keysignReviewText(.footnote).monospacedDigit().foregroundStyle(Theme.colors.textTertiary).fixedSize()
+                }
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(row.label).keysignReviewText(.footnote).foregroundStyle(Theme.colors.textTertiary)
-                Text(row.value).keysignReviewText(.bodyS).foregroundStyle(row.color)
+                Text([row.value, row.note].compactMap { $0 }.joined(separator: "  ")).keysignReviewText(.bodyS).foregroundStyle(row.color)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)

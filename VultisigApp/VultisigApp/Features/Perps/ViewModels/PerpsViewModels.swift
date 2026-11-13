@@ -82,6 +82,15 @@ enum PerpsFormat {
         return signed ? "+" + text : text
     }
 
+    /// "49% below" (long) / "12% above" (short): how far the price can move
+    /// before liquidation. One decimal under 10% ("0.8% below").
+    static func liquidationDistance(price: Decimal, liquidation: Decimal?, isLong: Bool) -> String? {
+        guard let liquidation, price > 0 else { return nil }
+        let distance = PerpsMath.liquidationDistance(markPrice: price, liquidationPrice: liquidation)
+        let text = percent(distance, digits: distance < 10 ? 1 : 0, signed: false)
+        return String(format: (isLong ? "perpsPercentBelow" : "perpsPercentAbove").localized, text)
+    }
+
     static func compactUsd(_ value: Decimal) -> String {
         let number = NSDecimalNumber(decimal: value).doubleValue
         switch number {

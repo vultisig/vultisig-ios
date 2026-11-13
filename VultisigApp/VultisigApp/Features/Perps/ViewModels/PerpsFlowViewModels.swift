@@ -138,7 +138,26 @@ final class PerpsTicketViewModel: ObservableObject {
     var isNewAccount: Bool { account?.isEmpty ?? true }
     var availableToTrade: Decimal { account?.availableToTrade ?? 0 }
     var referencePrice: Decimal { market.midPrice ?? market.markPrice }
-    var leverageOptions: [Int] { PerpsConfig.leveragePresets.filter { $0 <= market.maxLeverage } }
+    /// Evenly spaced slider stops up to the market's max (1/2/3/5/10/20/40×;
+    /// a 25× market ends on 25×).
+    var leverageOptions: [Int] {
+        let stops = PerpsConfig.leveragePresets.filter { $0 <= market.maxLeverage }
+        return stops.last == market.maxLeverage ? stops : stops + [market.maxLeverage]
+    }
+
+    /// What the Leverage sheet shows live for a candidate leverage, before it is applied.
+    func preview(leverage candidate: Int) -> (size: Decimal, liquidation: Decimal?) {
+        let estimate = PerpsMath.estimate(side: side, margin: PerpsInput.decimal(amountText) ?? 0, leverage: candidate, price: referencePrice,
+                                          szDecimals: market.szDecimals, maxLeverage: market.maxLeverage, marginMode: .isolated,
+                                          schedule: market.marginSchedule)
+        return (estimate.notional, estimate.liquidationPrice)
+    }
+
+    /// 25% / 50% of what can be traded (floored to cents); Max uses `applyMax`.
+    func applyFraction(_ fraction: Decimal) {
+        let base = availableToTrade > 0 ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0)
+        amountText = PerpsInput.usdcText((base * fraction).rounded(scale: 2, mode: .down))
+    }
 
     /// Max fills what the account can trade with, or the vault's USDC when the
     /// account is empty (the difference arrives by deposit).
@@ -357,6 +376,24 @@ final class PerpsAutoCloseViewModel: ObservableObject {
 enum PerpsTriggerField: Hashable { case stopLoss, takeProfit }
 
 extension PerpsAutoCloseViewModel {
+    /// "Close if BTC drops 5% / 7% / 10% / 25%" (rises, for a short), from the entry.
+    static let stopPresets: [Decimal] = [5, 7, 10, 25]
+
+    func stopPrice(dropPercent: Decimal) -> Decimal {
+        let raw = entry * (1 - side.sign * dropPercent / 100)
+        return HLWireFormat.price(PerpsFormat.roundedPrice(raw), szDecimals: szDecimals)
+    }
+
+    func applyStopPreset(_ percent: Decimal) {
+        stopText = HLWireFormat.decimalString(stopPrice(dropPercent: percent))
+    }
+
+    /// The preset the current stop equals, if any (7% for the default stop).
+    var selectedStopPreset: Decimal? {
+        guard let stopLoss else { return nil }
+        return Self.stopPresets.first { stopPrice(dropPercent: $0) == stopLoss }
+    }
+
     /// The stop loss / take profit edit for an open position, or nil when
     /// nothing changed or a trigger sits on the wrong side. A build failure
     /// is logged, never swallowed.

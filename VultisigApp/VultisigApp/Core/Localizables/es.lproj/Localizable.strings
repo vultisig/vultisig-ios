@@ -1196,6 +1196,7 @@
 "pendingIncomingBalance" = "+%@ pendiente";
 "pendingRewards" = "Recompensas pendientes";
 "perpsAboutFiveMin" = "Unos 5 min";
+"perpsAboveNow" = "%@ por encima del precio actual";
 "perpsActivationFee" = "Activación de la cuenta (única vez)";
 "perpsActivationFootnote" = "Las tarifas incluyen un cargo único de %@ en tu primer retiro.";
 "perpsActivity" = "Actividad";
@@ -1220,6 +1221,7 @@
 "perpsAvailableToTrade" = "Disponible para operar";
 "perpsBack" = "Atrás";
 "perpsBackToTradingAccount" = "Volver a la cuenta de trading";
+"perpsBelowNow" = "%@ por debajo del precio actual";
 "perpsBetaTag" = "Beta";
 "perpsCantConnect" = "Sin conexión. Precios de hace %d min.";
 "perpsClose" = "Cerrar";
@@ -1227,11 +1229,14 @@
 "perpsClosed" = "Cerrada";
 "perpsClosedAt" = "Cerrada a";
 "perpsClosedAtPrice" = "Cerrada a %@";
+"perpsCloseIfDrops" = "Cerrar si %@ baja";
+"perpsCloseIfRises" = "Cerrar si %@ sube";
 "perpsClosePosition" = "Cerrar posición";
 "perpsCloseSide" = "Cerrar %@ %@";
 "perpsClosingEllipsis" = "Cerrando…";
 "perpsClosingOf" = "Cerrando %1$@ de %2$@";
 "perpsClosingSize" = "Cerrando %@";
+"perpsCoinNow" = "%@ ahora";
 "perpsCross" = "cruzado";
 "perpsDayVolume" = "Volumen 24h";
 "perpsDefiSubtitle" = "Perpetuos de Hyperliquid";
@@ -1290,6 +1295,10 @@
 "perpsLiquidatedNothingBack" = "No se devolvió nada.";
 "perpsLiquidatedTitle" = "%@ %@ liquidado";
 "perpsLiquidation" = "Liquidación";
+"perpsLiquidationExplainFalls" = "Si %1$@ cae a %2$@, esta operación se cierra sola y pierdes la mayor parte de su margen.";
+"perpsLiquidationExplainMargin" = "Añadir margen aleja la liquidación.";
+"perpsLiquidationExplainRises" = "Si %1$@ sube a %2$@, esta operación se cierra sola y pierdes la mayor parte de su margen.";
+"perpsLiquidationExplainStop" = "Tu stop loss en %@ la cierra antes.";
 "perpsLiquidationPrice" = "Precio de liquidación";
 "perpsLoadFailed" = "No se pudieron cargar los datos de Hyperliquid. Desliza para reintentar.";
 "perpsLong" = "long";
@@ -1303,12 +1312,13 @@
 "perpsMax" = "Máx.";
 "perpsMaxFee" = "Tarifa de Vultisig";
 "perpsMaxLeverage" = "Apalancamiento máx.";
+"perpsMaxLeverageChip" = "Hasta %d× de apalancamiento";
 "perpsMinimumNotional" = "La posición debe valer al menos $10.";
 "perpsModify" = "Modificar";
 "perpsMoreThanAvailable" = "Eso es más de lo que tienes disponible.";
 "perpsMoreThanWithdrawable" = "Eso es más de lo que puedes retirar.";
 "perpsNearLiquidationBody" = "%@ %@ · Liquidación %@";
-"perpsNearLiquidationTitle" = "Tu posición %@ está cerca de la liquidación";
+"perpsNearLiquidationTitle" = "%1$@ está a %2$@ de la liquidación";
 "perpsNoActivity" = "Aún no hay actividad";
 "perpsNoChanges" = "No cambió nada.";
 "perpsNoMarketsFound" = "No se encontraron mercados";
@@ -1331,6 +1341,8 @@
 "perpsPairName" = "%@-USD";
 "perpsPartlyClosedLoss" = "Cerrada en parte · pérdida";
 "perpsPartlyClosedProfit" = "Cerrada en parte · ganancia";
+"perpsPercentAbove" = "%@ por encima";
+"perpsPercentBelow" = "%@ por debajo";
 "perpsPerHour" = "%@ por hora";
 "perpsPositionClosedTitle" = "Posición %@ cerrada";
 "perpsPositions" = "Posiciones";
@@ -1384,6 +1396,7 @@
 "perpsTriggerPrice" = "Precio de activación";
 "perpsTryAgain" = "Intentar de nuevo";
 "perpsUpTo" = "Hasta %@";
+"perpsUpToOnCoin" = "Hasta %1$@ en %2$@";
 "perpsUsdcOnArbitrum" = "USDC en Arbitrum";
 "perpsUsuallyFewSeconds" = "Suele tardar unos segundos.";
 "perpsValue" = "Valor";

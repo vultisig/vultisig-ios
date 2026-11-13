@@ -1196,6 +1196,7 @@
 "pendingIncomingBalance" = "+%@ pending";
 "pendingRewards" = "Pending Rewards";
 "perpsAboutFiveMin" = "About 5 min";
+"perpsAboveNow" = "%@ above now";
 "perpsActivationFee" = "Account activation (one time)";
 "perpsActivationFootnote" = "Fees include a one-time %@ on your first withdrawal.";
 "perpsActivity" = "Activity";
@@ -1220,6 +1221,7 @@
 "perpsAvailableToTrade" = "Available to trade";
 "perpsBack" = "Back";
 "perpsBackToTradingAccount" = "Back to trading account";
+"perpsBelowNow" = "%@ below now";
 "perpsBetaTag" = "Beta";
 "perpsCantConnect" = "Can't connect. Prices are from %d min ago.";
 "perpsClose" = "Close";
@@ -1227,11 +1229,14 @@
 "perpsClosed" = "Closed";
 "perpsClosedAt" = "Closed at";
 "perpsClosedAtPrice" = "Closed at %@";
+"perpsCloseIfDrops" = "Close if %@ drops";
+"perpsCloseIfRises" = "Close if %@ rises";
 "perpsClosePosition" = "Close position";
 "perpsCloseSide" = "Close %@ %@";
 "perpsClosingEllipsis" = "Closing…";
 "perpsClosingOf" = "Closing %1$@ of %2$@";
 "perpsClosingSize" = "Closing %@";
+"perpsCoinNow" = "%@ now";
 "perpsCross" = "cross";
 "perpsDayVolume" = "24h volume";
 "perpsDefiSubtitle" = "Hyperliquid perpetuals";
@@ -1290,6 +1295,10 @@
 "perpsLiquidatedNothingBack" = "Nothing was returned.";
 "perpsLiquidatedTitle" = "%@ %@ liquidated";
 "perpsLiquidation" = "Liquidation";
+"perpsLiquidationExplainFalls" = "If %1$@ falls to %2$@, this trade closes on its own and you lose most of its margin.";
+"perpsLiquidationExplainMargin" = "Adding margin moves liquidation further away.";
+"perpsLiquidationExplainRises" = "If %1$@ rises to %2$@, this trade closes on its own and you lose most of its margin.";
+"perpsLiquidationExplainStop" = "Your stop loss at %@ closes it first.";
 "perpsLiquidationPrice" = "Liquidation price";
 "perpsLoadFailed" = "Couldn't load Hyperliquid data. Pull to retry.";
 "perpsLong" = "long";
@@ -1303,12 +1312,13 @@
 "perpsMax" = "Max";
 "perpsMaxFee" = "Vultisig fee";
 "perpsMaxLeverage" = "Max leverage";
+"perpsMaxLeverageChip" = "Up to %d× leverage";
 "perpsMinimumNotional" = "The position must be worth at least $10.";
 "perpsModify" = "Modify";
 "perpsMoreThanAvailable" = "That's more than you have available.";
 "perpsMoreThanWithdrawable" = "That's more than you can withdraw.";
 "perpsNearLiquidationBody" = "%@ %@ · Liquidation %@";
-"perpsNearLiquidationTitle" = "Your %@ position is near liquidation";
+"perpsNearLiquidationTitle" = "%1$@ is %2$@ from liquidation";
 "perpsNoActivity" = "No activity yet";
 "perpsNoChanges" = "Nothing changed.";
 "perpsNoMarketsFound" = "No markets found";
@@ -1331,6 +1341,8 @@
 "perpsPairName" = "%@-USD";
 "perpsPartlyClosedLoss" = "Partly closed · loss";
 "perpsPartlyClosedProfit" = "Partly closed · profit";
+"perpsPercentAbove" = "%@ above";
+"perpsPercentBelow" = "%@ below";
 "perpsPerHour" = "%@ per hour";
 "perpsPositionClosedTitle" = "%@ position closed";
 "perpsPositions" = "Positions";
@@ -1384,6 +1396,7 @@
 "perpsTriggerPrice" = "Trigger price";
 "perpsTryAgain" = "Try again";
 "perpsUpTo" = "Up to %@";
+"perpsUpToOnCoin" = "Up to %1$@ on %2$@";
 "perpsUsdcOnArbitrum" = "USDC on Arbitrum";
 "perpsUsuallyFewSeconds" = "Usually takes a few seconds.";
 "perpsValue" = "Value";

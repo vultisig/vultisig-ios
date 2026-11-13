@@ -72,7 +72,9 @@ enum PerpsFlows {
         let estimate = plan.estimate
         var rows = [
             PerpsReviewRow(label: "perpsPositionSize".localized, value: PerpsFormat.usd(estimate.notional)),
-            PerpsReviewRow(label: "perpsLiquidationPrice".localized, value: estimate.liquidationPrice.map(PerpsFormat.price) ?? "-")
+            PerpsReviewRow(label: "perpsLiquidationPrice".localized, value: estimate.liquidationPrice.map(PerpsFormat.price) ?? "-",
+                           note: PerpsFormat.liquidationDistance(price: market.midPrice ?? market.markPrice,
+                                                                 liquidation: estimate.liquidationPrice, isLong: ticket.side == .long))
         ]
         if let stop = ticket.stopLoss { rows.append(PerpsReviewRow(label: "perpsStopLoss".localized, value: PerpsFormat.price(stop))) }
         if let take = ticket.takeProfit { rows.append(PerpsReviewRow(label: "perpsTakeProfit".localized, value: PerpsFormat.price(take))) }

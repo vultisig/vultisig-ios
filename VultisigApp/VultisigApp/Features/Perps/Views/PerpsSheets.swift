@@ -124,3 +124,105 @@ struct PerpsMarketInfoSheet: View {
         .perpsSheetChrome()
     }
 }
+
+/// Liquidation, explained with the position's own prices: a ladder from the
+/// mark down (or up, for a short) to the liquidation price, then what happens
+/// there, what the stop does first, and how margin moves it.
+struct PerpsLiquidationSheet: View {
+    let coin: String
+    let isLong: Bool
+    let mark: Decimal
+    let entry: Decimal?
+    let stopLoss: Decimal?
+    let liquidation: Decimal?
+    let onDone: () -> Void
+
+    private enum Step: Hashable {
+        case price(label: String, value: Decimal, color: Color, isLiquidation: Bool)
+        case distance(String)
+    }
+
+    private var steps: [Step] {
+        var prices: [Step] = [.price(label: String(format: "perpsCoinNow".localized, coin), value: mark,
+                                     color: Theme.colors.textPrimary, isLiquidation: false)]
+        if let entry {
+            prices.append(.price(label: "perpsEntryTitle".localized, value: entry, color: Theme.colors.textSecondary, isLiquidation: false))
+        }
+        if let stopLoss {
+            prices.append(.price(label: "perpsStopLoss".localized, value: stopLoss, color: Theme.colors.alertWarning, isLiquidation: false))
+        }
+        guard let liquidation else { return prices }
+        let distance = PerpsMath.liquidationDistance(markPrice: mark, liquidationPrice: liquidation)
+        let percent = PerpsFormat.percent(distance, digits: distance < 10 ? 1 : 0, signed: false)
+        let tail: [Step] = [.distance(String(format: (isLong ? "perpsBelowNow" : "perpsAboveNow").localized, percent)),
+                            .price(label: "perpsLiquidation".localized, value: liquidation, color: Theme.colors.alertError, isLiquidation: true)]
+        // Highest price at the top: a long's liquidation sits under the mark, a short's above it.
+        return isLong ? prices + tail : tail.reversed() + prices.reversed()
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                PerpsSheetTitle(title: "perpsLiquidation".localized)
+                HStack {
+                    Spacer()
+                    PerpsSheetCloseButton(action: onDone)
+                }
+            }
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(steps, id: \.self) { step in
+                    switch step {
+                    case let .price(label, value, color, isLiquidation):
+                        HStack(spacing: 12) {
+                            Circle()
+                                .stroke(isLiquidation ? Theme.colors.alertError : color, lineWidth: 2)
+                                .frame(width: 12, height: 12)
+                            Text(label)
+                                .font(Theme.fonts.bodySMedium)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                            Spacer(minLength: 8)
+                            Text(PerpsFormat.price(value))
+                                .font(Theme.fonts.priceBodyS)
+                                .monospacedDigit()
+                                .foregroundStyle(color == Theme.colors.textSecondary ? Theme.colors.textPrimary : color)
+                        }
+                        .padding(.vertical, 8)
+                    case let .distance(text):
+                        HStack(spacing: 12) {
+                            Rectangle()
+                                .fill(Theme.colors.alertError.opacity(0.6))
+                                .frame(width: 2, height: 36)
+                                .padding(.horizontal, 5)
+                            Text(text)
+                                .font(Theme.fonts.footnote)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                        }
+                    }
+                }
+                explanation
+                    .padding(.top, 12)
+            }
+            .padding(PerpsLayout.cardPadding)
+            .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface1))
+            PrimaryButton(title: "perpsGotIt".localized, type: .secondary, action: onDone)
+                .accessibilityIdentifier("perpsLiquidationGotIt")
+        }
+        .perpsSheetChrome()
+    }
+
+    /// "If BTC falls to $33,911, this trade closes on its own and you lose most
+    /// of its margin." in full colour, then the stop and margin in grey.
+    private var explanation: some View {
+        let first = liquidation.map {
+            String(format: (isLong ? "perpsLiquidationExplainFalls" : "perpsLiquidationExplainRises").localized, coin, PerpsFormat.price($0))
+        } ?? ""
+        var rest: [String] = []
+        if let stopLoss { rest.append(String(format: "perpsLiquidationExplainStop".localized, PerpsFormat.price(stopLoss))) }
+        rest.append("perpsLiquidationExplainMargin".localized)
+        return (Text(first).foregroundStyle(Theme.colors.textPrimary)
+                + Text(" " + rest.joined(separator: " ")).foregroundStyle(Theme.colors.textTertiary))
+            .font(Theme.fonts.bodySRegular)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}

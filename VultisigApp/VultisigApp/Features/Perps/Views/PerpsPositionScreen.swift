@@ -14,9 +14,10 @@ struct PerpsPositionScreen: View {
 
     private enum SheetKind: Identifiable, Equatable {
         case close(PerpsCloseFraction), modify(startsOnMargin: Bool), autoClose, stopNotPlaced, positionClosed, outcome(PerpsOutcome)
-        case closing(Decimal), partlyClosed(PerpsPartialFill)
+        case closing(Decimal), partlyClosed(PerpsPartialFill), liquidationInfo
         var id: String {
             switch self {
+            case .liquidationInfo: return "liquidationInfo"
             case .closing: return "closing"
             case .partlyClosed: return "partlyClosed"
             case .close: return "close"
@@ -180,9 +181,24 @@ struct PerpsPositionScreen: View {
         return PerpsMath.isNearLiquidation(markPrice: market.markPrice, liquidationPrice: position.liquidationPx?.value)
     }
 
+    /// "52% below" (or "above" for a short), from the live mark.
+    private func liquidationDistance(_ position: HLPosition) -> String? {
+        guard let mark = viewModel.market?.markPrice else { return nil }
+        return PerpsFormat.liquidationDistance(price: mark, liquidation: position.liquidationPx?.value, isLong: position.isLong)
+    }
+
+    /// "0.8%" for the near-liquidation banner.
+    private func liquidationPercent(_ position: HLPosition) -> String? {
+        guard let mark = viewModel.market?.markPrice, let liquidation = position.liquidationPx?.value else { return nil }
+        let distance = PerpsMath.liquidationDistance(markPrice: mark, liquidationPrice: liquidation)
+        return PerpsFormat.percent(distance, digits: distance < 10 ? 1 : 0, signed: false)
+    }
+
     private func liquidationNotice(_ position: HLPosition) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(String(format: "perpsNearLiquidationTitle".localized, coin))
+            // "ETH is 0.8% from liquidation".
+            Text(String(format: "perpsNearLiquidationTitle".localized, coin,
+                        liquidationPercent(position) ?? "-"))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.alertError)
             Text(String(format: "perpsNearLiquidationBody".localized, coin,
@@ -246,8 +262,22 @@ struct PerpsPositionScreen: View {
                     .accessibilityIdentifier("perpsClosingRow")
                 }
                 PerpsCard {
-                    PerpsRow(title: "perpsLiquidation".localized,
-                             value: position.liquidationPx.map { PerpsFormat.price($0.value) } ?? "perpsNone".localized)
+                    // "$33,911  52% below" and an (i) that explains it with this position's own prices.
+                    Button { sheet = .liquidationInfo } label: {
+                        PerpsRow(title: "perpsLiquidation".localized,
+                                 value: position.liquidationPx.map { PerpsFormat.price($0.value) } ?? "perpsNone".localized,
+                                 showsInfo: position.liquidationPx != nil) {
+                            if let distance = liquidationDistance(position) {
+                                Text(distance)
+                                    .font(Theme.fonts.footnote)
+                                    .monospacedDigit()
+                                    .foregroundStyle(isNearLiquidation ? Theme.colors.alertError : Theme.colors.textTertiary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(position.liquidationPx == nil)
+                    .accessibilityIdentifier("perpsLiquidationRow")
                     PerpsRow(title: "perpsEntryTitle".localized, value: position.entryPx.map { PerpsFormat.price($0.value) } ?? "-", showsDivider: true)
                     // "$99.94 isolated": the mode is a quiet suffix, not part of the amount.
                     PerpsRow(title: "perpsMargin".localized, value: PerpsFormat.usd(PerpsMarginFlows.margin(of: position)), showsDivider: true) {
@@ -293,6 +323,10 @@ struct PerpsPositionScreen: View {
     private func sheetContent(_ kind: SheetKind) -> some View {
         if let position, let market = viewModel.market {
             switch kind {
+            case .liquidationInfo:
+                PerpsLiquidationSheet(coin: coin, isLong: position.isLong, mark: market.markPrice,
+                                      entry: position.entryPx?.value, stopLoss: stop,
+                                      liquidation: position.liquidationPx?.value) { sheet = nil }
             case .closing(let size):
                 // Hide, not Close (ambiguous in a close flow). The row on the position stays.
                 PerpsResultSheet(
@@ -354,7 +388,7 @@ struct PerpsPositionScreen: View {
                     side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
                     size: abs(position.szi.value), liquidation: position.liquidationPx?.value, szDecimals: market.szDecimals,
                     takeProfit: take, stopLoss: stop
-                )) { newTake, newStop in
+                ), coin: coin) { newTake, newStop in
                     let document = try? PerpsFlows.editExits(position: position, market: market, existing: viewModel.triggers,
                                                              stopLoss: newStop, takeProfit: newTake,
                                                              nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2))

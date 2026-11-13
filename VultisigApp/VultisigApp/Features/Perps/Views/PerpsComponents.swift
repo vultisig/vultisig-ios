@@ -119,6 +119,36 @@ struct PerpsChipPicker<Option: Hashable>: View {
     }
 }
 
+/// Small one-tap amount picks ("25%", "50%", "Max"): no selection state,
+/// each sets the amount once.
+struct PerpsQuickPicks: View {
+    let titles: [String]
+    var selected: String?
+    let onPick: (Int) -> Void
+    var accessibilityPrefix = "perpsQuickPick"
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(titles.indices, id: \.self) { index in
+                let isSelected = titles[index] == selected
+                Button { onPick(index) } label: {
+                    Text(titles[index])
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textSecondary)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background(Capsule().fill(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1))
+                        .overlay(Capsule().stroke(isSelected ? Theme.colors.primaryAccent3 : Theme.colors.borderLight, lineWidth: 1))
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                .accessibilityIdentifier("\(accessibilityPrefix)-\(titles[index])")
+            }
+        }
+    }
+}
+
 /// Round back button for a sheet's second page, the same size as the sheet close button.
 struct PerpsSheetBackButton: View {
     let action: () -> Void
@@ -170,6 +200,8 @@ struct PerpsRow<Accessory: View>: View {
     var value: String?
     var valueColor: Color = Theme.colors.textPrimary
     var showsDivider = false
+    /// An (i) after the title: the row opens an explanation.
+    var showsInfo = false
     @ViewBuilder var accessory: () -> Accessory
 
     var body: some View {
@@ -177,9 +209,14 @@ struct PerpsRow<Accessory: View>: View {
             if showsDivider { Separator(color: Theme.colors.borderLight, opacity: 1) }
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(Theme.fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textSecondary)
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .font(Theme.fonts.subtitle)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                        if showsInfo {
+                            Icon(.circleInfo, color: Theme.colors.textTertiary, size: 14)
+                        }
+                    }
                     if let subtitle {
                         Text(subtitle)
                             .font(Theme.fonts.footnote)
@@ -225,6 +262,17 @@ struct PerpsMarketListRow: View {
             Text(String(format: "perpsPairName".localized, market.coin))
                 .font(Theme.fonts.subtitle)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
+            // "40×": the most this market allows, from Hyperliquid's meta.
+            Text("\(market.maxLeverage)×")
+                .font(Theme.fonts.caption10)
+                .monospacedDigit()
+                .foregroundStyle(Theme.colors.textSecondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Capsule().fill(Theme.colors.bgSurface2))
+                .fixedSize()
+                .accessibilityLabel(String(format: "perpsMaxLeverageChip".localized, market.maxLeverage))
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(PerpsFormat.price(market.markPrice))

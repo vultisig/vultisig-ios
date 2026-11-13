@@ -78,6 +78,53 @@ final class PerpsFlowsTests: XCTestCase {
             .rounded(scale: 2, mode: .up))
     }
 
+    /// Liquidation distance next to every liquidation price (R20): "49% below",
+    /// one decimal under 10%, "above" for shorts.
+    func testLiquidationDistanceText() {
+        XCTAssertEqual(PerpsFormat.liquidationDistance(price: 66_975, liquidation: Decimal(string: "33911.4"), isLong: true),
+                       String(format: "perpsPercentBelow".localized, "49%"))
+        XCTAssertEqual(PerpsFormat.liquidationDistance(price: 2_510, liquidation: Decimal(string: "2489.39"), isLong: true),
+                       String(format: "perpsPercentBelow".localized, "0.8%"))
+        XCTAssertEqual(PerpsFormat.liquidationDistance(price: 100, liquidation: 112, isLong: false),
+                       String(format: "perpsPercentAbove".localized, "12%"))
+        XCTAssertNil(PerpsFormat.liquidationDistance(price: 100, liquidation: nil, isLong: true))
+    }
+
+    /// Leverage stops are evenly spaced and end on the market's max; the live
+    /// preview matches the ticket's own estimate; quick picks floor to cents.
+    @MainActor
+    func testLeverageStopsPreviewAndQuickPicks() {
+        let vault = PerpsVaultContext(name: "Main", address: "0x9d7c000000000000000000000000000000003003", arbitrumUsdcBalance: 0,
+                                      tradingAddress: nil)
+        let btc = PerpsTicketViewModel(side: .long, market: market(maxLeverage: 40), account: nil, vault: vault)
+        XCTAssertEqual(btc.leverageOptions, [1, 2, 3, 5, 10, 20, 40])
+        let eth = PerpsTicketViewModel(side: .long, market: market(maxLeverage: 25), account: nil, vault: vault)
+        XCTAssertEqual(eth.leverageOptions, [1, 2, 3, 5, 10, 20, 25])
+        btc.leverage = 2
+        let preview = btc.preview(leverage: 2)
+        XCTAssertEqual(preview.size, btc.estimate?.notional)
+        XCTAssertEqual(preview.liquidation, btc.estimate?.liquidationPrice)
+        let funded = PerpsVaultContext(name: "Main", address: vault.address, arbitrumUsdcBalance: Decimal(string: "250.07"), tradingAddress: nil)
+        let ticket = PerpsTicketViewModel(side: .long, market: market(), account: nil, vault: funded)
+        ticket.applyFraction(Decimal(string: "0.25") ?? 0)
+        XCTAssertEqual(ticket.amountText, "62.51")
+    }
+
+    /// Stop-loss presets (R20): 7% from the entry is the default stop.
+    @MainActor
+    func testStopPresetsFromEntry() {
+        let viewModel = PerpsAutoCloseViewModel(side: .long, entry: 66_975, reference: 66_975, size: Decimal(string: "0.00298") ?? 0,
+                                                liquidation: nil, szDecimals: 5, takeProfit: nil, stopLoss: 62_287)
+        XCTAssertEqual(viewModel.stopPrice(dropPercent: 7), 62_287)
+        XCTAssertEqual(viewModel.selectedStopPreset, 7)
+        viewModel.applyStopPreset(10)
+        XCTAssertEqual(viewModel.stopLoss, Decimal(string: "60278"))
+        XCTAssertEqual(viewModel.selectedStopPreset, 10)
+        let short = PerpsAutoCloseViewModel(side: .short, entry: 100, reference: 100, size: 1, liquidation: nil, szDecimals: 2,
+                                            takeProfit: nil, stopLoss: nil)
+        XCTAssertEqual(short.stopPrice(dropPercent: 5), 105)
+    }
+
     /// The builders themselves refuse a trigger that rounds to 0 (not only the sheet),
     /// and reserve their second nonce.
     func testBuildersRejectSubTickTriggersAndReserveNonces() throws {
