@@ -75,7 +75,7 @@ struct DefiPositionsService: DefiPositionsProviding {
         case .qbtc:
             [TokensStore.qbtc]
         case .ton:
-            [TokensStore.ton]
+            [TokensStore.ton, TokensStore.tston]
         case .solana:
             // Native SOL has no `TokensStore.sol` static — it is defined inline
             // in `TokenSelectionAssets`. Resolve the native SOL meta from there

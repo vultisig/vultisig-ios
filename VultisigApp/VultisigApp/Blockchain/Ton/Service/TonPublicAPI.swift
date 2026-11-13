@@ -113,11 +113,18 @@ struct TonStakingPoolInfo: Decodable {
     /// when a pending nominator withdrawal becomes claimable / the locked funds
     /// are returned. Used to tell the user roughly when their withdrawal unlocks.
     let cycleEnd: Int64?
+    /// Total TON managed by the pool, in nanotons. Numerator of the
+    /// tsTON→TON rate (`total_amount ÷ tsTON total_supply`).
+    let totalAmount: Int64?
+    /// tsTON jetton master (`liquid_jetton_master`) reported by the pool.
+    let liquidJettonMaster: String?
 
     private enum CodingKeys: String, CodingKey {
         case address, name, apy, implementation
         case minStake = "min_stake"
         case cycleEnd = "cycle_end"
+        case totalAmount = "total_amount"
+        case liquidJettonMaster = "liquid_jetton_master"
     }
 }
 

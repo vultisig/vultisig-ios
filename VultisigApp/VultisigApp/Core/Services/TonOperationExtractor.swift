@@ -59,7 +59,7 @@ enum TonOperationExtractor {
                 ) {
                     return display
                 }
-            case .nftTransfer, .excesses, .swap:
+            case .nftTransfer, .excesses, .swap, .liquidStakingDeposit, .jettonBurn:
                 // Phase 1C surfaces jetton transfers only — everything else
                 // falls through to the unmodified TonConnect details list.
                 continue

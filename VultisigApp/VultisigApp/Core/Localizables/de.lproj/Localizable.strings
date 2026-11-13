@@ -2026,3 +2026,13 @@
 "zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
 "zipImportUnsafeVaults" = "%1$d Tresor(e) importiert. %2$d übersprungen. %3$@ konnte nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeTitle" = "Mit Tonstakers staken";
+"tonstakersUnstakeTitle" = "Tonstakers-Unstake";
+"tonstakersDepositFee" = "Einzahlungsgebühr";
+"tonstakersYouReceive" = "Sie erhalten";
+"tonstakersAttachedValue" = "Beigefügt für die Verarbeitung";
+"tonstakersStakeNotice" = "Enthält die Einzahlungsgebühr von %1$@ %2$@, die Tonstakers vorab abzieht. Der vom Pool nicht genutzte Teil wird erstattet.";
+"tonstakersUnstakeNotice" = "%1$@ %2$@ werden zur Verarbeitung der Abhebung beigefügt; der ungenutzte Teil wird erstattet. Die Auszahlung erfolgt sofort, wenn der Pool über Liquidität verfügt, andernfalls am Ende der aktuellen Validierungsrunde.";
+"liquidStakingDeposit" = "Liquid-Staking-Einzahlung";
+"jettonBurn" = "Jetton-Burn";

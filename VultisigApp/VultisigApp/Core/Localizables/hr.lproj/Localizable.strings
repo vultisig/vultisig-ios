@@ -1717,6 +1717,9 @@
 "tokens" = "Tokeni";
 "tokenUnverifiedBadge" = "Neprovjereno";
 "tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeTitle" = "Stakeaj putem Tonstakersa";
+"tonstakersUnstakeTitle" = "Povuci s Tonstakersa";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "min %@ %@";
@@ -2026,3 +2029,10 @@
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
 "zipImportUnsafeVaults" = "Uvezeno %1$d trezor(a). Preskočeno %2$d. %3$@ nije moguće uvesti: prebrisalo bi trezor koji već postoji na ovom uređaju.";
+"tonstakersDepositFee" = "Naknada za polog";
+"tonstakersYouReceive" = "Primit ćete";
+"tonstakersAttachedValue" = "Priloženo za obradu";
+"tonstakersStakeNotice" = "Uključuje naknadu za polog od %1$@ %2$@ koju Tonstakers unaprijed odbija. Dio koji pool ne iskoristi vraća se.";
+"tonstakersUnstakeNotice" = "%1$@ %2$@ prilaže se za obradu povlačenja; neiskorišteni dio se vraća. Isplata je trenutačna kada pool ima likvidnost, inače na kraju trenutačne runde validacije.";
+"liquidStakingDeposit" = "Polog za likvidni staking";
+"jettonBurn" = "Jetton burn";

@@ -88,6 +88,10 @@ final class DefiChainScreenModel: ObservableObject {
     /// other chains route stake / compound / index through their respective
     /// `FunctionTransactionType` cases.
     func stakeTransactionType(for position: StakePosition) -> FunctionTransactionType {
+        if position.type == .liquid {
+            // Tonstakers spends native TON; the tsTON position coin is display-only.
+            return .tonLiquidStake(coin: TokensStore.ton)
+        }
         if position.coin.chain == .ton {
             // Add-more reuses the existing pool; a first-time stake (no pool yet)
             // routes with `nil` so the screen prompts for the pool address.
@@ -104,12 +108,18 @@ final class DefiChainScreenModel: ObservableObject {
             return .stake(coin: stakeCoin(for: position.coin), isAutocompound: true)
         case .index:
             return .mint(coin: coin(for: position.coin), yCoin: position.coin)
+        case .liquid:
+            return .tonLiquidStake(coin: TokensStore.ton)
         }
     }
 
     /// Maps an unstake action to the function-call transaction, or `nil` when the
     /// action is a no-op (a TON unstake with no pool address to unwind).
     func unstakeTransactionType(for position: StakePosition) -> FunctionTransactionType? {
+        if position.type == .liquid {
+            guard position.availableToUnstake > 0 else { return nil }
+            return .tonLiquidUnstake(coin: TokensStore.ton)
+        }
         if position.coin.chain == .ton {
             guard let poolAddress = position.poolAddress, !poolAddress.isEmpty else { return nil }
             return .tonUnstake(
@@ -134,6 +144,8 @@ final class DefiChainScreenModel: ObservableObject {
             )
         case .index:
             return .redeem(coin: coin(for: position.coin), yCoin: position.coin)
+        case .liquid:
+            return .tonLiquidUnstake(coin: TokensStore.ton)
         }
     }
 

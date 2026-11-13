@@ -85,6 +85,11 @@ enum TonMessageBodyDecoder {
                 return nil
             }
             return parsePtonTransferSwap(slice: slice)
+        case TonOpcode.tonstakersDeposit:
+            guard Tonstakers.isPool(outerDestination) else { return nil }
+            return safeDecode { .liquidStakingDeposit(queryId: String(try slice.loadUInt(bits: 64))) }
+        case TonOpcode.jettonBurn:
+            return parseJettonBurn(slice: slice)
         case TonOpcode.dedustNativeSwap:
             guard isKnownRouter(address: outerDestination, in: TonKnownRouters.dedustNativeVaults) else {
                 return nil
@@ -96,6 +101,28 @@ enum TonMessageBodyDecoder {
     }
 
     // MARK: - Jetton
+
+    private static func parseJettonBurn(slice: TonSlice) -> TonMessageBodyIntent? {
+        safeDecode {
+            let queryId = String(try slice.loadUInt(bits: 64))
+            let amount = try slice.loadCoins()
+            let response = try slice.loadMaybeAddress()
+            var waitTillRoundEnd: Bool?
+            var fillOrKill: Bool?
+            if let payload = try? slice.loadMaybeRef() {
+                let flags = payload.beginParse()
+                waitTillRoundEnd = try? flags.loadBit()
+                fillOrKill = try? flags.loadBit()
+            }
+            return .jettonBurn(.init(
+                queryId: queryId,
+                amount: amount,
+                responseDestination: response,
+                waitTillRoundEnd: waitTillRoundEnd,
+                fillOrKill: fillOrKill
+            ))
+        }
+    }
 
     private static func parseJettonTransfer(slice: TonSlice) -> TonMessageBodyIntent? {
         return safeDecode {
