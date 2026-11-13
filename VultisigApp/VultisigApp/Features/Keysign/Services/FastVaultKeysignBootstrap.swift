@@ -94,6 +94,10 @@ struct FastVaultKeysignBootstrap {
             throw CustomMessagePayloadError.unsupportedChain(chain.name)
         }
         let customMessageChain = try customMessagePayload?.resolveSigningChain()
+        // Resolve before any session or wake, so a refused vault never reaches VultiServer.
+        let derivation = try KeysignDerivationResolver.override(vault: vault, keysignType: .ECDSA,
+                                                                keysignPayload: keysignPayload,
+                                                                customMessagePayload: customMessagePayload)
 
         let session = try sessionService.newSession(vault: vault, serviceName: nil)
 
@@ -140,7 +144,7 @@ struct FastVaultKeysignBootstrap {
             publicKeyEcdsa: vault.pubKeyECDSA,
             keysignMessages: keysignMessages,
             session: session,
-            derivePath: coin.coinType.derivationPath(),
+            derivePath: KeysignDerivationResolver.fastVaultDerivePath(coin: coin, override: derivation),
             isECDSA: coin.chain.isECDSA,
             vaultPassword: fastVaultPassword,
             chain: coin.chain.name,
