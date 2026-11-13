@@ -24,6 +24,27 @@ final class QBTCClaimFeatureFlagTests: XCTestCase {
         )
     }
 
+    // MARK: - DeFi gating
+
+    func testDefiFlagIsOffWhilePreLaunch() {
+        XCTAssertFalse(
+            QBTCConfig.isDefiEnabled,
+            "QBTC stays out of DeFi until it launches"
+        )
+    }
+
+    func testDefiChainsExcludeQbtcWhenDefiFlagOff() {
+        XCTAssertFalse(
+            CoinAction.defiChains.contains(.qbtc),
+            "QBTC must not be offered as a DeFi chain while isDefiEnabled is off"
+        )
+        XCTAssertEqual(
+            CoinAction.defiChains,
+            [.thorChain, .mayaChain, .tron, .terra, .terraClassic, .ton, .solana],
+            "the other DeFi chains are unaffected"
+        )
+    }
+
     // MARK: - CoinSelectionViewModel chain picker gating
 
     func testChainPickerShowsQbtcWhenMldsaKeyPresent() {
