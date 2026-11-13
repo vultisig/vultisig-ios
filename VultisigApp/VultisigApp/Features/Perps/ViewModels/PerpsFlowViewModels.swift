@@ -208,6 +208,7 @@ final class PerpsTicketViewModel: ObservableObject {
             case .leverageOutOfRange: return "perpsLeverageOutOfRange".localized
             case .isolatedOnly: return "perpsIsolatedOnly".localized
             case .missingLimitPrice: return nil
+            case .invalidTriggerPrice: return "perpsInvalidPrice".localized
             }
         }
         if let costs, costs.transfer > 0, let reason = PerpsFlows.fundingIssue(amount: costs.transfer, vault: vault) { return reason }
@@ -233,6 +234,8 @@ final class PerpsTicketViewModel: ObservableObject {
 /// Where take profit and stop loss may sit relative to the reference price.
 enum PerpsTriggerRules {
     static func issue(side: PerpsSide, reference: Decimal, liquidation: Decimal?, takeProfit: Decimal?, stopLoss: Decimal?) -> String? {
+        // Zero, or a sub-tick price that snapped to zero, is never a trigger.
+        if [stopLoss, takeProfit].contains(where: { ($0 ?? 1) <= 0 }) { return "perpsInvalidPrice".localized }
         if let stop = stopLoss {
             if side == .long ? stop >= reference : stop <= reference {
                 return side == .long ? "perpsStopBelowPrice".localized : "perpsStopAbovePrice".localized

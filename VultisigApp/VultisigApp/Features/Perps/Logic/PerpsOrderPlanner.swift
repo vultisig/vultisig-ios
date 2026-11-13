@@ -63,6 +63,7 @@ enum PerpsOrderPlannerError: Error, Equatable {
     case isolatedOnly
     case minimumNotional
     case missingLimitPrice
+    case invalidTriggerPrice
 }
 
 enum PerpsOrderPlanner {
@@ -107,6 +108,7 @@ enum PerpsOrderPlanner {
         )]
         for (trigger, kind) in [(ticket.takeProfit, HLOrderType.Kind.takeProfit), (ticket.stopLoss, .stopLoss)] {
             guard let trigger else { continue }
+            guard trigger > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
             let triggerPrice = try HLWireFormat.wire(HLWireFormat.price(trigger, szDecimals: market.szDecimals))
             orders.append(HLOrderWire(
                 asset: market.assetIndex,

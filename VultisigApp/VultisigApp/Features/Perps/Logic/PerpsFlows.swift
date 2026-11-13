@@ -256,6 +256,7 @@ enum PerpsFlows {
             guard current?.triggerPx?.value != target else { continue }
             if let current { cancels.append((market.assetIndex, current.oid)) }
             if let target {
+                guard target > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
                 let price = try HLWireFormat.wire(HLWireFormat.price(target, szDecimals: market.szDecimals))
                 orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
                                           type: .trigger(isMarket: true, triggerPrice: price, kind: kind)))

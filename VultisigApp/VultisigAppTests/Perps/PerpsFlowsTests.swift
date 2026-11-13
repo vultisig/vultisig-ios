@@ -209,6 +209,14 @@ final class PerpsFlowsTests: XCTestCase {
         viewModel.stopText = "100001"
         XCTAssertEqual(viewModel.stopLoss, 100_000, "5 significant figures, the price that would be signed")
         XCTAssertNotNil(viewModel.issue, "a short's stop at or under the mark is refused, not signed")
+        // Zero, or a sub-tick price that snaps to zero, is refused (blank still removes).
+        viewModel.stopText = ""
+        viewModel.takeText = "0"
+        XCTAssertNotNil(viewModel.issue)
+        viewModel.takeText = "0.000001"
+        XCTAssertEqual(viewModel.takeProfit, 0)
+        XCTAssertNotNil(viewModel.issue)
+        viewModel.takeText = ""
         viewModel.stopText = "100060"
         XCTAssertEqual(viewModel.stopLoss, 100_060)
         XCTAssertNil(viewModel.issue)
