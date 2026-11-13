@@ -3,32 +3,24 @@
 //  VultisigApp
 //
 //  Signs SwapKit's pre-built ZEC PSBT. The transparent ZEC tx is wrapped in
-//  a BIP-174 envelope but the inner unsigned-tx body is **Sapling-v4**, not
-//  BIP-144 segwit: extra `nVersionGroupId` (4B), `expiryHeight` (4B),
-//  `valueBalance` (i64), and three varint zeros for shielded counts. We
-//  walk those, assert the chain is on Sapling v4 transparent-only (v5 NU5
-//  hard-rejected; non-zero shielded fields hard-rejected), then hand the
-//  P2PKH inputs to WalletCore's `CoinType.zcash` path.
+//  a BIP-174 envelope; the inner unsigned-tx body is **NU5 v5 (ZIP-225)**:
+//  header `0x80000005`, version group `0x26A7270A`, consensus branch id,
+//  lock time, expiry height, the transparent bundle, then three zero counts
+//  for the Sapling spends/outputs and Orchard actions. Sapling v4 is refused
+//  (invalid on mainnet since NU7), as are non-zero shielded bundles and
+//  non-P2PKH inputs.
 //
-//  Sighash: WalletCore's ZEC signer implements ZIP-243 (the Sapling
-//  signature digest with the personalised Blake2b-256). It reads the branch
-//  ID from `BitcoinTransactionPlan.branchID` — we feed it the live consensus
-//  branch id resolved at send time (the same value the native ZEC send uses),
-//  so the digest output is identical to a manually-sent ZEC transaction.
-//  (Deviating to the Sapling-v4 spec ID `0x76b809bb` would produce a
-//  different digest that the chain rejects.)
+//  Sighash: ZIP-244 through `ZcashSigner` (WalletCore signing V2). SwapKit's
+//  inputs, outputs (scripts verbatim) and their order are kept untouched, so
+//  the signed txid is the one SwapKit/NEAR Intents tracks. The branch id comes
+//  from the PSBT and must equal the live one resolved at send time.
 //
-//  Real fixture: captured during the ZEC source-chain spike (`ZEC.ZEC →
-//  ETH.USDC`, funded `t1bnxtY7aLCjWx9Ru1YcGwRWch3eEWUFK7u` source). The
-//  body is 201 bytes — see `__fixtures__/v3-real-zec-swap.json`.
+//  Real fixture: `__fixtures__/v3-real-zec-v5-swap.json` (ZEC.ZEC → ETH.ETH).
 //
 
 import Foundation
-import OSLog
 import Tss
 import WalletCore
-
-private let logger = Log.chain.other
 
 enum SwapKitZcashSignerError: Error, LocalizedError {
     case unsupportedZcashVersion(version: UInt32, group: UInt32)
@@ -47,148 +39,93 @@ enum SwapKitZcashSignerError: Error, LocalizedError {
     }
 }
 
-/// Sapling-v4 consensus group ID. `nVersionGroupId` field must equal this
-/// or the tx is on a different consensus epoch we don't sign.
-private let saplingVersionGroupID: UInt32 = 0x892F2085
-/// Overwinter flag (high bit) + version 4. Matches `0x04 0x00 0x00 0x80` LE.
-private let saplingTxVersion: UInt32 = 0x80000004
-/// NU5 consensus group ID — we hard-reject this until SwapKit's wire flips.
+/// Overwinter flag (high bit) + version 5. Matches `0x05 0x00 0x00 0x80` LE.
+private let nu5TxVersion: UInt32 = 0x80000005
+/// NU5 consensus group ID.
 private let nu5VersionGroupID: UInt32 = 0x26A7270A
 
 enum SwapKitZcashSigner {
 
-    /// ZIP-243 preimage hashes for every input. WalletCore handles the per-
-    /// input personalised Blake2b construction via `CoinType.zcash` + the
-    /// branchID injected on the frozen plan. `zcashBranchId` is the live branch
-    /// id resolved at send time (carried on the source-chain payload's UTXO
-    /// specific); refuses when absent (no compiled-in fallback).
+    /// ZIP-244 sighashes for every input, via `ZcashSigner`. `zcashBranchId` is the live branch
+    /// id resolved at send time; refuses when absent or different from the PSBT's
+    /// (no compiled-in fallback).
     static func preSigningHashes(payload: SwapKitSwapPayload, zcashBranchId: String?, pubKeyHex: String) throws -> [String] {
-        guard let pubkeyData = Data(hexString: pubKeyHex) else {
-            throw SwapKitZcashSignerError.underlying(.invalidPublicKey(pubKeyHex))
-        }
-        let input = try Self.ownedSigningInput(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
-        let serialized = try input.serializedData()
-        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
-        if !preSignOutputs.errorMessage.isEmpty {
-            throw SwapKitZcashSignerError.underlying(.planError(preSignOutputs.errorMessage))
-        }
-        return preSignOutputs.hashPublicKeys
-            .map { $0.dataHash.hexString }
+        let pubkeyData = try Self.pubkeyData(pubKeyHex)
+        let v2 = try Self.ownedSigningInputV2(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
+        return try Self.wrap { try ZcashSigner.preImageHashes(v2Input: v2) }
+            .map(\.hexString)
             .sorted()
     }
 
-    /// Assemble the signed broadcast tx with the Sapling-v4 header + ZIP-243
-    /// sighash already baked into WalletCore's compileWithSignatures.
+    /// Assembles the signed v5 broadcast tx; every signature is verified against its sighash.
     static func compileSignedTransaction(
         payload: SwapKitSwapPayload,
         signatures: [String: TssKeysignResponse],
         pubKeyHex: String,
         zcashBranchId: String?
     ) throws -> SignedTransactionResult {
-        guard let pubkeyData = Data(hexString: pubKeyHex),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
-        else {
+        let pubkeyData = try Self.pubkeyData(pubKeyHex)
+        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
             throw SwapKitZcashSignerError.underlying(.invalidPublicKey(pubKeyHex))
         }
-        let input = try Self.ownedSigningInput(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
-        let serialized = try input.serializedData()
-        let preHashesBytes = TransactionCompiler.preImageHashes(coinType: .zcash, txInputData: serialized)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashesBytes)
-        if !preSignOutputs.errorMessage.isEmpty {
-            throw SwapKitZcashSignerError.underlying(.planError(preSignOutputs.errorMessage))
+        let v2 = try Self.ownedSigningInputV2(payload: payload, zcashBranchId: zcashBranchId, pubkeyData: pubkeyData)
+        return try Self.wrap { try ZcashSigner.compile(v2Input: v2, signatures: signatures, publicKey: publicKey) }
+    }
+
+    private static func pubkeyData(_ hex: String) throws -> Data {
+        guard let data = Data(hexString: hex) else {
+            throw SwapKitZcashSignerError.underlying(.invalidPublicKey(hex))
         }
-        let allSignatures = DataVector()
-        let publicKeys = DataVector()
-        let provider = SignatureProvider(signatures: signatures)
-        for h in preSignOutputs.hashPublicKeys {
-            let preImage = h.dataHash
-            let signature = provider.getDerSignature(preHash: preImage)
-            guard publicKey.verifyAsDER(signature: signature, message: preImage) else {
-                throw SwapKitZcashSignerError.underlying(.signatureVerifyFailed)
-            }
-            allSignatures.add(data: signature)
-            publicKeys.add(data: pubkeyData)
+        return data
+    }
+
+    private static func wrap<T>(_ body: () throws -> T) throws -> T {
+        do {
+            return try body()
+        } catch let err as ZcashSignerError {
+            throw SwapKitZcashSignerError.underlying(.planError(err.errorDescription ?? "\(err)"))
         }
-        let compileBytes = TransactionCompiler.compileWithSignatures(
-            coinType: .zcash,
-            txInputData: serialized,
-            signatures: allSignatures,
-            publicKeys: publicKeys
-        )
-        let output = try BitcoinSigningOutput(serializedBytes: compileBytes)
-        if !output.errorMessage.isEmpty {
-            throw SwapKitZcashSignerError.underlying(.planError(output.errorMessage))
-        }
-        return SignedTransactionResult(
-            rawTransaction: output.encoded.hexString,
-            transactionHash: output.transactionID
-        )
     }
 
     /// Builds the signing input only after every PSBT input is confirmed to be
     /// locked to `pubkeyData`; the MPC network must never be asked to sign an
     /// input this vault does not own.
-    private static func ownedSigningInput(
+    private static func ownedSigningInputV2(
         payload: SwapKitSwapPayload,
         zcashBranchId: String?,
         pubkeyData: Data
-    ) throws -> BitcoinSigningInput {
-        let parsed = try parseSaplingPSBT(
-            payload.txPayload,
-            targetAddress: payload.targetAddress,
-            zcashBranchId: zcashBranchId
-        )
+    ) throws -> Data {
+        let parsed = try parsePSBT(payload.txPayload, zcashBranchId: zcashBranchId)
         do {
             try SwapKitLegacyP2PKHSigner.verifyOwnership(inputs: parsed.inputs, pubkeyData: pubkeyData)
         } catch let err as SwapKitLegacyP2PKHSignerError {
             throw SwapKitZcashSignerError.underlying(err)
         }
-        return parsed.input
-    }
-
-    /// Exposed for unit tests: build the WalletCore signing input with the
-    /// frozen Sapling plan + branchID set. `zcashBranchId` is the live branch id
-    /// resolved at send time; refuses when absent (no compiled-in fallback).
-    static func buildSigningInput(payload: SwapKitSwapPayload, zcashBranchId: String?) throws -> BitcoinSigningInput {
-        let parsed = try parseSaplingPSBT(
-            payload.txPayload,
-            targetAddress: payload.targetAddress,
-            zcashBranchId: zcashBranchId
-        )
-        return parsed.input
-    }
-
-    /// Validates and converts the live ZIP-243 branch id. WalletCore reads it
-    /// on the plan during preimage construction; there is no compiled-in
-    /// fallback because signing with a stale id produces a tx the network
-    /// rejects, so refuse up front when it could not be resolved.
-    private static func branchIDData(_ zcashBranchId: String?) throws -> Data {
-        guard let zcashBranchId, !zcashBranchId.isEmpty,
-              let data = Data(hexString: zcashBranchId) else {
-            throw SwapKitZcashSignerError.underlying(.planError(
-                "Zcash ZIP-243 consensus branch id is unavailable; cannot sign the SwapKit ZEC transaction without the live branch id"
-            ))
+        return try Self.wrap {
+            try ZcashSigner.signingInputV2(
+                utxos: parsed.utxos,
+                outputs: parsed.outputs,
+                lockTime: parsed.lockTime,
+                expiryHeight: parsed.expiryHeight,
+                branchID: parsed.branchID,
+                publicKey: pubkeyData
+            )
         }
-        return data
     }
 
-    /// Exposed for unit tests so callers can pin the Sapling-header parser
-    /// in isolation.
-    static func parseSaplingUnsignedTx(_ data: Data) throws -> ParsedSaplingTx {
+    /// Exposed for unit tests so callers can pin the v5 body parser in isolation.
+    static func parseUnsignedTx(_ data: Data) throws -> ParsedZcashV5Tx {
         var cursor = PSBTCursor(data: data)
         do {
             let version = try cursor.readUInt32LE()
             let versionGroupID = try cursor.readUInt32LE()
-            // Reject NU5 (v5) outright — different sighash construction
-            // (ZIP-244) that WalletCore may not handle, and our branchID
-            // assumes Sapling-v4 + Vultisig's existing native-send path.
-            guard version == saplingTxVersion, versionGroupID == saplingVersionGroupID else {
-                throw SwapKitZcashSignerError.unsupportedZcashVersion(
-                    version: version,
-                    group: versionGroupID
-                )
+            // Sapling v4 is invalid since NU7; anything else is an epoch we don't sign.
+            guard version == nu5TxVersion, versionGroupID == nu5VersionGroupID else {
+                throw SwapKitZcashSignerError.unsupportedZcashVersion(version: version, group: versionGroupID)
             }
+            let branchID = try cursor.readBytes(4)
+            let lockTime = try cursor.readUInt32LE()
+            let expiryHeight = try cursor.readUInt32LE()
             let inputCount = try cursor.readCompactSize()
             var inputs: [(prevTxIdLE: Data, prevIndex: UInt32, sequence: UInt32)] = []
             for _ in 0..<inputCount {
@@ -207,24 +144,18 @@ enum SwapKitZcashSigner {
                 let script = try cursor.readBytes(Int(scriptLen))
                 outputs.append(LegacyP2PKHOutput(amount: amount, scriptPubKey: script))
             }
-            let lockTime = try cursor.readUInt32LE()
-            let expiryHeight = try cursor.readUInt32LE()
-            // Sapling-v4 transparent-only: all shielded fields must be zero.
-            // If SwapKit ever returns a tx with shielded value flowing,
-            // hard-reject — we can't sign shielded bundles with MPC.
-            let valueBalance = try cursor.readInt64LE()
-            let nShieldedSpend = try cursor.readCompactSize()
-            let nShieldedOutput = try cursor.readCompactSize()
-            let nJoinSplit = try cursor.readCompactSize()
-            guard valueBalance == 0,
-                  nShieldedSpend == 0,
-                  nShieldedOutput == 0,
-                  nJoinSplit == 0 else {
+            // Transparent-only: Sapling spends, Sapling outputs and Orchard actions
+            // must all be zero and nothing may follow. We can't sign shielded bundles with MPC.
+            let nSaplingSpend = try cursor.readCompactSize()
+            let nSaplingOutput = try cursor.readCompactSize()
+            let nOrchardAction = try cursor.readCompactSize()
+            guard nSaplingSpend == 0, nSaplingOutput == 0, nOrchardAction == 0, cursor.isAtEnd else {
                 throw SwapKitZcashSignerError.unsupportedShieldedTransaction
             }
-            return ParsedSaplingTx(
+            return ParsedZcashV5Tx(
                 version: version,
                 versionGroupID: versionGroupID,
+                branchID: branchID,
                 lockTime: lockTime,
                 expiryHeight: expiryHeight,
                 inputs: inputs,
@@ -235,14 +166,19 @@ enum SwapKitZcashSigner {
         }
     }
 
-    // MARK: - Private — full PSBT walker (framing + Sapling body + per-input maps)
+    // MARK: - Private — full PSBT walker (framing + v5 body + per-input maps)
 
-    private struct ParsedSaplingPSBT {
-        let input: BitcoinSigningInput
+    struct ParsedZcashPSBT {
         let inputs: [LegacyP2PKHInput]
+        let utxos: [BitcoinUnspentTransaction]
+        let outputs: [BitcoinV2Output]
+        let branchID: Data
+        let lockTime: UInt32
+        let expiryHeight: UInt32
     }
 
-    private static func parseSaplingPSBT(_ psbtBytes: Data, targetAddress: String, zcashBranchId: String?) throws -> ParsedSaplingPSBT {
+    /// Exposed for unit tests: the validated inputs/outputs the signer will replay.
+    static func parsePSBT(_ psbtBytes: Data, zcashBranchId: String?) throws -> ParsedZcashPSBT {
         // 1. Parse BIP-174 framing.
         let framingPrefix: (cursor: PSBTCursor, globals: [Data: Data], unsignedTxBytes: Data)
         do {
@@ -251,40 +187,29 @@ enum SwapKitZcashSigner {
             throw SwapKitZcashSignerError.underlying(mapParserError(err))
         }
 
-        // 2. Parse the Sapling-v4 body.
-        let parsedTx = try parseSaplingUnsignedTx(framingPrefix.unsignedTxBytes)
+        // 2. Parse the v5 body and pin its branch id to the live one.
+        let parsedTx = try parseUnsignedTx(framingPrefix.unsignedTxBytes)
+        try requireLiveBranchID(zcashBranchId, matches: parsedTx.branchID)
 
         // 3. Drain per-input + per-output maps.
         var cursor = framingPrefix.cursor
         var inputMaps: [[Data: Data]] = []
-        for _ in 0..<parsedTx.inputs.count {
-            do {
+        do {
+            for _ in 0..<parsedTx.inputs.count {
                 inputMaps.append(try cursor.readMap())
-            } catch let err as SwapKitPSBTParserError {
-                throw SwapKitZcashSignerError.underlying(mapParserError(err))
             }
-        }
-        for _ in 0..<parsedTx.outputs.count {
-            do {
+            for _ in 0..<parsedTx.outputs.count {
                 _ = try cursor.readMap()
-            } catch let err as SwapKitPSBTParserError {
-                throw SwapKitZcashSignerError.underlying(mapParserError(err))
             }
+        } catch let err as SwapKitPSBTParserError {
+            throw SwapKitZcashSignerError.underlying(mapParserError(err))
         }
 
-        // 4. Resolve per-input UTXO (ZEC ships WITNESS_UTXO per the spike
-        // fixture — different from DOGE's NON_WITNESS_UTXO — but the shared
-        // resolver accepts both).
+        // 4. Resolve per-input UTXO (ZEC ships WITNESS_UTXO) and require P2PKH.
         var legacyInputs: [LegacyP2PKHInput] = []
         for (index, parsedInput) in parsedTx.inputs.enumerated() {
-            let (amount, scriptPubKey) = try resolvePrevUtxo(
-                inputMap: inputMaps[index],
-                inputIndex: index
-            )
-            let keyHash = try assertP2PKHAndExtractKeyHash(
-                scriptPubKey: scriptPubKey,
-                inputIndex: index
-            )
+            let (amount, scriptPubKey) = try resolvePrevUtxo(inputMap: inputMaps[index], inputIndex: index)
+            let keyHash = try assertP2PKHAndExtractKeyHash(scriptPubKey: scriptPubKey, label: "input #\(index)")
             legacyInputs.append(LegacyP2PKHInput(
                 prevTxIdLE: parsedInput.prevTxIdLE,
                 prevIndex: parsedInput.prevIndex,
@@ -295,25 +220,72 @@ enum SwapKitZcashSigner {
             ))
         }
 
-        // 5. Build the BitcoinSigningInput with a frozen plan.
-        let input = try assembleZcashSigningInput(
+        // 5. Outputs stay verbatim and in order: P2PKH (deposit/change) or one OP_RETURN memo.
+        guard !legacyInputs.isEmpty, !parsedTx.outputs.isEmpty else {
+            throw SwapKitZcashSignerError.underlying(.planError("empty inputs or outputs"))
+        }
+        var opReturnCount = 0
+        for (index, output) in parsedTx.outputs.enumerated() {
+            if output.scriptPubKey.first == 0x6a, output.amount == 0 {
+                opReturnCount += 1
+            } else {
+                _ = try assertP2PKHAndExtractKeyHash(scriptPubKey: output.scriptPubKey, label: "output #\(index)")
+            }
+        }
+        guard opReturnCount <= 1 else {
+            throw SwapKitZcashSignerError.underlying(.unsupportedScript("PSBT has \(opReturnCount) OP_RETURN outputs; expected at most 1"))
+        }
+        let totalIn = legacyInputs.reduce(Int64(0)) { $0 + $1.amount }
+        let totalOut = parsedTx.outputs.reduce(Int64(0)) { $0 + $1.amount }
+        guard totalIn >= totalOut else {
+            throw SwapKitZcashSignerError.underlying(.planError("negative fee: inputs=\(totalIn) outputs=\(totalOut)"))
+        }
+
+        return ParsedZcashPSBT(
             inputs: legacyInputs,
-            outputs: parsedTx.outputs,
-            expiryHeight: parsedTx.expiryHeight,
-            targetAddress: targetAddress,
-            zcashBranchId: zcashBranchId
+            utxos: legacyInputs.map { input in
+                BitcoinUnspentTransaction.with {
+                    $0.outPoint = BitcoinOutPoint.with {
+                        $0.hash = input.prevTxIdLE
+                        $0.index = input.prevIndex
+                        $0.sequence = input.sequence
+                    }
+                    $0.amount = input.amount
+                    $0.script = input.scriptPubKey
+                }
+            },
+            outputs: parsedTx.outputs.map { output in
+                BitcoinV2Output.with {
+                    $0.value = output.amount
+                    $0.customScriptPubkey = output.scriptPubKey
+                }
+            },
+            branchID: parsedTx.branchID,
+            lockTime: parsedTx.lockTime,
+            expiryHeight: parsedTx.expiryHeight
         )
-        return ParsedSaplingPSBT(input: input, inputs: legacyInputs)
+    }
+
+    /// Signing with a branch id other than the live one yields a tx the network
+    /// rejects, so refuse up front when it is unresolved or different.
+    private static func requireLiveBranchID(_ zcashBranchId: String?, matches psbtBranchID: Data) throws {
+        guard let zcashBranchId, !zcashBranchId.isEmpty, let live = Data(hexString: zcashBranchId) else {
+            throw SwapKitZcashSignerError.underlying(.planError(
+                "Zcash consensus branch id is unavailable; cannot sign the SwapKit ZEC transaction without the live branch id"
+            ))
+        }
+        guard live == psbtBranchID else {
+            throw SwapKitZcashSignerError.underlying(.planError(
+                "SwapKit ZEC PSBT branch id \(psbtBranchID.hexString) differs from the live branch id \(zcashBranchId)"
+            ))
+        }
     }
 
     private static func resolvePrevUtxo(
         inputMap: [Data: Data],
         inputIndex: Int
     ) throws -> (amount: Int64, scriptPubKey: Data) {
-        // ZEC ships WITNESS_UTXO (key 0x01) — confirmed in the captured
-        // fixture. The shared `parseWitnessUtxo` lives on
-        // `SwapKitLegacyP2PKHSigner` but it's `private`; reimplement
-        // locally (8 lines).
+        // ZEC ships WITNESS_UTXO (key 0x01).
         if let witness = inputMap[Data([0x01])] {
             var c = PSBTCursor(data: witness)
             do {
@@ -328,13 +300,7 @@ enum SwapKitZcashSigner {
         throw SwapKitZcashSignerError.underlying(.missingPrevUtxo(inputIndex: inputIndex))
     }
 
-    /// Output-side P2PKH assertion. Tags errors with `output #N` so
-    /// non-P2PKH output rejections (OP_RETURN, P2SH, shielded leftover)
-    /// read distinctly from input-side rejections in logs.
-    private static func assertP2PKHForOutput(
-        scriptPubKey: Data,
-        outputIndex: Int
-    ) throws -> Data {
+    private static func assertP2PKHAndExtractKeyHash(scriptPubKey: Data, label: String) throws -> Data {
         guard scriptPubKey.count == 25,
               scriptPubKey[scriptPubKey.startIndex] == 0x76,
               scriptPubKey[scriptPubKey.startIndex + 1] == 0xa9,
@@ -343,141 +309,11 @@ enum SwapKitZcashSigner {
               scriptPubKey[scriptPubKey.startIndex + 24] == 0xac
         else {
             throw SwapKitZcashSignerError.underlying(.unsupportedScript(
-                "output #\(outputIndex) scriptPubKey is not P2PKH: \(scriptPubKey.hexString)"
+                "\(label) scriptPubKey is not P2PKH: \(scriptPubKey.hexString)"
             ))
         }
         let start = scriptPubKey.startIndex + 3
         return Data(scriptPubKey[start..<(start + 20)])
-    }
-
-    private static func assertP2PKHAndExtractKeyHash(
-        scriptPubKey: Data,
-        inputIndex: Int
-    ) throws -> Data {
-        guard scriptPubKey.count == 25,
-              scriptPubKey[scriptPubKey.startIndex] == 0x76,
-              scriptPubKey[scriptPubKey.startIndex + 1] == 0xa9,
-              scriptPubKey[scriptPubKey.startIndex + 2] == 0x14,
-              scriptPubKey[scriptPubKey.startIndex + 23] == 0x88,
-              scriptPubKey[scriptPubKey.startIndex + 24] == 0xac
-        else {
-            throw SwapKitZcashSignerError.underlying(.unsupportedScript(
-                "input #\(inputIndex) scriptPubKey is not P2PKH: \(scriptPubKey.hexString)"
-            ))
-        }
-        let start = scriptPubKey.startIndex + 3
-        return Data(scriptPubKey[start..<(start + 20)])
-    }
-
-    private static func assembleZcashSigningInput(
-        inputs: [LegacyP2PKHInput],
-        outputs: [LegacyP2PKHOutput],
-        expiryHeight _: UInt32,
-        targetAddress: String,
-        zcashBranchId: String?
-    ) throws -> BitcoinSigningInput {
-        // Validate the live branch id up front so an unresolved id refuses
-        // before we do the (otherwise wasted) plan-assembly work.
-        let branchID = try branchIDData(zcashBranchId)
-        guard !inputs.isEmpty, !outputs.isEmpty else {
-            throw SwapKitZcashSignerError.underlying(.planError("empty inputs or outputs"))
-        }
-        // WalletCore reconstructs each output from `toAddress` /
-        // `changeAddress` — it does NOT pull per-output scripts from the
-        // frozen plan. Validate every output is a P2PKH we can faithfully
-        // re-emit through the address-only API, then derive the t1
-        // addresses from the PSBT's actual hash160s (NOT from the SwapKit
-        // `targetAddress` — the spike fixture has output 0 going to a
-        // route-allocated transparent address that differs from
-        // `targetAddress`, so trusting `targetAddress` produces a tx whose
-        // deposit lands at the wrong recipient). Hard-reject anything
-        // other than 1 deposit + optional 1 change P2PKH outputs.
-        guard outputs.count <= 2 else {
-            throw SwapKitZcashSignerError.underlying(.unsupportedScript(
-                "Sapling PSBT has \(outputs.count) outputs; ZEC signer expects 1 deposit + optional 1 change"
-            ))
-        }
-        let outputKeyHashes = try outputs.enumerated().map { (idx, out) -> Data in
-            try assertP2PKHForOutput(scriptPubKey: out.scriptPubKey, outputIndex: idx)
-        }
-        let totalIn = inputs.reduce(Int64(0)) { $0 + $1.amount }
-        let totalOut = outputs.reduce(Int64(0)) { $0 + $1.amount }
-        let fee = totalIn - totalOut
-        guard fee >= 0 else {
-            throw SwapKitZcashSignerError.underlying(.planError(
-                "negative fee: inputs=\(totalIn) outputs=\(totalOut)"
-            ))
-        }
-        let depositAmount = outputs[0].amount
-        let changeAmount = outputs.dropFirst().reduce(Int64(0)) { $0 + $1.amount }
-        // Derive t1 addresses from the parsed output hash160s. Falls back
-        // to the SwapKit `targetAddress` hint only if address derivation
-        // fails — shouldn't happen for ZEC (`0x1C 0xB8` two-byte
-        // transparent prefix always encodes via base58check).
-        let depositAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
-            forHash: outputKeyHashes[0],
-            coin: .zcash
-        ) ?? targetAddress
-        let changeAddress: String
-        if outputs.count >= 2 {
-            changeAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
-                forHash: outputKeyHashes[1],
-                coin: .zcash
-            ) ?? targetAddress
-        } else {
-            changeAddress = SwapKitLegacyP2PKHSigner.legacyAddress(
-                forHash: inputs[0].keyHash,
-                coin: .zcash
-            ) ?? targetAddress
-        }
-
-        var utxos: [BitcoinUnspentTransaction] = []
-        for input in inputs {
-            let utxo = BitcoinUnspentTransaction.with {
-                $0.outPoint = BitcoinOutPoint.with {
-                    $0.hash = input.prevTxIdLE
-                    $0.index = input.prevIndex
-                    $0.sequence = input.sequence
-                }
-                $0.amount = input.amount
-                $0.script = input.scriptPubKey
-            }
-            utxos.append(utxo)
-        }
-
-        let plan = BitcoinTransactionPlan.with {
-            $0.amount = depositAmount
-            $0.availableAmount = totalIn
-            $0.fee = fee
-            $0.change = changeAmount
-            $0.utxos = utxos
-            $0.branchID = branchID
-        }
-
-        var scripts: [String: Data] = [:]
-        for input in inputs {
-            let redeem = BitcoinScript.buildPayToPublicKeyHash(hash: input.keyHash)
-            scripts[input.keyHash.hexString] = redeem.data
-        }
-
-        var signingInput = BitcoinSigningInput.with {
-            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .zcash)
-            $0.byteFee = 1
-            $0.useMaxAmount = false
-            $0.amount = depositAmount
-            $0.coinType = CoinType.zcash.rawValue
-            // toAddress / changeAddress drive the output scripts WalletCore
-            // emits. Derived above from the PSBT's actual output hash160s
-            // so the rebuilt tx is byte-identical to the PSBT's intended
-            // outputs (preserves the NEAR Intents route tx_id and the
-            // deposit destination).
-            $0.toAddress = depositAddress
-            $0.changeAddress = changeAddress
-        }
-        signingInput.scripts = scripts
-        signingInput.utxo = utxos
-        signingInput.plan = plan
-        return signingInput
     }
 
     private static func mapParserError(_ err: SwapKitPSBTParserError) -> SwapKitLegacyP2PKHSignerError {
@@ -490,12 +326,12 @@ enum SwapKitZcashSigner {
     }
 }
 
-/// Result of parsing the Sapling-v4 unsigned-tx body. Exposed so tests can
-/// pin the structural fields (version, group, expiry, input/output counts)
-/// without going through the full PSBT walker.
-struct ParsedSaplingTx {
+/// Result of parsing the v5 unsigned-tx body. Exposed so tests can pin the
+/// structural fields without going through the full PSBT walker.
+struct ParsedZcashV5Tx {
     let version: UInt32
     let versionGroupID: UInt32
+    let branchID: Data
     let lockTime: UInt32
     let expiryHeight: UInt32
     let inputs: [(prevTxIdLE: Data, prevIndex: UInt32, sequence: UInt32)]

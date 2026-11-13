@@ -395,10 +395,9 @@ enum SwapKitTx: Hashable {
     /// DASH source — legacy P2PKH PSBT (DASH has no segwit). Same structure
     /// as DOGE/BCH; signed via `CoinType.dash`.
     case dashPsbt(base64: String)
-    /// ZEC source — Sapling-v4 transparent PSBT. Inputs are P2PKH; the
-    /// unsigned-tx body carries `nVersionGroupId` + `expiryHeight` + zeroed
-    /// shielded fields. Signed via `CoinType.zcash` with the Sapling
-    /// branchID (`0x76b809bb` LE) for ZIP-243 sighash.
+    /// ZEC source — NU5 v5 (ZIP-225) transparent PSBT. Inputs are P2PKH; the
+    /// unsigned-tx body carries the branch id, `expiryHeight` and zeroed
+    /// shielded counts. Signed via `ZcashSigner` (ZIP-244 sighash).
     case zcashPsbt(base64: String)
     case unsupported(txType: String, raw: SwapKitRawJSON)
 }
