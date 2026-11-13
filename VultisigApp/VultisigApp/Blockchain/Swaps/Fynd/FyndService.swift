@@ -194,6 +194,7 @@ struct FyndService {
         let order = try await requestQuote(chain: chainName, body: request, endpoint: endpoint)
         let context = FyndQuoteContext(
             router: router,
+            recipient: fromCoin.address,
             sellAmount: amount,
             sellsNative: fromCoin.isNativeToken,
             slippageBps: slippage,
@@ -233,6 +234,8 @@ struct FyndService {
 
 struct FyndQuoteContext {
     let router: String
+    /// The vault address that submits the swap and receives its output.
+    let recipient: String
     let sellAmount: BigInt
     let sellsNative: Bool
     let slippageBps: Int
@@ -304,6 +307,15 @@ extension FyndService {
             throw FyndError.invalidResponse("min_amount_received \(minReceived) is outside the requested slippage")
         }
 
+        // The router call is opaque, but its ABI arguments carry these values as
+        // whole words. Requiring them binds the calldata to what was validated
+        // above rather than to the response's metadata alone.
+        guard Self.hasArgumentWord(calldata, Self.uintWord(amountIn)),
+              Self.hasArgumentWord(calldata, Self.uintWord(minReceived)),
+              Self.hasArgumentWord(calldata, Self.addressWord(context.recipient)) else {
+            throw FyndError.invalidResponse("calldata does not encode the quoted amounts and recipient")
+        }
+
         if context.clientFeeBps == 0 {
             guard clientFee == 0 else {
                 throw FyndError.invalidResponse("unexpected client fee \(clientFee)")
@@ -320,6 +332,9 @@ extension FyndService {
         }
 
         let gasEstimate = Int64(order.gasEstimate ?? "") ?? 0
+        guard (0...maxGasEstimate).contains(gasEstimate) else {
+            throw FyndError.invalidResponse("gas estimate \(gasEstimate) is out of range")
+        }
         return FyndValidatedQuote(
             to: tx.to,
             value: String(value),
@@ -345,14 +360,14 @@ extension FyndService {
             throw FyndError.invalidResponse("client fee \(clientFee) does not match \(context.clientFeeBps) bps (expected \(expected))")
         }
 
-        let receiverWord = String(repeating: "0", count: 24) + context.feeReceiver.lowercased().stripHexPrefix()
-        guard receiverWord.count == 64, calldata.contains(receiverWord) else {
+        guard hasArgumentWord(calldata, addressWord(context.feeReceiver)) else {
             throw FyndError.invalidResponse("calldata does not name the Vultisig fee receiver")
         }
 
         let signatureHexLength = clientFeeSignatureBytes * 2
         guard let offset = signatureOffset, offset >= 0,
-              offset * 2 + signatureHexLength <= calldata.count else {
+              calldata.count >= signatureHexLength,
+              offset <= (calldata.count - signatureHexLength) / 2 else {
             throw FyndError.invalidResponse("missing client fee signature offset")
         }
         let start = calldata.index(calldata.startIndex, offsetBy: offset * 2)
@@ -364,6 +379,31 @@ extension FyndService {
         guard let deadline, TimeInterval(deadline) > context.now.timeIntervalSince1970 else {
             throw FyndError.invalidResponse("client fee deadline missing or expired")
         }
+    }
+
+    /// Fynd routes are a few hundred thousand gas; anything far above that is
+    /// not a quote we would sign.
+    static let maxGasEstimate: Int64 = 10_000_000
+
+    static func uintWord(_ value: BigInt) -> String {
+        let hex = String(value, radix: 16)
+        return String(repeating: "0", count: max(0, 64 - hex.count)) + hex
+    }
+
+    /// Whether `word` is one of the 32-byte argument words after the 4-byte selector.
+    static func hasArgumentWord(_ calldata: String, _ word: String) -> Bool {
+        guard word.count == 64, calldata.count >= 8 + 64 else { return false }
+        var start = calldata.index(calldata.startIndex, offsetBy: 8)
+        while calldata.distance(from: start, to: calldata.endIndex) >= 64 {
+            let end = calldata.index(start, offsetBy: 64)
+            if calldata[start..<end] == word { return true }
+            start = end
+        }
+        return false
+    }
+
+    static func addressWord(_ address: String) -> String {
+        String(repeating: "0", count: 24) + address.lowercased().stripHexPrefix()
     }
 
     static func makeQuote(_ quote: FyndValidatedQuote, sender: String, tokenOut: String) -> (quote: EVMQuote, fee: BigInt?) {

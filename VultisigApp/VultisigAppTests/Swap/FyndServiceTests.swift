@@ -106,7 +106,6 @@ final class FyndServiceTests: XCTestCase {
 final class FyndQuoteValidationTests: XCTestCase {
 
     private let router = "0x1644d2477f809cc2c71bccfd6dc9497e3f83210d"
-    private let receiver = FyndService.feeReceiver.lowercased()
     private let now = Date(timeIntervalSince1970: 1_800_000_000)
     private let sell = BigInt("1000000000000000000")
     private let amountOut = BigInt(3_000_000_000)
@@ -141,6 +140,18 @@ final class FyndQuoteValidationTests: XCTestCase {
 
     func testRejectsAnOutputFloorLooserThanTheSlippage() {
         assertInvalid(order(minReceived: "1"), clientFeeBps: 0)
+    }
+
+    func testRejectsCalldataThatDoesNotEncodeTheQuote() {
+        assertInvalid(order(data: "0xabcdef01"), clientFeeBps: 0)
+        let min = minOut(clientFee: 0)
+        assertInvalid(order(data: calldata(minReceived: min - 1)), clientFeeBps: 0)
+        assertInvalid(order(data: calldata(minReceived: min, recipient: "0x00000000000000000000000000000000deadbeef")), clientFeeBps: 0)
+    }
+
+    func testRejectsAnOverflowingSignatureOffsetWithoutTrapping() {
+        let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, offset: Int.max), clientFeeBps: 63)
     }
 
     func testRejectsAClientFeeTheAppDidNotAskFor() {
@@ -182,9 +193,12 @@ final class FyndQuoteValidationTests: XCTestCase {
 }
 
 private extension FyndQuoteValidationTests {
+    var recipient: String { "0x1111111111111111111111111111111111111111" }
+
     func context(clientFeeBps: Int) -> FyndQuoteContext {
         FyndQuoteContext(
             router: router,
+            recipient: recipient,
             sellAmount: sell,
             sellsNative: true,
             slippageBps: 100,
@@ -194,6 +208,18 @@ private extension FyndQuoteValidationTests {
         )
     }
 
+    func netOut(clientFee: BigInt) -> BigInt { amountOut - 300 - clientFee }
+    func minOut(clientFee: BigInt) -> BigInt { netOut(clientFee: clientFee) * 9_900 / 10_000 }
+
+    /// Selector plus the head words the validator binds: amount in, min out, recipient.
+    func calldata(minReceived: BigInt, recipient: String? = nil, tail: String = "") -> String {
+        "0xabcdef01"
+            + FyndService.uintWord(sell)
+            + FyndService.uintWord(minReceived)
+            + FyndService.addressWord(recipient ?? self.recipient)
+            + tail
+    }
+
     func order(
         status: String = "success",
         to: String? = nil,
@@ -201,25 +227,25 @@ private extension FyndQuoteValidationTests {
         value: String? = nil,
         clientFee: String = "0",
         minReceived: String? = nil,
-        data: String = "0xabcdef01",
+        data: String? = nil,
         offset: Int? = nil,
         deadline: Int? = nil
     ) -> FyndOrderQuote {
         let fee = BigInt(clientFee) ?? 0
-        let net = amountOut - 300 - fee
+        let min = minReceived ?? String(minOut(clientFee: fee))
         return FyndOrderQuote(
             status: status,
             amountIn: amountIn ?? String(sell),
             amountOut: String(amountOut),
             gasEstimate: "200000",
             gasPrice: "1000000000",
-            transaction: .init(to: to ?? router, value: value ?? String(sell), data: data, clientFeeSignatureOffset: offset),
-            feeBreakdown: .init(
-                routerFee: "300",
-                clientFee: clientFee,
-                maxSlippage: "0",
-                minAmountReceived: minReceived ?? String(net * 9_900 / 10_000)
+            transaction: .init(
+                to: to ?? router,
+                value: value ?? String(sell),
+                data: data ?? calldata(minReceived: BigInt(min) ?? 0),
+                clientFeeSignatureOffset: offset
             ),
+            feeBreakdown: .init(routerFee: "300", clientFee: clientFee, maxSlippage: "0", minAmountReceived: min),
             clientFeeDeadline: deadline
         )
     }
@@ -228,13 +254,13 @@ private extension FyndQuoteValidationTests {
         clientFee: BigInt,
         receiver: String? = nil,
         signature: String = String(repeating: "ab", count: 65),
-        offset: Int? = 36,
+        offset: Int? = 4 + 32 * 4,
         deadline: Int? = 1_800_000_900
     ) -> FyndOrderQuote {
-        let receiverWord = String(repeating: "0", count: 24) + (receiver ?? self.receiver).lowercased().stripHexPrefix()
+        let tail = FyndService.addressWord(receiver ?? FyndService.feeReceiver) + signature
         return order(
             clientFee: String(clientFee),
-            data: "0xabcdef01" + receiverWord + signature,
+            data: calldata(minReceived: minOut(clientFee: clientFee), tail: tail),
             offset: offset,
             deadline: deadline
         )
