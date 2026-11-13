@@ -1891,8 +1891,8 @@
 "swapReworkAllChains" = "전체";
 "swapReworkAllIn" = "%@ 총액";
 "swapReworkAllowSwap" = "허용 + 스왑";
-"swapReworkApprovalBody" = "먼저 %3$@에 %1$@ %2$@ 사용을 허용한 뒤 스왑합니다. 한 번 검토, 두 번의 트랜잭션.";
-"swapReworkApprovalTitle" = "승인 필요";
+"swapReworkApprovalBody" = "%3$@이(가) 아직 %1$@ %2$@을(를) 사용할 수 없다면, 검토 단계에서 스왑 전에 승인이 추가됩니다. 가스는 그곳에서 추정됩니다.";
+"swapReworkApprovalTitle" = "승인이 필요할 수 있음";
 "swapReworkArrived" = "볼트에 도착함";
 "swapReworkBackToVault" = "볼트로 돌아가기";
 "swapReworkBalance" = "잔액";
@@ -1903,17 +1903,18 @@
 "swapReworkChooseAnother" = "다른 코인 선택";
 "swapReworkConfirmNewAmount" = "새 금액 수락";
 "swapReworkDeliveredLabel" = "전달됨";
+"swapReworkDeliveredPending" = "정확한 수령 금액이 아직 보고되지 않았습니다. 내역에서 거래를 확인하세요.";
 "swapReworkDifference" = "차이";
 "swapReworkEnterAmount" = "금액 입력";
 "swapReworkEtaMinutes" = "%1$d-%2$d분";
 "swapReworkEtaSeconds" = "~%d초";
+"swapReworkExpectedIn" = "%@에 예정";
 "swapReworkFailed" = "스왑이 완료되지 않았습니다";
 "swapReworkFastest" = "가장 빠름";
 "swapReworkFees" = "수수료";
 "swapReworkFeesShort" = "수수료 %@";
 "swapReworkFlip" = "지불/받기 전환";
 "swapReworkGas" = "%@ 가스";
-"swapReworkGasAllowSwap" = "%@ 가스 (허용 + 스왑)";
 "swapReworkGasShortfall" = "보유: %1$@. 가스비로 %2$@ (%3$@)를 추가하세요.";
 "swapReworkGasUseMax" = "금액과 가스 %@의 합이 잔액보다 많습니다. 최대를 눌러 가스를 남기세요.";
 "swapReworkGetNewQuote" = "새 견적 받기";
@@ -1936,6 +1937,7 @@
 "swapReworkMaxSlippage" = "최대 슬리피지";
 "swapReworkMinimumReceived" = "최소 수령액";
 "swapReworkMinutes" = "%d분";
+"swapReworkNativeCoin" = "네이티브 코인";
 "swapReworkNotEnoughGasCTA" = "가스용 %@ 부족";
 "swapReworkNoTier" = "기본 요율 %@. VULT를 보유하면 낮아집니다.";
 "swapReworkOnChain" = "%@에서";
@@ -1959,7 +1961,7 @@
 "swapReworkStageSwapped" = "%@에서 스왑됨";
 "swapReworkStepAllow" = "%1$@ %2$@ 허용";
 "swapReworkStepAllowDetail" = "%@가 정확히 이 금액만 사용하도록 허용합니다.";
-"swapReworkStepsFooter" = "두 트랜잭션 모두 검토 화면에 표시되며 같은 세션에서 서명됩니다. 허용 후 스왑이 실패하면 재시도 전에 다시 확인합니다.";
+"swapReworkStepsFooter" = "필요할 때만: 기존 허용량으로 충분하면 승인이 없습니다. 둘 다 검토 화면에 표시되고 같은 세션에서 서명됩니다.";
 "swapReworkStepSwap" = "%1$@ %2$@ → %3$@ 스왑";
 "swapReworkStepSwapDetail" = "허용이 확인되면 전송됩니다.";
 "swapReworkSwapAgain" = "다시 스왑";

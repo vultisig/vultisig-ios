@@ -1891,8 +1891,8 @@
 "swapReworkAllChains" = "Alle";
 "swapReworkAllIn" = "%@ inkl. allem";
 "swapReworkAllowSwap" = "Erlauben + Swap";
-"swapReworkApprovalBody" = "Erlaube zuerst %1$@ %2$@ für %3$@, dann den Swap. Eine Prüfung, zwei Transaktionen.";
-"swapReworkApprovalTitle" = "Freigabe erforderlich";
+"swapReworkApprovalBody" = "Falls %3$@ %1$@ %2$@ noch nicht ausgeben darf, fügt die Überprüfung vor dem Swap eine Freigabe hinzu. Deren Gas wird dort geschätzt.";
+"swapReworkApprovalTitle" = "Eventuell Freigabe nötig";
 "swapReworkArrived" = "In deinem Tresor angekommen";
 "swapReworkBackToVault" = "Zurück zum Tresor";
 "swapReworkBalance" = "Guthaben";
@@ -1903,17 +1903,18 @@
 "swapReworkChooseAnother" = "Andere Münze wählen";
 "swapReworkConfirmNewAmount" = "Neuen Betrag akzeptieren";
 "swapReworkDeliveredLabel" = "Geliefert";
+"swapReworkDeliveredPending" = "Der genau gelieferte Betrag ist noch nicht gemeldet. Prüfe die Transaktion in deinem Verlauf.";
 "swapReworkDifference" = "Differenz";
 "swapReworkEnterAmount" = "Betrag eingeben";
 "swapReworkEtaMinutes" = "%1$d-%2$d Min.";
 "swapReworkEtaSeconds" = "~%d s";
+"swapReworkExpectedIn" = "Erwartet in %@";
 "swapReworkFailed" = "Dieser Swap ist fehlgeschlagen";
 "swapReworkFastest" = "Am schnellsten";
 "swapReworkFees" = "Gebühren";
 "swapReworkFeesShort" = "Gebühren %@";
 "swapReworkFlip" = "Zahlen und Erhalten tauschen";
 "swapReworkGas" = "%@ Gas";
-"swapReworkGasAllowSwap" = "%@ Gas (Erlauben + Swap)";
 "swapReworkGasShortfall" = "Du hast %1$@. Füge %2$@ (%3$@) für Gas hinzu.";
 "swapReworkGasUseMax" = "Betrag plus %@ Gas übersteigt dein Guthaben. Tippe auf Max, um Gas übrig zu lassen.";
 "swapReworkGetNewQuote" = "Neues Angebot holen";
@@ -1936,6 +1937,7 @@
 "swapReworkMaxSlippage" = "Max. Slippage";
 "swapReworkMinimumReceived" = "Mindestens erhalten";
 "swapReworkMinutes" = "%d Min.";
+"swapReworkNativeCoin" = "native Coin";
 "swapReworkNotEnoughGasCTA" = "Nicht genug %@ für Gas";
 "swapReworkNoTier" = "Listenpreis %@. Halte VULT, um ihn zu senken.";
 "swapReworkOnChain" = "auf %@";
@@ -1959,7 +1961,7 @@
 "swapReworkStageSwapped" = "Getauscht auf %@";
 "swapReworkStepAllow" = "%1$@ %2$@ erlauben";
 "swapReworkStepAllowDetail" = "Erlaubt %@, genau diesen Betrag auszugeben, nicht mehr.";
-"swapReworkStepsFooter" = "Beide Transaktionen werden in der Prüfung angezeigt und in derselben Sitzung signiert. Scheitert der Swap nach der Freigabe, wird sie vor dem erneuten Versuch erneut geprüft.";
+"swapReworkStepsFooter" = "Nur wenn nötig: Deckt eine bestehende Freigabe den Betrag, entfällt sie. Beides wird in der Überprüfung gezeigt und in derselben Sitzung signiert.";
 "swapReworkStepSwap" = "Swap %1$@ %2$@ → %3$@";
 "swapReworkStepSwapDetail" = "Wird gesendet, sobald die Freigabe bestätigt ist.";
 "swapReworkSwapAgain" = "Erneut swappen";

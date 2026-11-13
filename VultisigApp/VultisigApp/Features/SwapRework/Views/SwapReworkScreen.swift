@@ -267,8 +267,13 @@ struct SwapReworkScreen: View {
         guard !viewModel.isDemo else { return }
         isEditingAmount = false
         viewModel.willPresentReview()
+        let quoteAtTap = details.quote
         Task {
             guard let transaction = await details.prepareTransaction(vault: vault) else { return }
+            guard viewModel.canStillPresent(quoteAtTap: quoteAtTap) else {
+                viewModel.requestNewQuote(vault: vault)
+                return
+            }
             reviewPresenter.present(.swap(
                 transaction: transaction,
                 retrySignal: SwapRetrySignal(),

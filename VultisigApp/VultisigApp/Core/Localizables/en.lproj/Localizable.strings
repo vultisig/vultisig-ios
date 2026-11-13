@@ -1891,8 +1891,8 @@
 "swapReworkAllChains" = "All";
 "swapReworkAllIn" = "%@ all-in";
 "swapReworkAllowSwap" = "Allow + swap";
-"swapReworkApprovalBody" = "First allow %1$@ %2$@ for %3$@, then the swap. One review, two transactions.";
-"swapReworkApprovalTitle" = "Needs an approval";
+"swapReworkApprovalBody" = "If %3$@ can't already spend %1$@ %2$@, the review adds an approval before the swap. Its gas is estimated there.";
+"swapReworkApprovalTitle" = "May need an approval";
 "swapReworkArrived" = "Arrived in your vault";
 "swapReworkBackToVault" = "Back to vault";
 "swapReworkBalance" = "Balance";
@@ -1903,17 +1903,18 @@
 "swapReworkChooseAnother" = "Choose another coin";
 "swapReworkConfirmNewAmount" = "Accept new amount";
 "swapReworkDeliveredLabel" = "Delivered";
+"swapReworkDeliveredPending" = "The exact amount delivered isn't reported yet. Check the transaction in your history.";
 "swapReworkDifference" = "Difference";
 "swapReworkEnterAmount" = "Enter an amount";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
+"swapReworkExpectedIn" = "Expected in %@";
 "swapReworkFailed" = "This swap didn't go through";
 "swapReworkFastest" = "Fastest";
 "swapReworkFees" = "Fees";
 "swapReworkFeesShort" = "fees %@";
 "swapReworkFlip" = "Flip pay and receive";
 "swapReworkGas" = "%@ gas";
-"swapReworkGasAllowSwap" = "%@ gas (allow + swap)";
 "swapReworkGasShortfall" = "You have %1$@. Add %2$@ (%3$@) to pay for gas.";
 "swapReworkGasUseMax" = "The amount plus %@ of gas is more than your balance. Tap Max to keep gas behind.";
 "swapReworkGetNewQuote" = "Get new quote";
@@ -1936,6 +1937,7 @@
 "swapReworkMaxSlippage" = "Max slippage";
 "swapReworkMinimumReceived" = "Minimum received";
 "swapReworkMinutes" = "%d min";
+"swapReworkNativeCoin" = "native coin";
 "swapReworkNotEnoughGasCTA" = "Not enough %@ for gas";
 "swapReworkNoTier" = "List rate %@. Hold VULT to lower it.";
 "swapReworkOnChain" = "on %@";
@@ -1959,7 +1961,7 @@
 "swapReworkStageSwapped" = "Swapped on %@";
 "swapReworkStepAllow" = "Allow %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Lets %@ spend exactly this amount, nothing more.";
-"swapReworkStepsFooter" = "Both transactions are shown on the review and signed in the same session. If the swap fails after the allowance, it is checked again before you retry.";
+"swapReworkStepsFooter" = "Only when needed: if an existing allowance already covers it, there is no approval. Both are shown on the review and signed in the same session.";
 "swapReworkStepSwap" = "Swap %1$@ %2$@ → %3$@";
 "swapReworkStepSwapDetail" = "Sent once the allowance is confirmed.";
 "swapReworkSwapAgain" = "Swap again";

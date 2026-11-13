@@ -154,6 +154,21 @@ final class SwapFeeBreakdownTests: XCTestCase {
         XCTAssertFalse(breakdown(net: "0", list: "4.89", discountBps: .max, tier: .ultimate).isWaivedByQuote)
     }
 
+    func testChargedRateIncludesReferralOnTopOfTier() {
+        // Gold (30 bps) + 5 bps referral: the quote charges 25 bps of 50.
+        let fees = breakdown(net: "2.445", list: "4.89", referral: "0.489")
+        XCTAssertEqual(fees.chargedBps, 25)
+        XCTAssertEqual(fees.chargedRateText, "0.25%")
+        XCTAssertEqual(fees.effectiveRateText, "0.30%")
+    }
+
+    func testDisplayedRowsAddUpToDisplayedTotal() {
+        let fees = breakdown(network: "0.009", protocolFee: "0.009", net: "0.009", list: "0.015")
+        XCTAssertEqual(fees.displayTotalFiat, 0)
+        XCTAssertEqual(breakdown().displayTotalFiat, dec("6.63"))
+        XCTAssertEqual(breakdown(network: "0.849", protocolFee: "2.861", net: "2.937").displayTotalFiat, dec("6.63"))
+    }
+
     func testAllInChangeIncludesGas() {
         // (972.41 - 979.04) / 979.04 = -0.677...%
         XCTAssertEqual(breakdown().allInChangeText, "-0.68%")
@@ -328,6 +343,19 @@ final class SwapTokenTrustTests: XCTestCase {
         XCTAssertEqual(SwapTokenTrust.assess(.init(chain: "Ethereum", ticker: "ETH", contract: ""), curated: curated), .verified)
         XCTAssertEqual(SwapTokenTrust.assess(.init(chain: "Ethereum", ticker: "PEPE", contract: "0x1"), curated: curated), .verified)
         XCTAssertEqual(SwapTokenTrust.assess(.init(chain: "Base", ticker: "USDC", contract: "0x2"), curated: curated), .verified)
+    }
+
+    func testTokenClaimingANativeTickerIsUnverified() {
+        let fakeEth = SwapTokenTrust.Token(chain: "Ethereum", ticker: "ETH", contract: "0xdead")
+        XCTAssertEqual(SwapTokenTrust.assess(fakeEth, curated: curated), .unverified(genuineContract: ""))
+    }
+
+    func testOnlyHexContractsCompareIgnoringCase() {
+        let solCurated = [SwapTokenTrust.Token(chain: "Solana", ticker: "USDC", contract: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")]
+        let lowered = SwapTokenTrust.Token(chain: "Solana", ticker: "USDC", contract: "epjfwdd5aufqssqem2qn1xzybapc8g4weggkzwytdt1v")
+        XCTAssertNotEqual(SwapTokenTrust.assess(lowered, curated: solCurated), .verified)
+        XCTAssertTrue(SwapTokenTrust.sameContract("0xABC", "0xabc"))
+        XCTAssertFalse(SwapTokenTrust.sameContract("", ""))
     }
 
     func testRecentsAreMostRecentFirstAndCapped() {

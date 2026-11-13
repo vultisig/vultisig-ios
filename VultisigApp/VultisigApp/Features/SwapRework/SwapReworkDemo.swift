@@ -72,7 +72,7 @@ enum SwapReworkDemo {
     static func feeRows(_ breakdown: SwapFeeBreakdown, approval: Bool = false) -> SwapReworkFeeRows {
         SwapReworkFeeRows(
             breakdown: breakdown,
-            networkLabel: String(format: (approval ? "swapReworkGasAllowSwap" : "swapReworkGas").localized, "Ethereum"),
+            networkLabel: String(format: "swapReworkGas".localized, "Ethereum"),
             networkCrypto: breakdown.input.networkCrypto,
             protocolLabel: breakdown.input.protocolFiat > 0 ? String(format: "swapReworkProtocolFee".localized, "THORChain") : nil,
             tierName: breakdown.input.tier?.name,
@@ -99,7 +99,7 @@ enum SwapReworkDemo {
             isReceiveIndicative: false,
             isQuoteLoading: false,
             highlightsReceive: false,
-            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.totalFiat.formatToFiat(), isSelectable: true),
+            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: true),
             routes: routes,
             selectedRouteID: "THORChain",
             timer: SwapReworkQuoteTimer(state: .live(secondsLeft: 47), fraction: 47.0 / 59),
@@ -160,7 +160,7 @@ enum SwapReworkDemo {
             state.receiveAmountText = "0.509405"
             state.receiveFiatText = "≈ $996.60"
             state.allInText = fees.allInChangeText.map { String(format: "swapReworkAllIn".localized, $0) }
-            state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.totalFiat.formatToFiat(), isSelectable: false)
+            state.route = SwapReworkRouteSummary(providerName: "1inch", providerLogo: SwapProviderKind.oneInch.providerLogo, tag: .bestPrice, etaText: SwapReworkFormat.eta(seconds: 30), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: false)
             state.routes = []
             state.fees = feeRows(fees, approval: true)
             state.approval = SwapReworkApproval(ticker: "USDC", amountText: "1,000", spenderName: "1inch")
@@ -270,6 +270,7 @@ enum SwapReworkDemo {
         return SwapReworkSuccessState(
             receive: btc,
             vaultName: "Main vault",
+            isDeliveredKnown: true,
             deliveredText: "+0.0140237 BTC",
             deliveredFiatText: "≈ $972.54",
             quotedText: "0.0140218 BTC",

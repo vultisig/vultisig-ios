@@ -20,6 +20,8 @@ struct SwapReworkDoneScreen: View {
     @StateObject private var statusService: DoneStatusService
     @State private var startedAt = Date()
     @State private var now = Date()
+    /// Frozen when the pollers first report completion, so "Took" stops.
+    @State private var confirmedAt: Date?
 
     init(
         vault: Vault,
@@ -64,6 +66,9 @@ struct SwapReworkDoneScreen: View {
         .onAppear { statusService.start() }
         .onDisappear { statusService.stop() }
         .swapRefreshTick { now = Date() }
+        .onChange(of: statusService.status) { _, status in
+            if status == .confirmed, confirmedAt == nil { confirmedAt = Date() }
+        }
     }
 
     private var isCrossChain: Bool {
@@ -99,14 +104,15 @@ struct SwapReworkDoneScreen: View {
     }
 
     /// The pollers report completion, not the delivered amount, so the summary
-    /// shows the quoted amount and leaves the delivered comparison out rather
-    /// than inventing one.
+    /// shows the quoted amount as expected and never calls it delivered.
     private var successState: SwapReworkSuccessState {
-        let minutes = max(1, Int((now.timeIntervalSince(startedAt) / 60).rounded(.up)))
+        let end = confirmedAt ?? now
+        let minutes = max(1, Int((end.timeIntervalSince(startedAt) / 60).rounded(.up)))
         return SwapReworkSuccessState(
             receive: SwapReworkViewModel.asset(transaction.toCoin),
             vaultName: vault.name,
-            deliveredText: "+" + receiveText,
+            isDeliveredKnown: false,
+            deliveredText: "≈ " + receiveText,
             deliveredFiatText: transaction.toFiatAmount,
             quotedText: receiveText,
             outcome: nil,

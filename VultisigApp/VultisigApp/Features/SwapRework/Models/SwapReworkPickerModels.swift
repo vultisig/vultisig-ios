@@ -70,6 +70,9 @@ struct SwapReworkTrackerState: Equatable {
 struct SwapReworkSuccessState: Equatable {
     let receive: SwapReworkAsset
     let vaultName: String
+    /// False while only the quote is known: the screen then says "expected"
+    /// and never labels the quoted amount as delivered.
+    let isDeliveredKnown: Bool
     let deliveredText: String
     let deliveredFiatText: String
     let quotedText: String

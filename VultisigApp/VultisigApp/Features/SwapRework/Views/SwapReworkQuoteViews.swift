@@ -223,7 +223,7 @@ struct SwapReworkFeeCard: View {
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                     Spacer()
-                    Text(breakdown.totalFiat.formatToFiat())
+                    Text(breakdown.displayTotalFiat.formatToFiat())
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")

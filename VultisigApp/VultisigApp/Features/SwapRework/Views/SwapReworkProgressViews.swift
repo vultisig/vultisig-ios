@@ -161,7 +161,7 @@ struct SwapReworkSuccessView: View {
                     .background(Circle().fill(Theme.colors.bgPrimary))
                     .offset(x: 8, y: -6)
             }
-            Text(String(format: "swapReworkReceivedIn".localized, state.vaultName))
+            Text(String(format: (state.isDeliveredKnown ? "swapReworkReceivedIn" : "swapReworkExpectedIn").localized, state.vaultName))
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textTertiary)
             Text(state.deliveredText)
@@ -176,7 +176,14 @@ struct SwapReworkSuccessView: View {
 
             VStack(spacing: 12) {
                 row("swapReworkQuoted".localized, state.quotedText)
-                row("swapReworkDeliveredLabel".localized, String(state.deliveredText.drop(while: { $0 == "+" })), color: Theme.colors.alertSuccess)
+                if state.isDeliveredKnown {
+                    row("swapReworkDeliveredLabel".localized, String(state.deliveredText.drop(while: { $0 == "+" })), color: Theme.colors.alertSuccess)
+                } else {
+                    Text("swapReworkDeliveredPending".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 if let difference = state.differenceText {
                     row(
                         "swapReworkDifference".localized,

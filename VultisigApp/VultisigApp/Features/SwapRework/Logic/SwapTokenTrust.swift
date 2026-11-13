@@ -24,21 +24,34 @@ enum SwapTokenTrust: Equatable {
         let contract: String
     }
 
+    /// `genuineContract` is empty when the ticker belongs to the chain's
+    /// native coin (an ERC-20 called "ETH" impersonating ether).
     static func assess(_ token: Token, curated: [Token]) -> SwapTokenTrust {
         guard !token.contract.isEmpty else { return .verified }
         let sameTicker = curated.filter {
             $0.chain == token.chain && $0.ticker.caseInsensitiveCompare(token.ticker) == .orderedSame
         }
-        guard !sameTicker.isEmpty else { return .verified }
-        if sameTicker.contains(where: { $0.contract.caseInsensitiveCompare(token.contract) == .orderedSame }) {
+        guard let first = sameTicker.first else { return .verified }
+        if sameTicker.contains(where: { sameContract($0.contract, token.contract) }) {
             return .verified
         }
-        guard let genuine = sameTicker.first(where: { !$0.contract.isEmpty }) else { return .verified }
+        let genuine = sameTicker.first(where: { !$0.contract.isEmpty }) ?? first
         return .unverified(genuineContract: genuine.contract)
+    }
+
+    /// Hex (EVM-style) addresses are case-insensitive; base58 mints and other
+    /// encodings are not, so only a "0x" pair compares ignoring case.
+    static func sameContract(_ lhs: String, _ rhs: String) -> Bool {
+        guard !lhs.isEmpty, !rhs.isEmpty else { return false }
+        if lhs.hasPrefix("0x") && rhs.hasPrefix("0x") {
+            return lhs.caseInsensitiveCompare(rhs) == .orderedSame
+        }
+        return lhs == rhs
     }
 
     /// "0x9f3a…c41b"
     static func shortContract(_ contract: String) -> String {
+        guard !contract.isEmpty else { return "swapReworkNativeCoin".localized }
         guard contract.count > 12 else { return contract }
         return "\(contract.prefix(6))…\(contract.suffix(4))"
     }

@@ -1891,8 +1891,8 @@
 "swapReworkAllChains" = "Tutte";
 "swapReworkAllIn" = "%@ tutto incluso";
 "swapReworkAllowSwap" = "Consenti + swap";
-"swapReworkApprovalBody" = "Prima consenti %1$@ %2$@ per %3$@, poi lo swap. Una revisione, due transazioni.";
-"swapReworkApprovalTitle" = "Serve un'approvazione";
+"swapReworkApprovalBody" = "Se %3$@ non può ancora spendere %1$@ %2$@, la revisione aggiunge un'approvazione prima dello swap. Il suo gas viene stimato lì.";
+"swapReworkApprovalTitle" = "Potrebbe servire un'approvazione";
 "swapReworkArrived" = "Arrivato nel tuo vault";
 "swapReworkBackToVault" = "Torna al vault";
 "swapReworkBalance" = "Saldo";
@@ -1903,17 +1903,18 @@
 "swapReworkChooseAnother" = "Scegli un'altra moneta";
 "swapReworkConfirmNewAmount" = "Accetta nuovo importo";
 "swapReworkDeliveredLabel" = "Consegnato";
+"swapReworkDeliveredPending" = "L'importo esatto consegnato non è ancora disponibile. Controlla la transazione nella cronologia.";
 "swapReworkDifference" = "Differenza";
 "swapReworkEnterAmount" = "Inserisci un importo";
 "swapReworkEtaMinutes" = "%1$d-%2$d min";
 "swapReworkEtaSeconds" = "~%d s";
+"swapReworkExpectedIn" = "Previsto in %@";
 "swapReworkFailed" = "Questo swap non è andato a buon fine";
 "swapReworkFastest" = "Più veloce";
 "swapReworkFees" = "Commissioni";
 "swapReworkFeesShort" = "commissioni %@";
 "swapReworkFlip" = "Inverti paghi e ricevi";
 "swapReworkGas" = "%@ di gas";
-"swapReworkGasAllowSwap" = "%@ di gas (consenti + swap)";
 "swapReworkGasShortfall" = "Hai %1$@. Aggiungi %2$@ (%3$@) per pagare il gas.";
 "swapReworkGasUseMax" = "L'importo più %@ di gas supera il tuo saldo. Tocca Max per lasciare il gas.";
 "swapReworkGetNewQuote" = "Nuova quotazione";
@@ -1936,6 +1937,7 @@
 "swapReworkMaxSlippage" = "Slippage max";
 "swapReworkMinimumReceived" = "Minimo ricevuto";
 "swapReworkMinutes" = "%d min";
+"swapReworkNativeCoin" = "moneta nativa";
 "swapReworkNotEnoughGasCTA" = "%@ insufficiente per il gas";
 "swapReworkNoTier" = "Tariffa base %@. Tieni VULT per ridurla.";
 "swapReworkOnChain" = "su %@";
@@ -1959,7 +1961,7 @@
 "swapReworkStageSwapped" = "Scambiato su %@";
 "swapReworkStepAllow" = "Consenti %1$@ %2$@";
 "swapReworkStepAllowDetail" = "Permette a %@ di spendere esattamente questo importo, niente di più.";
-"swapReworkStepsFooter" = "Entrambe le transazioni sono mostrate nella revisione e firmate nella stessa sessione. Se lo swap fallisce dopo l'autorizzazione, viene ricontrollata prima di riprovare.";
+"swapReworkStepsFooter" = "Solo se serve: se un'autorizzazione esistente lo copre già, non c'è approvazione. Entrambe compaiono nella revisione e si firmano nella stessa sessione.";
 "swapReworkStepSwap" = "Swap %1$@ %2$@ → %3$@";
 "swapReworkStepSwapDetail" = "Inviato una volta confermata l'autorizzazione.";
 "swapReworkSwapAgain" = "Swap di nuovo";

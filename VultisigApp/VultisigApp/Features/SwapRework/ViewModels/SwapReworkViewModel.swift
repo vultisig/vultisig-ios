@@ -71,10 +71,25 @@ final class SwapReworkViewModel {
         guard let text = SwapCryptoLogic.percentageAmountText(
             percentage: percentage,
             fromCoin: details.fromCoin,
-            fee: details.fee + details.storageReserve
+            fee: fundingReserve
         ), let amount = SwapAmountInput.parseToken(text) else { return }
         keepsGasReserve = percentage == 100 && details.fromCoin.isNativeToken
-        setAmount(SwapKeypadInput.normalized(amount, maxFractionDigits: maxFractionDigits), vault: vault, immediate: true)
+        let normalized = SwapKeypadInput.normalized(amount, maxFractionDigits: maxFractionDigits)
+        // Re-applying Max with an unchanged reserve would re-quote the same
+        // amount forever; only a different amount is worth a fetch.
+        guard normalized != amountText else { return }
+        setAmount(normalized, vault: vault, immediate: true)
+    }
+
+    /// What Max leaves behind: the same funding fee `balanceError` validates
+    /// against (the signed bond, Solana headroom, any storage reserve).
+    private var fundingReserve: BigInt {
+        SwapCryptoLogic.fundingNetworkFee(
+            displayedFee: details.displayedNetworkFeeWei,
+            gasEstimate: details.gas,
+            storageReserve: details.storageReserve,
+            chain: details.fromCoin.chain
+        )
     }
 
     private func setAmount(_ text: String, vault: Vault, immediate: Bool) {
@@ -155,6 +170,15 @@ final class SwapReworkViewModel {
     /// The payout shown when the user opened review counts as accepted.
     func willPresentReview() {
         acknowledgedReceive = details.toAmountDecimal
+    }
+
+    /// Rechecked after the async approval read, right before the sheet: the
+    /// quote must be the one the user tapped on, still validate (which checks it
+    /// matches the current request), and not have expired while the allowance
+    /// RPC ran.
+    func canStillPresent(quoteAtTap: SwapQuote?) -> Bool {
+        guard let quoteAtTap, details.quote == quoteAtTap else { return false }
+        return details.validateForm() && !clock.isExpired(at: Date())
     }
 
     func selectRoute(id: String, vault: Vault) {
@@ -260,7 +284,7 @@ final class SwapReworkViewModel {
 
     private var gasReserveText: String? {
         guard keepsGasReserve else { return nil }
-        let reserve = details.fee + details.storageReserve
+        let reserve = fundingReserve
         guard reserve > 0 else { return nil }
         let feeCoin = details.feeCoin
         let crypto = feeCoin.decimal(for: reserve)
@@ -282,9 +306,12 @@ final class SwapReworkViewModel {
         let toCoin = details.toCoin
         let options = details.allQuotes.map { quote in
             let received = quote.expectedNetToAmount(toCoin: toCoin) ?? 0
-            let providerFees = SwapCryptoLogic.affiliateFeeFiat(
-                quote: quote, fromCoin: details.fromCoin, toCoin: toCoin, feeCoin: details.feeCoin
-            ) + SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: toCoin)
+            // SwapKit folds its fees into the rate: unknown, never "$0.00".
+            let providerFees: Decimal? = SwapCryptoLogic.showsDiscountAmounts(quote: quote)
+                ? SwapCryptoLogic.affiliateFeeFiat(
+                    quote: quote, fromCoin: details.fromCoin, toCoin: toCoin, feeCoin: details.feeCoin
+                ) + SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: toCoin)
+                : nil
             return SwapRouteOption(
                 id: Self.routeID(for: quote),
                 providerName: quote.displayName ?? quote.kind.displayName,
@@ -306,7 +333,7 @@ final class SwapReworkViewModel {
             providerLogo: quote.kind.providerLogo,
             tag: tag,
             etaText: quote.totalSwapSeconds.map(SwapReworkFormat.eta(seconds:)) ?? "",
-            feesText: details.isLoadingFees ? "" : (fees?.breakdown.totalFiat.formatToFiat() ?? ""),
+            feesText: details.isLoadingFees ? "" : (fees?.breakdown.displayTotalFiat.formatToFiat() ?? ""),
             isSelectable: ranked.count > 1
         )
     }
@@ -343,11 +370,10 @@ final class SwapReworkViewModel {
         ))
         let providerName = quote.displayName ?? quote.kind.displayName
         let minimum = SwapCryptoLogic.signedMinimumOutput(quote: quote, fromCoin: fromCoin, toCoin: toCoin)
-        let networkLabelKey = details.isApproveRequired ? "swapReworkGasAllowSwap" : "swapReworkGas"
 
         return SwapReworkFeeRows(
             breakdown: breakdown,
-            networkLabel: String(format: networkLabelKey.localized, feeCoin.chain.name),
+            networkLabel: String(format: "swapReworkGas".localized, feeCoin.chain.name),
             networkCrypto: breakdown.input.networkCrypto,
             protocolLabel: outbound > 0 ? String(format: "swapReworkProtocolFee".localized, providerName) : nil,
             tierName: breakdown.input.tier?.name,

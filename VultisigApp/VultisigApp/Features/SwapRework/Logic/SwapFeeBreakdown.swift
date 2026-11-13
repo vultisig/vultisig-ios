@@ -64,8 +64,20 @@ struct SwapFeeBreakdown: Equatable {
         !input.vultisigIncludedInRate && input.vultisigNetFiat == 0 && effectiveBps > 0
     }
 
+    /// The rate the quote actually charges, in bps: the list rate scaled by
+    /// what the quote charges against the list fee, so a referral discount on
+    /// top of the tier shows too (Gold + 5 bps referral = 25). Falls back to
+    /// the tier rate when there is no list amount to scale from.
+    var chargedBps: Int {
+        guard !input.vultisigIncludedInRate, input.vultisigListFiat > 0 else {
+            return isWaivedByQuote ? 0 : effectiveBps
+        }
+        let scaled = (input.vultisigNetFiat / input.vultisigListFiat * Decimal(input.listBps)).rounded(scale: 0)
+        return min(max(NSDecimalNumber(decimal: scaled).intValue, 0), input.listBps)
+    }
+
     /// The rate the row states: what the quote actually charges.
-    var chargedRateText: String { isWaivedByQuote ? Self.percent(bps: 0) : effectiveRateText }
+    var chargedRateText: String { Self.percent(bps: chargedBps) }
     var listRateText: String { Self.percent(bps: input.listBps) }
 
     /// Whole percent of the list fee the tier removes (Gold: 40).
@@ -88,6 +100,14 @@ struct SwapFeeBreakdown: Equatable {
     /// the quoted amount and are never added again.
     var totalFiat: Decimal {
         input.networkFiat + input.protocolFiat + (input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat)
+    }
+
+    /// The total as the rows display it: each row truncated to cents (as
+    /// `formatToFiat` shows it) before adding, so the rows on screen always
+    /// add up to the total on screen.
+    var displayTotalFiat: Decimal {
+        let rows = [input.networkFiat, input.protocolFiat, input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat]
+        return rows.reduce(0) { $0 + $1.truncated(toPlaces: 2) }
     }
 
     /// Everything that leaves the vault, in fiat: the amount plus gas.
