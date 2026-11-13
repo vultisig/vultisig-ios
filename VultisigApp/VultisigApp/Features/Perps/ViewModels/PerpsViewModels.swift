@@ -243,6 +243,17 @@ final class PerpsMarketViewModel: ObservableObject {
         if market != nil, points.isEmpty { await loadChart() }
     }
 
+    /// Keeps marks, the account and the open ticket fresh while the screen is up.
+    static let pollInterval: Duration = .seconds(15)
+
+    func pollPrices() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: Self.pollInterval)
+            guard !Task.isCancelled else { return }
+            await refreshPrices()
+        }
+    }
+
     func select(_ timeframe: PerpsTimeframe) {
         self.timeframe = timeframe
         Task { await loadChart() }

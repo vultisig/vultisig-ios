@@ -67,6 +67,7 @@ struct PerpsMarketScreen: View {
         }
         .perpsCompactHeader(coin: coin)
         .perpsScreenMargins()
+        .task { await viewModel.pollPrices() }
         .task {
             await viewModel.load(vault: vault)
             #if DEBUG

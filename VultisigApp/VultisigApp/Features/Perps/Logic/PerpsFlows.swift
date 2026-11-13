@@ -138,6 +138,14 @@ enum PerpsFlows {
 
     /// approveAgent (named, with on-chain expiry) + approveBuilderFee, both
     /// signed by the trading account. One review, two vault signatures.
+    /// What callers use: reserves both nonces (approveAgent, approveBuilderFee)
+    /// itself, so no caller can hand in a single `next()`.
+    static func enableTrading(agentAddress: String, nonces: HLNonceSource, hasDeposited: Bool,
+                              now: Date = Date()) throws -> PerpsReviewDocument {
+        try enableTrading(agentAddress: agentAddress, nonce: nonces.next(count: 2), hasDeposited: hasDeposited, now: now)
+    }
+
+    /// `nonce` and `nonce + 1` must both be reserved (`HLNonceSource.next(count: 2)`).
     static func enableTrading(
         agentAddress: String,
         nonce: UInt64,
@@ -150,7 +158,6 @@ enum PerpsFlows {
             agentAddress: agentAddress, agentName: name, nonce: nonce,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId
         )
-        // Callers reserve two nonces (`HLNonceSource.next(count: 2)`).
         let approveBuilder = try HLUserSignedAction.approveBuilderFee(
             builder: PerpsConfig.builderAddress, maxFeeRate: PerpsConfig.builderMaxFeeRate, nonce: nonce + 1,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId

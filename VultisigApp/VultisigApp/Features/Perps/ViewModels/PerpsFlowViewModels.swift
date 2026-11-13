@@ -353,6 +353,39 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     }
 }
 
+/// Which trigger field the keypad types into.
+enum PerpsTriggerField: Hashable { case stopLoss, takeProfit }
+
+extension PerpsAutoCloseViewModel {
+    /// The stop loss / take profit edit for an open position, or nil when
+    /// nothing changed or a trigger sits on the wrong side. A build failure
+    /// is logged, never swallowed.
+    func exitsReview(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder], nonce: UInt64) -> PerpsReviewDocument? {
+        guard issue == nil else { return nil }
+        do {
+            let document = try PerpsFlows.editExits(position: position, market: market, existing: existing,
+                                                    stopLoss: stopLoss, takeProfit: takeProfit, nonce: nonce)
+            return document.blockingIssue == nil ? document : nil
+        } catch {
+            perpsFlowLogger.error("Perps exit edit failed: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
+    }
+
+    /// Validation only (nonce 0), for the Review button's enabled state.
+    func canReviewExits(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder]) -> Bool {
+        exitsReview(position: position, market: market, existing: existing, nonce: 0) != nil
+    }
+
+    /// Prices take up to 6 decimals (Hyperliquid's cap), so small coins can be typed.
+    func press(_ key: PerpsKeypadKey, into field: PerpsTriggerField) {
+        switch field {
+        case .stopLoss: stopText = PerpsKeypadKey.apply(key, to: stopText, maxDecimals: 6)
+        case .takeProfit: takeText = PerpsKeypadKey.apply(key, to: takeText, maxDecimals: 6)
+        }
+    }
+}
+
 // MARK: - Add funds
 
 @MainActor

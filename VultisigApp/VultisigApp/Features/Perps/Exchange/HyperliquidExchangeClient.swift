@@ -197,6 +197,6 @@ final class HyperliquidExchangeDryRunClient: ObservableObject {
             + "\"minFinalityThreshold\":\(HLCctp.fastFinalityThreshold),\"hookData\":\"0x\(deposit.hookData.hexString)\","
             + "\"hyperCoreRecipient\":\"\(deposit.tradingAddress)\",\"authorizationDigest\":\"0x\(deposit.authorization.digest.hexString)\"}"
         log.insert(HLDryRunEntry(date: Date(), kind: "cctpDeposit", digest: "0x" + deposit.authorization.digest.hexString, json: json), at: 0)
-        logger.info("[dry-run] would deposit via CCTP \(json, privacy: .public)")
+        logger.info("[dry-run] would deposit via CCTP \(json, privacy: .private)")
     }
 }

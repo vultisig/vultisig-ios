@@ -112,6 +112,12 @@ struct PerpsTicketSheet: View {
             guard !isOffline, let market = connection.market else { return }
             viewModel.refresh(market: market, account: connection.account)
         }
+        // The screen behind refreshes prices every few seconds; a ticket left
+        // open follows them, so the review never quotes an old mark.
+        .onChange(of: connection.pricesAsOf) { _, _ in
+            guard !connection.isOffline, let market = connection.market else { return }
+            viewModel.refresh(market: market, account: connection.account)
+        }
         .crossPlatformSheet(item: $subSheet) { kind in
             switch kind {
             case .leverage:

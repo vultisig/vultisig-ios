@@ -154,26 +154,16 @@ struct PerpsModifySheet: View {
             PerpsFootnote(text: exits.issue ?? "perpsStopSlippageNote".localized, isError: exits.issue != nil)
             PrimaryButton(title: "perpsReview".localized) {
                 // Real nonces only when the review is actually built.
-                guard let document = exitsDocument(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return }
+                guard let document = exits.exitsReview(position: position, market: market, existing: existingTriggers,
+                                                      nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return }
                 onReview(document)
             }
-            .disabled(exitsDocument(nonce: 0) == nil)
+            .disabled(!exits.canReviewExits(position: position, market: market, existing: existingTriggers))
             .accessibilityIdentifier("perpsModifyReview")
             if let triggerFocus {
                 PerpsKeypad { exits.press($0, into: triggerFocus) }
             }
         }
-    }
-
-    /// Nil when nothing changed or a trigger sits on the wrong side. Read on
-    /// every render with nonce 0 (validation only); the Review tap reserves real ones.
-    private func exitsDocument(nonce: UInt64) -> PerpsReviewDocument? {
-        guard exits.issue == nil,
-              let document = try? PerpsFlows.editExits(position: position, market: market, existing: existingTriggers,
-                                                       stopLoss: exits.stopLoss, takeProfit: exits.takeProfit,
-                                                       nonce: nonce),
-              document.blockingIssue == nil else { return nil }
-        return document
     }
 }
 
@@ -303,19 +293,6 @@ struct PerpsTriggerRow: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .contentShape(Rectangle())
-        }
-    }
-}
-
-/// Which trigger field the keypad types into.
-enum PerpsTriggerField: Hashable { case stopLoss, takeProfit }
-
-extension PerpsAutoCloseViewModel {
-    /// Prices take up to 6 decimals (Hyperliquid's cap), so small coins can be typed.
-    func press(_ key: PerpsKeypadKey, into field: PerpsTriggerField) {
-        switch field {
-        case .stopLoss: stopText = PerpsKeypadKey.apply(key, to: stopText, maxDecimals: 6)
-        case .takeProfit: takeText = PerpsKeypadKey.apply(key, to: takeText, maxDecimals: 6)
         }
     }
 }
