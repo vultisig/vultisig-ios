@@ -202,16 +202,22 @@ final class PerpsFlowsTests: XCTestCase {
         close(liquidation, full, 1)
     }
 
-    func testEditExitsCancelsThenPlacesPositionTpsl() throws {
+    /// Moving the stop is one `batchModify` (never cancel-first); adding a take
+    /// profit where none exists is an additive `positionTpsl` order after it.
+    func testEditExitsModifiesInPlaceAndAddsWithoutCancelling() throws {
         let stopJSON = #"{"coin":"BTC","oid":77,"side":"A","sz":"0.0","limitPx":"60000","triggerPx":"60000.0","isTrigger":true,"#
             + #""isPositionTpsl":true,"reduceOnly":true,"orderType":"Stop Market","timestamp":1}"#
         let stop = try JSONDecoder().decode(HLFrontendOrder.self, from: Data(stopJSON.utf8))
         XCTAssertTrue(stop.isStopLoss)
         let document = try PerpsFlows.editExits(position: try position(), market: market(), existing: [stop], stopLoss: 62_000,
                                                 takeProfit: 72_000, nonce: 100)
-        XCTAssertEqual(document.requests.map(\.kind), [.cancel, .order])
+        XCTAssertEqual(document.requests.map(\.kind), [.batchModify, .order])
+        XCTAssertEqual(document.steps.map(\.kind), [.batchModify, .order])
         XCTAssertEqual(document.requests.map(\.nonce), [100, 101])
+        guard case .array(let modifies)? = document.requests[0].action["modifies"] else { return XCTFail("modifies") }
+        XCTAssertEqual(modifies.first?["oid"], .int(77))
         XCTAssertEqual(document.requests[1].action["grouping"], .string("positionTpsl"))
+        XCTAssertFalse(document.requests.contains { $0.kind == .cancel })
         let unchanged = try PerpsFlows.editExits(position: try position(), market: market(), existing: [stop], stopLoss: 60_000,
                                                  takeProfit: nil, nonce: 200)
         XCTAssertNotNil(unchanged.blockingIssue)
