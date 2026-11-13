@@ -220,8 +220,16 @@ final class SwapReworkViewModel {
     /// Called when a quote fetch settles. A fresh quote restarts the clock and
     /// is checked against the payout the user last accepted.
     func quoteFetchSettled(vault: Vault) {
-        if isMaxAwaitingFee, details.quote == nil, details.error != nil {
-            // The provider rejected the provisional amount: try a lower share.
+        // A provisional amount rejected at the quote or at the fee step (a
+        // UTXO plan that cannot fit amount plus fee) is handled the same way.
+        if isMaxAwaitingFee, let error = details.error {
+            // A lower share cannot clear a provider minimum: stop at the
+            // largest one and let the "too small" issue speak. Any other
+            // rejection steps down to the next share.
+            if SwapReworkIssue.issue(for: error, nativeProviderName: "") == .amountTooSmall {
+                isMaxAwaitingFee = false
+                return
+            }
             provisionalStep += 1
             applyProvisionalMax(vault: vault)
             return
@@ -347,7 +355,10 @@ final class SwapReworkViewModel {
             fees: fees,
             approval: approval,
             issue: issue,
-            valueLossText: issue == nil && (fees?.breakdown.isValueLossHigh ?? false) ? fees?.breakdown.allInChangeText : nil,
+            // Unsigned: the title already says "lost".
+            valueLossText: issue == nil && (fees?.breakdown.isValueLossHigh ?? false)
+                ? fees?.breakdown.allInChangeText.map { String($0.drop(while: { $0 == "-" })) }
+                : nil,
             cta: cta,
             isCTAEnabled: isCTAEnabled(cta)
         )

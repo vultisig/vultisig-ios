@@ -82,6 +82,15 @@ enum SwapReworkIssue: Equatable {
                 break
             }
         }
+        if let planError = error as? UTXOTransactionPlanError {
+            switch planError {
+            // The outputs cannot cover amount plus fee: a gas problem with a fix
+            // (lower the amount or Max), not an "unexpected" one.
+            case .insufficientFunds: return .notEnoughGas
+            case .dustAmount: return .amountTooSmall
+            default: break
+            }
+        }
         if let formError = error as? SwapCryptoLogic.Errors {
             switch formError {
             case .insufficientFunds: return .overBalance

@@ -285,6 +285,11 @@ final class SwapReworkIssueTests: XCTestCase {
         XCTAssertEqual(SwapReworkIssue.resolve(context(error: SwapError.lessThenMinSwapAmount(amount: "1"))), .amountTooSmall)
     }
 
+    func testUTXOPlanErrorsMapToActionableIssues() {
+        XCTAssertEqual(SwapReworkIssue.resolve(context(error: UTXOTransactionPlanError.insufficientFunds)), .notEnoughGas)
+        XCTAssertEqual(SwapReworkIssue.resolve(context(error: UTXOTransactionPlanError.dustAmount)), .amountTooSmall)
+    }
+
     func testPriorityRouteThenExpiryThenBalanceThenPrice() {
         XCTAssertEqual(SwapReworkIssue.resolve(context(balance: .insufficientGas, error: SwapError.tradingHalted, expired: true)),
                        .tradingHalted(providerName: "THORChain"))
