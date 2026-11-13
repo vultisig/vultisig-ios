@@ -95,7 +95,8 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
 
     func testOrderVerifiesAndRendersWhatIsSigned() throws {
         let summary = try XCTUnwrap(HyperliquidCoSignVerifier.verify(try l1Payload(try orderAction()), context: context))
-        XCTAssertEqual(summary.lines.count, 3, "entry, stop loss, builder fee")
+        XCTAssertEqual(summary.lines.count, 4, "entry, stop loss, builder fee, network")
+        XCTAssertEqual(summary.lines.last, String(format: "perpsCoSignNetwork".localized, "Mainnet"))
         XCTAssertTrue(summary.lines[0].contains("0.00298"))
         XCTAssertTrue(summary.lines[0].contains("BTC"))
         XCTAssertTrue(summary.lines[0].contains("67,638"))
@@ -210,7 +211,7 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
 
         let cancel = try XCTUnwrap(HyperliquidCoSignVerifier.verify(
             try l1Payload(HLActions.cancel([(0, 77)]), kind: .cancel), context: context))
-        XCTAssertEqual(cancel.lines, [String(format: "perpsCoSignCancel".localized, "77", "BTC")])
+        XCTAssertEqual(cancel.lines.first, String(format: "perpsCoSignCancel".localized, "77", "BTC"))
     }
 
     // MARK: - User-signed
@@ -222,7 +223,7 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
 
     func testWithdrawIsPinnedToThisDevicesOwnVaultAddress() throws {
         let summary = try XCTUnwrap(HyperliquidCoSignVerifier.verify(try withdraw(to: Self.main), context: context))
-        XCTAssertEqual(summary.lines, [String(format: "perpsCoSignWithdraw".localized, "49.5")])
+        XCTAssertEqual(summary.lines.first, String(format: "perpsCoSignWithdraw".localized, "49.5"))
         assertRefused(try withdraw(to: "0x00000000000000000000000000000000000000ff"), .withdrawDestination)
         var noAddress = context
         noAddress.mainAddress = nil
@@ -246,14 +247,93 @@ final class HyperliquidCoSignVerifierTests: XCTestCase {
         assertRefused(try approval(PerpsConfig.builderAddress, "0.5%"), .maxFeeTooHigh)
     }
 
-    func testAgentApprovalNeedsAName() throws {
+    /// The agent key is device-local, so the joiner can't recompute it: it
+    /// shows the full address, and pins the name and the lifetime perps uses.
+    func testAgentApprovalIsPinnedToThePerpsNameAndLifetime() throws {
+        let agent = "0x5e9ee1089755c3435139848e47e6635505d5a13a"
         func approval(_ name: String?) throws -> CustomMessagePayload {
             try payload(.userSigned(.approveAgent, try HLUserSignedAction.approveAgent(
-                agentAddress: "0x5e9ee1089755c3435139848e47e6635505d5a13a", agentName: name, nonce: Self.nonce,
-                isMainnet: true, signatureChainId: 0xa4b1)))
+                agentAddress: agent, agentName: name, nonce: Self.nonce, isMainnet: true, signatureChainId: 0xa4b1)))
         }
-        XCTAssertNotNil(try HyperliquidCoSignVerifier.verify(try approval("vultisig valid_until 1"), context: context))
+        let week = Self.nonce + PerpsConfig.agentLifetimeMs
+        let summary = try XCTUnwrap(HyperliquidCoSignVerifier.verify(try approval("vultisig valid_until \(week)"), context: context))
+        XCTAssertTrue(summary.lines[0].contains(agent), "the full agent address, not a shortened one")
         assertRefused(try approval(nil), .emptyAgentName)
+        assertRefused(try approval("vultisig"), .agentApprovalMismatch)
+        assertRefused(try approval("attacker valid_until \(week)"), .agentApprovalMismatch)
+        assertRefused(try approval("vultisig valid_until \(Self.nonce - 1)"), .agentApprovalMismatch)
+        let tooLong = Self.nonce + PerpsConfig.agentLifetimeMs + HyperliquidCoSignVerifier.maxClockSkewMs + 1
+        assertRefused(try approval("vultisig valid_until \(tooLong)"), .agentApprovalMismatch)
+        assertRefused(try approval("vultisig valid_until \(HLUserSignedAction.maxAgentLifetimeMs + Self.nonce)"), .agentApprovalMismatch)
+    }
+
+    func testUserSignedDomainMustUseTheConfiguredChainId() throws {
+        let sdkChain = try payload(.userSigned(.withdraw3, try HLUserSignedAction.withdraw3(
+            destination: Self.main, amount: 49.5, nonce: Self.nonce, isMainnet: true, signatureChainId: 0x66eee)))
+        assertRefused(sdkChain, .signatureChainMismatch)
+    }
+
+    /// Two JSON parsers read the typed data (JSONSerialization here, WalletCore
+    /// for the digest): a repeated key could make them disagree, so it is refused.
+    func testDuplicateKeysAreRefusedBeforeDetection() throws {
+        let hidden = #"{"types":{"EIP712Domain":[{"name":"name","type":"string"}],"Agent":[{"name":"source","type":"string"}]},"#
+            + #""primaryType":"Agent","primaryType":"Mail","domain":{"name":"Exchange"},"message":{"source":"a"}}"#
+        let payload = CustomMessagePayload(method: "eth_signTypedData_v4", message: hidden, vaultPublicKeyECDSA: "02aa",
+                                           vaultLocalPartyID: "iPhone", chain: "Ethereum")
+        assertRefused(payload, .duplicateKeys)
+        let escaped = #"{"a":1,"a":2}"#
+        XCTAssertTrue(try HLJSONKeyScanner.hasDuplicateKeys(escaped), "keys compare after unescaping")
+        XCTAssertFalse(try HLJSONKeyScanner.hasDuplicateKeys(#"{"a":{"a":1},"b":[{"a":1},{"a":2}]}"#), "same key in different objects is fine")
+        XCTAssertThrowsError(try HLJSONKeyScanner.hasDuplicateKeys(#"{"a":1,}"#))
+    }
+
+    func testMarketTriggerWorstPriceIsBounded() throws {
+        let far = HLOrderWire(asset: 0, isBuy: false, price: "1", size: "0.002", reduceOnly: true,
+                              type: .trigger(isMarket: true, triggerPrice: "62000", kind: .stopLoss))
+        assertRefused(try l1Payload(HLActions.batchModify([(77, far)]), kind: .batchModify), .unsupportedTrigger)
+        let tenPercent = HLOrderWire(asset: 0, isBuy: false, price: "55800", size: "0.002", reduceOnly: true,
+                                     type: .trigger(isMarket: true, triggerPrice: "62000", kind: .stopLoss))
+        XCTAssertNotNil(try HyperliquidCoSignVerifier.verify(try l1Payload(HLActions.batchModify([(77, tenPercent)]), kind: .batchModify),
+                                                             context: context))
+    }
+
+    // MARK: - Golden digests (hyperliquid-python-sdk, vectors/gen_cosign_golden.py)
+
+    /// Every action type the verifier accepts: the SDK's digest equals the
+    /// keysign digest of the payload perps builds, and the verifier accepts it.
+    func testGoldenDigestsForEveryAcceptedActionMatchTheSDK() throws {
+        let expires = Self.nonce + 60_000
+        func l1(_ kind: HLExchangeRequest.Kind, _ action: HLValue) throws -> CustomMessagePayload {
+            try payload(try .l1(kind, action: action, nonce: Self.nonce, isMainnet: true, expiresAfter: expires))
+        }
+        let entry = HLOrderWire(asset: 0, isBuy: true, price: "67638", size: "0.00298", reduceOnly: false, type: .limit(.ioc),
+                                clientOrderId: "0x0123456789abcdef0123456789abcdef")
+        let stop = HLOrderWire(asset: 0, isBuy: false, price: "62000", size: "0.00298", reduceOnly: true,
+                               type: .trigger(isMarket: true, triggerPrice: "62000", kind: .stopLoss))
+        let order = HLActions.order([entry, stop], grouping: .normalTpsl,
+                                    builder: HLBuilderFee(builder: PerpsConfig.builderAddress, tenthsOfBasisPoint: 100))
+        let cases: [(String, CustomMessagePayload)] = [
+            ("6e8cb5a712c54322641f9a02b96ebf2546a87b61ad59a74ae4292d4acef697c0", try l1(.order, order)),
+            ("52811d95906a5bbcbe41f410b60992ddf29dd35d4675e8af52e75f15a4a65fe7", try l1(.cancel, HLActions.cancel([(0, 77)]))),
+            ("a86d6014017e648187b5b450cd13a54999f8ce5d54586478e6f4a9c993c1f8c8",
+             try l1(.updateLeverage, HLActions.updateLeverage(asset: 0, isCross: false, leverage: 5))),
+            ("d1b6379fa8ddad71142398e9c76d1809fc8d46256e9a19127365c6a911d45725",
+             try l1(.updateIsolatedMargin, HLActions.updateIsolatedMargin(asset: 0, usd: Decimal(string: "-25.5") ?? 0))),
+            ("34dfda9b5778fc4b3e128b38cb14ef2475bfd97e590db6cb3cdecc8d020e3112",
+             try payload(.userSigned(.withdraw3, try HLUserSignedAction.withdraw3(
+                destination: Self.main, amount: 49.5, nonce: Self.nonce, isMainnet: true, signatureChainId: 0xa4b1)))),
+            ("ede06d9d5c819a3b1f589d124eaa19158cd89d1289484ab24de13f86c4ff3e97",
+             try payload(.userSigned(.approveBuilderFee, try HLUserSignedAction.approveBuilderFee(
+                builder: PerpsConfig.builderAddress, maxFeeRate: "0.1%", nonce: Self.nonce, isMainnet: true, signatureChainId: 0xa4b1)))),
+            ("23190d10717ba572c63b1d456ebf8a30757fd757585332b6ceebedb00cc70764",
+             try payload(.userSigned(.approveAgent, try HLUserSignedAction.approveAgent(
+                agentAddress: "0x5e9ee1089755c3435139848e47e6635505d5a13a", agentName: "vultisig valid_until \(Self.nonce + 7 * 86_400_000)",
+                nonce: Self.nonce, isMainnet: true, signatureChainId: 0xa4b1))))
+        ]
+        for (digest, payload) in cases {
+            XCTAssertEqual(payload.keysignMessages.first, digest, payload.hyperliquid?.kind ?? "")
+            XCTAssertNotNil(try HyperliquidCoSignVerifier.verify(payload, context: context), payload.hyperliquid?.kind ?? "")
+        }
     }
 
     // MARK: - Other payloads

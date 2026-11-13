@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "%2$@ 중 %1$@ 종료 중";
 "perpsClosingSize" = "%@ 종료 중";
 "perpsCoSignAddMargin" = "%2$@에 증거금 $%1$@ 추가";
-"perpsCoSignApproveAgent" = "거래 키 %1$@ 승인 (%2$@)";
+"perpsCoSignApproveAgent" = "거래 키 %1$@ 승인, %2$@까지 유효";
 "perpsCoSignApproveBuilder" = "Vultisig 수수료 승인, 최대 %@";
 "perpsCoSignAsset" = "자산 #%@";
 "perpsCoSignBuilderFee" = "Vultisig 수수료 %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "지정가 $%@";
 "perpsCoSignMarket" = "시장가, 최악 가격 $%@";
 "perpsCoSignModify" = "주문 #%1$@ 변경: %2$@";
+"perpsCoSignNetwork" = "네트워크: %@";
 "perpsCoSignNoop" = "대기 중인 작업 취소";
 "perpsCoSignReduceOnly" = "감소 전용";
 "perpsCoSignRefused" = "이 요청은 서명될 내용과 일치하지 않아 이 기기는 서명하지 않습니다.";

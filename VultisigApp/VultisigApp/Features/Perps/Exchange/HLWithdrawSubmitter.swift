@@ -5,14 +5,15 @@
 //  withdraw3 is user-signed, has no `expiresAfter`, and its `time` is the
 //  nonce. Re-signing after a timeout would sign a NEW nonce, and both
 //  withdrawals could land. So a withdrawal is signed once:
-//    signed -> posting -> done | rejected | uncertain
+//    reserved -> signed -> posting -> done | rejected | uncertain
 //  - the signed body is persisted before the first POST,
 //  - "try again" while uncertain resends that exact body (the venue applies
 //    a nonce at most once, so a duplicate is refused, never paid twice),
 //  - an uncertain record is reconciled against the ledger (by nonce only), and only a
 //    definitive answer (`rejected`, or the nonce out of HL's window) lets a
-//    new withdrawal be signed. `ensureCanSign` runs before the ceremony;
-//    `record` re-checks atomically after it.
+//    new withdrawal be signed. `reserve` persists a reservation BEFORE the
+//    ceremony, and `record` only accepts a signature against it, so a second
+//    ceremony can never start while one is open on this device.
 //  The body carries a signature: it is never logged.
 //
 
@@ -20,10 +21,12 @@ import Foundation
 
 struct HLPendingSubmission: Codable, Equatable, Sendable, Identifiable {
     enum State: String, Codable, Sendable {
+        /// A ceremony is about to run; nothing is signed yet.
+        case reserved
         case signed, posting, done, rejected, uncertain
 
-        /// Blocks a new signature for the same signer.
-        var isOpen: Bool { self == .signed || self == .posting || self == .uncertain }
+        /// Blocks a new ceremony for the same signer.
+        var isOpen: Bool { self == .reserved || self == .signed || self == .posting || self == .uncertain }
     }
 
     let id: UUID
@@ -114,6 +117,8 @@ enum HLWithdrawSubmitterError: Error, Equatable {
     case notSigned
     /// A withdrawal for this signer is not settled yet.
     case withdrawalPending
+    /// `record` without a live reservation from `reserve`.
+    case noReservation
     case unknownRecord
     /// Only a signed or uncertain record is (re)posted.
     case notPostable(HLPendingSubmission.State)
@@ -123,6 +128,9 @@ actor HLWithdrawSubmitter {
     /// HL accepts nonces within (now - 2d, now + 1d): past that, a body that
     /// never landed can never land.
     static let nonceWindowMs: UInt64 = 2 * 86_400_000
+    /// Extra wait past the window before a record is called rejected, on top
+    /// of the venue-clock bound (`HLVenueClock.maxTrustedOffset`).
+    static let windowMarginMs: UInt64 = 86_400_000
     /// The ledger query starts a little before the nonce.
     static let ledgerLookbackMs: UInt64 = 60_000
 
@@ -149,32 +157,55 @@ actor HLWithdrawSubmitter {
         try Self.storeLock.withLock { try store.load(signer: signer).first { $0.state.isOpen } }
     }
 
-    /// The check BEFORE a withdrawal is signed: throws while one is not settled,
-    /// so no second ceremony starts. `record` checks again, atomically.
-    func ensureCanSign(signer: String) throws {
-        guard try openRecord(signer: signer) == nil else { throw HLWithdrawSubmitterError.withdrawalPending }
+    /// Persisted BEFORE the signing ceremony starts: refused while any
+    /// withdrawal for this signer is open, so two flows can never both reach
+    /// a signature. Returns the id `record` must be given.
+    func reserve(signer: String) throws -> UUID {
+        let reservation = HLPendingSubmission(
+            id: UUID(), kind: HLExchangeRequest.Kind.withdraw3.rawValue, nonce: 0, digest: "", body: "",
+            signer: signer.lowercased(), amount: "", createdAt: Date(timeIntervalSince1970: TimeInterval(nowMs()) / 1000), state: .reserved
+        )
+        try mutate(signer: signer) { records in
+            guard !records.contains(where: { $0.state.isOpen }) else { throw HLWithdrawSubmitterError.withdrawalPending }
+            records.append(reservation)
+        }
+        return reservation.id
     }
 
-    /// At launch: a record left `posting` (the app died mid-request) is uncertain.
+    /// The ceremony ended without a signature (cancelled, failed): the
+    /// reservation goes. A signed record is never released this way.
+    func releaseReservation(_ id: UUID, signer: String) throws {
+        try mutate(signer: signer) { records in
+            records.removeAll { $0.id == id && $0.state == .reserved }
+        }
+    }
+
+    /// At launch: a record left `posting` (the app died mid-request) is
+    /// uncertain. A reservation never got a persisted signature, and no
+    /// signature lives anywhere but that record, so it is released.
     func recoverAfterLaunch(signer: String) throws {
         try mutate(signer: signer) { records in
+            records.removeAll { $0.state == .reserved }
             for index in records.indices where records[index].state == .posting { records[index].state = .uncertain }
         }
     }
 
-    /// Persists the guarded signature before anything is posted.
-    func record(_ request: HLExchangeRequest, signer: String, amount: String) throws -> HLPendingSubmission {
+    /// Persists the guarded signature, against the reservation made before
+    /// the ceremony, before anything is posted.
+    func record(_ request: HLExchangeRequest, signer: String, amount: String, reservation: UUID) throws -> HLPendingSubmission {
         guard request.kind == .withdraw3 else { throw HLWithdrawSubmitterError.notWithdraw }
         guard case .signed = request.signature else { throw HLWithdrawSubmitterError.notSigned }
         try request.verifySigner(expected: signer)
         let record = HLPendingSubmission(
-            id: UUID(), kind: request.kind.rawValue, nonce: request.nonce, digest: "0x" + request.digest.hexString,
+            id: reservation, kind: request.kind.rawValue, nonce: request.nonce, digest: "0x" + request.digest.hexString,
             body: request.jsonBody, signer: signer.lowercased(), amount: amount,
             createdAt: Date(timeIntervalSince1970: TimeInterval(nowMs()) / 1000), state: .signed
         )
         try mutate(signer: signer) { records in
-            guard !records.contains(where: { $0.state.isOpen }) else { throw HLWithdrawSubmitterError.withdrawalPending }
-            records.append(record)
+            guard let index = records.firstIndex(where: { $0.id == reservation && $0.state == .reserved }) else {
+                throw HLWithdrawSubmitterError.noReservation
+            }
+            records[index] = record
         }
         return record
     }
@@ -204,13 +235,13 @@ actor HLWithdrawSubmitter {
     /// Otherwise it stays uncertain; it never times out into rejected early.
     func reconcile(id: UUID, signer: String) async throws -> HLPendingSubmission.State {
         let record = try find(id, signer: signer)
-        guard record.state.isOpen else { return record.state }
+        guard record.state.isOpen, record.state != .reserved else { return record.state }
         let start = Int64(record.nonce > Self.ledgerLookbackMs ? record.nonce - Self.ledgerLookbackMs : 0)
         let updates = try await ledger.ledgerUpdates(user: signer, startTimeMs: start)
         let state: HLPendingSubmission.State
         if updates.contains(where: { Self.matches($0, record) }) {
             state = .done
-        } else if nowMs() > record.nonce + Self.nonceWindowMs {
+        } else if nowMs() > record.nonce + Self.nonceWindowMs + Self.windowMarginMs {
             state = .rejected
         } else {
             state = .uncertain

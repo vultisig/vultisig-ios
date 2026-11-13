@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "Zatvaranje %1$@ od %2$@";
 "perpsClosingSize" = "Zatvaranje %@";
 "perpsCoSignAddMargin" = "Dodaj $%1$@ marže na %2$@";
-"perpsCoSignApproveAgent" = "Odobri ključ za trgovanje %1$@ (%2$@)";
+"perpsCoSignApproveAgent" = "Odobri ključ za trgovanje %1$@, vrijedi do %2$@";
 "perpsCoSignApproveBuilder" = "Odobri Vultisig naknadu, do %@";
 "perpsCoSignAsset" = "imovina #%@";
 "perpsCoSignBuilderFee" = "Vultisig naknada %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "limit $%@";
 "perpsCoSignMarket" = "tržišno, najlošija cijena $%@";
 "perpsCoSignModify" = "Promijeni nalog #%1$@: %2$@";
+"perpsCoSignNetwork" = "Mreža: %@";
 "perpsCoSignNoop" = "Otkaži radnju na čekanju";
 "perpsCoSignReduceOnly" = "samo smanjenje";
 "perpsCoSignRefused" = "Ovaj zahtjev ne odgovara onome što bi se potpisalo pa ga ovaj uređaj neće potpisati.";

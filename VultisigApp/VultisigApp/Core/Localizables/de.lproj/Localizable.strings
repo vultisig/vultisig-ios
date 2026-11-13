@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "%1$@ von %2$@ wird geschlossen";
 "perpsClosingSize" = "%@ wird geschlossen";
 "perpsCoSignAddMargin" = "$%1$@ Margin zu %2$@ hinzufügen";
-"perpsCoSignApproveAgent" = "Trading-Schlüssel %1$@ genehmigen (%2$@)";
+"perpsCoSignApproveAgent" = "Trading-Schlüssel %1$@ genehmigen, gültig bis %2$@";
 "perpsCoSignApproveBuilder" = "Vultisig-Gebühr genehmigen, bis zu %@";
 "perpsCoSignAsset" = "Asset #%@";
 "perpsCoSignBuilderFee" = "Vultisig-Gebühr %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "Limit $%@";
 "perpsCoSignMarket" = "Market, schlechtester Preis $%@";
 "perpsCoSignModify" = "Order #%1$@ ändern: %2$@";
+"perpsCoSignNetwork" = "Netzwerk: %@";
 "perpsCoSignNoop" = "Eine ausstehende Aktion abbrechen";
 "perpsCoSignReduceOnly" = "nur reduzieren";
 "perpsCoSignRefused" = "Diese Anfrage stimmt nicht mit dem überein, was signiert würde. Dieses Gerät signiert sie nicht.";

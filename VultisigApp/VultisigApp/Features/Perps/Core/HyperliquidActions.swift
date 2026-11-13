@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import Security
 
 enum HLTimeInForce: String, Sendable {
     case gtc = "Gtc"
@@ -124,6 +125,29 @@ enum HLActions {
             ("type", .string("batchModify")),
             ("modifies", .array(modifies.map { .object([("oid", .int($0.oid)), ("order", $0.order.wire)]) }))
         ])
+    }
+
+    /// Sets `c` on the first limit (entry) order of an `order` action that
+    /// has none. Triggers keep none: each cloid must be unique per order.
+    static func settingClientOrderId(_ cloid: String, on action: HLValue) -> HLValue {
+        guard case .map(var entries) = action, action["type"] == .string("order"),
+              let index = entries.firstIndex(where: { $0.key == "orders" }), case .array(var orders) = entries[index].value,
+              let entry = orders.firstIndex(where: { $0["t"]?["limit"] != nil && $0["c"] == nil }),
+              case .map(var fields) = orders[entry] else { return action }
+        fields.append(HLEntry(key: "c", value: .string(cloid)))
+        orders[entry] = .map(fields)
+        entries[index] = HLEntry(key: "orders", value: .array(orders))
+        return .map(entries)
+    }
+
+    /// A random 128-bit client order id, "0x" + 32 hex (the SDK's `Cloid`).
+    static func randomClientOrderId() -> String? {
+        var bytes = Data(count: 16)
+        let status = bytes.withUnsafeMutableBytes { buffer -> OSStatus in
+            guard let base = buffer.baseAddress else { return errSecParam }
+            return SecRandomCopyBytes(kSecRandomDefault, 16, base)
+        }
+        return status == errSecSuccess ? "0x" + bytes.hexString : nil
     }
 
     /// `{type:"noop"}`: burns a nonce, to abort a signed action that is still live.

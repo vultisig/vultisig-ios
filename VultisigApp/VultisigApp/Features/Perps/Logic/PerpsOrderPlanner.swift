@@ -62,19 +62,21 @@ struct PerpsOrderPlan: Equatable, Sendable {
     /// What signing stamps. A market order rebuilds its IOC price from the
     /// mark read at stamp time and refuses when it moved past the slippage
     /// setting; the size stays the reviewed one.
+    /// Each call draws a new entry `cloid`; a review document keeps one set.
     var unsignedSteps: [HLUnsignedStep] {
         steps.map { step in
             switch step.kind {
             case .updateLeverage:
                 return .l1(.updateLeverage, action: step.action)
             case .order:
-                guard isMarket else { return .l1(.order, action: step.action) }
+                let cloid = HLActions.randomClientOrderId()
+                guard isMarket else { return HLUnsignedStep(kind: .order, build: .l1 { _ in step.action }, clientOrderId: cloid) }
                 let market = market, ticket = ticket, size = estimate.size, reference = reference, builder = builder
                 return HLUnsignedStep(kind: .order, build: .l1 { freshMid in
                     let price = try HLRequote.marketPrice(reviewMid: reference, freshMid: freshMid, isBuy: ticket.side.isBuy,
                                                           slippage: ticket.slippage, szDecimals: market.szDecimals)
                     return try PerpsOrderPlanner.orderAction(market: market, ticket: ticket, size: size, price: price, builder: builder)
-                })
+                }, clientOrderId: cloid)
             }
         }
     }

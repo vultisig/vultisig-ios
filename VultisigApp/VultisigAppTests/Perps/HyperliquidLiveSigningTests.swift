@@ -93,29 +93,99 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired)) {
             XCTAssertEqual($0 as? HLStampError, .previousStepPending, "step 2 is never pre-stamped while step 1 runs")
         }
-        sequence.markPosted()
+        sequence.markConfirmed()
         let second = try sequence.stampNext(with: stamper, mode: .paired)
         XCTAssertEqual(second.kind, .order)
         XCTAssertGreaterThan(second.nonce, first.nonce)
-        sequence.markPosted()
+        sequence.markConfirmed()
         XCTAssertTrue(sequence.isFinished)
         XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired))
+    }
+
+    /// A failed `updateLeverage` must never be followed by the order.
+    func testARejectedStepAbortsTheRest() throws {
+        let plan = try PerpsOrderPlanner.plan(market: market(), ticket: ticket(), nonce: 0)
+        var sequence = HLStepSequence(steps: plan.unsignedSteps)
+        let stamper = stamper(at: Self.nonce)
+        _ = try sequence.stampNext(with: stamper, mode: .paired)
+        sequence.markRejected()
+        XCTAssertTrue(sequence.isFinished)
+        XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired)) {
+            XCTAssertEqual($0 as? HLStampError, .sequenceAborted)
+        }
+    }
+
+    /// After an ambiguous POST the stamped request stays in flight to be
+    /// resent as is; only a request that never left the device is restamped.
+    func testAmbiguousFailureKeepsTheSameRequest() throws {
+        let plan = try PerpsOrderPlanner.plan(market: market(), ticket: ticket(), nonce: 0)
+        var sequence = HLStepSequence(steps: plan.unsignedSteps)
+        let stamper = stamper(at: Self.nonce)
+        let stamped = try sequence.stampNext(with: stamper, mode: .paired)
+        XCTAssertEqual(sequence.inFlight, stamped)
+        XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired)) {
+            XCTAssertEqual($0 as? HLStampError, .previousStepPending, "no fresh nonce while the outcome is unknown")
+        }
+        sequence.markNeverSent()
+        let restamped = try sequence.stampNext(with: stamper, mode: .paired)
+        XCTAssertEqual(restamped.kind, stamped.kind)
+        XCTAssertNotEqual(restamped.nonce, stamped.nonce)
+    }
+
+    /// A Date header more than 5 minutes off is not believed: no stamp.
+    func testUntrustedVenueClockRefusesToStamp() throws {
+        let device = Date(timeIntervalSince1970: TimeInterval(Self.nonce) / 1000)
+        let clock = HLVenueClock(device: { device })
+        clock.record(serverDate: device.addingTimeInterval(86_000))
+        XCTAssertFalse(clock.isTrusted)
+        XCTAssertEqual(clock.now(), device, "an untrusted offset is never applied")
+        let stamper = HLStamper(nonces: HLNonceSource(clock: clock.now), isMainnet: true, clock: clock)
+        XCTAssertThrowsError(try stamper.stamp(.l1(.noop, action: HLActions.noop), mode: .fastVault)) {
+            XCTAssertEqual($0 as? HLStampError, .clockUntrusted)
+        }
+        clock.record(serverDate: device.addingTimeInterval(299))
+        XCTAssertTrue(clock.isTrusted)
+        XCTAssertNoThrow(try stamper.stamp(.l1(.noop, action: HLActions.noop), mode: .fastVault))
     }
 
     func testMarketOrderIsRequotedAtStampTime() throws {
         let plan = try PerpsOrderPlanner.plan(market: market(mid: 100_000), ticket: ticket(), nonce: 0)
         let order = try XCTUnwrap(plan.unsignedSteps.last)
         let stamper = stamper(at: Self.nonce)
-        let requoted = try stamper.stamp(order, mode: .fastVault, freshMid: 100_500)
+        let requoted = try stamper.stamp(order, mode: .fastVault, freshMid: 99_800)
         guard case .array(let orders)? = requoted.action["orders"] else { return XCTFail("orders") }
-        // mid 100,500 + 1% slippage; an integer price keeps every digit.
-        XCTAssertEqual(orders[0]["p"], .string("101505"))
+        // mid 99,800 + 1% slippage; an integer price keeps every digit.
+        XCTAssertEqual(orders[0]["p"], .string("100798"))
         guard case .array(let reviewed)? = plan.steps.last?.action["orders"] else { return XCTFail("reviewed orders") }
         XCTAssertEqual(orders[0]["s"], reviewed[0]["s"], "the reviewed size is kept")
         XCTAssertThrowsError(try stamper.stamp(order, mode: .fastVault, freshMid: 101_500)) {
             XCTAssertEqual($0 as? HLStampError, .priceMoved)
         }
-        XCTAssertEqual(try stamper.stamp(order, mode: .fastVault).action, plan.steps.last?.action, "no fresh mark: the reviewed price")
+        // Inside the slippage band but against the user: the signed worst
+        // price would beat the one the review showed (101,000), so refused.
+        XCTAssertThrowsError(try stamper.stamp(order, mode: .fastVault, freshMid: 100_500)) {
+            XCTAssertEqual($0 as? HLStampError, .priceMoved)
+        }
+        guard case .array(let unquoted)? = try stamper.stamp(order, mode: .fastVault).action["orders"] else { return XCTFail("orders") }
+        XCTAssertEqual(unquoted[0]["p"], reviewed[0]["p"], "no fresh mark: the reviewed price")
+    }
+
+    /// The entry carries one cloid, the same on every stamp of the step, and
+    /// triggers carry none.
+    func testEntryOrderCarriesAStableClientOrderId() throws {
+        let plan = try PerpsOrderPlanner.plan(market: market(), ticket: ticket(), nonce: 0)
+        let order = try XCTUnwrap(plan.unsignedSteps.last)
+        let cloid = try XCTUnwrap(order.clientOrderId)
+        XCTAssertTrue(cloid.hasPrefix("0x"))
+        XCTAssertEqual(cloid.count, 34)
+        let stamper = stamper(at: Self.nonce)
+        let first = try stamper.stamp(order, mode: .paired)
+        let second = try stamper.stamp(order, mode: .paired)
+        XCTAssertNotEqual(first.nonce, second.nonce)
+        guard case .array(let one)? = first.action["orders"], case .array(let two)? = second.action["orders"] else { return XCTFail("orders") }
+        XCTAssertEqual(one[0]["c"], .string(cloid))
+        XCTAssertEqual(two[0]["c"], .string(cloid))
+        XCTAssertNil(one[1]["c"], "the stop loss trigger has no cloid")
     }
 
     func testUnchangedLeverageSkipsTheLeverageCeremony() throws {
@@ -209,7 +279,7 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         var sequence = HLStepSequence(document: document)
         let stamper = stamper(at: Self.nonce)
         XCTAssertEqual(try sequence.stampNext(with: stamper, mode: .paired).kind, .order)
-        sequence.markPosted()
+        sequence.markConfirmed()
         XCTAssertThrowsError(try sequence.stampNext(with: stamper, mode: .paired)) {
             XCTAssertEqual($0 as? HLStampError, .replacementNotConfirmed)
         }
@@ -293,12 +363,18 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         HLWithdrawSubmitter(store: store, poster: poster, ledger: ledger, nowMs: { clock.ms })
     }
 
+    private func reserveAndRecord(_ submitter: HLWithdrawSubmitter, _ request: HLExchangeRequest,
+                                  signer: String) async throws -> HLPendingSubmission {
+        let reservation = try await submitter.reserve(signer: signer)
+        return try await submitter.record(request, signer: signer, amount: "49.5", reservation: reservation)
+    }
+
     func testOnlyAGuardedSignatureIsRecorded() async throws {
         let unsigned = HLExchangeRequest.userSigned(.withdraw3, try HLUserSignedAction.withdraw3(
             destination: "0x9d7c000000000000000000000000000000003003", amount: 49.5, nonce: Self.nonce, isMainnet: true))
         let submitter = submitter(FakePoster([]))
         do {
-            _ = try await submitter.record(unsigned, signer: "0x00", amount: "49.5")
+            _ = try await reserveAndRecord(submitter, unsigned, signer: "0x00")
             XCTFail("an unsigned body was recorded")
         } catch {
             XCTAssertEqual(error as? HLWithdrawSubmitterError, .notSigned)
@@ -308,7 +384,7 @@ final class HyperliquidLiveSigningTests: XCTestCase {
     func testOkIsDone() async throws {
         let (request, signer) = try signedWithdraw()
         let submitter = submitter(FakePoster([.ok]))
-        let record = try await submitter.record(request, signer: signer, amount: "49.5")
+        let record = try await reserveAndRecord(submitter, request, signer: signer)
         let state = try await submitter.post(id: record.id, signer: signer)
         XCTAssertEqual(state, .done)
         let open = try await submitter.openRecord(signer: signer)
@@ -321,13 +397,12 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         let (request, signer) = try signedWithdraw()
         let poster = FakePoster([.transportFailure, .ok])
         let submitter = submitter(poster)
-        let record = try await submitter.record(request, signer: signer, amount: "49.5")
+        let record = try await reserveAndRecord(submitter, request, signer: signer)
         let first = try await submitter.post(id: record.id, signer: signer)
         XCTAssertEqual(first, .uncertain)
-        let (another, _) = try signedWithdraw(nonce: Self.nonce + 5)
         do {
-            _ = try await submitter.record(another, signer: signer, amount: "49.5")
-            XCTFail("a second withdrawal was signed while one is uncertain")
+            _ = try await submitter.reserve(signer: signer)
+            XCTFail("a second withdrawal ceremony could start while one is uncertain")
         } catch {
             XCTAssertEqual(error as? HLWithdrawSubmitterError, .withdrawalPending)
         }
@@ -341,27 +416,30 @@ final class HyperliquidLiveSigningTests: XCTestCase {
     func testDuplicateNonceReconcilesAgainstTheLedger() async throws {
         let (request, signer) = try signedWithdraw()
         let found = submitter(FakePoster([.nonceAlreadyUsed]), ledger: FakeLedger(updates: [try ledgerWithdraw(nonce: Self.nonce)]))
-        let record = try await found.record(request, signer: signer, amount: "49.5")
+        let record = try await reserveAndRecord(found, request, signer: signer)
         let state = try await found.post(id: record.id, signer: signer)
         XCTAssertEqual(state, .done)
 
         let clock = Clock()
         let missing = submitter(FakePoster([.nonceAlreadyUsed]), clock: clock)
-        let pending = try await missing.record(request, signer: signer, amount: "49.5")
+        let pending = try await reserveAndRecord(missing, request, signer: signer)
         let stillUncertain = try await missing.post(id: pending.id, signer: signer)
         XCTAssertEqual(stillUncertain, .uncertain, "not in the ledger yet: never assumed failed")
         clock.ms = Self.nonce + HLWithdrawSubmitter.nonceWindowMs + 1
+        let inMargin = try await missing.reconcile(id: pending.id, signer: signer)
+        XCTAssertEqual(inMargin, .uncertain, "the window gets a safety margin before anything is called rejected")
+        clock.ms = Self.nonce + HLWithdrawSubmitter.nonceWindowMs + HLWithdrawSubmitter.windowMarginMs + 1
         let expired = try await missing.reconcile(id: pending.id, signer: signer)
         XCTAssertEqual(expired, .rejected, "out of the venue's nonce window: it can never land")
         let (next, _) = try signedWithdraw(nonce: clock.ms)
-        let fresh = try await missing.record(next, signer: signer, amount: "49.5")
+        let fresh = try await reserveAndRecord(missing, next, signer: signer)
         XCTAssertEqual(fresh.state, .signed)
     }
 
     func testDefinitiveRejectionAllowsANewSignature() async throws {
         let (request, signer) = try signedWithdraw()
         let submitter = submitter(FakePoster([.rejected("Insufficient balance for withdrawal")]))
-        let record = try await submitter.record(request, signer: signer, amount: "49.5")
+        let record = try await reserveAndRecord(submitter, request, signer: signer)
         let state = try await submitter.post(id: record.id, signer: signer)
         XCTAssertEqual(state, .rejected)
         let open = try await submitter.openRecord(signer: signer)
@@ -378,7 +456,7 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         let (request, signer) = try signedWithdraw()
         let store = MemoryStore()
         let submitter = submitter(FakePoster([]), store: store)
-        var record = try await submitter.record(request, signer: signer, amount: "49.5")
+        var record = try await reserveAndRecord(submitter, request, signer: signer)
         record.state = .posting
         try store.save([record], signer: signer)
         try await submitter.recoverAfterLaunch(signer: signer)
@@ -400,22 +478,42 @@ final class HyperliquidLiveSigningTests: XCTestCase {
         let store = MemoryStore()
         let first = submitter(FakePoster([.transportFailure]), store: store)
         let second = submitter(FakePoster([]), store: store)
-        try await first.ensureCanSign(signer: signer)
-        let record = try await first.record(request, signer: signer, amount: "49.5")
-        _ = try await first.post(id: record.id, signer: signer)
+        // The reservation alone (no signature yet) already blocks a second ceremony.
+        let reservation = try await first.reserve(signer: signer)
         do {
-            try await second.ensureCanSign(signer: signer)
+            _ = try await second.reserve(signer: signer)
             XCTFail("a second ceremony could start")
         } catch {
             XCTAssertEqual(error as? HLWithdrawSubmitterError, .withdrawalPending)
         }
         let (other, _) = try signedWithdraw(nonce: Self.nonce + 9)
         do {
-            _ = try await second.record(other, signer: signer, amount: "49.5")
-            XCTFail("another submitter on the same store recorded a second withdrawal")
+            _ = try await second.record(other, signer: signer, amount: "49.5", reservation: UUID())
+            XCTFail("a signature without its own reservation was recorded")
         } catch {
-            XCTAssertEqual(error as? HLWithdrawSubmitterError, .withdrawalPending)
+            XCTAssertEqual(error as? HLWithdrawSubmitterError, .noReservation)
         }
+        let record = try await first.record(request, signer: signer, amount: "49.5", reservation: reservation)
+        XCTAssertEqual(record.id, reservation)
+        _ = try await first.post(id: record.id, signer: signer)
+        do {
+            _ = try await first.record(other, signer: signer, amount: "49.5", reservation: reservation)
+            XCTFail("one reservation recorded two signatures")
+        } catch {
+            XCTAssertEqual(error as? HLWithdrawSubmitterError, .noReservation)
+        }
+    }
+
+    func testAnAbandonedCeremonyReleasesItsReservation() async throws {
+        let (_, signer) = try signedWithdraw()
+        let submitter = submitter(FakePoster([]))
+        let cancelled = try await submitter.reserve(signer: signer)
+        try await submitter.releaseReservation(cancelled, signer: signer)
+        let crashed = try await submitter.reserve(signer: signer)
+        XCTAssertNotEqual(crashed, cancelled)
+        try await submitter.recoverAfterLaunch(signer: signer)
+        let open = try await submitter.openRecord(signer: signer)
+        XCTAssertNil(open, "a reservation never holds a signature, so a relaunch drops it")
     }
 
     func testPostOutcomeClassification() {

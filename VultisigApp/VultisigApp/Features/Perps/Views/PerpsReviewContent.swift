@@ -134,20 +134,25 @@ struct PerpsReviewContent: View {
     }
 
     /// Stamps the first step when the user commits: nonce and expiry for the
-    /// signing mode, a market order re-quoted from the latest mark. Each
-    /// following step is stamped only after the previous one is posted.
+    /// signing mode, a market order re-quoted from a mid read right now
+    /// (`allMids`, never a cached one). No mid, no stamp. Each following step
+    /// is stamped only after the venue confirmed the previous one.
     /// Unreachable while `allowsSigning` is false: the buttons are disabled.
     /// The hand-off to the shared `SigningRoute` lands with the live client.
     private func beginSigning(_ mode: HLSigningMode) {
         guard PerpsConfig.allowsSigning, blockingIssue == nil else { return }
-        var sequence = signingSteps ?? HLStepSequence(document: document)
-        let stamper = HLStamper(nonces: HyperliquidExchangeDryRunClient.shared.nonces)
-        do {
-            let request = try sequence.stampNext(with: stamper, mode: mode, freshMid: document.coin.flatMap(PerpsMarketCache.shared.mid))
-            signingSteps = sequence
-            HyperliquidExchangeDryRunClient.shared.submit(request)
-        } catch {
-            perpsReviewLogger.error("Perps stamp refused: \(String(describing: error), privacy: .public)")
+        Task { @MainActor in
+            do {
+                var freshMid: Decimal?
+                if let coin = document.coin { freshMid = try await HLMidQuoter().mid(coin: coin) }
+                var sequence = signingSteps ?? HLStepSequence(document: document)
+                let request = try sequence.stampNext(with: HLStamper(nonces: HyperliquidExchangeDryRunClient.shared.nonces),
+                                                     mode: mode, freshMid: freshMid)
+                signingSteps = sequence
+                HyperliquidExchangeDryRunClient.shared.submit(request)
+            } catch {
+                perpsReviewLogger.error("Perps stamp refused: \(String(describing: error), privacy: .public)")
+            }
         }
     }
 

@@ -45,6 +45,12 @@ enum HyperliquidCoSignRefusal: Error, Equatable, LocalizedError {
     case emptyAgentName
     /// Perps only places reduce-only market triggers.
     case unsupportedTrigger
+    /// Typed data that repeats a key: two JSON parsers could read it differently.
+    case duplicateKeys
+    case signatureChainMismatch
+    /// An agent approval perps would not make: another name, no expiry, or
+    /// an expiry past `PerpsConfig.agentLifetimeMs`.
+    case agentApprovalMismatch
 
     var errorDescription: String? {
         self == .missingPreimage ? "perpsCoSignCannotVerify".localized : "perpsCoSignRefused".localized
@@ -59,6 +65,9 @@ struct HyperliquidCoSignContext {
     var builderAddress: String = PerpsConfig.builderAddress
     var maxBuilderFeeTenthsBp: Int = PerpsConfig.builderFeeTenthsBp
     var maxBuilderFeeRate: Decimal = Decimal(string: "0.1") ?? 0
+    var signatureChainId: UInt64 = PerpsConfig.signatureChainId
+    var agentName: String = PerpsConfig.agentName
+    var maxAgentLifetimeMs: UInt64 = PerpsConfig.agentLifetimeMs
     var nowMs: UInt64 = HLVenueClock.shared.nowMs
     var coinName: (Int) -> String? = { PerpsMarketCache.shared.name(for: $0) }
 }
@@ -86,16 +95,21 @@ enum HyperliquidCoSignVerifier {
     /// Nil when the payload is not Hyperliquid at all (any other dApp
     /// message signs as before). Throws a refusal otherwise.
     static func verify(_ payload: CustomMessagePayload, context: HyperliquidCoSignContext) throws -> PerpsCoSignSummary? {
-        guard payload.method == "eth_signTypedData_v4", let typed = parse(payload.message), let shape = shape(of: typed) else { return nil }
+        guard payload.method == "eth_signTypedData_v4" else { return nil }
+        // Before detection, for every typed-data payload: a duplicate
+        // `domain`/`primaryType` could hide a Hyperliquid digest from it.
+        guard (try? HLJSONKeyScanner.hasDuplicateKeys(payload.message)) == false else { throw HyperliquidCoSignRefusal.duplicateKeys }
+        guard let typed = parse(payload.message), let shape = shape(of: typed) else { return nil }
         guard let preimage = payload.hyperliquid else { throw HyperliquidCoSignRefusal.missingPreimage }
         try checkNonceTime(preimage.nonce, context: context)
-        let lines: [String]
+        var lines: [String]
         switch shape {
         case .l1:
             lines = try verifyL1(preimage, keysignDigest: payload.keysignMessages.first, context: context)
         case .userSigned(let primaryType):
             lines = try verifyUserSigned(preimage, primaryType: primaryType, typed: typed, context: context)
         }
+        lines.append(String(format: "perpsCoSignNetwork".localized, preimage.isMainnet ? "Mainnet" : "Testnet"))
         // Only when the payload names the trading path. A joiner learns it once
         // `derive_path` travels in the proto; until then the row is left out.
         let signingAs = payload.derivePath == PerpsSignerAccount.trading.derivationPath
@@ -153,7 +167,9 @@ enum HyperliquidCoSignVerifier {
 
     private static func verifyUserSigned(_ preimage: HyperliquidActionPreimage, primaryType: String, typed: [String: Any],
                                          context: HyperliquidCoSignContext) throws -> [String] {
-        guard preimage.actionMsgpack.isEmpty, let message = typed["message"] as? [String: Any] else { throw HyperliquidCoSignRefusal.malformed }
+        guard preimage.actionMsgpack.isEmpty, let message = typed["message"] as? [String: Any],
+              let domain = typed["domain"] as? [String: Any] else { throw HyperliquidCoSignRefusal.malformed }
+        guard uint64(domain["chainId"]) == context.signatureChainId else { throw HyperliquidCoSignRefusal.signatureChainMismatch }
         guard message["hyperliquidChain"] as? String == (preimage.isMainnet ? "Mainnet" : "Testnet") else {
             throw HyperliquidCoSignRefusal.networkMismatch
         }
@@ -178,10 +194,25 @@ enum HyperliquidCoSignVerifier {
             guard preimage.kind == "approveAgent", uint64(message["nonce"]) == preimage.nonce else { throw HyperliquidCoSignRefusal.kindMismatch }
             guard let name = message["agentName"] as? String, !name.isEmpty else { throw HyperliquidCoSignRefusal.emptyAgentName }
             guard let agent = message["agentAddress"] as? String else { throw HyperliquidCoSignRefusal.malformed }
-            return [String(format: "perpsCoSignApproveAgent".localized, PerpsFormat.shortAddress(agent), name)]
+            let validUntil = try agentExpiry(name, nonce: preimage.nonce, context: context)
+            // The agent key is device-local, so the joiner cannot recompute
+            // it: the full address and the parsed expiry are shown instead.
+            let until = Date(timeIntervalSince1970: TimeInterval(validUntil) / 1000).formatted(date: .abbreviated, time: .shortened)
+            return [String(format: "perpsCoSignApproveAgent".localized, agent.lowercased(), until)]
         default:
             throw HyperliquidCoSignRefusal.unknownAction(primaryType)
         }
+    }
+
+    /// "vultisig valid_until <ms>", exactly the name perps builds, expiring
+    /// after the nonce and no later than the configured agent lifetime.
+    private static func agentExpiry(_ name: String, nonce: UInt64, context: HyperliquidCoSignContext) throws -> UInt64 {
+        let prefix = context.agentName + " valid_until "
+        guard name.hasPrefix(prefix), let validUntil = UInt64(name.dropFirst(prefix.count)),
+              validUntil > nonce, validUntil - nonce <= context.maxAgentLifetimeMs + maxClockSkewMs else {
+            throw HyperliquidCoSignRefusal.agentApprovalMismatch
+        }
+        return validUntil
     }
 
     private static func uint64(_ value: Any?) -> UInt64? {
@@ -200,6 +231,7 @@ enum HyperliquidCoSignVerifier {
 /// Strict reader of the L1 actions perps signs: known types, exact keys.
 struct HLCoSignActionReader {
     let context: HyperliquidCoSignContext
+    static let maxTriggerSlippage = Decimal(string: "0.1") ?? 0
 
     func lines(for action: HLValue, type: String) throws -> [String] {
         switch type {
@@ -264,6 +296,12 @@ struct HLCoSignActionReader {
             // A limit trigger can sit unfillable, and a trigger that is not
             // reduce-only can open a position: neither is what perps signs.
             guard isMarket, reduceOnly else { throw HyperliquidCoSignRefusal.unsupportedTrigger }
+            // `p` on a market trigger is its worst fill price. Perps sets it at
+            // the trigger (the venue applies its own market slippage); anything
+            // more than 10% away is not what perps builds, so it is refused
+            // rather than shown.
+            let triggerValue = Self.decimal(triggerPx), worst = Self.decimal(price)
+            guard triggerValue > 0, abs(worst - triggerValue) / triggerValue <= Self.maxTriggerSlippage else { throw HyperliquidCoSignRefusal.unsupportedTrigger }
             let key = kind == .stopLoss ? "perpsCoSignStopAt" : "perpsCoSignTakeAt"
             return [String(format: key.localized, PerpsFormat.plainPrice(Self.decimal(triggerPx), grouped: true)), side,
                     "perpsCoSignReduceOnly".localized].joined(separator: ", ")
@@ -315,29 +353,20 @@ struct HLCoSignActionReader {
     }
 }
 
-/// Coin names by asset index and the latest mid per coin, kept from the
-/// last `metaAndAssetCtxs` read. A co-signer that never opened perps shows
-/// "asset #3": honest, and it does not touch the digest. Stamping re-quotes
-/// a market order from `mid(coin:)`.
+/// Coin names by asset index, kept from the last `metaAndAssetCtxs` read.
+/// A co-signer that never opened perps shows "asset #3": honest, and it
+/// does not touch the digest.
 final class PerpsMarketCache: @unchecked Sendable {
     static let shared = PerpsMarketCache()
 
     private let lock = NSLock()
     private var names: [Int: String] = [:]
-    private var mids: [String: Decimal] = [:]
 
     func record(_ markets: [PerpsMarket]) {
-        lock.withLock {
-            names = Dictionary(markets.map { ($0.assetIndex, $0.coin) }, uniquingKeysWith: { first, _ in first })
-            mids = Dictionary(markets.map { ($0.coin, $0.midPrice ?? $0.markPrice) }, uniquingKeysWith: { first, _ in first })
-        }
+        lock.withLock { names = Dictionary(markets.map { ($0.assetIndex, $0.coin) }, uniquingKeysWith: { first, _ in first }) }
     }
 
     func name(for asset: Int) -> String? {
         lock.withLock { names[asset] }
-    }
-
-    func mid(coin: String) -> Decimal? {
-        lock.withLock { mids[coin] }
     }
 }

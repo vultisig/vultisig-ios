@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "Closing %1$@ of %2$@";
 "perpsClosingSize" = "Closing %@";
 "perpsCoSignAddMargin" = "Add $%1$@ margin on %2$@";
-"perpsCoSignApproveAgent" = "Approve trading key %1$@ (%2$@)";
+"perpsCoSignApproveAgent" = "Approve trading key %1$@, valid until %2$@";
 "perpsCoSignApproveBuilder" = "Approve the Vultisig fee, up to %@";
 "perpsCoSignAsset" = "asset #%@";
 "perpsCoSignBuilderFee" = "Vultisig fee %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "limit $%@";
 "perpsCoSignMarket" = "market, worst price $%@";
 "perpsCoSignModify" = "Change order #%1$@: %2$@";
+"perpsCoSignNetwork" = "Network: %@";
 "perpsCoSignNoop" = "Cancel a pending action";
 "perpsCoSignReduceOnly" = "reduce only";
 "perpsCoSignRefused" = "This request doesn't match what would be signed, so this device won't sign it.";

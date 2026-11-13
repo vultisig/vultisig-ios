@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "正在平仓 %2$@ 中的 %1$@";
 "perpsClosingSize" = "正在平仓 %@";
 "perpsCoSignAddMargin" = "为 %2$@ 增加 $%1$@ 保证金";
-"perpsCoSignApproveAgent" = "批准交易密钥 %1$@（%2$@）";
+"perpsCoSignApproveAgent" = "批准交易密钥 %1$@，有效期至 %2$@";
 "perpsCoSignApproveBuilder" = "批准 Vultisig 费用，最高 %@";
 "perpsCoSignAsset" = "资产 #%@";
 "perpsCoSignBuilderFee" = "Vultisig 费用 %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "限价 $%@";
 "perpsCoSignMarket" = "市价，最差价格 $%@";
 "perpsCoSignModify" = "修改订单 #%1$@：%2$@";
+"perpsCoSignNetwork" = "网络：%@";
 "perpsCoSignNoop" = "取消一个待处理的操作";
 "perpsCoSignReduceOnly" = "仅减仓";
 "perpsCoSignRefused" = "此请求与将要签名的内容不符，因此此设备不会签名。";

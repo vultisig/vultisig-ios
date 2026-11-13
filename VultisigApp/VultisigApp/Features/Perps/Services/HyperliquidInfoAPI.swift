@@ -19,6 +19,7 @@ enum HyperliquidInfoAPI: TargetType {
     case spotClearinghouseState(user: String)
     case ledgerUpdates(user: String, startTimeMs: Int64)
     case funding(user: String, startTimeMs: Int64)
+    case allMids
 
     var baseURL: URL { URL(string: "https://api.hyperliquid.xyz")! }
     var path: String { "/info" }
@@ -52,8 +53,28 @@ enum HyperliquidInfoAPI: TargetType {
             return ["type": "spotClearinghouseState", "user": user.lowercased()]
         case let .ledgerUpdates(user, startTimeMs):
             return ["type": "userNonFundingLedgerUpdates", "user": user.lowercased(), "startTime": startTimeMs]
+        case .allMids:
+            return ["type": "allMids"]
         case let .funding(user, startTimeMs):
             return ["type": "userFunding", "user": user.lowercased(), "startTime": startTimeMs]
         }
+    }
+}
+
+enum HLMidQuoterError: Error, Equatable {
+    case noMid(String)
+}
+
+/// The mid of one coin, read when it is needed (`allMids`), for stamping a
+/// market order. Never a cached value.
+struct HLMidQuoter {
+    var httpClient: HTTPClientProtocol = HTTPClient()
+
+    func mid(coin: String) async throws -> Decimal {
+        let mids = try await httpClient.request(HyperliquidInfoAPI.allMids, responseType: [String: String].self).data
+        guard let text = mids[coin], let mid = Decimal(string: text, locale: Locale(identifier: "en_US_POSIX")), mid > 0 else {
+            throw HLMidQuoterError.noMid(coin)
+        }
+        return mid
     }
 }

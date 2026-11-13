@@ -1233,7 +1233,7 @@
 "perpsClosingOf" = "Cerrando %1$@ de %2$@";
 "perpsClosingSize" = "Cerrando %@";
 "perpsCoSignAddMargin" = "Añadir $%1$@ de margen en %2$@";
-"perpsCoSignApproveAgent" = "Aprobar la clave de trading %1$@ (%2$@)";
+"perpsCoSignApproveAgent" = "Aprobar la clave de trading %1$@, válida hasta %2$@";
 "perpsCoSignApproveBuilder" = "Aprobar la comisión de Vultisig, hasta %@";
 "perpsCoSignAsset" = "activo #%@";
 "perpsCoSignBuilderFee" = "Comisión de Vultisig %@";
@@ -1244,6 +1244,7 @@
 "perpsCoSignLimit" = "límite $%@";
 "perpsCoSignMarket" = "a mercado, peor precio $%@";
 "perpsCoSignModify" = "Cambiar la orden #%1$@: %2$@";
+"perpsCoSignNetwork" = "Red: %@";
 "perpsCoSignNoop" = "Cancelar una acción pendiente";
 "perpsCoSignReduceOnly" = "solo reducir";
 "perpsCoSignRefused" = "Esta solicitud no coincide con lo que se firmaría, así que este dispositivo no la firmará.";

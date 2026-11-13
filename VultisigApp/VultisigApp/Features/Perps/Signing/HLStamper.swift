@@ -33,8 +33,12 @@ enum HLStampError: Error, Equatable {
     case priceMoved
     /// Less than `HLStamper.postMarginMs` left before `expiresAfter`.
     case signatureExpired
-    /// The previous step has not been posted yet.
+    /// The previous step has no venue answer yet.
     case previousStepPending
+    /// A step was rejected: the steps after it never run.
+    case sequenceAborted
+    /// The venue clock offset is beyond `HLVenueClock.maxTrustedOffset`.
+    case clockUntrusted
     /// Place-then-cancel: the new trigger is not confirmed resting, so the
     /// old one is never cancelled.
     case replacementNotConfirmed
@@ -53,6 +57,10 @@ struct HLUnsignedStep: Sendable {
 
     let kind: HLExchangeRequest.Kind
     let build: Build
+    /// The entry order's `cloid`, fixed when the review is built so every
+    /// stamp of this step carries the same one: an ambiguous POST can be
+    /// looked up with `orderStatus` by cloid instead of guessed at.
+    var clientOrderId: String?
 
     static func l1(_ kind: HLExchangeRequest.Kind, action: HLValue) -> HLUnsignedStep {
         HLUnsignedStep(kind: kind, build: .l1 { _ in action })
@@ -66,7 +74,9 @@ struct HLUnsignedStep: Sendable {
     func request(nonce: UInt64, expiryBudgetMs: UInt64, freshMid: Decimal?, isMainnet: Bool) throws -> HLExchangeRequest {
         switch build {
         case .l1(let make):
-            return try .l1(kind, action: try make(freshMid), nonce: nonce, isMainnet: isMainnet, expiresAfter: nonce + expiryBudgetMs)
+            var action = try make(freshMid)
+            if kind == .order, let clientOrderId { action = HLActions.settingClientOrderId(clientOrderId, on: action) }
+            return try .l1(kind, action: action, nonce: nonce, isMainnet: isMainnet, expiresAfter: nonce + expiryBudgetMs)
         case .userSigned(let make):
             return .userSigned(kind, try make(nonce))
         }
@@ -89,9 +99,13 @@ struct HLStamper {
 
     let nonces: HLNonceSource
     var isMainnet: Bool = PerpsConfig.isMainnet
+    var clock: HLVenueClock = .shared
 
     func stamp(_ step: HLUnsignedStep, mode: HLSigningMode, freshMid: Decimal? = nil) throws -> HLExchangeRequest {
-        try step.request(nonce: nonces.next(), expiryBudgetMs: mode.expiryBudgetMs, freshMid: freshMid, isMainnet: isMainnet)
+        // A wild Date header would move every nonce: HL accepts nonces up to
+        // T+1d, so a forward clock would keep a signature live for a day.
+        guard clock.isTrusted else { throw HLStampError.clockUntrusted }
+        return try step.request(nonce: nonces.next(), expiryBudgetMs: mode.expiryBudgetMs, freshMid: freshMid, isMainnet: isMainnet)
     }
 
     /// The last check before a POST. User-signed actions carry no expiry.
@@ -101,13 +115,19 @@ struct HLStamper {
     }
 }
 
-/// The steps of one review, stamped strictly in order.
+/// The steps of one review, stamped strictly in order. A step advances
+/// only on a venue-confirmed success; a definitive failure aborts the rest
+/// (an order must never run after its `updateLeverage` failed); an ambiguous
+/// failure keeps the stamped request so the caller resends the same signed
+/// body, never a new nonce.
 struct HLStepSequence: Sendable {
     let steps: [HLUnsignedStep]
     /// Place-then-cancel exit edits: the cancel step waits for `confirmReplacement`.
     let cancelGate: PerpsExitCancelGate?
     private(set) var nextIndex = 0
-    private var awaitingPost = false
+    /// The stamped request of the current step, until the venue answers.
+    private(set) var inFlight: HLExchangeRequest?
+    private(set) var isAborted = false
     private var replacementConfirmed = false
 
     init(steps: [HLUnsignedStep], cancelGate: PerpsExitCancelGate? = nil) {
@@ -119,24 +139,38 @@ struct HLStepSequence: Sendable {
         self.init(steps: document.steps, cancelGate: document.cancelGate)
     }
 
-    var isFinished: Bool { nextIndex >= steps.count && !awaitingPost }
+    var isFinished: Bool { isAborted || (nextIndex >= steps.count && inFlight == nil) }
 
     mutating func stampNext(with stamper: HLStamper, mode: HLSigningMode, freshMid: Decimal? = nil) throws -> HLExchangeRequest {
-        guard !awaitingPost else { throw HLStampError.previousStepPending }
+        guard !isAborted else { throw HLStampError.sequenceAborted }
+        guard inFlight == nil else { throw HLStampError.previousStepPending }
         guard nextIndex < steps.count else { throw HLStampError.noStepsLeft }
         if cancelGate != nil, steps[nextIndex].kind == .cancel, !replacementConfirmed {
             throw HLStampError.replacementNotConfirmed
         }
         let request = try stamper.stamp(steps[nextIndex], mode: mode, freshMid: freshMid)
-        awaitingPost = true
+        inFlight = request
         return request
     }
 
-    /// The stamped step was posted (or definitively failed): the next may be stamped.
-    mutating func markPosted() {
-        guard awaitingPost else { return }
-        awaitingPost = false
+    /// The venue answered `ok` for the in-flight step: the next may be stamped.
+    mutating func markConfirmed() {
+        guard inFlight != nil else { return }
+        inFlight = nil
         nextIndex += 1
+    }
+
+    /// A definitive venue error for the in-flight step: nothing after it runs.
+    mutating func markRejected() {
+        inFlight = nil
+        isAborted = true
+    }
+
+    /// Only when the request provably never left the device (signing was
+    /// cancelled or failed before any POST): the step may be stamped again.
+    /// After a POST whose outcome is unknown, resend `inFlight` instead.
+    mutating func markNeverSent() {
+        inFlight = nil
     }
 
     /// Feeds the place step's resting oids and a fresh `frontendOpenOrders`
@@ -147,12 +181,6 @@ struct HLStepSequence: Sendable {
         let decision = cancelGate.decide(placed: placed, openOrders: openOrders)
         replacementConfirmed = decision == .cancelOld
         return decision
-    }
-
-    /// Signing or posting failed before the venue saw it: the same step is
-    /// stamped again, with a fresh nonce and expiry.
-    mutating func discardStamp() {
-        awaitingPost = false
     }
 }
 
@@ -165,14 +193,17 @@ enum HLRequote {
         guard moved <= slippage else { throw HLStampError.priceMoved }
     }
 
-    /// The IOC price at stamp time: from `freshMid` once it passes the check,
-    /// or the review's price when no fresh mark is given.
+    /// The IOC price at stamp time, from `freshMid`. It is never worse than
+    /// the worst price the review showed: a buy never signs a higher limit,
+    /// a sell never a lower one, so a move against the user refuses instead.
+    /// Without a fresh mark, the review's price.
     static func marketPrice(reviewMid: Decimal, freshMid: Decimal?, isBuy: Bool, slippage: Decimal, szDecimals: Int) throws -> Decimal {
-        guard let freshMid else {
-            return HLWireFormat.marketPrice(mid: reviewMid, isBuy: isBuy, slippage: slippage, szDecimals: szDecimals)
-        }
+        let reviewed = HLWireFormat.marketPrice(mid: reviewMid, isBuy: isBuy, slippage: slippage, szDecimals: szDecimals)
+        guard let freshMid else { return reviewed }
         try check(reviewMid: reviewMid, freshMid: freshMid, slippage: slippage)
-        return HLWireFormat.marketPrice(mid: freshMid, isBuy: isBuy, slippage: slippage, szDecimals: szDecimals)
+        let fresh = HLWireFormat.marketPrice(mid: freshMid, isBuy: isBuy, slippage: slippage, szDecimals: szDecimals)
+        guard isBuy ? fresh <= reviewed : fresh >= reviewed else { throw HLStampError.priceMoved }
+        return fresh
     }
 }
 
@@ -185,6 +216,9 @@ final class HLVenueClock: @unchecked Sendable {
 
     /// The header has 1 s resolution; smaller differences are noise.
     static let minimumOffset: TimeInterval = 2
+    /// Beyond this the header is not believed (a bad edge, a TLS-intercepting
+    /// proxy): `now()` stays on device time and stamping refuses.
+    static let maxTrustedOffset: TimeInterval = 300
 
     private let lock = NSLock()
     private var offset: TimeInterval = 0
@@ -194,9 +228,14 @@ final class HLVenueClock: @unchecked Sendable {
         self.device = device
     }
 
+    /// Device time plus the offset, which is never more than
+    /// `maxTrustedOffset`: an untrusted offset is not applied.
     func now() -> Date {
-        device().addingTimeInterval(lock.withLock { offset })
+        let offset = lock.withLock { self.offset }
+        return device().addingTimeInterval(abs(offset) <= Self.maxTrustedOffset ? offset : 0)
     }
+
+    var isTrusted: Bool { abs(lock.withLock { offset }) <= Self.maxTrustedOffset }
 
     var nowMs: UInt64 { UInt64(max(0, now().timeIntervalSince1970) * 1000) }
 
