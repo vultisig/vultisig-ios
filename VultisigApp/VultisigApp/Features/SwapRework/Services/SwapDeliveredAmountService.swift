@@ -18,7 +18,7 @@ struct SwapDeliveredAmountService {
     /// never touches a SwiftData model off it.
     struct Request: Sendable {
         enum Source: Sendable {
-            case midgard(network: Chain, assetPrefix: String?, divisor: Decimal)
+            case midgard(network: Chain, asset: String, divisor: Decimal)
             case evmReceipt(chain: Chain, token: String, decimals: Int)
         }
 
@@ -32,10 +32,14 @@ struct SwapDeliveredAmountService {
     static func request(for transaction: SwapTransaction, hash: String) -> Request? {
         guard let quote = transaction.quote else { return nil }
         let toCoin = transaction.toCoin
+        // The external recipient when one is set, the vault's address otherwise.
+        let recipient = transaction.recipientAddress
         if quote.isNativeProtocolRoute, let network = NativeSwapTrackingService.network(for: quote) {
-            let prefix = thorchainChainPrefix(for: toCoin.chain).map { "\($0).\(toCoin.ticker.uppercased())" }
+            // Full canonical spelling (contract included, secured denoms as
+            // is). Without one there is no way to tell the asset apart: nil.
+            guard let asset = thorchainCancelMemoAsset(for: toCoin) else { return nil }
             let divisor: Decimal = network == .mayaChain ? toCoin.thorswapMultiplier : pow(10, 8)
-            return Request(hash: hash, recipient: toCoin.address, source: .midgard(network: network, assetPrefix: prefix, divisor: divisor))
+            return Request(hash: hash, recipient: recipient, source: .midgard(network: network, asset: asset, divisor: divisor))
         }
         switch quote {
         case .oneinch, .kyberswap, .lifi:
@@ -44,7 +48,7 @@ struct SwapDeliveredAmountService {
                   !toCoin.isNativeToken else { return nil }
             return Request(
                 hash: hash,
-                recipient: toCoin.address,
+                recipient: recipient,
                 source: .evmReceipt(chain: toCoin.chain, token: toCoin.contractAddress, decimals: toCoin.decimals)
             )
         default:
@@ -55,16 +59,21 @@ struct SwapDeliveredAmountService {
     func deliveredAmount(_ request: Request) async -> Decimal? {
         do {
             switch request.source {
-            case let .midgard(network, assetPrefix, divisor):
+            case let .midgard(network, asset, divisor):
                 let response = try await httpClient.request(
                     THORChainTransactionStatusAPI.getActions(txHash: request.hash, chain: network),
                     responseType: THORChainActionsResponse.self
                 ).data
+                // Same settlement rule the tracker uses, on this response.
+                guard NativeSwapTrackingService.outcome(response: response, hash: request.hash)?.status == "completed" else {
+                    return nil
+                }
                 return SwapDeliveredAmount.fromMidgard(
                     actions: response.actions,
+                    count: response.count,
                     inboundHash: request.hash,
                     recipient: request.recipient,
-                    assetPrefix: assetPrefix,
+                    asset: asset,
                     divisor: divisor
                 )
             case let .evmReceipt(chain, token, decimals):

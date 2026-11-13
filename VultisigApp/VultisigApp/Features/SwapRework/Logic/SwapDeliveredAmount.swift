@@ -23,50 +23,42 @@ enum SwapDeliveredAmount {
 
     // MARK: - Midgard
 
-    /// Sum of the out coins to `recipient` in `assetPrefix` (e.g. "BTC.BTC",
-    /// "ETH.USDC"), across the actions whose inbound is `inboundHash`. Midgard
-    /// amounts are integers scaled by `divisor` (1e8 on THORChain). Nil when no
-    /// swap action pays the recipient, or when a refund is among the actions.
+    /// Sum of the out coins to `recipient` in exactly `asset` (the canonical
+    /// spelling with the full contract, e.g. "BTC.BTC", "ETH.USDC-0XA0B8…", or a
+    /// secured denom), across the swap actions whose inbound is `inboundHash`.
+    /// Midgard amounts are integers scaled by `divisor` (1e8 on THORChain).
+    /// Nil when the page may be truncated (`count` above what it lists), when
+    /// any matching action is not a settled success, on a refund or failure,
+    /// or when nothing pays the recipient in that asset.
     static func fromMidgard(
         actions: [MidgardAction],
+        count: String,
         inboundHash: String,
         recipient: String,
-        assetPrefix: String?,
+        asset: String,
         divisor: Decimal
     ) -> Decimal? {
+        guard let total = Int(count), total <= actions.count else { return nil }
         let hash = normalized(inboundHash)
         let matching = actions.filter { action in
             action.in.contains { normalized($0.txID) == hash }
         }
         guard matching.contains(where: { $0.type.lowercased() == "swap" }),
               !matching.contains(where: { ["refund", "failed"].contains($0.type.lowercased()) }),
-              divisor > 0 else { return nil }
+              matching.allSatisfy({ $0.status.lowercased() == "success" }),
+              !recipient.isEmpty, !asset.isEmpty, divisor > 0 else { return nil }
 
         let coins = matching
             .filter { $0.type.lowercased() == "swap" }
             .flatMap(\.out)
             .filter { ($0.address ?? "").caseInsensitiveCompare(recipient) == .orderedSame }
             .flatMap { $0.coins ?? [] }
-        let paid: [MidgardCoin]
-        if let assetPrefix {
-            paid = coins.filter { matches(asset: $0.asset, prefix: assetPrefix) }
-        } else {
-            // No asset spelling for this chain: trust the address only when
-            // everything paid to it is a single asset.
-            paid = Set(coins.map { $0.asset.uppercased() }).count == 1 ? coins : []
-        }
+        let paid = coins.filter { $0.asset.caseInsensitiveCompare(asset) == .orderedSame }
         guard !paid.isEmpty else { return nil }
-        let total = paid.reduce(Decimal(0)) { sum, coin in
-            sum + (Decimal(string: coin.amount, locale: Locale(identifier: "en_US_POSIX")) ?? 0)
+        let sum = paid.reduce(Decimal(0)) { partial, coin in
+            partial + (Decimal(string: coin.amount, locale: Locale(identifier: "en_US_POSIX")) ?? 0)
         }
-        return total > 0 ? total / divisor : nil
-    }
-
-    /// "ETH.USDC-0XA0B8..." matches "ETH.USDC"; "ETH.USDT-..." does not.
-    static func matches(asset: String, prefix: String) -> Bool {
-        let asset = asset.uppercased()
-        let prefix = prefix.uppercased()
-        return asset == prefix || asset.hasPrefix(prefix + "-")
+        return sum > 0 ? sum / divisor : nil
     }
 
     // MARK: - EVM receipt

@@ -140,7 +140,7 @@ final class SwapReworkViewModel {
     /// (`ERC20ApprovalResolver` on `SwapCryptoLogic.approvalQuery`), read-only,
     /// so the form can count approval legs and their gas before review. The
     /// review still reads it again and signs what it decides.
-    private func refreshApproval() {
+    func refreshApproval() {
         guard details.isApproveRequired,
               let query = try? SwapCryptoLogic.approvalQuery(
                 fromCoin: details.fromCoin, amount: details.amountInCoinDecimal, quote: details.quote
@@ -153,7 +153,8 @@ final class SwapReworkViewModel {
         approvalQuery = query
         approvalTask = Task { [weak self, approvalResolver] in
             let requirement = try? await approvalResolver.requirement(for: query)
-            guard !Task.isCancelled, let self else { return }
+            // Applied only if it still answers the spend on screen.
+            guard !Task.isCancelled, let self, self.approvalQuery == query else { return }
             self.approvalLegs = requirement.map(SwapApprovalGas.legs(for:))
             // An unanswered read stays unknown and is retried next refresh.
             if requirement == nil { self.approvalQuery = nil }
@@ -228,6 +229,7 @@ final class SwapReworkViewModel {
     func selectRoute(id: String, vault: Vault) {
         guard let quote = details.allQuotes.first(where: { Self.routeID(for: $0) == id }) else { return }
         details.selectProvider(quote, vault: vault)
+        refreshApproval()
         acknowledgedReceive = quote.expectedNetToAmount(toCoin: details.toCoin)
         priceMove = .unchanged
         showRouteSheet = false
@@ -335,7 +337,22 @@ final class SwapReworkViewModel {
         return "\(SwapReworkFormat.amount(crypto, ticker: feeCoin.ticker)) · \(feeCoin.fiat(decimal: crypto).formatToFiat())"
     }
 
+    /// A SECURE+ mint from an ERC-20 approves the THORChain router, which the
+    /// synthetic quote does not name, so the form cannot read that allowance.
+    /// It says an approval may be needed and leaves the gas to the review.
+    private var isSecuredMintFromToken: Bool {
+        details.isSecuredMint && details.fromCoin.chain.chainType == .EVM && !details.fromCoin.isNativeToken
+    }
+
     private var approval: SwapReworkApproval? {
+        if isSecuredMintFromToken, details.quote != nil {
+            return SwapReworkApproval(
+                ticker: details.fromCoin.ticker,
+                amountText: SwapReworkFormat.amount(details.fromAmountDecimal),
+                spenderName: SwapProviderKind.thorchain.displayName,
+                legs: nil
+            )
+        }
         guard details.isApproveRequired, let quote = details.quote, approvalLegs != 0 else { return nil }
         return SwapReworkApproval(
             ticker: details.fromCoin.ticker,

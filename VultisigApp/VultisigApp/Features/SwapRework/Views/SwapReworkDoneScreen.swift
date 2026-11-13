@@ -126,7 +126,10 @@ struct SwapReworkDoneScreen: View {
         let outcome = delivered.map { SwapOutcome(quoted: transaction.toAmountDecimal, delivered: $0) }
         return SwapReworkSuccessState(
             receive: SwapReworkViewModel.asset(toCoin),
-            vaultName: vault.name,
+            // An external recipient is named by its address, never as the vault.
+            vaultName: transaction.hasExternalRecipient
+                ? SwapTokenTrust.shortContract(transaction.recipientAddress)
+                : vault.name,
             isDeliveredKnown: outcome != nil,
             deliveredText: delivered.map { "+" + SwapReworkFormat.amount($0, ticker: toCoin.ticker) } ?? "≈ " + receiveText,
             deliveredFiatText: delivered.map { toCoin.fiat(decimal: $0).formatToFiat() } ?? transaction.toFiatAmount,

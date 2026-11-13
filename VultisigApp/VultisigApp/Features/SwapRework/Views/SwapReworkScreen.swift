@@ -135,6 +135,12 @@ struct SwapReworkScreen: View {
             details.updateToCoin(coin: coin, vault: vault)
             viewModel.coinsChanged()
         }
+        .onChange(of: details.quote) { _, _ in
+            // A route pick swaps the quote (and so the spender) without a
+            // quote fetch; re-resolve the approval for whatever is on screen.
+            guard !viewModel.isDemo else { return }
+            viewModel.refreshApproval()
+        }
         .onChange(of: details.isLoadingQuotes) { wasLoading, isLoading in
             if wasLoading && !isLoading { viewModel.quoteFetchSettled(vault: vault) }
         }

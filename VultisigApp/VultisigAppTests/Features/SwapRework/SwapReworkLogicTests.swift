@@ -386,9 +386,9 @@ final class SwapTokenTrustTests: XCTestCase {
 final class SwapDeliveredAmountTests: XCTestCase {
     private let vaultBTC = "bc1qexamplevaultaddress0000000000000000"
 
-    private func action(_ type: String, inHash: String = "ABC123", out: [MidgardTransaction]) -> MidgardAction {
+    private func action(_ type: String, status: String = "success", inHash: String = "ABC123", out: [MidgardTransaction]) -> MidgardAction {
         MidgardAction(
-            pools: [], type: type, status: "success",
+            pools: [], type: type, status: status,
             in: [MidgardTransaction(txID: inHash, address: nil, coins: nil)],
             out: out, date: "0", height: "0", metadata: nil
         )
@@ -400,8 +400,8 @@ final class SwapDeliveredAmountTests: XCTestCase {
             MidgardTransaction(txID: "", address: "thor1affiliate", coins: [MidgardCoin(asset: "THOR.RUNE", amount: "99")])
         ])]
         let delivered = SwapDeliveredAmount.fromMidgard(
-            actions: actions, inboundHash: "0xabc123", recipient: vaultBTC.uppercased(),
-            assetPrefix: "BTC.BTC", divisor: 100_000_000
+            actions: actions, count: "1", inboundHash: "0xabc123", recipient: vaultBTC.uppercased(),
+            asset: "BTC.BTC", divisor: 100_000_000
         )
         XCTAssertEqual(delivered, dec("0.0140237"))
     }
@@ -411,16 +411,23 @@ final class SwapDeliveredAmountTests: XCTestCase {
             action("swap", out: [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "BTC.BTC", amount: "10")])]),
             action("refund", out: [])
         ]
-        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: refunded, inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "BTC.BTC", divisor: 1e8))
-        let wrongAsset = [action("swap", out: [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "ETH.USDT-0XDAC", amount: "10")])])]
-        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: wrongAsset, inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "ETH.USDC", divisor: 1e8))
-        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [], inboundHash: "ABC123", recipient: vaultBTC, assetPrefix: "BTC.BTC", divisor: 1e8))
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: refunded, count: "2", inboundHash: "ABC123", recipient: vaultBTC, asset: "BTC.BTC", divisor: 1e8))
+        // Same ticker, different contract: not the destination asset.
+        let wrongContract = [action("swap", out: [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "ETH.USDC-0XFAKE", amount: "10")])])]
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: wrongContract, count: "1", inboundHash: "ABC123", recipient: vaultBTC, asset: "ETH.USDC-0XA0B8", divisor: 1e8))
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [], count: "0", inboundHash: "ABC123", recipient: vaultBTC, asset: "BTC.BTC", divisor: 1e8))
     }
 
-    func testAssetPrefixMatchesTokenSuffixes() {
-        XCTAssertTrue(SwapDeliveredAmount.matches(asset: "ETH.USDC-0XA0B86991", prefix: "ETH.USDC"))
-        XCTAssertTrue(SwapDeliveredAmount.matches(asset: "btc.btc", prefix: "BTC.BTC"))
-        XCTAssertFalse(SwapDeliveredAmount.matches(asset: "ETH.USDCX-0X1", prefix: "ETH.USDC"))
+    func testMidgardRejectsTruncatedOrPendingPages() {
+        let paid = [MidgardTransaction(txID: "1", address: vaultBTC, coins: [MidgardCoin(asset: "BTC.BTC", amount: "10")])]
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [action("swap", out: paid)], count: "2", inboundHash: "ABC123", recipient: vaultBTC, asset: "BTC.BTC", divisor: 1e8))
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [action("swap", status: "pending", out: paid)], count: "1", inboundHash: "ABC123", recipient: vaultBTC, asset: "BTC.BTC", divisor: 1e8))
+        XCTAssertNil(SwapDeliveredAmount.fromMidgard(actions: [action("swap", out: paid)], count: "1", inboundHash: "ABC123", recipient: "", asset: "BTC.BTC", divisor: 1e8))
+    }
+
+    func testSecuredDenomMatchesIgnoringCase() {
+        let paid = [MidgardTransaction(txID: "", address: "thor1vault", coins: [MidgardCoin(asset: "ETH-USDC-0XA0B8", amount: "250000000")])]
+        XCTAssertEqual(SwapDeliveredAmount.fromMidgard(actions: [action("swap", out: paid)], count: "1", inboundHash: "ABC123", recipient: "thor1vault", asset: "eth-usdc-0xa0b8", divisor: 1e8), dec("2.5"))
     }
 
     func testReceiptSumsTokenTransfersToTheVault() {
