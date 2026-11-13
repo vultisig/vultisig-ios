@@ -25,6 +25,10 @@ struct SwapReworkDoneScreen: View {
     /// Read from the chain after completion; nil when the route does not
     /// state it, and the summary then shows no delivered row or difference.
     @State private var delivered: Decimal?
+    /// A supported route whose delivered amount is not readable yet (receipt
+    /// not mined, Midgard not indexed, an RPC hiccup): retried with backoff.
+    @State private var isCheckingDelivered = false
+    @State private var deliveredTask: Task<Void, Never>?
     /// When each stage was first seen done, for the tracker's time column.
     @State private var stageDoneAt: [SwapTrackerStage.Kind: Date] = [:]
 
@@ -84,7 +88,10 @@ struct SwapReworkDoneScreen: View {
         .screenTitle("swap".localized)
         .screenBackButtonHidden()
         .onAppear { statusService.start() }
-        .onDisappear { statusService.stop() }
+        .onDisappear {
+            statusService.stop()
+            deliveredTask?.cancel()
+        }
         .swapRefreshTick { now = Date() }
         .onChange(of: statusService.status) { _, status in
             recordStageTimes(status: status)
@@ -162,10 +169,21 @@ struct SwapReworkDoneScreen: View {
         )
     }
 
+    /// Unsupported routes stop here ("doesn't report"). Supported ones are
+    /// read again on `SwapDeliveredRetry.delays` until a figure comes back.
     private func loadDelivered() {
         guard let request = SwapDeliveredAmountService.request(for: transaction, hash: hash) else { return }
-        Task {
-            delivered = await deliveredService.deliveredAmount(request)
+        isCheckingDelivered = true
+        deliveredTask = Task {
+            for delay in SwapDeliveredRetry.delays {
+                if delay > 0 { try? await Task.sleep(for: .seconds(delay)) }
+                guard !Task.isCancelled else { break }
+                if let amount = await deliveredService.deliveredAmount(request) {
+                    delivered = amount
+                    break
+                }
+            }
+            isCheckingDelivered = false
         }
     }
 
@@ -183,6 +201,7 @@ struct SwapReworkDoneScreen: View {
                 ? SwapTokenTrust.shortContract(transaction.recipientAddress)
                 : vault.name,
             isDeliveredKnown: outcome != nil,
+            isCheckingDelivered: isCheckingDelivered && outcome == nil,
             deliveredText: delivered.map { "+" + SwapReworkFormat.amount($0, ticker: toCoin.ticker) } ?? "≈ " + receiveText,
             deliveredFiatText: delivered.map { toCoin.fiat(decimal: $0).formatToFiat() } ?? transaction.toFiatAmount,
             quotedText: receiveText,

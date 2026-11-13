@@ -269,7 +269,7 @@ struct SwapReworkScreen: View {
                 onPercent: { percentage in
                     // The amount is set: put the quote in view, as R3 does.
                     isEditingAmount = false
-                    viewModel.selectPercent(percentage, vault: vault)
+                    viewModel.tapPercent(percentage, vault: vault)
                 }
             )
             SwapReworkFlipButton {

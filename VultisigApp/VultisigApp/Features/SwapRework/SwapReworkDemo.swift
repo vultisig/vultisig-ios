@@ -115,7 +115,7 @@ enum SwapReworkDemo {
             isReceiveIndicative: false,
             isQuoteLoading: false,
             highlightsReceive: false,
-            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .bestReturn, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: true),
+            route: SwapReworkRouteSummary(providerName: "THORChain", providerLogo: SwapProviderKind.thorchain.providerLogo, tag: .mostReceived, etaText: SwapReworkFormat.eta(seconds: 600), feesText: fees.displayTotalFiat.formatToFiat(), isSelectable: true),
             routes: routes,
             routeGasNote: "Ethereum gas $0.84",
             feeTicker: "ETH",

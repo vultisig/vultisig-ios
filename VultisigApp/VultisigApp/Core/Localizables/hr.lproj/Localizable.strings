@@ -1903,7 +1903,7 @@
 "swapReworkApprovalBody" = "Ako %3$@ još ne može trošiti %1$@ %2$@, pregled dodaje odobrenje prije zamjene. Njegov plin procjenjuje se tamo.";
 "swapReworkApprovalBodyNeeded" = "Prvo dopustite %3$@ trošenje %1$@ %2$@, zatim zamjena. Plin je u naknadama.";
 "swapReworkApprovalBodyReset" = "%1$@ traži da se staro odobrenje za %2$@ postavi na nulu prije novog. Plin za oba je u naknadama.";
-"swapReworkApprovalGas" = "Plin za odobrenje (%d tx)";
+"swapReworkApprovalGas" = "Plin za odobrenje (%d tx, najviše)";
 "swapReworkApprovalTitle" = "Možda je potrebno odobrenje";
 "swapReworkApprovalTitleNeeded" = "Potrebno je odobrenje";
 "swapReworkApprovalTitleReset" = "Potrebna su 2 odobrenja";
@@ -1914,6 +1914,7 @@
 "swapReworkBrowseAll" = "Pronađi više tokena";
 "swapReworkBrowseChain" = "Pronađi više tokena na %@";
 "swapReworkCannotSwap" = "Zamjena još nije moguća";
+"swapReworkCheckingDelivered" = "Provjeravamo što je stiglo...";
 "swapReworkChooseAnother" = "Odaberi drugi novčić";
 "swapReworkConfirmNewAmount" = "Prihvati novi iznos";
 "swapReworkDeliveredLabel" = "Isporučeno";
@@ -1963,6 +1964,7 @@
 "swapReworkMaxSlippage" = "Maks. skliznuće";
 "swapReworkMinimumReceived" = "Minimalno primljeno";
 "swapReworkMinutes" = "%d min";
+"swapReworkMostReceived" = "Najviše primljeno";
 "swapReworkMostToVault" = "Najviše u tvoj trezor";
 "swapReworkNativeCoin" = "izvorni coin";
 "swapReworkNotEnoughGasCTA" = "Nedovoljno %@ za plin";

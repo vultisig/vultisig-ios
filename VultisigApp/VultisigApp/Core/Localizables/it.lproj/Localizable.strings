@@ -1903,7 +1903,7 @@
 "swapReworkApprovalBody" = "Se %3$@ non può ancora spendere %1$@ %2$@, la revisione aggiunge un'approvazione prima dello swap. Il suo gas viene stimato lì.";
 "swapReworkApprovalBodyNeeded" = "Prima consenti a %3$@ di spendere %1$@ %2$@, poi lo swap. Il gas è nelle commissioni.";
 "swapReworkApprovalBodyReset" = "%1$@ richiede di azzerare la vecchia autorizzazione per %2$@ prima di una nuova. Il gas di entrambe è nelle commissioni.";
-"swapReworkApprovalGas" = "Gas di approvazione (%d tx)";
+"swapReworkApprovalGas" = "Gas di approvazione (%d tx, al massimo)";
 "swapReworkApprovalTitle" = "Potrebbe servire un'approvazione";
 "swapReworkApprovalTitleNeeded" = "Serve un'approvazione";
 "swapReworkApprovalTitleReset" = "Servono 2 approvazioni";
@@ -1914,6 +1914,7 @@
 "swapReworkBrowseAll" = "Trova altri token";
 "swapReworkBrowseChain" = "Trova altri token su %@";
 "swapReworkCannotSwap" = "Swap non ancora possibile";
+"swapReworkCheckingDelivered" = "Verifica di cosa è arrivato...";
 "swapReworkChooseAnother" = "Scegli un'altra moneta";
 "swapReworkConfirmNewAmount" = "Accetta nuovo importo";
 "swapReworkDeliveredLabel" = "Consegnato";
@@ -1963,6 +1964,7 @@
 "swapReworkMaxSlippage" = "Slippage max";
 "swapReworkMinimumReceived" = "Minimo ricevuto";
 "swapReworkMinutes" = "%d min";
+"swapReworkMostReceived" = "Più ricevuto";
 "swapReworkMostToVault" = "Il massimo nel tuo vault";
 "swapReworkNativeCoin" = "moneta nativa";
 "swapReworkNotEnoughGasCTA" = "%@ insufficiente per il gas";

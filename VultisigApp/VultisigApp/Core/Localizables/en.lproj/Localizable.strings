@@ -1903,7 +1903,7 @@
 "swapReworkApprovalBody" = "If %3$@ can't already spend %1$@ %2$@, the review adds an approval before the swap. Its gas is estimated there.";
 "swapReworkApprovalBodyNeeded" = "First allow %3$@ to spend %1$@ %2$@, then the swap. Its gas is in the fees.";
 "swapReworkApprovalBodyReset" = "%1$@ needs its old allowance for %2$@ set to zero before a new one. Both approvals' gas is in the fees.";
-"swapReworkApprovalGas" = "Approval gas (%d tx)";
+"swapReworkApprovalGas" = "Approval gas (%d tx, at most)";
 "swapReworkApprovalTitle" = "May need an approval";
 "swapReworkApprovalTitleNeeded" = "Needs an approval";
 "swapReworkApprovalTitleReset" = "Needs 2 approvals";
@@ -1914,6 +1914,7 @@
 "swapReworkBrowseAll" = "Find more tokens";
 "swapReworkBrowseChain" = "Find more tokens on %@";
 "swapReworkCannotSwap" = "Can't swap yet";
+"swapReworkCheckingDelivered" = "Checking what arrived...";
 "swapReworkChooseAnother" = "Choose another coin";
 "swapReworkConfirmNewAmount" = "Accept new amount";
 "swapReworkDeliveredLabel" = "Delivered";
@@ -1963,6 +1964,7 @@
 "swapReworkMaxSlippage" = "Max slippage";
 "swapReworkMinimumReceived" = "Minimum received";
 "swapReworkMinutes" = "%d min";
+"swapReworkMostReceived" = "Most received";
 "swapReworkMostToVault" = "Most to your vault";
 "swapReworkNativeCoin" = "native coin";
 "swapReworkNotEnoughGasCTA" = "Not enough %@ for gas";

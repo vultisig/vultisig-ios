@@ -60,7 +60,11 @@ enum SwapRouteSort: String, CaseIterable, Identifiable {
 }
 
 enum SwapRouteTag: Equatable {
+    /// Top route ranked net of every route's gas.
     case bestReturn
+    /// Top route when some routes' gas is unknown: it pays out the most, which
+    /// is all the ranking can claim.
+    case mostReceived
     case fastest
 }
 
@@ -73,7 +77,7 @@ struct SwapRankedRoute: Equatable, Identifiable {
     var shortfallFiat: Decimal?
 
     var id: String { option.id }
-    var isBest: Bool { tags.contains(.bestReturn) }
+    var isBest: Bool { tags.contains(.bestReturn) || tags.contains(.mostReceived) }
 }
 
 enum SwapRouteRanking {
@@ -85,7 +89,7 @@ enum SwapRouteRanking {
         let viable = options.filter { $0.receivedAmount > 0 }
         // Net of gas only when every route states its fiat value; otherwise a
         // route without one would win or lose on a missing number.
-        let comparesNet = viable.allSatisfy { $0.netFiat != nil }
+        let comparesNet = !viable.isEmpty && viable.allSatisfy { $0.netFiat != nil }
         let sorted = viable.sorted { isBetter($0, $1, comparesNet: comparesNet) }
         guard let best = sorted.first else { return [] }
 
@@ -93,7 +97,7 @@ enum SwapRouteRanking {
 
         return sorted.map { option in
             var tags: [SwapRouteTag] = []
-            if option.id == best.id { tags.append(.bestReturn) }
+            if option.id == best.id { tags.append(comparesNet ? .bestReturn : .mostReceived) }
             if option.id == fastestID { tags.append(.fastest) }
             // Net of gas when every route's gas is known, otherwise the output
             // difference alone.
@@ -161,5 +165,20 @@ enum SwapRouteRanking {
             return nil
         }
         return fastest.0.id
+    }
+}
+
+/// Unique, readable ids for the route sheet. Two quotes of the same brand
+/// (SwapKit through two sub-providers) used to share one id, so SwiftUI
+/// merged the rows and a tap on the second picked the first. The first keeps
+/// its brand id; later ones get "#2", "#3", in quote order.
+enum SwapRouteIdentity {
+    static func ids(forBrands brands: [String]) -> [String] {
+        var seen: [String: Int] = [:]
+        return brands.map { brand in
+            let count = (seen[brand] ?? 0) + 1
+            seen[brand] = count
+            return count == 1 ? brand : "\(brand)#\(count)"
+        }
     }
 }

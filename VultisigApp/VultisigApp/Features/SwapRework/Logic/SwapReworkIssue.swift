@@ -131,3 +131,24 @@ enum SwapReworkIssue: Equatable {
         }
     }
 }
+
+/// What a rejected provisional Max amount means for the next try.
+enum SwapReworkMaxStep: Equatable {
+    /// A provider minimum: a lower share cannot help.
+    case stop
+    /// The amount plus fees does not fit the balance: try a lower share.
+    case stepDown
+    /// Anything else (network, rate limit, provider error): same share again.
+    case retrySameShare
+
+    static func decision(for error: Error) -> SwapReworkMaxStep {
+        switch SwapReworkIssue.issue(for: error, nativeProviderName: "") {
+        case .amountTooSmall?:
+            return .stop
+        case .notEnoughGas?, .overBalance?:
+            return .stepDown
+        default:
+            return .retrySameShare
+        }
+    }
+}

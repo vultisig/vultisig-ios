@@ -41,13 +41,11 @@ enum SwapKeypadInput {
         var value = amount
         var rounded = Decimal()
         NSDecimalRound(&rounded, &value, max(maxFractionDigits, 0), .down)
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.usesGroupingSeparator = false
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = max(maxFractionDigits, 0)
-        formatter.minimumIntegerDigits = 1
-        return formatter.string(from: NSDecimalNumber(decimal: rounded)) ?? ""
+        // `Decimal`'s own description: exact at any precision (a
+        // NumberFormatter goes through ~15 significant digits, which left dust
+        // on 18-decimal tokens), always ".", no grouping, no exponent, no
+        // trailing zeros.
+        return rounded.description
     }
 
     /// "1234.5" as "1,234.5" for display, keeping a trailing "." or zeros the

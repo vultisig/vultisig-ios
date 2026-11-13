@@ -136,13 +136,14 @@ struct SwapReworkRouteTagView: View {
     private var title: String {
         switch tag {
         case .bestReturn: return "swapReworkBestReturn".localized
+        case .mostReceived: return "swapReworkMostReceived".localized
         case .fastest: return "swapReworkFastest".localized
         }
     }
 
     private var color: Color {
         switch tag {
-        case .bestReturn: return Theme.colors.alertSuccess
+        case .bestReturn, .mostReceived: return Theme.colors.alertSuccess
         case .fastest: return Theme.colors.primaryAccent4
         }
     }

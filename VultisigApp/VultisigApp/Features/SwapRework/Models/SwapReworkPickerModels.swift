@@ -122,6 +122,9 @@ struct SwapReworkSuccessState: Equatable {
     /// False while only the quote is known: the screen then says "expected"
     /// and never labels the quoted amount as delivered.
     let isDeliveredKnown: Bool
+    /// Still reading the delivered amount: "Checking what arrived..." instead
+    /// of "this route doesn't report it".
+    var isCheckingDelivered = false
     let deliveredText: String
     let deliveredFiatText: String
     let quotedText: String

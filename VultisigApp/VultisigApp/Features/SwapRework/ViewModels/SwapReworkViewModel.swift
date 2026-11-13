@@ -26,6 +26,11 @@ final class SwapReworkViewModel {
     private(set) var priceMove: SwapPriceMove = .unchanged
     /// Max was tapped on a native coin: the amount keeps the network fee behind.
     private(set) var keepsGasReserve = false
+    /// Automatic Max re-runs since the user's last Max or keypad input. Capped,
+    /// so a fee that moves with the amount on every quote cannot loop.
+    @ObservationIgnored private var maxReapplyCount = 0
+    static let maxReapplies = 2
+
     /// Max was tapped before any fee was known. A provisional amount fetches a
     /// quote (and with it the real fee); Max then re-applies once against it.
     private(set) var isMaxAwaitingFee = false
@@ -75,7 +80,15 @@ final class SwapReworkViewModel {
 
     // MARK: - Input
 
-    private var maxFractionDigits: Int { min(details.fromCoin.decimals, 8) }
+    /// The coin's own precision: an 8-digit cap left up to 1e-8 of an 18-decimal
+    /// token behind on Max, and made balances below 1e-8 unswappable.
+    private var maxFractionDigits: Int { max(details.fromCoin.decimals, 0) }
+
+    /// A % chip the user tapped (as opposed to an automatic Max re-run).
+    func tapPercent(_ percentage: Int, vault: Vault) {
+        maxReapplyCount = 0
+        selectPercent(percentage, vault: vault)
+    }
 
     func press(_ key: PerpsKeypadKey, vault: Vault) {
         let updated = SwapKeypadInput.apply(key, to: amountText, maxFractionDigits: maxFractionDigits)
@@ -223,15 +236,19 @@ final class SwapReworkViewModel {
         // A provisional amount rejected at the quote or at the fee step (a
         // UTXO plan that cannot fit amount plus fee) is handled the same way.
         if isMaxAwaitingFee, let error = details.error {
-            // A lower share cannot clear a provider minimum: stop at the
-            // largest one and let the "too small" issue speak. Any other
-            // rejection steps down to the next share.
-            if SwapReworkIssue.issue(for: error, nativeProviderName: "") == .amountTooSmall {
+            switch SwapReworkMaxStep.decision(for: error) {
+            case .stop:
+                // A lower share cannot clear a provider minimum: stop at the
+                // largest one and let the "too small" issue speak.
                 isMaxAwaitingFee = false
-                return
+            case .stepDown:
+                provisionalStep += 1
+                applyProvisionalMax(vault: vault)
+            case .retrySameShare:
+                // A network or provider hiccup says nothing about the amount:
+                // keep this share; the periodic refresh quotes it again.
+                break
             }
-            provisionalStep += 1
-            applyProvisionalMax(vault: vault)
             return
         }
         guard details.quote != nil, details.error == nil else { return }
@@ -251,7 +268,9 @@ final class SwapReworkViewModel {
     /// Max is computed against the fee known when it was tapped; the first
     /// quote often brings the real one. Re-run Max once it would overspend.
     private func reapplyMaxIfFeeGrew(vault: Vault) {
-        guard keepsGasReserve, details.balanceError == .insufficientGas else { return }
+        guard keepsGasReserve, details.balanceError == .insufficientGas,
+              maxReapplyCount < Self.maxReapplies else { return }
+        maxReapplyCount += 1
         selectPercent(100, vault: vault)
     }
 
@@ -293,7 +312,7 @@ final class SwapReworkViewModel {
     }
 
     func selectRoute(id: String, vault: Vault) {
-        guard let quote = details.allQuotes.first(where: { Self.routeID(for: $0) == id }) else { return }
+        guard let quote = routeQuotes.first(where: { $0.id == id })?.quote else { return }
         details.selectProvider(quote, vault: vault)
         refreshApproval()
         acknowledgedReceive = quote.expectedNetToAmount(toCoin: details.toCoin)
@@ -301,8 +320,20 @@ final class SwapReworkViewModel {
         showRouteSheet = false
     }
 
-    static func routeID(for quote: SwapQuote) -> String {
+    static func brand(of quote: SwapQuote) -> String {
         quote.displayName ?? quote.kind.displayName
+    }
+
+    /// Every quote with a unique id (see `SwapRouteIdentity`).
+    private var routeQuotes: [(quote: SwapQuote, id: String)] {
+        let quotes = details.allQuotes
+        let ids = SwapRouteIdentity.ids(forBrands: quotes.map(Self.brand(of:)))
+        return Array(zip(quotes, ids)).map { (quote: $0.0, id: $0.1) }
+    }
+
+    private var activeRouteID: String? {
+        guard let active = details.quote else { return nil }
+        return routeQuotes.first(where: { $0.quote == active })?.id ?? Self.brand(of: active)
     }
 
     // MARK: - Presentation
@@ -319,7 +350,7 @@ final class SwapReworkViewModel {
         let toCoin = details.toCoin
         let hasAmount = details.fromAmountDecimal > 0
         let ranked = rankedRoutes
-        let activeID = details.quote.map(Self.routeID(for:))
+        let activeID = activeRouteID
         let issue = SwapReworkIssue.resolve(.init(
             hasAmount: hasAmount,
             balanceError: details.quote == nil ? nil : (details.balanceError ?? approvalGasShortfall),
@@ -353,7 +384,7 @@ final class SwapReworkViewModel {
             selectedRouteID: activeID,
             timer: SwapReworkQuoteTimer(
                 state: timerState,
-                fraction: Double(max(details.timer, 0)) / 59
+                fraction: Double(max(details.timer, 0)) / Double(SwapReworkConfig.quoteRefreshTicks)
             ),
             fees: fees,
             approval: approval,
@@ -414,6 +445,14 @@ final class SwapReworkViewModel {
         return "\(SwapReworkFormat.amount(crypto, ticker: feeCoin.ticker)) · \(feeCoin.fiat(decimal: crypto).formatToFiat())"
     }
 
+    /// Approve legs counted in fees and the gas check. A SECURE+ mint from a
+    /// token approves a router the form cannot read, so it counts one leg
+    /// (the common case) rather than none; the review reads the real answer.
+    private var effectiveApprovalLegs: Int {
+        if isSecuredMintFromToken { return 1 }
+        return details.isApproveRequired ? (approvalLegs ?? 0) : 0
+    }
+
     /// A SECURE+ mint from an ERC-20 approves the THORChain router, which the
     /// synthetic quote does not name, so the form cannot read that allowance.
     /// It says an approval may be needed and leaves the gas to the review.
@@ -450,7 +489,7 @@ final class SwapReworkViewModel {
             let feeCoin = details.feeCoin
             return feeCoin.fiat(decimal: feeCoin.decimal(for: details.displayedNetworkFeeWei))
         }()
-        let options = details.allQuotes.map { quote in
+        let options = routeQuotes.map { quote, id in
             let received = quote.expectedNetToAmount(toCoin: toCoin) ?? 0
             // SwapKit folds its fees into the rate: unknown, never "$0.00".
             let providerFees: Decimal? = SwapCryptoLogic.showsDiscountAmounts(quote: quote)
@@ -459,7 +498,7 @@ final class SwapReworkViewModel {
                 ) + SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: toCoin)
                 : nil
             return SwapRouteOption(
-                id: Self.routeID(for: quote),
+                id: id,
                 providerName: quote.displayName ?? quote.kind.displayName,
                 providerLogo: quote.kind.providerLogo,
                 receivedAmount: received,
@@ -502,7 +541,7 @@ final class SwapReworkViewModel {
         )
         let outbound = SwapCryptoLogic.outboundFeeFiat(quote: quote, toCoin: toCoin)
         let networkFiat = feeCoin.fiat(decimal: networkCrypto)
-        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        let legs = effectiveApprovalLegs
         let breakdown = SwapFeeBreakdown(.init(
             networkFiat: networkFiat,
             networkCrypto: SwapReworkFormat.amount(networkCrypto, ticker: feeCoin.ticker),
@@ -511,6 +550,7 @@ final class SwapReworkViewModel {
             vultisigNetFiat: net,
             vultisigListFiat: net + discounts.total,
             referralFiat: discounts.referral,
+            referralDiscountBps: details.referralDiscountBps,
             listBps: SwapCryptoLogic.affiliateListFeeBps,
             tierDiscountBps: details.vultDiscountBps,
             tier: VultDiscountTier.from(bpsDiscount: details.vultDiscountBps),
@@ -573,7 +613,7 @@ final class SwapReworkViewModel {
             chain: details.fromCoin.chain
         )
         guard funding > 0 else { return nil }
-        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        let legs = effectiveApprovalLegs
         let approval = details.displayedNetworkFeeWei * BigInt(legs)
         return SwapGasRequirement(
             gas: feeCoin.decimal(for: funding + approval),
@@ -599,7 +639,7 @@ final class SwapReworkViewModel {
     /// The existing balance gate counts swap gas only. Once the allowance check
     /// says approve legs come first, the fee coin must also cover their gas.
     private var approvalGasShortfall: SwapCryptoLogic.Errors? {
-        let legs = details.isApproveRequired ? (approvalLegs ?? 0) : 0
+        let legs = effectiveApprovalLegs
         guard legs > 0, let requirement = gasRequirement else { return nil }
         return requirement.isShort ? .insufficientGas : nil
     }
@@ -710,7 +750,8 @@ final class SwapReworkViewModel {
         case .confirmNewAmount, .getNewQuote, .chooseAnotherCoin, .useMinimum:
             return true
         case .review, .reviewWith:
-            return details.validateForm()
+            // Not on a provisional Max: the user asked for Max, not 95% of it.
+            return details.validateForm() && !isMaxAwaitingFee
         }
     }
 }

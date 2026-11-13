@@ -33,6 +33,8 @@ struct SwapFeeBreakdown: Equatable {
         let vultisigListFiat: Decimal
         /// Part of the discount that comes from a referral, not the tier.
         var referralFiat: Decimal = 0
+        /// The referral discount in bps, when one applies to this quote.
+        var referralDiscountBps: Int = 0
         /// List rate in basis points (50).
         let listBps: Int
         /// Discount the vault's VULT tier takes off the list rate, in bps.
@@ -68,16 +70,13 @@ struct SwapFeeBreakdown: Equatable {
         !input.vultisigIncludedInRate && input.vultisigNetFiat == 0 && effectiveBps > 0
     }
 
-    /// The rate the quote actually charges, in bps: the list rate scaled by
-    /// what the quote charges against the list fee, so a referral discount on
-    /// top of the tier shows too (Gold + 5 bps referral = 25). Falls back to
-    /// the tier rate when there is no list amount to scale from.
+    /// The rate the quote actually charges, in bps, from the quote's own bps
+    /// (list minus the tier, minus a referral that applies) rather than a fiat
+    /// ratio, which rounding could turn into 24 or 26 for a 25 bps quote.
     var chargedBps: Int {
-        guard !input.vultisigIncludedInRate, input.vultisigListFiat > 0 else {
-            return isWaivedByQuote ? 0 : effectiveBps
-        }
-        let scaled = (input.vultisigNetFiat / input.vultisigListFiat * Decimal(input.listBps)).rounded(scale: 0)
-        return min(max(NSDecimalNumber(decimal: scaled).intValue, 0), input.listBps)
+        if isWaivedByQuote { return 0 }
+        let referral = input.referralFiat > 0 ? min(max(input.referralDiscountBps, 0), input.listBps) : 0
+        return max(effectiveBps - referral, 0)
     }
 
     /// The rate the row states: what the quote actually charges.

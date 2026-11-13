@@ -32,7 +32,8 @@ final class SwapRouteRankingTests: XCTestCase {
             option("LI.FI", "0.0139412")
         ])
         XCTAssertEqual(ranked.map(\.id), ["THORChain", "Chainflip", "LI.FI"])
-        XCTAssertEqual(ranked.first?.tags, [.bestReturn])
+        // No fiat or gas on these options: the top route only "pays the most".
+        XCTAssertEqual(ranked.first?.tags, [.mostReceived])
         XCTAssertEqual(ranked.first?.shortfall, 0)
         XCTAssertEqual(ranked[1].shortfall, dec("0.0140218") - dec("0.013989"))
     }
@@ -89,6 +90,7 @@ final class SwapRouteRankingTests: XCTestCase {
         XCTAssertEqual(ranked[1].shortfallFiat, dec("4"))
         XCTAssertEqual(ranked[0].option.feesEstimate, .complete(dec("2")))
         XCTAssertTrue(ranked[0].isBest)
+        XCTAssertEqual(ranked[0].tags, [.bestReturn])
         XCTAssertEqual(SwapRouteRanking.sorted(ranked, by: .fastest).map(\.id), ["B", "A"])
         XCTAssertEqual(SwapRouteRanking.sorted(ranked, by: .bestReturn).map(\.id), ["A", "B"])
     }
@@ -110,6 +112,12 @@ final class SwapRouteRankingTests: XCTestCase {
         let rateOnly = SwapRouteOption(id: "D", providerName: "D", providerLogo: nil, receivedAmount: 1,
                                        receivedFiat: nil, feesFiat: nil, etaSeconds: nil, gasFiat: dec("0.8"))
         XCTAssertEqual(rateOnly.feesEstimate, .feesInRate(gas: dec("0.8")))
+    }
+
+    func testSameBrandQuotesGetUniqueIDs() {
+        XCTAssertEqual(SwapRouteIdentity.ids(forBrands: ["SwapKit", "THORChain", "SwapKit", "SwapKit"]),
+                       ["SwapKit", "THORChain", "SwapKit#2", "SwapKit#3"])
+        XCTAssertEqual(SwapRouteIdentity.ids(forBrands: ["1inch", "LI.FI"]), ["1inch", "LI.FI"])
     }
 
     func testGapReadsSatsForBitcoin() {
@@ -135,7 +143,7 @@ final class SwapFeeBreakdownTests: XCTestCase {
 
     private func breakdown(
         network: String = "0.84", protocolFee: String = "2.86",
-        net: String = "2.93", list: String = "4.89", referral: String = "0",
+        net: String = "2.93", list: String = "4.89", referral: String = "0", referralBps: Int = 0,
         discountBps: Int = 20, tier: VultDiscountTier? = .gold,
         includedInRate: Bool = false, pay: String = "978.20", receive: String = "972.41"
     ) -> SwapFeeBreakdown {
@@ -143,7 +151,7 @@ final class SwapFeeBreakdownTests: XCTestCase {
             networkFiat: dec(network), networkCrypto: "0.00043 ETH",
             protocolFiat: dec(protocolFee),
             vultisigNetFiat: dec(net), vultisigListFiat: dec(list),
-            referralFiat: dec(referral),
+            referralFiat: dec(referral), referralDiscountBps: referralBps,
             listBps: 50, tierDiscountBps: discountBps, tier: tier,
             vultisigIncludedInRate: includedInRate,
             payFiat: dec(pay), receiveFiat: dec(receive)
@@ -204,7 +212,7 @@ final class SwapFeeBreakdownTests: XCTestCase {
 
     func testChargedRateIncludesReferralOnTopOfTier() {
         // Gold (30 bps) + 5 bps referral: the quote charges 25 bps of 50.
-        let fees = breakdown(net: "2.445", list: "4.89", referral: "0.489")
+        let fees = breakdown(net: "2.445", list: "4.89", referral: "0.489", referralBps: 5)
         XCTAssertEqual(fees.chargedBps, 25)
         XCTAssertEqual(fees.chargedRateText, "0.25%")
         XCTAssertEqual(fees.effectiveRateText, "0.30%")
@@ -339,6 +347,14 @@ final class SwapKeypadInputTests: XCTestCase {
         XCTAssertEqual(typed([.digit(5), .delete]), "")
     }
 
+    func testEighteenDecimalTokensKeepFullPrecision() {
+        // Max of an 18-decimal balance leaves no dust behind.
+        XCTAssertEqual(SwapKeypadInput.normalized(dec("0.123456789012345678"), maxFractionDigits: 18), "0.123456789012345678")
+        // And a balance below 1e-8 can be typed.
+        let keys: [PerpsKeypadKey] = [.digit(0), .dot] + Array(repeating: .digit(0), count: 9) + [.digit(5)]
+        XCTAssertEqual(typed(keys, decimals: 18), "0.0000000005")
+    }
+
     func testNormalizedAndDisplay() {
         XCTAssertEqual(SwapKeypadInput.normalized(dec("1.283670000"), maxFractionDigits: 8), "1.28367")
         XCTAssertEqual(SwapKeypadInput.normalized(dec("0.123456789"), maxFractionDigits: 6), "0.123456")
@@ -377,6 +393,14 @@ final class SwapReworkIssueTests: XCTestCase {
         XCTAssertEqual(SwapReworkIssue.resolve(context(balance: .insufficientGas, move: .worsened(change: 1))), .notEnoughGas)
         XCTAssertEqual(SwapReworkIssue.resolve(context(balance: .insufficientFunds)), .overBalance)
         XCTAssertEqual(SwapReworkIssue.resolve(context(move: .worsened(change: dec("0.004")))), .priceMoved(.worsened(change: dec("0.004"))))
+    }
+
+    func testProvisionalMaxStepsDownOnlyWhenALowerShareCanHelp() {
+        XCTAssertEqual(SwapReworkMaxStep.decision(for: SwapError.lessThenMinSwapAmount(amount: "1 BTC")), .stop)
+        XCTAssertEqual(SwapReworkMaxStep.decision(for: UTXOTransactionPlanError.insufficientFunds), .stepDown)
+        XCTAssertEqual(SwapReworkMaxStep.decision(for: SwapCryptoLogic.Errors.insufficientGas), .stepDown)
+        XCTAssertEqual(SwapReworkMaxStep.decision(for: URLError(.timedOut)), .retrySameShare)
+        XCTAssertEqual(SwapReworkMaxStep.decision(for: CancellationError()), .retrySameShare)
     }
 
     func testNothingWithoutAnAmountOrForCancellation() {
@@ -568,10 +592,29 @@ final class SwapDeliveredAmountTests: XCTestCase {
             SwapDeliveredAmount.Log(address: token, topics: [SwapDeliveredAmount.transferTopic, vaultWord, other], data: "0x10"),
             SwapDeliveredAmount.Log(address: "0xdead000000000000000000000000000000000000", topics: [SwapDeliveredAmount.transferTopic, other, vaultWord], data: "0x10")
         ]
-        // 0x3b9aca00 = 1,000,000,000 base units = 1,000 USDC (6 decimals).
-        XCTAssertEqual(SwapDeliveredAmount.fromReceiptLogs(logs, token: token, recipient: vault, decimals: 6), 1000)
+        // 0x3b9aca00 = 1,000,000,000 base units in, 0x10 = 16 out of the vault:
+        // net 999.999984 USDC (6 decimals). The unrelated token is ignored.
+        XCTAssertEqual(SwapDeliveredAmount.fromReceiptLogs(logs, token: token, recipient: vault, decimals: 6), dec("999.999984"))
         XCTAssertNil(SwapDeliveredAmount.fromReceiptLogs([], token: token, recipient: vault, decimals: 6))
         XCTAssertNil(SwapDeliveredAmount.fromReceiptLogs(logs, token: "", recipient: vault, decimals: 6))
+    }
+
+    func testReceiptNetsOutgoingTransfers() {
+        let token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        let vault = "0x9D2a7C1b3E4f5A6b7C8d9E0f1A2b3C4d5E6f3003"
+        let vaultWord = SwapDeliveredAmount.topicWord(vault) ?? ""
+        let pool = SwapDeliveredAmount.topicWord("0x1111111111111111111111111111111111111111") ?? ""
+        let feeSink = SwapDeliveredAmount.topicWord("0x2222222222222222222222222222222222222222") ?? ""
+        let logs = [
+            // 1,000 USDC in, then a 10 USDC fee out of the vault in the same receipt.
+            SwapDeliveredAmount.Log(address: token, topics: [SwapDeliveredAmount.transferTopic, pool, vaultWord], data: "0x3b9aca00"),
+            SwapDeliveredAmount.Log(address: token, topics: [SwapDeliveredAmount.transferTopic, vaultWord, feeSink], data: "0x989680")
+        ]
+        XCTAssertEqual(SwapDeliveredAmount.fromReceiptLogs(logs, token: token, recipient: vault, decimals: 6), 990)
+        // A self-transfer cancels out.
+        let selfOnly = [SwapDeliveredAmount.Log(address: token, topics: [SwapDeliveredAmount.transferTopic, vaultWord, vaultWord], data: "0x10")]
+        XCTAssertNil(SwapDeliveredAmount.fromReceiptLogs(selfOnly, token: token, recipient: vault, decimals: 6))
+        XCTAssertEqual(SwapDeliveredRetry.delays.first, 0)
     }
 
     func testApprovalGasLegs() {

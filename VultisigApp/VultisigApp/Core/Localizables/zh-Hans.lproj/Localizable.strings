@@ -1903,7 +1903,7 @@
 "swapReworkApprovalBody" = "如果 %3$@ 尚无法使用 %1$@ %2$@，审核时会在兑换前添加一笔授权，其燃料费在那里估算。";
 "swapReworkApprovalBodyNeeded" = "先允许 %3$@ 使用 %1$@ %2$@，然后兑换。燃料费已计入费用。";
 "swapReworkApprovalBodyReset" = "%1$@ 要求先将 %2$@ 的旧额度清零再重新授权。两次授权的燃料费已计入费用。";
-"swapReworkApprovalGas" = "授权燃料费（%d 笔）";
+"swapReworkApprovalGas" = "授权燃料费（%d 笔，最多）";
 "swapReworkApprovalTitle" = "可能需要授权";
 "swapReworkApprovalTitleNeeded" = "需要授权";
 "swapReworkApprovalTitleReset" = "需要 2 次授权";
@@ -1914,6 +1914,7 @@
 "swapReworkBrowseAll" = "查找更多代币";
 "swapReworkBrowseChain" = "在 %@ 上查找更多代币";
 "swapReworkCannotSwap" = "暂时无法兑换";
+"swapReworkCheckingDelivered" = "正在核对到账金额...";
 "swapReworkChooseAnother" = "选择其他币种";
 "swapReworkConfirmNewAmount" = "接受新金额";
 "swapReworkDeliveredLabel" = "已到账";
@@ -1963,6 +1964,7 @@
 "swapReworkMaxSlippage" = "最大滑点";
 "swapReworkMinimumReceived" = "最少收到";
 "swapReworkMinutes" = "%d 分钟";
+"swapReworkMostReceived" = "到账最多";
 "swapReworkMostToVault" = "最多进入你的保险库";
 "swapReworkNativeCoin" = "原生币";
 "swapReworkNotEnoughGasCTA" = "%@ 不足以支付燃料";

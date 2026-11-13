@@ -198,7 +198,7 @@ struct SwapReworkSuccessView: View {
                 if state.isDeliveredKnown {
                     row("swapReworkDeliveredLabel".localized, String(state.deliveredText.drop(while: { $0 == "+" })), color: Theme.colors.alertSuccess)
                 } else {
-                    Text("swapReworkDeliveredUnreported".localized)
+                    Text((state.isCheckingDelivered ? "swapReworkCheckingDelivered" : "swapReworkDeliveredUnreported").localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)

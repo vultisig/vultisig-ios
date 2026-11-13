@@ -72,15 +72,18 @@ enum SwapDeliveredAmount {
     /// keccak256("Transfer(address,address,uint256)")
     static let transferTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-    /// Sum of `token` Transfer logs whose `to` is `recipient`, in token units.
+    /// The recipient's net `token` movement in the receipt, in token units:
+    /// Transfers in minus Transfers out (a fee-on-transfer token that credits
+    /// and then debits in one receipt is not overstated; self-transfers cancel).
     static func fromReceiptLogs(_ logs: [Log], token: String, recipient: String, decimals: Int) -> Decimal? {
         guard !token.isEmpty, let recipientWord = topicWord(recipient) else { return nil }
-        let raw = logs
+        let transfers = logs
             .filter { $0.address.caseInsensitiveCompare(token) == .orderedSame }
             .filter { $0.topics.count == 3 && $0.topics[0].lowercased() == transferTopic }
-            .filter { $0.topics[2].lowercased() == recipientWord }
-            .compactMap { BigInt($0.data.stripHexPrefix(), radix: 16) }
-            .reduce(BigInt(0), +)
+        let amount: (Log) -> BigInt = { BigInt($0.data.stripHexPrefix(), radix: 16) ?? 0 }
+        let incoming = transfers.filter { $0.topics[2].lowercased() == recipientWord }.map(amount).reduce(BigInt(0), +)
+        let outgoing = transfers.filter { $0.topics[1].lowercased() == recipientWord }.map(amount).reduce(BigInt(0), +)
+        let raw = incoming - outgoing
         guard raw > 0 else { return nil }
         return (Decimal(string: raw.description) ?? 0) / pow(10, max(decimals, 0))
     }
@@ -104,4 +107,11 @@ enum SwapDeliveredAmount {
     private static func normalized(_ hash: String) -> String {
         hash.stripHexPrefix().uppercased()
     }
+}
+
+/// When to read a supported route's delivered amount after completion, in
+/// seconds from the first try: about two minutes in all, then give up and say
+/// the route did not report it.
+enum SwapDeliveredRetry {
+    static let delays: [Double] = [0, 5, 15, 30, 60]
 }

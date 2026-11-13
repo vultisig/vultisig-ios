@@ -27,6 +27,10 @@ enum SwapReworkConfig {
     /// the same beat.
     static let quoteLifetime: TimeInterval = 60
 
+    /// The existing `SwapDetailsViewModel.timer` counts down from this value
+    /// to its re-quote; the countdown ring is a fraction of it.
+    static let quoteRefreshTicks = 59
+
     /// Past this age without a successful refresh the quote is expired and
     /// review is blocked until a new one lands.
     static let quoteExpiryGrace: TimeInterval = 15

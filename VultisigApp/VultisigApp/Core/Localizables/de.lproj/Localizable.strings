@@ -1903,7 +1903,7 @@
 "swapReworkApprovalBody" = "Falls %3$@ %1$@ %2$@ noch nicht ausgeben darf, fügt die Überprüfung vor dem Swap eine Freigabe hinzu. Deren Gas wird dort geschätzt.";
 "swapReworkApprovalBodyNeeded" = "Erst %3$@ erlauben, %1$@ %2$@ auszugeben, dann der Swap. Das Gas steht bei den Gebühren.";
 "swapReworkApprovalBodyReset" = "%1$@ verlangt, dass die alte Freigabe für %2$@ erst auf null gesetzt wird. Das Gas beider Freigaben steht bei den Gebühren.";
-"swapReworkApprovalGas" = "Freigabe-Gas (%d Tx)";
+"swapReworkApprovalGas" = "Freigabe-Gas (%d Tx, höchstens)";
 "swapReworkApprovalTitle" = "Eventuell Freigabe nötig";
 "swapReworkApprovalTitleNeeded" = "Freigabe nötig";
 "swapReworkApprovalTitleReset" = "2 Freigaben nötig";
@@ -1914,6 +1914,7 @@
 "swapReworkBrowseAll" = "Weitere Token finden";
 "swapReworkBrowseChain" = "Weitere Token auf %@ finden";
 "swapReworkCannotSwap" = "Swap noch nicht möglich";
+"swapReworkCheckingDelivered" = "Prüfe, was angekommen ist...";
 "swapReworkChooseAnother" = "Andere Münze wählen";
 "swapReworkConfirmNewAmount" = "Neuen Betrag akzeptieren";
 "swapReworkDeliveredLabel" = "Geliefert";
@@ -1963,6 +1964,7 @@
 "swapReworkMaxSlippage" = "Max. Slippage";
 "swapReworkMinimumReceived" = "Mindestens erhalten";
 "swapReworkMinutes" = "%d Min.";
+"swapReworkMostReceived" = "Meiste Auszahlung";
 "swapReworkMostToVault" = "Am meisten in deinen Tresor";
 "swapReworkNativeCoin" = "native Coin";
 "swapReworkNotEnoughGasCTA" = "Nicht genug %@ für Gas";
