@@ -1298,7 +1298,8 @@
 "perpsLiquidationExplainFalls" = "Ako %1$@ padne na %2$@, ova se trgovina sama zatvara i gubite većinu njezine margine.";
 "perpsLiquidationExplainMargin" = "Dodavanje margine udaljava likvidaciju.";
 "perpsLiquidationExplainRises" = "Ako %1$@ naraste na %2$@, ova se trgovina sama zatvara i gubite većinu njezine margine.";
-"perpsLiquidationExplainStop" = "Vaš stop loss na %@ zatvara je prije.";
+"perpsLiquidationExplainStop" = "Vaš stop loss na %@ postavljen je da je zatvori prije toga.";
+"perpsLiquidationExplainStopBeyond" = "Vaš stop loss na %@ je iza likvidacije pa neće prvi zatvoriti trgovinu. Pomaknite ga bliže.";
 "perpsLiquidationPrice" = "Cijena likvidacije";
 "perpsLoadFailed" = "Učitavanje Hyperliquid podataka nije uspjelo. Povucite za ponovni pokušaj.";
 "perpsLong" = "long";

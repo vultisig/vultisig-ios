@@ -1298,7 +1298,8 @@
 "perpsLiquidationExplainFalls" = "Se %1$@ cair para %2$@, esta operação fecha sozinha e você perde a maior parte da margem.";
 "perpsLiquidationExplainMargin" = "Adicionar margem afasta a liquidação.";
 "perpsLiquidationExplainRises" = "Se %1$@ subir para %2$@, esta operação fecha sozinha e você perde a maior parte da margem.";
-"perpsLiquidationExplainStop" = "Seu stop loss em %@ fecha antes.";
+"perpsLiquidationExplainStop" = "Seu stop loss em %@ está configurado para fechá-la antes.";
+"perpsLiquidationExplainStopBeyond" = "Seu stop loss em %@ está além da liquidação, então não fechará a operação antes. Aproxime-o.";
 "perpsLiquidationPrice" = "Preço de liquidação";
 "perpsLoadFailed" = "Não foi possível carregar os dados da Hyperliquid. Puxe para tentar novamente.";
 "perpsLong" = "long";

@@ -217,7 +217,13 @@ struct PerpsLiquidationSheet: View {
             String(format: (isLong ? "perpsLiquidationExplainFalls" : "perpsLiquidationExplainRises").localized, coin, PerpsFormat.price($0))
         } ?? ""
         var rest: [String] = []
-        if let stopLoss { rest.append(String(format: "perpsLiquidationExplainStop".localized, PerpsFormat.price(stopLoss))) }
+        if let stopLoss, let liquidation {
+            // Only a stop between the price and liquidation can act first; one past
+            // liquidation (after margin came out, say) never triggers in time.
+            let actsFirst = isLong ? (stopLoss > liquidation && stopLoss < mark) : (stopLoss < liquidation && stopLoss > mark)
+            rest.append(String(format: (actsFirst ? "perpsLiquidationExplainStop" : "perpsLiquidationExplainStopBeyond").localized,
+                               PerpsFormat.price(stopLoss)))
+        }
         rest.append("perpsLiquidationExplainMargin".localized)
         return (Text(first).foregroundStyle(Theme.colors.textPrimary)
                 + Text(" " + rest.joined(separator: " ")).foregroundStyle(Theme.colors.textTertiary))

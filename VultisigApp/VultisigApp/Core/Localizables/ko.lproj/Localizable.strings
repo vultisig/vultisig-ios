@@ -1298,7 +1298,8 @@
 "perpsLiquidationExplainFalls" = "%1$@ 가격이 %2$@까지 떨어지면 이 거래는 자동으로 종료되고 마진 대부분을 잃습니다.";
 "perpsLiquidationExplainMargin" = "마진을 추가하면 청산 가격이 더 멀어집니다.";
 "perpsLiquidationExplainRises" = "%1$@ 가격이 %2$@까지 오르면 이 거래는 자동으로 종료되고 마진 대부분을 잃습니다.";
-"perpsLiquidationExplainStop" = "%@의 손절이 먼저 종료합니다.";
+"perpsLiquidationExplainStop" = "%@의 손절은 그 전에 종료하도록 설정되어 있습니다.";
+"perpsLiquidationExplainStopBeyond" = "%@의 손절은 청산 가격을 넘어 있어 먼저 종료되지 않습니다. 더 가깝게 옮기세요.";
 "perpsLiquidationPrice" = "청산 가격";
 "perpsLoadFailed" = "Hyperliquid 데이터를 불러오지 못했습니다. 당겨서 다시 시도하세요.";
 "perpsLong" = "롱";

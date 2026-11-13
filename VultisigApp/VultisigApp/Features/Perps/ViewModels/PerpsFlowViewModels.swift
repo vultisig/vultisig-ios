@@ -155,15 +155,25 @@ final class PerpsTicketViewModel: ObservableObject {
 
     /// 25% / 50% of what can be traded (floored to cents); Max uses `applyMax`.
     func applyFraction(_ fraction: Decimal) {
-        let base = availableToTrade > 0 ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0)
-        amountText = PerpsInput.usdcText((base * fraction).rounded(scale: 2, mode: .down))
+        amountText = PerpsInput.usdcText((affordableMargin * fraction).rounded(scale: 2, mode: .down))
     }
 
     /// Max fills what the account can trade with, or the vault's USDC when the
     /// account is empty (the difference arrives by deposit).
     func applyMax() {
-        let max = availableToTrade > 0 ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0)
-        amountText = PerpsInput.usdcText(max.rounded(scale: 2, mode: .down))
+        amountText = PerpsInput.usdcText(affordableMargin.rounded(scale: 2, mode: .down))
+    }
+
+    /// The most margin the balance can fund once trading fees (and, from the
+    /// vault, the deposit's forwarding + first-deposit fees) are taken out:
+    /// margin + margin x leverage x fee rate fits in what is there.
+    var affordableMargin: Decimal {
+        let fromAccount = availableToTrade > 0
+        var base = fromAccount ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0)
+        if !fromAccount { base -= HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0) }
+        guard base > 0 else { return 0 }
+        let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate
+        return base / (1 + Decimal(leverage) * feeRate)
     }
 
     /// Stop 7% from entry, or halfway to liquidation if that is closer.
