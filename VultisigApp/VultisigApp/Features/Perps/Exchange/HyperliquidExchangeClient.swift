@@ -22,7 +22,8 @@ final class HLNonceSource: @unchecked Sendable {
     private var last: UInt64 = 0
     private let clock: () -> Date
 
-    init(clock: @escaping () -> Date = Date.init) {
+    /// Venue-corrected time, so `expiresAfter` is measured on the clock HL checks it against.
+    init(clock: @escaping () -> Date = { HLVenueClock.shared.now() }) {
         self.clock = clock
     }
 
@@ -42,8 +43,9 @@ final class HLNonceSource: @unchecked Sendable {
     }
 
     /// Short replay window for L1 actions, as the spec's policy section asks:
-    /// a signed-but-unsent order is dead after this.
-    static let defaultExpiryMs: UInt64 = 60_000
+    /// a signed-but-unsent order is dead after this. Live signing stamps with
+    /// `HLSigningMode.expiryBudgetMs` instead (60 s Fast Vault, 180 s paired).
+    static let defaultExpiryMs: UInt64 = HLSigningMode.fastVault.expiryBudgetMs
 }
 
 /// The signature in the posted body. A vault signature only exists after the
@@ -79,7 +81,9 @@ enum HLExchangeSignature: Equatable, Sendable {
 /// One /exchange request, ready to post.
 struct HLExchangeRequest: Equatable, Sendable {
     enum Kind: String, Sendable {
-        case order, cancel, updateLeverage, updateIsolatedMargin, approveAgent, approveBuilderFee, withdraw3
+        case order, cancel, batchModify, noop, updateLeverage, updateIsolatedMargin, approveAgent, approveBuilderFee, withdraw3
+
+        var isUserSigned: Bool { [.approveAgent, .approveBuilderFee, .withdraw3].contains(self) }
     }
 
     let kind: Kind
@@ -136,13 +140,11 @@ struct HLExchangeRequest: Equatable, Sendable {
 
     /// The request the shared keysign flow would sign for this body.
     var signRequest: PerpsSignRequest {
-        switch kind {
-        case .approveAgent, .approveBuilderFee, .withdraw3:
+        if kind.isUserSigned {
             return .userSigned(HLUserSignedAction(action: action, typedData: typedData, nonce: nonce))
-        default:
-            return .l1(action: action, nonce: nonce, isMainnet: isMainnet ?? PerpsConfig.isMainnet,
-                       vaultAddress: vaultAddress, expiresAfter: expiresAfter)
         }
+        return .l1(action: action, nonce: nonce, isMainnet: isMainnet ?? PerpsConfig.isMainnet,
+                   vaultAddress: vaultAddress, expiresAfter: expiresAfter)
     }
 }
 

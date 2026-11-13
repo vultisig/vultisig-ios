@@ -141,7 +141,10 @@ final class HyperliquidPerpsRepository: PerpsRepository {
 
     func markets() async throws -> [PerpsMarket] {
         let response = try await httpClient.request(HyperliquidInfoAPI.metaAndAssetContexts, responseType: HLMetaAndAssetContexts.self)
-        return Self.markets(from: response.data)
+        HLVenueClock.shared.record(response.response)
+        let markets = Self.markets(from: response.data)
+        PerpsMarketCache.shared.record(markets)
+        return markets
     }
 
     func candles(coin: String, interval: HLCandleInterval, since: Date, until: Date) async throws -> [HLCandle] {

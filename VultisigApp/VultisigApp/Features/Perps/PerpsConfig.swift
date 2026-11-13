@@ -68,6 +68,18 @@ enum PerpsConfig {
     /// the derive path carried to co-signers) lands in a follow-up.
     static let allowsSigning = false
 
+    /// How a changed stop / take profit is replaced. `.modify` is one signed
+    /// `batchModify`; switch to `.placeThenCancel` if the testnet run shows it
+    /// cannot retarget `positionTpsl` triggers.
+    static let exitEditStrategy: PerpsExitEditStrategy = .modify
+
+    /// Joiner-side check of perps keysign payloads: rebuild the digest from
+    /// the raw action, refuse a mismatch or a missing preimage, and show the
+    /// decoded action. Off until commondata carries the preimage
+    /// (`CustomMessagePayload.hyperliquid`): turned on today it would refuse
+    /// every Hyperliquid payload, including ones signed from a dApp.
+    static let verifiesCoSignedActions = false
+
     /// User-signed domain chain id. Any chain is valid; the spec recommends
     /// Arbitrum One. The SDK parity tests use the SDK's 0x66eee.
     static let signatureChainId: UInt64 = 0xa4b1

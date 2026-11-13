@@ -44,6 +44,13 @@ struct CustomMessagePayload: Codable, Hashable {
     /// not carried in the proto until commondata gains `derive_path`.
     var derivePath: String? = nil
 
+    /// The raw Hyperliquid action behind an `Agent` / `HyperliquidTransaction`
+    /// typed-data payload, so a co-signer can rebuild the digest and show the
+    /// trade (`HyperliquidCoSignVerifier`). Display and verification only: it
+    /// never feeds `keysignMessages`. Local only until commondata gains
+    /// `CustomMessagePayload.hyperliquid = 8`.
+    var hyperliquid: HyperliquidActionPreimage? = nil
+
     var keysignMessages: [String] {
         let data: Data
 
