@@ -13,6 +13,14 @@ enum KeysignReview: Hashable, Identifiable {
     case send(tx: SendTransaction, retrySignal: SendRetrySignal, vault: Vault, prebuiltKeysignPayload: KeysignPayload? = nil)
     case swap(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vaultPubKeyECDSA: String)
     case functionTransaction(tx: SendTransaction, vault: Vault)
+    /// Perps: review only, signing disabled. See `PerpsReviewContent`.
+    case perps(request: PerpsReviewRequest, vaultPubKeyECDSA: String)
 
     var id: Self { self }
+
+    /// Perps reviews match the other perps sheets: system dim, no root blur.
+    var usesQuietBackdrop: Bool {
+        if case .perps = self { return true }
+        return false
+    }
 }

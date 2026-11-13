@@ -36,6 +36,7 @@ struct SettingsAdvancedView: View {
         case thorchainStagenet
         case sell
         case tssBatching
+        case perps
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
@@ -77,6 +78,12 @@ struct SettingsAdvancedView: View {
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
+            )
+        case .perps:
+            SettingToggleCell(
+                title: "settingsAdvancedPerps".localized,
+                icon: "chart.line.uptrend.xyaxis",
+                isEnabled: $settingsViewModel.perpsEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

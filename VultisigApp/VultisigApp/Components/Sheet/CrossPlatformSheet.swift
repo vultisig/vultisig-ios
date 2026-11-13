@@ -21,13 +21,18 @@ extension View {
     ///   instead of a native `.sheet` on macOS 26+. Needed where the sheet's
     ///   content is Metal-backed Rive artwork, which a native macOS sheet can
     ///   fail to composite.
+    /// - Parameter usesQuietBackdrop: items for which the root's blur-and-darken
+    ///   backdrop stays off, leaving only the system dim. Defaults to none, so
+    ///   every existing caller behaves exactly as before.
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
         useOverlayOnMacOS: Bool = false,
+        usesQuietBackdrop: @escaping (Item) -> Bool = { _ in false },
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) -> some View {
-        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, useOverlayOnMacOS: useOverlayOnMacOS, sheetContent: sheetContent))
+        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, useOverlayOnMacOS: useOverlayOnMacOS,
+                                       usesQuietBackdrop: usesQuietBackdrop, sheetContent: sheetContent))
     }
 }
 
@@ -150,9 +155,12 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
 
     var onDismiss: (() -> Void)?
     let useOverlayOnMacOS: Bool
+    let usesQuietBackdrop: (Item) -> Bool
     var sheetContent: (Item) -> SheetContent
 
     @FocusState private var overlayFocused: Bool
+    /// The presented item skipped the backdrop counter, so its dismissal must too.
+    @State private var isQuietPresentation = false
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
     @State private var isPresented: Bool = false
@@ -165,11 +173,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
         useOverlayOnMacOS: Bool = false,
+        usesQuietBackdrop: @escaping (Item) -> Bool = { _ in false },
         @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
     ) {
         self._item = item
         self.onDismiss = onDismiss
         self.useOverlayOnMacOS = useOverlayOnMacOS
+        self.usesQuietBackdrop = usesQuietBackdrop
         self.sheetContent = sheetContent
     }
 
@@ -267,6 +277,14 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
             .onChange(of: item) { _, newValue in
                 // Defer state updates to avoid interfering with sheet animation on macOS 15.5
                 Task { @MainActor in
+                    if let newValue, usesQuietBackdrop(newValue) {
+                        isQuietPresentation = true
+                        return
+                    }
+                    if newValue == nil, isQuietPresentation {
+                        isQuietPresentation = false
+                        return
+                    }
                     if newValue != nil {
                         counterManager.increment()
                         counter = counterManager.counter
