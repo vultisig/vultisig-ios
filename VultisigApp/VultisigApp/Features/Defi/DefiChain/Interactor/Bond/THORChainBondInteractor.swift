@@ -21,6 +21,7 @@ private struct BondPositionDraft: Sendable {
 
 struct THORChainBondInteractor: BondInteractor {
     private let thorchainAPIService = THORChainAPIService()
+    private let rewardHistoryStore = BondRewardHistoryStore()
 
     let vultiNodeAddresses: [String] = []
 
@@ -51,19 +52,12 @@ struct THORChainBondInteractor: BondInteractor {
                             address: node.address,
                             state: nodeState
                         )
-                        // One extra `?height=` query for the card's Last
-                        // Reward. The sheet's own view model currently
-                        // resolves a fresh interactor/API service, so it does
-                        // not yet reuse this exact height's cache entry —
-                        // that's a follow-up, not a correctness issue here. A
-                        // failure or "no prior churn" here must not fail the
-                        // whole position: the card just shows no Last Reward,
-                        // not a blank list.
-                        let lastReward = try? await thorchainAPIService.getBondRewardHistory(
+                        // A failure here must not fail the whole position: the card just shows no Last Reward.
+                        let lastReward = try? await rewardHistory(
                             nodeAddress: node.address,
                             myBondAddress: runeAddress,
                             limit: 1
-                        ).first?.amount
+                        ).entries.first?.amount
                         return BondPositionDraft(
                             node: bondNode,
                             amount: metrics.myBond,
@@ -116,8 +110,8 @@ struct THORChainBondInteractor: BondInteractor {
         return true
     }
 
-    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
-        try await thorchainAPIService.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> BondRewardHistory {
+        try await rewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
     }
 
     func bondCoinAddress(in vault: Vault) async -> String? {
@@ -139,6 +133,21 @@ extension THORChainBondInteractor {
 }
 
 private extension THORChainBondInteractor {
+    func rewardHistory(
+        nodeAddress: String,
+        myBondAddress: String,
+        limit: Int = BondRewardHistoryConfig.limit
+    ) async throws -> BondRewardHistory {
+        try await rewardHistoryStore.fetch(bondAddress: myBondAddress, nodeAddress: nodeAddress) { known in
+            try await thorchainAPIService.getBondRewardHistory(
+                nodeAddress: nodeAddress,
+                myBondAddress: myBondAddress,
+                limit: limit,
+                known: known
+            )
+        }
+    }
+
     @MainActor
     func materialize(
         drafts: [BondPositionDraft],

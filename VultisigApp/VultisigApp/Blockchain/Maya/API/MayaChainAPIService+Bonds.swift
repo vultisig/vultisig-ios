@@ -127,68 +127,33 @@ extension MayaChainAPIService {
 
     /// This bond address's share of the award paid at each of the vault's
     /// last `limit` churns, newest first. Mirrors
-    /// `THORChainAPIService.getBondRewardHistory` — see it for the
-    /// batched-stop-at-first-gap and caching rationale.
+    /// `THORChainAPIService.getBondRewardHistory`.
     func getBondRewardHistory(
         nodeAddress: String,
         myBondAddress: String,
-        limit: Int = BondRewardHistoryConfig.limit
-    ) async throws -> [BondRewardHistoryEntry] {
-        let churns = try await getChurns()
-        let recentChurns = churns
-            .sorted { (Int($0.height) ?? 0) > (Int($1.height) ?? 0) }
-            .prefix(limit)
-
-        let queries: [(height: Int, date: Date)] = recentChurns.compactMap { churn in
-            guard
-                let churnHeight = Int(churn.height),
-                let dateNanos = Double(churn.date)
-            else { return nil }
-            return (height: churnHeight - 1, date: Date(timeIntervalSince1970: dateNanos / 1_000_000_000))
-        }
-
-        var entries: [BondRewardHistoryEntry] = []
-        for batch in queries.chunked(into: BondRewardHistoryConfig.concurrency) {
-            // See the identical comment in THORChainAPIService.getBondRewardHistory.
-            try Task.checkCancellation()
-
-            let batchResults = try await withBoundedConcurrency(
-                batch,
-                maxConcurrent: BondRewardHistoryConfig.concurrency
-            ) { query -> BondRewardHistoryQueryResult in
-                do {
-                    let node = try await self.getNodeDetails(nodeAddress: nodeAddress, height: query.height)
-                    guard let share = BondRewardMath.share(
-                        providers: node.bondProviders.providers.map { ($0.bondAddress, $0.totalBond) },
-                        nodeOperatorFeeBps: Decimal(string: node.bondProviders.nodeOperatorFee) ?? 0,
-                        currentAward: Decimal(string: node.currentAward) ?? 0,
-                        myBondAddress: myBondAddress
-                    ) else {
-                        return .notAProvider
-                    }
-                    return .found(BondRewardHistoryEntry(churnHeight: query.height + 1, churnDate: query.date, amount: share.myAward))
-                } catch {
-                    return .failed(error)
+        limit: Int = BondRewardHistoryConfig.limit,
+        known: [Int: BondRewardHistoryEntry] = [:]
+    ) async throws -> BondRewardHistory {
+        try await BondRewardHistoryWalker.walk(
+            churns: try await getChurns(),
+            limit: limit,
+            known: known
+        ) { height, date in
+            do {
+                let node = try await self.getNodeDetails(nodeAddress: nodeAddress, height: height)
+                guard let share = BondRewardMath.share(
+                    providers: node.bondProviders.providers.map { ($0.bondAddress, $0.totalBond) },
+                    nodeOperatorFeeBps: Decimal(string: node.bondProviders.nodeOperatorFee) ?? 0,
+                    currentAward: Decimal(string: node.currentAward) ?? 0,
+                    myBondAddress: myBondAddress
+                ) else {
+                    return .notAProvider
                 }
-            }
-
-            for result in batchResults {
-                switch result {
-                case .found(let entry):
-                    entries.append(entry)
-                case .notAProvider:
-                    // See the identical comment in THORChainAPIService.getBondRewardHistory.
-                    try Task.checkCancellation()
-                    return entries
-                case .failed(let error):
-                    // See the identical comment in THORChainAPIService.getBondRewardHistory.
-                    throw error
-                }
+                return .found(BondRewardHistoryEntry(churnHeight: height + 1, churnDate: date, amount: share.myAward))
+            } catch {
+                return .failed(error)
             }
         }
-        // See the identical comment in THORChainAPIService.getBondRewardHistory.
-        try Task.checkCancellation()
-        return entries
     }
 
     /// Estimate next churn ETA for MayaChain

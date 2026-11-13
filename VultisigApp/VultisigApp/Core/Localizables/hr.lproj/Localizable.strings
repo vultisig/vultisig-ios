@@ -1346,6 +1346,7 @@
 "retry" = "Pokušaj ponovo";
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
 "rewardHistoryNodeAddress" = "Čvor: %@";
+"rewardHistoryPartial" = "Neke nagrade nije bilo moguće učitati";
 "rewardHistoryUnavailable" = "Povijest Nagrada Nedostupna";
 "rippleCustomTokenInvalidFormat" = "Unesite XRP token kao currency.issuer — kod tokena (npr. USD ili SOLO), a zatim adresu izdavatelja.";
 "rippleFieldAmount" = "Iznos";

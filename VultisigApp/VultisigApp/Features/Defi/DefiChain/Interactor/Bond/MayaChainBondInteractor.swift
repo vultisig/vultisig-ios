@@ -21,6 +21,7 @@ private struct BondPositionDraft: Sendable {
 
 struct MayaChainBondInteractor: BondInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
+    private let rewardHistoryStore = BondRewardHistoryStore()
 
     let vultiNodeAddresses: [String] = []
 
@@ -53,13 +54,12 @@ struct MayaChainBondInteractor: BondInteractor {
                     address: node.address,
                     state: nodeState
                 )
-                // One extra `?height=` query for the card's Last Reward —
-                // see the identical comment in THORChainBondInteractor.
-                let lastReward = try? await mayaChainAPIService.getBondRewardHistory(
+                // A failure here must not fail the whole position: the card just shows no Last Reward.
+                let lastReward = try? await rewardHistory(
                     nodeAddress: node.address,
                     myBondAddress: cacaoAddress,
                     limit: 1
-                ).first?.amount
+                ).entries.first?.amount
                 drafts.append(
                     BondPositionDraft(
                         node: bondNode,
@@ -100,8 +100,8 @@ struct MayaChainBondInteractor: BondInteractor {
         return true
     }
 
-    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
-        try await mayaChainAPIService.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> BondRewardHistory {
+        try await rewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
     }
 
     func bondCoinAddress(in vault: Vault) async -> String? {
@@ -123,6 +123,21 @@ extension MayaChainBondInteractor {
 }
 
 private extension MayaChainBondInteractor {
+    func rewardHistory(
+        nodeAddress: String,
+        myBondAddress: String,
+        limit: Int = BondRewardHistoryConfig.limit
+    ) async throws -> BondRewardHistory {
+        try await rewardHistoryStore.fetch(bondAddress: myBondAddress, nodeAddress: nodeAddress) { known in
+            try await mayaChainAPIService.getBondRewardHistory(
+                nodeAddress: nodeAddress,
+                myBondAddress: myBondAddress,
+                limit: limit,
+                known: known
+            )
+        }
+    }
+
     @MainActor
     func materialize(
         drafts: [BondPositionDraft],

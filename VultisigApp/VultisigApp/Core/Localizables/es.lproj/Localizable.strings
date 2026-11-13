@@ -1346,6 +1346,7 @@
 "retry" = "Reintentar";
 "reviewYourVaultDevices" = "Revisa los dispositivos de tu bóveda";
 "rewardHistoryNodeAddress" = "Nodo: %@";
+"rewardHistoryPartial" = "No se pudieron cargar algunas recompensas";
 "rewardHistoryUnavailable" = "Historial de Recompensas No Disponible";
 "rippleCustomTokenInvalidFormat" = "Ingresa un token XRP como currency.issuer: el código del token (p. ej. USD o SOLO) y luego la dirección del emisor.";
 "rippleFieldAmount" = "Cantidad";

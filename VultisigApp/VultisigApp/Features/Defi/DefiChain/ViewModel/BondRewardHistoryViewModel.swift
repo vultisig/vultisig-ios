@@ -18,6 +18,8 @@ final class BondRewardHistoryViewModel: ObservableObject {
     @Published private(set) var history: [BondRewardHistoryEntry] = []
     @Published private(set) var isLoading = false
     @Published private(set) var loadError: String?
+    /// `false` when some rewards could not be loaded, so `total` may be short.
+    @Published private(set) var isHistoryComplete = true
 
     let coin: Coin
     /// Names whose rewards these are, under the header total.
@@ -27,7 +29,7 @@ final class BondRewardHistoryViewModel: ObservableObject {
     /// off the already-loaded position, so it never waits on the history fetch.
     let upcomingAmount: Decimal?
 
-    private let fetchHistory: @MainActor () async throws -> [BondRewardHistoryEntry]
+    private let fetchHistory: @MainActor () async throws -> BondRewardHistory
     private var fetchTask: Task<Void, Never>?
 
     /// Sum of realized (dated) rows only — Upcoming is excluded per the
@@ -40,7 +42,7 @@ final class BondRewardHistoryViewModel: ObservableObject {
         coin: Coin,
         subtitle: String,
         upcomingAmount: Decimal?,
-        fetchHistory: @escaping @MainActor () async throws -> [BondRewardHistoryEntry]
+        fetchHistory: @escaping @MainActor () async throws -> BondRewardHistory
     ) {
         self.coin = coin
         self.subtitle = subtitle
@@ -70,7 +72,10 @@ final class BondRewardHistoryViewModel: ObservableObject {
             subtitle: String(format: "stakedCoin".localized, TokensStore.tcy.ticker),
             upcomingAmount: estimatedReward.map { runeCoin.decimalToCrypto(value: $0) }
         ) {
-            try await THORChainStakingService.shared.fetchTcyRewardHistory(address: address)
+            BondRewardHistory(
+                entries: try await THORChainStakingService.shared.fetchTcyRewardHistory(address: address),
+                isComplete: true
+            )
         }
     }
 
@@ -110,9 +115,10 @@ final class BondRewardHistoryViewModel: ObservableObject {
         }
 
         do {
-            let entries = try await fetchHistory()
+            let result = try await fetchHistory()
             guard !Task.isCancelled else { return }
-            history = entries
+            history = result.entries
+            isHistoryComplete = result.isComplete
         } catch {
             guard !Task.isCancelled else { return }
             // History-only failure: the list this sheet was opened from is
