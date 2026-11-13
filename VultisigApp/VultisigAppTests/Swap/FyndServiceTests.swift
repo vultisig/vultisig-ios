@@ -106,6 +106,8 @@ final class FyndServiceTests: XCTestCase {
 final class FyndQuoteValidationTests: XCTestCase {
 
     private let router = "0x1644d2477f809cc2c71bccfd6dc9497e3f83210d"
+    private let usdc = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+    private let attacker = "0x00000000000000000000000000000000deadbeef"
     private let now = Date(timeIntervalSince1970: 1_800_000_000)
     private let sell = BigInt("1000000000000000000")
     private let amountOut = BigInt(3_000_000_000)
@@ -117,20 +119,52 @@ final class FyndQuoteValidationTests: XCTestCase {
         XCTAssertEqual(quote.value, String(sell))
     }
 
+    func testEveryTransferFromEntrypointDecodes() throws {
+        for selector in [FyndRouterCall.splitSwapSelector, FyndRouterCall.sequentialSwapSelector, FyndRouterCall.singleSwapSelector] {
+            XCTAssertNoThrow(try FyndService.validate(order(call: call(selector: selector)), context: context(clientFeeBps: 0)), selector)
+        }
+    }
+
+    func testRouterNativeAddressCountsAsTheNativeCoin() throws {
+        let native = call(tokenIn: FyndService.routerNativeAddress)
+        XCTAssertNoThrow(try FyndService.validate(order(call: native), context: context(clientFeeBps: 0)))
+    }
+
     func testSignedFeeQuoteIsAccepted() throws {
         let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
         let quote = try FyndService.validate(signedOrder(clientFee: fee), context: context(clientFeeBps: 63))
         XCTAssertEqual(quote.clientFee, fee)
         XCTAssertEqual(quote.netAmountOut, amountOut - 300 - fee)
 
-        let (evmQuote, _) = FyndService.makeQuote(quote, sender: "0xa", tokenOut: "0xusdc")
+        let (evmQuote, _) = FyndService.makeQuote(quote, sender: recipient, tokenOut: usdc)
         XCTAssertEqual(evmQuote.tx.swapFee, String(fee))
-        XCTAssertEqual(evmQuote.tx.swapFeeTokenContract, "0xusdc")
+        XCTAssertEqual(evmQuote.tx.swapFeeTokenContract, usdc)
         XCTAssertEqual(evmQuote.dstAmount, String(amountOut - 300 - fee))
     }
 
     func testRejectsAForeignRouter() {
-        assertInvalid(order(to: "0x00000000000000000000000000000000deadbeef"), clientFeeBps: 0)
+        assertInvalid(order(to: attacker), clientFeeBps: 0)
+    }
+
+    func testRejectsUnknownSelectorsAndVaultEntrypoints() {
+        assertInvalid(order(data: "0xabcdef01"), clientFeeBps: 0)
+        // singleSwapUsingVault: same head, but spends the sender's router vault.
+        assertInvalid(order(call: call(selector: "ef7008ea")), clientFeeBps: 0)
+    }
+
+    func testRejectsCalldataThatSwapsSomethingElse() {
+        assertInvalid(order(call: call(amountIn: sell - 1)), clientFeeBps: 0)
+        assertInvalid(order(call: call(tokenOut: attacker)), clientFeeBps: 0)
+        assertInvalid(order(call: call(tokenIn: usdc)), clientFeeBps: 0)
+        assertInvalid(order(call: call(receiver: attacker)), clientFeeBps: 0)
+        assertInvalid(order(call: call(minAmountOut: minOut(clientFee: 0) - 1)), clientFeeBps: 0)
+        assertInvalid(order(call: call(expectedAmountOut: amountOut + 1)), clientFeeBps: 0)
+    }
+
+    func testExpectedWordsInTrailingDataDoNotSatisfyTheDecoder() {
+        let honestWords = FyndRouterCallEncoder.word(sell) + FyndRouterCallEncoder.address(recipient)
+        let data = "0x" + call(receiver: attacker) + honestWords
+        assertInvalid(order(data: data), clientFeeBps: 0)
     }
 
     func testRejectsADifferentSellAmountOrValue() {
@@ -142,43 +176,39 @@ final class FyndQuoteValidationTests: XCTestCase {
         assertInvalid(order(minReceived: "1"), clientFeeBps: 0)
     }
 
-    func testRejectsCalldataThatDoesNotEncodeTheQuote() {
-        assertInvalid(order(data: "0xabcdef01"), clientFeeBps: 0)
-        let min = minOut(clientFee: 0)
-        assertInvalid(order(data: calldata(minReceived: min - 1)), clientFeeBps: 0)
-        assertInvalid(order(data: calldata(minReceived: min, recipient: "0x00000000000000000000000000000000deadbeef")), clientFeeBps: 0)
-    }
-
-    func testRejectsAnOverflowingSignatureOffsetWithoutTrapping() {
-        let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
-        assertInvalid(signedOrder(clientFee: fee, offset: Int.max), clientFeeBps: 63)
-    }
-
     func testRejectsAClientFeeTheAppDidNotAskFor() {
         assertInvalid(order(clientFee: "5"), clientFeeBps: 0)
+        assertInvalid(order(call: call(feeUnits: 630_000)), clientFeeBps: 0)
     }
 
     func testRejectsAClientFeeThatDiffersFromTheRequestedBps() {
         let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
         assertInvalid(signedOrder(clientFee: fee + 10), clientFeeBps: 63)
-        assertInvalid(signedOrder(clientFee: fee - 10), clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, feeUnits: 640_000), clientFeeBps: 63)
     }
 
     func testRejectsAQuoteForAnotherFeeReceiver() {
         let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
-        assertInvalid(signedOrder(clientFee: fee, receiver: "0x00000000000000000000000000000000deadbeef"), clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, feeReceiver: attacker), clientFeeBps: 63)
+    }
+
+    func testRejectsASubsidizedFee() {
+        let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, maxContribution: 1), clientFeeBps: 63)
     }
 
     func testRejectsTheUnsignedPlaceholder() {
         let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
         assertInvalid(signedOrder(clientFee: fee, signature: String(repeating: "0", count: 130)), clientFeeBps: 63)
-        assertInvalid(signedOrder(clientFee: fee, offset: nil), clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, signature: ""), clientFeeBps: 63)
     }
 
-    func testRejectsAMissingOrExpiredDeadline() {
+    func testRejectsAMissingMismatchedOrExpiredDeadline() {
         let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
         assertInvalid(signedOrder(clientFee: fee, deadline: nil), clientFeeBps: 63)
-        assertInvalid(signedOrder(clientFee: fee, deadline: Int(now.timeIntervalSince1970) - 1), clientFeeBps: 63)
+        assertInvalid(signedOrder(clientFee: fee, deadline: 1_800_000_900, calldataDeadline: 1_800_000_901), clientFeeBps: 63)
+        let expired = Int(now.timeIntervalSince1970) - 1
+        assertInvalid(signedOrder(clientFee: fee, deadline: expired, calldataDeadline: expired), clientFeeBps: 63)
     }
 
     func testMapsFailedStatuses() {
@@ -192,15 +222,59 @@ final class FyndQuoteValidationTests: XCTestCase {
     }
 }
 
+/// ABI-encodes TychoRouterV3 swap calls for the validator tests.
+enum FyndRouterCallEncoder {
+    static func word(_ value: BigInt) -> String {
+        let hex = String(value, radix: 16)
+        return String(repeating: "0", count: 64 - hex.count) + hex
+    }
+
+    static func address(_ address: String) -> String {
+        String(repeating: "0", count: 24) + address.lowercased().stripHexPrefix()
+    }
+
+    static func bytes(_ hex: String) -> String {
+        let padding = (64 - hex.count % 64) % 64
+        return word(BigInt(hex.count / 2)) + hex + String(repeating: "0", count: padding)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    static func encode(
+        selector: String,
+        amountIn: BigInt,
+        tokenIn: String,
+        tokenOut: String,
+        expectedAmountOut: BigInt,
+        minAmountOut: BigInt,
+        receiver: String,
+        feeUnits: BigInt,
+        feeReceiver: String,
+        maxContribution: BigInt,
+        deadline: BigInt,
+        signature: String
+    ) -> String {
+        var head = [word(amountIn), address(tokenIn), address(tokenOut), word(expectedAmountOut), word(minAmountOut)]
+        if selector == FyndRouterCall.splitSwapSelector { head.append(word(2)) }
+        head.append(address(receiver))
+        let headSize = (head.count + 2) * 32
+        let tuple = word(feeUnits) + address(feeReceiver) + word(maxContribution) + word(deadline) + word(5 * 32) + bytes(signature)
+        head.append(word(BigInt(headSize)))
+        head.append(word(BigInt(headSize + tuple.count / 2)))
+        return selector + head.joined() + tuple + bytes("")
+    }
+}
+
 private extension FyndQuoteValidationTests {
     var recipient: String { "0x1111111111111111111111111111111111111111" }
+    var zeroAddress: String { FyndService.nativeTokenAddress }
 
     func context(clientFeeBps: Int) -> FyndQuoteContext {
         FyndQuoteContext(
             router: router,
             recipient: recipient,
+            tokenIn: zeroAddress,
+            tokenOut: usdc,
             sellAmount: sell,
-            sellsNative: true,
             slippageBps: 100,
             clientFeeBps: clientFeeBps,
             feeReceiver: FyndService.feeReceiver,
@@ -211,13 +285,34 @@ private extension FyndQuoteValidationTests {
     func netOut(clientFee: BigInt) -> BigInt { amountOut - 300 - clientFee }
     func minOut(clientFee: BigInt) -> BigInt { netOut(clientFee: clientFee) * 9_900 / 10_000 }
 
-    /// Selector plus the head words the validator binds: amount in, min out, recipient.
-    func calldata(minReceived: BigInt, recipient: String? = nil, tail: String = "") -> String {
-        "0xabcdef01"
-            + FyndService.uintWord(sell)
-            + FyndService.uintWord(minReceived)
-            + FyndService.addressWord(recipient ?? self.recipient)
-            + tail
+    func call(
+        selector: String = FyndRouterCall.singleSwapSelector,
+        amountIn: BigInt? = nil,
+        tokenIn: String? = nil,
+        tokenOut: String? = nil,
+        expectedAmountOut: BigInt? = nil,
+        minAmountOut: BigInt? = nil,
+        receiver: String? = nil,
+        feeUnits: BigInt = 0,
+        feeReceiver: String? = nil,
+        maxContribution: BigInt = 0,
+        deadline: BigInt = 0,
+        signature: String = ""
+    ) -> String {
+        FyndRouterCallEncoder.encode(
+            selector: selector,
+            amountIn: amountIn ?? sell,
+            tokenIn: tokenIn ?? zeroAddress,
+            tokenOut: tokenOut ?? usdc,
+            expectedAmountOut: expectedAmountOut ?? amountOut,
+            minAmountOut: minAmountOut ?? minOut(clientFee: 0),
+            receiver: receiver ?? recipient,
+            feeUnits: feeUnits,
+            feeReceiver: feeReceiver ?? zeroAddress,
+            maxContribution: maxContribution,
+            deadline: deadline,
+            signature: signature
+        )
     }
 
     func order(
@@ -227,8 +322,8 @@ private extension FyndQuoteValidationTests {
         value: String? = nil,
         clientFee: String = "0",
         minReceived: String? = nil,
+        call: String? = nil,
         data: String? = nil,
-        offset: Int? = nil,
         deadline: Int? = nil
     ) -> FyndOrderQuote {
         let fee = BigInt(clientFee) ?? 0
@@ -242,8 +337,8 @@ private extension FyndQuoteValidationTests {
             transaction: .init(
                 to: to ?? router,
                 value: value ?? String(sell),
-                data: data ?? calldata(minReceived: BigInt(min) ?? 0),
-                clientFeeSignatureOffset: offset
+                data: data ?? ("0x" + (call ?? self.call(minAmountOut: BigInt(min)))),
+                clientFeeSignatureOffset: nil
             ),
             feeBreakdown: .init(routerFee: "300", clientFee: clientFee, maxSlippage: "0", minAmountReceived: min),
             clientFeeDeadline: deadline
@@ -252,18 +347,22 @@ private extension FyndQuoteValidationTests {
 
     func signedOrder(
         clientFee: BigInt,
-        receiver: String? = nil,
+        feeUnits: BigInt = 630_000,
+        feeReceiver: String? = nil,
+        maxContribution: BigInt = 0,
         signature: String = String(repeating: "ab", count: 65),
-        offset: Int? = 4 + 32 * 4,
-        deadline: Int? = 1_800_000_900
+        deadline: Int? = 1_800_000_900,
+        calldataDeadline: Int? = nil
     ) -> FyndOrderQuote {
-        let tail = FyndService.addressWord(receiver ?? FyndService.feeReceiver) + signature
-        return order(
-            clientFee: String(clientFee),
-            data: calldata(minReceived: minOut(clientFee: clientFee), tail: tail),
-            offset: offset,
-            deadline: deadline
+        let signed = call(
+            minAmountOut: minOut(clientFee: clientFee),
+            feeUnits: feeUnits,
+            feeReceiver: feeReceiver ?? FyndService.feeReceiver,
+            maxContribution: maxContribution,
+            deadline: BigInt(calldataDeadline ?? deadline ?? 0),
+            signature: signature
         )
+        return order(clientFee: String(clientFee), call: signed, deadline: deadline)
     }
 
     func assertInvalid(_ order: FyndOrderQuote, clientFeeBps: Int, file: StaticString = #filePath, line: UInt = #line) {

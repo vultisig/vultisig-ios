@@ -145,7 +145,7 @@ struct FyndService {
     }
 
     static func tokenAddress(_ coin: Coin) -> String {
-        coin.isNativeToken ? "0x0000000000000000000000000000000000000000" : coin.contractAddress
+        coin.isNativeToken ? nativeTokenAddress : coin.contractAddress
     }
 
     func fetchQuote(
@@ -195,8 +195,9 @@ struct FyndService {
         let context = FyndQuoteContext(
             router: router,
             recipient: fromCoin.address,
+            tokenIn: Self.tokenAddress(fromCoin),
+            tokenOut: Self.tokenAddress(toCoin),
             sellAmount: amount,
-            sellsNative: fromCoin.isNativeToken,
             slippageBps: slippage,
             clientFeeBps: clientFeeBps,
             feeReceiver: Self.feeReceiver,
@@ -236,13 +237,17 @@ struct FyndQuoteContext {
     let router: String
     /// The vault address that submits the swap and receives its output.
     let recipient: String
+    /// Request token addresses; the zero address is the native coin.
+    let tokenIn: String
+    let tokenOut: String
     let sellAmount: BigInt
-    let sellsNative: Bool
     let slippageBps: Int
     /// Gross client fee requested; 0 when the quote carries no client fee.
     let clientFeeBps: Int
     let feeReceiver: String
     let now: Date
+
+    var sellsNative: Bool { FyndService.isNative(tokenIn) }
 }
 
 struct FyndValidatedQuote: Equatable {
@@ -258,9 +263,24 @@ struct FyndValidatedQuote: Equatable {
 }
 
 extension FyndService {
-    /// Rejects any quote whose signed fields differ from what was asked for.
-    /// Mirrors shapeshift/web's `validateFyndQuoteResponse`, plus a receiver
-    /// check, since the app (not a trusted backend) builds the transaction.
+    static let nativeTokenAddress = "0x0000000000000000000000000000000000000000"
+    /// TychoRouterV3's `ETH_ADDRESS`, which the encoder may use for the native side.
+    static let routerNativeAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    static let feeUnitsPerBps = 10_000
+
+    static func isNative(_ token: String) -> Bool {
+        let lower = token.lowercased()
+        return lower == nativeTokenAddress || lower == routerNativeAddress
+    }
+
+    static func sameToken(_ lhs: String, _ rhs: String) -> Bool {
+        if isNative(lhs) || isNative(rhs) { return isNative(lhs) && isNative(rhs) }
+        return lhs.lowercased() == rhs.lowercased()
+    }
+
+    /// Rejects any quote whose calldata does not perform exactly the swap that
+    /// was asked for. The router call is decoded rather than trusted from the
+    /// response metadata, because the app (not a trusted backend) signs it.
     static func validate(_ order: FyndOrderQuote, context: FyndQuoteContext) throws -> FyndValidatedQuote {
         switch order.status {
         case "success":
@@ -276,8 +296,7 @@ extension FyndService {
         guard let tx = order.transaction, let fees = order.feeBreakdown else {
             throw FyndError.invalidResponse("missing transaction or fee breakdown")
         }
-        guard let amountIn = BigInt(order.amountIn ?? ""),
-              let amountOut = BigInt(order.amountOut ?? ""),
+        guard let amountOut = BigInt(order.amountOut ?? ""),
               let routerFee = BigInt(fees.routerFee),
               let clientFee = BigInt(fees.clientFee),
               let minReceived = BigInt(fees.minAmountReceived),
@@ -286,16 +305,23 @@ extension FyndService {
             throw FyndError.invalidResponse("unparseable amounts")
         }
         let calldata = tx.data.lowercased().stripHexPrefix()
-        guard !calldata.isEmpty, calldata.count % 2 == 0,
-              calldata.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
+        guard calldata.count % 2 == 0, calldata.allSatisfy({ $0.isASCII && $0.isHexDigit }) else {
             throw FyndError.invalidResponse("calldata is not hex")
         }
-
         guard tx.to.lowercased() == context.router.lowercased() else {
             throw FyndError.invalidResponse("router \(tx.to) is not the pinned router \(context.router)")
         }
-        guard amountIn == context.sellAmount else {
-            throw FyndError.invalidResponse("quoted sell amount \(amountIn) differs from \(context.sellAmount)")
+        guard let call = FyndRouterCall.decode(calldata) else {
+            throw FyndError.invalidResponse("calldata is not a TychoRouterV3 swap")
+        }
+        guard call.amountIn == context.sellAmount, BigInt(order.amountIn ?? "") == context.sellAmount else {
+            throw FyndError.invalidResponse("sell amount differs from \(context.sellAmount)")
+        }
+        guard sameToken(call.tokenIn, context.tokenIn), sameToken(call.tokenOut, context.tokenOut) else {
+            throw FyndError.invalidResponse("calldata swaps \(call.tokenIn) for \(call.tokenOut)")
+        }
+        guard call.receiver.lowercased() == context.recipient.lowercased() else {
+            throw FyndError.invalidResponse("calldata pays \(call.receiver), not the vault")
         }
         guard value == (context.sellsNative ? context.sellAmount : 0) else {
             throw FyndError.invalidResponse("tx value \(value) does not match the sell")
@@ -303,33 +329,12 @@ extension FyndService {
 
         let netAmountOut = amountOut - routerFee - clientFee
         let outputFloor = netAmountOut * BigInt(10_000 - context.slippageBps) / 10_000
-        guard netAmountOut > 0, minReceived > 0, minReceived >= outputFloor, minReceived <= netAmountOut else {
-            throw FyndError.invalidResponse("min_amount_received \(minReceived) is outside the requested slippage")
+        guard netAmountOut > 0, minReceived > 0, minReceived >= outputFloor, minReceived <= netAmountOut,
+              call.minAmountOut == minReceived, call.expectedAmountOut == amountOut else {
+            throw FyndError.invalidResponse("output floor does not match the requested slippage")
         }
 
-        // The router call is opaque, but its ABI arguments carry these values as
-        // whole words. Requiring them binds the calldata to what was validated
-        // above rather than to the response's metadata alone.
-        guard Self.hasArgumentWord(calldata, Self.uintWord(amountIn)),
-              Self.hasArgumentWord(calldata, Self.uintWord(minReceived)),
-              Self.hasArgumentWord(calldata, Self.addressWord(context.recipient)) else {
-            throw FyndError.invalidResponse("calldata does not encode the quoted amounts and recipient")
-        }
-
-        if context.clientFeeBps == 0 {
-            guard clientFee == 0 else {
-                throw FyndError.invalidResponse("unexpected client fee \(clientFee)")
-            }
-        } else {
-            try validateClientFee(
-                clientFee: clientFee,
-                amountOut: amountOut,
-                calldata: calldata,
-                signatureOffset: tx.clientFeeSignatureOffset,
-                deadline: order.clientFeeDeadline,
-                context: context
-            )
-        }
+        try validateClientFee(call: call, clientFee: clientFee, amountOut: amountOut, deadline: order.clientFeeDeadline, context: context)
 
         let gasEstimate = Int64(order.gasEstimate ?? "") ?? 0
         guard (0...maxGasEstimate).contains(gasEstimate) else {
@@ -347,64 +352,46 @@ extension FyndService {
     }
 
     private static func validateClientFee(
+        call: FyndRouterCall,
         clientFee: BigInt,
         amountOut: BigInt,
-        calldata: String,
-        signatureOffset: Int?,
         deadline: Int?,
         context: FyndQuoteContext
     ) throws {
+        guard context.clientFeeBps > 0 else {
+            guard clientFee == 0, call.clientFeeUnits == 0 else {
+                throw FyndError.invalidResponse("unexpected client fee \(clientFee)")
+            }
+            return
+        }
+
+        guard call.clientFeeUnits == BigInt(context.clientFeeBps * feeUnitsPerBps) else {
+            throw FyndError.invalidResponse("calldata charges \(call.clientFeeUnits) fee units, not \(context.clientFeeBps) bps")
+        }
         let expected = expectedClientFee(amountOut: amountOut, clientFeeBps: context.clientFeeBps)
         // One unit of rounding either way; more is a different fee than asked.
         guard (clientFee - expected).magnitude <= 1 else {
             throw FyndError.invalidResponse("client fee \(clientFee) does not match \(context.clientFeeBps) bps (expected \(expected))")
         }
-
-        guard hasArgumentWord(calldata, addressWord(context.feeReceiver)) else {
-            throw FyndError.invalidResponse("calldata does not name the Vultisig fee receiver")
+        guard call.clientFeeReceiver.lowercased() == context.feeReceiver.lowercased() else {
+            throw FyndError.invalidResponse("client fee goes to \(call.clientFeeReceiver), not the Vultisig receiver")
         }
-
-        let signatureHexLength = clientFeeSignatureBytes * 2
-        guard let offset = signatureOffset, offset >= 0,
-              calldata.count >= signatureHexLength,
-              offset <= (calldata.count - signatureHexLength) / 2 else {
-            throw FyndError.invalidResponse("missing client fee signature offset")
+        guard call.maxClientContribution == 0 else {
+            throw FyndError.invalidResponse("client fee subsidizes slippage")
         }
-        let start = calldata.index(calldata.startIndex, offsetBy: offset * 2)
-        let end = calldata.index(start, offsetBy: signatureHexLength)
-        guard calldata[start..<end].contains(where: { $0 != "0" }) else {
-            throw FyndError.invalidResponse("client fee signature is the unsigned placeholder")
+        guard call.clientSignature.count == clientFeeSignatureBytes * 2,
+              call.clientSignature.contains(where: { $0 != "0" }) else {
+            throw FyndError.invalidResponse("client fee signature is missing or the unsigned placeholder")
         }
-
-        guard let deadline, TimeInterval(deadline) > context.now.timeIntervalSince1970 else {
-            throw FyndError.invalidResponse("client fee deadline missing or expired")
+        guard let deadline, BigInt(deadline) == call.clientFeeDeadline,
+              TimeInterval(deadline) > context.now.timeIntervalSince1970 else {
+            throw FyndError.invalidResponse("client fee deadline missing, mismatched or expired")
         }
     }
 
     /// Fynd routes are a few hundred thousand gas; anything far above that is
     /// not a quote we would sign.
     static let maxGasEstimate: Int64 = 10_000_000
-
-    static func uintWord(_ value: BigInt) -> String {
-        let hex = String(value, radix: 16)
-        return String(repeating: "0", count: max(0, 64 - hex.count)) + hex
-    }
-
-    /// Whether `word` is one of the 32-byte argument words after the 4-byte selector.
-    static func hasArgumentWord(_ calldata: String, _ word: String) -> Bool {
-        guard word.count == 64, calldata.count >= 8 + 64 else { return false }
-        var start = calldata.index(calldata.startIndex, offsetBy: 8)
-        while calldata.distance(from: start, to: calldata.endIndex) >= 64 {
-            let end = calldata.index(start, offsetBy: 64)
-            if calldata[start..<end] == word { return true }
-            start = end
-        }
-        return false
-    }
-
-    static func addressWord(_ address: String) -> String {
-        String(repeating: "0", count: 24) + address.lowercased().stripHexPrefix()
-    }
 
     static func makeQuote(_ quote: FyndValidatedQuote, sender: String, tokenOut: String) -> (quote: EVMQuote, fee: BigInt?) {
         let gas = quote.gasEstimate > 0 ? quote.gasEstimate * 3 / 2 + routerGasOverhead : 0

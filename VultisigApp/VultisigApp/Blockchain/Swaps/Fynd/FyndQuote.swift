@@ -6,6 +6,7 @@
 //  Field names follow the Fynd OpenAPI schema (snake_case).
 //
 
+import BigInt
 import Foundation
 
 struct FyndQuoteRequest: Encodable, Equatable {
@@ -118,4 +119,90 @@ struct FyndOrderQuote: Decodable, Equatable {
 struct FyndErrorResponse: Decodable {
     let error: String
     let code: String
+}
+
+/// The arguments of a TychoRouterV3 `transfer_from` swap call, decoded from
+/// calldata. Only `splitSwap`, `sequentialSwap` and `singleSwap` are accepted:
+/// the vault and Permit2 entrypoints are never requested.
+struct FyndRouterCall: Equatable {
+    let amountIn: BigInt
+    let tokenIn: String
+    let tokenOut: String
+    let expectedAmountOut: BigInt
+    let minAmountOut: BigInt
+    let receiver: String
+    /// Router fee units: 100,000,000 = 100%, so 1 bps = 10,000.
+    let clientFeeUnits: BigInt
+    let clientFeeReceiver: String
+    let maxClientContribution: BigInt
+    let clientFeeDeadline: BigInt
+    let clientSignature: String
+
+    static let splitSwapSelector = "fe745a0f"
+    static let sequentialSwapSelector = "3c226834"
+    static let singleSwapSelector = "0c1a0ee7"
+
+    /// `calldata` is lowercase hex without `0x`.
+    static func decode(_ calldata: String) -> FyndRouterCall? {
+        let hex = Array(calldata)
+        guard hex.count >= 8 else { return nil }
+        let selector = String(hex[0..<8])
+        // splitSwap carries an extra `nTokens` word before `receiver`.
+        let receiverIndex: Int
+        switch selector {
+        case splitSwapSelector: receiverIndex = 6
+        case sequentialSwapSelector, singleSwapSelector: receiverIndex = 5
+        default: return nil
+        }
+        let args = Array(hex[8...])
+
+        func word(_ base: Int, _ index: Int) -> BigInt? {
+            let start = base + index * 64
+            guard start >= 0, start + 64 <= args.count else { return nil }
+            return BigInt(String(args[start..<(start + 64)]), radix: 16)
+        }
+        func address(_ base: Int, _ index: Int) -> String? {
+            guard let value = word(base, index), value.bitWidth <= 161 else { return nil }
+            let hex = String(value, radix: 16)
+            return "0x" + String(repeating: "0", count: 40 - hex.count) + hex
+        }
+        func offset(_ base: Int, _ index: Int) -> Int? {
+            guard let value = word(base, index), value >= 0, value < BigInt(args.count) else { return nil }
+            return Int(value) * 2
+        }
+
+        guard let amountIn = word(0, 0),
+              let tokenIn = address(0, 1),
+              let tokenOut = address(0, 2),
+              let expected = word(0, 3),
+              let minOut = word(0, 4),
+              let receiver = address(0, receiverIndex),
+              let feeTuple = offset(0, receiverIndex + 1),
+              let feeUnits = word(feeTuple, 0),
+              let feeReceiver = address(feeTuple, 1),
+              let maxContribution = word(feeTuple, 2),
+              let deadline = word(feeTuple, 3),
+              let signatureOffset = offset(feeTuple, 4),
+              let signatureLength = word(feeTuple + signatureOffset, 0),
+              signatureLength <= BigInt(args.count) else {
+            return nil
+        }
+        let signatureStart = feeTuple + signatureOffset + 64
+        let signatureEnd = signatureStart + Int(signatureLength) * 2
+        guard signatureEnd <= args.count else { return nil }
+
+        return FyndRouterCall(
+            amountIn: amountIn,
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
+            expectedAmountOut: expected,
+            minAmountOut: minOut,
+            receiver: receiver,
+            clientFeeUnits: feeUnits,
+            clientFeeReceiver: feeReceiver,
+            maxClientContribution: maxContribution,
+            clientFeeDeadline: deadline,
+            clientSignature: String(args[signatureStart..<signatureEnd])
+        )
+    }
 }
