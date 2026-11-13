@@ -114,6 +114,11 @@ enum RippleHelper {
         //   3. non-native coin with a token id   → opPayment.currencyAmount
         //   4. native XRP                        → opPayment.amount (drops)
         //
+        // (3) and (4) take `transaction_type` unset or `ripplePayment`. SDK-built
+        // payloads (Windows) declare `ripplePayment` on issued-currency sends, and
+        // some SDK releases on native sends too. The discriminator never reaches
+        // the signed bytes, so both forms must build the same Payment.
+        //
         // (2) before (3) is what makes a mixed-version TrustSet ceremony work: a
         // co-signer predating `transaction_type` sees only "non-native Ripple
         // coin" and builds a TrustSet from the same limit, which is byte-identical
@@ -135,7 +140,7 @@ enum RippleHelper {
         //     for good once every platform sets the field.
         // Both are stated in the PR body rather than left to be rediscovered.
         switch fieldTransactionType {
-        case VSTransactionType.unspecified.rawValue:
+        case VSTransactionType.unspecified.rawValue, VSTransactionType.ripplePayment.rawValue:
             break
         case VSTransactionType.rippleTrustSet.rawValue:
             return try trustSetSigningInput(
