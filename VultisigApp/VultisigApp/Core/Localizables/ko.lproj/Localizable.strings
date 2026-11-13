@@ -1717,6 +1717,9 @@
 "tokens" = "토큰";
 "tokenUnverifiedBadge" = "미확인";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeTitle" = "Tonstakers로 스테이킹";
+"tonstakersUnstakeTitle" = "Tonstakers 언스테이킹";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "최소 %@ %@";
@@ -2026,3 +2029,10 @@
 "zipImportAllDuplicates" = "모든 볼트 %d개가 이미 존재하여 건너뛰었습니다: %@.";
 "zipImportPartialSuccess" = "%d개의 볼트를 가져왔습니다. %d개의 중복을 건너뛰었습니다: %@.";
 "zipImportUnsafeVaults" = "%1$d개의 볼트를 가져왔습니다. %2$d개를 건너뛰었습니다. %3$@은(는) 가져올 수 없습니다: 이 기기에 이미 있는 볼트를 덮어쓰게 됩니다.";
+"tonstakersDepositFee" = "예치 수수료";
+"tonstakersYouReceive" = "수령 예정";
+"tonstakersAttachedValue" = "처리용 첨부 금액";
+"tonstakersStakeNotice" = "Tonstakers가 선공제하는 %1$@ %2$@ 예치 수수료가 포함되어 있습니다. 풀이 사용하지 않은 부분은 환불됩니다.";
+"tonstakersUnstakeNotice" = "인출 처리를 위해 %1$@ %2$@이(가) 첨부되며, 사용되지 않은 부분은 환불됩니다. 풀에 유동성이 있으면 즉시 지급되고, 그렇지 않으면 현재 검증 라운드가 끝날 때 지급됩니다.";
+"liquidStakingDeposit" = "유동성 스테이킹 예치";
+"jettonBurn" = "Jetton 소각";

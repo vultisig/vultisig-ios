@@ -1717,6 +1717,9 @@
 "tokens" = "Tokens";
 "tokenUnverifiedBadge" = "Unverified";
 "tonStakeBelowMinimum" = "Minimum stake is %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeTitle" = "Stake with Tonstakers";
+"tonstakersUnstakeTitle" = "Unstake Tonstakers";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "min %@ %@";
@@ -2026,3 +2029,10 @@
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
 "zipImportUnsafeVaults" = "Imported %1$d vault(s). Skipped %2$d. %3$@ could not be imported: it would overwrite a vault already on this device.";
+"tonstakersDepositFee" = "Deposit fee";
+"tonstakersYouReceive" = "You'll receive";
+"tonstakersAttachedValue" = "Attached for processing";
+"tonstakersStakeNotice" = "Includes the %1$@ %2$@ deposit fee Tonstakers takes off the top. The part the pool doesn't use is refunded.";
+"tonstakersUnstakeNotice" = "%1$@ %2$@ is attached to process the withdrawal; the unused part is refunded. You're paid out immediately when the pool has liquidity, otherwise at the end of the current validation round.";
+"liquidStakingDeposit" = "Liquid Staking Deposit";
+"jettonBurn" = "Jetton Burn";

@@ -1717,6 +1717,9 @@
 "tokens" = "代币";
 "tokenUnverifiedBadge" = "未验证";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
+"tonstakersPositionLabel" = "Tonstakers";
+"tonstakersStakeTitle" = "通过 Tonstakers 质押";
+"tonstakersUnstakeTitle" = "取消 Tonstakers 质押";
 "tonStakingAPY" = "年化收益";
 "tonStakingAPYValue" = "%@%%";
 "tonStakingMinStake" = "最低 %@ %@";
@@ -2026,3 +2029,10 @@
 "zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
 "zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";
 "zipImportUnsafeVaults" = "已导入 %1$d 个保险库。跳过 %2$d 个。无法导入 %3$@：它会覆盖此设备上已有的保险库。";
+"tonstakersDepositFee" = "存入费用";
+"tonstakersYouReceive" = "您将收到";
+"tonstakersAttachedValue" = "附加的处理金额";
+"tonstakersStakeNotice" = "包含 Tonstakers 预先扣除的 %1$@ %2$@ 存入费用。质押池未使用的部分将退还。";
+"tonstakersUnstakeNotice" = "将附加 %1$@ %2$@ 用于处理提取，未使用的部分将退还。质押池有流动性时立即支付，否则在当前验证轮次结束时支付。";
+"liquidStakingDeposit" = "流动性质押存入";
+"jettonBurn" = "Jetton 销毁";

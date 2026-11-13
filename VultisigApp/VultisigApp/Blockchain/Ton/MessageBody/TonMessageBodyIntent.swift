@@ -16,6 +16,19 @@ enum TonMessageBodyIntent: Equatable {
     case nftTransfer(NftTransfer)
     case excesses(queryId: String)
     case swap(Swap)
+    /// Tonstakers `pool::deposit`, recognised only when sent to the Tonstakers pool.
+    case liquidStakingDeposit(queryId: String)
+    case jettonBurn(JettonBurn)
+
+    struct JettonBurn: Equatable {
+        let queryId: String
+        /// Jetton base units burned.
+        let amount: String
+        let responseDestination: String?
+        /// Tonstakers withdrawal flags from `custom_payload`, when present.
+        let waitTillRoundEnd: Bool?
+        let fillOrKill: Bool?
+    }
 
     struct JettonTransfer: Equatable {
         let queryId: String

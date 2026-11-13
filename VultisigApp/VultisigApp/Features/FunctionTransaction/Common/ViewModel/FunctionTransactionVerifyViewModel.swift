@@ -137,6 +137,12 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
                 return basePayload.withSignData(.signDirect(signDirect))
             }
 
+            // Tonstakers deposit / burn: app-built bodies ride the TonConnect `customPayload`
+            // path, so every co-signer signs the identical message rather than a plain transfer.
+            if let tonStakePayload = tx.tonStakePayload {
+                return basePayload.withSignData(.signTon(SignTon(tonMessages: tonStakePayload.messages)))
+            }
+
             // Solana native-staking branch — build the unsigned delegate tx
             // once (pinned blockhash + derived stake-account address) and relay
             // it via `signData = .signSolana`, the field that round-trips so the
