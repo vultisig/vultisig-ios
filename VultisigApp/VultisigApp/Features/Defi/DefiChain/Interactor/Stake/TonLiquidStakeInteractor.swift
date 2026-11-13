@@ -25,8 +25,9 @@ struct TonLiquidStakeInteractor: StakeInteractor {
         do {
             balanceRaw = try await service.getJettonBalance(coin: tston, address: address)
         } catch {
+            // Keep the stored position rather than overwrite it with a zero on a transient error.
             logger.error("Failed to read tsTON balance: \(error.localizedDescription, privacy: .private)")
-            balanceRaw = .zero
+            return []
         }
         let balance = (Decimal(string: balanceRaw) ?? 0) / pow(Decimal(10), tston.decimals)
 
