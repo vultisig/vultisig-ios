@@ -125,7 +125,7 @@ struct PerpsSheetBackButton: View {
 
     var body: some View {
         Button(action: action) {
-            Icon(.chevronLeft, color: Theme.colors.textPrimary, size: 18)
+            Icon(.chevronLeft, color: Theme.colors.textPrimary, size: 22)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Theme.colors.bgSheetControl))
                 .frame(width: 44, height: 44)
