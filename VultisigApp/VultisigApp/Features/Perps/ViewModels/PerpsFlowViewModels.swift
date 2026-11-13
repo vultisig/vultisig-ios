@@ -42,15 +42,21 @@ extension PerpsVaultContext {
 }
 
 enum PerpsInput {
-    /// Accepts grouped prices ("66,468", "1,250.75") and the decimal pad's
-    /// comma in comma-decimal locales ("76,5").
+    /// Parses what an amount or price field holds. A lone comma is the
+    /// decimal pad's separator in comma-decimal locales ("76,5", "0,125"),
+    /// never grouping: editable fields are prefilled ungrouped (`priceText`),
+    /// so "1,500" typed on a German keypad is 1.5, not 1,500. Commas are only
+    /// dropped as grouping next to a dot ("1,250.75"). Anything else that is
+    /// not a plain number is rejected.
     static func decimal(_ text: String) -> Decimal? {
         var cleaned = text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "")
-        let isGrouped = cleaned.range(of: #"^\d{1,3}(,\d{3})+(\.\d+)?$"#, options: .regularExpression) != nil
-        cleaned = cleaned.contains(".") || isGrouped
-            ? cleaned.replacingOccurrences(of: ",", with: "")
-            : cleaned.replacingOccurrences(of: ",", with: ".")
-        guard !cleaned.isEmpty else { return nil }
+        if cleaned.contains(".") {
+            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+        } else if cleaned.filter({ $0 == "," }).count == 1 {
+            cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+        }
+        guard cleaned.range(of: #"^\d*\.?\d*$"#, options: .regularExpression) != nil,
+              cleaned.contains(where: \.isNumber) else { return nil }
         return Decimal(string: cleaned, locale: Locale(identifier: "en_US_POSIX"))
     }
 
@@ -61,8 +67,9 @@ enum PerpsInput {
         String(format: "%.2f", locale: Locale(identifier: "en_US_POSIX"), NSDecimalNumber(decimal: value).doubleValue)
     }
 
-    /// A price for an input field, grouped like the rest of the UI.
-    static func priceText(_ value: Decimal) -> String { PerpsFormat.plainPrice(value) }
+    /// A price for an input field: ungrouped, so a comma in a field is only
+    /// ever a decimal separator.
+    static func priceText(_ value: Decimal) -> String { PerpsFormat.plainPrice(value, grouped: false) }
 }
 
 // MARK: - Ticket

@@ -47,3 +47,24 @@ final class PerpsFeatureFlagTests: XCTestCase {
         XCTAssertEqual(PerpsConfig.builderMaxFeeRate, "0.1%")
     }
 }
+
+final class PerpsVultTierTests: XCTestCase {
+    func testSwitchingVaultDropsThePreviousTierAndIgnoresAStaleRefresh() async {
+        await PerpsVultTier.refresh(vaultKey: "vault-a") { .gold }
+        XCTAssertEqual(PerpsVultTier.current, .gold)
+
+        // A different vault starts with no discount until its own tier resolves.
+        await PerpsVultTier.refresh(vaultKey: "vault-b") {
+            XCTAssertNil(PerpsVultTier.current)
+            return .bronze
+        }
+        XCTAssertEqual(PerpsVultTier.current, .bronze)
+
+        // A refresh for vault A that finishes after vault B became active never lands.
+        await PerpsVultTier.refresh(vaultKey: "vault-a") {
+            await PerpsVultTier.refresh(vaultKey: "vault-b") { .silver }
+            return .diamond
+        }
+        XCTAssertEqual(PerpsVultTier.current, .silver)
+    }
+}

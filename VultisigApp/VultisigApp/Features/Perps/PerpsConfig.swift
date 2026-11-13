@@ -128,6 +128,10 @@ enum PerpsConfig {
 /// kept for the builder fee. Debug only: `-perpsDemoVultTier gold` pins one.
 enum PerpsVultTier {
     private static let lock = NSLock()
+    /// The vault the tier below belongs to. Switching vault drops the old
+    /// vault's tier at once (the list fee applies until the new one resolves),
+    /// and a slower refresh for a vault no longer active never lands.
+    nonisolated(unsafe) private static var activeVault: String?
     nonisolated(unsafe) private static var resolved: VultDiscountTier?
 
     static var current: VultDiscountTier? {
@@ -137,8 +141,20 @@ enum PerpsVultTier {
 
     @MainActor
     static func refresh(vault: Vault, resolver: SwapDiscountTierResolving = VultTierService()) async {
-        let tier = await resolver.resolveTierForSession(for: vault)
-        lock.withLock { resolved = tier }
+        await refresh(vaultKey: vault.pubKeyECDSA) { await resolver.resolveTierForSession(for: vault) }
+    }
+
+    static func refresh(vaultKey: String, resolve: () async -> VultDiscountTier?) async {
+        lock.withLock {
+            if activeVault != vaultKey {
+                activeVault = vaultKey
+                resolved = nil
+            }
+        }
+        let tier = await resolve()
+        lock.withLock {
+            if activeVault == vaultKey { resolved = tier }
+        }
     }
 
     private static var demoTier: VultDiscountTier? {

@@ -190,7 +190,7 @@ struct HLUserSignedAction: Equatable, Sendable {
     ) throws -> HLUserSignedAction {
         let address = "0x" + (try HLAddress.bytes(destination)).hexString
         let chain = isMainnet ? "Mainnet" : "Testnet"
-        let amountText = HLWireFormat.decimalString(amount)
+        let amountText = try HLWireFormat.wire(amount)
         let action = HLValue.object([
             ("type", .string("withdraw3")),
             ("signatureChainId", .string("0x" + String(signatureChainId, radix: 16))),
@@ -246,6 +246,11 @@ struct HLUserSignedAction: Equatable, Sendable {
 
 // MARK: - Wire number formatting
 
+enum HLWireFormatError: Error, Equatable {
+    /// More than 8 decimals: the SDK's `float_to_wire` raises rather than round.
+    case precisionLoss
+}
+
 enum HLWireFormat {
     /// Plain decimal, no exponent, no trailing zeros ("30000", "0.001"),
     /// matching the Python SDK's `float_to_wire`. The venue normalises numbers
@@ -263,6 +268,17 @@ enum HLWireFormat {
         return trimmed
     }
 
+    /// `decimalString` for a value that goes on the wire: like the Python
+    /// SDK's `float_to_wire`, it refuses a value that does not survive 8
+    /// decimals instead of silently signing a rounded one.
+    static func wire(_ value: Decimal) throws -> String {
+        var copy = value
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &copy, 8, .plain)
+        guard rounded == value else { throw HLWireFormatError.precisionLoss }
+        return decimalString(value)
+    }
+
     /// Size rounded DOWN to the asset's `szDecimals`.
     static func size(_ value: Decimal, szDecimals: Int) -> Decimal {
         round(value, scale: szDecimals, mode: .down)
@@ -270,14 +286,14 @@ enum HLWireFormat {
 
     /// Perp price rule: at most 5 significant figures and at most
     /// `6 - szDecimals` decimals. Mirrors the Python SDK's
-    /// `round(float(f"{px:.5g}"), 6 - szDecimals)`.
+    /// `round(float(f"{px:.5g}"), 6 - szDecimals)`, ties to even like Python.
     static func price(_ value: Decimal, szDecimals: Int) -> Decimal {
         guard value > 0 else { return 0 }
         let maxDecimals = max(0, 6 - szDecimals)
         let magnitude = Int(floor(log10(NSDecimalNumber(decimal: value).doubleValue)))
         let significantScale = 4 - magnitude
-        let fiveSignificant = round(value, scale: significantScale, mode: .plain)
-        return round(fiveSignificant, scale: maxDecimals, mode: .plain)
+        let fiveSignificant = round(value, scale: significantScale, mode: .bankers)
+        return round(fiveSignificant, scale: maxDecimals, mode: .bankers)
     }
 
     /// Aggressive IOC price for a "market" order: mid ± slippage, then rounded to a valid tick.

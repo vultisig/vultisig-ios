@@ -217,7 +217,10 @@ final class HyperliquidPerpsRepository: PerpsRepository {
     static func markets(from response: HLMetaAndAssetContexts) -> [PerpsMarket] {
         zip(response.meta.universe.indices, zip(response.meta.universe, response.contexts)).compactMap { index, pair in
             let (meta, context) = pair
-            guard meta.isDelisted != true else { return nil }
+            // Skip delisted assets and metadata the math cannot use safely
+            // (leverage ranges, maintenance = 1 / (2 * maxLeverage), lot sizes).
+            guard meta.isDelisted != true, meta.maxLeverage >= 1, (0...6).contains(meta.szDecimals),
+                  context.markPx.value > 0 else { return nil }
             return PerpsMarket(
                 assetIndex: index,
                 coin: meta.name,

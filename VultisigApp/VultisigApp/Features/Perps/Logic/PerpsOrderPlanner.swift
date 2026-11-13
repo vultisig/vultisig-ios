@@ -76,7 +76,7 @@ enum PerpsOrderPlanner {
         crossAccountValue: Decimal? = nil,
         builder: HLBuilderFee? = nil
     ) throws -> PerpsOrderPlan {
-        guard (1...market.maxLeverage).contains(ticket.leverage) else { throw PerpsOrderPlannerError.leverageOutOfRange }
+        guard ticket.leverage >= 1, ticket.leverage <= market.maxLeverage else { throw PerpsOrderPlannerError.leverageOutOfRange }
         if market.onlyIsolated && ticket.marginMode == .cross { throw PerpsOrderPlannerError.isolatedOnly }
 
         let reference = ticket.limitPrice ?? market.midPrice ?? market.markPrice
@@ -96,18 +96,18 @@ enum PerpsOrderPlanner {
         guard estimate.size > 0 else { throw PerpsOrderPlannerError.sizeTooSmall }
         guard estimate.notional >= minimumNotional else { throw PerpsOrderPlannerError.minimumNotional }
 
-        let size = HLWireFormat.decimalString(estimate.size)
+        let size = try HLWireFormat.wire(estimate.size)
         var orders = [HLOrderWire(
             asset: market.assetIndex,
             isBuy: ticket.side.isBuy,
-            price: HLWireFormat.decimalString(price),
+            price: try HLWireFormat.wire(price),
             size: size,
             reduceOnly: false,
             type: .limit(ticket.limitPrice == nil ? .ioc : .gtc)
         )]
         for (trigger, kind) in [(ticket.takeProfit, HLOrderType.Kind.takeProfit), (ticket.stopLoss, .stopLoss)] {
             guard let trigger else { continue }
-            let triggerPrice = HLWireFormat.decimalString(HLWireFormat.price(trigger, szDecimals: market.szDecimals))
+            let triggerPrice = try HLWireFormat.wire(HLWireFormat.price(trigger, szDecimals: market.szDecimals))
             orders.append(HLOrderWire(
                 asset: market.assetIndex,
                 isBuy: !ticket.side.isBuy,

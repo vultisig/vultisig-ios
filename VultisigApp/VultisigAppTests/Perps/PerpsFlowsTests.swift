@@ -205,6 +205,14 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsInput.decimal("1,250.75"), Decimal(string: "1250.75"))
         XCTAssertEqual(PerpsInput.decimal("100"), 100)
         XCTAssertNil(PerpsInput.decimal(""))
+        // A lone comma is always the decimal pad's separator, never grouping:
+        // "0,125" and "1,500" typed on a comma-decimal keypad are not 125 / 1,500.
+        XCTAssertEqual(PerpsInput.decimal("0,125"), Decimal(string: "0.125"))
+        XCTAssertEqual(PerpsInput.decimal("1,500"), Decimal(string: "1.5"))
+        XCTAssertNil(PerpsInput.decimal("1,2,3"))
+        XCTAssertNil(PerpsInput.decimal("1.2.3"))
+        XCTAssertNil(PerpsInput.decimal("12a"))
+        XCTAssertNil(PerpsInput.decimal("."))
     }
 
     // MARK: - Ticket numbers come from the same reference price
@@ -253,7 +261,9 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsFormat.price(Decimal(string: "91.488") ?? 0), "$91.49")
         XCTAssertEqual(PerpsFormat.price(Decimal(string: "66468.4") ?? 0), "$66,468")
         XCTAssertEqual(PerpsFormat.price(Decimal(string: "0.523412") ?? 0), "$0.52341")
+        XCTAssertEqual(PerpsInput.priceText(66_468), "66468")
         XCTAssertEqual(PerpsInput.decimal(PerpsInput.priceText(66_468)), 66_468)
+        XCTAssertEqual(PerpsInput.decimal(PerpsInput.priceText(Decimal(string: "72.35") ?? 0)), Decimal(string: "72.35"))
         XCTAssertEqual(PerpsInput.decimal("91,49"), Decimal(string: "91.49"))
     }
 

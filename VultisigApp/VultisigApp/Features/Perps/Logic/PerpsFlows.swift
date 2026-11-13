@@ -245,14 +245,14 @@ enum PerpsFlows {
     ) throws -> PerpsReviewDocument {
         let currentStop = existing.first(where: \.isStopLoss)
         let currentTake = existing.first(where: \.isTakeProfit)
-        let size = HLWireFormat.decimalString(abs(position.szi.value))
+        let size = try HLWireFormat.wire(abs(position.szi.value))
         var cancels: [(asset: Int, oid: Int64)] = []
         var orders: [HLOrderWire] = []
         for (current, target, kind) in [(currentStop, stopLoss, HLOrderType.Kind.stopLoss), (currentTake, takeProfit, .takeProfit)] {
             guard current?.triggerPx?.value != target else { continue }
             if let current { cancels.append((market.assetIndex, current.oid)) }
             if let target {
-                let price = HLWireFormat.decimalString(HLWireFormat.price(target, szDecimals: market.szDecimals))
+                let price = try HLWireFormat.wire(HLWireFormat.price(target, szDecimals: market.szDecimals))
                 orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
                                           type: .trigger(isMarket: true, triggerPrice: price, kind: kind)))
             }

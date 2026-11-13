@@ -53,10 +53,11 @@ enum PerpsFormat {
         return nil
     }
 
-    static func plainPrice(_ value: Decimal) -> String {
+    static func plainPrice(_ value: Decimal, grouped: Bool = true) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = Locale(identifier: "en_US")
+        formatter.usesGroupingSeparator = grouped
         if let decimals = priceDecimals(value) {
             formatter.minimumFractionDigits = decimals
             formatter.maximumFractionDigits = decimals

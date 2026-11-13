@@ -22,6 +22,20 @@ final class PerpsLogicTests: XCTestCase {
         XCTAssertEqual(HLWireFormat.decimalString(dec("0.000000001")), "0")
     }
 
+    func testWireRefusesPrecisionLossLikeFloatToWire() throws {
+        XCTAssertEqual(try HLWireFormat.wire(dec("0.00298")), "0.00298")
+        XCTAssertEqual(try HLWireFormat.wire(dec("30000.0")), "30000")
+        XCTAssertThrowsError(try HLWireFormat.wire(dec("0.000000001"))) { error in
+            XCTAssertEqual(error as? HLWireFormatError, .precisionLoss)
+        }
+    }
+
+    func testPriceTiesRoundToEvenLikePython() {
+        // f"{12344.5:.5g}" == "12344" and f"{12345.5:.5g}" == "12346" (banker's rounding on exact ties).
+        XCTAssertEqual(HLWireFormat.price(dec("12344.5"), szDecimals: 5), dec("12344"))
+        XCTAssertEqual(HLWireFormat.price(dec("12345.5"), szDecimals: 5), dec("12346"))
+    }
+
     func testPriceRoundsToFiveSignificantFiguresAndMaxDecimals() {
         // BTC szDecimals 5 -> max 1 decimal; 5 sig figs on 71398.57 -> 71399
         XCTAssertEqual(HLWireFormat.price(dec("71398.57"), szDecimals: 5), dec("71399"))

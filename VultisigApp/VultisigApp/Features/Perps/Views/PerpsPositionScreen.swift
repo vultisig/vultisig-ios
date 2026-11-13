@@ -37,8 +37,10 @@ struct PerpsPositionScreen: View {
     @State private var outcome: PerpsOutcome?
     /// The same for a close the user made (net P&L, return on margin).
     @State private var closedByUser: ClosedResult?
+    #if DEBUG
     /// Debug story: the review on screen is a close of the whole position.
     @State private var reviewClosesAll = false
+    #endif
     @State private var didPresentReview = false
 
     private struct ClosedResult: Equatable {
@@ -410,11 +412,13 @@ struct PerpsPositionScreen: View {
     }
 
     private func handOff(_ document: PerpsReviewDocument) {
+        #if DEBUG
         // Debug story: a review titled by the whole size closes the position.
         if let position {
             reviewClosesAll = document.amountLabel == String(format: "perpsCloseAmount".localized,
                                                              PerpsCloseFlows.sizeText(abs(position.szi.value), coin: coin))
         }
+        #endif
         pendingReview = document
         sheet = nil
     }
