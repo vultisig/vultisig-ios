@@ -87,6 +87,18 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertEqual(viewModel.quote.receive, Decimal(string: "147.81"))
     }
 
+    /// No vault address (EVM chains removed and nothing derivable): the
+    /// withdraw review is blocked with a reason, never a silent no-op.
+    @MainActor
+    func testWithdrawWithoutAVaultAddressIsBlocked() throws {
+        let snapshot = account(positions: [try position()])
+        let noAddress = PerpsVaultContext(name: "Main Vault", address: "", arbitrumUsdcBalance: 0, tradingAddress: vault.tradingAddress)
+        let viewModel = PerpsWithdrawViewModel(account: snapshot, vault: noAddress)
+        viewModel.amountText = "100"
+        XCTAssertNotNil(viewModel.issue)
+        XCTAssertFalse(viewModel.canReview)
+    }
+
     func testKeypadKeepsADotAndTwoDecimals() {
         var text = ""
         for key: PerpsKeypadKey in [.digit(0), .digit(1), .dot, .dot, .digit(5), .digit(0), .digit(9)] {

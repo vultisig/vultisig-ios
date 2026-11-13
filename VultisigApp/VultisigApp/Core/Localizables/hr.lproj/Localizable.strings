@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Uskoro";
 "perpsNoTradingAddress" = "Nije moguće izvesti račun za trgovanje ovog trezora.";
 "perpsNotThereInAnHour" = "Nije stiglo u roku od sat vremena?";
+"perpsNoVaultAddress" = "Adresa ovog trezora nije pronađena.";
 "perpsOff" = "Isključeno";
 "perpsOnlyAvailableWithdraws" = "Može se povući samo dostupni iznos.";
 "perpsOpenedAt" = "Ulaz %@ · Stop loss postavljen";

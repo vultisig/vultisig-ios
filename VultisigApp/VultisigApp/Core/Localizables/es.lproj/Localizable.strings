@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Próximamente";
 "perpsNoTradingAddress" = "No se pudo derivar la cuenta de trading de esta bóveda.";
 "perpsNotThereInAnHour" = "¿No ha llegado en una hora?";
+"perpsNoVaultAddress" = "No se encontró la dirección de esta bóveda.";
 "perpsOff" = "Desactivado";
 "perpsOnlyAvailableWithdraws" = "Solo se puede retirar el monto disponible.";
 "perpsOpenedAt" = "Entrada %@ · Stop loss fijado";

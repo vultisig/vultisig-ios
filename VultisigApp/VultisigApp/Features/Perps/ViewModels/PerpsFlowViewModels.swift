@@ -13,10 +13,15 @@ import WalletCore
 extension PerpsVaultContext {
     @MainActor
     init(vault: Vault) {
-        let usdc = vault.coins.first { $0.chain == .arbitrum && $0.ticker.uppercased() == "USDC" && !$0.isNativeToken }
+        // Native USDC by contract, never by ticker: the deposit always authorizes this token.
+        let usdc = vault.coins.first { $0.chain == .arbitrum && $0.contractAddress.lowercased() == HLCctp.arbitrumUsdc }
+        // The vault's main EVM address (same on every EVM chain), without
+        // depending on which EVM chains the user keeps in the wallet.
+        let mainAddress = vault.coins.first { ($0.chain == .ethereum || $0.chain == .arbitrum) && $0.isNativeToken }?.address
+            ?? PerpsDerivedAccount.derive(.main, vault: vault)?.address ?? ""
         self.init(
             name: Self.demoVaultName ?? vault.name,
-            address: vault.coins.first { $0.chain == .ethereum && $0.isNativeToken }?.address ?? "",
+            address: mainAddress,
             arbitrumUsdcBalance: Self.demoVaultUsdc ?? usdc?.balanceDecimal,
             tradingAddress: PerpsDerivedAccount.derive(.trading, vault: vault)?.address
         )
@@ -480,6 +485,7 @@ final class PerpsWithdrawViewModel: ObservableObject {
     }
 
     var issue: String? {
+        guard (try? HLAddress.bytes(vault.address)) != nil else { return "perpsNoVaultAddress".localized }
         switch quote.issue {
         case .moreThanWithdrawable: return "perpsMoreThanWithdrawable".localized
         case .belowFees: return "perpsWithdrawBelowFee".localized

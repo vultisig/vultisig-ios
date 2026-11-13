@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Coming soon";
 "perpsNoTradingAddress" = "Could not derive this vault's trading account.";
 "perpsNotThereInAnHour" = "Not there in an hour?";
+"perpsNoVaultAddress" = "Couldn't find this vault's address.";
 "perpsOff" = "Off";
 "perpsOnlyAvailableWithdraws" = "Only the available amount can be withdrawn.";
 "perpsOpenedAt" = "Entry %@ · Stop loss set";

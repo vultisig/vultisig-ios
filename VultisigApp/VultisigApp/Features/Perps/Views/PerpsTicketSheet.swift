@@ -134,7 +134,7 @@ struct PerpsTicketSheet: View {
     }
 }
 
-/// "Can't connect. Prices are from 2 min ago." in amber, right above the disabled CTA.
+/// "Can't connect. Prices are from 2 min ago.": the app's warning banner.
 struct PerpsOfflineBanner: View {
     let message: String
 
@@ -147,21 +147,8 @@ struct PerpsOfflineBanner: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Theme.colors.alertWarning)
-            Text(message)
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Theme.radius.md.shape.fill(Theme.colors.bgAlert))
-        .overlay(Theme.radius.md.shape.stroke(Theme.colors.alertWarning.opacity(0.3), lineWidth: 1))
-        .accessibilityIdentifier("perpsOfflineBanner")
+        InfoBannerView(description: message, type: .warning, leadingIcon: .triangleWarning)
+            .accessibilityIdentifier("perpsOfflineBanner")
     }
 }
 

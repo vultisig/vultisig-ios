@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Demnächst verfügbar";
 "perpsNoTradingAddress" = "Das Handelskonto dieses Tresors konnte nicht abgeleitet werden.";
 "perpsNotThereInAnHour" = "Nach einer Stunde noch nicht da?";
+"perpsNoVaultAddress" = "Die Adresse dieses Tresors wurde nicht gefunden.";
 "perpsOff" = "Aus";
 "perpsOnlyAvailableWithdraws" = "Nur der verfügbare Betrag kann ausgezahlt werden.";
 "perpsOpenedAt" = "Einstieg %@ · Stop-Loss gesetzt";

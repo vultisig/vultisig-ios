@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "即将推出";
 "perpsNoTradingAddress" = "无法派生此保险库的交易账户。";
 "perpsNotThereInAnHour" = "一小时后仍未到账？";
+"perpsNoVaultAddress" = "找不到此保险库的地址。";
 "perpsOff" = "关";
 "perpsOnlyAvailableWithdraws" = "只能提取可用金额。";
 "perpsOpenedAt" = "开仓 %@ · 已设止损";

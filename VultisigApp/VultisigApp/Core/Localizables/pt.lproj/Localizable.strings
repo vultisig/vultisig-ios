@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Em breve";
 "perpsNoTradingAddress" = "Não foi possível derivar a conta de trading deste cofre.";
 "perpsNotThereInAnHour" = "Não chegou em uma hora?";
+"perpsNoVaultAddress" = "Não foi possível encontrar o endereço deste cofre.";
 "perpsOff" = "Desligado";
 "perpsOnlyAvailableWithdraws" = "Só o valor disponível pode ser sacado.";
 "perpsOpenedAt" = "Entrada %@ · Stop loss definido";

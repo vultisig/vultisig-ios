@@ -1318,6 +1318,7 @@
 "perpsNotInPreview" = "Prossimamente";
 "perpsNoTradingAddress" = "Impossibile derivare l'account di trading di questo vault.";
 "perpsNotThereInAnHour" = "Non è arrivato entro un'ora?";
+"perpsNoVaultAddress" = "Impossibile trovare l'indirizzo di questo vault.";
 "perpsOff" = "Off";
 "perpsOnlyAvailableWithdraws" = "Si può prelevare solo l'importo disponibile.";
 "perpsOpenedAt" = "Ingresso %@ · Stop loss impostato";
