@@ -435,6 +435,10 @@ final class SwapReworkViewModel {
         return "≈ " + details.toCoin.fiat(decimal: amount).formatToFiat()
     }
 
+    /// What Max holds back: the funding fee (signed bond, Solana headroom,
+    /// storage reserve), the same value `balanceError` validates. It can read
+    /// higher than the fee card's network row, which shows the network fee
+    /// alone: different questions, both correct.
     private var gasReserveText: String? {
         guard keepsGasReserve else { return nil }
         if isMaxAwaitingFee { return "swapReworkEstimatingGas".localized }
