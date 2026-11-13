@@ -287,6 +287,18 @@ extension FyndService {
     /// TychoRouterV3's `ETH_ADDRESS`, which the encoder may use for the native side.
     static let routerNativeAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     static let feeUnitsPerBps = 10_000
+    /// Fynd's own fee defaults to 0 bps; allow a small negotiated rate on top
+    /// of its 20% of the client fee. Same cap as Android.
+    static let maxRouterFeeBps = 10
+
+    /// The most `router_fee` a quote may report: Fynd's share of the client fee
+    /// plus `maxRouterFeeBps` of the output. An unbounded router fee would let a
+    /// quote hide a near-zero minimum behind fees.
+    static func maxRouterFee(amountOut: BigInt, clientFeeBps: Int) -> BigInt {
+        let routerShareOfClientFee = amountOut * BigInt(clientFeeBps) / 10_000
+            - expectedClientFee(amountOut: amountOut, clientFeeBps: clientFeeBps)
+        return routerShareOfClientFee + amountOut * BigInt(maxRouterFeeBps) / 10_000
+    }
 
     /// A fee signature must outlive multi-device keysign; one expiring sooner
     /// would revert on-chain.
@@ -351,6 +363,11 @@ extension FyndService {
         }
         guard value == (context.sellsNative ? context.sellAmount : 0) else {
             throw FyndError.invalidResponse("tx value \(value) does not match the sell")
+        }
+
+        let routerFeeCap = maxRouterFee(amountOut: amountOut, clientFeeBps: context.clientFeeBps)
+        guard routerFee <= routerFeeCap else {
+            throw FyndError.invalidResponse("router fee \(routerFee) is above \(routerFeeCap)")
         }
 
         let netAmountOut = amountOut - routerFee - clientFee

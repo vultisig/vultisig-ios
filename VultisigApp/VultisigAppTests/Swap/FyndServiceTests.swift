@@ -204,6 +204,23 @@ final class FyndQuoteValidationTests: XCTestCase {
         assertInvalid(order(value: "1"), clientFeeBps: 0)
     }
 
+    func testRejectsAnInflatedRouterFee() {
+        // A huge router fee would make a near-zero minimum look within slippage.
+        let inflated = amountOut - 2
+        assertInvalid(order(routerFee: String(inflated)), clientFeeBps: 0)
+        let cap = FyndService.maxRouterFee(amountOut: amountOut, clientFeeBps: 0)
+        XCTAssertEqual(cap, amountOut * 10 / 10_000)
+        XCTAssertNoThrow(try FyndService.validate(order(routerFee: String(cap)), context: context(clientFeeBps: 0)))
+        assertInvalid(order(routerFee: String(cap + 1)), clientFeeBps: 0)
+    }
+
+    func testRouterFeeCapIncludesFyndsShareOfTheClientFee() {
+        let fee = FyndService.expectedClientFee(amountOut: amountOut, clientFeeBps: 63)
+        let share = amountOut * 63 / 10_000 - fee
+        XCTAssertEqual(FyndService.maxRouterFee(amountOut: amountOut, clientFeeBps: 63), share + amountOut * 10 / 10_000)
+        XCTAssertNoThrow(try FyndService.validate(signedOrder(clientFee: fee, routerFee: share + 300), context: context(clientFeeBps: 63)))
+    }
+
     func testRejectsAnOutputFloorLooserThanTheSlippage() {
         assertInvalid(order(minReceived: "1"), clientFeeBps: 0)
     }
@@ -317,8 +334,10 @@ private extension FyndQuoteValidationTests {
         )
     }
 
-    func netOut(clientFee: BigInt) -> BigInt { amountOut - 300 - clientFee }
-    func minOut(clientFee: BigInt) -> BigInt { netOut(clientFee: clientFee) * 9_900 / 10_000 }
+    func netOut(clientFee: BigInt, routerFee: BigInt = 300) -> BigInt { amountOut - routerFee - clientFee }
+    func minOut(clientFee: BigInt, routerFee: BigInt = 300) -> BigInt {
+        netOut(clientFee: clientFee, routerFee: routerFee) * 9_900 / 10_000
+    }
 
     func call(
         selector: String = FyndRouterCall.singleSwapSelector,
@@ -356,6 +375,7 @@ private extension FyndQuoteValidationTests {
         amountIn: String? = nil,
         value: String? = nil,
         clientFee: String = "0",
+        routerFee: String = "300",
         minReceived: String? = nil,
         call: String? = nil,
         data: String? = nil,
@@ -363,7 +383,7 @@ private extension FyndQuoteValidationTests {
         reportedOffset: Int? = nil
     ) -> FyndOrderQuote {
         let fee = BigInt(clientFee) ?? 0
-        let min = minReceived ?? String(minOut(clientFee: fee))
+        let min = minReceived ?? String(minOut(clientFee: fee, routerFee: BigInt(routerFee) ?? 0))
         return FyndOrderQuote(
             status: status,
             amountIn: amountIn ?? String(sell),
@@ -376,7 +396,7 @@ private extension FyndQuoteValidationTests {
                 data: data ?? ("0x" + (call ?? self.call(minAmountOut: BigInt(min)))),
                 clientFeeSignatureOffset: reportedOffset
             ),
-            feeBreakdown: .init(routerFee: "300", clientFee: clientFee, maxSlippage: "0", minAmountReceived: min),
+            feeBreakdown: .init(routerFee: routerFee, clientFee: clientFee, maxSlippage: "0", minAmountReceived: min),
             clientFeeDeadline: deadline
         )
     }
@@ -389,17 +409,24 @@ private extension FyndQuoteValidationTests {
         signature: String = String(repeating: "ab", count: 65),
         deadline: Int? = 1_800_003_600,
         calldataDeadline: Int? = nil,
-        reportedOffset: Int? = nil
+        reportedOffset: Int? = nil,
+        routerFee: BigInt = 300
     ) -> FyndOrderQuote {
         let signed = call(
-            minAmountOut: minOut(clientFee: clientFee),
+            minAmountOut: minOut(clientFee: clientFee, routerFee: routerFee),
             feeUnits: feeUnits,
             feeReceiver: feeReceiver ?? self.feeReceiver,
             maxContribution: maxContribution,
             deadline: BigInt(calldataDeadline ?? deadline ?? 0),
             signature: signature
         )
-        return order(clientFee: String(clientFee), call: signed, deadline: deadline, reportedOffset: reportedOffset)
+        return order(
+            clientFee: String(clientFee),
+            routerFee: String(routerFee),
+            call: signed,
+            deadline: deadline,
+            reportedOffset: reportedOffset
+        )
     }
 
     func assertInvalid(_ order: FyndOrderQuote, clientFeeBps: Int, file: StaticString = #filePath, line: UInt = #line) {
