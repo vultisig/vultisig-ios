@@ -58,6 +58,17 @@ final class KeysignDerivationTests: XCTestCase {
         XCTAssertEqual(PerpsSignerGuard.address(of: key), Self.tradingAddress)
     }
 
+    func testCeremoniesRefuseAnOverrideUntilJoinersCarryThePath() throws {
+        XCTAssertFalse(KeysignDerivationResolver.isCeremonyOverrideEnabled)
+        let derivation = try resolve(try payload())
+        XCTAssertThrowsError(try KeysignDerivationResolver.gateCeremony(derivation)) { error in
+            XCTAssertEqual(error as? KeysignDerivationError, .ceremonyNotSupported)
+        }
+        // No override: every existing keysign passes the gate untouched.
+        XCTAssertNoThrow(try KeysignDerivationResolver.gateCeremony(nil))
+        XCTAssertNoThrow(try KeysignDerivationResolver.gateCeremony(derivation, enabled: true))
+    }
+
     func testOverrideRefusesUnsupportedVaultsKeysAndChains() throws {
         let trading = try payload()
         for libType in [LibType.GG20, .KeyImport, nil] as [LibType?] {

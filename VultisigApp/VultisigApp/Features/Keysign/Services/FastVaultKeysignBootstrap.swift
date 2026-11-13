@@ -95,7 +95,7 @@ struct FastVaultKeysignBootstrap {
         }
         let customMessageChain = try customMessagePayload?.resolveSigningChain()
         // Resolve before any session or wake, so a refused vault never reaches VultiServer.
-        let derivation = try KeysignDerivationResolver.override(vault: vault, keysignType: .ECDSA,
+        let derivation = try KeysignDerivationResolver.ceremonyOverride(vault: vault, keysignType: .ECDSA,
                                                                 keysignPayload: keysignPayload,
                                                                 customMessagePayload: customMessagePayload)
 

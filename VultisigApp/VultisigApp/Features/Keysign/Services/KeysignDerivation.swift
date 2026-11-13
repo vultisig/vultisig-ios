@@ -33,11 +33,13 @@ enum KeysignDerivationError: LocalizedError, Equatable {
     case pathNotAllowed(String)
     case derivationFailed
     case signerMismatch
+    case ceremonyNotSupported
 
     var errorDescription: String? {
         switch self {
         case .unsupportedVaultType: return "keysignDerivationUnsupportedVault".localized
-        case .unsupportedKeyType, .unsupportedChain, .pathNotAllowed, .derivationFailed: return "keysignDerivationRefused".localized
+        case .unsupportedKeyType, .unsupportedChain, .pathNotAllowed, .derivationFailed, .ceremonyNotSupported:
+            return "keysignDerivationRefused".localized
         case .signerMismatch: return "keysignDerivationSignerMismatch".localized
         }
     }
@@ -79,6 +81,27 @@ enum KeysignDerivationResolver {
                          customMessagePayload: CustomMessagePayload?) throws -> KeysignDerivation? {
         try override(libType: vault.libType, rootPublicKeyECDSA: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode,
                      keysignType: keysignType, hasKeysignPayload: keysignPayload != nil, customMessagePayload: customMessagePayload)
+    }
+
+    /// Off until `derive_path` travels in the keysign message. Today a joiner
+    /// never learns the override, so it cannot check the path itself or run
+    /// the recovery guard, and DKLS publishes signatures before the
+    /// initiator's guard runs. Until then every ceremony that asks for an
+    /// override is refused before any relay or VultiServer traffic.
+    static let isCeremonyOverrideEnabled = false
+
+    /// What the keysign call sites use: `override`, plus the ceremony gate.
+    @MainActor
+    static func ceremonyOverride(vault: Vault, keysignType: KeyType, keysignPayload: KeysignPayload?,
+                                 customMessagePayload: CustomMessagePayload?) throws -> KeysignDerivation? {
+        let derivation = try override(vault: vault, keysignType: keysignType, keysignPayload: keysignPayload,
+                                      customMessagePayload: customMessagePayload)
+        try gateCeremony(derivation)
+        return derivation
+    }
+
+    static func gateCeremony(_ derivation: KeysignDerivation?, enabled: Bool = isCeremonyOverrideEnabled) throws {
+        if derivation != nil, !enabled { throw KeysignDerivationError.ceremonyNotSupported }
     }
 
     /// `^m(/[0-9]{1,10}'?){1,6}$`, every index below 2^31.
@@ -123,8 +146,9 @@ enum KeysignDerivationResolver {
 
     // MARK: Post-sign check
 
-    /// Every signature must recover to the override's child key. Runs on the
-    /// initiator and on joiners; a mismatch fails the keysign.
+    /// Every signature must recover to the override's child key; a mismatch
+    /// fails the keysign. Runs wherever the override is known, which today is
+    /// the initiator only (see `isCeremonyOverrideEnabled`).
     static func verify(signatures: [String: TssKeysignResponse], expectedPublicKeyHex: String) throws {
         for (message, response) in signatures {
             guard case .success(let rsv) = response.getSignatureWithRecoveryID(),

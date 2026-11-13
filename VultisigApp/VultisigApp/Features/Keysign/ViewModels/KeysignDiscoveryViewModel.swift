@@ -207,7 +207,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             serverAddr = Endpoint.vultisigRelay
 
             do {
-                let derivation = try KeysignDerivationResolver.override(vault: vault, keysignType: .ECDSA,
+                let derivation = try KeysignDerivationResolver.ceremonyOverride(vault: vault, keysignType: .ECDSA,
                                                                         keysignPayload: keysignPayload,
                                                                         customMessagePayload: customMessagePayload)
                 try await fastVaultService.sign(

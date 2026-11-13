@@ -379,7 +379,7 @@ class KeysignViewModel: ObservableObject {
                 throw CustomMessagePayloadError.unsupportedChain(chain.name)
             }
             _ = try customMessagePayload?.resolveSigningChain()
-            derivation = try KeysignDerivationResolver.override(vault: vault, keysignType: keysignType,
+            derivation = try KeysignDerivationResolver.ceremonyOverride(vault: vault, keysignType: keysignType,
                                                                 keysignPayload: keysignPayload,
                                                                 customMessagePayload: customMessagePayload)
         } catch {
