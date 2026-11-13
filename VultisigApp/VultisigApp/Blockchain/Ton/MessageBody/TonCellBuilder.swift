@@ -197,8 +197,9 @@ enum TonBocSerializer {
     }
 }
 
-/// Converts a user-friendly TON address (base64 or base64url) to raw `workchain:hex`; raw input is
-/// normalized and returned. `nil` when it is neither, so callers fail closed.
+/// Converts a mainnet user-friendly TON address (base64 or base64url) to raw `workchain:hex`; raw
+/// input is normalized and returned. `nil` for a bad tag, a testnet address or a CRC mismatch, so a
+/// typo fails closed instead of becoming another account.
 func tonFriendlyToRaw(_ address: String) -> String? {
     let trimmed = address.trimmingCharacters(in: .whitespaces)
     if let separator = trimmed.firstIndex(of: ":") {
@@ -210,7 +211,23 @@ func tonFriendlyToRaw(_ address: String) -> String? {
     guard trimmed.count == 48 else { return nil }
     let standard = trimmed.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
     guard let bytes = Data(base64Encoded: standard), bytes.count == 36 else { return nil }
+    // 0x11 bounceable, 0x51 non-bounceable; the 0x80 testnet bit is rejected.
+    guard bytes[0] == 0x11 || bytes[0] == 0x51 else { return nil }
+    let checksum = UInt16(bytes[34]) << 8 | UInt16(bytes[35])
+    guard tonAddressCrc16(Array(bytes[0..<34])) == checksum else { return nil }
     let workchain = Int(Int8(bitPattern: bytes[1]))
     let hash = bytes[2..<34].map { String(format: "%02x", $0) }.joined()
     return "\(workchain):\(hash)"
+}
+
+/// CRC16-XMODEM, the checksum TON appends to user-friendly addresses.
+private func tonAddressCrc16(_ bytes: [UInt8]) -> UInt16 {
+    var crc: UInt16 = 0
+    for byte in bytes {
+        crc ^= UInt16(byte) << 8
+        for _ in 0..<8 {
+            crc = (crc & 0x8000) != 0 ? (crc << 1) ^ 0x1021 : crc << 1
+        }
+    }
+    return crc
 }

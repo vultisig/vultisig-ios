@@ -21,18 +21,15 @@ struct TonLiquidStakeTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool = false
     let memo: String = ""
+    /// Always present: the builder only exists once the deposit body is built, so Verify can
+    /// never fall back to a bodyless transfer to the pool.
+    let tonStakePayload: TonStakePayload?
 
-    var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
-        ThreadSafeDictionary<String, String>()
-    }
-
-    var transactionType: VSTransactionType { .unspecified }
-    var wasmContractPayload: WasmExecuteContractPayload? { nil }
-    var toAddress: String { Tonstakers.poolAddress }
-
-    var tonStakePayload: TonStakePayload? {
+    /// `nil` when the value is under `minimumValue` (nanotons, the same minimum the form
+    /// enforces) or the body cannot be built.
+    init?(coin: Coin, amount: String, minimumValue: BigInt) {
         let value = amount.toBigInt(decimals: coin.decimals)
-        guard value >= Tonstakers.minimumDepositValue() else {
+        guard value > 0, value >= minimumValue else {
             logger.error("Tonstakers deposit below the pool minimum")
             return nil
         }
@@ -42,10 +39,20 @@ struct TonLiquidStakeTransactionBuilder: TransactionBuilder {
                 amount: value.description,
                 payload: try Tonstakers.depositBody()
             )
-            return TonStakePayload(messages: [message])
+            self.coin = coin
+            self.amount = amount
+            self.tonStakePayload = TonStakePayload(messages: [message])
         } catch {
             logger.error("Failed to build Tonstakers deposit body: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }
+
+    var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
+        ThreadSafeDictionary<String, String>()
+    }
+
+    var transactionType: VSTransactionType { .unspecified }
+    var wasmContractPayload: WasmExecuteContractPayload? { nil }
+    var toAddress: String { Tonstakers.poolAddress }
 }

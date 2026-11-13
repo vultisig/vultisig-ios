@@ -93,7 +93,8 @@ final class TonLiquidStakeTransactionViewModel: ObservableObject, Form {
         guard validForm, hasSufficientBalanceForFee else { return nil }
         return TonLiquidStakeTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals)
+            amount: amountField.value.formatToDecimal(digits: coin.decimals),
+            minimumValue: Tonstakers.minimumDepositValue(minStake: poolMinStake)
         )
     }
 

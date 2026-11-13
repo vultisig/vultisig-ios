@@ -16,13 +16,37 @@ private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-liquid
 struct TonLiquidUnstakeTransactionBuilder: TransactionBuilder {
     /// Native TON: it pays the attached value and the network fee.
     let coin: Coin
-    /// The user's tsTON jetton wallet, resolved against the tsTON master (burn destination).
-    let jettonWalletAddress: String
-    /// tsTON to burn, in base units.
-    let tsTONAmount: BigInt
-
     let sendMaxAmount: Bool = false
     let memo: String = ""
+    /// The user's tsTON jetton wallet in bounceable form (burn destination).
+    let toAddress: String
+    /// Always present: the builder only exists once the burn body is built.
+    let tonStakePayload: TonStakePayload?
+
+    /// `nil` when the amount is not positive, the owner address is not TON, or the body fails.
+    init?(coin: Coin, jettonWalletAddress: String, tsTONAmount: BigInt) {
+        guard tsTONAmount > 0 else {
+            logger.error("Tonstakers burn amount non-positive")
+            return nil
+        }
+        // Jetton wallets are active contracts; bounceable so a failed burn refunds.
+        let wallet = TONAddressConverter.toUserFriendly(address: jettonWalletAddress, bounceable: true, testnet: false)
+            ?? jettonWalletAddress
+        do {
+            guard let body = try Tonstakers.burnBody(amount: tsTONAmount, responseAddress: coin.address) else {
+                logger.error("Tonstakers burn: owner address is not a TON address")
+                return nil
+            }
+            self.coin = coin
+            self.toAddress = wallet
+            self.tonStakePayload = TonStakePayload(messages: [
+                TonMessage(to: wallet, amount: Tonstakers.unstakeAttachedValue.description, payload: body)
+            ])
+        } catch {
+            logger.error("Failed to build Tonstakers burn body: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
+    }
 
     /// TON the transfer carries (the attached value); the tsTON rides in the body.
     var amount: String {
@@ -36,33 +60,4 @@ struct TonLiquidUnstakeTransactionBuilder: TransactionBuilder {
 
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
-    var toAddress: String { bounceableJettonWallet }
-
-    /// Jetton wallets are always active contracts; send bounceable so a failed burn refunds.
-    private var bounceableJettonWallet: String {
-        TONAddressConverter.toUserFriendly(address: jettonWalletAddress, bounceable: true, testnet: false)
-            ?? jettonWalletAddress
-    }
-
-    var tonStakePayload: TonStakePayload? {
-        guard tsTONAmount > 0 else {
-            logger.error("Tonstakers burn amount non-positive")
-            return nil
-        }
-        do {
-            guard let body = try Tonstakers.burnBody(amount: tsTONAmount, responseAddress: coin.address) else {
-                logger.error("Tonstakers burn: owner address is not a TON address")
-                return nil
-            }
-            let message = TonMessage(
-                to: bounceableJettonWallet,
-                amount: Tonstakers.unstakeAttachedValue.description,
-                payload: body
-            )
-            return TonStakePayload(messages: [message])
-        } catch {
-            logger.error("Failed to build Tonstakers burn body: \(error.localizedDescription, privacy: .public)")
-            return nil
-        }
-    }
 }

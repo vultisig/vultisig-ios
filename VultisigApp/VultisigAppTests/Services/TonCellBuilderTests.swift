@@ -119,6 +119,7 @@ final class TonCellBuilderTests: XCTestCase {
         XCTAssertEqual(tonFriendlyToRaw("UQBfwesEQte6-OnnVoRroXg2Fhs5kKQtfIITGP22CG98-XlU"), ownerRaw)
         XCTAssertEqual(tonFriendlyToRaw("EQBfwesEQte6+OnnVoRroXg2Fhs5kKQtfIITGP22CG98+SSR"), ownerRaw)
         XCTAssertEqual(tonFriendlyToRaw(ownerRaw), ownerRaw)
+        XCTAssertNil(tonFriendlyToRaw("EQBfwesEQte6-OnnVoRroXg2Fhs5kKQtfIITGP22CG98-SSS"), "CRC mismatch")
         XCTAssertNil(tonFriendlyToRaw("0:1234"))
         XCTAssertNil(tonFriendlyToRaw(""))
     }
