@@ -694,8 +694,8 @@
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
-"kaminoBannerSubtitle" = "Start earning with Kamino";
-"kaminoBannerTitle" = "New on Solana";
+"kaminoBannerSubtitle" = "Put idle USDC to work";
+"kaminoBannerTitle" = "With Kamino";
 "kaminoDepositMinimum" = "Minimum deposit is %@ %@.";
 "kaminoDepositMissingCoin" = "Add %@ on Solana to your vault before depositing.";
 "kaminoDepositTitle" = "Deposit";

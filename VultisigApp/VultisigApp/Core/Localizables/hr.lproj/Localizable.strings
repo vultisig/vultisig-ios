@@ -694,8 +694,8 @@
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
-"kaminoBannerSubtitle" = "Počnite zarađivati uz Kamino";
-"kaminoBannerTitle" = "Novo na Solani";
+"kaminoBannerSubtitle" = "Neka neiskorišteni USDC radi za vas";
+"kaminoBannerTitle" = "Uz Kamino";
 "kaminoDepositMinimum" = "Minimalni polog je %@ %@.";
 "kaminoDepositMissingCoin" = "Dodajte %@ na Solani u svoj trezor prije polaganja.";
 "kaminoDepositTitle" = "Položi";

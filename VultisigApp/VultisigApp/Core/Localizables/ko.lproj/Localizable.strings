@@ -694,8 +694,8 @@
 "joinSend" = "전송 참여";
 "joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
-"kaminoBannerSubtitle" = "Kamino로 수익을 시작하세요";
-"kaminoBannerTitle" = "솔라나 신규";
+"kaminoBannerSubtitle" = "잠자는 USDC를 굴려보세요";
+"kaminoBannerTitle" = "Kamino와 함께";
 "kaminoDepositMinimum" = "최소 예치 금액은 %@ %@입니다.";
 "kaminoDepositMissingCoin" = "예치하기 전에 Solana의 %@을(를) 볼트에 추가하세요.";
 "kaminoDepositTitle" = "예치";
