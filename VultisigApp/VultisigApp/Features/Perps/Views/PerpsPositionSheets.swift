@@ -92,6 +92,7 @@ struct PerpsModifySheet: View {
     let onClose: () -> Void
 
     @State private var page: Page
+    @State private var triggerFocus: PerpsTriggerField?
     @StateObject private var exits: PerpsAutoCloseViewModel
     @StateObject private var margin: PerpsMarginViewModel
     private let existingTriggers: [HLFrontendOrder]
@@ -143,10 +144,12 @@ struct PerpsModifySheet: View {
                 .accessibilityIdentifier("perpsModifyMargin")
             }
             PerpsCard {
-                PerpsTriggerRow(title: "perpsStopLoss".localized, text: $exits.stopText, outcome: exits.outcome(exits.stopLoss),
-                                placeholder: "perpsPricePlaceholder".localized, id: "perpsStopLossField", showsDivider: false)
-                PerpsTriggerRow(title: "perpsTakeProfit".localized, text: $exits.takeText, outcome: exits.outcome(exits.takeProfit),
-                                placeholder: "perpsOptional".localized, id: "perpsTakeProfitField", showsDivider: true)
+                PerpsTriggerRow(title: "perpsStopLoss".localized, text: exits.stopText, outcome: exits.outcome(exits.stopLoss),
+                                placeholder: "perpsPricePlaceholder".localized, id: "perpsStopLossField", showsDivider: false,
+                                isFocused: triggerFocus == .stopLoss) { triggerFocus = .stopLoss }
+                PerpsTriggerRow(title: "perpsTakeProfit".localized, text: exits.takeText, outcome: exits.outcome(exits.takeProfit),
+                                placeholder: "perpsOptional".localized, id: "perpsTakeProfitField", showsDivider: true,
+                                isFocused: triggerFocus == .takeProfit) { triggerFocus = .takeProfit }
             }
             PerpsFootnote(text: exits.issue ?? "perpsStopSlippageNote".localized, isError: exits.issue != nil)
             PrimaryButton(title: "perpsReview".localized) {
@@ -155,6 +158,9 @@ struct PerpsModifySheet: View {
             }
             .disabled(exitsDocument == nil)
             .accessibilityIdentifier("perpsModifyReview")
+            if let triggerFocus {
+                PerpsKeypad { exits.press($0, into: triggerFocus) }
+            }
         }
     }
 
@@ -248,13 +254,21 @@ struct PerpsMarginPage: View {
 /// Price field with what the trigger would make or lose ("62,281  −$14.00").
 struct PerpsTriggerRow: View {
     let title: String
-    @Binding var text: String
+    let text: String
     let outcome: Decimal?
     let placeholder: String
     let id: String
     let showsDivider: Bool
+    var isFocused = false
+    var onTap: () -> Void = {}
 
     var body: some View {
+        Button(action: onTap) { content }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier(id)
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             if showsDivider { Separator(color: Theme.colors.borderLight, opacity: 1) }
             HStack(spacing: 10) {
@@ -263,20 +277,17 @@ struct PerpsTriggerRow: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .fixedSize()
                 Spacer(minLength: 8)
-                // "$63,900", like the stop loss row on the position screen.
-                HStack(spacing: 0) {
-                    if !text.isEmpty {
-                        Text("$")
-                            .font(Theme.fonts.priceBodyL)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
-                    TextField(placeholder, text: $text)
+                // "$63,900", like the stop loss row on the position screen,
+                // grouped as it is typed on the "." keypad.
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text(text.isEmpty ? placeholder : "$" + PerpsInput.grouped(text))
                         .font(Theme.fonts.priceBodyL)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .multilineTextAlignment(.trailing)
+                        .monospacedDigit()
+                        .foregroundStyle(text.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
                         .fixedSize()
-                        .perpsDecimalKeyboard()
-                        .accessibilityIdentifier(id)
+                    if isFocused {
+                        PerpsCaret(height: 20)
+                    }
                 }
                 .frame(minWidth: 96, alignment: .trailing)
                 if let outcome {
@@ -289,6 +300,20 @@ struct PerpsTriggerRow: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+    }
+}
+
+/// Which trigger field the keypad types into.
+enum PerpsTriggerField: Hashable { case stopLoss, takeProfit }
+
+extension PerpsAutoCloseViewModel {
+    /// Prices take up to 6 decimals (Hyperliquid's cap), so small coins can be typed.
+    func press(_ key: PerpsKeypadKey, into field: PerpsTriggerField) {
+        switch field {
+        case .stopLoss: stopText = PerpsKeypadKey.apply(key, to: stopText, maxDecimals: 6)
+        case .takeProfit: takeText = PerpsKeypadKey.apply(key, to: takeText, maxDecimals: 6)
         }
     }
 }

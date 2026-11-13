@@ -18,6 +18,7 @@ struct PerpsTicketSheet: View {
     }
 
     @StateObject private var viewModel: PerpsTicketViewModel
+    @State private var showsKeypad = false
     @ObservedObject private var connection: PerpsConnection
     @State private var subSheet: SubSheet?
 
@@ -35,7 +36,9 @@ struct PerpsTicketSheet: View {
                 Text("perpsMargin".localized)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-                PerpsAmountInput(text: $viewModel.amountText, accessibilityID: "perpsTicketAmount")
+                PerpsAmountInput(text: viewModel.amountText, isFocused: showsKeypad, accessibilityID: "perpsTicketAmount") {
+                    showsKeypad = true
+                }
                 Text(viewModel.summaryLine)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -92,6 +95,9 @@ struct PerpsTicketSheet: View {
                 }
                 .disabled(!viewModel.canReview)
                 .accessibilityIdentifier("perpsReviewButton")
+            }
+            if showsKeypad {
+                PerpsKeypad { viewModel.amountText = PerpsKeypadKey.apply($0, to: viewModel.amountText) }
             }
         }
         .perpsSheetChrome()
@@ -193,6 +199,7 @@ struct PerpsLeverageSheet: View {
 /// take profit and stop loss rows with what each would make or lose.
 struct PerpsAutoCloseSheet: View {
     @StateObject private var viewModel: PerpsAutoCloseViewModel
+    @State private var focus: PerpsTriggerField?
     let onDone: (Decimal?, Decimal?) -> Void
 
     init(viewModel: PerpsAutoCloseViewModel, onDone: @escaping (Decimal?, Decimal?) -> Void) {
@@ -205,10 +212,12 @@ struct PerpsAutoCloseSheet: View {
             PerpsSheetTitle(title: "perpsStopLoss".localized)
             PerpsCard {
                 // The stop first, take profit second and optional.
-                PerpsTriggerRow(title: "perpsStopLoss".localized, text: $viewModel.stopText, outcome: viewModel.outcome(viewModel.stopLoss),
-                           placeholder: "perpsPricePlaceholder".localized, id: "perpsStopLossField", showsDivider: false)
-                PerpsTriggerRow(title: "perpsTakeProfit".localized, text: $viewModel.takeText, outcome: viewModel.outcome(viewModel.takeProfit),
-                           placeholder: "perpsOptional".localized, id: "perpsTakeProfitField", showsDivider: true)
+                PerpsTriggerRow(title: "perpsStopLoss".localized, text: viewModel.stopText, outcome: viewModel.outcome(viewModel.stopLoss),
+                                placeholder: "perpsPricePlaceholder".localized, id: "perpsStopLossField", showsDivider: false,
+                                isFocused: focus == .stopLoss) { focus = .stopLoss }
+                PerpsTriggerRow(title: "perpsTakeProfit".localized, text: viewModel.takeText, outcome: viewModel.outcome(viewModel.takeProfit),
+                                placeholder: "perpsOptional".localized, id: "perpsTakeProfitField", showsDivider: true,
+                                isFocused: focus == .takeProfit) { focus = .takeProfit }
             }
             Text(viewModel.issue ?? "perpsStopSlippageNote".localized)
                 .font(Theme.fonts.caption12)
@@ -218,6 +227,9 @@ struct PerpsAutoCloseSheet: View {
             PrimaryButton(title: "perpsDone".localized) { onDone(viewModel.takeProfit, viewModel.stopLoss) }
                 .disabled(viewModel.issue != nil)
                 .accessibilityIdentifier("perpsAutoCloseDone")
+            if let focus {
+                PerpsKeypad { viewModel.press($0, into: focus) }
+            }
         }
         .perpsSheetChrome()
     }

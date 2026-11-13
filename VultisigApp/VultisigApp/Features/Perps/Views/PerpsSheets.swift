@@ -23,7 +23,7 @@ struct PerpsFundsSheet: View {
         VStack(spacing: 24) {
             PerpsSheetTitle(title: "perpsAddFunds".localized)
             VStack(spacing: 8) {
-                PerpsAmountInput(text: $viewModel.amountText, prefix: "", suffix: " USDC", accessibilityID: "perpsFundsAmount")
+                PerpsAmountInput(text: viewModel.amountText, prefix: "", suffix: " USDC", isFocused: true, accessibilityID: "perpsFundsAmount")
                 HStack(spacing: 8) {
                     Text(String(format: "perpsInYourVault".localized,
                                 PerpsFlows.usdc(viewModel.source)))
@@ -49,6 +49,7 @@ struct PerpsFundsSheet: View {
             }
             .disabled(!viewModel.canReview)
             .accessibilityIdentifier("perpsFundsReview")
+            PerpsKeypad { viewModel.amountText = PerpsKeypadKey.apply($0, to: viewModel.amountText) }
         }
         .perpsSheetChrome()
     }

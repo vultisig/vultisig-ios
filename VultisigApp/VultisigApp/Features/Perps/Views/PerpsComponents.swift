@@ -9,34 +9,57 @@
 import Charts
 import SwiftUI
 
-/// The big centered amount the ticket and money sheets lead with.
+/// The big centered amount the ticket and money sheets lead with. Typed on
+/// `PerpsKeypad` (always "."), shown grouped: never the system decimal pad,
+/// which shows "," in comma-decimal locales.
 struct PerpsAmountInput: View {
-    @Binding var text: String
+    let text: String
     var prefix: String = "$"
     var suffix: String = ""
+    var isFocused = false
     var accessibilityID = "perpsAmountInput"
+    var onTap: () -> Void = {}
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 2) {
-            if !prefix.isEmpty {
-                Text(prefix)
+        Button(action: onTap) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                if !prefix.isEmpty {
+                    Text(prefix)
+                        .font(Theme.fonts.priceLargeTitle)
+                        .foregroundStyle(text.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                }
+                Text(text.isEmpty ? "0" : PerpsInput.grouped(text))
                     .font(Theme.fonts.priceLargeTitle)
+                    .monospacedDigit()
                     .foregroundStyle(text.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                if isFocused {
+                    PerpsCaret(height: 30)
+                }
+                if !suffix.isEmpty {
+                    Text(suffix)
+                        .font(Theme.fonts.title2)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
             }
-            TextField("0", text: $text)
-                .font(Theme.fonts.priceLargeTitle)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .fixedSize()
-                .perpsDecimalKeyboard()
-                .accessibilityIdentifier(accessibilityID)
-            if !suffix.isEmpty {
-                Text(suffix)
-                    .font(Theme.fonts.title2)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
-        .lineLimit(1)
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(accessibilityID)
+    }
+}
+
+/// The insertion point of a keypad field.
+struct PerpsCaret: View {
+    let height: CGFloat
+
+    var body: some View {
+        Capsule()
+            .fill(Theme.colors.primaryAccent4)
+            .frame(width: 2, height: height)
+            .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 4 }
     }
 }
 
@@ -414,15 +437,6 @@ extension View {
                 }
             }
         }
-    }
-
-    @ViewBuilder
-    func perpsDecimalKeyboard() -> some View {
-        #if os(iOS)
-        keyboardType(.decimalPad)
-        #else
-        self
-        #endif
     }
 
     /// Sheet chrome shared by the perps sheets: gutters, keyboard Done, and a

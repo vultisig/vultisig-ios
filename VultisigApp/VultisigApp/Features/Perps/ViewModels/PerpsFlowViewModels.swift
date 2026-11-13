@@ -70,6 +70,20 @@ enum PerpsInput {
 
     static func text(_ value: Decimal) -> String { HLWireFormat.decimalString(value) }
 
+    /// What a keypad field shows while typing: "62287.5" reads "62,287.5".
+    /// The text itself stays plain digits and one ".", whatever the locale.
+    static func grouped(_ text: String) -> String {
+        let parts = text.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        guard let integer = parts.first else { return text }
+        var grouped = ""
+        for (index, character) in integer.reversed().enumerated() {
+            if index > 0, index % 3 == 0 { grouped.append(",") }
+            grouped.append(character)
+        }
+        let head = String(grouped.reversed())
+        return parts.count > 1 ? head + "." + parts[1] : head
+    }
+
     /// USDC amounts always show cents: "101.30".
     static func usdcText(_ value: Decimal) -> String {
         String(format: "%.2f", locale: Locale(identifier: "en_US_POSIX"), NSDecimalNumber(decimal: value).doubleValue)
@@ -506,17 +520,18 @@ enum PerpsKeypadKey: Hashable, Sendable {
     case dot
     case delete
 
-    static func apply(_ key: PerpsKeypadKey, to text: String) -> String {
+    /// `maxDecimals`: 2 for USD amounts, more for prices of small coins.
+    static func apply(_ key: PerpsKeypadKey, to text: String, maxDecimals: Int = 2) -> String {
         switch key {
         case .delete:
             return String(text.dropLast())
         case .dot:
-            if text.contains(".") { return text }
+            if text.contains(".") || maxDecimals == 0 { return text }
             return text.isEmpty ? "0." : text + "."
         case .digit(let digit):
-            if let dot = text.firstIndex(of: "."), text[text.index(after: dot)...].count >= 2 { return text }
+            if let dot = text.firstIndex(of: "."), text[text.index(after: dot)...].count >= maxDecimals { return text }
             if text == "0" { return "\(digit)" }
-            guard text.count < 9 else { return text }
+            guard text.count < 12 else { return text }
             return text + "\(digit)"
         }
     }

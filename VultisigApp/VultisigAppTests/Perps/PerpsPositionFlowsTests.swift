@@ -110,6 +110,21 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsInput.decimal("1.50"), Decimal(string: "1.5"))
     }
 
+    /// Keypad fields group as they are typed, whatever the device locale.
+    func testKeypadFieldsGroupAndAcceptPriceDecimals() {
+        XCTAssertEqual(PerpsInput.grouped("62287"), "62,287")
+        XCTAssertEqual(PerpsInput.grouped("1234567.25"), "1,234,567.25")
+        XCTAssertEqual(PerpsInput.grouped("999"), "999")
+        XCTAssertEqual(PerpsInput.grouped("0."), "0.")
+        XCTAssertEqual(PerpsInput.grouped(""), "")
+        var price = ""
+        for key: PerpsKeypadKey in [.digit(0), .dot, .digit(0), .digit(1), .digit(2), .digit(3), .digit(4), .digit(5), .digit(6), .digit(7)] {
+            price = PerpsKeypadKey.apply(key, to: price, maxDecimals: 6)
+        }
+        XCTAssertEqual(price, "0.012345", "six decimals for prices, no more")
+        XCTAssertEqual(PerpsInput.decimal(price), Decimal(string: "0.012345"))
+    }
+
     // MARK: - Margin
 
     func testAddMarginMovesLiquidationByTheFormulaStep() throws {
