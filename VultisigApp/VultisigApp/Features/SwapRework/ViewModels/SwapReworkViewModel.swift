@@ -362,7 +362,7 @@ final class SwapReworkViewModel {
             valueLossText: issue == nil && (fees?.breakdown.isValueLossHigh ?? false)
                 ? fees?.breakdown.allInChangeText.map { String($0.drop(while: { $0 == "-" })) }
                 : nil,
-            minimumText: minimumAmount.map { SwapReworkFormat.amount($0, ticker: details.fromCoin.ticker) },
+            minimumText: minimumAmountText,
             feeWarning: issue == nil ? feeWarning(fees) : nil,
             cta: cta,
             isCTAEnabled: isCTAEnabled(cta)
@@ -617,6 +617,12 @@ final class SwapReworkViewModel {
         SwapReworkIssue.minimumAmount(for: details.error).map { $0.rounded(scale: maxFractionDigits, mode: .up) }
     }
 
+    /// The exact amount `useMinimum` enters. The display formatter truncates
+    /// digits, which would show less than the provider's floor.
+    var minimumAmountText: String? {
+        minimumAmount.map { "\(SwapKeypadInput.normalized($0, maxFractionDigits: maxFractionDigits)) \(details.fromCoin.ticker)" }
+    }
+
     func useMinimum(vault: Vault) {
         guard let minimum = minimumAmount else { return }
         keepsGasReserve = false
@@ -665,7 +671,7 @@ final class SwapReworkViewModel {
         case .amountTooSmall?:
             // Offered only when the vault can actually send the minimum.
             if let minimum = minimumAmount, minimum <= details.fromCoin.balanceDecimal {
-                return .useMinimum(amountText: SwapReworkFormat.amount(minimum, ticker: details.fromCoin.ticker))
+                return .useMinimum(amountText: minimumAmountText ?? "")
             }
             return .enterAmount
         case .tradingHalted?, .other?:
