@@ -1,0 +1,125 @@
+//
+//  SwapFeeBreakdown.swift
+//  VultisigApp
+//
+//  The honest fee card: every fee the swap costs, in fiat, adding up to the
+//  total on screen, with the Vultisig fee at its list rate struck through next
+//  to what the vault's VULT tier actually charges.
+//
+//  Inputs are the fiat values the existing swap logic already derives
+//  (`SwapCryptoLogic.affiliateFeeFiat`, `outboundFeeFiat`, the signed network
+//  bond), so the rework shows the same money the review and done screens do.
+//
+
+import Foundation
+
+struct SwapFeeBreakdown: Equatable {
+
+    struct Input: Equatable {
+        /// Source-chain gas, the signed bond (approval included when one is needed).
+        let networkFiat: Decimal
+        /// The same gas in the fee coin, e.g. "0.00043 ETH".
+        let networkCrypto: String
+        /// Protocol payout fee (THORChain/Maya outbound). Zero for aggregators,
+        /// whose swap cost is already inside the quoted rate.
+        let protocolFiat: Decimal
+        /// Vultisig fee the quote charges, after every discount.
+        let vultisigNetFiat: Decimal
+        /// Vultisig fee at the list rate, before any discount.
+        let vultisigListFiat: Decimal
+        /// Part of the discount that comes from a referral, not the tier.
+        var referralFiat: Decimal = 0
+        /// List rate in basis points (50).
+        let listBps: Int
+        /// Discount the vault's VULT tier takes off the list rate, in bps.
+        /// `Int.max` is the Ultimate waiver.
+        let tierDiscountBps: Int
+        let tier: VultDiscountTier?
+        /// SwapKit bakes the affiliate into its rate: no separable amount.
+        let vultisigIncludedInRate: Bool
+        /// What the user pays, in fiat.
+        let payFiat: Decimal
+        /// What the vault receives, in fiat.
+        let receiveFiat: Decimal
+    }
+
+    let input: Input
+
+    init(_ input: Input) {
+        self.input = input
+    }
+
+    /// The rate the tier pays, in bps: 50 list, 30 for Gold, 0 for Ultimate.
+    var effectiveBps: Int {
+        max(0, input.listBps - min(max(input.tierDiscountBps, 0), input.listBps))
+    }
+
+    /// "0.30%"
+    var effectiveRateText: String { Self.percent(bps: effectiveBps) }
+
+    /// The quote charged no Vultisig fee although the tier rate is above
+    /// zero (a provider minimum on a small swap). The label then says 0.00%
+    /// rather than a rate next to $0.00.
+    var isWaivedByQuote: Bool {
+        !input.vultisigIncludedInRate && input.vultisigNetFiat == 0 && effectiveBps > 0
+    }
+
+    /// The rate the row states: what the quote actually charges.
+    var chargedRateText: String { isWaivedByQuote ? Self.percent(bps: 0) : effectiveRateText }
+    var listRateText: String { Self.percent(bps: input.listBps) }
+
+    /// Whole percent of the list fee the tier removes (Gold: 40).
+    var percentOff: Int {
+        guard input.listBps > 0 else { return 0 }
+        return min(max(input.tierDiscountBps, 0), input.listBps) * 100 / input.listBps
+    }
+
+    /// What the tier saved on this swap, in fiat. Never negative.
+    var tierSavingsFiat: Decimal {
+        guard !input.vultisigIncludedInRate else { return 0 }
+        return max(input.vultisigListFiat - input.vultisigNetFiat - input.referralFiat, 0)
+    }
+
+    var showsStrikethrough: Bool {
+        !input.vultisigIncludedInRate && input.vultisigListFiat > input.vultisigNetFiat
+    }
+
+    /// Network + protocol + Vultisig. Price impact and slippage are already in
+    /// the quoted amount and are never added again.
+    var totalFiat: Decimal {
+        input.networkFiat + input.protocolFiat + (input.vultisigIncludedInRate ? 0 : input.vultisigNetFiat)
+    }
+
+    /// Everything that leaves the vault, in fiat: the amount plus gas.
+    var totalDebitFiat: Decimal { input.payFiat + input.networkFiat }
+
+    /// Received against everything that left, gas included. Negative is a
+    /// loss. Nil until both sides are known.
+    var allInChange: Decimal? {
+        guard totalDebitFiat > 0, input.receiveFiat > 0 else { return nil }
+        return (input.receiveFiat - totalDebitFiat) / totalDebitFiat
+    }
+
+    /// "-0.68%", two decimals, always signed.
+    var allInChangeText: String? {
+        guard let change = allInChange else { return nil }
+        let percent = (change * 100).rounded(scale: 2)
+        let formatted = Self.decimalFormatter.string(from: NSDecimalNumber(decimal: abs(percent))) ?? "0.00"
+        return (percent < 0 ? "-" : "+") + formatted + "%"
+    }
+
+    static func percent(bps: Int) -> String {
+        let value = Decimal(bps) / 100
+        return (decimalFormatter.string(from: NSDecimalNumber(decimal: value)) ?? "0.00") + "%"
+    }
+
+    /// Always "." for decimals, whatever the locale, to match the keypad.
+    private static let decimalFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.minimumIntegerDigits = 1
+        return formatter
+    }()
+}

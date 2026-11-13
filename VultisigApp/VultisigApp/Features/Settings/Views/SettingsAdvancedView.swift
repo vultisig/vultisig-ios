@@ -37,6 +37,7 @@ struct SettingsAdvancedView: View {
         case sell
         case tssBatching
         case perps
+        case swapRework
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
@@ -84,6 +85,12 @@ struct SettingsAdvancedView: View {
                 title: "settingsAdvancedPerps".localized,
                 icon: "chart.line.uptrend.xyaxis",
                 isEnabled: $settingsViewModel.perpsEnabled
+            )
+        case .swapRework:
+            SettingToggleCell(
+                title: "settingsAdvancedSwapRework".localized,
+                icon: "arrow.left.arrow.right",
+                isEnabled: $settingsViewModel.swapReworkEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

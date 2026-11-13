@@ -23,7 +23,11 @@ struct SwapRouter {
 
     @ViewBuilder
     func buildDetailsScreen(fromCoin: Coin?, toCoin: Coin?, vault: Vault) -> some View {
-        SwapDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+        if SwapReworkConfig.isFeatureEnabled {
+            SwapReworkScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+        } else {
+            SwapDetailsScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+        }
     }
 
     // MARK: - SwiftData lookups

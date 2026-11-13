@@ -1,0 +1,102 @@
+//
+//  SwapReworkFormState.swift
+//  VultisigApp
+//
+//  Everything the reworked swap form renders, as plain values. Built from the
+//  live `SwapDetailsViewModel` by `SwapReworkViewModel`, or from a fictional
+//  fixture in debug demo mode, so the views never read a quote or a SwiftData
+//  model directly.
+//
+
+import Foundation
+
+struct SwapReworkAsset: Equatable {
+    let coinID: String
+    let ticker: String
+    let logo: String
+    let chainLogo: String?
+    let chainName: String
+    let isNative: Bool
+}
+
+struct SwapReworkRouteSummary: Equatable {
+    let providerName: String
+    let providerLogo: String?
+    let tag: SwapRouteTag?
+    /// "8-12 min", empty when the provider gives no time.
+    let etaText: String
+    /// "$6.63", empty until fees land.
+    let feesText: String
+    let isSelectable: Bool
+}
+
+struct SwapReworkFeeRows: Equatable {
+    let breakdown: SwapFeeBreakdown
+    /// "Ethereum gas" or "Ethereum gas (allow + swap)".
+    let networkLabel: String
+    /// "0.00043 ETH"
+    let networkCrypto: String
+    /// "THORChain swap + payout", nil when the route has no protocol fee.
+    let protocolLabel: String?
+    let tierName: String?
+    let minimumReceived: String
+    let slippageText: String
+    let priceImpactText: String
+    /// "0.5 + 0.00043 ETH · $979.04"
+    let leavesVaultText: String
+}
+
+struct SwapReworkApproval: Equatable {
+    let ticker: String
+    let amountText: String
+    let spenderName: String
+}
+
+struct SwapReworkQuoteTimer: Equatable {
+    let state: SwapQuoteClock.State
+    let fraction: Double
+}
+
+enum SwapReworkCTA: Equatable {
+    case enterAmount
+    case loading
+    case review
+    case reviewWith(providerName: String)
+    case confirmNewAmount
+    case getNewQuote
+    case chooseAnotherCoin
+    case insufficient(ticker: String)
+    case fixGas(ticker: String)
+}
+
+struct SwapReworkFormState: Equatable {
+    var pay: SwapReworkAsset
+    var receive: SwapReworkAsset
+    /// Raw keypad text, "." decimals.
+    var amountText: String
+    var payFiatText: String
+    var balanceText: String
+    /// "0.00043 ETH · $0.84" once Max has kept gas behind.
+    var gasReserveText: String?
+    var showsMaxChip: Bool
+
+    var receiveAmountText: String
+    var receiveFiatText: String
+    /// "-0.68% all-in"
+    var allInText: String?
+    var isReceiveIndicative: Bool
+    var isQuoteLoading: Bool
+    var highlightsReceive: Bool
+
+    var route: SwapReworkRouteSummary?
+    var routes: [SwapRankedRoute]
+    var selectedRouteID: String?
+    var timer: SwapReworkQuoteTimer
+    var fees: SwapReworkFeeRows?
+    var approval: SwapReworkApproval?
+    var issue: SwapReworkIssue?
+    var cta: SwapReworkCTA
+    var isCTAEnabled: Bool
+
+    var isEmpty: Bool { amountText.isEmpty }
+}
