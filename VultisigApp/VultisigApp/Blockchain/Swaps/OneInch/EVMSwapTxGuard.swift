@@ -42,7 +42,8 @@ enum EVMSwapTxGuardError: Error, LocalizedError, Equatable {
 ///   A SwapKit `transfer` call or a SwapKit tx addressed to the sold token (an
 ///   ERC-20 deposit) must instead be exactly `transfer(recipient, fromAmount)`
 ///   on the sold token with no native value.
-/// - A 1inch / Kyber swap (or a provider-less one aimed at their routers) cannot
+/// - A 1inch / Kyber / Fynd swap (or a provider-less one aimed at the 1inch or
+///   Kyber routers) cannot
 ///   send more native value than the quoted amount and sends none from an ERC-20
 ///   source. LI.FI and SwapKit are exempt: bridge routes add native messaging fees
 ///   on top of the quoted amount, so `tx.value` can legitimately exceed it.
@@ -72,7 +73,7 @@ enum EVMSwapTxGuard {
         case .swapkit:
             _ = try Self.swapKitDepositRecipient(of: payload)
             routers = nil
-        case .oneInch, .kyberSwap, .lifi, .jupiter:
+        case .oneInch, .kyberSwap, .lifi, .fynd, .jupiter:
             routers = Self.routers(for: provider, chain: chain)
         case .unknown:
             guard rawProvider.isEmpty else {
@@ -92,7 +93,7 @@ enum EVMSwapTxGuard {
 
         let boundsValue: Bool
         switch provider {
-        case .oneInch, .kyberSwap:
+        case .oneInch, .kyberSwap, .fynd:
             boundsValue = true
         case .unknown:
             boundsValue = Self.exactValueRouters(chain: chain).contains(to)
@@ -199,8 +200,22 @@ enum EVMSwapTxGuard {
             case .zksync: return [lifiZkSync]
             default: return [lifiDiamond]
             }
+        case .fynd:
+            return fyndRouter(for: chain).map { [$0] } ?? []
         case .swapkit, .jupiter, .unknown:
             return []
+        }
+    }
+
+    /// Fynd's Designated Router (TychoRouterV3) per chain, from Propeller Heads'
+    /// deployment registry. Fynd's JIT router is never accepted: quotes only go
+    /// to it for API keys enrolled in JIT routing, which ours is not.
+    static func fyndRouter(for chain: Chain) -> String? {
+        switch chain {
+        case .ethereum: return fyndEthereum
+        case .base: return fyndBase
+        case .arbitrum: return fyndArbitrum
+        default: return nil
         }
     }
 
@@ -213,4 +228,7 @@ enum EVMSwapTxGuard {
     private static let lifiHyperliquid = "0x0a0758d937d1059c356d4714e57f5df0239bce1a"
     private static let lifiRobinhood = "0xb477751b76cf82d00a686a1232f5fcd772414af3"
     private static let lifiZkSync = "0x341e94069f53234fe6dabef707ad424830525715"
+    private static let fyndEthereum = "0x1644d2477f809cc2c71bccfd6dc9497e3f83210d"
+    private static let fyndBase = "0xaba5b53b03eafad1c5fc8bd5fc765fc85bb3de67"
+    private static let fyndArbitrum = "0x924f147c50ea59f5180a26031a8b65b2aa1e81cd"
 }

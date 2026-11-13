@@ -145,7 +145,7 @@ struct DefaultSwapInteractor: SwapInteractor {
                 inboundFetch = {
                     try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
                 }
-            case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+            case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
                 return
             }
         }

@@ -51,6 +51,25 @@ struct SettingsAdvancedView: View {
         .commonListContainer()
     }
 
+    private static var forcedSwapProviderOptions: [SettingPickerCell<String>.Option] {
+        var options: [SettingPickerCell<String>.Option] = [
+            .init(value: "", label: "settingsAdvancedForcedSwapProviderAll".localized),
+            .init(value: "swapkit", label: "SwapKit only"),
+            .init(value: "oneInch", label: "1Inch only"),
+            .init(value: "kyberSwap", label: "KyberSwap only"),
+            .init(value: "lifi", label: "LI.FI only"),
+            .init(value: "jupiter", label: "settingsAdvancedForcedSwapProviderJupiter".localized),
+            .init(value: "thorchain", label: "THORChain only"),
+            .init(value: "mayachain", label: "Maya only")
+        ]
+        #if DEBUG
+        // Fynd quotes are off in release builds until its proxy is live, so
+        // forcing it there would leave no provider at all.
+        options.insert(.init(value: "fynd", label: "Fynd only"), at: 4)
+        #endif
+        return options
+    }
+
     @ViewBuilder
     func view(for row: Row) -> some View {
         switch row {
@@ -82,16 +101,7 @@ struct SettingsAdvancedView: View {
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",
-                options: [
-                    .init(value: "", label: "settingsAdvancedForcedSwapProviderAll".localized),
-                    .init(value: "swapkit", label: "SwapKit only"),
-                    .init(value: "oneInch", label: "1Inch only"),
-                    .init(value: "kyberSwap", label: "KyberSwap only"),
-                    .init(value: "lifi", label: "LI.FI only"),
-                    .init(value: "jupiter", label: "settingsAdvancedForcedSwapProviderJupiter".localized),
-                    .init(value: "thorchain", label: "THORChain only"),
-                    .init(value: "mayachain", label: "Maya only")
-                ],
+                options: Self.forcedSwapProviderOptions,
                 selection: $settingsViewModel.forcedSwapProvider
             )
         case .clearSwapKitTokensCache:

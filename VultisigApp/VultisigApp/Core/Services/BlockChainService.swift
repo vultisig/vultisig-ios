@@ -1221,7 +1221,7 @@ private extension BlockChainService {
             // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
             // 23000 is too low. Using 120000 (same as ERC20) is safer.
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        case .oneinch(let evmQuote, _), .kyberswap(let evmQuote, _), .lifi(let evmQuote, _, _):
+        case .oneinch(let evmQuote, _), .kyberswap(let evmQuote, _), .fynd(let evmQuote, _), .lifi(let evmQuote, _, _):
             guard fromCoin.isNativeToken else { return nil }
             do {
                 let amountInCoin = fromCoin.raw(for: fromAmount)

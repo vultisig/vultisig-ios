@@ -218,6 +218,15 @@ struct SwapService {
             }
         }
 
+        if let fyndError = error as? FyndError {
+            switch fyndError {
+            case .noRoute, .unsupportedChain, .notEnabled:
+                return true
+            default:
+                return false
+            }
+        }
+
         if let liFiError = error as? LiFiSwapError {
             let message = liFiError.message.lowercased()
             return ["no route", "not found", "not supported", "unsupported"].contains {
@@ -261,6 +270,15 @@ struct SwapService {
         if let kyberError = error as? KyberSwapError,
            case .apiError(let code, _, _) = kyberError {
             return code >= 500
+        }
+
+        if let fyndError = error as? FyndError {
+            switch fyndError {
+            case .timeout, .rateLimited:
+                return true
+            default:
+                return false
+            }
         }
 
         if let jupiterError = error as? JupiterError {
@@ -423,7 +441,8 @@ struct SwapService {
 
     /// Provider preference order for the banded selection. Lower index = preferred. Keyed off
     /// the enum case (not `displayName`, which can carry SwapKit sub-provider text). THORChain
-    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, Jupiter, LI.FI.
+    /// (all networks) is most preferred, then Maya, SwapKit, KyberSwap, 1inch, Jupiter, LI.FI,
+    /// then Fynd, which wins only on a better net output while it is new.
     /// Jupiter sits just above LI.FI so on-Solana token swaps prefer Jupiter (no aggregator
     /// markup) when its net output is within the band, while LI.FI still wins when materially
     /// better.
@@ -443,6 +462,8 @@ struct SwapService {
             return 5
         case .lifi:
             return 6
+        case .fynd:
+            return 7
         }
     }
 
@@ -535,6 +556,15 @@ struct SwapService {
             return try await fetchKyberSwapQuote(
                 service: KyberSwapService.shared,
                 chain: KyberSwapService.shared.getChainName(for: fromCoin.chain),
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                vultTierDiscount: vultTierDiscount,
+                slippageBps: slippageBps
+            )
+        case .fynd:
+            return try await fetchFyndQuote(
+                service: FyndService.shared,
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
@@ -707,6 +737,24 @@ private extension SwapService {
             slippageBps: slippageBps
         )
         return .kyberswap(quote, fee: fee)
+    }
+
+    func fetchFyndQuote(
+        service: FyndService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        vultTierDiscount: Int,
+        slippageBps: Int?
+    ) async throws -> SwapQuote {
+        let (quote, fee) = try await service.fetchQuote(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            amount: fromCoin.raw(for: amount),
+            vultTierDiscount: vultTierDiscount,
+            slippageBps: slippageBps
+        )
+        return .fynd(quote, fee: fee)
     }
 
     func fetchLiFiQuote(
@@ -1069,7 +1117,7 @@ extension SwapService {
         switch provider {
         case .thorchain, .thorchainChainnet, .thorchainStagenet:
             return true
-        case .mayachain, .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .mayachain, .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return false
         }
     }
