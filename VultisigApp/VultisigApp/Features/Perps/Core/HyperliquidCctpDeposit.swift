@@ -67,6 +67,11 @@ struct HLCctpDeposit: Equatable, Sendable {
 
     static func make(from: String, tradingAddress: String, amount: Decimal, validBefore: UInt64, authNonce: Data) throws -> HLCctpDeposit {
         guard authNonce.count == 32 else { throw HLSigningError.invalidAddress("authNonce") }
+        // USDC has 6 decimals and the forwarder takes its fee from the amount:
+        // anything else would sign a different value than the one shown.
+        guard amount > HLCctp.forwardingFee, amount == amount.rounded(scale: 6, mode: .down) else {
+            throw HLSigningError.invalidAmount("\(amount)")
+        }
         let authorization = HLTypedData(
             domain: HLTypedDomain(name: "USD Coin", version: "2", chainId: HLCctp.arbitrumChainId,
                                   verifyingContract: try HLAddress.bytes(HLCctp.arbitrumUsdc)),

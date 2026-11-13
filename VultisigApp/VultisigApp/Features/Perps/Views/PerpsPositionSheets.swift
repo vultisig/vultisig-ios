@@ -153,10 +153,11 @@ struct PerpsModifySheet: View {
             }
             PerpsFootnote(text: exits.issue ?? "perpsStopSlippageNote".localized, isError: exits.issue != nil)
             PrimaryButton(title: "perpsReview".localized) {
-                guard let document = exitsDocument else { return }
+                // Real nonces only when the review is actually built.
+                guard let document = exitsDocument(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return }
                 onReview(document)
             }
-            .disabled(exitsDocument == nil)
+            .disabled(exitsDocument(nonce: 0) == nil)
             .accessibilityIdentifier("perpsModifyReview")
             if let triggerFocus {
                 PerpsKeypad { exits.press($0, into: triggerFocus) }
@@ -164,12 +165,13 @@ struct PerpsModifySheet: View {
         }
     }
 
-    /// Nil when nothing changed or a trigger sits on the wrong side.
-    private var exitsDocument: PerpsReviewDocument? {
+    /// Nil when nothing changed or a trigger sits on the wrong side. Read on
+    /// every render with nonce 0 (validation only); the Review tap reserves real ones.
+    private func exitsDocument(nonce: UInt64) -> PerpsReviewDocument? {
         guard exits.issue == nil,
               let document = try? PerpsFlows.editExits(position: position, market: market, existing: existingTriggers,
                                                        stopLoss: exits.stopLoss, takeProfit: exits.takeProfit,
-                                                       nonce: HyperliquidExchangeDryRunClient.shared.nonces.next()),
+                                                       nonce: nonce),
               document.blockingIssue == nil else { return nil }
         return document
     }

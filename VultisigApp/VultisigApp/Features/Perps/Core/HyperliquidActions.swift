@@ -292,6 +292,9 @@ enum HLWireFormat {
     /// (Formats without a locale: `String(format:locale:)` rounds differently.)
     static func price(_ value: Decimal, szDecimals: Int) -> Decimal {
         guard value > 0 else { return 0 }
+        // Hyperliquid accepts any integer price whatever its significant
+        // figures (tick-and-lot-size docs), so 100001 stays 100001.
+        if value == value.rounded(scale: 0) { return value }
         let maxDecimals = max(0, 6 - szDecimals)
         let posix = Locale(identifier: "en_US_POSIX")
         // Parse the decimal text: NSDecimalNumber.doubleValue is not correctly rounded.

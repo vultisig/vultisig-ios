@@ -150,6 +150,7 @@ enum PerpsFlows {
             agentAddress: agentAddress, agentName: name, nonce: nonce,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId
         )
+        // Callers reserve two nonces (`HLNonceSource.next(count: 2)`).
         let approveBuilder = try HLUserSignedAction.approveBuilderFee(
             builder: PerpsConfig.builderAddress, maxFeeRate: PerpsConfig.builderMaxFeeRate, nonce: nonce + 1,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId
@@ -256,8 +257,10 @@ enum PerpsFlows {
             guard current?.triggerPx?.value != target else { continue }
             if let current { cancels.append((market.assetIndex, current.oid)) }
             if let target {
-                guard target > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
-                let price = try HLWireFormat.wire(HLWireFormat.price(target, szDecimals: market.szDecimals))
+                // Round first, then check: a sub-tick trigger rounds to 0.
+                let rounded = HLWireFormat.price(target, szDecimals: market.szDecimals)
+                guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
+                let price = try HLWireFormat.wire(rounded)
                 orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
                                           type: .trigger(isMarket: true, triggerPrice: price, kind: kind)))
             }
@@ -336,8 +339,11 @@ enum PerpsFlows {
         } else if position.leverage.isCross {
             liquidation = position.liquidationPx?.value
         } else {
+            // The formula adds uPnL itself, so it takes the margin at entry
+            // (marginUsed minus uPnL), like PerpsMarginFlows.change.
+            let entryMargin = PerpsMarginFlows.margin(of: position)
             liquidation = PerpsMath.liquidationPrice(side: side, entryPrice: entry, size: remaining,
-                                                     collateral: position.marginUsed.value - released,
+                                                     collateral: entryMargin - entryMargin * fraction,
                                                      schedule: market.marginSchedule)
         }
         return CloseEstimate(size: size, price: market.markPrice, realizedPnl: pnl, fees: fees, releasedMargin: released,
@@ -373,7 +379,10 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsBackToTradingAccount".localized, value: PerpsFormat.usd(estimate.returned))
             ],
             requests: [request],
-            blockingIssue: estimate.size * market.markPrice < PerpsOrderPlanner.minimumNotional ? "perpsMinimumNotional".localized : nil
+            // Closing the whole position is never blocked by the $10 opening minimum,
+            // so a position that shrank under $10 can still be closed.
+            blockingIssue: estimate.size < abs(position.szi.value) && estimate.size * market.markPrice < PerpsOrderPlanner.minimumNotional
+                ? "perpsMinimumNotional".localized : nil
         )
     }
 

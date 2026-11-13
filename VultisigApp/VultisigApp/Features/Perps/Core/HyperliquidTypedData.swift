@@ -130,6 +130,7 @@ struct HLTypedData: Equatable, Sendable {
 enum HLSigningError: Error, Equatable {
     case invalidAddress(String)
     case invalidSignatureChainId(String)
+    case invalidAmount(String)
 }
 
 enum HLActionHasher {

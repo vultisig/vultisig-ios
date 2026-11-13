@@ -8,7 +8,10 @@
 //
 
 import Foundation
+import OSLog
 import WalletCore
+
+private let perpsFlowLogger = Logger(subsystem: "com.vultisig.app", category: "perps")
 
 extension PerpsVaultContext {
     @MainActor
@@ -192,14 +195,20 @@ final class PerpsTicketViewModel: ObservableObject {
         return String(format: "perpsAddToTrade".localized, PerpsFormat.usd(missing.rounded(scale: 2, mode: .up)))
     }
 
-    var plan: Result<PerpsOrderPlan, PerpsOrderPlannerError> {
+    /// For the screen (estimate, costs, issue): read on every render, so it
+    /// takes no nonce. The review reserves real ones (`reviewDocument`).
+    var plan: Result<PerpsOrderPlan, PerpsOrderPlannerError> { plan(nonce: 0) }
+
+    private func plan(nonce: UInt64) -> Result<PerpsOrderPlan, PerpsOrderPlannerError> {
         do {
-            return .success(try PerpsOrderPlanner.plan(market: market, ticket: ticket, nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(),
+            return .success(try PerpsOrderPlanner.plan(market: market, ticket: ticket, nonce: nonce,
                                                        builder: PerpsConfig.builderFee))
         } catch let error as PerpsOrderPlannerError {
             return .failure(error)
         } catch {
-            return .failure(.sizeTooSmall)
+            // Wire formatting refused a value: say so, never pretend it is too small.
+            perpsFlowLogger.error("Perps order plan failed: \(error.localizedDescription, privacy: .public)")
+            return .failure(.requestBuildFailed)
         }
     }
 
@@ -228,6 +237,7 @@ final class PerpsTicketViewModel: ObservableObject {
             case .isolatedOnly: return "perpsIsolatedOnly".localized
             case .missingLimitPrice: return nil
             case .invalidTriggerPrice: return "perpsInvalidPrice".localized
+            case .requestBuildFailed: return "perpsReviewUnavailable".localized
             }
         }
         if let costs, costs.transfer > 0, let reason = PerpsFlows.fundingIssue(amount: costs.transfer, vault: vault) { return reason }
@@ -245,7 +255,8 @@ final class PerpsTicketViewModel: ObservableObject {
     }
 
     func reviewDocument() -> PerpsReviewDocument? {
-        guard canReview, case .success(let plan) = plan, let costs else { return nil }
+        guard canReview, let costs,
+              case .success(let plan) = plan(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return nil }
         return PerpsFlows.order(plan: plan, costs: costs, vault: vault, isNewAccount: isNewAccount)
     }
 }
@@ -405,8 +416,10 @@ final class PerpsCloseViewModel: ObservableObject {
         String(format: "perpsCloseSide".localized, market.coin, position.isLong ? "perpsLong".localized : "perpsShort".localized)
     }
 
+    /// The $10 minimum applies to partial closes only: closing everything is
+    /// always allowed, even when the position shrank under $10.
     var issue: String? {
-        size * market.markPrice < PerpsOrderPlanner.minimumNotional ? "perpsMinimumNotional".localized : nil
+        size < total && size * market.markPrice < PerpsOrderPlanner.minimumNotional ? "perpsMinimumNotional".localized : nil
     }
 
     func reviewDocument() -> PerpsReviewDocument? {
@@ -455,12 +468,7 @@ final class PerpsMarginViewModel: ObservableObject {
 
     var issue: String? {
         guard amount > 0 else { return nil }
-        switch change.issue {
-        case .crossPosition: return "perpsMarginIsolatedOnly".localized
-        case .moreThanAvailable: return "perpsMoreThanAvailable".localized
-        case .moreThanRemovable: return String(format: "perpsEnterOrLess".localized, PerpsFormat.usd(change.maxRemovable))
-        case nil: return nil
-        }
+        return change.issue?.message(maxRemovable: change.maxRemovable)
     }
 
     var canReview: Bool { amount > 0 && issue == nil }

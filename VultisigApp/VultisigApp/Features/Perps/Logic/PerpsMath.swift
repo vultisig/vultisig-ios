@@ -176,3 +176,13 @@ enum PerpsMath {
         return (delta < 0 ? -delta : delta) / markPrice * 100
     }
 }
+
+/// Within this fraction of the liquidation price, a position shows the warning.
+extension PerpsMath {
+    static let nearLiquidationThreshold: Decimal = Decimal(string: "0.02") ?? 0
+
+    static func isNearLiquidation(markPrice: Decimal, liquidationPrice: Decimal?) -> Bool {
+        guard let liquidationPrice, markPrice > 0 else { return false }
+        return liquidationDistance(markPrice: markPrice, liquidationPrice: liquidationPrice) / 100 <= nearLiquidationThreshold
+    }
+}

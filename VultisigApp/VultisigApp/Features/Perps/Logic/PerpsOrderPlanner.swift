@@ -64,6 +64,8 @@ enum PerpsOrderPlannerError: Error, Equatable {
     case minimumNotional
     case missingLimitPrice
     case invalidTriggerPrice
+    /// A planned step's request could not be built; never dropped silently.
+    case requestBuildFailed
 }
 
 enum PerpsOrderPlanner {
@@ -108,8 +110,10 @@ enum PerpsOrderPlanner {
         )]
         for (trigger, kind) in [(ticket.takeProfit, HLOrderType.Kind.takeProfit), (ticket.stopLoss, .stopLoss)] {
             guard let trigger else { continue }
-            guard trigger > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
-            let triggerPrice = try HLWireFormat.wire(HLWireFormat.price(trigger, szDecimals: market.szDecimals))
+            // Round first, then check: a sub-tick trigger rounds to 0.
+            let rounded = HLWireFormat.price(trigger, szDecimals: market.szDecimals)
+            guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
+            let triggerPrice = try HLWireFormat.wire(rounded)
             orders.append(HLOrderWire(
                 asset: market.assetIndex,
                 isBuy: !ticket.side.isBuy,
@@ -128,6 +132,7 @@ enum PerpsOrderPlanner {
             ),
             PerpsPlannedStep(kind: .order, action: HLActions.order(orders, grouping: grouping, builder: builder), nonce: nonce + 1)
         ]
+        guard steps.allSatisfy({ $0.request != nil }) else { throw PerpsOrderPlannerError.requestBuildFailed }
         return PerpsOrderPlan(market: market, ticket: ticket, estimate: estimate, price: price, steps: steps)
     }
 

@@ -84,7 +84,17 @@ struct PerpsMarginChange: Equatable, Sendable {
     var marginAfter: Decimal { marginBefore + delta }
     var availableAfter: Decimal { availableBefore - delta }
 
-    enum Issue: Equatable, Sendable { case crossPosition, moreThanAvailable, moreThanRemovable }
+    enum Issue: Equatable, Sendable {
+        case crossPosition, moreThanAvailable, moreThanRemovable
+
+        func message(maxRemovable: Decimal) -> String {
+            switch self {
+            case .crossPosition: return "perpsMarginIsolatedOnly".localized
+            case .moreThanAvailable: return "perpsMoreThanAvailable".localized
+            case .moreThanRemovable: return String(format: "perpsEnterOrLess".localized, PerpsFormat.usd(maxRemovable))
+            }
+        }
+    }
 
     var issue: Issue?
 }
@@ -161,7 +171,8 @@ enum PerpsMarginFlows {
                                value: arrow(PerpsFormat.usd(change.availableBefore), PerpsFormat.usd(change.availableAfter)))
             ],
             requests: [request],
-            blockingIssue: change.delta == 0 ? "perpsNoChanges".localized : nil
+            // The document itself refuses an invalid change, not only the sheet before it.
+            blockingIssue: change.delta == 0 ? "perpsNoChanges".localized : change.issue?.message(maxRemovable: change.maxRemovable)
         )
     }
 

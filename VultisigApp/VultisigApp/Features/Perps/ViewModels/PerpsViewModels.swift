@@ -251,13 +251,17 @@ final class PerpsMarketViewModel: ObservableObject {
     func loadChart() async {
         isLoadingChart = true
         defer { isLoadingChart = false }
-        let window = timeframe.window
+        let requested = timeframe
+        let window = requested.window
         let now = Date()
         do {
             let candles = try await repository.candles(coin: coin, interval: window.interval, since: now.addingTimeInterval(-window.lookback), until: now)
+            // A slow load for a timeframe the user already left never overwrites the newer one.
+            guard requested == timeframe else { return }
             points = candles.map { MarketChartPoint(date: $0.openTime, price: NSDecimalNumber(decimal: $0.close.value).doubleValue) }
         } catch {
             logger.error("Perps candles failed: \(error.localizedDescription, privacy: .public)")
+            guard requested == timeframe else { return }
             points = []
         }
     }

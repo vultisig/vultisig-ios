@@ -49,6 +49,12 @@ final class PerpsFeatureFlagTests: XCTestCase {
 }
 
 final class PerpsVultTierTests: XCTestCase {
+    /// The tier is process-wide: leave no discount behind for other tests.
+    override func tearDown() async throws {
+        await PerpsVultTier.refresh(vaultKey: "tests-reset") { nil }
+        try await super.tearDown()
+    }
+
     func testSwitchingVaultDropsThePreviousTierAndIgnoresAStaleRefresh() async {
         await PerpsVultTier.refresh(vaultKey: "vault-a") { .gold }
         XCTAssertEqual(PerpsVultTier.current, .gold)

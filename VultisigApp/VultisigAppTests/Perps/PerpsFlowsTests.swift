@@ -78,6 +78,21 @@ final class PerpsFlowsTests: XCTestCase {
             .rounded(scale: 2, mode: .up))
     }
 
+    /// The builders themselves refuse a trigger that rounds to 0 (not only the sheet),
+    /// and reserve their second nonce.
+    func testBuildersRejectSubTickTriggersAndReserveNonces() throws {
+        let ticket = PerpsTicket(side: .long, margin: 100, leverage: 2, marginMode: .isolated, limitPrice: nil,
+                                 takeProfit: nil, stopLoss: Decimal(string: "0.000001"))
+        XCTAssertThrowsError(try PerpsOrderPlanner.plan(market: market(), ticket: ticket, nonce: 1)) { error in
+            XCTAssertEqual(error as? PerpsOrderPlannerError, .invalidTriggerPrice)
+        }
+        XCTAssertThrowsError(try PerpsFlows.editExits(position: try position(), market: market(), existing: [],
+                                                      stopLoss: Decimal(string: "0.000001"), takeProfit: nil, nonce: 1))
+        let source = HLNonceSource(clock: { Date(timeIntervalSince1970: 1_000) })
+        let first = source.next(count: 2)
+        XCTAssertEqual(source.next(), first + 2, "first + 1 was reserved for the second step")
+    }
+
     func testOrderReviewIsMinimalAndFundsTheTradingAccount() throws {
         let plan = try PerpsOrderPlanner.plan(market: market(), ticket: PerpsTicket(side: .long, margin: 100, leverage: 2, marginMode: .isolated,
                                                                                     limitPrice: nil, takeProfit: nil, stopLoss: 62_500),
@@ -180,8 +195,10 @@ final class PerpsFlowsTests: XCTestCase {
         // Isolated margin already holds the uPnL: half of 1.94 is not paid twice.
         close(estimate.returned, 33.95 - 0.97 + estimate.realizedPnl - estimate.fees)
         let liquidation = try XCTUnwrap(estimate.remainingLiquidation)
+        // The formula adds uPnL from the entry itself, so it takes the margin at entry:
+        // marginUsed 67.9 minus uPnL 1.94 (counting it twice made winners look safer).
         let full = try XCTUnwrap(PerpsMath.liquidationPrice(side: .long, entryPrice: 66_000, size: 0.002,
-                                                            collateral: 67.9, schedule: .single(maxLeverage: 40)))
+                                                            collateral: Decimal(string: "65.96") ?? 0, schedule: .single(maxLeverage: 40)))
         close(liquidation, full, 1)
     }
 
@@ -206,8 +223,13 @@ final class PerpsFlowsTests: XCTestCase {
     func testEditedTriggerIsSnappedBeforeValidation() {
         let viewModel = PerpsAutoCloseViewModel(side: .short, entry: 100_000, reference: Decimal(string: "100000.5") ?? 0, size: 1,
                                                 liquidation: nil, szDecimals: 5, takeProfit: nil, stopLoss: nil)
+        // Hyperliquid accepts any integer price, so 100001 is kept as typed (above the mark: valid).
         viewModel.stopText = "100001"
-        XCTAssertEqual(viewModel.stopLoss, 100_000, "5 significant figures, the price that would be signed")
+        XCTAssertEqual(viewModel.stopLoss, 100_001)
+        XCTAssertNil(viewModel.issue)
+        // A fractional price is snapped to 5 significant figures first: 100000.4 -> 100000, under the mark.
+        viewModel.stopText = "100000.4"
+        XCTAssertEqual(viewModel.stopLoss, 100_000, "the price that would be signed")
         XCTAssertNotNil(viewModel.issue, "a short's stop at or under the mark is refused, not signed")
         // Zero, or a sub-tick price that snaps to zero, is refused (blank still removes).
         viewModel.stopText = ""

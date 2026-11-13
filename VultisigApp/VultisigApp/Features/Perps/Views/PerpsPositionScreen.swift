@@ -356,7 +356,7 @@ struct PerpsPositionScreen: View {
                 )) { newTake, newStop in
                     let document = try? PerpsFlows.editExits(position: position, market: market, existing: viewModel.triggers,
                                                              stopLoss: newStop, takeProfit: newTake,
-                                                             nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
+                                                             nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2))
                     if let document, document.blockingIssue == nil { pendingReview = document }
                     sheet = nil
                 }

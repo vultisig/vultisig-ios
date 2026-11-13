@@ -26,12 +26,19 @@ final class HLNonceSource: @unchecked Sendable {
         self.clock = clock
     }
 
-    func next() -> UInt64 {
+    func next() -> UInt64 { next(count: 1) }
+
+    /// Reserves `count` consecutive nonces and returns the first. Flows that
+    /// sign several steps (leverage + order, cancel + order) use first,
+    /// first + 1, ...: the source knows about all of them, so no later call
+    /// can hand the same value out again.
+    func next(count: Int) -> UInt64 {
         lock.lock()
         defer { lock.unlock() }
         let now = UInt64(clock().timeIntervalSince1970 * 1000)
-        last = max(now, last + 1)
-        return last
+        let first = max(now, last + 1)
+        last = first + UInt64(max(1, count) - 1)
+        return first
     }
 
     /// Short replay window for L1 actions, as the spec's policy section asks:
@@ -82,6 +89,9 @@ struct HLExchangeRequest: Equatable, Sendable {
     let expiresAfter: UInt64?
     let typedData: HLTypedData
     var signature: HLExchangeSignature
+    /// The network the request was built for, so the sign request always
+    /// rebuilds the same digest. Nil for user-signed actions (in the typed data).
+    var isMainnet: Bool?
 
     var digest: Data { typedData.digest }
 
@@ -112,7 +122,7 @@ struct HLExchangeRequest: Equatable, Sendable {
         )
         return HLExchangeRequest(
             kind: kind, action: action, nonce: nonce, vaultAddress: vaultAddress, expiresAfter: expiresAfter,
-            typedData: typed, signature: .pendingVaultKeysign(digest: typed.digest)
+            typedData: typed, signature: .pendingVaultKeysign(digest: typed.digest), isMainnet: isMainnet
         )
     }
 
@@ -130,7 +140,8 @@ struct HLExchangeRequest: Equatable, Sendable {
         case .approveAgent, .approveBuilderFee, .withdraw3:
             return .userSigned(HLUserSignedAction(action: action, typedData: typedData, nonce: nonce))
         default:
-            return .l1(action: action, nonce: nonce, isMainnet: PerpsConfig.isMainnet, vaultAddress: vaultAddress, expiresAfter: expiresAfter)
+            return .l1(action: action, nonce: nonce, isMainnet: isMainnet ?? PerpsConfig.isMainnet,
+                       vaultAddress: vaultAddress, expiresAfter: expiresAfter)
         }
     }
 }
@@ -165,7 +176,9 @@ final class HyperliquidExchangeDryRunClient: ObservableObject {
         let json = request.jsonBody
         let entry = HLDryRunEntry(date: Date(), kind: request.kind.rawValue, digest: "0x" + request.digest.hexString, json: json)
         log.insert(entry, at: 0)
-        logger.info("[dry-run] would submit \(Self.endpoint, privacy: .public) \(json, privacy: .public)")
+        // Kind and digest only: a body that later carries a signature
+        // (withdraw3, approveAgent have no expiry) must never reach device logs.
+        logger.info("[dry-run] would submit \(request.kind.rawValue, privacy: .public) digest \(entry.digest, privacy: .private)")
         return .dryRun(json: json)
     }
 

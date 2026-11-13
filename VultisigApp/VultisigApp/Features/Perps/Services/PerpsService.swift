@@ -178,25 +178,26 @@ final class HyperliquidPerpsRepository: PerpsRepository {
         let since = Int64(Date().addingTimeInterval(-30 * 86_400).timeIntervalSince1970 * 1000)
         async let ledger = httpClient.request(HyperliquidInfoAPI.ledgerUpdates(user: address, startTimeMs: since), responseType: [HLLedgerUpdate].self)
         async let funding = httpClient.request(HyperliquidInfoAPI.funding(user: address, startTimeMs: since), responseType: [HLFundingPayment].self)
-        return try await Self.activity(fills: fills, ledger: ledger.data, funding: funding.data)
+        return try await Self.activity(fills: fills, ledger: ledger.data, funding: funding.data, account: address)
     }
 
     /// Fills grouped by order, ledger transfers as-is, funding summed per day.
-    static func activity(fills: [HLFill], ledger: [HLLedgerUpdate], funding: [HLFundingPayment]) -> [PerpsActivityItem] {
+    static func activity(fills: [HLFill], ledger: [HLLedgerUpdate], funding: [HLFundingPayment], account: String = "") -> [PerpsActivityItem] {
         let orders = Dictionary(grouping: fills, by: \.oid).compactMap { oid, parts -> PerpsActivityItem? in
             guard let first = parts.min(by: { $0.time < $1.time }) else { return nil }
-            let size = parts.reduce(Decimal(0)) { $0 + $1.sz.value }
+            // Each fill at its own price: one order can fill at several.
+            let notional = parts.reduce(Decimal(0)) { $0 + $1.sz.value * $1.px.value }
             let pnl = parts.reduce(Decimal(0)) { $0 + $1.closedPnl.value }
             let isClose = first.dir.hasPrefix("Close")
             let side = first.dir.lowercased().contains("long") ? "perpsLong".localized : "perpsShort".localized
             let title = String(format: (isClose ? "perpsActivityClosed" : "perpsActivityOpened").localized, first.coin, side)
             return PerpsActivityItem(id: "o\(oid)", kind: .trade, coin: first.coin, title: title,
                                      date: Date(timeIntervalSince1970: TimeInterval(first.time) / 1000),
-                                     amount: isClose ? pnl : size * first.px.value, isSigned: isClose)
+                                     amount: isClose ? pnl : notional, isSigned: isClose)
         }
         let transfers = ledger.compactMap { update -> PerpsActivityItem? in
             guard let usdc = update.delta.usdc?.value else { return nil }
-            let isOut = update.delta.type.lowercased().contains("withdraw")
+            let isOut = update.isOutgoing(from: account)
             return PerpsActivityItem(id: "l\(update.hash)\(update.time)", kind: .transfer, coin: "USDC",
                                      title: (isOut ? "perpsActivityWithdrew" : "perpsActivityAdded").localized,
                                      date: Date(timeIntervalSince1970: TimeInterval(update.time) / 1000),

@@ -243,11 +243,24 @@ struct HLLedgerUpdate: Decodable, Hashable, Sendable {
     struct Delta: Decodable, Hashable, Sendable {
         let type: String
         let usdc: HLDecimal?
+        /// Transfers: who sent it and where it went (`internalTransfer`, `send`).
+        var user: String?
+        var destination: String?
+        /// Account-class transfers: true when the USDC moved into perps.
+        var toPerp: Bool?
     }
 
     let time: Int64
     let hash: String
     let delta: Delta
+
+    /// Whether USDC left `account`, from the event fields rather than the type
+    /// name: an outgoing internal transfer does not say "withdraw".
+    func isOutgoing(from account: String) -> Bool {
+        if let toPerp = delta.toPerp { return !toPerp }
+        if let user = delta.user, delta.destination != nil { return user.lowercased() == account.lowercased() }
+        return delta.type.lowercased().contains("withdraw")
+    }
 }
 
 /// `userFunding`: one funding payment on one position.
