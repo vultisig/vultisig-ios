@@ -208,6 +208,34 @@ enum PerpsStopPlacement: Equatable {
     }
 }
 
+/// Row order for the liquidation explainer: always price order, highest at the
+/// top, whatever has happened (a price that passed the stop, a stop at or past
+/// liquidation). The distance note sits on the liquidation's inner side.
+enum PerpsLadderRow: Equatable {
+    case now, entry, stopLoss, liquidation, distance
+
+    static func ordered(isLong: Bool, mark: Decimal, entry: Decimal?, stopLoss: Decimal?, liquidation: Decimal?) -> [PerpsLadderRow] {
+        // Equal prices keep this order, read from the safe side toward liquidation.
+        var rows: [(row: PerpsLadderRow, price: Decimal)] = [(.now, mark)]
+        if let entry { rows.append((.entry, entry)) }
+        if let stopLoss { rows.append((.stopLoss, stopLoss)) }
+        if let liquidation { rows.append((.liquidation, liquidation)) }
+        // Long: falling toward liquidation reads top-down; a short is the mirror.
+        let side: Decimal = isLong ? 1 : -1
+        let towardLiquidation = rows.enumerated().sorted { lhs, rhs in
+            let left = lhs.element.price * side, right = rhs.element.price * side
+            return left != right ? left > right : lhs.offset < rhs.offset
+        }.map(\.element.row)
+        var result: [PerpsLadderRow] = []
+        for row in towardLiquidation {
+            if row == .liquidation { result.append(.distance) }
+            result.append(row)
+        }
+        // Highest price first on screen: a short's list runs bottom-up.
+        return isLong ? result : result.reversed()
+    }
+}
+
 /// Within this fraction of the liquidation price, a position shows the warning.
 extension PerpsMath {
     static let nearLiquidationThreshold: Decimal = Decimal(string: "0.02") ?? 0

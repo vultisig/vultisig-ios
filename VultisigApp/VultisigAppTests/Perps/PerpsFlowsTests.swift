@@ -138,6 +138,28 @@ final class PerpsFlowsTests: XCTestCase {
         }
     }
 
+    /// The explainer's rows are always in price order, highest at the top,
+    /// including after the price passed the stop or the stop sits at liquidation.
+    func testLiquidationLadderIsInPriceOrder() {
+        func order(_ isLong: Bool, mark: Decimal, entry: Decimal?, stop: Decimal?, liq: Decimal?) -> [PerpsLadderRow] {
+            PerpsLadderRow.ordered(isLong: isLong, mark: mark, entry: entry, stopLoss: stop, liquidation: liq)
+        }
+        // Long, in profit: now 71,130 > entry 66,975 > stop 62,287 > liquidation 33,911.
+        XCTAssertEqual(order(true, mark: 71_130, entry: 66_975, stop: 62_287, liq: 33_911), [.now, .entry, .stopLoss, .distance, .liquidation])
+        // Long, price already under the stop: entry > stop > now > liquidation.
+        XCTAssertEqual(order(true, mark: 62_000, entry: 66_975, stop: 62_287, liq: 33_911), [.entry, .stopLoss, .now, .distance, .liquidation])
+        // Long, stop exactly at liquidation: liquidation is the last row.
+        XCTAssertEqual(order(true, mark: 71_130, entry: 66_975, stop: 33_911, liq: 33_911), [.now, .entry, .stopLoss, .distance, .liquidation])
+        // Long, stop past liquidation: it sits under liquidation.
+        XCTAssertEqual(order(true, mark: 71_130, entry: 66_975, stop: 30_000, liq: 33_911), [.now, .entry, .distance, .liquidation, .stopLoss])
+        // Short, mirrored: liquidation 120 on top, then stop 110, entry 100, now 90.
+        XCTAssertEqual(order(false, mark: 90, entry: 100, stop: 110, liq: 120), [.liquidation, .distance, .stopLoss, .entry, .now])
+        // Short, price already above the stop: liquidation > now > stop > entry.
+        XCTAssertEqual(order(false, mark: 112, entry: 100, stop: 110, liq: 120), [.liquidation, .distance, .now, .stopLoss, .entry])
+        // No stop, no liquidation: just the prices.
+        XCTAssertEqual(order(true, mark: 90, entry: 100, stop: nil, liq: nil), [.entry, .now])
+    }
+
     /// Stop-loss presets (R20): 7% from the entry is the default stop.
     @MainActor
     func testStopPresetsFromEntry() {

@@ -143,21 +143,23 @@ struct PerpsLiquidationSheet: View {
     }
 
     private var steps: [Step] {
-        var prices: [Step] = [.price(label: String(format: "perpsCoinNow".localized, coin), value: mark,
-                                     color: Theme.colors.textPrimary, isLiquidation: false)]
-        if let entry {
-            prices.append(.price(label: "perpsEntryTitle".localized, value: entry, color: Theme.colors.textSecondary, isLiquidation: false))
+        PerpsLadderRow.ordered(isLong: isLong, mark: mark, entry: entry, stopLoss: stopLoss, liquidation: liquidation).compactMap { row in
+            switch row {
+            case .now:
+                return .price(label: String(format: "perpsCoinNow".localized, coin), value: mark, color: Theme.colors.textPrimary, isLiquidation: false)
+            case .entry:
+                return entry.map { .price(label: "perpsEntryTitle".localized, value: $0, color: Theme.colors.textSecondary, isLiquidation: false) }
+            case .stopLoss:
+                return stopLoss.map { .price(label: "perpsStopLoss".localized, value: $0, color: Theme.colors.alertWarning, isLiquidation: false) }
+            case .liquidation:
+                return liquidation.map { .price(label: "perpsLiquidation".localized, value: $0, color: Theme.colors.alertError, isLiquidation: true) }
+            case .distance:
+                guard let liquidation else { return nil }
+                let distance = PerpsMath.liquidationDistance(markPrice: mark, liquidationPrice: liquidation)
+                let percent = PerpsFormat.percent(distance, digits: distance < 10 ? 1 : 0, signed: false)
+                return .distance(String(format: (isLong ? "perpsBelowNow" : "perpsAboveNow").localized, percent))
+            }
         }
-        if let stopLoss {
-            prices.append(.price(label: "perpsStopLoss".localized, value: stopLoss, color: Theme.colors.alertWarning, isLiquidation: false))
-        }
-        guard let liquidation else { return prices }
-        let distance = PerpsMath.liquidationDistance(markPrice: mark, liquidationPrice: liquidation)
-        let percent = PerpsFormat.percent(distance, digits: distance < 10 ? 1 : 0, signed: false)
-        let tail: [Step] = [.distance(String(format: (isLong ? "perpsBelowNow" : "perpsAboveNow").localized, percent)),
-                            .price(label: "perpsLiquidation".localized, value: liquidation, color: Theme.colors.alertError, isLiquidation: true)]
-        // Highest price at the top: a long's liquidation sits under the mark, a short's above it.
-        return isLong ? prices + tail : tail.reversed() + prices.reversed()
     }
 
     var body: some View {
