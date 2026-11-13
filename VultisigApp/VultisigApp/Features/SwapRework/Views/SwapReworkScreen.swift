@@ -125,14 +125,15 @@ struct SwapReworkScreen: View {
                 gasNote: state.routeGasNote,
                 onSelect: { viewModel.selectRoute(id: $0, vault: vault) }
             )
-            .sheetStyle(padding: 0, detents: [.medium])
+            // Tall enough for three routes and the footer; drag up for more.
+            .sheetStyle(padding: 0, detents: [.fraction(0.7), .large])
         }
         .crossPlatformSheet(isPresented: $showAddGas) {
             SwapReworkAddGasSheet(
                 ticker: state.feeTicker,
-                chainName: details.feeCoin.chain.name,
+                chainName: viewModel.isDemo ? "Ethereum" : details.feeCoin.chain.name,
                 amountText: state.gasToAddText ?? demoGasToAdd,
-                addressText: SwapTokenTrust.shortContract(details.feeCoin.address),
+                addressText: viewModel.isDemo ? "0x4a7e…91c2" : SwapTokenTrust.shortContract(details.feeCoin.address),
                 onReceive: {
                     showAddGas = false
                     guard !viewModel.isDemo else { return }

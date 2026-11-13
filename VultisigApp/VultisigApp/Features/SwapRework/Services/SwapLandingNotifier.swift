@@ -33,7 +33,9 @@ final class SwapLandingNotifier {
     @ObservationIgnored private let hash: String
     @ObservationIgnored private let watcher: SwapLandingWatcher
 
-    init(hash: String, watcher: SwapLandingWatcher = .shared) {
+    init(hash: String, watcher: SwapLandingWatcher? = nil) {
+        // Resolved here, on the main actor, not as a default argument.
+        let watcher = watcher ?? .shared
         self.hash = hash
         self.watcher = watcher
         self.state = watcher.isWatching(hash: hash) ? .on : .off
