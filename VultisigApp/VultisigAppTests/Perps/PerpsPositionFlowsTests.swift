@@ -250,7 +250,7 @@ final class PerpsPositionFlowsTests: XCTestCase {
         let stop = PerpsOutcome.make(kind: .stopLoss, position: position, fillPrice: 62_262, triggerPrice: 62_281)
         close(stop.margin, Decimal(string: "99.94") ?? 0, 0.0001)
         let gross = (62_262 - 67_074) * (Decimal(string: "0.00298") ?? 0)
-        XCTAssertEqual(stop.netPnl, (gross - stop.fees).rounded(scale: 2))
+        XCTAssertEqual(stop.netPnl, gross - stop.fees, "full precision, rounded once where shown")
         XCTAssertEqual(stop.returned, stop.margin + stop.netPnl, "what comes back adds up")
         XCTAssertLessThan(stop.netPnl, 0)
         let take = PerpsOutcome.make(kind: .takeProfit, position: position, fillPrice: 74_988, triggerPrice: 75_000)

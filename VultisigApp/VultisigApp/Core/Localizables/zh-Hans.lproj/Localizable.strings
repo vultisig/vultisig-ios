@@ -1373,6 +1373,7 @@
 "perpsTitle" = "永续合约";
 "perpsTo" = "至";
 "perpsTodayTitle" = "今天";
+"perpsTotalFromAvailable" = "从可用余额扣除合计";
 "perpsToTradingAccount" = "转入您的交易账户";
 "perpsTradeOpenedTitle" = "%@ %@ 已开仓";
 "perpsTradingAccountShort" = "交易账户";

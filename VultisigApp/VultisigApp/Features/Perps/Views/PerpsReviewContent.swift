@@ -199,6 +199,7 @@ struct PerpsReviewContent: View {
             rows.append(PerpsReviewRow(label: "perpsFees".localized, value: fees.total))
             if document.deposit != nil || fees.showsBreakdown { rows += fees.breakdown }
         }
+        rows += document.detailTotalRows
         rows.append(signingRow)
         return rows
     }

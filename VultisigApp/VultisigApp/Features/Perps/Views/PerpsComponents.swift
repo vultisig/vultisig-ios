@@ -160,7 +160,7 @@ struct PerpsRow<Accessory: View>: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(Theme.fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     if let subtitle {
                         Text(subtitle)
                             .font(Theme.fonts.footnote)
@@ -274,6 +274,9 @@ struct PerpsLevel: Identifiable, Equatable {
     let title: String
     let price: Decimal
     let color: Color
+    /// Always widens the chart to stay visible (the entry on a position);
+    /// other levels only widen it when they sit near the move.
+    var isPinned = false
 
     var id: String { title }
     var value: Double { NSDecimalNumber(decimal: price).doubleValue }
@@ -295,7 +298,7 @@ struct PerpsPriceChart: View {
         // A level far outside the move (a distant liquidation) would flatten
         // the line, so only levels within 3x the visible range widen it.
         let span = max(high - low, high * 0.01)
-        let near = levels.map(\.value).filter { $0 >= low - 3 * span && $0 <= high + 3 * span }
+        let near = levels.filter { $0.isPinned || ($0.value >= low - 3 * span && $0.value <= high + 3 * span) }.map(\.value)
         let minValue = min(low, near.min() ?? low)
         let maxValue = max(high, near.max() ?? high)
         let pad = (maxValue - minValue) * 0.1
@@ -313,19 +316,36 @@ struct PerpsPriceChart: View {
                     .foregroundStyle(tint)
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
             }
+
             ForEach(levels.filter { domain.contains($0.value) }) { level in
                 RuleMark(y: .value(level.title, level.value))
                     .foregroundStyle(level.color.opacity(0.7))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .annotation(position: placement(for: level, domain: domain).0,
                                 alignment: placement(for: level, domain: domain).1, spacing: 3) {
-                        levelPill(level, alignment: placement(for: level, domain: domain).1)
+                        levelPill(level)
                     }
             }
         }
         .chartYScale(domain: domain)
+        // Room for the end dot inside the chart's own frame.
+        .chartXScale(range: .plotDimension(endPadding: 6))
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
+        .chartOverlay { proxy in
+            // The current price: a dot where the line ends, drawn over the
+            // plot so the chart's edge never clips it.
+            GeometryReader { geometry in
+                if let last = points.last, let plotFrame = proxy.plotFrame,
+                   let x = proxy.position(forX: last.date), let y = proxy.position(forY: last.price) {
+                    let origin = geometry[plotFrame].origin
+                    Circle()
+                        .fill(tint)
+                        .frame(width: 8, height: 8)
+                        .position(x: origin.x + x, y: origin.y + y)
+                }
+            }
+        }
         .frame(height: height)
         .accessibilityIdentifier("perpsPriceChart")
     }
@@ -348,8 +368,8 @@ struct PerpsPriceChart: View {
         return ((prices.last ?? level.value) >= level.value ? .bottom : .top, .trailing)
     }
 
-    /// "Entry $66,975" in a small pill, kept inside the screen margin.
-    private func levelPill(_ level: PerpsLevel, alignment: Alignment) -> some View {
+    /// "Entry $66,975" in a small pill.
+    private func levelPill(_ level: PerpsLevel) -> some View {
         Text("\(level.title) \(PerpsFormat.price(level.price))")
             .font(Theme.fonts.caption10)
             .monospacedDigit()
@@ -358,7 +378,6 @@ struct PerpsPriceChart: View {
             .padding(.vertical, 2)
             .background(Capsule().fill(Theme.colors.bgPrimary.opacity(0.85)))
             .overlay(Capsule().stroke(level.color.opacity(0.35), lineWidth: 1))
-            .padding(alignment == .leading ? .leading : .trailing, PerpsLayout.margin)
     }
 }
 
@@ -376,8 +395,11 @@ private struct PerpsFitDetent: ViewModifier {
 
 extension View {
     /// 20pt side margins on perps screens; charts bleed back to the edges.
+    /// Perps screens: the shared margins on the app's gradient background (the
+    /// blue glow at the top, as on the wallet home).
     func perpsScreenMargins() -> some View {
         screenEdgeInsets(ScreenEdgeInsets(leading: PerpsLayout.margin, trailing: PerpsLayout.margin))
+            .screenBackground(.gradient)
     }
 
     /// compact header: back button, then a small logo and the symbol centered.

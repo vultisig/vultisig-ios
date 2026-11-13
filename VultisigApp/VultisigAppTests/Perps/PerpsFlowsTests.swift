@@ -209,6 +209,7 @@ final class PerpsFlowsTests: XCTestCase {
         // "0,125" and "1,500" typed on a comma-decimal keypad are not 125 / 1,500.
         XCTAssertEqual(PerpsInput.decimal("0,125"), Decimal(string: "0.125"))
         XCTAssertEqual(PerpsInput.decimal("1,500"), Decimal(string: "1.5"))
+        XCTAssertEqual(PerpsInput.decimal("75.000,5"), Decimal(string: "75000.5"))
         XCTAssertNil(PerpsInput.decimal("1,2,3"))
         XCTAssertNil(PerpsInput.decimal("1.2.3"))
         XCTAssertNil(PerpsInput.decimal("12a"))
@@ -345,8 +346,10 @@ final class PerpsFlowsTests: XCTestCase {
         let stop = PerpsOutcome.make(kind: .stopLoss, position: position, fillPrice: 62_268, triggerPrice: 62_287)
         XCTAssertEqual(PerpsFormat.usd(stop.netPnl, signed: true), "\u{2212}$14.30")
         XCTAssertEqual(PerpsFormat.usd(stop.fees), "$0.27")
+        // Rounded once, like the close estimate: 99.79275 - 14.29592 = 85.49683.
+        XCTAssertEqual(PerpsFormat.usd(stop.returned), "$85.50")
         let take = PerpsOutcome.make(kind: .takeProfit, position: position, fillPrice: 74_988, triggerPrice: 75_000)
-        XCTAssertEqual(PerpsFormat.usd(take.netPnl, signed: true), "+$23.56")
+        XCTAssertEqual(PerpsFormat.usd(take.netPnl, signed: true), "+$23.55")
         XCTAssertEqual(PerpsFormat.usd(take.fees), "$0.32")
     }
 

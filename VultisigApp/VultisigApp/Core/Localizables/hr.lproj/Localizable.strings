@@ -1373,6 +1373,7 @@
 "perpsTitle" = "Perps";
 "perpsTo" = "Za";
 "perpsTodayTitle" = "Danas";
+"perpsTotalFromAvailable" = "Ukupno iz raspoloživog";
 "perpsToTradingAccount" = "Na vaš račun za trgovanje";
 "perpsTradeOpenedTitle" = "%@ %@ otvoreno";
 "perpsTradingAccountShort" = "Račun za trgovanje";

@@ -1373,6 +1373,7 @@
 "perpsTitle" = "Perps";
 "perpsTo" = "An";
 "perpsTodayTitle" = "Heute";
+"perpsTotalFromAvailable" = "Gesamt aus verfügbarem Guthaben";
 "perpsToTradingAccount" = "Auf Ihr Handelskonto";
 "perpsTradeOpenedTitle" = "%@ %@ eröffnet";
 "perpsTradingAccountShort" = "Handelskonto";

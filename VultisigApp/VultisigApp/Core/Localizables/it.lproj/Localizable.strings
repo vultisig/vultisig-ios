@@ -1373,6 +1373,7 @@
 "perpsTitle" = "Perps";
 "perpsTo" = "A";
 "perpsTodayTitle" = "Oggi";
+"perpsTotalFromAvailable" = "Totale dal disponibile";
 "perpsToTradingAccount" = "Al tuo account di trading";
 "perpsTradeOpenedTitle" = "%@ %@ aperto";
 "perpsTradingAccountShort" = "Account di trading";

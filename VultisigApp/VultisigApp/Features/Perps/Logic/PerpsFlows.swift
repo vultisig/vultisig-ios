@@ -107,6 +107,10 @@ enum PerpsFlows {
                                   showsBreakdown: costs.transfer > 0 || costs.vultTier != nil),
             // Lot rounding means the margin used is a little under the amount entered.
             detailRows: [PerpsReviewRow(label: "perpsMargin".localized, value: PerpsFormat.usd(estimate.margin))],
+            // What actually leaves "available": margin plus trading fees, rounded once.
+            detailTotalRows: costs.transfer > 0 ? [] : [
+                PerpsReviewRow(label: "perpsTotalFromAvailable".localized, value: PerpsFormat.usd(estimate.margin + costs.tradingFees))
+            ],
             requests: plan.requests,
             deposit: deposit,
             blockingIssue: blocking

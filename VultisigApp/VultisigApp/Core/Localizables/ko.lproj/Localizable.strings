@@ -1373,6 +1373,7 @@
 "perpsTitle" = "무기한 선물";
 "perpsTo" = "받는 곳";
 "perpsTodayTitle" = "오늘";
+"perpsTotalFromAvailable" = "사용 가능 금액에서 총액";
 "perpsToTradingAccount" = "내 트레이딩 계정으로";
 "perpsTradeOpenedTitle" = "%@ %@ 오픈됨";
 "perpsTradingAccountShort" = "트레이딩 계정";

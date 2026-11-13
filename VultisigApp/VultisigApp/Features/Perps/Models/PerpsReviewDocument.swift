@@ -58,6 +58,8 @@ struct PerpsReviewDocument: Sendable {
     /// Rows at the top of Details, before the fees ("Margin $99.79"): with the
     /// fee total they reconcile the amount entered on the ticket.
     var detailRows: [PerpsReviewRow] = []
+    /// Details rows after the fees ("Total from available $100.08").
+    var detailTotalRows: [PerpsReviewRow] = []
     /// Rows shown after the fees, such as "You get".
     var trailingRows: [PerpsReviewRow] = []
     /// One quiet line under the rows ("Includes a one-time $1 fee...").

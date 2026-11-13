@@ -346,11 +346,13 @@ struct PerpsOutcome: Equatable, Sendable {
         let side: PerpsSide = position.isLong ? .long : .short
         let gross = PerpsMath.unrealizedPnl(side: side, entryPrice: entry, markPrice: fillPrice, size: size)
         let rate = PerpsMath.baseTakerFeeRate + (kind == .liquidated ? 0 : PerpsConfig.builderFeeRate)
-        let fees = (size * fillPrice * rate).rounded(scale: 2)
+        // Full precision here; each figure is rounded once, where it is shown
+        // (like the close estimate), so "back to trading account" is not off by a cent.
+        let fees = size * fillPrice * rate
         let margin = PerpsMarginFlows.margin(of: position)
         return PerpsOutcome(kind: kind, coin: position.coin, isLong: position.isLong, leverage: position.leverage.value,
                             triggerPrice: triggerPrice, fillPrice: fillPrice, size: size, fees: fees,
-                            netPnl: (gross - fees).rounded(scale: 2), margin: margin)
+                            netPnl: gross - fees, margin: margin)
     }
 
     /// From the closing fills the venue reports: P&L is `closedPnl` minus

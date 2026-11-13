@@ -234,7 +234,6 @@ struct PerpsPositionScreen: View {
             }
             // The line follows the position's P&L, not the price move over the window.
             PerpsPriceChart(points: viewModel.points, levels: levels(position), height: 200, tint: tint)
-                .padding(.horizontal, -PerpsLayout.margin)
             // A closed position has no live rows: the outcome sheet carries the result.
             if closedResult == nil {
                 if let pendingClose {
@@ -281,7 +280,7 @@ struct PerpsPositionScreen: View {
     private func levels(_ position: HLPosition) -> [PerpsLevel] {
         var levels: [PerpsLevel] = []
         if let entry = position.entryPx?.value {
-            levels.append(PerpsLevel(title: "perpsEntryTitle".localized, price: entry, color: Theme.colors.textTertiary))
+            levels.append(PerpsLevel(title: "perpsEntryTitle".localized, price: entry, color: Theme.colors.textTertiary, isPinned: true))
         }
         if let liquidation = position.liquidationPx?.value {
             levels.append(PerpsLevel(title: "perpsLiquidation".localized, price: liquidation, color: Theme.colors.alertError))

@@ -51,7 +51,6 @@ struct PerpsMarketScreen: View {
                         header
                         PerpsPriceChart(points: viewModel.points, height: 240)
                             .opacity(viewModel.isLoadingChart ? 0.4 : 1)
-                            .padding(.horizontal, -PerpsLayout.margin)
                         PerpsTimeframePicker(selected: viewModel.timeframe, onSelect: viewModel.select)
                         accountCard
                     }

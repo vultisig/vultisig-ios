@@ -45,14 +45,17 @@ enum PerpsInput {
     /// Parses what an amount or price field holds. A lone comma is the
     /// decimal pad's separator in comma-decimal locales ("76,5", "0,125"),
     /// never grouping: editable fields are prefilled ungrouped (`priceText`),
-    /// so "1,500" typed on a German keypad is 1.5, not 1,500. Commas are only
-    /// dropped as grouping next to a dot ("1,250.75"). Anything else that is
-    /// not a plain number is rejected.
+    /// so "1,500" typed on a German keypad is 1.5, not 1,500. With both
+    /// separators the last one is the decimal ("1,250.75", "75.000,5").
+    /// Anything else that is not a plain number is rejected.
     static func decimal(_ text: String) -> Decimal? {
         var cleaned = text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "")
-        if cleaned.contains(".") {
-            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
-        } else if cleaned.filter({ $0 == "," }).count == 1 {
+        if let last = cleaned.lastIndex(where: { $0 == "." || $0 == "," }) {
+            let decimalSeparator = cleaned[last]
+            let grouping: Character = decimalSeparator == "." ? "," : "."
+            if cleaned.contains(grouping) {
+                cleaned.removeAll { $0 == grouping }
+            }
             cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
         }
         guard cleaned.range(of: #"^\d*\.?\d*$"#, options: .regularExpression) != nil,
