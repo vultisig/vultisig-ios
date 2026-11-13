@@ -1299,7 +1299,9 @@
 "perpsLiquidationExplainMargin" = "Mehr Margin verschiebt die Liquidation weiter weg.";
 "perpsLiquidationExplainRises" = "Steigt %1$@ auf %2$@, wird dieser Trade automatisch geschlossen und Sie verlieren den Großteil seiner Margin.";
 "perpsLiquidationExplainStop" = "Ihr Stop-Loss bei %@ soll ihn vorher schließen.";
+"perpsLiquidationExplainStopAtLiquidation" = "Ihr Stop-Loss bei %@ liegt genau auf der Liquidation, daher kann die Liquidation den Trade zuerst schließen. Setzen Sie ihn näher.";
 "perpsLiquidationExplainStopBeyond" = "Ihr Stop-Loss bei %@ liegt hinter der Liquidation und schließt den Trade nicht vorher. Setzen Sie ihn näher.";
+"perpsLiquidationExplainStopCrossed" = "Der Preis hat Ihren Stop-Loss bei %@ bereits überschritten, daher schließt er den Trade stattdessen zum aktuellen Preis.";
 "perpsLiquidationPrice" = "Liquidationspreis";
 "perpsLoadFailed" = "Hyperliquid-Daten konnten nicht geladen werden. Zum Aktualisieren ziehen.";
 "perpsLong" = "Long";

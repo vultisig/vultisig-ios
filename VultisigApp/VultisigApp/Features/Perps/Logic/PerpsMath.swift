@@ -177,6 +177,37 @@ enum PerpsMath {
     }
 }
 
+/// Where a stop loss sits relative to the price and liquidation, for the explainer.
+enum PerpsStopPlacement: Equatable {
+    /// Between the price and liquidation: it is set to close the trade first.
+    case beforeLiquidation
+    /// The price has already reached or passed the stop.
+    case crossed
+    /// Exactly at liquidation: no room to act first.
+    case atLiquidation
+    /// On the far side of liquidation (after margin came out, say): liquidation comes first.
+    case pastLiquidation
+
+    static func of(stop: Decimal, mark: Decimal, liquidation: Decimal, isLong: Bool) -> PerpsStopPlacement {
+        // Flip a short into long terms: "below" always means toward liquidation.
+        let side: Decimal = isLong ? 1 : -1
+        let stop = stop * side, mark = mark * side, liquidation = liquidation * side
+        if stop >= mark { return .crossed }
+        if stop == liquidation { return .atLiquidation }
+        if stop < liquidation { return .pastLiquidation }
+        return .beforeLiquidation
+    }
+
+    var explainKey: String {
+        switch self {
+        case .beforeLiquidation: return "perpsLiquidationExplainStop"
+        case .crossed: return "perpsLiquidationExplainStopCrossed"
+        case .atLiquidation: return "perpsLiquidationExplainStopAtLiquidation"
+        case .pastLiquidation: return "perpsLiquidationExplainStopBeyond"
+        }
+    }
+}
+
 /// Within this fraction of the liquidation price, a position shows the warning.
 extension PerpsMath {
     static let nearLiquidationThreshold: Decimal = Decimal(string: "0.02") ?? 0

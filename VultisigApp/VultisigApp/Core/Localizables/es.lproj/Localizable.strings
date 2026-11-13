@@ -1299,7 +1299,9 @@
 "perpsLiquidationExplainMargin" = "Añadir margen aleja la liquidación.";
 "perpsLiquidationExplainRises" = "Si %1$@ sube a %2$@, esta operación se cierra sola y pierdes la mayor parte de su margen.";
 "perpsLiquidationExplainStop" = "Tu stop loss en %@ está configurado para cerrarla antes.";
+"perpsLiquidationExplainStopAtLiquidation" = "Tu stop loss en %@ está justo en la liquidación, así que la liquidación puede cerrar la operación antes. Acércalo.";
 "perpsLiquidationExplainStopBeyond" = "Tu stop loss en %@ está más allá de la liquidación, así que no cerrará la operación antes. Acércalo.";
+"perpsLiquidationExplainStopCrossed" = "El precio ya superó tu stop loss en %@, así que cierra la operación al precio actual.";
 "perpsLiquidationPrice" = "Precio de liquidación";
 "perpsLoadFailed" = "No se pudieron cargar los datos de Hyperliquid. Desliza para reintentar.";
 "perpsLong" = "long";

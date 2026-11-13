@@ -1299,7 +1299,9 @@
 "perpsLiquidationExplainMargin" = "Adding margin moves liquidation further away.";
 "perpsLiquidationExplainRises" = "If %1$@ rises to %2$@, this trade closes on its own and you lose most of its margin.";
 "perpsLiquidationExplainStop" = "Your stop loss at %@ is set to close it before that.";
+"perpsLiquidationExplainStopAtLiquidation" = "Your stop loss at %@ is right at liquidation, so liquidation can close the trade first. Move it closer.";
 "perpsLiquidationExplainStopBeyond" = "Your stop loss at %@ is past liquidation, so it won't close the trade first. Move it closer.";
+"perpsLiquidationExplainStopCrossed" = "The price has already passed your stop loss at %@, so it closes the trade at the current price instead.";
 "perpsLiquidationPrice" = "Liquidation price";
 "perpsLoadFailed" = "Couldn't load Hyperliquid data. Pull to retry.";
 "perpsLong" = "long";

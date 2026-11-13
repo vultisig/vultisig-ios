@@ -1299,7 +1299,9 @@
 "perpsLiquidationExplainMargin" = "追加保证金可让强平价更远。";
 "perpsLiquidationExplainRises" = "如果 %1$@ 涨至 %2$@，此交易将自动平仓，你将损失大部分保证金。";
 "perpsLiquidationExplainStop" = "你在 %@ 的止损设定为在此之前平仓。";
+"perpsLiquidationExplainStopAtLiquidation" = "你在 %@ 的止损正好位于强平价，强平可能先平仓。请把它调近一些。";
 "perpsLiquidationExplainStopBeyond" = "你在 %@ 的止损已越过强平价，不会先平仓。请把它调近一些。";
+"perpsLiquidationExplainStopCrossed" = "价格已越过你在 %@ 的止损，因此将按当前价格平仓。";
 "perpsLiquidationPrice" = "强平价";
 "perpsLoadFailed" = "无法加载 Hyperliquid 数据。下拉重试。";
 "perpsLong" = "多";

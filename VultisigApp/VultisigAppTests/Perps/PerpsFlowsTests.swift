@@ -116,6 +116,28 @@ final class PerpsFlowsTests: XCTestCase {
                                  "Max never asks for more than the vault holds")
     }
 
+    /// The explainer tells apart a stop that acts first, one the price already
+    /// crossed, one exactly at liquidation and one past it, for both sides.
+    func testStopPlacementForExplainer() {
+        // Long: mark 100, liquidation 80.
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 90, mark: 100, liquidation: 80, isLong: true), .beforeLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 100, mark: 100, liquidation: 80, isLong: true), .crossed)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 105, mark: 100, liquidation: 80, isLong: true), .crossed)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 80, mark: 100, liquidation: 80, isLong: true), .atLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 75, mark: 100, liquidation: 80, isLong: true), .pastLiquidation)
+        // Short: mark 100, liquidation 120.
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 110, mark: 100, liquidation: 120, isLong: false), .beforeLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 95, mark: 100, liquidation: 120, isLong: false), .crossed)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 120, mark: 100, liquidation: 120, isLong: false), .atLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 125, mark: 100, liquidation: 120, isLong: false), .pastLiquidation)
+        // Every case has copy in every locale.
+        let placements: [PerpsStopPlacement] = [.beforeLiquidation, .crossed, .atLiquidation, .pastLiquidation]
+        XCTAssertEqual(Set(placements.map(\.explainKey)).count, 4)
+        for placement in placements {
+            XCTAssertNotEqual(placement.explainKey.localized, placement.explainKey)
+        }
+    }
+
     /// Stop-loss presets (R20): 7% from the entry is the default stop.
     @MainActor
     func testStopPresetsFromEntry() {
