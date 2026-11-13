@@ -82,6 +82,8 @@ struct VaultPerpsSigner: PerpsSigner {
     /// Which vault address signs. `.trading` sets the payload's `derivePath`;
     /// `.main` leaves it nil so main-path payloads encode exactly as before.
     var account: PerpsSignerAccount = .main
+    /// The vault's main EVM address: the only destination a withdrawal may pin.
+    var mainAddress: String?
 
     func prepare(_ request: PerpsSignRequest) throws -> PerpsSigningOutcome {
         let typedData = try request.typedData()
@@ -94,6 +96,12 @@ struct VaultPerpsSigner: PerpsSigner {
             chain: Chain.ethereum.name
         )
         if account == .trading { payload.derivePath = account.derivationPath }
+        payload.hyperliquid = try HyperliquidActionPreimage(request)
+        // The initiator runs the joiner's check on its own payload, so both
+        // devices show the same thing and a malformed one never starts.
+        if PerpsConfig.verifiesCoSignedActions {
+            _ = try HyperliquidCoSignVerifier.verify(payload, context: HyperliquidCoSignContext(mainAddress: mainAddress))
+        }
         return .vaultKeysign(payload, expectedDigest: typedData.digest)
     }
 }

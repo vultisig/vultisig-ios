@@ -62,6 +62,9 @@ extension CustomMessagePayload: ProtoMappable {
         self.vaultPublicKeyECDSA = proto.vaultPublicKeyEcdsa
         self.chain = proto.chain
         self.dappMetadata = proto.hasDappMetadata ? DAppMetadata(proto: proto.dappMetadata) : nil
+        #if VS_COMMONDATA_HYPERLIQUID
+        self.hyperliquid = proto.hasHyperliquid ? HyperliquidActionPreimage(proto: proto.hyperliquid) : nil
+        #endif
     }
 
     func mapToProtobuff() -> VSCustomMessagePayload {
@@ -77,6 +80,13 @@ extension CustomMessagePayload: ProtoMappable {
             if let dappMetadata = dappMetadata?.normalized {
                 $0.dappMetadata = dappMetadata.mapToProtobuff()
             }
+            #if VS_COMMONDATA_HYPERLIQUID
+            // Explicit presence, like dappMetadata: a non-perps payload encodes
+            // exactly as before the field existed.
+            if let hyperliquid {
+                $0.hyperliquid = hyperliquid.mapToProtobuff()
+            }
+            #endif
         }
     }
 }
@@ -907,3 +917,32 @@ extension TronTransferAssetContractPayload {
         }
     }
 }
+
+#if VS_COMMONDATA_HYPERLIQUID
+// Compiled in once the VultisigCommonData pin carries
+// `CustomMessagePayload.hyperliquid = 8` and the build sets
+// VS_COMMONDATA_HYPERLIQUID. Until then the preimage is local only.
+extension HyperliquidActionPreimage {
+    init(proto: VSHyperliquidActionPreimage) {
+        self.init(
+            kind: proto.kind,
+            actionMsgpack: proto.actionMsgpack,
+            nonce: proto.nonce,
+            vaultAddress: proto.hasVaultAddress ? proto.vaultAddress : nil,
+            expiresAfter: proto.hasExpiresAfter ? proto.expiresAfter : nil,
+            isMainnet: proto.isMainnet
+        )
+    }
+
+    func mapToProtobuff() -> VSHyperliquidActionPreimage {
+        VSHyperliquidActionPreimage.with {
+            $0.kind = kind
+            $0.actionMsgpack = actionMsgpack
+            $0.nonce = nonce
+            if let vaultAddress { $0.vaultAddress = vaultAddress }
+            if let expiresAfter { $0.expiresAfter = expiresAfter }
+            $0.isMainnet = isMainnet
+        }
+    }
+}
+#endif

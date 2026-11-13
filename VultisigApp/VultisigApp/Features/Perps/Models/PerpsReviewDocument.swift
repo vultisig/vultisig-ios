@@ -64,7 +64,15 @@ struct PerpsReviewDocument: Sendable {
     var trailingRows: [PerpsReviewRow] = []
     /// One quiet line under the rows ("Includes a one-time $1 fee...").
     var footer: String?
+    /// The requests at a placeholder nonce, for the review's digests and the
+    /// dry-run log. Never signed: signing stamps `steps`.
     let requests: [HLExchangeRequest]
+    /// What signing stamps, one at a time, when the user commits
+    /// (`HLStamper`): a fresh nonce, an expiry for the signing mode and, for a
+    /// market order, a re-quoted price.
+    var steps: [HLUnsignedStep] = []
+    /// Place-then-cancel exit edits only: the cancel step waits for this.
+    var cancelGate: PerpsExitCancelGate?
     /// A CCTP deposit into the trading account (two Arbitrum-side vault signatures).
     var deposit: HLCctpDeposit?
     var blockingIssue: String?

@@ -112,6 +112,7 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsTotalFromAvailable".localized, value: PerpsFormat.usd(estimate.margin + costs.tradingFees))
             ],
             requests: plan.requests,
+            steps: plan.unsignedSteps,
             deposit: deposit,
             blockingIssue: blocking
         )
@@ -162,6 +163,17 @@ enum PerpsFlows {
             builder: PerpsConfig.builderAddress, maxFeeRate: PerpsConfig.builderMaxFeeRate, nonce: nonce + 1,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId
         )
+        let steps = [
+            HLUnsignedStep(kind: .approveAgent, build: .userSigned { nonce in
+                try HLUserSignedAction.approveAgent(agentAddress: agentAddress, agentName: name, nonce: nonce,
+                                                    isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId)
+            }),
+            HLUnsignedStep(kind: .approveBuilderFee, build: .userSigned { nonce in
+                try HLUserSignedAction.approveBuilderFee(builder: PerpsConfig.builderAddress, maxFeeRate: PerpsConfig.builderMaxFeeRate,
+                                                         nonce: nonce, isMainnet: PerpsConfig.isMainnet,
+                                                         signatureChainId: PerpsConfig.signatureChainId)
+            })
+        ]
         let expires = Date(timeIntervalSince1970: TimeInterval(validUntil) / 1000)
         return PerpsReviewDocument(
             sheetTitle: "perpsApproveAutomatically".localized,
@@ -173,6 +185,7 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsMaxFee".localized, value: PerpsConfig.builderMaxFeeRate)
             ],
             requests: [.userSigned(.approveAgent, approveAgent), .userSigned(.approveBuilderFee, approveBuilder)],
+            steps: steps,
             // A fresh account rejects every action until its first deposit
             // (testnet q00). After that, both approvals must come from the
             // trading account's key, which keysign cannot sign at yet.
@@ -213,10 +226,18 @@ enum PerpsFlows {
     /// timing. The one-time activation fee is explained in one footnote.
     static func withdraw(amount: Decimal, account: PerpsAccountSnapshot, vault: PerpsVaultContext, nonce: UInt64) throws -> PerpsReviewDocument {
         let quote = PerpsWithdrawQuote.make(amount: amount, account: account)
+        let destination = vault.address
         let request = try HLUserSignedAction.withdraw3(
-            destination: vault.address, amount: amount, nonce: nonce,
+            destination: destination, amount: amount, nonce: nonce,
             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId
         )
+        // `time` is the nonce, so the stamp decides it. A retry after an
+        // uncertain post never comes back here: it resends the persisted
+        // body (`HLWithdrawSubmitter`).
+        let step = HLUnsignedStep(kind: .withdraw3, build: .userSigned { nonce in
+            try HLUserSignedAction.withdraw3(destination: destination, amount: amount, nonce: nonce,
+                                             isMainnet: PerpsConfig.isMainnet, signatureChainId: PerpsConfig.signatureChainId)
+        })
         var blocking: String?
         switch quote.issue {
         case .moreThanWithdrawable: blocking = "perpsMoreThanWithdrawable".localized
@@ -239,49 +260,75 @@ enum PerpsFlows {
             footer: quote.activationFee > 0
                 ? String(format: "perpsActivationFootnote".localized, PerpsFormat.amount(quote.activationFee)) : nil,
             requests: [.userSigned(.withdraw3, request)],
+            steps: [step],
             blockingIssue: blocking
         )
     }
 
     // MARK: - Auto close (stop loss / take profit)
 
-    /// Cancels the existing triggers being replaced or removed, then places
-    /// the new ones as `positionTpsl` reduce-only triggers for the whole position.
+    /// One action per edit, so a position is never left without its stop:
+    ///   - a trigger whose price changed is replaced in place (`batchModify`,
+    ///     one signature for one or both),
+    ///   - a trigger added where none exists is a `positionTpsl` order,
+    ///   - only a trigger the user turned off is cancelled.
+    /// Steps run in that order: additive steps first, the cancel last.
+    /// `.placeThenCancel` is the fallback if `batchModify` cannot retarget
+    /// `positionTpsl` triggers: the new trigger is placed first, and the old
+    /// one is cancelled only once the new one is confirmed resting
+    /// (`PerpsExitCancelGate`). The cancel never goes first.
     static func editExits(
         position: HLPosition,
         market: PerpsMarket,
         existing: [HLFrontendOrder],
         stopLoss: Decimal?,
         takeProfit: Decimal?,
-        nonce: UInt64
+        nonce: UInt64,
+        strategy: PerpsExitEditStrategy = PerpsConfig.exitEditStrategy
     ) throws -> PerpsReviewDocument {
-        let currentStop = existing.first(where: \.isStopLoss)
-        let currentTake = existing.first(where: \.isTakeProfit)
+        let stops = existing.filter(\.isStopLoss)
+        let takes = existing.filter(\.isTakeProfit)
+        let currentStop = stops.first
+        let currentTake = takes.first
         let size = try HLWireFormat.wire(abs(position.szi.value))
+        var modifies: [(oid: Int64, order: HLOrderWire)] = []
+        var adds: [HLOrderWire] = []
         var cancels: [(asset: Int, oid: Int64)] = []
-        var orders: [HLOrderWire] = []
+        var replaced: [Int64] = []
         for (current, target, kind) in [(currentStop, stopLoss, HLOrderType.Kind.stopLoss), (currentTake, takeProfit, .takeProfit)] {
             guard current?.triggerPx?.value != target else { continue }
-            if let current { cancels.append((market.assetIndex, current.oid)) }
-            if let target {
-                // Round first, then check: a sub-tick trigger rounds to 0.
-                let rounded = HLWireFormat.price(target, szDecimals: market.szDecimals)
-                guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
-                let price = try HLWireFormat.wire(rounded)
-                orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
-                                          type: .trigger(isMarket: true, triggerPrice: price, kind: kind)))
+            let wire = try target.map { try exitTrigger($0, kind: kind, position: position, market: market, size: size) }
+            switch (current, wire) {
+            case let (current?, wire?):
+                if strategy == .modify {
+                    modifies.append((current.oid, wire))
+                } else {
+                    adds.append(wire)
+                    cancels.append((market.assetIndex, current.oid))
+                    replaced.append(current.oid)
+                }
+            case let (nil, wire?):
+                adds.append(wire)
+            case let (current?, nil):
+                cancels.append((market.assetIndex, current.oid))
+            case (nil, nil):
+                continue
             }
         }
-        var requests: [HLExchangeRequest] = []
-        var next = nonce
-        let expiry = HLNonceSource.defaultExpiryMs
-        if !cancels.isEmpty {
-            requests.append(try .l1(.cancel, action: HLActions.cancel(cancels), nonce: next, isMainnet: PerpsConfig.isMainnet, expiresAfter: next + expiry))
-            next += 1
+        // A second trigger of the same kind (left by a failed place-then-cancel)
+        // would still fire at its old price: it goes with the final cancel.
+        for extra in stops.dropFirst() + takes.dropFirst() where !cancels.contains(where: { $0.oid == extra.oid }) {
+            cancels.append((market.assetIndex, extra.oid))
         }
-        if !orders.isEmpty {
-            requests.append(try .l1(.order, action: HLActions.order(orders, grouping: .positionTpsl, builder: PerpsConfig.builderFee),
-                                    nonce: next, isMainnet: PerpsConfig.isMainnet, expiresAfter: next + expiry))
+        var steps: [HLUnsignedStep] = []
+        if !modifies.isEmpty {
+            steps.append(.l1(.batchModify, action: HLActions.batchModify(modifies)))
+        }
+        if !adds.isEmpty {
+            steps.append(.l1(.order, action: HLActions.order(adds, grouping: .positionTpsl, builder: PerpsConfig.builderFee)))
+        }
+        if !cancels.isEmpty {
+            steps.append(.l1(.cancel, action: HLActions.cancel(cancels)))
         }
         return PerpsReviewDocument(
             sheetTitle: "perpsStopLoss".localized,
@@ -292,9 +339,22 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsTakeProfit".localized, value: takeProfit.map(PerpsFormat.price) ?? "perpsOff".localized),
                 PerpsReviewRow(label: "perpsStopLoss".localized, value: stopLoss.map(PerpsFormat.price) ?? "perpsOff".localized)
             ],
-            requests: requests,
-            blockingIssue: requests.isEmpty ? "perpsNoChanges".localized : nil
+            requests: try HLUnsignedStep.preview(steps, firstNonce: nonce),
+            steps: steps,
+            cancelGate: replaced.isEmpty ? nil : PerpsExitCancelGate(replacedOids: replaced),
+            blockingIssue: steps.isEmpty ? "perpsNoChanges".localized : nil
         )
+    }
+
+    /// A reduce-only market trigger for the whole position.
+    private static func exitTrigger(_ target: Decimal, kind: HLOrderType.Kind, position: HLPosition, market: PerpsMarket,
+                                    size: String) throws -> HLOrderWire {
+        // Round first, then check: a sub-tick trigger rounds to 0.
+        let rounded = HLWireFormat.price(target, szDecimals: market.szDecimals)
+        guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
+        let price = try HLWireFormat.wire(rounded)
+        return HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
+                           type: .trigger(isMarket: true, triggerPrice: price, kind: kind))
     }
 
     // MARK: - Partial close
@@ -370,6 +430,11 @@ enum PerpsFlows {
         let order = closeOrder(position: position, market: market, size: estimate.size)
         let request = try HLExchangeRequest.l1(.order, action: HLActions.order([order], builder: PerpsConfig.builderFee),
                                                nonce: nonce, isMainnet: PerpsConfig.isMainnet, expiresAfter: nonce + HLNonceSource.defaultExpiryMs)
+        let closeSize = estimate.size
+        let step = HLUnsignedStep(kind: .order, build: .l1 { freshMid in
+            try HLActions.order([PerpsFlows.closeOrder(position: position, market: market, size: closeSize, freshMid: freshMid)],
+                                builder: PerpsConfig.builderFee)
+        })
         let net = PerpsCloseFlows.netProfit(estimate)
         return PerpsReviewDocument(
             sheetTitle: "perpsReview".localized,
@@ -386,6 +451,7 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsBackToTradingAccount".localized, value: PerpsFormat.usd(estimate.returned))
             ],
             requests: [request],
+            steps: [step],
             // Closing the whole position is never blocked by the $10 opening minimum,
             // so a position that shrank under $10 can still be closed.
             blockingIssue: estimate.size < abs(position.szi.value) && estimate.size * market.markPrice < PerpsOrderPlanner.minimumNotional
@@ -396,7 +462,20 @@ enum PerpsFlows {
     /// Reduce-only market close: IOC limit at mid ± 1% slippage, opposite side.
     static func closeOrder(position: HLPosition, market: PerpsMarket, size: Decimal) -> HLOrderWire {
         let mid = market.midPrice ?? market.markPrice
-        let price = HLWireFormat.marketPrice(mid: mid, isBuy: !position.isLong, slippage: Decimal(string: "0.01") ?? 0, szDecimals: market.szDecimals)
+        let price = HLWireFormat.marketPrice(mid: mid, isBuy: !position.isLong, slippage: closeSlippage, szDecimals: market.szDecimals)
+        return closeOrder(position: position, market: market, size: size, price: price)
+    }
+
+    static let closeSlippage = Decimal(string: "0.01") ?? 0
+
+    /// The close re-quoted at stamp time; refuses when the mark moved more than the slippage.
+    static func closeOrder(position: HLPosition, market: PerpsMarket, size: Decimal, freshMid: Decimal?) throws -> HLOrderWire {
+        let price = try HLRequote.marketPrice(reviewMid: market.midPrice ?? market.markPrice, freshMid: freshMid, isBuy: !position.isLong,
+                                              slippage: closeSlippage, szDecimals: market.szDecimals)
+        return closeOrder(position: position, market: market, size: size, price: price)
+    }
+
+    private static func closeOrder(position: HLPosition, market: PerpsMarket, size: Decimal, price: Decimal) -> HLOrderWire {
         return HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: HLWireFormat.decimalString(price),
                            size: HLWireFormat.decimalString(size), reduceOnly: true, type: .limit(.ioc))
     }

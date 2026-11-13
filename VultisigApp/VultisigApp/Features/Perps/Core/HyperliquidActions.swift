@@ -114,6 +114,21 @@ enum HLActions {
         return NSDecimalNumber(decimal: rounded).int64Value
     }
 
+    /// `{type:"batchModify", modifies:[{oid, order}]}`: replaces resting
+    /// orders (trigger orders included) under one signature, so an edited stop
+    /// is never cancelled before its replacement exists. The SDK's
+    /// `bulk_modify_orders_new`; its `modify_order` sends a one-element batch
+    /// too, so a single edit uses the same shape.
+    static func batchModify(_ modifies: [(oid: Int64, order: HLOrderWire)]) -> HLValue {
+        .object([
+            ("type", .string("batchModify")),
+            ("modifies", .array(modifies.map { .object([("oid", .int($0.oid)), ("order", $0.order.wire)]) }))
+        ])
+    }
+
+    /// `{type:"noop"}`: burns a nonce, to abort a signed action that is still live.
+    static var noop: HLValue { .object([("type", .string("noop"))]) }
+
     static func updateLeverage(asset: Int, isCross: Bool, leverage: Int) -> HLValue {
         .object([
             ("type", .string("updateLeverage")),

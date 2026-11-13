@@ -171,6 +171,7 @@ enum PerpsMarginFlows {
                                value: arrow(PerpsFormat.usd(change.availableBefore), PerpsFormat.usd(change.availableAfter)))
             ],
             requests: [request],
+            steps: [.l1(.updateIsolatedMargin, action: action)],
             // The document itself refuses an invalid change, not only the sheet before it.
             blockingIssue: change.delta == 0 ? "perpsNoChanges".localized : change.issue?.message(maxRemovable: change.maxRemovable)
         )

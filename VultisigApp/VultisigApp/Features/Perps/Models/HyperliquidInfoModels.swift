@@ -248,6 +248,9 @@ struct HLLedgerUpdate: Decodable, Hashable, Sendable {
         var destination: String?
         /// Account-class transfers: true when the USDC moved into perps.
         var toPerp: Bool?
+        /// `withdraw`: the signed nonce (the action's `time`) and the venue fee.
+        var nonce: UInt64?
+        var fee: HLDecimal?
     }
 
     let time: Int64

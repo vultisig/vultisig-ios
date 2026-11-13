@@ -99,6 +99,8 @@ class JoinKeysignViewModel: ObservableObject {
     /// peer-side flow. See [[v2-secure-vault-design]].
     @Published var qbtcClaimDriver: QBTCClaimJoinDriver? = nil
     @Published var customMessagePayload: CustomMessagePayload? = nil
+    /// What a verified Hyperliquid payload does, for the confirm screen.
+    @Published var perpsCoSignSummary: PerpsCoSignSummary? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
@@ -365,12 +367,28 @@ class JoinKeysignViewModel: ObservableObject {
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
         do {
             try customMessagePayload.validateEVMSignable()
+            try verifyPerpsAction(customMessagePayload)
         } catch {
             self.errorMsg = error.localizedDescription
             self.status = .FailedToStart
             return
         }
         self.keysignMessages = customMessagePayload.keysignMessages
+    }
+
+    /// Hyperliquid payloads only, behind `PerpsConfig.verifiesCoSignedActions`:
+    /// rebuilds the digest from the raw action and refuses a mismatch or a
+    /// missing preimage before any relay traffic. Pins use this device's own
+    /// addresses for the vault named in the payload, never the payload's.
+    private func verifyPerpsAction(_ payload: CustomMessagePayload) throws {
+        perpsCoSignSummary = nil
+        guard PerpsConfig.verifiesCoSignedActions else { return }
+        let signingVault = fetchVaults().first { $0.pubKeyECDSA == payload.vaultPublicKeyECDSA } ?? vault
+        let context = HyperliquidCoSignContext(
+            mainAddress: PerpsDerivedAccount.derive(.main, vault: signingVault)?.address,
+            tradingAddress: PerpsDerivedAccount.derive(.trading, vault: signingVault)?.address
+        )
+        perpsCoSignSummary = try HyperliquidCoSignVerifier.verify(payload, context: context)
     }
 
     /// Re-stamps the live consensus branch id onto a Zcash UTXO payload rebuilt

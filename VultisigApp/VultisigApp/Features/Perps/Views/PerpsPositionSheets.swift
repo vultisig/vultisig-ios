@@ -153,9 +153,9 @@ struct PerpsModifySheet: View {
             }
             PerpsFootnote(text: exits.issue ?? "perpsStopSlippageNote".localized, isError: exits.issue != nil)
             PrimaryButton(title: "perpsReview".localized) {
-                // Real nonces only when the review is actually built.
+                // Nonce and expiry are stamped at signing, not here.
                 guard let document = exits.exitsReview(position: position, market: market, existing: existingTriggers,
-                                                      nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return }
+                                                      nonce: 0) else { return }
                 onReview(document)
             }
             .disabled(!exits.canReviewExits(position: position, market: market, existing: existingTriggers))

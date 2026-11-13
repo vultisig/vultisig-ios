@@ -39,6 +39,10 @@ struct KeysignCustomMessageConfirmView: View {
                     heroSection
                     Separator()
                 }
+                if let perps = viewModel.perpsCoSignSummary {
+                    perpsSummary(perps)
+                    Separator()
+                }
                 chain
                 Separator()
                 method
@@ -190,6 +194,29 @@ struct KeysignCustomMessageConfirmView: View {
                 .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
+    }
+
+    /// A verified Hyperliquid request, decoded from the raw action the digest
+    /// was rebuilt from: what this device signs, above the raw typed data.
+    private func perpsSummary(_ summary: PerpsCoSignSummary) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("perpsCoSignTitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            ForEach(Array(summary.lines.enumerated()), id: \.offset) { _, line in
+                Text(line)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let signingAs = summary.signingAs {
+                Text(signingAs)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("perpsCoSignSummary")
     }
 
     private func getPrimaryCell(title: String, value: String, isWarning: Bool = false) -> some View {

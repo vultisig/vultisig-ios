@@ -12,8 +12,11 @@
 //  the would-submit bodies in the dry-run client.
 //
 
+import OSLog
 import SwiftUI
 import VultisigUIResources
+
+private let perpsReviewLogger = Logger(subsystem: "com.vultisig.app", category: "perps-review")
 
 /// The Vultisig mark and a vault name on one line, cut at the end:
 /// "Dev - consider funds lost (old laptop…". Same on the withdraw screen and its review.
@@ -51,6 +54,7 @@ struct PerpsReviewContent: View {
 
     @Environment(KeysignReviewPresenter.self) private var reviewPresenter
     @State private var didRecord = false
+    @State private var signingSteps: HLStepSequence?
 
     private var document: PerpsReviewDocument { request.document }
 
@@ -100,7 +104,8 @@ struct PerpsReviewContent: View {
     /// runs the same resolver keysign uses, so an unsupported vault is refused
     /// here, before anything starts.
     private var keysignPayloads: Result<[CustomMessagePayload], Error> {
-        let signer = VaultPerpsSigner(vaultPublicKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID, account: .trading)
+        let signer = VaultPerpsSigner(vaultPublicKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID, account: .trading,
+                                      mainAddress: PerpsVaultContext(vault: vault).address)
         do {
             let payloads = try document.requests.compactMap { request -> CustomMessagePayload? in
                 guard case let .vaultKeysign(payload, _) = try signer.prepare(request.signRequest) else { return nil }
@@ -124,7 +129,26 @@ struct PerpsReviewContent: View {
     /// The app's shared signing buttons (Paired + Fast Sign), unchanged.
     private var signingButtons: some View {
         SigningCTAButtons(isFastVault: vault.offersFastSigning, isDisabled: isSigningDisabled,
-                          singleSignTitle: "signTransaction", onFastSign: {}, onPairedSign: {})
+                          singleSignTitle: "signTransaction",
+                          onFastSign: { beginSigning(.fastVault) }, onPairedSign: { beginSigning(.paired) })
+    }
+
+    /// Stamps the first step when the user commits: nonce and expiry for the
+    /// signing mode, a market order re-quoted from the latest mark. Each
+    /// following step is stamped only after the previous one is posted.
+    /// Unreachable while `allowsSigning` is false: the buttons are disabled.
+    /// The hand-off to the shared `SigningRoute` lands with the live client.
+    private func beginSigning(_ mode: HLSigningMode) {
+        guard PerpsConfig.allowsSigning, blockingIssue == nil else { return }
+        var sequence = signingSteps ?? HLStepSequence(document: document)
+        let stamper = HLStamper(nonces: HyperliquidExchangeDryRunClient.shared.nonces)
+        do {
+            let request = try sequence.stampNext(with: stamper, mode: mode, freshMid: document.coin.flatMap(PerpsMarketCache.shared.mid))
+            signingSteps = sequence
+            HyperliquidExchangeDryRunClient.shared.submit(request)
+        } catch {
+            perpsReviewLogger.error("Perps stamp refused: \(String(describing: error), privacy: .public)")
+        }
     }
 
     /// Label and value side by side when they fit, otherwise the value drops

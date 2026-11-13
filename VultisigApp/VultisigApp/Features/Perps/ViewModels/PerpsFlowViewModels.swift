@@ -195,14 +195,13 @@ final class PerpsTicketViewModel: ObservableObject {
         return String(format: "perpsAddToTrade".localized, PerpsFormat.usd(missing.rounded(scale: 2, mode: .up)))
     }
 
-    /// For the screen (estimate, costs, issue): read on every render, so it
-    /// takes no nonce. The review reserves real ones (`reviewDocument`).
-    var plan: Result<PerpsOrderPlan, PerpsOrderPlannerError> { plan(nonce: 0) }
-
-    private func plan(nonce: UInt64) -> Result<PerpsOrderPlan, PerpsOrderPlannerError> {
+    /// Nonce 0 everywhere before signing: the nonce and expiry are stamped
+    /// when the user commits to signing (`HLStamper`), never at review time.
+    var plan: Result<PerpsOrderPlan, PerpsOrderPlannerError> {
         do {
-            return .success(try PerpsOrderPlanner.plan(market: market, ticket: ticket, nonce: nonce,
-                                                       builder: PerpsConfig.builderFee))
+            return .success(try PerpsOrderPlanner.plan(market: market, ticket: ticket, nonce: 0,
+                                                       builder: PerpsConfig.builderFee,
+                                                       currentLeverage: account?.position(coin: market.coin)?.leverage))
         } catch let error as PerpsOrderPlannerError {
             return .failure(error)
         } catch {
@@ -255,8 +254,7 @@ final class PerpsTicketViewModel: ObservableObject {
     }
 
     func reviewDocument() -> PerpsReviewDocument? {
-        guard canReview, let costs,
-              case .success(let plan) = plan(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return nil }
+        guard canReview, let costs, case .success(let plan) = plan else { return nil }
         return PerpsFlows.order(plan: plan, costs: costs, vault: vault, isNewAccount: isNewAccount)
     }
 }
@@ -457,7 +455,7 @@ final class PerpsCloseViewModel: ObservableObject {
 
     func reviewDocument() -> PerpsReviewDocument? {
         guard size > 0, issue == nil else { return nil }
-        return try? PerpsFlows.partialClose(position: position, market: market, size: size, nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
+        return try? PerpsFlows.partialClose(position: position, market: market, size: size, nonce: 0)
     }
 }
 
@@ -509,7 +507,7 @@ final class PerpsMarginViewModel: ObservableObject {
     func reviewDocument() -> PerpsReviewDocument? {
         guard canReview else { return nil }
         return try? PerpsMarginFlows.review(position: position, market: market, change: change,
-                                            nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
+                                            nonce: 0)
     }
 }
 
@@ -522,10 +520,14 @@ final class PerpsWithdrawViewModel: ObservableObject {
 
     let account: PerpsAccountSnapshot
     let vault: PerpsVaultContext
+    /// A withdrawal that is signed but not settled (`HLWithdrawSubmitter`):
+    /// no new one is signed until it is done or definitively rejected.
+    let pendingWithdrawal: HLPendingSubmission?
 
-    init(account: PerpsAccountSnapshot, vault: PerpsVaultContext, prefill: Decimal? = nil) {
+    init(account: PerpsAccountSnapshot, vault: PerpsVaultContext, prefill: Decimal? = nil, pendingWithdrawal: HLPendingSubmission? = nil) {
         self.account = account
         self.vault = vault
+        self.pendingWithdrawal = pendingWithdrawal
         amountText = prefill.map { PerpsInput.text($0) } ?? ""
     }
 
@@ -540,6 +542,7 @@ final class PerpsWithdrawViewModel: ObservableObject {
     }
 
     var issue: String? {
+        if pendingWithdrawal?.state.isOpen == true { return "perpsWithdrawalChecking".localized }
         guard (try? HLAddress.bytes(vault.address)) != nil else { return "perpsNoVaultAddress".localized }
         switch quote.issue {
         case .moreThanWithdrawable: return "perpsMoreThanWithdrawable".localized
@@ -552,7 +555,7 @@ final class PerpsWithdrawViewModel: ObservableObject {
 
     func reviewDocument() -> PerpsReviewDocument? {
         guard canReview else { return nil }
-        return try? PerpsFlows.withdraw(amount: amount, account: account, vault: vault, nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
+        return try? PerpsFlows.withdraw(amount: amount, account: account, vault: vault, nonce: 0)
     }
 }
 
