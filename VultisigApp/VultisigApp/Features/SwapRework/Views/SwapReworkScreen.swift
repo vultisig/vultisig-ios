@@ -365,8 +365,13 @@ struct SwapReworkScreen: View {
     /// advanced sheet (slippage, gas limit, recipient, route); below that the
     /// locked-feature sheet explains the tier.
     private func handleAdvancedSettingsTap() {
-        guard !viewModel.isDemo else { return }
         isEditingAmount = false
+        if viewModel.isDemo {
+            // Debug fixtures have no vault tier to check; open the sheet as-is.
+            details.snapshotAdvancedSettings()
+            details.showAdvancedSettingsSheet = true
+            return
+        }
         Task {
             await TierGatedTap.handle(
                 required: .silver,
