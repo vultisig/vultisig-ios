@@ -37,6 +37,13 @@ struct CustomMessagePayload: Codable, Hashable {
     /// same digest.
     var dappMetadata: DAppMetadata? = nil
 
+    /// Non-default BIP32 path to sign under (the perps trading account).
+    /// nil = the chain's default path. It never feeds `keysignMessages`, so
+    /// the digest is unchanged; `KeysignDerivationResolver` turns it into the
+    /// DKLS chainPath and refuses it where it is not supported. Local only:
+    /// not carried in the proto until commondata gains `derive_path`.
+    var derivePath: String? = nil
+
     var keysignMessages: [String] {
         let data: Data
 

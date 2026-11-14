@@ -34,7 +34,8 @@ private struct KeysignReviewHost: ViewModifier {
                 onDismiss: sheetDidDismiss,
                 // Native macOS sheets can fail to composite Metal-backed
                 // artwork. Keep Rive in the window's existing overlay host.
-                useOverlayOnMacOS: true
+                useOverlayOnMacOS: true,
+                usesQuietBackdrop: \.usesQuietBackdrop
             ) { review in
                 KeysignReviewSheetContent(review: review, presentationID: presenter.presentationID)
                     .id(presenter.presentationID)
@@ -95,6 +96,10 @@ private struct KeysignReviewSheetContent: View {
             }
         case .functionTransaction(let tx, let vault):
             FunctionTransactionReviewContent(transaction: tx, vault: vault, presentationID: presentationID)
+        case .perps(let request, let vaultPubKeyECDSA):
+            if PerpsConfig.isFeatureEnabled, let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
+                PerpsReviewContent(request: request, vault: vault)
+            }
         }
     }
 

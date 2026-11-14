@@ -23,7 +23,16 @@ struct DefiChainListView: View {
     }
 
     var body: some View {
-        Group {
+        VStack(spacing: 16) {
+            if PerpsConfig.isFeatureEnabled {
+                Button {
+                    router.navigate(to: PerpsRoute.hub(vault: vault))
+                } label: {
+                    PerpsDefiEntryRow()
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("defiPerpsRow")
+            }
             if !items.isEmpty {
                 chainList
             } else {

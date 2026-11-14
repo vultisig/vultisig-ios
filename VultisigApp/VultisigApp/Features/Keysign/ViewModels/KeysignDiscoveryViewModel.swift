@@ -207,12 +207,15 @@ class KeysignDiscoveryViewModel: ObservableObject {
             serverAddr = Endpoint.vultisigRelay
 
             do {
+                let derivation = try KeysignDerivationResolver.ceremonyOverride(vault: vault, keysignType: .ECDSA,
+                                                                        keysignPayload: keysignPayload,
+                                                                        customMessagePayload: customMessagePayload)
                 try await fastVaultService.sign(
                     publicKeyEcdsa: vault.pubKeyECDSA,
                     keysignMessages: self.keysignMessages,
                     sessionID: self.sessionID,
                     hexEncryptionKey: encryptionKeyHex,
-                    derivePath: coin.coinType.derivationPath(),
+                    derivePath: KeysignDerivationResolver.fastVaultDerivePath(coin: coin, override: derivation),
                     isECDSA: coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword,
                     chain: coin.chain.name,
