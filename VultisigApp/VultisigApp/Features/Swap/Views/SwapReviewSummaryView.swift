@@ -82,6 +82,17 @@ struct SwapReviewSummaryView: View {
         if let limitFee = summary.limitNetworkFee {
             KeysignReviewFeeRow(label: "networkFee".localized, amount: limitFee.amount, fiat: limitFee.fiat)
         }
+        if !summary.limitFillFees.isEmpty {
+            KeysignReviewDisclosure(title: "swapReworkLimitIfFills".localized, value: "", isInitiallyExpanded: true) {
+                ForEach(summary.limitFillFees) { line in
+                    KeysignReviewRow(label: line.label, labelStyle: .caption) {
+                        if let value = line.value {
+                            KeysignReviewRowValue(text: value, color: line.valueColor, style: .caption)
+                        }
+                    }
+                }
+            }
+        }
         if let totalFee = summary.totalFee {
             if summary.feeLines.isEmpty {
                 KeysignReviewRow(label: "totalFee".localized, value: totalFee, color: Theme.colors.textSecondary)
