@@ -110,7 +110,7 @@ final class RippleXAddressAutofillTests: XCTestCase {
         vm.toAddress = taggedXAddress
 
         let resolved = await vm.validateToAddress()
-        XCTAssertTrue(resolved)
+        XCTAssertEqual(resolved, true)
         XCTAssertEqual(vm.toAddress, classicAddress)
         XCTAssertEqual(vm.rippleTag.destinationTag, "1")
         XCTAssertTrue(vm.rippleTag.isDestinationTagLocked)

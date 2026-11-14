@@ -388,7 +388,7 @@ extension SendDetailsScreen {
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
             } else {
-                let resolved = await viewModel.validateToAddress()
+                guard let resolved = await viewModel.validateToAddress() else { return }
                 viewModel.addressSetupDone = resolved
                 if resolved {
                     viewModel.onSelect(tab: .amount)
