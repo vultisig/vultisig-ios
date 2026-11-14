@@ -108,11 +108,31 @@ final class SendDetailsViewModelTests: XCTestCase {
 
         let isValid = await vm.validateToAddress()
 
-        XCTAssertTrue(isValid)
+        XCTAssertEqual(isValid, true)
         XCTAssertTrue(vm.isNamespaceResolved)
         XCTAssertEqual(vm.toAddress, resolved)
         XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
         XCTAssertEqual(vm.lastResolvedAddress, resolved)
+    }
+
+    func testValidateToAddressIgnoresResultWhenRecipientChangedMidLookup() async {
+        let bob = "0x2222222222222222222222222222222222222222"
+        var vmRef: SendDetailsViewModel?
+        let vm = SendFormFixture.make(
+            coin: SendFormFixture.makeETH(),
+            addressResolver: { _, _ in
+                vmRef?.toAddress = bob // user pastes a new address while the lookup runs
+                return "0x1111111111111111111111111111111111111111"
+            }
+        )
+        vmRef = vm
+        vm.toAddress = "alice.eth"
+
+        let result = await vm.validateToAddress()
+
+        XCTAssertNil(result)
+        XCTAssertEqual(vm.toAddress, bob)
+        XCTAssertNil(vm.toAddressLabel)
     }
 
     func testValidateFormAllowsResolvedNamespaceAddress() async {
@@ -129,7 +149,7 @@ final class SendDetailsViewModelTests: XCTestCase {
 
         let isValid = await vm.validateForm()
 
-        XCTAssertTrue(isValid)
+        XCTAssertEqual(isValid, true)
         XCTAssertEqual(vm.toAddress, resolved)
         XCTAssertEqual(vm.toAddressLabel, "vitalik.eth")
     }
@@ -146,7 +166,7 @@ final class SendDetailsViewModelTests: XCTestCase {
 
         let isValid = await vm.validateToAddress()
 
-        XCTAssertTrue(isValid)
+        XCTAssertEqual(isValid, true)
         XCTAssertTrue(vm.isNamespaceResolved)
         XCTAssertEqual(vm.toAddress, resolved)
         XCTAssertNil(vm.toAddressLabel)

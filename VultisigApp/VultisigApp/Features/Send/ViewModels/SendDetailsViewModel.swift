@@ -559,15 +559,20 @@ final class SendDetailsViewModel {
         markInvalidRecipient()
     }
 
-    func validateToAddress() async -> Bool {
+    /// Returns `nil` when the recipient or chain changed during the lookup:
+    /// the verdict is for text no longer in the field, so nothing is committed.
+    func validateToAddress() async -> Bool? {
         guard !toAddress.isEmpty else { return false }
         normalizeRippleXAddressIfNeeded()
         let originalInput = toAddress
+        let originalChain = coin.chain
         do {
-            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
+            let resolvedAddress = try await addressResolver(originalInput, originalChain)
+            guard toAddress == originalInput, coin.chain == originalChain else { return nil }
             commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
             return true
         } catch {
+            guard toAddress == originalInput, coin.chain == originalChain else { return nil }
             isNamespaceResolved = false
             return false
         }
@@ -1237,7 +1242,9 @@ final class SendDetailsViewModel {
     }
 
     func validateAddressResolved() async -> Bool {
-        guard await validateToAddress() else {
+        // nil = superseded by an edit: fail the submit without a false error.
+        guard let resolved = await validateToAddress() else { return false }
+        guard resolved else {
             setAddressError(message: "invalidRecipientAddressError")
             return false
         }

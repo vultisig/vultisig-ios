@@ -80,7 +80,9 @@ struct SendDetailsAddressTab: View {
             return
         }
         if !viewModel.toAddress.isEmpty {
-            guard await viewModel.validateToAddress() else {
+            // nil = recipient edited mid-lookup; the newer edit owns the state.
+            guard let resolved = await viewModel.validateToAddress() else { return }
+            guard resolved else {
                 // Collapsing the address tab on an unresolved recipient is a
                 // definitive failure — surface the inline reason rather than
                 // just leaving Next disabled.
