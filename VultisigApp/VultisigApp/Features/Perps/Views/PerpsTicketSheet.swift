@@ -148,7 +148,9 @@ struct PerpsTicketSheet: View {
                     size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice,
                     szDecimals: viewModel.market.szDecimals,
                     takeProfit: viewModel.takeProfit, stopLoss: viewModel.stopLoss
-                ), coin: viewModel.market.coin) { take, stop in
+                ), coin: viewModel.market.coin,
+                   live: PerpsExitInputs(entry: viewModel.referencePrice, reference: viewModel.referencePrice,
+                                         size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice)) { take, stop in
                     viewModel.applyAutoClose(takeProfit: take, stopLoss: stop)
                     subSheet = nil
                 }
@@ -325,11 +327,14 @@ struct PerpsAutoCloseSheet: View {
     @StateObject private var viewModel: PerpsAutoCloseViewModel
     @State private var focus: PerpsTriggerField?
     let coin: String
+    /// The latest numbers from the caller's poll; nil when the caller has none.
+    let live: PerpsExitInputs?
     let onDone: (Decimal?, Decimal?) -> Void
 
-    init(viewModel: PerpsAutoCloseViewModel, coin: String, onDone: @escaping (Decimal?, Decimal?) -> Void) {
+    init(viewModel: PerpsAutoCloseViewModel, coin: String, live: PerpsExitInputs? = nil, onDone: @escaping (Decimal?, Decimal?) -> Void) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.coin = coin
+        self.live = live
         self.onDone = onDone
     }
 
@@ -373,5 +378,8 @@ struct PerpsAutoCloseSheet: View {
             }
         }
         .perpsSheetChrome()
+        .onChange(of: live) { _, inputs in
+            if let inputs { viewModel.refresh(inputs) }
+        }
     }
 }

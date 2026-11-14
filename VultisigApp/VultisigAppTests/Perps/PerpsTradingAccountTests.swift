@@ -5,7 +5,7 @@
 //  The trading-account address against an independent oracle:
 //  @scure/bip32 non-hardened derivation from (root pubkey, chain code) with
 //  apostrophes stripped, as vultisig-sdk's derivePublicKey does
-//  (scratchpad/perps/vectors/gen_trading_address.mjs). The root pubkey is
+//  (VultisigAppTests/Perps/Vectors/gen_trading_address.mjs). The root pubkey is
 //  the Python SDK's public test key; the chain code is arbitrary.
 //
 

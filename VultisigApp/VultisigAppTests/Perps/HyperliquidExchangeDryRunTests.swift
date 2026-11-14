@@ -4,7 +4,7 @@
 //
 //  the dry-run /exchange client against the official
 //  hyperliquid-python-sdk. The vectors below were produced by
-//  scratchpad/perps/vectors/gen_exchange_sdk.py, which builds every action
+//  VultisigAppTests/Perps/Vectors/gen_exchange_sdk.py, which builds every action
 //  the way `hyperliquid/exchange.py` does, signs with the SDK's public test
 //  key and records the body `_post_action` posts. One vector
 //  (`withdraw3_testnet_sdk_test`) is the SDK's own `signing_test.py` case.

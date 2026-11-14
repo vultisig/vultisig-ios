@@ -1307,8 +1307,10 @@
 "perpsLong" = "long";
 "perpsLongCoin" = "Long %@";
 "perpsLongTitle" = "Long";
+"perpsManagePosition" = "Gerenciar posição";
 "perpsMargin" = "Margem";
 "perpsMarginIsolatedOnly" = "Só posições isoladas podem alterar a margem.";
+"perpsMarginWouldLiquidate" = "Remover tanto levaria a posição à liquidação. Remova menos.";
 "perpsMarketInfo" = "Info do mercado";
 "perpsMarketsTitle" = "Mercados";
 "perpsMarketUnavailable" = "Não foi possível conectar à Hyperliquid. Tentando novamente…";
@@ -1348,6 +1350,7 @@
 "perpsPercentBelow" = "%@ abaixo";
 "perpsPerHour" = "%@ por hora";
 "perpsPositionClosedTitle" = "Posição %@ fechada";
+"perpsPositionOpenBlocked" = "Você já tem um %2$@ de %1$@ aberto. Aumentar ou operar no sentido contrário ainda não está disponível: feche ou modifique pela sua posição.";
 "perpsPositions" = "Posições";
 "perpsPositionSize" = "Tamanho da posição";
 "perpsPricePlaceholder" = "Preço";
@@ -1398,6 +1401,8 @@
 "perpsTriggerPartlyCovers" = "Seu stop loss cobre %1$@ dos %2$@ ainda abertos. Edite-o para cobrir o restante.";
 "perpsTriggerPrice" = "Preço de acionamento";
 "perpsTryAgain" = "Tentar novamente";
+"perpsUnsupportedVault" = "Perps precisa de um cofre criado com o esquema de assinatura atual (DKLS). Cofres do esquema antigo (GG20) ou importados de uma frase-semente não conseguem assinar para uma conta de trading, então este não pode depositar nem negociar.";
+"perpsUnsupportedVaultTitle" = "Perps não está disponível para este cofre";
 "perpsUpTo" = "Até %@";
 "perpsUpToOnCoin" = "Até %1$@ em %2$@";
 "perpsUsdcOnArbitrum" = "USDC na Arbitrum";

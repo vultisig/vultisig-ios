@@ -1307,8 +1307,10 @@
 "perpsLong" = "롱";
 "perpsLongCoin" = "%@ 롱";
 "perpsLongTitle" = "롱";
+"perpsManagePosition" = "포지션 관리";
 "perpsMargin" = "마진";
 "perpsMarginIsolatedOnly" = "격리 포지션만 마진을 변경할 수 있습니다.";
+"perpsMarginWouldLiquidate" = "이만큼 빼면 포지션이 청산됩니다. 더 적게 빼세요.";
 "perpsMarketInfo" = "마켓 정보";
 "perpsMarketsTitle" = "마켓";
 "perpsMarketUnavailable" = "Hyperliquid에 연결할 수 없습니다. 다시 시도 중…";
@@ -1348,6 +1350,7 @@
 "perpsPercentBelow" = "%@ 아래";
 "perpsPerHour" = "시간당 %@";
 "perpsPositionClosedTitle" = "%@ 포지션 종료됨";
+"perpsPositionOpenBlocked" = "이미 %1$@ %2$@ 포지션이 열려 있습니다. 추가하거나 반대 방향으로 거래하는 기능은 아직 없습니다. 포지션 화면에서 종료하거나 수정하세요.";
 "perpsPositions" = "포지션";
 "perpsPositionSize" = "포지션 규모";
 "perpsPricePlaceholder" = "가격";
@@ -1398,6 +1401,8 @@
 "perpsTriggerPartlyCovers" = "손절이 아직 열려 있는 %2$@ 중 %1$@을(를) 커버합니다. 나머지를 커버하도록 수정하세요.";
 "perpsTriggerPrice" = "발동 가격";
 "perpsTryAgain" = "다시 시도";
+"perpsUnsupportedVault" = "무기한 선물은 현재 서명 방식(DKLS)으로 만든 볼트가 필요합니다. 이전 방식(GG20)으로 만들었거나 시드 문구로 가져온 볼트는 거래 계정에 서명할 수 없어 이 볼트로는 입금하거나 거래할 수 없습니다.";
+"perpsUnsupportedVaultTitle" = "이 볼트에서는 무기한 선물을 사용할 수 없습니다";
 "perpsUpTo" = "최대 %@";
 "perpsUpToOnCoin" = "%2$@ 최대 %1$@";
 "perpsUsdcOnArbitrum" = "Arbitrum의 USDC";

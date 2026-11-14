@@ -12,10 +12,15 @@ import SwiftUI
 
 struct PerpsCloseSheet: View {
     let onReview: (PerpsReviewDocument) -> Void
+    /// The screen's latest values: a sheet left open follows the poll.
+    private let position: HLPosition
+    private let market: PerpsMarket
     @StateObject private var viewModel: PerpsCloseViewModel
 
     init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, onReview: @escaping (PerpsReviewDocument) -> Void) {
         self.onReview = onReview
+        self.position = position
+        self.market = market
         _viewModel = StateObject(wrappedValue: PerpsCloseViewModel(position: position, market: market, fraction: fraction))
     }
 
@@ -61,6 +66,9 @@ struct PerpsCloseSheet: View {
             .accessibilityIdentifier("perpsCloseReview")
         }
         .perpsSheetChrome()
+        .onChange(of: PerpsSheetInputs(position: position, market: market)) { _, inputs in
+            viewModel.refresh(position: inputs.position, market: inputs.market)
+        }
     }
 }
 
@@ -88,6 +96,7 @@ struct PerpsModifySheet: View {
 
     let position: HLPosition
     let market: PerpsMarket
+    let account: PerpsAccountSnapshot
     let onReview: (PerpsReviewDocument) -> Void
     let onClose: () -> Void
 
@@ -102,6 +111,7 @@ struct PerpsModifySheet: View {
          onReview: @escaping (PerpsReviewDocument) -> Void, onClose: @escaping () -> Void) {
         self.position = position
         self.market = market
+        self.account = account
         self.onReview = onReview
         self.onClose = onClose
         existingTriggers = triggers
@@ -124,6 +134,11 @@ struct PerpsModifySheet: View {
             }
         }
         .perpsSheetChrome()
+        // The screen polls every 15 s; both pages follow it while open.
+        .onChange(of: PerpsSheetInputs(position: position, market: market, account: account)) { _, inputs in
+            exits.refresh(PerpsExitInputs(position: inputs.position, market: inputs.market))
+            if let account = inputs.account { margin.refresh(position: inputs.position, market: inputs.market, account: account) }
+        }
     }
 
     private var mainPage: some View {
@@ -165,6 +180,13 @@ struct PerpsModifySheet: View {
             }
         }
     }
+}
+
+/// What an open position sheet follows: the poll's position, market and account.
+struct PerpsSheetInputs: Hashable {
+    let position: HLPosition
+    let market: PerpsMarket
+    var account: PerpsAccountSnapshot?
 }
 
 enum PerpsMarginDirection: Int, CaseIterable, Identifiable {

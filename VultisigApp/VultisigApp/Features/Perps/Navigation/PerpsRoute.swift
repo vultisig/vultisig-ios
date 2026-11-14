@@ -14,3 +14,15 @@ enum PerpsRoute: Hashable {
     case withdraw(vault: Vault)
     case dryRunLog
 }
+
+extension PerpsRoute {
+    /// The vault a route works on; nil for the vault-free debug log.
+    var vault: Vault? {
+        switch self {
+        case .hub(let vault), .market(let vault, _), .position(let vault, _), .search(let vault), .activity(let vault), .withdraw(let vault):
+            return vault
+        case .dryRunLog:
+            return nil
+        }
+    }
+}

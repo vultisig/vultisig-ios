@@ -1307,8 +1307,10 @@
 "perpsLong" = "long";
 "perpsLongCoin" = "Long %@";
 "perpsLongTitle" = "Long";
+"perpsManagePosition" = "Upravljaj pozicijom";
 "perpsMargin" = "Marža";
 "perpsMarginIsolatedOnly" = "Samo izoliranim pozicijama može se mijenjati marža.";
+"perpsMarginWouldLiquidate" = "Uklanjanje ovoliko dovelo bi poziciju do likvidacije. Uklonite manje.";
 "perpsMarketInfo" = "Informacije o tržištu";
 "perpsMarketsTitle" = "Tržišta";
 "perpsMarketUnavailable" = "Hyperliquid nije dostupan. Ponovni pokušaj…";
@@ -1348,6 +1350,7 @@
 "perpsPercentBelow" = "%@ niže";
 "perpsPerHour" = "%@ po satu";
 "perpsPositionClosedTitle" = "%@ pozicija zatvorena";
+"perpsPositionOpenBlocked" = "Već imate otvoren %2$@ na %1$@. Dodavanje ili trgovanje u suprotnom smjeru još nije dostupno: zatvorite ga ili izmijenite iz svoje pozicije.";
 "perpsPositions" = "Pozicije";
 "perpsPositionSize" = "Veličina pozicije";
 "perpsPricePlaceholder" = "Cijena";
@@ -1398,6 +1401,8 @@
 "perpsTriggerPartlyCovers" = "Vaš stop loss pokriva %1$@ od %2$@ koji su još otvoreni. Uredite ga da pokrije ostatak.";
 "perpsTriggerPrice" = "Okidna cijena";
 "perpsTryAgain" = "Pokušaj ponovno";
+"perpsUnsupportedVault" = "Perps treba trezor stvoren trenutnom shemom potpisivanja (DKLS). Trezori sa starijom shemom (GG20) ili uvezeni iz seed fraze ne mogu potpisivati za račun za trgovanje, pa se s ovim ne može uplaćivati ni trgovati.";
+"perpsUnsupportedVaultTitle" = "Perps nije dostupan za ovaj trezor";
 "perpsUpTo" = "Do %@";
 "perpsUpToOnCoin" = "Do %1$@ na %2$@";
 "perpsUsdcOnArbitrum" = "USDC na Arbitrumu";

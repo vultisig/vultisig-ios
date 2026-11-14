@@ -299,6 +299,7 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertEqual(outcome.returned, Decimal(string: "9.25"))
     }
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     func testDemoStatesAddUp() throws {
         let snapshot = PerpsDemoRepository.snapshot(address: "0x0", btcMark: 71_130, entry: 67_074, now: Date())
         let after = PerpsDemoRepository.afterWithdrawal(snapshot)
@@ -312,4 +313,5 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertEqual(take.triggerPrice, 71_100, "6% over entry, to the nearest $100")
         XCTAssertGreaterThan(take.netPnl, 0)
     }
+    #endif
 }

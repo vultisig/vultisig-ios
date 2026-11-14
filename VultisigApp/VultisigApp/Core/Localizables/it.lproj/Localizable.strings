@@ -1307,8 +1307,10 @@
 "perpsLong" = "long";
 "perpsLongCoin" = "Long %@";
 "perpsLongTitle" = "Long";
+"perpsManagePosition" = "Gestisci posizione";
 "perpsMargin" = "Margine";
 "perpsMarginIsolatedOnly" = "Solo le posizioni isolate possono modificare il margine.";
+"perpsMarginWouldLiquidate" = "Rimuovere così tanto porterebbe la posizione alla liquidazione. Rimuovi meno.";
 "perpsMarketInfo" = "Info mercato";
 "perpsMarketsTitle" = "Mercati";
 "perpsMarketUnavailable" = "Impossibile raggiungere Hyperliquid. Nuovo tentativo…";
@@ -1348,6 +1350,7 @@
 "perpsPercentBelow" = "%@ sotto";
 "perpsPerHour" = "%@ all'ora";
 "perpsPositionClosedTitle" = "Posizione %@ chiusa";
+"perpsPositionOpenBlocked" = "Hai già un %2$@ su %1$@ aperto. Aumentarlo o fare trading nella direzione opposta non è ancora disponibile: chiudilo o modificalo dalla tua posizione.";
 "perpsPositions" = "Posizioni";
 "perpsPositionSize" = "Dimensione posizione";
 "perpsPricePlaceholder" = "Prezzo";
@@ -1398,6 +1401,8 @@
 "perpsTriggerPartlyCovers" = "Il tuo stop loss copre %1$@ dei %2$@ ancora aperti. Modificalo per coprire il resto.";
 "perpsTriggerPrice" = "Prezzo di attivazione";
 "perpsTryAgain" = "Riprova";
+"perpsUnsupportedVault" = "Perps richiede un vault creato con lo schema di firma attuale (DKLS). I vault con lo schema precedente (GG20) o importati da una seed phrase non possono firmare per un conto di trading, quindi con questo non si può depositare né fare trading.";
+"perpsUnsupportedVaultTitle" = "Perps non è disponibile per questo vault";
 "perpsUpTo" = "Fino a %@";
 "perpsUpToOnCoin" = "Fino a %1$@ su %2$@";
 "perpsUsdcOnArbitrum" = "USDC su Arbitrum";

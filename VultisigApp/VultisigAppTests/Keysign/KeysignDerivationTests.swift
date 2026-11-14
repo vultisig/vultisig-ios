@@ -7,7 +7,7 @@
 //  post-sign recovery check. Vectors use a fictional root key (the Python
 //  SDK's public test key, chain code c9f3…) and signatures made with child
 //  PRIVATE keys derived by @scure/bip32
-//  (scratchpad/perps/vectors/gen_trading_signatures.mjs).
+//  (VultisigAppTests/Perps/Vectors/gen_trading_signatures.mjs).
 //
 
 import Tss

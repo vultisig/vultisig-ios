@@ -5,7 +5,8 @@
 //  Hyperliquid perps configuration. The whole feature sits behind
 //  `isFeatureEnabled`, off by default and switched on from Settings >
 //  Advanced (tap the version five times), like the other in-progress
-//  toggles there. Every perps surface (DeFi row, routes, review) checks it.
+//  toggles there, in Debug builds only. Every perps surface (DeFi row,
+//  routes, review) checks it.
 //
 
 import Foundation
@@ -14,8 +15,14 @@ enum PerpsConfig {
     /// `@AppStorage` key of the Settings > Advanced toggle.
     static let featureFlagKey = "perpsEnabled"
 
+    /// Debug builds only until live signing: a Release build is always off,
+    /// whatever is stored, and its Settings screen has no toggle.
     static var isFeatureEnabled: Bool {
+        #if DEBUG
         UserDefaults.standard.bool(forKey: featureFlagKey)
+        #else
+        false
+        #endif
     }
 
     /// Debug-only details (digests, request kinds, the dry-run log, account
@@ -57,7 +64,20 @@ enum PerpsConfig {
     /// (m/44'/60'/0'/0/1000), or the debug override.
     @MainActor
     static func tradingAccountAddress(vault: Vault) -> String? {
-        debugAddressOverride ?? PerpsDerivedAccount.derive(.trading, vault: vault)?.address
+        guard isSupported(vault: vault) else { return nil }
+        return debugAddressOverride ?? PerpsDerivedAccount.derive(.trading, vault: vault)?.address
+    }
+
+    /// Perps needs a DKLS vault with a chain code: the trading account is a
+    /// child key (m/44'/60'/0'/0/1000) that only a DKLS ceremony can sign for.
+    /// GG20 and imported (KeyImport) vaults get no trading address and no review.
+    @MainActor
+    static func isSupported(vault: Vault) -> Bool {
+        #if DEBUG
+        // Debug only: `-perpsDemoUnsupportedVault YES` shows the refusal on a DKLS test vault.
+        if UserDefaults.standard.bool(forKey: "perpsDemoUnsupportedVault") { return false }
+        #endif
+        return vault.libType == .DKLS && !vault.hexChainCode.isEmpty
     }
 
     /// Mainnet. Only the read-only info API is called; nothing is submitted to `/exchange` yet.

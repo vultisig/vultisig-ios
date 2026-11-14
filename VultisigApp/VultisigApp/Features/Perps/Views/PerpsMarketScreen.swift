@@ -56,13 +56,26 @@ struct PerpsMarketScreen: View {
                     }
                     .padding(.top, 4)
                 }
-                HStack(spacing: 10) {
-                    PrimaryButton(title: "perpsLongTitle".localized, type: .primary) { sheet = .ticket(.long) }
-                        .accessibilityIdentifier("perpsLongButton")
-                    PrimaryButton(title: "perpsShortTitle".localized, type: .secondary) { sheet = .ticket(.short) }
-                        .accessibilityIdentifier("perpsShortButton")
+                if let position = viewModel.position {
+                    // One position per market for now: adding to it or trading
+                    // the other way is not modelled, so neither is offered.
+                    VStack(spacing: 10) {
+                        PerpsFootnote(text: PerpsFlows.positionOpenMessage(position))
+                            .accessibilityIdentifier("perpsPositionOpenNote")
+                        PrimaryButton(title: "perpsManagePosition".localized, type: .primary) {
+                            router.navigate(to: PerpsRoute.position(vault: vault, coin: coin))
+                        }
+                        .accessibilityIdentifier("perpsManagePosition")
+                    }
+                } else {
+                    HStack(spacing: 10) {
+                        PrimaryButton(title: "perpsLongTitle".localized, type: .primary) { sheet = .ticket(.long) }
+                            .accessibilityIdentifier("perpsLongButton")
+                        PrimaryButton(title: "perpsShortTitle".localized, type: .secondary) { sheet = .ticket(.short) }
+                            .accessibilityIdentifier("perpsShortButton")
+                    }
+                    .disabled(viewModel.market == nil)
                 }
-                .disabled(viewModel.market == nil)
             }
         }
         .perpsCompactHeader(coin: coin)

@@ -388,7 +388,7 @@ struct PerpsPositionScreen: View {
                     side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
                     size: abs(position.szi.value), liquidation: position.liquidationPx?.value, szDecimals: market.szDecimals,
                     takeProfit: take, stopLoss: stop
-                ), coin: coin) { newTake, newStop in
+                ), coin: coin, live: PerpsExitInputs(position: position, market: market)) { newTake, newStop in
                     let document = try? PerpsFlows.editExits(position: position, market: market, existing: viewModel.triggers,
                                                              stopLoss: newStop, takeProfit: newTake,
                                                              nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2))

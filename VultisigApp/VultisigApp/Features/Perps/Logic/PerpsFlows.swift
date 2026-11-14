@@ -21,6 +21,9 @@ struct PerpsVaultContext: Sendable {
     /// The vault's trading account (m/44'/60'/0'/0/1000), master of its own
     /// Hyperliquid account. Deposits credit it; its key signs every trading action.
     var tradingAddress: String?
+    /// False for GG20 and imported vaults (`PerpsConfig.isSupported`): every
+    /// review is then refused, before any address or deposit is shown.
+    var isSupported = true
 }
 
 struct PerpsTicketCosts: Equatable, Sendable {
@@ -113,17 +116,29 @@ enum PerpsFlows {
             detailTotalRows: costs.transfer > 0 ? [] : [
                 PerpsReviewRow(label: "perpsTotalFromAvailable".localized, value: PerpsFormat.usd(estimate.margin + costs.tradingFees))
             ],
-            requests: plan.requests,
-            deposit: deposit,
-            blockingIssue: blocking
+            requests: vault.isSupported ? plan.requests : [],
+            deposit: vault.isSupported ? deposit : nil,
+            blockingIssue: vaultIssue(vault) ?? blocking
         )
     }
 
     /// Nil when the vault can fund `amount`; otherwise the inline reason.
     static func fundingIssue(amount: Decimal, vault: PerpsVaultContext) -> String? {
+        if let issue = vaultIssue(vault) { return issue }
         guard let balance = vault.arbitrumUsdcBalance else { return "perpsVaultHasNoArbitrumUsdc".localized }
         guard balance >= amount else { return String(format: "perpsShortfallLine".localized, usdc(amount), usdc(balance)) }
         return nil
+    }
+
+    /// Why the ticket refuses while a position is open in the same market.
+    static func positionOpenMessage(_ position: HLPosition) -> String {
+        String(format: "perpsPositionOpenBlocked".localized, position.coin,
+               position.isLong ? "perpsLong".localized : "perpsShort".localized)
+    }
+
+    /// The vault can't hold a trading account: nothing perps may be reviewed.
+    static func vaultIssue(_ vault: PerpsVaultContext) -> String? {
+        vault.isSupported ? nil : "perpsUnsupportedVault".localized
     }
 
     static func sideCaption(_ side: PerpsSide, coin: String, leverage: Int) -> String {
@@ -186,7 +201,7 @@ enum PerpsFlows {
     // MARK: - Add funds
 
     static func addFunds(amount: Decimal, vault: PerpsVaultContext, isNewAccount: Bool = false) -> PerpsReviewDocument {
-        let deposit = cctpDeposit(amount: amount, vault: vault)
+        let deposit = vault.isSupported ? cctpDeposit(amount: amount, vault: vault) : nil
         let fees = HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0)
         var breakdown = [PerpsReviewRow(label: "perpsForwardingFee".localized, value: usdc(HLCctp.forwardingFee))]
         if isNewAccount { breakdown.append(PerpsReviewRow(label: "perpsActivationFee".localized, value: usdc(HLCctp.activationFee))) }
@@ -194,6 +209,7 @@ enum PerpsFlows {
         var blocking = fundingIssue(amount: amount, vault: vault)
         if deposit == nil { blocking = blocking ?? "perpsNoTradingAddress".localized }
         if credited <= 0 { blocking = "perpsDepositBelowFees".localized }
+        if let issue = vaultIssue(vault) { blocking = issue }
         return PerpsReviewDocument(
             sheetTitle: "perpsAddFunds".localized,
             amount: usdc(amount),
@@ -329,13 +345,14 @@ enum PerpsFlows {
         return (pnl, initialMargin > 0 ? pnl / initialMargin : 0)
     }
 
-    static func closeEstimate(position: HLPosition, market: PerpsMarket, size requested: Decimal) -> CloseEstimate {
+    static func closeEstimate(position: HLPosition, market: PerpsMarket, size requested: Decimal,
+                              tier: VultDiscountTier? = PerpsVultTier.current) -> CloseEstimate {
         let total = abs(position.szi.value)
         let size = HLWireFormat.size(min(requested, total), szDecimals: market.szDecimals)
         let entry = position.entryPx?.value ?? market.markPrice
         let side: PerpsSide = position.isLong ? .long : .short
         let pnl = PerpsMath.unrealizedPnl(side: side, entryPrice: entry, markPrice: market.markPrice, size: size)
-        let fees = size * market.markPrice * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate)
+        let fees = size * market.markPrice * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: tier))
         let fraction = total > 0 ? size / total : 0
         let released = position.marginUsed.value * fraction
         let remaining = total - size
@@ -366,11 +383,13 @@ enum PerpsFlows {
         position: HLPosition,
         market: PerpsMarket,
         size: Decimal,
+        tier: VultDiscountTier? = PerpsVultTier.current,
         nonce: UInt64
     ) throws -> PerpsReviewDocument {
-        let estimate = closeEstimate(position: position, market: market, size: size)
+        // One tier read: the fee row and the order's builder fee come from it.
+        let estimate = closeEstimate(position: position, market: market, size: size, tier: tier)
         let order = closeOrder(position: position, market: market, size: estimate.size)
-        let request = try HLExchangeRequest.l1(.order, action: HLActions.order([order], builder: PerpsConfig.builderFee),
+        let request = try HLExchangeRequest.l1(.order, action: HLActions.order([order], builder: PerpsConfig.builderFee(tier: tier)),
                                                nonce: nonce, isMainnet: PerpsConfig.isMainnet, expiresAfter: nonce + HLNonceSource.defaultExpiryMs)
         let net = PerpsCloseFlows.netProfit(estimate)
         return PerpsReviewDocument(

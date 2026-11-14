@@ -28,9 +28,21 @@ final class PerpsFeatureFlagTests: XCTestCase {
 
     func testFollowsTheAdvancedToggle() {
         UserDefaults.standard.set(true, forKey: PerpsConfig.featureFlagKey)
+        #if DEBUG
         XCTAssertTrue(PerpsConfig.isFeatureEnabled)
+        #else
+        XCTAssertFalse(PerpsConfig.isFeatureEnabled, "Release builds stay off whatever is stored")
+        #endif
         UserDefaults.standard.set(false, forKey: PerpsConfig.featureFlagKey)
         XCTAssertFalse(PerpsConfig.isFeatureEnabled)
+    }
+
+    func testAdvancedSettingsShowThePerpsToggleInDebugOnly() {
+        #if DEBUG
+        XCTAssertTrue(SettingsAdvancedView.Row.visible.contains(.perps))
+        #else
+        XCTAssertFalse(SettingsAdvancedView.Row.visible.contains(.perps))
+        #endif
     }
 
     func testSigningStaysOffUntilLiveSigningLands() {

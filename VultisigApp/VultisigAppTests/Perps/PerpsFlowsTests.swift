@@ -266,7 +266,7 @@ final class PerpsFlowsTests: XCTestCase {
     }
 
     /// Circle's `encodeForwardHookData` and viem `hashTypedData`
-    /// (scratchpad/perps/vectors/gen_cctp.mjs).
+    /// (VultisigAppTests/Perps/Vectors/gen_cctp.mjs).
     func testCctpHookDataAndAuthorizationMatchReferences() throws {
         let trading = "0x1185457adb9913df15c0cfac2441986520827ce0"
         XCTAssertEqual(try HLCctp.forwardHookData(recipient: trading).hexString,
@@ -418,6 +418,7 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsFormat.percent(Decimal(string: "1.1") ?? 0), "+1.10%")
     }
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     /// Demo account: available = added - fee - reserved margin, and the stop is 7% under entry.
     func testDemoAccountMathsAgree() throws {
         let snapshot = PerpsDemoRepository.snapshot(address: "0x0", btcMark: 66_969, entry: 66_975, now: Date())
@@ -430,6 +431,7 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(snapshot.triggerOrders.first?.triggerPx?.value, 62_287)
         XCTAssertEqual(PerpsDemoRepository.unfunded(address: "0x0").availableToTrade, 250)
     }
+    #endif
 
     /// Details lists the margin actually used, then the fee total;
     /// lot rounding keeps the margin a little under the $100 entered.
@@ -447,6 +449,7 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(document.fees?.total, "$0.29")
     }
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     /// design fixture at the 10 bps builder fee: entry $66,975, mark $71,130.
     func testDemoAccountMatchesTheR18Board() throws {
         let snapshot = PerpsDemoRepository.snapshot(address: "0x0", btcMark: 71_130, entry: 66_975, now: Date())
@@ -469,7 +472,9 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsFormat.usd(eth.unrealizedPnl.value, signed: true), "\u{2212}$59.35")
         XCTAssertEqual(PerpsFormat.usd(PerpsMarginFlows.margin(of: eth)), "$131.38")
     }
+    #endif
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     /// 10 bps builder fee on the close and the trigger outcomes, at the design marks.
     func testTenBpsFeesOnClosesAndOutcomes() throws {
         let snapshot = PerpsDemoRepository.snapshot(address: "0x0", btcMark: 71_130, entry: 66_975, now: Date())
@@ -493,7 +498,9 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsFormat.usd(take.netPnl, signed: true), "+$23.55")
         XCTAssertEqual(PerpsFormat.usd(take.fees), "$0.32")
     }
+    #endif
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     /// Demo chart: a falling live day is bent to end on the mark and open
     /// on the previous day's price, so a +1.11% day draws a rising line.
     func testDemoChartEndsOnTheMarkAndFollowsTheDayChange() {
@@ -512,6 +519,7 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertGreaterThan(secondHalf, firstHalf, "the line rises to the mark")
         XCTAssertTrue(bent.allSatisfy { $0.high.value >= $0.close.value && $0.low.value <= $0.close.value })
     }
+    #endif
 
     /// VULT tiers scale the 10 bps builder fee like swaps scale the 50 bps list fee.
     func testBuilderFeePerVultTier() {
@@ -559,12 +567,14 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsCloseFlows.sizeText(Decimal(string: "0.0005") ?? 0, coin: "BTC"), "0.0005 BTC")
     }
 
+    #if DEBUG // PerpsDemoRepository is Debug-only, so Release test builds skip it.
     func testDemoNearLiquidationShowsTheWarning() throws {
         let snapshot = PerpsDemoRepository.nearLiquidation(address: "0x0", ethMark: Decimal(string: "2484.5") ?? 0)
         let position = try XCTUnwrap(snapshot.positions.first)
         XCTAssertTrue(PerpsMath.isNearLiquidation(markPrice: Decimal(string: "2484.5") ?? 0, liquidationPrice: position.liquidationPx?.value))
         XCTAssertLessThan(position.unrealizedPnl.value, 0)
     }
+    #endif
 
     /// Activity: fills grouped per order, transfers signed, funding summed per day.
     func testActivityGroupsFillsAndSumsFunding() throws {

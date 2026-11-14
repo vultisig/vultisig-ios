@@ -388,6 +388,8 @@ targets:
           # files from being flattened into the test bundle root (which
           # collides under "Multiple commands produce").
           - "Blockchain/Cosmos/Signing/fixtures/qbtc-voteweighted/**"
+          # The perps vector generators (Python / Node scripts), same reason.
+          - "Perps/Vectors/**"
       # Static fixture JSONs bundled with the test target as *folder
       # references* (blue folders in Xcode) so they keep their directory
       # inside the bundle instead of flattening into the resource root.

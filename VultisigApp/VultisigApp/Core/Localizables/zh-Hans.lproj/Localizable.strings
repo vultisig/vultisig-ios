@@ -1307,8 +1307,10 @@
 "perpsLong" = "多";
 "perpsLongCoin" = "做多 %@";
 "perpsLongTitle" = "做多";
+"perpsManagePosition" = "管理仓位";
 "perpsMargin" = "保证金";
 "perpsMarginIsolatedOnly" = "只有逐仓仓位可以调整保证金。";
+"perpsMarginWouldLiquidate" = "移除这么多会使仓位达到强平价。请少移除一些。";
 "perpsMarketInfo" = "市场信息";
 "perpsMarketsTitle" = "市场";
 "perpsMarketUnavailable" = "无法连接 Hyperliquid。正在重试…";
@@ -1348,6 +1350,7 @@
 "perpsPercentBelow" = "低 %@";
 "perpsPerHour" = "每小时 %@";
 "perpsPositionClosedTitle" = "%@ 仓位已平仓";
+"perpsPositionOpenBlocked" = "你已有一个 %1$@ %2$@ 仓位。暂不支持加仓或反向交易，请在仓位页面平仓或修改。";
 "perpsPositions" = "仓位";
 "perpsPositionSize" = "仓位规模";
 "perpsPricePlaceholder" = "价格";
@@ -1398,6 +1401,8 @@
 "perpsTriggerPartlyCovers" = "您的止损覆盖了仍持有的 %2$@ 中的 %1$@。请编辑以覆盖其余部分。";
 "perpsTriggerPrice" = "触发价";
 "perpsTryAgain" = "重试";
+"perpsUnsupportedVault" = "永续合约需要使用当前签名方案（DKLS）创建的保险库。使用旧方案（GG20）或从助记词导入的保险库无法为交易账户签名，因此此保险库无法存入或交易。";
+"perpsUnsupportedVaultTitle" = "此保险库无法使用永续合约";
 "perpsUpTo" = "最高 %@";
 "perpsUpToOnCoin" = "%2$@ 最高 %1$@";
 "perpsUsdcOnArbitrum" = "Arbitrum 上的 USDC";

@@ -22,11 +22,13 @@ extension PerpsVaultContext {
         // depending on which EVM chains the user keeps in the wallet.
         let mainAddress = vault.coins.first { ($0.chain == .ethereum || $0.chain == .arbitrum) && $0.isNativeToken }?.address
             ?? PerpsDerivedAccount.derive(.main, vault: vault)?.address ?? ""
+        let isSupported = PerpsConfig.isSupported(vault: vault)
         self.init(
             name: Self.demoVaultName ?? vault.name,
             address: mainAddress,
             arbitrumUsdcBalance: Self.demoVaultUsdc ?? usdc?.balanceDecimal,
-            tradingAddress: PerpsDerivedAccount.derive(.trading, vault: vault)?.address
+            tradingAddress: isSupported ? PerpsDerivedAccount.derive(.trading, vault: vault)?.address : nil,
+            isSupported: isSupported
         )
     }
 
@@ -116,12 +118,17 @@ final class PerpsTicketViewModel: ObservableObject {
     @Published private(set) var account: PerpsAccountSnapshot?
     let vault: PerpsVaultContext
     let maxAllowedLeverage: Int
+    /// The VULT tier this ticket prices with: one snapshot feeds the fee shown,
+    /// Max, and the builder fee the order carries, so they can never disagree.
+    @Published private(set) var vultTier: VultDiscountTier?
 
-    init(side: PerpsSide, market: PerpsMarket, account: PerpsAccountSnapshot?, vault: PerpsVaultContext) {
+    init(side: PerpsSide, market: PerpsMarket, account: PerpsAccountSnapshot?, vault: PerpsVaultContext,
+         vultTier: VultDiscountTier? = PerpsVultTier.current) {
         self.side = side
         self.market = market
         self.account = account
         self.vault = vault
+        self.vultTier = vultTier
         let isFirstTrade = (account?.positions.isEmpty ?? true) && (account?.fills.isEmpty ?? true)
         maxAllowedLeverage = min(isFirstTrade ? PerpsConfig.firstTradeMaxLeverage : market.maxLeverage, market.maxLeverage)
         leverage = min(PerpsConfig.defaultLeverage, market.maxLeverage)
@@ -129,10 +136,15 @@ final class PerpsTicketViewModel: ObservableObject {
 
     /// After a reconnect: fresh price and account, so size, available and the
     /// default stop are recomputed before Review comes back. The draft stays.
-    func refresh(market: PerpsMarket, account: PerpsAccountSnapshot?) {
+    func refresh(market: PerpsMarket, account: PerpsAccountSnapshot?, vultTier: VultDiscountTier? = PerpsVultTier.current) {
         self.market = market
         self.account = account
+        self.vultTier = vultTier
     }
+
+    /// A position already open in this market. Adding to it or trading against
+    /// it is not modelled yet, so the ticket refuses rather than re-levering it.
+    var openPosition: HLPosition? { account?.position(coin: market.coin) }
 
     var title: String { String(format: side == .long ? "perpsLongCoin".localized : "perpsShortCoin".localized, market.coin) }
     var isNewAccount: Bool { account?.isEmpty ?? true }
@@ -174,7 +186,7 @@ final class PerpsTicketViewModel: ObservableObject {
         var base = fromAccount ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0).rounded(scale: 2, mode: .down)
         if !fromAccount { base -= HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0) }
         guard base > 0 else { return 0 }
-        let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate
+        let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: vultTier)
         return base / (1 + Decimal(leverage) * feeRate)
     }
 
@@ -233,7 +245,7 @@ final class PerpsTicketViewModel: ObservableObject {
     private func plan(nonce: UInt64) -> Result<PerpsOrderPlan, PerpsOrderPlannerError> {
         do {
             return .success(try PerpsOrderPlanner.plan(market: market, ticket: ticket, nonce: nonce,
-                                                       builder: PerpsConfig.builderFee))
+                                                       builder: PerpsConfig.builderFee(tier: vultTier), openPosition: openPosition))
         } catch let error as PerpsOrderPlannerError {
             return .failure(error)
         } catch {
@@ -250,7 +262,7 @@ final class PerpsTicketViewModel: ObservableObject {
 
     var costs: PerpsTicketCosts? {
         guard case .success(let plan) = plan else { return nil }
-        return PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, isNewAccount: isNewAccount)
+        return PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, isNewAccount: isNewAccount, tier: vultTier)
     }
 
     var sizeText: String {
@@ -269,6 +281,7 @@ final class PerpsTicketViewModel: ObservableObject {
             case .missingLimitPrice: return nil
             case .invalidTriggerPrice: return "perpsInvalidPrice".localized
             case .requestBuildFailed: return "perpsReviewUnavailable".localized
+            case .positionOpen: return positionOpenMessage
             }
         }
         if let costs, costs.transfer > 0, let reason = PerpsFlows.fundingIssue(amount: costs.transfer, vault: vault) { return reason }
@@ -286,9 +299,16 @@ final class PerpsTicketViewModel: ObservableObject {
     }
 
     func reviewDocument() -> PerpsReviewDocument? {
-        guard canReview, let costs,
+        guard canReview,
               case .success(let plan) = plan(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return nil }
+        // Costs from this same plan and tier: the fee shown is the fee signed.
+        let costs = PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, isNewAccount: isNewAccount, tier: vultTier)
         return PerpsFlows.order(plan: plan, costs: costs, vault: vault, isNewAccount: isNewAccount)
+    }
+
+    /// "You already have a BTC long open. …"
+    var positionOpenMessage: String? {
+        openPosition.map { PerpsFlows.positionOpenMessage($0) }
     }
 }
 
@@ -325,10 +345,10 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     @Published var stopText: String
 
     let side: PerpsSide
-    let entry: Decimal
-    let reference: Decimal
-    let size: Decimal
-    let liquidation: Decimal?
+    @Published private(set) var entry: Decimal
+    @Published private(set) var reference: Decimal
+    @Published private(set) var size: Decimal
+    @Published private(set) var liquidation: Decimal?
     /// The market's lot decimals: an edited trigger is snapped to a valid
     /// Hyperliquid price before it is checked, so the price validated, shown
     /// in the review and signed is the same number.
@@ -351,6 +371,15 @@ final class PerpsAutoCloseViewModel: ObservableObject {
         stopText = stop
         initialTakeText = take
         initialStopText = stop
+    }
+
+    /// The position's live numbers from the 15 s poll. Typed triggers stay as
+    /// they are; checks and outcomes follow the new price, size and liquidation.
+    func refresh(_ inputs: PerpsExitInputs) {
+        entry = inputs.entry
+        reference = inputs.reference
+        size = inputs.size
+        liquidation = inputs.liquidation
     }
 
     private let initialTake: Decimal?
@@ -381,6 +410,26 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     var issue: String? {
         if hasInvalidInput { return "perpsInvalidPrice".localized }
         return PerpsTriggerRules.issue(side: side, reference: reference, liquidation: liquidation, takeProfit: takeProfit, stopLoss: stopLoss)
+    }
+}
+
+/// What an open stop loss / take profit sheet follows while the screen polls.
+struct PerpsExitInputs: Hashable {
+    let entry: Decimal
+    let reference: Decimal
+    let size: Decimal
+    let liquidation: Decimal?
+
+    init(entry: Decimal, reference: Decimal, size: Decimal, liquidation: Decimal?) {
+        self.entry = entry
+        self.reference = reference
+        self.size = size
+        self.liquidation = liquidation
+    }
+
+    init(position: HLPosition, market: PerpsMarket) {
+        self.init(entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
+                  size: abs(position.szi.value), liquidation: position.liquidationPx?.value)
     }
 }
 
@@ -477,19 +526,30 @@ final class PerpsFundsViewModel: ObservableObject {
 final class PerpsCloseViewModel: ObservableObject {
     @Published var fraction: PerpsCloseFraction
 
-    let position: HLPosition
-    let market: PerpsMarket
+    @Published private(set) var position: HLPosition
+    @Published private(set) var market: PerpsMarket
+    /// One tier for the fee shown and the order built.
+    let vultTier: VultDiscountTier?
 
-    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all) {
+    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, vultTier: VultDiscountTier? = PerpsVultTier.current) {
         self.position = position
         self.market = market
         self.fraction = fraction
+        self.vultTier = vultTier
+    }
+
+    /// Follows the screen's 15 s poll, so the review's IOC price and "back to
+    /// trading account" are never from when the sheet opened.
+    func refresh(position: HLPosition, market: PerpsMarket) {
+        self.position = position
+        self.market = market
+        if !isAvailable(fraction) { fraction = .all }
     }
 
     var total: Decimal { abs(position.szi.value) }
     var size: Decimal { fraction.size(of: total, szDecimals: market.szDecimals) }
     var remaining: Decimal { total - size }
-    var estimate: PerpsFlows.CloseEstimate { PerpsFlows.closeEstimate(position: position, market: market, size: size) }
+    var estimate: PerpsFlows.CloseEstimate { PerpsFlows.closeEstimate(position: position, market: market, size: size, tier: vultTier) }
     var netProfit: Decimal { PerpsCloseFlows.netProfit(estimate) }
 
     func isAvailable(_ fraction: PerpsCloseFraction) -> Bool { fraction.isAvailable(total: total, szDecimals: market.szDecimals) }
@@ -506,7 +566,8 @@ final class PerpsCloseViewModel: ObservableObject {
 
     func reviewDocument() -> PerpsReviewDocument? {
         guard size > 0, issue == nil else { return nil }
-        return try? PerpsFlows.partialClose(position: position, market: market, size: size, nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
+        return try? PerpsFlows.partialClose(position: position, market: market, size: size, tier: vultTier,
+                                            nonce: HyperliquidExchangeDryRunClient.shared.nonces.next())
     }
 }
 
@@ -518,9 +579,9 @@ final class PerpsMarginViewModel: ObservableObject {
     @Published var isAdding: Bool
     @Published var amountText: String
 
-    let position: HLPosition
-    let market: PerpsMarket
-    let account: PerpsAccountSnapshot
+    @Published private(set) var position: HLPosition
+    @Published private(set) var market: PerpsMarket
+    @Published private(set) var account: PerpsAccountSnapshot
 
     init(position: HLPosition, market: PerpsMarket, account: PerpsAccountSnapshot, isAdding: Bool = true, prefill: Decimal? = nil) {
         self.position = position
@@ -528,6 +589,13 @@ final class PerpsMarginViewModel: ObservableObject {
         self.account = account
         self.isAdding = isAdding
         amountText = prefill.map { PerpsInput.text($0) } ?? ""
+    }
+
+    /// Follows the poll: the limit, liquidation before → after and the review use live numbers.
+    func refresh(position: HLPosition, market: PerpsMarket, account: PerpsAccountSnapshot) {
+        self.position = position
+        self.market = market
+        self.account = account
     }
 
     var amount: Decimal { PerpsInput.decimal(amountText) ?? 0 }

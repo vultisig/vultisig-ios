@@ -86,12 +86,15 @@ struct PerpsMarginChange: Equatable, Sendable {
 
     enum Issue: Equatable, Sendable {
         case crossPosition, moreThanAvailable, moreThanRemovable
+        /// The new liquidation would be at or past the current price.
+        case liquidatesNow
 
         func message(maxRemovable: Decimal) -> String {
             switch self {
             case .crossPosition: return "perpsMarginIsolatedOnly".localized
             case .moreThanAvailable: return "perpsMoreThanAvailable".localized
             case .moreThanRemovable: return String(format: "perpsEnterOrLess".localized, PerpsFormat.usd(maxRemovable))
+            case .liquidatesNow: return "perpsMarginWouldLiquidate".localized
             }
         }
     }
@@ -132,9 +135,15 @@ enum PerpsMarginFlows {
         let before = position.liquidationPx?.value ?? formulaBefore
         var after: Decimal?
         if let before, let formulaBefore, let formulaAfter {
+            // Both sides known: move the venue's figure by the formula's step.
             let shifted = before + (formulaAfter - formulaBefore)
             after = shifted > 0 ? shifted : nil
+        } else {
+            // No liquidation before (over-collateralised): removing margin can
+            // create one, and the formula is the only figure there is.
+            after = formulaAfter
         }
+        let liquidatesNow = delta < 0 && after.map { side == .long ? $0 >= market.markPrice : $0 <= market.markPrice } == true
         let removable = maxRemovable(position: position, markPrice: market.markPrice)
         var change = PerpsMarginChange(delta: delta, marginBefore: margin(of: position), liquidationBefore: before,
                                        liquidationAfter: delta == 0 ? before : after,
@@ -145,6 +154,8 @@ enum PerpsMarginFlows {
             change.issue = .moreThanAvailable
         } else if -delta > removable {
             change.issue = .moreThanRemovable
+        } else if liquidatesNow {
+            change.issue = .liquidatesNow
         }
         return change
     }

@@ -66,6 +66,9 @@ enum PerpsOrderPlannerError: Error, Equatable {
     case invalidTriggerPrice
     /// A planned step's request could not be built; never dropped silently.
     case requestBuildFailed
+    /// A position is already open in this market: a new order would add to,
+    /// reduce or flip it, and its leverage step would re-lever it.
+    case positionOpen
 }
 
 enum PerpsOrderPlanner {
@@ -77,8 +80,10 @@ enum PerpsOrderPlanner {
         ticket: PerpsTicket,
         nonce: UInt64,
         crossAccountValue: Decimal? = nil,
-        builder: HLBuilderFee? = nil
+        builder: HLBuilderFee? = nil,
+        openPosition: HLPosition? = nil
     ) throws -> PerpsOrderPlan {
+        if let openPosition, openPosition.coin == market.coin, openPosition.szi.value != 0 { throw PerpsOrderPlannerError.positionOpen }
         guard ticket.leverage >= 1, ticket.leverage <= market.maxLeverage else { throw PerpsOrderPlannerError.leverageOutOfRange }
         if market.onlyIsolated && ticket.marginMode == .cross { throw PerpsOrderPlannerError.isolatedOnly }
 

@@ -11,7 +11,7 @@ struct PerpsRouter {
     /// screen underneath stays recognisable.
     private static let quietSheetCounter = SheetPresentedCounterManager()
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     func build(_ route: PerpsRoute) -> some View {
         if PerpsConfig.isFeatureEnabled {
             content(route)
@@ -21,8 +21,18 @@ struct PerpsRouter {
         }
     }
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     private func content(_ route: PerpsRoute) -> some View {
+        // GG20 and imported vaults stop here: no trading address, no deposit review.
+        if let vault = route.vault, !PerpsConfig.isSupported(vault: vault) {
+            PerpsUnsupportedVaultScreen()
+        } else {
+            supportedContent(route)
+        }
+    }
+
+    @ViewBuilder
+    private func supportedContent(_ route: PerpsRoute) -> some View {
         switch route {
         case .hub(let vault):
             PerpsHubScreen(vault: vault)
