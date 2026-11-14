@@ -53,7 +53,7 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
 
     // MARK: - Fixtures
 
-    private static func makeNativeCoin() -> Coin {
+    private static func makeNativeCoin(account: String = RippleIssuedCurrencySigningTests.account, publicKeyHex: String = RippleIssuedCurrencySigningTests.publicKeyHex) -> Coin {
         let meta = CoinMeta(
             chain: .ripple,
             ticker: "XRP",
@@ -68,7 +68,9 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
 
     private static func makeTokenCoin(
         contractAddress: String = "USD.\(issuer)",
-        decimals: Int = RippleIssuedCurrency.issuedCurrencyDecimals
+        decimals: Int = RippleIssuedCurrency.issuedCurrencyDecimals,
+        account: String = RippleIssuedCurrencySigningTests.account,
+        publicKeyHex: String = RippleIssuedCurrencySigningTests.publicKeyHex
     ) -> Coin {
         let meta = CoinMeta(
             chain: .ripple,
@@ -88,7 +90,10 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
         toAmount: BigInt,
         memo: String? = nil,
         destinationTag: UInt32? = nil,
-        transactionType: VSTransactionType = .unspecified
+        transactionType: VSTransactionType = .unspecified,
+        sequence: UInt64 = RippleIssuedCurrencySigningTests.sequence,
+        gas: UInt64 = RippleIssuedCurrencySigningTests.gas,
+        lastLedgerSequence: UInt64 = RippleIssuedCurrencySigningTests.lastLedgerSequence
     ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
@@ -705,6 +710,87 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
             return XCTFail("expected a Ripple chain specific")
         }
         XCTAssertEqual(transactionType, 9_999, "an unknown discriminator must not be flattened on the wire")
+    }
+
+    // MARK: - RIPPLE_PAYMENT, as SDK-built payloads carry it
+
+    // `testdata/cross-encoder-golden/ripple-payment.json` and
+    // `ripple-issued-payment.json` in vultisig-sdk: the SDK's WalletCore and
+    // RN-JS encoders both derive these signing hashes, so matching them is
+    // byte agreement with every SDK-built co-signer.
+    private enum SDKGolden {
+        static let sender = "rUaRcsApnVHudsdLD2mut2qCKWq6iLRT2D"
+        static let recipient = "r4VYvnjmi9JREsu1PZJQmJEJ6bQ6iPNSTP"
+        static let senderPublicKeyHex = "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f"
+        static let feeDrops: UInt64 = 12
+        static let sequence: UInt64 = 5
+        static let lastLedgerSequence: UInt64 = 32_000_000
+
+        static let nativeAmountDrops = BigInt(1_000_000)
+        static let nativeSigningHash = "d66908156861d2629068359705f1e40254cf80a51800db82cb2d68b0ebafea57"
+
+        static let issuedTokenId = "524C555344000000000000000000000000000000.rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"
+        static let issuedAmount = BigInt("1234567890123456")
+        static let issuedDestinationTag: UInt32 = 998_877
+        static let issuedSigningHash = "5a98864c297e0066ca21410e955a578d4969c2a7edf738300f429feb6e73382b"
+    }
+
+    private static func sdkGoldenPayload(
+        coin: Coin,
+        toAmount: BigInt,
+        destinationTag: UInt32? = nil,
+        transactionType: VSTransactionType
+    ) -> KeysignPayload {
+        makePayload(
+            coin: coin,
+            toAddress: SDKGolden.recipient,
+            toAmount: toAmount,
+            destinationTag: destinationTag,
+            transactionType: transactionType,
+            sequence: SDKGolden.sequence,
+            gas: SDKGolden.feeDrops,
+            lastLedgerSequence: SDKGolden.lastLedgerSequence
+        )
+    }
+
+    /// Some SDK releases declare native sends a Payment too. On native XRP the declaration must
+    /// change nothing: the same pre-image the SDK signs, declared or not.
+    func testNativeSendDeclaredRipplePaymentSignsTheSdkGoldenHash() throws {
+        let coin = Self.makeNativeCoin(account: SDKGolden.sender, publicKeyHex: SDKGolden.senderPublicKeyHex)
+
+        for transactionType in [VSTransactionType.unspecified, .ripplePayment] {
+            let payload = Self.sdkGoldenPayload(
+                coin: coin,
+                toAmount: SDKGolden.nativeAmountDrops,
+                transactionType: transactionType
+            )
+            XCTAssertEqual(
+                try Self.preImageHash(of: RippleHelper.getPreSignedInputData(keysignPayload: payload)),
+                SDKGolden.nativeSigningHash,
+                "native XRP declared \(transactionType) must sign the SDK's pre-image"
+            )
+        }
+    }
+
+    /// An issued-currency Payment declared RIPPLE_PAYMENT, the operation the
+    /// discriminator exists for, signs the SDK's pre-image byte for byte.
+    func testIssuedPaymentDeclaredRipplePaymentSignsTheSdkGoldenHash() throws {
+        let coin = Self.makeTokenCoin(
+            contractAddress: SDKGolden.issuedTokenId,
+            account: SDKGolden.sender,
+            publicKeyHex: SDKGolden.senderPublicKeyHex
+        )
+        let payload = Self.sdkGoldenPayload(
+            coin: coin,
+            toAmount: SDKGolden.issuedAmount,
+            destinationTag: SDKGolden.issuedDestinationTag,
+            transactionType: .ripplePayment
+        )
+
+        XCTAssertEqual(
+            try Self.preImageHash(of: RippleHelper.getPreSignedInputData(keysignPayload: payload)),
+            SDKGolden.issuedSigningHash
+        )
     }
 
     // MARK: - Frozen golden vectors
