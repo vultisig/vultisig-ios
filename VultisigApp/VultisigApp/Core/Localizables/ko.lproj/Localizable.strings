@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "%@의 손절이 청산 가격과 같아 청산이 먼저 거래를 종료할 수 있습니다. 더 가깝게 옮기세요.";
 "perpsLiquidationExplainStopBeyond" = "%@의 손절은 청산 가격을 넘어 있어 먼저 종료되지 않습니다. 더 가깝게 옮기세요.";
 "perpsLiquidationExplainStopCrossed" = "가격이 이미 %@의 손절 가격을 지났으므로 현재 가격으로 거래를 종료합니다.";
+"perpsLiquidationExplainStopNoLiquidation" = "가격이 %@에 도달하면 손절이 거래를 종료합니다.";
 "perpsLiquidationPrice" = "청산 가격";
 "perpsLoadFailed" = "Hyperliquid 데이터를 불러오지 못했습니다. 당겨서 다시 시도하세요.";
 "perpsLong" = "롱";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "이미 %1$@ %2$@ 포지션이 열려 있습니다. 추가하거나 반대 방향으로 거래하는 기능은 아직 없습니다. 포지션 화면에서 종료하거나 수정하세요.";
 "perpsPositions" = "포지션";
 "perpsPositionSize" = "포지션 규모";
+"perpsPresetsPastLiquidation" = "이 레버리지에서는 청산 가격이거나 그 너머인 프리셋을 사용할 수 없습니다.";
 "perpsPricePlaceholder" = "가격";
 "perpsPricesUpdating" = "가격을 업데이트하는 중입니다. 다음 가격이 들어오면 검토할 수 있습니다.";
 "perpsReconnecting" = "다시 연결 중…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "아직 열려 있음";
 "perpsStopAbovePrice" = "숏의 손절가는 현재 가격보다 높아야 합니다.";
 "perpsStopBelowPrice" = "롱의 손절가는 현재 가격보다 낮아야 합니다.";
-"perpsStopBeyondLiquidation" = "이 손절가는 청산 가격을 넘어서므로 절대 발동되지 않습니다.";
+"perpsStopBeyondLiquidation" = "이 손절은 청산 가격이거나 그 너머라 청산이 먼저 거래를 종료합니다. 더 가깝게 옮기세요.";
 "perpsStopLoss" = "손절";
 "perpsStopLossHit" = "손절 발동";
 "perpsStopNotPlacedBody" = "%@ %@ 포지션이 손절 없이 열려 있습니다.";

@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "Ihr Stop-Loss bei %@ liegt genau auf der Liquidation, daher kann die Liquidation den Trade zuerst schließen. Setzen Sie ihn näher.";
 "perpsLiquidationExplainStopBeyond" = "Ihr Stop-Loss bei %@ liegt hinter der Liquidation und schließt den Trade nicht vorher. Setzen Sie ihn näher.";
 "perpsLiquidationExplainStopCrossed" = "Der Preis hat Ihren Stop-Loss bei %@ bereits überschritten, daher schließt er den Trade stattdessen zum aktuellen Preis.";
+"perpsLiquidationExplainStopNoLiquidation" = "Ihr Stop-Loss bei %@ schließt ihn, wenn der Preis dort ankommt.";
 "perpsLiquidationPrice" = "Liquidationspreis";
 "perpsLoadFailed" = "Hyperliquid-Daten konnten nicht geladen werden. Zum Aktualisieren ziehen.";
 "perpsLong" = "Long";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "Sie haben bereits eine %1$@-%2$@-Position offen. Aufstocken oder in die Gegenrichtung handeln ist noch nicht möglich: Schließen oder ändern Sie sie in Ihrer Position.";
 "perpsPositions" = "Positionen";
 "perpsPositionSize" = "Positionsgröße";
+"perpsPresetsPastLiquidation" = "Voreinstellungen auf oder hinter der Liquidation sind bei diesem Hebel deaktiviert.";
 "perpsPricePlaceholder" = "Preis";
 "perpsPricesUpdating" = "Preise werden aktualisiert. Die Prüfung ist mit dem nächsten Preis wieder möglich.";
 "perpsReconnecting" = "Verbindung wird wiederhergestellt…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "Noch offen";
 "perpsStopAbovePrice" = "Der Stop-Loss eines Shorts muss über dem Preis liegen.";
 "perpsStopBelowPrice" = "Der Stop-Loss eines Longs muss unter dem Preis liegen.";
-"perpsStopBeyondLiquidation" = "Dieser Stop liegt jenseits des Liquidationspreises und würde nie ausgelöst.";
+"perpsStopBeyondLiquidation" = "Dieser Stop liegt auf oder hinter dem Liquidationspreis, daher würde die Liquidation den Trade zuerst schließen. Setzen Sie ihn näher.";
 "perpsStopLoss" = "Stop-Loss";
 "perpsStopLossHit" = "Stop-Loss ausgelöst";
 "perpsStopNotPlacedBody" = "Ihre %@-%@-Position ist ohne Stop-Loss offen.";

@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "Your stop loss at %@ is right at liquidation, so liquidation can close the trade first. Move it closer.";
 "perpsLiquidationExplainStopBeyond" = "Your stop loss at %@ is past liquidation, so it won't close the trade first. Move it closer.";
 "perpsLiquidationExplainStopCrossed" = "The price has already passed your stop loss at %@, so it closes the trade at the current price instead.";
+"perpsLiquidationExplainStopNoLiquidation" = "Your stop loss at %@ closes it if the price gets there.";
 "perpsLiquidationPrice" = "Liquidation price";
 "perpsLoadFailed" = "Couldn't load Hyperliquid data. Pull to retry.";
 "perpsLong" = "long";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "You already have a %1$@ %2$@ open. Adding to it or trading the other way isn't available yet: close or modify it from your position.";
 "perpsPositions" = "Positions";
 "perpsPositionSize" = "Position size";
+"perpsPresetsPastLiquidation" = "Presets at or past liquidation are off at this leverage.";
 "perpsPricePlaceholder" = "Price";
 "perpsPricesUpdating" = "Prices are updating. Review comes back with the next price.";
 "perpsReconnecting" = "Reconnecting…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "Still open";
 "perpsStopAbovePrice" = "A short's stop loss must be above the price.";
 "perpsStopBelowPrice" = "A long's stop loss must be below the price.";
-"perpsStopBeyondLiquidation" = "This stop is past the liquidation price, so it would never trigger.";
+"perpsStopBeyondLiquidation" = "This stop is at or past the liquidation price, so liquidation would close the trade first. Move it closer.";
 "perpsStopLoss" = "Stop loss";
 "perpsStopLossHit" = "Stop loss hit";
 "perpsStopNotPlacedBody" = "Your %@ %@ is open without a stop loss.";

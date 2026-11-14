@@ -352,8 +352,16 @@ struct PerpsAutoCloseSheet: View {
             let titles = PerpsAutoCloseViewModel.stopPresets.map { PerpsFormat.percent($0, digits: 0, signed: false) }
             PerpsQuickPicks(titles: titles,
                             selected: viewModel.selectedStopPreset.map { PerpsFormat.percent($0, digits: 0, signed: false) },
+                            isEnabled: { viewModel.isStopPresetAvailable(PerpsAutoCloseViewModel.stopPresets[$0]) },
                             onPick: { viewModel.applyStopPreset(PerpsAutoCloseViewModel.stopPresets[$0]) },
                             accessibilityPrefix: "perpsStopPreset")
+            if let note = viewModel.unavailablePresetNote {
+                Text(note)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .accessibilityIdentifier("perpsPresetsPastLiquidation")
+            }
         }
     }
 
@@ -375,7 +383,11 @@ struct PerpsAutoCloseSheet: View {
                 .foregroundStyle(viewModel.issue == nil ? Theme.colors.textTertiary : Theme.colors.alertError)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 4)
-            PrimaryButton(title: "perpsDone".localized) { onDone(viewModel.takeProfit, viewModel.stopLoss) }
+            PrimaryButton(title: "perpsDone".localized) {
+                // Checked again at the tap, like Close and Modify: a tick can expire between probes.
+                guard connection?.isFresh() ?? true else { return viewModel.setPricesFresh(false) }
+                onDone(viewModel.takeProfit, viewModel.stopLoss)
+            }
                 .disabled(viewModel.issue != nil)
                 .accessibilityIdentifier("perpsAutoCloseDone")
             if let focus {

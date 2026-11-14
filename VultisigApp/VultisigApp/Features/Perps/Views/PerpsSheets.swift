@@ -217,16 +217,17 @@ struct PerpsLiquidationSheet: View {
     private var explanation: some View {
         let first = liquidation.map {
             String(format: (isLong ? "perpsLiquidationExplainFalls" : "perpsLiquidationExplainRises").localized, coin, PerpsFormat.price($0))
-        } ?? ""
+        }
         var rest: [String] = []
-        if let stopLoss, let liquidation {
-            // Only a stop between the price and liquidation can act first.
+        if let stopLoss {
+            // Explained with or without a liquidation price.
             let placement = PerpsStopPlacement.of(stop: stopLoss, mark: mark, liquidation: liquidation, isLong: isLong)
             rest.append(String(format: placement.explainKey.localized, PerpsFormat.price(stopLoss)))
         }
-        rest.append("perpsLiquidationExplainMargin".localized)
-        return (Text(first).foregroundStyle(Theme.colors.textPrimary)
-                + Text(" " + rest.joined(separator: " ")).foregroundStyle(Theme.colors.textTertiary))
+        if liquidation != nil { rest.append("perpsLiquidationExplainMargin".localized) }
+        let tail = rest.joined(separator: " ")
+        return (Text(first ?? "").foregroundStyle(Theme.colors.textPrimary)
+                + Text(first == nil || tail.isEmpty ? tail : " " + tail).foregroundStyle(Theme.colors.textTertiary))
             .font(Theme.fonts.bodySRegular)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)

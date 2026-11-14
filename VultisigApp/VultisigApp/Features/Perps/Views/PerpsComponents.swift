@@ -124,6 +124,7 @@ struct PerpsChipPicker<Option: Hashable>: View {
 struct PerpsQuickPicks: View {
     let titles: [String]
     var selected: String?
+    var isEnabled: (Int) -> Bool = { _ in true }
     let onPick: (Int) -> Void
     var accessibilityPrefix = "perpsQuickPick"
 
@@ -131,6 +132,7 @@ struct PerpsQuickPicks: View {
         HStack(spacing: 8) {
             ForEach(titles.indices, id: \.self) { index in
                 let isSelected = titles[index] == selected
+                let enabled = isEnabled(index)
                 Button { onPick(index) } label: {
                     Text(titles[index])
                         .font(Theme.fonts.caption12)
@@ -142,6 +144,8 @@ struct PerpsQuickPicks: View {
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .disabled(!enabled)
+                .opacity(enabled ? 1 : 0.35)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
                 .accessibilityIdentifier("\(accessibilityPrefix)-\(titles[index])")
             }

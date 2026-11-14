@@ -130,9 +130,19 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(PerpsStopPlacement.of(stop: 95, mark: 100, liquidation: 120, isLong: false), .crossed)
         XCTAssertEqual(PerpsStopPlacement.of(stop: 120, mark: 100, liquidation: 120, isLong: false), .atLiquidation)
         XCTAssertEqual(PerpsStopPlacement.of(stop: 125, mark: 100, liquidation: 120, isLong: false), .pastLiquidation)
+        // "At liquidation" within 0.1% (one tick or so), not only exact equality.
+        XCTAssertEqual(PerpsStopPlacement.of(stop: Decimal(string: "80.05") ?? 0, mark: 100, liquidation: 80, isLong: true), .atLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: Decimal(string: "33920") ?? 0, mark: 71_130, liquidation: 33_911, isLong: true), .atLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: Decimal(string: "119.9") ?? 0, mark: 100, liquidation: 120, isLong: false), .atLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 81, mark: 100, liquidation: 80, isLong: true), .beforeLiquidation)
+        // No liquidation price: the stop is still explained.
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 90, mark: 100, liquidation: nil, isLong: true), .noLiquidation)
+        XCTAssertEqual(PerpsStopPlacement.of(stop: 101, mark: 100, liquidation: nil, isLong: true), .crossed)
+        XCTAssertTrue(PerpsStopPlacement.noLiquidation.actsBeforeLiquidation)
+        XCTAssertFalse(PerpsStopPlacement.atLiquidation.actsBeforeLiquidation)
         // Every case has copy in every locale.
-        let placements: [PerpsStopPlacement] = [.beforeLiquidation, .crossed, .atLiquidation, .pastLiquidation]
-        XCTAssertEqual(Set(placements.map(\.explainKey)).count, 4)
+        let placements: [PerpsStopPlacement] = [.beforeLiquidation, .crossed, .atLiquidation, .pastLiquidation, .noLiquidation]
+        XCTAssertEqual(Set(placements.map(\.explainKey)).count, 5)
         for placement in placements {
             XCTAssertNotEqual(placement.explainKey.localized, placement.explainKey)
         }

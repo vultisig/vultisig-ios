@@ -323,7 +323,9 @@ enum PerpsTriggerRules {
             if side == .long ? stop >= reference : stop <= reference {
                 return side == .long ? "perpsStopBelowPrice".localized : "perpsStopAbovePrice".localized
             }
-            if let liquidation, side == .long ? stop <= liquidation : stop >= liquidation {
+            // At liquidation (within the tolerance) or past it: liquidation would come first.
+            if let liquidation,
+               PerpsMath.isAtLiquidation(stop, liquidation: liquidation) || (side == .long ? stop <= liquidation : stop >= liquidation) {
                 return "perpsStopBeyondLiquidation".localized
             }
         }
@@ -477,7 +479,21 @@ extension PerpsAutoCloseViewModel {
     }
 
     func applyStopPreset(_ percent: Decimal) {
+        guard isStopPresetAvailable(percent) else { return }
         stopText = HLWireFormat.decimalString(stopPrice(dropPercent: percent))
+    }
+
+    /// A preset that would sit at or past liquidation (a 25% stop at 20× or 40×)
+    /// is off: the same check as a typed stop.
+    func isStopPresetAvailable(_ percent: Decimal) -> Bool {
+        let price = stopPrice(dropPercent: percent)
+        guard price > 0, let liquidation else { return price > 0 }
+        return !PerpsMath.isAtLiquidation(price, liquidation: liquidation) && (side == .long ? price > liquidation : price < liquidation)
+    }
+
+    /// Shown under the presets when at least one is off.
+    var unavailablePresetNote: String? {
+        Self.stopPresets.allSatisfy(isStopPresetAvailable) ? nil : "perpsPresetsPastLiquidation".localized
     }
 
     /// The preset the current stop equals, if any (7% for the default stop).

@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "Seu stop loss em %@ está exatamente na liquidação, então a liquidação pode fechar a operação antes. Aproxime-o.";
 "perpsLiquidationExplainStopBeyond" = "Seu stop loss em %@ está além da liquidação, então não fechará a operação antes. Aproxime-o.";
 "perpsLiquidationExplainStopCrossed" = "O preço já passou do seu stop loss em %@, então ele fecha a operação ao preço atual.";
+"perpsLiquidationExplainStopNoLiquidation" = "Seu stop loss em %@ fecha a operação se o preço chegar lá.";
 "perpsLiquidationPrice" = "Preço de liquidação";
 "perpsLoadFailed" = "Não foi possível carregar os dados da Hyperliquid. Puxe para tentar novamente.";
 "perpsLong" = "long";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "Você já tem um %2$@ de %1$@ aberto. Aumentar ou operar no sentido contrário ainda não está disponível: feche ou modifique pela sua posição.";
 "perpsPositions" = "Posições";
 "perpsPositionSize" = "Tamanho da posição";
+"perpsPresetsPastLiquidation" = "Predefinições na liquidação ou além dela ficam desativadas com esta alavancagem.";
 "perpsPricePlaceholder" = "Preço";
 "perpsPricesUpdating" = "Os preços estão atualizando. A revisão volta com o próximo preço.";
 "perpsReconnecting" = "Reconectando…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "Ainda aberta";
 "perpsStopAbovePrice" = "O stop loss de um short deve estar acima do preço.";
 "perpsStopBelowPrice" = "O stop loss de um long deve estar abaixo do preço.";
-"perpsStopBeyondLiquidation" = "Este stop está além do preço de liquidação, então nunca seria acionado.";
+"perpsStopBeyondLiquidation" = "Este stop está no preço de liquidação ou além, então a liquidação fecharia a operação antes. Aproxime-o.";
 "perpsStopLoss" = "Stop loss";
 "perpsStopLossHit" = "Stop loss atingido";
 "perpsStopNotPlacedBody" = "Seu %@ %@ está aberto sem stop loss.";

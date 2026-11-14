@@ -183,18 +183,20 @@ enum PerpsStopPlacement: Equatable {
     case beforeLiquidation
     /// The price has already reached or passed the stop.
     case crossed
-    /// Exactly at liquidation: no room to act first.
+    /// At liquidation, within `PerpsMath.liquidationTolerance`: no room to act first.
     case atLiquidation
     /// On the far side of liquidation (after margin came out, say): liquidation comes first.
     case pastLiquidation
+    /// No liquidation price (over-collateralised): the stop is the only exit.
+    case noLiquidation
 
-    static func of(stop: Decimal, mark: Decimal, liquidation: Decimal, isLong: Bool) -> PerpsStopPlacement {
+    static func of(stop: Decimal, mark: Decimal, liquidation: Decimal?, isLong: Bool) -> PerpsStopPlacement {
         // Flip a short into long terms: "below" always means toward liquidation.
         let side: Decimal = isLong ? 1 : -1
-        let stop = stop * side, mark = mark * side, liquidation = liquidation * side
-        if stop >= mark { return .crossed }
-        if stop == liquidation { return .atLiquidation }
-        if stop < liquidation { return .pastLiquidation }
+        if stop * side >= mark * side { return .crossed }
+        guard let liquidation else { return .noLiquidation }
+        if PerpsMath.isAtLiquidation(stop, liquidation: liquidation) { return .atLiquidation }
+        if stop * side < liquidation * side { return .pastLiquidation }
         return .beforeLiquidation
     }
 
@@ -204,7 +206,23 @@ enum PerpsStopPlacement: Equatable {
         case .crossed: return "perpsLiquidationExplainStopCrossed"
         case .atLiquidation: return "perpsLiquidationExplainStopAtLiquidation"
         case .pastLiquidation: return "perpsLiquidationExplainStopBeyond"
+        case .noLiquidation: return "perpsLiquidationExplainStopNoLiquidation"
         }
+    }
+
+    /// Whether a stop here can still close the trade before liquidation.
+    var actsBeforeLiquidation: Bool { self == .beforeLiquidation || self == .noLiquidation }
+}
+
+extension PerpsMath {
+    /// A stop this close to liquidation (0.1%, wider than one 5-significant-figure
+    /// tick) counts as at liquidation: it can't reliably close the trade first.
+    static let liquidationTolerance: Decimal = Decimal(string: "0.001") ?? 0
+
+    static func isAtLiquidation(_ price: Decimal, liquidation: Decimal) -> Bool {
+        guard liquidation > 0 else { return false }
+        let gap = price - liquidation
+        return (gap < 0 ? -gap : gap) <= liquidation * liquidationTolerance
     }
 }
 

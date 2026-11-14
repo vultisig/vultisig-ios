@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "Vaš stop loss na %@ je točno na likvidaciji, pa likvidacija može prva zatvoriti trgovinu. Pomaknite ga bliže.";
 "perpsLiquidationExplainStopBeyond" = "Vaš stop loss na %@ je iza likvidacije pa neće prvi zatvoriti trgovinu. Pomaknite ga bliže.";
 "perpsLiquidationExplainStopCrossed" = "Cijena je već prešla vaš stop loss na %@, pa on zatvara trgovinu po trenutnoj cijeni.";
+"perpsLiquidationExplainStopNoLiquidation" = "Vaš stop loss na %@ zatvara je ako cijena dođe do njega.";
 "perpsLiquidationPrice" = "Cijena likvidacije";
 "perpsLoadFailed" = "Učitavanje Hyperliquid podataka nije uspjelo. Povucite za ponovni pokušaj.";
 "perpsLong" = "long";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "Već imate otvoren %2$@ na %1$@. Dodavanje ili trgovanje u suprotnom smjeru još nije dostupno: zatvorite ga ili izmijenite iz svoje pozicije.";
 "perpsPositions" = "Pozicije";
 "perpsPositionSize" = "Veličina pozicije";
+"perpsPresetsPastLiquidation" = "Unaprijed postavljene vrijednosti na likvidaciji ili iza nje isključene su uz ovu polugu.";
 "perpsPricePlaceholder" = "Cijena";
 "perpsPricesUpdating" = "Cijene se ažuriraju. Pregled je ponovno dostupan sa sljedećom cijenom.";
 "perpsReconnecting" = "Ponovno povezivanje…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "Još otvoreno";
 "perpsStopAbovePrice" = "Stop loss short pozicije mora biti iznad cijene.";
 "perpsStopBelowPrice" = "Stop loss long pozicije mora biti ispod cijene.";
-"perpsStopBeyondLiquidation" = "Ovaj stop je iza cijene likvidacije, pa se nikad ne bi aktivirao.";
+"perpsStopBeyondLiquidation" = "Ovaj stop je na cijeni likvidacije ili iza nje, pa bi likvidacija prva zatvorila trgovinu. Pomaknite ga bliže.";
 "perpsStopLoss" = "Stop loss";
 "perpsStopLossHit" = "Stop loss aktiviran";
 "perpsStopNotPlacedBody" = "Vaša %@ %@ otvorena je bez stop lossa.";

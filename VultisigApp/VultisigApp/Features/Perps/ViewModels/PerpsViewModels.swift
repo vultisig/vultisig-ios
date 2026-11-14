@@ -150,9 +150,10 @@ final class PerpsHubViewModel: ObservableObject {
         Task { await PerpsVultTier.refresh(vault: vault) }
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
         loadGeneration += 1
         let generation = loadGeneration
+        // A superseded load never clears the spinner of the newest one.
+        defer { if generation == loadGeneration { isLoading = false } }
         do {
             async let marketList = repository.markets()
             var freshAccount = account

@@ -1302,6 +1302,7 @@
 "perpsLiquidationExplainStopAtLiquidation" = "你在 %@ 的止损正好位于强平价，强平可能先平仓。请把它调近一些。";
 "perpsLiquidationExplainStopBeyond" = "你在 %@ 的止损已越过强平价，不会先平仓。请把它调近一些。";
 "perpsLiquidationExplainStopCrossed" = "价格已越过你在 %@ 的止损，因此将按当前价格平仓。";
+"perpsLiquidationExplainStopNoLiquidation" = "价格到达 %@ 时，你的止损会平仓。";
 "perpsLiquidationPrice" = "强平价";
 "perpsLoadFailed" = "无法加载 Hyperliquid 数据。下拉重试。";
 "perpsLong" = "多";
@@ -1353,6 +1354,7 @@
 "perpsPositionOpenBlocked" = "你已有一个 %1$@ %2$@ 仓位。暂不支持加仓或反向交易，请在仓位页面平仓或修改。";
 "perpsPositions" = "仓位";
 "perpsPositionSize" = "仓位规模";
+"perpsPresetsPastLiquidation" = "在此杠杆下，位于或超过强平价的预设不可用。";
 "perpsPricePlaceholder" = "价格";
 "perpsPricesUpdating" = "价格更新中，收到下一个价格后即可查看。";
 "perpsReconnecting" = "正在重新连接…";
@@ -1377,7 +1379,7 @@
 "perpsStillOpen" = "仍在持仓";
 "perpsStopAbovePrice" = "空单的止损价必须高于当前价格。";
 "perpsStopBelowPrice" = "多单的止损价必须低于当前价格。";
-"perpsStopBeyondLiquidation" = "此止损价超出强平价，永远不会触发。";
+"perpsStopBeyondLiquidation" = "此止损位于或超过强平价，强平会先平仓。请把它调近一些。";
 "perpsStopLoss" = "止损";
 "perpsStopLossHit" = "止损已触发";
 "perpsStopNotPlacedBody" = "您的 %@ %@ 未设置止损。";

@@ -280,6 +280,48 @@ final class PerpsReviewGuardTests: XCTestCase {
         await older.value
         XCTAssertNotNil(viewModel.position, "the stale snapshot without the position never lands")
     }
+
+    // MARK: - Stop presets and liquidation (NeOMakinG re-review)
+
+    func testStopPresetsPastLiquidationAreOffAndTypedStopsMatch() {
+        // 40× long from 100: liquidation about 98.7, so only presets above it are usable.
+        let liquidation = PerpsMath.liquidationPrice(side: .long, entryPrice: 100, size: 1, collateral: 2.5, maxLeverage: 40) ?? 0
+        XCTAssertGreaterThan(liquidation, 95)
+        let exits = PerpsAutoCloseViewModel(side: .long, entry: 100, reference: 100, size: 1, liquidation: liquidation, szDecimals: 2,
+                                            takeProfit: nil, stopLoss: nil)
+        for preset in PerpsAutoCloseViewModel.stopPresets {
+            XCTAssertFalse(exits.isStopPresetAvailable(preset), "\(preset)% sits past a 40× liquidation")
+        }
+        XCTAssertEqual(exits.unavailablePresetNote, "perpsPresetsPastLiquidation".localized)
+        exits.applyStopPreset(25)
+        XCTAssertEqual(exits.stopText, "", "an unavailable preset does nothing")
+
+        // 20× from 100: liquidation about 95.6, so 25% (75) is past it.
+        let twenty = PerpsMath.liquidationPrice(side: .long, entryPrice: 100, size: 1, collateral: 5, maxLeverage: 40) ?? 0
+        let atTwenty = PerpsAutoCloseViewModel(side: .long, entry: 100, reference: 100, size: 1, liquidation: twenty, szDecimals: 2,
+                                               takeProfit: nil, stopLoss: nil)
+        XCTAssertFalse(atTwenty.isStopPresetAvailable(25))
+
+        // 2×: every preset is usable and there is no note.
+        let calm = PerpsAutoCloseViewModel(side: .long, entry: 100, reference: 100, size: 1, liquidation: 50, szDecimals: 2,
+                                           takeProfit: nil, stopLoss: nil)
+        XCTAssertTrue(PerpsAutoCloseViewModel.stopPresets.allSatisfy(calm.isStopPresetAvailable))
+        XCTAssertNil(calm.unavailablePresetNote)
+
+        // Shorts mirror it.
+        let short = PerpsAutoCloseViewModel(side: .short, entry: 100, reference: 100, size: 1, liquidation: 104, szDecimals: 2,
+                                            takeProfit: nil, stopLoss: nil)
+        XCTAssertFalse(short.isStopPresetAvailable(5), "a 5% rise to 105 is past a 104 liquidation")
+        let roomyShort = PerpsAutoCloseViewModel(side: .short, entry: 100, reference: 100, size: 1, liquidation: 115, szDecimals: 2,
+                                                 takeProfit: nil, stopLoss: nil)
+        XCTAssertTrue(roomyShort.isStopPresetAvailable(10))
+        XCTAssertFalse(roomyShort.isStopPresetAvailable(25), "a 25% rise to 125 is past a 115 liquidation")
+
+        // A typed stop within 0.1% of liquidation is refused like one past it.
+        XCTAssertEqual(PerpsTriggerRules.issue(side: .long, reference: 100, liquidation: 80, takeProfit: nil,
+                                               stopLoss: Decimal(string: "80.05")), "perpsStopBeyondLiquidation".localized)
+        XCTAssertNil(PerpsTriggerRules.issue(side: .long, reference: 100, liquidation: 80, takeProfit: nil, stopLoss: 81))
+    }
 }
 
 // The protocol is async; the stub answers at once.
