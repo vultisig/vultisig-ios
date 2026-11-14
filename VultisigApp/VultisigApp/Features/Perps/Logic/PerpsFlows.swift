@@ -24,6 +24,8 @@ struct PerpsVaultContext: Sendable {
     /// False for GG20 and imported vaults (`PerpsConfig.isSupported`): every
     /// review is then refused, before any address or deposit is shown.
     var isSupported = true
+    /// The vault's pubKeyECDSA: its VULT tier is looked up by this key.
+    var tierKey: String?
 }
 
 struct PerpsTicketCosts: Equatable, Sendable {
@@ -271,6 +273,7 @@ enum PerpsFlows {
         existing: [HLFrontendOrder],
         stopLoss: Decimal?,
         takeProfit: Decimal?,
+        tier: VultDiscountTier?,
         nonce: UInt64
     ) throws -> PerpsReviewDocument {
         let currentStop = existing.first(where: \.isStopLoss)
@@ -298,7 +301,7 @@ enum PerpsFlows {
             next += 1
         }
         if !orders.isEmpty {
-            requests.append(try .l1(.order, action: HLActions.order(orders, grouping: .positionTpsl, builder: PerpsConfig.builderFee),
+            requests.append(try .l1(.order, action: HLActions.order(orders, grouping: .positionTpsl, builder: PerpsConfig.builderFee(tier: tier)),
                                     nonce: next, isMainnet: PerpsConfig.isMainnet, expiresAfter: next + expiry))
         }
         return PerpsReviewDocument(
@@ -383,7 +386,7 @@ enum PerpsFlows {
         position: HLPosition,
         market: PerpsMarket,
         size: Decimal,
-        tier: VultDiscountTier? = PerpsVultTier.current,
+        tier: VultDiscountTier?,
         nonce: UInt64
     ) throws -> PerpsReviewDocument {
         // One tier read: the fee row and the order's builder fee come from it.

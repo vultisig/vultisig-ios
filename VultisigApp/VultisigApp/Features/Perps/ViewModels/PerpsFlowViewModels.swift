@@ -28,7 +28,8 @@ extension PerpsVaultContext {
             address: mainAddress,
             arbitrumUsdcBalance: Self.demoVaultUsdc ?? usdc?.balanceDecimal,
             tradingAddress: isSupported ? PerpsDerivedAccount.derive(.trading, vault: vault)?.address : nil,
-            isSupported: isSupported
+            isSupported: isSupported,
+            tierKey: vault.pubKeyECDSA
         )
     }
 
@@ -122,13 +123,14 @@ final class PerpsTicketViewModel: ObservableObject {
     /// Max, and the builder fee the order carries, so they can never disagree.
     @Published private(set) var vultTier: VultDiscountTier?
 
+    /// `vultTier` defaults to this vault's own resolved tier (`PerpsVultTier.tier(for:)`).
     init(side: PerpsSide, market: PerpsMarket, account: PerpsAccountSnapshot?, vault: PerpsVaultContext,
-         vultTier: VultDiscountTier? = PerpsVultTier.current) {
+         vultTier: VultDiscountTier?? = nil) {
         self.side = side
         self.market = market
         self.account = account
         self.vault = vault
-        self.vultTier = vultTier
+        self.vultTier = vultTier ?? PerpsVultTier.tier(for: vault.tierKey)
         let isFirstTrade = (account?.positions.isEmpty ?? true) && (account?.fills.isEmpty ?? true)
         maxAllowedLeverage = min(isFirstTrade ? PerpsConfig.firstTradeMaxLeverage : market.maxLeverage, market.maxLeverage)
         leverage = min(PerpsConfig.defaultLeverage, market.maxLeverage)
@@ -136,10 +138,10 @@ final class PerpsTicketViewModel: ObservableObject {
 
     /// After a reconnect: fresh price and account, so size, available and the
     /// default stop are recomputed before Review comes back. The draft stays.
-    func refresh(market: PerpsMarket, account: PerpsAccountSnapshot?, vultTier: VultDiscountTier? = PerpsVultTier.current) {
+    func refresh(market: PerpsMarket, account: PerpsAccountSnapshot?) {
         self.market = market
         self.account = account
-        self.vultTier = vultTier
+        vultTier = PerpsVultTier.tier(for: vault.tierKey)
     }
 
     /// A position already open in this market. Adding to it or trading against
@@ -344,7 +346,9 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     @Published var takeText: String
     @Published var stopText: String
 
-    let side: PerpsSide
+    @Published private(set) var side: PerpsSide
+    /// False after a failed poll until a fresh tick: Review / Done stay off meanwhile.
+    @Published private(set) var pricesAreFresh = true
     @Published private(set) var entry: Decimal
     @Published private(set) var reference: Decimal
     @Published private(set) var size: Decimal
@@ -376,16 +380,32 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     /// The position's live numbers from the 15 s poll. Typed triggers stay as
     /// they are; checks and outcomes follow the new price, size and liquidation.
     func refresh(_ inputs: PerpsExitInputs) {
+        if inputs.side != side {
+            // The position flipped elsewhere: nothing typed for the old side still applies.
+            side = inputs.side
+            takeText = inputs.takeProfit.map(HLWireFormat.decimalString) ?? ""
+            stopText = inputs.stopLoss.map(HLWireFormat.decimalString) ?? ""
+        } else {
+            // Untouched fields follow the venue's triggers; typed ones stay.
+            if takeText == initialTakeText { takeText = inputs.takeProfit.map(HLWireFormat.decimalString) ?? "" }
+            if stopText == initialStopText { stopText = inputs.stopLoss.map(HLWireFormat.decimalString) ?? "" }
+        }
+        initialTake = inputs.takeProfit
+        initialStop = inputs.stopLoss
+        initialTakeText = inputs.takeProfit.map(HLWireFormat.decimalString) ?? ""
+        initialStopText = inputs.stopLoss.map(HLWireFormat.decimalString) ?? ""
         entry = inputs.entry
         reference = inputs.reference
         size = inputs.size
         liquidation = inputs.liquidation
     }
 
-    private let initialTake: Decimal?
-    private let initialStop: Decimal?
-    private let initialTakeText: String
-    private let initialStopText: String
+    func setPricesFresh(_ isFresh: Bool) { pricesAreFresh = isFresh }
+
+    private var initialTake: Decimal?
+    private var initialStop: Decimal?
+    private var initialTakeText: String
+    private var initialStopText: String
 
     /// An untouched field keeps the existing trigger exactly; an edited one is
     /// rounded to what the UI shows.
@@ -408,6 +428,7 @@ final class PerpsAutoCloseViewModel: ObservableObject {
     }
 
     var issue: String? {
+        if !pricesAreFresh { return "perpsPricesUpdating".localized }
         if hasInvalidInput { return "perpsInvalidPrice".localized }
         return PerpsTriggerRules.issue(side: side, reference: reference, liquidation: liquidation, takeProfit: takeProfit, stopLoss: stopLoss)
     }
@@ -415,21 +436,31 @@ final class PerpsAutoCloseViewModel: ObservableObject {
 
 /// What an open stop loss / take profit sheet follows while the screen polls.
 struct PerpsExitInputs: Hashable {
+    let side: PerpsSide
     let entry: Decimal
     let reference: Decimal
     let size: Decimal
     let liquidation: Decimal?
+    /// The triggers in force: untouched fields follow them.
+    let takeProfit: Decimal?
+    let stopLoss: Decimal?
 
-    init(entry: Decimal, reference: Decimal, size: Decimal, liquidation: Decimal?) {
+    init(side: PerpsSide, entry: Decimal, reference: Decimal, size: Decimal, liquidation: Decimal?,
+         takeProfit: Decimal?, stopLoss: Decimal?) {
+        self.side = side
         self.entry = entry
         self.reference = reference
         self.size = size
         self.liquidation = liquidation
+        self.takeProfit = takeProfit
+        self.stopLoss = stopLoss
     }
 
-    init(position: HLPosition, market: PerpsMarket) {
-        self.init(entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
-                  size: abs(position.szi.value), liquidation: position.liquidationPx?.value)
+    init(position: HLPosition, market: PerpsMarket, triggers: [HLFrontendOrder]) {
+        self.init(side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice,
+                  reference: market.markPrice, size: abs(position.szi.value), liquidation: position.liquidationPx?.value,
+                  takeProfit: triggers.first(where: \.isTakeProfit)?.triggerPx?.value,
+                  stopLoss: triggers.first(where: \.isStopLoss)?.triggerPx?.value)
     }
 }
 
@@ -458,11 +489,13 @@ extension PerpsAutoCloseViewModel {
     /// The stop loss / take profit edit for an open position, or nil when
     /// nothing changed or a trigger sits on the wrong side. A build failure
     /// is logged, never swallowed.
-    func exitsReview(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder], nonce: UInt64) -> PerpsReviewDocument? {
-        guard issue == nil else { return nil }
+    func exitsReview(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder], tier: VultDiscountTier?,
+                     nonce: UInt64) -> PerpsReviewDocument? {
+        // Validated against the exact position the document is built for.
+        guard issue == nil, (position.isLong ? PerpsSide.long : .short) == side else { return nil }
         do {
             let document = try PerpsFlows.editExits(position: position, market: market, existing: existing,
-                                                    stopLoss: stopLoss, takeProfit: takeProfit, nonce: nonce)
+                                                    stopLoss: stopLoss, takeProfit: takeProfit, tier: tier, nonce: nonce)
             return document.blockingIssue == nil ? document : nil
         } catch {
             perpsFlowLogger.error("Perps exit edit failed: \(error.localizedDescription, privacy: .public)")
@@ -471,8 +504,8 @@ extension PerpsAutoCloseViewModel {
     }
 
     /// Validation only (nonce 0), for the Review button's enabled state.
-    func canReviewExits(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder]) -> Bool {
-        exitsReview(position: position, market: market, existing: existing, nonce: 0) != nil
+    func canReviewExits(position: HLPosition, market: PerpsMarket, existing: [HLFrontendOrder], tier: VultDiscountTier?) -> Bool {
+        exitsReview(position: position, market: market, existing: existing, tier: tier, nonce: 0) != nil
     }
 
     /// Prices take up to 6 decimals (Hyperliquid's cap), so small coins can be typed.
@@ -531,7 +564,10 @@ final class PerpsCloseViewModel: ObservableObject {
     /// One tier for the fee shown and the order built.
     let vultTier: VultDiscountTier?
 
-    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, vultTier: VultDiscountTier? = PerpsVultTier.current) {
+    /// False after a failed poll until a fresh tick: Review stays off meanwhile.
+    @Published private(set) var pricesAreFresh = true
+
+    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, vultTier: VultDiscountTier?) {
         self.position = position
         self.market = market
         self.fraction = fraction
@@ -540,6 +576,8 @@ final class PerpsCloseViewModel: ObservableObject {
 
     /// Follows the screen's 15 s poll, so the review's IOC price and "back to
     /// trading account" are never from when the sheet opened.
+    func setPricesFresh(_ isFresh: Bool) { pricesAreFresh = isFresh }
+
     func refresh(position: HLPosition, market: PerpsMarket) {
         self.position = position
         self.market = market
@@ -562,7 +600,8 @@ final class PerpsCloseViewModel: ObservableObject {
     /// The $10 minimum applies to partial closes only: closing everything is
     /// always allowed, even when the position shrank under $10.
     var issue: String? {
-        size < total && size * market.markPrice < PerpsOrderPlanner.minimumNotional ? "perpsMinimumNotional".localized : nil
+        if !pricesAreFresh { return "perpsPricesUpdating".localized }
+        return size < total && size * market.markPrice < PerpsOrderPlanner.minimumNotional ? "perpsMinimumNotional".localized : nil
     }
 
     func reviewDocument() -> PerpsReviewDocument? {
@@ -592,6 +631,10 @@ final class PerpsMarginViewModel: ObservableObject {
         amountText = prefill.map { PerpsInput.text($0) } ?? ""
     }
 
+    /// False after a failed poll until a fresh tick: Review stays off meanwhile.
+    @Published private(set) var pricesAreFresh = true
+    func setPricesFresh(_ isFresh: Bool) { pricesAreFresh = isFresh }
+
     /// Follows the poll: the limit, liquidation before → after and the review use live numbers.
     func refresh(position: HLPosition, market: PerpsMarket, account: PerpsAccountSnapshot) {
         self.position = position
@@ -619,6 +662,7 @@ final class PerpsMarginViewModel: ObservableObject {
 
     var issue: String? {
         guard amount > 0 else { return nil }
+        if !pricesAreFresh { return "perpsPricesUpdating".localized }
         return change.issue?.message(maxRemovable: change.maxRemovable)
     }
 

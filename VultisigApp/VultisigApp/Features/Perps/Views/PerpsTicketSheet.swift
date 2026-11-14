@@ -149,8 +149,9 @@ struct PerpsTicketSheet: View {
                     szDecimals: viewModel.market.szDecimals,
                     takeProfit: viewModel.takeProfit, stopLoss: viewModel.stopLoss
                 ), coin: viewModel.market.coin,
-                   live: PerpsExitInputs(entry: viewModel.referencePrice, reference: viewModel.referencePrice,
-                                         size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice)) { take, stop in
+                   live: PerpsExitInputs(side: viewModel.side, entry: viewModel.referencePrice, reference: viewModel.referencePrice,
+                                         size: viewModel.estimate?.size ?? 0, liquidation: viewModel.estimate?.liquidationPrice,
+                                         takeProfit: viewModel.takeProfit, stopLoss: viewModel.stopLoss)) { take, stop in
                     viewModel.applyAutoClose(takeProfit: take, stopLoss: stop)
                     subSheet = nil
                 }
@@ -329,12 +330,16 @@ struct PerpsAutoCloseSheet: View {
     let coin: String
     /// The latest numbers from the caller's poll; nil when the caller has none.
     let live: PerpsExitInputs?
+    /// When set (an open position), Done waits for fresh prices.
+    let connection: PerpsConnection?
     let onDone: (Decimal?, Decimal?) -> Void
 
-    init(viewModel: PerpsAutoCloseViewModel, coin: String, live: PerpsExitInputs? = nil, onDone: @escaping (Decimal?, Decimal?) -> Void) {
+    init(viewModel: PerpsAutoCloseViewModel, coin: String, live: PerpsExitInputs? = nil, connection: PerpsConnection? = nil,
+         onDone: @escaping (Decimal?, Decimal?) -> Void) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.coin = coin
         self.live = live
+        self.connection = connection
         self.onDone = onDone
     }
 
@@ -380,6 +385,11 @@ struct PerpsAutoCloseSheet: View {
         .perpsSheetChrome()
         .onChange(of: live) { _, inputs in
             if let inputs { viewModel.refresh(inputs) }
+        }
+        .background {
+            if let connection {
+                PerpsFreshnessProbe(connection: connection) { viewModel.setPricesFresh($0) }
+            }
         }
     }
 }

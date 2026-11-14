@@ -1354,6 +1354,7 @@
 "perpsPositions" = "Posições";
 "perpsPositionSize" = "Tamanho da posição";
 "perpsPricePlaceholder" = "Preço";
+"perpsPricesUpdating" = "Os preços estão atualizando. A revisão volta com o próximo preço.";
 "perpsReconnecting" = "Reconectando…";
 "perpsRemove" = "Remover";
 "perpsRemoveMargin" = "Remover margem";

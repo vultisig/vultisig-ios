@@ -130,6 +130,8 @@ final class PerpsHubViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
 
     private let repository: PerpsRepository
+    /// Overlapping loads (appear, pull to refresh): only the newest publishes.
+    private var loadGeneration = 0
 
     init(repository: PerpsRepository = PerpsRepositories.make()) {
         self.repository = repository
@@ -149,13 +151,20 @@ final class PerpsHubViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
+        loadGeneration += 1
+        let generation = loadGeneration
         do {
             async let marketList = repository.markets()
+            var freshAccount = account
             if let address = PerpsConfig.tradingAccountAddress(vault: vault) {
-                account = try await repository.account(address: address)
+                freshAccount = try await repository.account(address: address)
             }
-            markets = try await marketList
+            let freshMarkets = try await marketList
+            guard generation == loadGeneration else { return }
+            account = freshAccount
+            markets = freshMarkets
         } catch {
+            guard generation == loadGeneration else { return }
             logger.error("Perps hub load failed: \(error.localizedDescription, privacy: .public)")
             errorMessage = "perpsLoadFailed".localized
         }
@@ -180,6 +189,15 @@ final class PerpsConnection: ObservableObject {
     }
 
     func reconnect() async { await onReconnect?() }
+
+    /// Prices a review may be built from: online, and a good tick in the last
+    /// 45 s (three polls). Anything older and position sheets wait for the next one.
+    static let freshFor: TimeInterval = 45
+
+    func isFresh(now: Date = Date()) -> Bool {
+        guard !isOffline, let pricesAsOf else { return false }
+        return now.timeIntervalSince(pricesAsOf) <= Self.freshFor
+    }
 }
 
 @MainActor
@@ -194,10 +212,13 @@ final class PerpsMarketViewModel: ObservableObject {
     let connection = PerpsConnection()
     private let repository: PerpsRepository
     private var address: String?
+    /// Load, poll and reconnect can overlap; only the newest refresh publishes.
+    private var refreshGeneration = 0
 
-    init(coin: String, repository: PerpsRepository = PerpsRepositories.make()) {
+    init(coin: String, repository: PerpsRepository = PerpsRepositories.make(), address: String? = nil) {
         self.coin = coin
         self.repository = repository
+        self.address = address
         connection.onReconnect = { [weak self] in await self?.reconnect() }
     }
 
@@ -230,10 +251,16 @@ final class PerpsMarketViewModel: ObservableObject {
         #if DEBUG
         if PerpsDemoState.current.contains(.offline), market != nil { return }
         #endif
+        refreshGeneration += 1
+        let generation = refreshGeneration
+        let requestedAddress = address
         do {
             let fresh = try await repository.markets().first { $0.coin == coin }
             var freshAccount = account
-            if let address { freshAccount = try await repository.account(address: address) }
+            if let requestedAddress { freshAccount = try await repository.account(address: requestedAddress) }
+            // An older refresh finishing after a newer one never overwrites it
+            // (it could bring back a closed position, or drop an open one).
+            guard generation == refreshGeneration, requestedAddress == address else { return }
             market = fresh
             account = freshAccount
             connection.market = fresh
@@ -242,6 +269,7 @@ final class PerpsMarketViewModel: ObservableObject {
             connection.isOffline = false
         } catch {
             logger.error("Perps market load failed: \(error.localizedDescription, privacy: .public)")
+            guard generation == refreshGeneration else { return }
             connection.isOffline = true
         }
     }

@@ -11,13 +11,13 @@ and prints JSON; nothing is sent anywhere.
 | `gen_trading_address.mjs` | `PerpsTradingAccountTests` | @scure/bip32 non-hardened derivation |
 | `gen_trading_signatures.mjs` | `KeysignDerivationTests` | @scure/bip32 + @noble/curves signatures |
 
-Versions the vectors were generated with: hyperliquid-python-sdk 0.24.0,
-eth-account 0.13.7, msgpack 1.2.4 (Python 3.12); viem, @scure/bip32 and
-@noble/curves from npm (the outputs are fixed by BIP-32, EIP-712 and Circle's
-documented encoding, not by a library version).
+Dependencies are pinned exactly: `package.json` + `package-lock.json` for Node
+(@noble/curves 2.x changed the APIs these scripts use, so stay on 1.9.7) and
+`requirements.txt` for Python 3.12. With those versions the three Node scripts
+reproduce the pinned addresses, signatures and CCTP digest byte for byte.
 
 ```
-python3 -m venv .venv && .venv/bin/pip install hyperliquid-python-sdk==0.24.0
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python gen_exchange_sdk.py
-npm i viem @scure/bip32 @noble/curves && node gen_trading_address.mjs
+npm ci && node gen_trading_address.mjs && node gen_trading_signatures.mjs && node gen_cctp.mjs
 ```

@@ -1354,6 +1354,7 @@
 "perpsPositions" = "Positionen";
 "perpsPositionSize" = "Positionsgröße";
 "perpsPricePlaceholder" = "Preis";
+"perpsPricesUpdating" = "Preise werden aktualisiert. Die Prüfung ist mit dem nächsten Preis wieder möglich.";
 "perpsReconnecting" = "Verbindung wird wiederhergestellt…";
 "perpsRemove" = "Entfernen";
 "perpsRemoveMargin" = "Margin entfernen";

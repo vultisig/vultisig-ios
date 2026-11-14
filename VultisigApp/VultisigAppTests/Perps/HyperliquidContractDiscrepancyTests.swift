@@ -8,7 +8,7 @@
 //  hashes really differ) and one marked `XCTExpectFailure` that states the
 //  contract's assumption and fails, so the suite stays green while the
 //  mismatch stays visible. Expected values come from hyperliquid-python-sdk
-//  (scratchpad/perps/vectors/gen_exchange_sdk.py, `discrepancies`).
+//  (VultisigAppTests/Perps/Vectors/gen_exchange_sdk.py, `discrepancies`).
 //
 
 import XCTest

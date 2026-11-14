@@ -1354,6 +1354,7 @@
 "perpsPositions" = "仓位";
 "perpsPositionSize" = "仓位规模";
 "perpsPricePlaceholder" = "价格";
+"perpsPricesUpdating" = "价格更新中，收到下一个价格后即可查看。";
 "perpsReconnecting" = "正在重新连接…";
 "perpsRemove" = "移除";
 "perpsRemoveMargin" = "减少保证金";

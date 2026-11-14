@@ -100,7 +100,8 @@ final class PerpsReviewGuardTests: XCTestCase {
         exits.stopText = "65000"
         XCTAssertNil(exits.issue)
         // The price fell under the typed stop: the check follows it.
-        exits.refresh(PerpsExitInputs(entry: 67_074, reference: 64_000, size: Decimal(string: "0.00298") ?? 0, liquidation: 33_908))
+        exits.refresh(PerpsExitInputs(side: .long, entry: 67_074, reference: 64_000, size: Decimal(string: "0.00298") ?? 0,
+                                      liquidation: 33_908, takeProfit: nil, stopLoss: nil))
         XCTAssertEqual(exits.issue, "perpsStopBelowPrice".localized)
         XCTAssertEqual(exits.stopText, "65000", "what was typed stays")
     }
@@ -156,7 +157,7 @@ final class PerpsReviewGuardTests: XCTestCase {
     func testFeeShownAndFeeSignedUseTheTicketsTier() async throws {
         // The global tier moves to Bronze; this ticket priced with Gold keeps Gold end to end.
         let viewModel = PerpsTicketViewModel(side: .long, market: market(), account: account(),
-                                             vault: context(supported: true), vultTier: .gold)
+                                             vault: context(supported: true), vultTier: VultDiscountTier.gold)
         addTeardownBlock { await PerpsVultTier.refresh(vaultKey: "guard-tests-reset") { nil } }
         await PerpsVultTier.refresh(vaultKey: "guard-tests") { .bronze }
         XCTAssertEqual(viewModel.costs?.vultTier, .gold)
@@ -168,9 +169,174 @@ final class PerpsReviewGuardTests: XCTestCase {
 
         // Ultimate waives the fee: no builder field at all, and no fee shown.
         let ultimate = PerpsTicketViewModel(side: .long, market: market(), account: account(),
-                                            vault: context(supported: true), vultTier: .ultimate)
+                                            vault: context(supported: true), vultTier: VultDiscountTier.ultimate)
         let waived = try XCTUnwrap(ultimate.reviewDocument()?.requests.last)
         XCTAssertFalse(waived.action.jsonString.contains("builder"))
         XCTAssertEqual(ultimate.costs.map { $0.builderFee - $0.vultDiscount }, 0)
     }
+    // MARK: - Stale prices (codex round on a7ecc9a4f)
+
+    func testPositionSheetsRefuseAReviewWhilePricesAreUpdating() throws {
+        let position = try position()
+        let close = PerpsCloseViewModel(position: position, market: market(), vultTier: nil)
+        close.setPricesFresh(false)
+        XCTAssertEqual(close.issue, "perpsPricesUpdating".localized)
+        XCTAssertNil(close.reviewDocument())
+        close.setPricesFresh(true)
+        XCTAssertNotNil(close.reviewDocument())
+
+        let margin = PerpsMarginViewModel(position: position, market: market(), account: account())
+        margin.amountText = "5"
+        margin.setPricesFresh(false)
+        XCTAssertFalse(margin.canReview)
+        XCTAssertNil(margin.reviewDocument())
+
+        let exits = PerpsAutoCloseViewModel(side: .long, entry: 67_074, reference: 66_969, size: Decimal(string: "0.00298") ?? 0,
+                                            liquidation: 33_908, szDecimals: 5, takeProfit: nil, stopLoss: 62_000)
+        exits.stopText = "63000"
+        exits.setPricesFresh(false)
+        XCTAssertEqual(exits.issue, "perpsPricesUpdating".localized)
+        XCTAssertNil(exits.exitsReview(position: position, market: market(), existing: [], tier: nil, nonce: 1))
+    }
+
+    func testConnectionIsFreshOnlyAfterARecentGoodTick() async {
+        let viewModel = PerpsMarketViewModel(coin: "BTC", repository: StubRepository(market: market()))
+        XCTAssertFalse(viewModel.connection.isFresh(), "no tick yet")
+        await viewModel.refreshPrices()
+        XCTAssertTrue(viewModel.connection.isFresh())
+        XCTAssertFalse(viewModel.connection.isFresh(now: Date().addingTimeInterval(PerpsConnection.freshFor + 1)), "an old tick expires")
+        let failing = PerpsMarketViewModel(coin: "BTC", repository: StubRepository(market: market(), fails: true))
+        await failing.refreshPrices()
+        XCTAssertTrue(failing.connection.isOffline)
+        XCTAssertFalse(failing.connection.isFresh())
+    }
+
+    // MARK: - Stop editor follows the position
+
+    func testStopEditorFollowsDirectionAndUntouchedTriggers() throws {
+        let exits = PerpsAutoCloseViewModel(side: .long, entry: 100, reference: 100, size: 1, liquidation: 60, szDecimals: 2,
+                                            takeProfit: 120, stopLoss: 90)
+        // Another client moved the stop; the take profit was typed here and stays.
+        exits.takeText = "125"
+        exits.refresh(PerpsExitInputs(side: .long, entry: 100, reference: 100, size: 1, liquidation: 60, takeProfit: 120, stopLoss: 92))
+        XCTAssertEqual(exits.stopText, "92", "an untouched field follows the venue")
+        XCTAssertEqual(exits.stopLoss, 92)
+        XCTAssertEqual(exits.takeText, "125", "a typed field is kept")
+
+        // The position flipped to a short: nothing typed for the long applies.
+        exits.refresh(PerpsExitInputs(side: .short, entry: 100, reference: 100, size: 1, liquidation: 140, takeProfit: nil, stopLoss: 110))
+        XCTAssertEqual(exits.side, .short)
+        XCTAssertEqual(exits.takeText, "")
+        XCTAssertEqual(exits.stopText, "110")
+        XCTAssertNil(exits.issue)
+
+        // A document is only built for the side the editor validated.
+        let long = try position()
+        XCTAssertNil(exits.exitsReview(position: long, market: market(), existing: [], tier: nil, nonce: 1))
+    }
+
+    // MARK: - Tier per vault, newest lookup wins
+
+    func testTierIsKeptPerVaultAndAnOlderLookupNeverLandsLast() async throws {
+        addTeardownBlock { await PerpsVultTier.refresh(vaultKey: "guard-reset") { nil } }
+        await PerpsVultTier.refresh(vaultKey: "guard-vault-a") { .gold }
+        await PerpsVultTier.refresh(vaultKey: "guard-vault-b") { .silver }
+        XCTAssertEqual(PerpsVultTier.tier(for: "guard-vault-a"), .gold, "switching vault keeps each vault's own tier")
+        XCTAssertEqual(PerpsVultTier.tier(for: "guard-vault-b"), .silver)
+
+        // Two lookups for the same vault: the older one finishes last and is dropped.
+        await PerpsVultTier.refresh(vaultKey: "guard-vault-a") {
+            await PerpsVultTier.refresh(vaultKey: "guard-vault-a") { .platinum }
+            return .bronze
+        }
+        XCTAssertEqual(PerpsVultTier.tier(for: "guard-vault-a"), .platinum)
+
+        // A ticket for vault A prices with vault A's tier, whatever the active vault.
+        await PerpsVultTier.refresh(vaultKey: "guard-vault-b") { .silver }
+        var vault = context(supported: true)
+        vault.tierKey = "guard-vault-a"
+        let ticket = PerpsTicketViewModel(side: .long, market: market(), account: account(), vault: vault)
+        XCTAssertEqual(ticket.vultTier, .platinum)
+
+        // The stop-loss edit carries the tier it is given, not the global one.
+        let edit = try PerpsFlows.editExits(position: try position(), market: market(), existing: [], stopLoss: 60_000, takeProfit: nil,
+                                            tier: .platinum, nonce: 1)
+        let platinum = PerpsConfig.builderFeeTenthsBp(tier: .platinum)
+        XCTAssertTrue(try XCTUnwrap(edit.requests.last).action.jsonString.contains(#""f":\#(platinum)"#))
+    }
+
+    // MARK: - Overlapping refreshes
+
+    func testAnOlderAccountRefreshFinishingLastIsDropped() async throws {
+        let open = try position()
+        let repository = StubRepository(market: market(), accounts: [account(), account(positions: [open])], gateFirstAccount: true)
+        let viewModel = PerpsMarketViewModel(coin: "BTC", repository: repository, address: "0x1")
+        // The first refresh (no position yet) stalls; the second (position open) completes.
+        let older = Task { await viewModel.refreshPrices() }
+        while repository.accountCalls < 1 { await Task.yield() }
+        await viewModel.refreshPrices()
+        XCTAssertNotNil(viewModel.position)
+        repository.releaseFirst()
+        await older.value
+        XCTAssertNotNil(viewModel.position, "the stale snapshot without the position never lands")
+    }
 }
+
+// The protocol is async; the stub answers at once.
+// swiftlint:disable async_without_await
+/// Markets and accounts on demand; the first account call can be held back.
+private final class StubRepository: PerpsRepository, @unchecked Sendable {
+    private let lock = NSLock()
+    private let market: PerpsMarket
+    private let accounts: [PerpsAccountSnapshot]
+    private let fails: Bool
+    private let gateFirstAccount: Bool
+    private var calls = 0
+    private var gate: CheckedContinuation<Void, Never>?
+    private var released = false
+
+    init(market: PerpsMarket, accounts: [PerpsAccountSnapshot] = [], fails: Bool = false, gateFirstAccount: Bool = false) {
+        self.market = market
+        self.accounts = accounts
+        self.fails = fails
+        self.gateFirstAccount = gateFirstAccount
+    }
+
+    var accountCalls: Int { lock.withLock { calls } }
+
+    func releaseFirst() {
+        let continuation: CheckedContinuation<Void, Never>? = lock.withLock {
+            released = true
+            defer { gate = nil }
+            return gate
+        }
+        continuation?.resume()
+    }
+
+    func markets() async throws -> [PerpsMarket] {
+        if fails { throw URLError(.notConnectedToInternet) }
+        return [market]
+    }
+
+    func account(address _: String) async throws -> PerpsAccountSnapshot {
+        let index: Int = lock.withLock {
+            defer { calls += 1 }
+            return calls
+        }
+        if index == 0, gateFirstAccount {
+            await withCheckedContinuation { continuation in
+                let resumeNow: Bool = lock.withLock {
+                    if released { return true }
+                    gate = continuation
+                    return false
+                }
+                if resumeNow { continuation.resume() }
+            }
+        }
+        return accounts[min(index, accounts.count - 1)]
+    }
+
+    func activity(address _: String, fills _: [HLFill]) async throws -> [PerpsActivityItem] { [] }
+    func candles(coin _: String, interval _: HLCandleInterval, since _: Date, until _: Date) async throws -> [HLCandle] { [] }
+}
+// swiftlint:enable async_without_await

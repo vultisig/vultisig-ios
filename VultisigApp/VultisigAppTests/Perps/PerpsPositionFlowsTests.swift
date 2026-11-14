@@ -201,7 +201,7 @@ final class PerpsPositionFlowsTests: XCTestCase {
         close(PerpsMarginFlows.margin(of: left), PerpsMarginFlows.margin(of: position) * (Decimal(string: "0.00248") ?? 0) / (Decimal(string: "0.00298") ?? 1),
               0.000_001)
         // "Close the rest" reviews the unfilled part against the remaining position.
-        let document = try PerpsFlows.partialClose(position: left, market: market(), size: Decimal(string: "0.00024") ?? 0, nonce: 4)
+        let document = try PerpsFlows.partialClose(position: left, market: market(), size: Decimal(string: "0.00024") ?? 0, tier: nil, nonce: 4)
         XCTAssertEqual(document.amountLabel, String(format: "perpsCloseAmount".localized, "0.00024 BTC"))
     }
 
@@ -258,7 +258,7 @@ final class PerpsPositionFlowsTests: XCTestCase {
         let order = PerpsFlows.closeOrder(position: position, market: market(), size: Decimal(string: "0.0015") ?? 0)
         XCTAssertEqual(order.wire.jsonString, #"{"a":0,"b":false,"p":"66299","s":"0.0015","r":true,"t":{"limit":{"tif":"Ioc"}}}"#,
                        "a,b,p,s,r,t; sell at mid − 1%; no trailing zeros")
-        let document = try PerpsFlows.partialClose(position: position, market: market(), size: Decimal(string: "0.00149") ?? 0, nonce: 3)
+        let document = try PerpsFlows.partialClose(position: position, market: market(), size: Decimal(string: "0.00149") ?? 0, tier: nil, nonce: 3)
         XCTAssertEqual(document.amountLabel, String(format: "perpsCloseAmount".localized, "0.00149 BTC"), "titled by the amount, not 50%")
         let estimate = PerpsFlows.closeEstimate(position: position, market: market(), size: Decimal(string: "0.00149") ?? 0)
         XCTAssertEqual(document.amount, PerpsFormat.usd(estimate.realizedPnl - estimate.fees, signed: true))

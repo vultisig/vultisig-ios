@@ -1354,6 +1354,7 @@
 "perpsPositions" = "포지션";
 "perpsPositionSize" = "포지션 규모";
 "perpsPricePlaceholder" = "가격";
+"perpsPricesUpdating" = "가격을 업데이트하는 중입니다. 다음 가격이 들어오면 검토할 수 있습니다.";
 "perpsReconnecting" = "다시 연결 중…";
 "perpsRemove" = "제거";
 "perpsRemoveMargin" = "마진 제거";

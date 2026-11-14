@@ -15,13 +15,16 @@ struct PerpsCloseSheet: View {
     /// The screen's latest values: a sheet left open follows the poll.
     private let position: HLPosition
     private let market: PerpsMarket
+    private let connection: PerpsConnection
     @StateObject private var viewModel: PerpsCloseViewModel
 
-    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, onReview: @escaping (PerpsReviewDocument) -> Void) {
+    init(position: HLPosition, market: PerpsMarket, fraction: PerpsCloseFraction = .all, vultTier: VultDiscountTier?,
+         connection: PerpsConnection, onReview: @escaping (PerpsReviewDocument) -> Void) {
         self.onReview = onReview
         self.position = position
         self.market = market
-        _viewModel = StateObject(wrappedValue: PerpsCloseViewModel(position: position, market: market, fraction: fraction))
+        self.connection = connection
+        _viewModel = StateObject(wrappedValue: PerpsCloseViewModel(position: position, market: market, fraction: fraction, vultTier: vultTier))
     }
 
     var body: some View {
@@ -59,6 +62,8 @@ struct PerpsCloseSheet: View {
                 PerpsFootnote(text: viewModel.issue ?? "perpsStopSlippageNote".localized, isError: viewModel.issue != nil)
             }
             PrimaryButton(title: "perpsReview".localized) {
+                // Checked again at the tap: a tick can expire between renders.
+                guard connection.isFresh() else { return viewModel.setPricesFresh(false) }
                 guard let document = viewModel.reviewDocument() else { return }
                 onReview(document)
             }
@@ -69,6 +74,7 @@ struct PerpsCloseSheet: View {
         .onChange(of: PerpsSheetInputs(position: position, market: market)) { _, inputs in
             viewModel.refresh(position: inputs.position, market: inputs.market)
         }
+        .background { PerpsFreshnessProbe(connection: connection) { viewModel.setPricesFresh($0) } }
     }
 }
 
@@ -97,6 +103,9 @@ struct PerpsModifySheet: View {
     let position: HLPosition
     let market: PerpsMarket
     let account: PerpsAccountSnapshot
+    let triggers: [HLFrontendOrder]
+    let vultTier: VultDiscountTier?
+    let connection: PerpsConnection
     let onReview: (PerpsReviewDocument) -> Void
     let onClose: () -> Void
 
@@ -104,17 +113,19 @@ struct PerpsModifySheet: View {
     @State private var triggerFocus: PerpsTriggerField?
     @StateObject private var exits: PerpsAutoCloseViewModel
     @StateObject private var margin: PerpsMarginViewModel
-    private let existingTriggers: [HLFrontendOrder]
 
     init(position: HLPosition, market: PerpsMarket, account: PerpsAccountSnapshot, triggers: [HLFrontendOrder],
+         vultTier: VultDiscountTier?, connection: PerpsConnection,
          startsOnMargin: Bool = false, marginRemoves: Bool = false, marginPrefill: Decimal? = nil,
          onReview: @escaping (PerpsReviewDocument) -> Void, onClose: @escaping () -> Void) {
         self.position = position
         self.market = market
         self.account = account
+        self.triggers = triggers
+        self.vultTier = vultTier
+        self.connection = connection
         self.onReview = onReview
         self.onClose = onClose
-        existingTriggers = triggers
         _page = State(initialValue: startsOnMargin ? .margin : .main)
         _exits = StateObject(wrappedValue: PerpsAutoCloseViewModel(
             side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
@@ -130,14 +141,24 @@ struct PerpsModifySheet: View {
         Group {
             switch page {
             case .main: mainPage
-            case .margin: PerpsMarginPage(viewModel: margin, onBack: { page = .main }, onClose: onClose, onReview: onReview)
+            case .margin:
+                PerpsMarginPage(viewModel: margin, onBack: { page = .main }, onClose: onClose, onReview: { document in
+                    guard connection.isFresh() else { return margin.setPricesFresh(false) }
+                    onReview(document)
+                })
             }
         }
         .perpsSheetChrome()
         // The screen polls every 15 s; both pages follow it while open.
-        .onChange(of: PerpsSheetInputs(position: position, market: market, account: account)) { _, inputs in
-            exits.refresh(PerpsExitInputs(position: inputs.position, market: inputs.market))
+        .onChange(of: PerpsSheetInputs(position: position, market: market, account: account, triggers: triggers)) { _, inputs in
+            exits.refresh(PerpsExitInputs(position: inputs.position, market: inputs.market, triggers: inputs.triggers))
             if let account = inputs.account { margin.refresh(position: inputs.position, market: inputs.market, account: account) }
+        }
+        .background {
+            PerpsFreshnessProbe(connection: connection) { isFresh in
+                exits.setPricesFresh(isFresh)
+                margin.setPricesFresh(isFresh)
+            }
         }
     }
 
@@ -168,12 +189,13 @@ struct PerpsModifySheet: View {
             }
             PerpsFootnote(text: exits.issue ?? "perpsStopSlippageNote".localized, isError: exits.issue != nil)
             PrimaryButton(title: "perpsReview".localized) {
+                guard connection.isFresh() else { return exits.setPricesFresh(false) }
                 // Real nonces only when the review is actually built.
-                guard let document = exits.exitsReview(position: position, market: market, existing: existingTriggers,
+                guard let document = exits.exitsReview(position: position, market: market, existing: triggers, tier: vultTier,
                                                       nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return }
                 onReview(document)
             }
-            .disabled(!exits.canReviewExits(position: position, market: market, existing: existingTriggers))
+            .disabled(!exits.canReviewExits(position: position, market: market, existing: triggers, tier: vultTier))
             .accessibilityIdentifier("perpsModifyReview")
             if let triggerFocus {
                 PerpsKeypad { exits.press($0, into: triggerFocus) }
@@ -182,11 +204,32 @@ struct PerpsModifySheet: View {
     }
 }
 
-/// What an open position sheet follows: the poll's position, market and account.
+/// What an open position sheet follows: the poll's position, market, account and triggers.
 struct PerpsSheetInputs: Hashable {
     let position: HLPosition
     let market: PerpsMarket
     var account: PerpsAccountSnapshot?
+    var triggers: [HLFrontendOrder] = []
+}
+
+/// Feeds a sheet whether its prices may back a review: on appear, on every
+/// connection change, and every 5 s so an expiring tick is noticed without a poll.
+struct PerpsFreshnessProbe: View {
+    @ObservedObject var connection: PerpsConnection
+    let apply: (Bool) -> Void
+
+    var body: some View {
+        Color.clear
+            .onAppear { apply(connection.isFresh()) }
+            .onChange(of: connection.isOffline) { _, _ in apply(connection.isFresh()) }
+            .onChange(of: connection.pricesAsOf) { _, _ in apply(connection.isFresh()) }
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(5))
+                    apply(connection.isFresh())
+                }
+            }
+    }
 }
 
 enum PerpsMarginDirection: Int, CaseIterable, Identifiable {

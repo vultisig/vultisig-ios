@@ -131,9 +131,12 @@ struct PerpsPositionScreen: View {
     }
 
     /// The whole position closed at the mark: the header switches to the result.
+    /// This vault's VULT tier: every review on this screen prices with it.
+    private var vultTier: VultDiscountTier? { PerpsVultTier.tier(for: vault.pubKeyECDSA) }
+
     private func showPositionClosed() {
         guard let position, let market = viewModel.market else { return }
-        let estimate = PerpsFlows.closeEstimate(position: position, market: market, size: abs(position.szi.value))
+        let estimate = PerpsFlows.closeEstimate(position: position, market: market, size: abs(position.szi.value), tier: vultTier)
         let net = estimate.realizedPnl - estimate.fees
         let margin = PerpsMarginFlows.margin(of: position)
         closedByUser = ClosedResult(pnl: net, roe: margin > 0 ? net / margin : 0)
@@ -339,10 +342,12 @@ struct PerpsPositionScreen: View {
             case .partlyClosed(let fill):
                 partlyClosedSheet(fill, position: position, market: market)
             case .close(let fraction):
-                PerpsCloseSheet(position: position, market: market, fraction: fraction, onReview: handOff)
+                PerpsCloseSheet(position: position, market: market, fraction: fraction, vultTier: vultTier,
+                                connection: viewModel.connection, onReview: handOff)
             case .modify(let startsOnMargin):
                 if let account = viewModel.account {
                     PerpsModifySheet(position: position, market: market, account: account, triggers: viewModel.triggers,
+                                     vultTier: vultTier, connection: viewModel.connection,
                                      startsOnMargin: startsOnMargin, marginRemoves: startsOnMargin && demoMarginRemoves,
                                      marginPrefill: demoMarginPrefill(startsOnMargin: startsOnMargin),
                                      onReview: handOff, onClose: { sheet = nil })
@@ -353,7 +358,7 @@ struct PerpsPositionScreen: View {
                     outcome = nil
                 }
             case .positionClosed:
-                let estimate = PerpsFlows.closeEstimate(position: position, market: market, size: abs(position.szi.value))
+                let estimate = PerpsFlows.closeEstimate(position: position, market: market, size: abs(position.szi.value), tier: vultTier)
                 let back = estimate.returned
                 // Net of the closing fee, like the close sheet's "Est. profit".
                 let net = estimate.realizedPnl - estimate.fees
@@ -388,9 +393,10 @@ struct PerpsPositionScreen: View {
                     side: position.isLong ? .long : .short, entry: position.entryPx?.value ?? market.markPrice, reference: market.markPrice,
                     size: abs(position.szi.value), liquidation: position.liquidationPx?.value, szDecimals: market.szDecimals,
                     takeProfit: take, stopLoss: stop
-                ), coin: coin, live: PerpsExitInputs(position: position, market: market)) { newTake, newStop in
+                ), coin: coin, live: PerpsExitInputs(position: position, market: market, triggers: viewModel.triggers),
+                   connection: viewModel.connection) { newTake, newStop in
                     let document = try? PerpsFlows.editExits(position: position, market: market, existing: viewModel.triggers,
-                                                             stopLoss: newStop, takeProfit: newTake,
+                                                             stopLoss: newStop, takeProfit: newTake, tier: vultTier,
                                                              nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2))
                     if let document, document.blockingIssue == nil { pendingReview = document }
                     sheet = nil
@@ -440,7 +446,7 @@ struct PerpsPositionScreen: View {
             secondaryAction: { sheet = nil },
             action: {
                 guard let document = try? PerpsFlows.partialClose(position: position, market: market, size: fill.notClosed,
-                                                                  nonce: HyperliquidExchangeDryRunClient.shared.nonces.next()) else { return }
+                                                                  tier: vultTier, nonce: HyperliquidExchangeDryRunClient.shared.nonces.next()) else { return }
                 handOff(document)
             }
         )

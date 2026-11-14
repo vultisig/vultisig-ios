@@ -148,15 +148,24 @@ enum PerpsConfig {
 /// kept for the builder fee. Debug only: `-perpsDemoVultTier gold` pins one.
 enum PerpsVultTier {
     private static let lock = NSLock()
-    /// The vault the tier below belongs to. Switching vault drops the old
-    /// vault's tier at once (the list fee applies until the new one resolves),
-    /// and a slower refresh for a vault no longer active never lands.
+    /// Tiers are kept per vault (pubKeyECDSA), so a review only ever prices
+    /// with its own vault's tier. Each lookup takes a generation number; a
+    /// lookup that finishes after a newer one for the same vault is dropped.
+    nonisolated(unsafe) private static var tiers: [String: VultDiscountTier] = [:]
+    nonisolated(unsafe) private static var generations: [String: Int] = [:]
+    /// The vault the screens are on, for `current`.
     nonisolated(unsafe) private static var activeVault: String?
-    nonisolated(unsafe) private static var resolved: VultDiscountTier?
 
-    static var current: VultDiscountTier? {
+    /// The tier for one vault, nil (list fee) until its lookup resolves.
+    static func tier(for vaultKey: String?) -> VultDiscountTier? {
         if let demo = demoTier { return demo }
-        return lock.withLock { resolved }
+        guard let vaultKey else { return nil }
+        return lock.withLock { tiers[vaultKey] }
+    }
+
+    /// The active vault's tier. Review-building code takes an explicit tier instead.
+    static var current: VultDiscountTier? {
+        tier(for: lock.withLock { activeVault })
     }
 
     @MainActor
@@ -165,15 +174,16 @@ enum PerpsVultTier {
     }
 
     static func refresh(vaultKey: String, resolve: () async -> VultDiscountTier?) async {
-        lock.withLock {
-            if activeVault != vaultKey {
-                activeVault = vaultKey
-                resolved = nil
-            }
+        let generation: Int = lock.withLock {
+            activeVault = vaultKey
+            let next = (generations[vaultKey] ?? 0) + 1
+            generations[vaultKey] = next
+            return next
         }
         let tier = await resolve()
         lock.withLock {
-            if activeVault == vaultKey { resolved = tier }
+            guard generations[vaultKey] == generation else { return }
+            tiers[vaultKey] = tier
         }
     }
 

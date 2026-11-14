@@ -1354,6 +1354,7 @@
 "perpsPositions" = "Pozicije";
 "perpsPositionSize" = "Veličina pozicije";
 "perpsPricePlaceholder" = "Cijena";
+"perpsPricesUpdating" = "Cijene se ažuriraju. Pregled je ponovno dostupan sa sljedećom cijenom.";
 "perpsReconnecting" = "Ponovno povezivanje…";
 "perpsRemove" = "Ukloni";
 "perpsRemoveMargin" = "Ukloni maržu";

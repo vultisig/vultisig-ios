@@ -1,0 +1,10 @@
+hyperliquid-python-sdk==0.24.0
+eth-account==0.13.7
+eth-abi==6.0.0
+eth-hash[pycryptodome]==0.8.0
+eth-keys==0.8.0
+eth-typing==6.0.0
+eth-utils==5.3.1
+hexbytes==2.0.0
+msgpack==1.2.4
+pycryptodome==3.24.1

@@ -184,7 +184,7 @@ final class PerpsFlowsTests: XCTestCase {
             XCTAssertEqual(error as? PerpsOrderPlannerError, .invalidTriggerPrice)
         }
         XCTAssertThrowsError(try PerpsFlows.editExits(position: try position(), market: market(), existing: [],
-                                                      stopLoss: Decimal(string: "0.000001"), takeProfit: nil, nonce: 1))
+                                                      stopLoss: Decimal(string: "0.000001"), takeProfit: nil, tier: nil, nonce: 1))
         let source = HLNonceSource(clock: { Date(timeIntervalSince1970: 1_000) })
         let first = source.next(count: 2)
         XCTAssertEqual(source.next(), first + 2, "first + 1 was reserved for the second step")
@@ -305,12 +305,12 @@ final class PerpsFlowsTests: XCTestCase {
         let stop = try JSONDecoder().decode(HLFrontendOrder.self, from: Data(stopJSON.utf8))
         XCTAssertTrue(stop.isStopLoss)
         let document = try PerpsFlows.editExits(position: try position(), market: market(), existing: [stop], stopLoss: 62_000,
-                                                takeProfit: 72_000, nonce: 100)
+                                                takeProfit: 72_000, tier: nil, nonce: 100)
         XCTAssertEqual(document.requests.map(\.kind), [.cancel, .order])
         XCTAssertEqual(document.requests.map(\.nonce), [100, 101])
         XCTAssertEqual(document.requests[1].action["grouping"], .string("positionTpsl"))
         let unchanged = try PerpsFlows.editExits(position: try position(), market: market(), existing: [stop], stopLoss: 60_000,
-                                                 takeProfit: nil, nonce: 200)
+                                                 takeProfit: nil, tier: nil, nonce: 200)
         XCTAssertNotNil(unchanged.blockingIssue)
     }
 
