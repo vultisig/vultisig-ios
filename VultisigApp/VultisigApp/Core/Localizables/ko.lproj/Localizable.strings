@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "수수료";
 "swapReworkFeeShareTitle" = "이 스왑의 %@이(가) 수수료입니다";
+"swapReworkFeesLine" = "수수료 %@";
 "swapReworkFeesPlusGas" = "수수료 %@ + 가스";
 "swapReworkFeesShort" = "수수료 %@";
 "swapReworkFlip" = "지불/받기 전환";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Bitcoin 블록은 평균 10분, 30분 이상 걸릴 수도 있음";
 "swapReworkLegConfirmations" = "%1$@ · %2$@회 컨펌";
 "swapReworkLegOutbound" = "%1$@ · %2$@ 출금 대기";
+"swapReworkLimitExpired" = "주문이 만료되었습니다. 체결된 부분은 지급되고, 미체결 금액은 THORChain 출금 수수료를 빼고 반환됩니다.";
+"swapReworkLimitFilledHeld" = "%@ 체결 · 주문 종료 시까지 보류";
+"swapReworkLimitIfFills" = "체결될 때만";
+"swapReworkLimitIfUnfilled" = "체결되지 않으면";
+"swapReworkLimitInsideFloor" = "최소 수령액에 포함";
+"swapReworkLimitRefundOutbound" = "THORChain 출금 수수료를 뺀 금액 환불";
+"swapReworkLimitThorchainFees" = "THORChain 스왑 수수료";
+"swapReworkLimitTierNote" = "VULT 등급 할인은 아직 지정가 주문에 적용되지 않습니다.";
+"swapReworkLimitVultisigFee" = "Vultisig 수수료 %@";
 "swapReworkMax" = "최대";
 "swapReworkMaxSlippage" = "최대 슬리피지";
 "swapReworkMinimumReceived" = "최소 수령액";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "진짜 %@";
 "swapReworkUnverifiedTitle" = "미확인 토큰";
 "swapReworkUseAnyway" = "그래도 사용";
+"swapReworkUseMax" = "가능한 최대 금액 스왑";
 "swapReworkUseMinimum" = "%@ 사용";
 "swapReworkUsuallyMore" = "보통 %1$d-%2$d분 더 걸림";
 "swapReworkValueLossBody" = "수수료와 가격 영향이 이 스왑의 큰 부분을 차지합니다. 더 큰 금액이나 다른 경로가 더 저렴할 수 있습니다.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "지불 금액";
 "swapReworkYourAssets" = "내 자산";
 "swapReworkYouReceive" = "받는 금액";
+"swapReworkYouReceiveOn" = "%@에서 받음";
 "swapRouteEta" = "~%ld초";
 "swapRouteNotAvailable" = "스왑 경로를 사용할 수 없습니다";
 "swapRouteResetToAuto" = "경로가 자동으로 재설정되었습니다";

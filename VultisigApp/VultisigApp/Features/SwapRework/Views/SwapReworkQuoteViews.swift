@@ -28,8 +28,54 @@ struct SwapReworkRouteCard: View {
         .swapReworkCard(highlighted: false)
     }
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var providerRow: some View {
         Button(action: onTap) {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    accessibilityRow
+                } else {
+                    standardRow
+                }
+            }
+            .padding(16)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("swapReworkRouteCard")
+    }
+
+    /// R4 1_04: provider, tag, time, fees and the countdown, one per line.
+    private var accessibilityRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                SwapReworkProviderLogo(name: route.providerName, logo: route.providerLogo, size: 32)
+                Text(route.providerName)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            if let tag = route.tag {
+                SwapReworkRouteTagView(tag: tag)
+            }
+            if !route.etaText.isEmpty {
+                Text(route.etaText)
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+            if !route.feesText.isEmpty {
+                Text(String(format: "swapReworkFeesLine".localized, route.feesText))
+                    .font(Theme.fonts.bodySRegular)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+            SwapReworkCountdown(timer: timer)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var standardRow: some View {
             HStack(spacing: 12) {
                 SwapReworkProviderLogo(name: route.providerName, logo: route.providerLogo, size: 32)
                 VStack(alignment: .leading, spacing: 2) {
@@ -57,11 +103,6 @@ struct SwapReworkRouteCard: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
-            .padding(16)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("swapReworkRouteCard")
     }
 
     private var detailText: String {

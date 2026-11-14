@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Fees";
 "swapReworkFeeShareTitle" = "%@ of this swap goes to fees";
+"swapReworkFeesLine" = "Fees %@";
 "swapReworkFeesPlusGas" = "fees %@ + gas";
 "swapReworkFeesShort" = "fees %@";
 "swapReworkFlip" = "Flip pay and receive";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Bitcoin blocks average 10 min, can be 30+";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ confirmations";
 "swapReworkLegOutbound" = "%1$@ · %2$@ outbound wait";
+"swapReworkLimitExpired" = "The order expired. Anything that filled is paid out; the unfilled amount is returned, minus THORChain's outbound fee.";
+"swapReworkLimitFilledHeld" = "%@ filled · held until the order closes";
+"swapReworkLimitIfFills" = "Only if it fills";
+"swapReworkLimitIfUnfilled" = "If it doesn't fill";
+"swapReworkLimitInsideFloor" = "inside your floor";
+"swapReworkLimitRefundOutbound" = "refunded, minus THORChain's outbound fee";
+"swapReworkLimitThorchainFees" = "THORChain swap fees";
+"swapReworkLimitTierNote" = "VULT tier discounts don't apply to limit orders yet.";
+"swapReworkLimitVultisigFee" = "Vultisig fee %@";
 "swapReworkMax" = "Max";
 "swapReworkMaxSlippage" = "Max slippage";
 "swapReworkMinimumReceived" = "Minimum received";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "Real %@";
 "swapReworkUnverifiedTitle" = "Unverified token";
 "swapReworkUseAnyway" = "Use anyway";
+"swapReworkUseMax" = "Swap the most you can";
 "swapReworkUseMinimum" = "Use %@";
 "swapReworkUsuallyMore" = "Usually %1$d-%2$d min more";
 "swapReworkValueLossBody" = "Fees and price impact take a large share of this swap. A larger amount or another route may cost less.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "You pay";
 "swapReworkYourAssets" = "Your assets";
 "swapReworkYouReceive" = "You receive";
+"swapReworkYouReceiveOn" = "You receive on %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap route not available";
 "swapRouteResetToAuto" = "Route reset to Auto";

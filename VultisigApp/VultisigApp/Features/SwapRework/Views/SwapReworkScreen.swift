@@ -386,6 +386,7 @@ struct SwapReworkScreen: View {
         case .insufficient(let ticker): return String(format: "swapInsufficientTokenBalance".localized, ticker)
         case .fixGas(let ticker): return String(format: "swapReworkNotEnoughGasCTA".localized, ticker)
         case .useMinimum(let amount): return String(format: "swapReworkUseMinimum".localized, amount)
+        case .useMax: return "swapReworkUseMax".localized
         }
     }
 
@@ -401,6 +402,8 @@ struct SwapReworkScreen: View {
             viewModel.pickerSide = .receive
         case .useMinimum:
             viewModel.useMinimum(vault: vault)
+        case .useMax:
+            viewModel.tapPercent(100, vault: vault)
         case .enterAmount, .loading, .insufficient, .fixGas:
             break
         }

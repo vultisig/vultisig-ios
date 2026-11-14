@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "费用";
 "swapReworkFeeShareTitle" = "本次兑换的 %@ 用于费用";
+"swapReworkFeesLine" = "费用 %@";
 "swapReworkFeesPlusGas" = "费用 %@ + 燃料费";
 "swapReworkFeesShort" = "费用 %@";
 "swapReworkFlip" = "切换支付和接收";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Bitcoin 区块平均 10 分钟，可能 30 分钟以上";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ 次确认";
 "swapReworkLegOutbound" = "%1$@ · %2$@ 出站等待";
+"swapReworkLimitExpired" = "订单已过期。已成交部分将支付给你；未成交金额将退回，扣除 THORChain 出站费用。";
+"swapReworkLimitFilledHeld" = "已成交 %@ · 订单关闭前暂存";
+"swapReworkLimitIfFills" = "仅在成交时";
+"swapReworkLimitIfUnfilled" = "若未成交";
+"swapReworkLimitInsideFloor" = "已包含在最低到账额内";
+"swapReworkLimitRefundOutbound" = "退回，扣除 THORChain 出站费用";
+"swapReworkLimitThorchainFees" = "THORChain 兑换费用";
+"swapReworkLimitTierNote" = "VULT 等级折扣暂不适用于限价单。";
+"swapReworkLimitVultisigFee" = "Vultisig 费用 %@";
 "swapReworkMax" = "最大";
 "swapReworkMaxSlippage" = "最大滑点";
 "swapReworkMinimumReceived" = "最少收到";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "真正的 %@";
 "swapReworkUnverifiedTitle" = "未验证代币";
 "swapReworkUseAnyway" = "仍然使用";
+"swapReworkUseMax" = "兑换可用最大额";
 "swapReworkUseMinimum" = "使用 %@";
 "swapReworkUsuallyMore" = "通常多需 %1$d-%2$d 分钟";
 "swapReworkValueLossBody" = "费用和价格影响占了此次兑换的很大一部分。更大的金额或其他路由可能更便宜。";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "你支付";
 "swapReworkYourAssets" = "你的资产";
 "swapReworkYouReceive" = "你将收到";
+"swapReworkYouReceiveOn" = "你在 %@ 上收到";
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "兑换路由不可用";
 "swapRouteResetToAuto" = "路线已重置为自动";

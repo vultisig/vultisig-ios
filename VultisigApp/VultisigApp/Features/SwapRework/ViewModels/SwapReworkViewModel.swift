@@ -725,6 +725,11 @@ final class SwapReworkViewModel {
         case .overBalance?:
             return .insufficient(ticker: details.fromCoin.ticker)
         case .notEnoughGas?:
+            // When the amount itself is in the fee coin, the fix is a smaller
+            // amount: offer the most that still leaves gas (R4 1_09).
+            if details.feeCoin.id == details.fromCoin.id, details.fromCoin.balanceDecimal > 0 {
+                return .useMax
+            }
             return .fixGas(ticker: details.feeCoin.ticker)
         case .noRoute?:
             return .chooseAnotherCoin
@@ -751,7 +756,7 @@ final class SwapReworkViewModel {
         switch cta {
         case .enterAmount, .loading, .insufficient, .fixGas:
             return false
-        case .confirmNewAmount, .getNewQuote, .chooseAnotherCoin, .useMinimum:
+        case .confirmNewAmount, .getNewQuote, .chooseAnotherCoin, .useMinimum, .useMax:
             return true
         case .review, .reviewWith:
             // Not on a provisional Max: the user asked for Max, not 95% of it.

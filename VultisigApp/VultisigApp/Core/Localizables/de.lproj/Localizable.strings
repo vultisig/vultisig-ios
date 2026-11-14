@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Gebühren";
 "swapReworkFeeShareTitle" = "%@ dieses Swaps gehen an Gebühren";
+"swapReworkFeesLine" = "Gebühren %@";
 "swapReworkFeesPlusGas" = "Gebühren %@ + Gas";
 "swapReworkFeesShort" = "Gebühren %@";
 "swapReworkFlip" = "Zahlen und Erhalten tauschen";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Bitcoin-Blöcke dauern im Schnitt 10 Min., manchmal 30+";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ Bestätigungen";
 "swapReworkLegOutbound" = "%1$@ · %2$@ Auszahlungswartezeit";
+"swapReworkLimitExpired" = "Die Order ist abgelaufen. Ausgeführte Teile werden ausgezahlt; der Rest wird abzüglich THORChains Ausgangsgebühr erstattet.";
+"swapReworkLimitFilledHeld" = "%@ ausgeführt · gehalten bis die Order schließt";
+"swapReworkLimitIfFills" = "Nur wenn sie ausgeführt wird";
+"swapReworkLimitIfUnfilled" = "Wenn sie nicht ausgeführt wird";
+"swapReworkLimitInsideFloor" = "in deinem Mindestbetrag enthalten";
+"swapReworkLimitRefundOutbound" = "erstattet, abzüglich THORChains Ausgangsgebühr";
+"swapReworkLimitThorchainFees" = "THORChain-Swap-Gebühren";
+"swapReworkLimitTierNote" = "VULT-Stufenrabatte gelten noch nicht für Limit-Orders.";
+"swapReworkLimitVultisigFee" = "Vultisig-Gebühr %@";
 "swapReworkMax" = "Max";
 "swapReworkMaxSlippage" = "Max. Slippage";
 "swapReworkMinimumReceived" = "Mindestens erhalten";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "Echtes %@";
 "swapReworkUnverifiedTitle" = "Nicht verifizierter Token";
 "swapReworkUseAnyway" = "Trotzdem nutzen";
+"swapReworkUseMax" = "So viel wie möglich swappen";
 "swapReworkUseMinimum" = "%@ verwenden";
 "swapReworkUsuallyMore" = "Meist %1$d-%2$d Min. länger";
 "swapReworkValueLossBody" = "Gebühren und Preiseinfluss nehmen einen großen Teil dieses Swaps. Ein größerer Betrag oder eine andere Route kann günstiger sein.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "Du zahlst";
 "swapReworkYourAssets" = "Deine Assets";
 "swapReworkYouReceive" = "Du erhältst";
+"swapReworkYouReceiveOn" = "Du erhältst auf %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap-Route nicht verfügbar";
 "swapRouteResetToAuto" = "Route auf Auto zurückgesetzt";

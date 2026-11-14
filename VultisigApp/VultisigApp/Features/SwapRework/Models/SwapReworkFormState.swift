@@ -73,6 +73,8 @@ enum SwapReworkCTA: Equatable {
     case insufficient(ticker: String)
     /// Raise the amount to the provider's stated minimum ("Use 0.0035 ETH").
     case useMinimum(amountText: String)
+    /// Paying in the fee coin and short of gas: Max, which keeps gas behind.
+    case useMax
     case fixGas(ticker: String)
 }
 

@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Taxas";
 "swapReworkFeeShareTitle" = "%@ deste swap vai para taxas";
+"swapReworkFeesLine" = "Taxas %@";
 "swapReworkFeesPlusGas" = "taxas %@ + gas";
 "swapReworkFeesShort" = "taxas %@";
 "swapReworkFlip" = "Inverter pagar e receber";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Blocos de Bitcoin levam 10 min em média, podem passar de 30";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ confirmações";
 "swapReworkLegOutbound" = "%1$@ · %2$@ de espera de saída";
+"swapReworkLimitExpired" = "A ordem expirou. O que foi executado é pago; o restante é devolvido, menos a taxa de saída da THORChain.";
+"swapReworkLimitFilledHeld" = "%@ executado · retido até a ordem fechar";
+"swapReworkLimitIfFills" = "Só se for executada";
+"swapReworkLimitIfUnfilled" = "Se não for executada";
+"swapReworkLimitInsideFloor" = "incluídas no seu mínimo";
+"swapReworkLimitRefundOutbound" = "reembolsado, menos a taxa de saída da THORChain";
+"swapReworkLimitThorchainFees" = "Taxas de swap da THORChain";
+"swapReworkLimitTierNote" = "Os descontos por nível VULT ainda não se aplicam a ordens limite.";
+"swapReworkLimitVultisigFee" = "Taxa da Vultisig %@";
 "swapReworkMax" = "Máx.";
 "swapReworkMaxSlippage" = "Slippage máx.";
 "swapReworkMinimumReceived" = "Mínimo recebido";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "%@ real";
 "swapReworkUnverifiedTitle" = "Token não verificado";
 "swapReworkUseAnyway" = "Usar mesmo assim";
+"swapReworkUseMax" = "Fazer swap do máximo possível";
 "swapReworkUseMinimum" = "Usar %@";
 "swapReworkUsuallyMore" = "Geralmente %1$d-%2$d min a mais";
 "swapReworkValueLossBody" = "Taxas e impacto levam grande parte deste swap. Um valor maior ou outra rota pode custar menos.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "Você paga";
 "swapReworkYourAssets" = "Seus ativos";
 "swapReworkYouReceive" = "Você recebe";
+"swapReworkYouReceiveOn" = "Você recebe na %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swapRouteResetToAuto" = "Rota redefinida para Auto";

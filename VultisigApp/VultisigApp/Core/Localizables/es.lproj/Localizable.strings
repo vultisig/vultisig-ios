@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Comisiones";
 "swapReworkFeeShareTitle" = "%@ de este intercambio va a comisiones";
+"swapReworkFeesLine" = "Comisiones %@";
 "swapReworkFeesPlusGas" = "comisiones %@ + gas";
 "swapReworkFeesShort" = "comisiones %@";
 "swapReworkFlip" = "Invertir pago y recepción";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Los bloques de Bitcoin tardan 10 min de media, a veces 30+";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ confirmaciones";
 "swapReworkLegOutbound" = "%1$@ · %2$@ de espera de salida";
+"swapReworkLimitExpired" = "La orden expiró. Lo que se ejecutó se paga; el resto se devuelve, menos la comisión de salida de THORChain.";
+"swapReworkLimitFilledHeld" = "%@ ejecutado · retenido hasta que la orden cierre";
+"swapReworkLimitIfFills" = "Solo si se ejecuta";
+"swapReworkLimitIfUnfilled" = "Si no se ejecuta";
+"swapReworkLimitInsideFloor" = "incluidas en tu mínimo";
+"swapReworkLimitRefundOutbound" = "reembolsado, menos la comisión de salida de THORChain";
+"swapReworkLimitThorchainFees" = "Comisiones de intercambio de THORChain";
+"swapReworkLimitTierNote" = "Los descuentos por nivel VULT aún no se aplican a órdenes límite.";
+"swapReworkLimitVultisigFee" = "Comisión de Vultisig %@";
 "swapReworkMax" = "Máx.";
 "swapReworkMaxSlippage" = "Deslizamiento máx.";
 "swapReworkMinimumReceived" = "Mínimo recibido";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "%@ real";
 "swapReworkUnverifiedTitle" = "Token no verificado";
 "swapReworkUseAnyway" = "Usar igualmente";
+"swapReworkUseMax" = "Intercambiar el máximo posible";
 "swapReworkUseMinimum" = "Usar %@";
 "swapReworkUsuallyMore" = "Suele tardar %1$d-%2$d min más";
 "swapReworkValueLossBody" = "Las comisiones y el impacto se llevan gran parte de este intercambio. Un importe mayor u otra ruta puede costar menos.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "Pagas";
 "swapReworkYourAssets" = "Tus activos";
 "swapReworkYouReceive" = "Recibes";
+"swapReworkYouReceiveOn" = "Recibes en %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swapRouteResetToAuto" = "Ruta restablecida a Auto";

@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Commissioni";
 "swapReworkFeeShareTitle" = "Il %@ di questo swap va in commissioni";
+"swapReworkFeesLine" = "Commissioni %@";
 "swapReworkFeesPlusGas" = "commissioni %@ + gas";
 "swapReworkFeesShort" = "commissioni %@";
 "swapReworkFlip" = "Inverti paghi e ricevi";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "I blocchi Bitcoin durano in media 10 min, anche 30+";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ conferme";
 "swapReworkLegOutbound" = "%1$@ · %2$@ di attesa in uscita";
+"swapReworkLimitExpired" = "L'ordine è scaduto. La parte eseguita viene pagata; il resto viene restituito, meno la commissione di uscita di THORChain.";
+"swapReworkLimitFilledHeld" = "%@ eseguito · trattenuto fino alla chiusura dell'ordine";
+"swapReworkLimitIfFills" = "Solo se viene eseguito";
+"swapReworkLimitIfUnfilled" = "Se non viene eseguito";
+"swapReworkLimitInsideFloor" = "incluse nel tuo minimo";
+"swapReworkLimitRefundOutbound" = "rimborsato, meno la commissione di uscita di THORChain";
+"swapReworkLimitThorchainFees" = "Commissioni swap THORChain";
+"swapReworkLimitTierNote" = "Gli sconti per livello VULT non si applicano ancora agli ordini limite.";
+"swapReworkLimitVultisigFee" = "Commissione Vultisig %@";
 "swapReworkMax" = "Max";
 "swapReworkMaxSlippage" = "Slippage max";
 "swapReworkMinimumReceived" = "Minimo ricevuto";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "%@ vero";
 "swapReworkUnverifiedTitle" = "Token non verificato";
 "swapReworkUseAnyway" = "Usa comunque";
+"swapReworkUseMax" = "Fai lo swap del massimo possibile";
 "swapReworkUseMinimum" = "Usa %@";
 "swapReworkUsuallyMore" = "Di solito %1$d-%2$d min in più";
 "swapReworkValueLossBody" = "Commissioni e impatto sul prezzo prendono gran parte di questo swap. Un importo maggiore o un altro percorso può costare meno.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "Paghi";
 "swapReworkYourAssets" = "I tuoi asset";
 "swapReworkYouReceive" = "Ricevi";
+"swapReworkYouReceiveOn" = "Ricevi su %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swapRouteResetToAuto" = "Percorso reimpostato su Auto";

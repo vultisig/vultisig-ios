@@ -132,7 +132,9 @@ final class LimitOrderPoller: DoneStatusPoller {
         case .refunded:
             return .failed(reason: "limitSwap.done.reason.refunded".localized)
         case .expired:
-            return .failed(reason: "limitSwap.done.reason.expired".localized)
+            // The rework's copy also covers a partly filled order, which the
+            // old sentence ("before your price was met") misstates.
+            return .failed(reason: (SwapReworkConfig.isFeatureEnabled ? "swapReworkLimitExpired" : "limitSwap.done.reason.expired").localized)
         case .cancelled:
             return .failed(reason: "limitSwap.done.reason.cancelled".localized)
         case .failed:

@@ -47,6 +47,8 @@ enum SwapReworkDemoScenario: String, CaseIterable {
     case notifyDenied
     /// Success while the delivered amount is still being read.
     case checkingDelivered
+    /// Paying in the fee coin and short of gas: "Swap the most you can".
+    case noGasNative
 }
 
 enum SwapReworkDemo {
@@ -143,6 +145,13 @@ enum SwapReworkDemo {
             break
         case .addGas:
             state = formState(for: .noGas)
+        case .noGasNative:
+            state.amountText = "1.2841"
+            state.payFiatText = "$2,512.21"
+            state.receiveAmountText = "0.0360072"
+            state.receiveFiatText = "≈ $2,497.10"
+            state.issue = .notEnoughGas
+            state.cta = .useMax
         case .tooSmallMin:
             state.amountText = "0.002"
             state.payFiatText = "$3.91"
@@ -286,8 +295,14 @@ enum SwapReworkDemo {
     }
 
     static func gasShortfallText(for scenario: SwapReworkDemoScenario) -> String? {
-        guard scenario == .noGas else { return nil }
-        return String(format: "swapReworkGasShortfall".localized, "0.0002 ETH", "0.00088 ETH", "$1.72")
+        switch scenario {
+        case .noGas, .addGas:
+            return String(format: "swapReworkGasShortfall".localized, "0.0002 ETH", "0.00088 ETH", "$1.72")
+        case .noGasNative:
+            return String(format: "swapReworkGasUseMax".localized, "0.00043 ETH")
+        default:
+            return nil
+        }
     }
 
     // MARK: - Picker

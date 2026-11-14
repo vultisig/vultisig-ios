@@ -1932,6 +1932,7 @@
 "swapReworkFeeOther" = "Vultisig %@";
 "swapReworkFees" = "Naknade";
 "swapReworkFeeShareTitle" = "%@ ove zamjene ide na naknade";
+"swapReworkFeesLine" = "Naknade %@";
 "swapReworkFeesPlusGas" = "naknade %@ + plin";
 "swapReworkFeesShort" = "naknade %@";
 "swapReworkFlip" = "Zamijeni plaćanje i primanje";
@@ -1960,6 +1961,15 @@
 "swapReworkLegBitcoinBlocks" = "Bitcoin blokovi traju prosječno 10 min, mogu i 30+";
 "swapReworkLegConfirmations" = "%1$@ · %2$@ potvrda";
 "swapReworkLegOutbound" = "%1$@ · %2$@ čekanja isplate";
+"swapReworkLimitExpired" = "Nalog je istekao. Izvršeni dio se isplaćuje; neizvršeni iznos se vraća, umanjen za THORChain izlaznu naknadu.";
+"swapReworkLimitFilledHeld" = "%@ izvršeno · zadržano dok se nalog ne zatvori";
+"swapReworkLimitIfFills" = "Samo ako se izvrši";
+"swapReworkLimitIfUnfilled" = "Ako se ne izvrši";
+"swapReworkLimitInsideFloor" = "uključene u vaš minimum";
+"swapReworkLimitRefundOutbound" = "vraćeno, umanjeno za THORChain izlaznu naknadu";
+"swapReworkLimitThorchainFees" = "THORChain naknade za zamjenu";
+"swapReworkLimitTierNote" = "VULT popusti po razini još se ne primjenjuju na limitne naloge.";
+"swapReworkLimitVultisigFee" = "Vultisig naknada %@";
 "swapReworkMax" = "Maks.";
 "swapReworkMaxSlippage" = "Maks. skliznuće";
 "swapReworkMinimumReceived" = "Minimalno primljeno";
@@ -2021,6 +2031,7 @@
 "swapReworkUnverifiedReal" = "Pravi %@";
 "swapReworkUnverifiedTitle" = "Neprovjereni token";
 "swapReworkUseAnyway" = "Ipak koristi";
+"swapReworkUseMax" = "Zamijeni najviše što možete";
 "swapReworkUseMinimum" = "Koristi %@";
 "swapReworkUsuallyMore" = "Obično %1$d-%2$d min dulje";
 "swapReworkValueLossBody" = "Naknade i utjecaj na cijenu uzimaju velik dio ove zamjene. Veći iznos ili druga ruta mogu koštati manje.";
@@ -2032,6 +2043,7 @@
 "swapReworkYouPay" = "Plaćaš";
 "swapReworkYourAssets" = "Tvoja imovina";
 "swapReworkYouReceive" = "Primaš";
+"swapReworkYouReceiveOn" = "Primate na %@";
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swapRouteResetToAuto" = "Ruta vraćena na Auto";

@@ -16,73 +16,121 @@ struct SwapReworkPayCard: View {
     let onTapToken: () -> Void
     let onPercent: (Int) -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SwapReworkAdaptiveRow {
-                Text("swapReworkYouPay".localized)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            } trailing: {
-                HStack(spacing: 4) {
-                    Text("swapReworkBalance".localized)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                    Text(state.balanceText)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-                .font(Theme.fonts.footnote)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            }
-
-            SwapReworkAdaptiveRow {
-                Button(action: onTapAmount) {
-                    HStack(spacing: 2) {
-                        Text(SwapKeypadInput.display(state.amountText))
-                            .font(Theme.fonts.priceLargeTitle)
-                            .monospacedDigit()
-                            .foregroundStyle(state.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.45)
-                        if isEditing {
-                            SwapReworkCaret()
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("swapReworkPayAmount")
-            } trailing: {
-                SwapReworkTokenPill(asset: state.pay, action: onTapToken)
-                    .accessibilityIdentifier("swapReworkPayToken")
-            }
-
-            SwapReworkAdaptiveRow {
-                if let reserve = state.gasReserveText {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("swapReworkReservedForGas".localized)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                        Text(reserve)
-                            .font(Theme.fonts.priceCaption)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                    }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .layoutPriority(-1)
-                } else {
-                    Text(state.payFiatText)
-                        .font(Theme.fonts.priceFootnote)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-            } trailing: {
-                SwapReworkPercentChips(isMaxActive: state.gasReserveText != nil, onPercent: onPercent)
-                    .fixedSize()
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                accessibilityLayout
+            } else {
+                standardLayout
             }
         }
         .padding(16)
         .swapReworkCard(highlighted: isEditing)
+    }
+
+    private var standardLayout: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                title
+                Spacer(minLength: 4)
+                balance
+            }
+            HStack(alignment: .center, spacing: 8) {
+                amountButton
+                Spacer(minLength: 4)
+                pill
+            }
+            HStack(alignment: .center, spacing: 8) {
+                fiatOrReserve
+                Spacer(minLength: 4)
+                chips
+            }
+        }
+    }
+
+    /// R4 1_03: one thing per line, in reading order: the amount gets the full
+    /// width, the pill drops below it, then fiat, balance and the chips.
+    private var accessibilityLayout: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            title
+            amountButton
+            pill
+            fiatOrReserve
+            balance
+            chips
+        }
+    }
+
+    private var title: some View {
+        Text("swapReworkYouPay".localized)
+            .font(Theme.fonts.footnote)
+            .foregroundStyle(Theme.colors.textTertiary)
+    }
+
+    private var balance: some View {
+        HStack(spacing: 4) {
+            Text("swapReworkBalance".localized)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Text(state.balanceText)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.footnote)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+    }
+
+    private var amountButton: some View {
+        Button(action: onTapAmount) {
+            HStack(spacing: 2) {
+                Text(SwapKeypadInput.display(state.amountText))
+                    .font(Theme.fonts.priceLargeTitle)
+                    .monospacedDigit()
+                    .foregroundStyle(state.isEmpty ? Theme.colors.textTertiary : Theme.colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.45)
+                if isEditing {
+                    SwapReworkCaret()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("swapReworkPayAmount")
+    }
+
+    private var pill: some View {
+        SwapReworkTokenPill(asset: state.pay, action: onTapToken)
+            .accessibilityIdentifier("swapReworkPayToken")
+    }
+
+    @ViewBuilder
+    private var fiatOrReserve: some View {
+        if let reserve = state.gasReserveText {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("swapReworkReservedForGas".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                Text(reserve)
+                    .font(Theme.fonts.priceCaption)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .layoutPriority(-1)
+        } else {
+            Text(state.payFiatText)
+                .font(Theme.fonts.priceFootnote)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .lineLimit(1)
+        }
+    }
+
+    private var chips: some View {
+        SwapReworkPercentChips(isMaxActive: state.gasReserveText != nil, onPercent: onPercent)
+            .fixedSize()
     }
 }
 
@@ -90,30 +138,41 @@ struct SwapReworkReceiveCard: View {
     let state: SwapReworkFormState
     let onTapToken: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                accessibilityLayout
+            } else {
+                standardLayout
+            }
+        }
+        .padding(16)
+        .swapReworkCard(highlighted: false)
+    }
+
+    private var standardLayout: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SwapReworkAdaptiveRow {
+            HStack {
                 Text("swapReworkYouReceive".localized)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
-            } trailing: {
+                Spacer(minLength: 4)
                 Text(String(format: "swapReworkOnChain".localized, state.receive.chainName))
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
             }
-
-            SwapReworkAdaptiveRow {
+            HStack(alignment: .center, spacing: 8) {
                 receiveAmount
                     .frame(maxWidth: .infinity, alignment: .leading)
-            } trailing: {
-                SwapReworkTokenPill(asset: state.receive, action: onTapToken)
-                    .accessibilityIdentifier("swapReworkReceiveToken")
+                Spacer(minLength: 4)
+                pill
             }
-
             if state.isQuoteLoading {
                 SwapReworkSkeleton(width: 120, height: 12)
-            } else if !state.receiveFiatText.isEmpty, state.issue != .noRoute {
+            } else if showsFiat {
                 HStack(spacing: 4) {
                     Text(state.receiveFiatText)
                     if let allIn = state.allInText {
@@ -127,8 +186,40 @@ struct SwapReworkReceiveCard: View {
                 .minimumScaleFactor(0.8)
             }
         }
-        .padding(16)
-        .swapReworkCard(highlighted: false)
+    }
+
+    /// R4 1_03: "You receive on Bitcoin" on one line, then the amount, the pill
+    /// below it, fiat and the all-in each on their own line.
+    private var accessibilityLayout: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(String(format: "swapReworkYouReceiveOn".localized, state.receive.chainName))
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textTertiary)
+            receiveAmount
+                .frame(maxWidth: .infinity, alignment: .leading)
+            pill
+            if state.isQuoteLoading {
+                SwapReworkSkeleton(width: 120, height: 12)
+            } else if showsFiat {
+                Text(state.receiveFiatText)
+                    .font(Theme.fonts.priceFootnote)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                if let allIn = state.allInText {
+                    Text(allIn)
+                        .font(Theme.fonts.priceFootnote)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
+            }
+        }
+    }
+
+    private var showsFiat: Bool {
+        !state.receiveFiatText.isEmpty && state.issue != .noRoute
+    }
+
+    private var pill: some View {
+        SwapReworkTokenPill(asset: state.receive, action: onTapToken)
+            .accessibilityIdentifier("swapReworkReceiveToken")
     }
 
     @ViewBuilder
@@ -156,30 +247,6 @@ struct SwapReworkReceiveCard: View {
     private var receiveColor: Color {
         if state.isReceiveIndicative || state.receiveAmountText == "0" { return Theme.colors.textTertiary }
         return Theme.colors.textSecondary
-    }
-}
-
-/// Side by side, or stacked at accessibility text sizes, where a token amount
-/// next to its pill would otherwise truncate. An amount must never truncate.
-struct SwapReworkAdaptiveRow<Leading: View, Trailing: View>: View {
-    @ViewBuilder let leading: () -> Leading
-    @ViewBuilder let trailing: () -> Trailing
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: 8) {
-                leading()
-                trailing()
-            }
-        } else {
-            HStack(alignment: .center, spacing: 8) {
-                leading()
-                Spacer(minLength: 4)
-                trailing()
-            }
-        }
     }
 }
 
