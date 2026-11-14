@@ -31,7 +31,7 @@ struct PerpsRouter {
         }
     }
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     private func supportedContent(_ route: PerpsRoute) -> some View {
         switch route {
         case .hub(let vault):

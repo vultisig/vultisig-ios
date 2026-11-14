@@ -543,7 +543,8 @@ final class PerpsCloseViewModel: ObservableObject {
     func refresh(position: HLPosition, market: PerpsMarket) {
         self.position = position
         self.market = market
-        if !isAvailable(fraction) { fraction = .all }
+        // Never widen the user's pick: an unavailable fraction sizes to 0,
+        // which `issue` reports and Review stays disabled until they re-pick.
     }
 
     var total: Decimal { abs(position.szi.value) }
