@@ -19,6 +19,10 @@ struct SendDetailsAmountTab: View {
         content
             .padding(.bottom, 65)
             .clipped()
+            .onChange(of: viewModel.coin) { _, _ in
+                // The preset (25/50/75/Max) described the old asset's balance.
+                percentage = nil
+            }
             .onChange(of: isExpanded) { _, newValue in
                 guard newValue else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
