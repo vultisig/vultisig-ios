@@ -55,6 +55,10 @@ struct SendDetailsScreen: View {
                 setData()
             }
             .onChange(of: viewModel.coin) { oldValue, newValue in
+                // The amount now describes a different asset, so the max-send intent
+                // no longer applies. Lives here (always mounted), not on the amount
+                // field, which is absent while its section is collapsed.
+                viewModel.convertToFiat(newValue: viewModel.amount)
                 viewModel.initializePendingTransactionState(for: newValue.chain)
                 PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
                 viewModel.refreshPendingTransactionState()
