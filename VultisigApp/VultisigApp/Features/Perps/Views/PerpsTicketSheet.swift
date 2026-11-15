@@ -98,6 +98,8 @@ struct PerpsTicketSheet: View {
                 }
             } else {
                 PrimaryButton(title: "perpsReview".localized) {
+                    // Checked again at the tap, like Close and Modify: a tick can expire between probes.
+                    guard connection.isFresh() else { return viewModel.setPricesFresh(false) }
                     guard let document = viewModel.reviewDocument() else { return }
                     onReview(document)
                 }
@@ -126,6 +128,7 @@ struct PerpsTicketSheet: View {
             guard !connection.isOffline, let market = connection.market else { return }
             viewModel.refresh(market: market, account: connection.account)
         }
+        .background { PerpsFreshnessProbe(connection: connection) { viewModel.setPricesFresh($0) } }
         .crossPlatformSheet(item: $subSheet) { kind in
             switch kind {
             case .leverage:

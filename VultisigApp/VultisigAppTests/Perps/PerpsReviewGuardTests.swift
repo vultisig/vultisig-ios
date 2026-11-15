@@ -199,6 +199,20 @@ final class PerpsReviewGuardTests: XCTestCase {
         XCTAssertNil(exits.exitsReview(position: position, market: market(), existing: [], tier: nil, nonce: 1))
     }
 
+    /// The open ticket gets the same guard: a stale mid would size the order,
+    /// place the default stop and price the IOC off an old quote.
+    func testTicketWaitsForFreshPricesBeforeReview() {
+        let ticket = PerpsTicketViewModel(side: .long, market: market(), account: account(), vault: context(supported: true))
+        ticket.autoCloseOn = false
+        XCTAssertTrue(ticket.canReview)
+        ticket.setPricesFresh(false)
+        XCTAssertEqual(ticket.issue, "perpsPricesUpdating".localized)
+        XCTAssertFalse(ticket.canReview)
+        XCTAssertNil(ticket.reviewDocument())
+        ticket.setPricesFresh(true)
+        XCTAssertNotNil(ticket.reviewDocument())
+    }
+
     func testConnectionIsFreshOnlyAfterARecentGoodTick() async {
         let viewModel = PerpsMarketViewModel(coin: "BTC", repository: StubRepository(market: market()))
         XCTAssertFalse(viewModel.connection.isFresh(), "no tick yet")

@@ -122,6 +122,9 @@ final class PerpsTicketViewModel: ObservableObject {
     /// The VULT tier this ticket prices with: one snapshot feeds the fee shown,
     /// Max, and the builder fee the order carries, so they can never disagree.
     @Published private(set) var vultTier: VultDiscountTier?
+    /// False while the connection's last good tick is older than 45 s: the
+    /// plan (size, stop, minimum, IOC price) would quote an old mid, so Review stays off.
+    @Published private(set) var pricesAreFresh = true
 
     /// `vultTier` defaults to this vault's own resolved tier (`PerpsVultTier.tier(for:)`).
     init(side: PerpsSide, market: PerpsMarket, account: PerpsAccountSnapshot?, vault: PerpsVaultContext,
@@ -143,6 +146,8 @@ final class PerpsTicketViewModel: ObservableObject {
         self.account = account
         vultTier = PerpsVultTier.tier(for: vault.tierKey)
     }
+
+    func setPricesFresh(_ isFresh: Bool) { pricesAreFresh = isFresh }
 
     /// A position already open in this market. Adding to it or trading against
     /// it is not modelled yet, so the ticket refuses rather than re-levering it.
@@ -275,6 +280,7 @@ final class PerpsTicketViewModel: ObservableObject {
     /// One inline reason the order cannot be reviewed, or nil.
     var issue: String? {
         guard (PerpsInput.decimal(amountText) ?? 0) > 0 else { return nil }
+        if !pricesAreFresh { return "perpsPricesUpdating".localized }
         if case .failure(let error) = plan {
             switch error {
             case .sizeTooSmall, .minimumNotional: return "perpsMinimumNotional".localized
