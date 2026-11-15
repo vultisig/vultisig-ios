@@ -711,12 +711,12 @@
 "kaminoEarnWithdraw" = "Sacar";
 "kaminoErrorVaultMetadataMismatch" = "A Kamino informou %1$@ como %2$@; o valor deste vault é %3$@";
 "kaminoErrorVaultNotInRegistry" = "O vault %@ não está no registro de vaults suportados por este aplicativo";
-"kaminoLoadFailed" = "Não foi possível carregar este cofre: %@";
-"kaminoPayerBalanceUnavailable" = "A Solana não informou o custo desta transação, então o máximo não pode ser calculado.";
-"kaminoSimulationFailed" = "Esta transação falharia na Solana: %@";
 "kaminoInsufficientSol" = "SOL insuficiente. Adicione SOL ao seu cofre e tente novamente.";
 "kaminoInsufficientSolAmounts" = "SOL insuficiente. Este depósito precisa de cerca de %1$@ SOL; seu cofre tem %2$@ SOL.";
 "kaminoInsufficientToken" = "%@ insuficiente.";
+"kaminoLoadFailed" = "Não foi possível carregar este cofre: %@";
+"kaminoPayerBalanceUnavailable" = "A Solana não informou o custo desta transação, então o máximo não pode ser calculado.";
+"kaminoSimulationFailed" = "Esta transação falharia na Solana: %@";
 "kaminoVerifyAmount" = "Valor";
 "kaminoVerifyAmountUnverifiable" = "O valor acima é uma estimativa do outro dispositivo e não pode ser conferido com estes bytes. O que está sendo assinado é a quantidade de cotas abaixo.";
 "kaminoVerifyCurator" = "Gestor";

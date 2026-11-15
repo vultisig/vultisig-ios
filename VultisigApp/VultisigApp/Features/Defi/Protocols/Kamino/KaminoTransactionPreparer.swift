@@ -27,12 +27,15 @@ protocol KaminoSolanaMeasuring {
 
     func fetchLamports(address: String) async throws -> UInt64
 
-    func accountExists(address: String) async throws -> Bool
+    /// Whether a token program owns `address`. Lamports alone, e.g. sent there before the
+    /// account was opened, still leave its rent to pay.
+    func isTokenAccount(address: String) async throws -> Bool
 }
 
 extension SolanaService: KaminoSolanaMeasuring {
-    func accountExists(address: String) async throws -> Bool {
-        try await checkAccountExists(address: address).exists
+    func isTokenAccount(address: String) async throws -> Bool {
+        let owner = try await fetchAccountOwner(address: address)
+        return owner == KaminoSolanaProgram.token.rawValue || owner == KaminoSolanaProgram.token2022.rawValue
     }
 }
 
@@ -506,8 +509,8 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
 
         var missingTokenAccounts = 0
         for address in opened.tokenAccounts {
-            let exists = try await solana.accountExists(address: address)
-            if !exists { missingTokenAccounts += 1 }
+            let isOpen = try await solana.isTokenAccount(address: address)
+            if !isOpen { missingTokenAccounts += 1 }
         }
 
         let available = try await availableRead

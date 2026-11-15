@@ -1018,7 +1018,7 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
         return lamports
     }
 
-    func accountExists(address: String) async throws -> Bool {
+    func isTokenAccount(address: String) async throws -> Bool {
         await Task.yield()
         return existingAccounts.contains(address)
     }

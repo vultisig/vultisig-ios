@@ -817,6 +817,15 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
         return lamports
     }
 
+    /// The program that owns `address`, or `nil` when no account exists there.
+    func fetchAccountOwner(address: String) async throws -> String? {
+        let response = try await httpClient.requestRetryingTimeout(
+            api(.getAccountInfo(address: address)),
+            responseType: SolanaGetAccountInfoResponse.self
+        )
+        return response.data.result.value?.owner
+    }
+
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
         let response = try await httpClient.requestRetryingTimeout(
             api(.getAccountInfo(address: address)),

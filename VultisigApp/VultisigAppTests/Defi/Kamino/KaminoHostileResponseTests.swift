@@ -432,7 +432,7 @@ private struct PermissiveSolana: KaminoSolanaMeasuring {
         return 0
     }
 
-    func accountExists(address: String) async throws -> Bool {
+    func isTokenAccount(address: String) async throws -> Bool {
         await Task.yield()
         return false
     }
