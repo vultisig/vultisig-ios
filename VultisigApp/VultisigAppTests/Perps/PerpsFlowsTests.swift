@@ -106,14 +106,20 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(preview.liquidation, btc.estimate?.liquidationPrice)
         let funded = PerpsVaultContext(name: "Main", address: vault.address, arbitrumUsdcBalance: Decimal(string: "250.07"), tradingAddress: nil)
         let ticket = PerpsTicketViewModel(side: .long, market: market(), account: nil, vault: funded)
-        // From the vault: 250.07 less the 0.20 + 1.00 deposit fees, then room for 2x trading fees.
+        // From the vault: 250.07 less the 0.20 + 1.00 deposit fees, then room for 2x trading fees
+        // and the long's 1% IOC slippage.
         ticket.applyFraction(Decimal(string: "0.25") ?? 0)
-        XCTAssertEqual(ticket.amountText, "62.03")
+        XCTAssertEqual(ticket.amountText, "61.42")
         ticket.applyMax()
         let margin = PerpsInput.decimal(ticket.amountText) ?? 0
-        let fees = margin * 2 * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: nil))
-        XCTAssertLessThanOrEqual(margin + fees + HLCctp.forwardingFee + HLCctp.activationFee, Decimal(string: "250.07") ?? 0,
-                                 "Max never asks for more than the vault holds")
+        let atLimit = margin * (1 + ticket.ticket.slippage)
+        let fees = atLimit * 2 * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: nil))
+        XCTAssertLessThanOrEqual(atLimit + fees + HLCctp.forwardingFee + HLCctp.activationFee, Decimal(string: "250.07") ?? 0,
+                                 "Max never asks for more than the vault holds, even filled at mid + slippage")
+        // A short sells at mid - slippage: nothing extra to reserve.
+        let short = PerpsTicketViewModel(side: .short, market: market(), account: nil, vault: funded)
+        short.applyFraction(Decimal(string: "0.25") ?? 0)
+        XCTAssertEqual(short.amountText, "62.03")
     }
 
     /// The explainer tells apart a stop that acts first, one the price already

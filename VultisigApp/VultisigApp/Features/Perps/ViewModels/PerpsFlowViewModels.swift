@@ -185,7 +185,9 @@ final class PerpsTicketViewModel: ObservableObject {
 
     /// The most margin the balance can fund once trading fees (and, from the
     /// vault, the deposit's forwarding + first-deposit fees) are taken out:
-    /// margin + margin x leverage x fee rate fits in what is there.
+    /// margin + margin x leverage x fee rate fits in what is there. A market
+    /// long's IOC is priced at mid + slippage, so its margin and fees can cost
+    /// that much more: Max leaves the room, or the venue rejects the order.
     var affordableMargin: Decimal {
         let fromAccount = availableToTrade > 0
         // The vault side is floored to cents first: the deposit is rounded up to
@@ -194,7 +196,8 @@ final class PerpsTicketViewModel: ObservableObject {
         if !fromAccount { base -= HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0) }
         guard base > 0 else { return 0 }
         let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: vultTier)
-        return base / (1 + Decimal(leverage) * feeRate)
+        let slippageRoom = side.isBuy ? 1 + ticket.slippage : 1
+        return base / ((1 + Decimal(leverage) * feeRate) * slippageRoom)
     }
 
     /// Stop 7% from entry, or halfway to liquidation if that is closer.
