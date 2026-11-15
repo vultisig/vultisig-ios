@@ -89,6 +89,21 @@ struct SwapDoneScreen: View {
     }
 
     var body: some View {
+        if SwapReworkConfig.isFeatureEnabled && !transaction.isLimit {
+            SwapReworkDoneScreen(
+                vault: vault,
+                hash: hash,
+                transaction: transaction,
+                statusService: DoneStatusServiceFactory.swap(txHash: hash, transaction: transaction, vault: vault),
+                onTryAgain: tryAgainAction(for: .failed(reason: "")),
+                onDone: { appViewModel.restart() }
+            )
+        } else {
+            existingDoneScreen
+        }
+    }
+
+    private var existingDoneScreen: some View {
         DoneScreen(
             input: payload,
             statusService: DoneStatusServiceFactory.swap(

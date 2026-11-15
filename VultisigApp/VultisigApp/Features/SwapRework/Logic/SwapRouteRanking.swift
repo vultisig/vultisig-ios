@@ -1,0 +1,184 @@
+//
+//  SwapRouteRanking.swift
+//  VultisigApp
+//
+//  Orders the route sheet by what reaches the vault after every fee, gas
+//  included when each route's gas is known. The top route is "Best return"; a
+//  different, strictly faster route is "Fastest". The sheet can also sort by
+//  speed. Only the existing providers are ranked: the sheet never invents one.
+//
+
+import Foundation
+
+/// One provider's quote reduced to what the route sheet compares.
+struct SwapRouteOption: Equatable, Identifiable {
+    /// Stable per provider, so a manual pick survives a refresh.
+    let id: String
+    let providerName: String
+    let providerLogo: String?
+    /// Amount of the destination coin the vault receives, net of provider fees.
+    let receivedAmount: Decimal
+    let receivedFiat: Decimal?
+    /// Fees the route charges in fiat, when the provider states them.
+    let feesFiat: Decimal?
+    /// Estimated seconds to land, when the provider states it.
+    let etaSeconds: Int?
+    /// Source-chain gas for this route, in fiat. Only known for the route the
+    /// form quoted (each route has its own gas parameters and approvals).
+    var gasFiat: Decimal?
+
+    /// What the fees add up to, and whether that is everything.
+    var feesEstimate: SwapRouteFeesEstimate? {
+        switch (feesFiat, gasFiat) {
+        case let (fees?, gas?): return .complete(fees + gas)
+        case let (fees?, nil): return .gasUnknown(fees: fees)
+        case let (nil, gas?): return .feesInRate(gas: gas)
+        case (nil, nil): return nil
+        }
+    }
+
+    /// What reaches the vault, net of gas, in fiat. Nil unless both are known:
+    /// a missing gas figure is unknown, never zero.
+    var netFiat: Decimal? {
+        guard let receivedFiat, let gasFiat else { return nil }
+        return receivedFiat - gasFiat
+    }
+}
+
+/// Route fees with gas when both are known; otherwise the known part and
+/// what is missing, so the sheet never calls a partial sum "all-in".
+enum SwapRouteFeesEstimate: Equatable {
+    case complete(Decimal)
+    case gasUnknown(fees: Decimal)
+    case feesInRate(gas: Decimal)
+}
+
+enum SwapRouteSort: String, CaseIterable, Identifiable {
+    case bestReturn
+    case fastest
+    var id: String { rawValue }
+}
+
+enum SwapRouteTag: Equatable {
+    /// Top route ranked net of every route's gas.
+    case bestReturn
+    /// Top route when some routes' gas is unknown: it pays out the most, which
+    /// is all the ranking can claim.
+    case mostReceived
+    case fastest
+}
+
+struct SwapRankedRoute: Equatable, Identifiable {
+    let option: SwapRouteOption
+    let tags: [SwapRouteTag]
+    /// Shortfall against the best route in destination units (0 for the best).
+    let shortfall: Decimal
+    /// The same shortfall in fiat, net of gas, when both sides have one.
+    var shortfallFiat: Decimal?
+
+    var id: String { option.id }
+    var isBest: Bool { tags.contains(.bestReturn) || tags.contains(.mostReceived) }
+}
+
+enum SwapRouteRanking {
+
+    /// Highest received amount first. Ties go to the lower fee, then the faster
+    /// route, then the provider name, so the order is stable across refreshes.
+    /// Options that pay out nothing are dropped: they are not a route.
+    static func rank(_ options: [SwapRouteOption]) -> [SwapRankedRoute] {
+        let viable = options.filter { $0.receivedAmount > 0 }
+        // Net of gas only when every route states its fiat value; otherwise a
+        // route without one would win or lose on a missing number.
+        let comparesNet = !viable.isEmpty && viable.allSatisfy { $0.netFiat != nil }
+        let sorted = viable.sorted { isBetter($0, $1, comparesNet: comparesNet) }
+        guard let best = sorted.first else { return [] }
+
+        let fastestID = fastestRouteID(in: sorted, bestID: best.id)
+
+        return sorted.map { option in
+            var tags: [SwapRouteTag] = []
+            if option.id == best.id { tags.append(comparesNet ? .bestReturn : .mostReceived) }
+            if option.id == fastestID { tags.append(.fastest) }
+            // Net of gas when every route's gas is known, otherwise the output
+            // difference alone.
+            var shortfallFiat: Decimal?
+            if comparesNet, let bestNet = best.netFiat, let net = option.netFiat {
+                shortfallFiat = max(bestNet - net, 0)
+            } else if let bestFiat = best.receivedFiat, let fiat = option.receivedFiat {
+                shortfallFiat = max(bestFiat - fiat, 0)
+            }
+            return SwapRankedRoute(
+                option: option,
+                tags: tags,
+                shortfall: max(best.receivedAmount - option.receivedAmount, 0),
+                shortfallFiat: shortfallFiat
+            )
+        }
+    }
+
+    /// Best return keeps the ranking; fastest orders by stated time, routes
+    /// without one last, ties in ranking order.
+    static func sorted(_ ranked: [SwapRankedRoute], by sort: SwapRouteSort) -> [SwapRankedRoute] {
+        switch sort {
+        case .bestReturn:
+            return ranked
+        case .fastest:
+            return ranked.enumerated().sorted { lhs, rhs in
+                let lhsEta = lhs.element.option.etaSeconds ?? .max
+                let rhsEta = rhs.element.option.etaSeconds ?? .max
+                return lhsEta != rhsEta ? lhsEta < rhsEta : lhs.offset < rhs.offset
+            }.map(\.element)
+        }
+    }
+
+    /// The route the form shows: the user's pick while it still quotes,
+    /// otherwise the best.
+    static func activeRoute(in ranked: [SwapRankedRoute], selectedID: String?) -> SwapRankedRoute? {
+        if let selectedID, let picked = ranked.first(where: { $0.id == selectedID }) {
+            return picked
+        }
+        return ranked.first
+    }
+
+    private static func isBetter(_ lhs: SwapRouteOption, _ rhs: SwapRouteOption, comparesNet: Bool) -> Bool {
+        if comparesNet, let lhsNet = lhs.netFiat, let rhsNet = rhs.netFiat, lhsNet != rhsNet {
+            return lhsNet > rhsNet
+        }
+        if lhs.receivedAmount != rhs.receivedAmount { return lhs.receivedAmount > rhs.receivedAmount }
+        let lhsFee = lhs.feesFiat ?? .greatestFiniteMagnitude
+        let rhsFee = rhs.feesFiat ?? .greatestFiniteMagnitude
+        if lhsFee != rhsFee { return lhsFee < rhsFee }
+        let lhsEta = lhs.etaSeconds ?? .max
+        let rhsEta = rhs.etaSeconds ?? .max
+        if lhsEta != rhsEta { return lhsEta < rhsEta }
+        return lhs.providerName < rhs.providerName
+    }
+
+    /// "Fastest" only means something when it is a different route from the
+    /// best and strictly quicker than it. A route with no stated time never
+    /// wins it.
+    private static func fastestRouteID(in sorted: [SwapRouteOption], bestID: String) -> String? {
+        guard sorted.count > 1 else { return nil }
+        let timed = sorted.compactMap { option in option.etaSeconds.map { (option, $0) } }
+        guard let fastest = timed.min(by: { $0.1 < $1.1 }), fastest.0.id != bestID else { return nil }
+        if let bestEta = sorted.first(where: { $0.id == bestID })?.etaSeconds, bestEta <= fastest.1 {
+            return nil
+        }
+        return fastest.0.id
+    }
+}
+
+/// Unique, readable ids for the route sheet. Two quotes of the same brand
+/// (SwapKit through two sub-providers) used to share one id, so SwiftUI
+/// merged the rows and a tap on the second picked the first. The first keeps
+/// its brand id; later ones get "#2", "#3", in quote order.
+enum SwapRouteIdentity {
+    static func ids(forBrands brands: [String]) -> [String] {
+        var seen: [String: Int] = [:]
+        return brands.map { brand in
+            let count = (seen[brand] ?? 0) + 1
+            seen[brand] = count
+            return count == 1 ? brand : "\(brand)#\(count)"
+        }
+    }
+}

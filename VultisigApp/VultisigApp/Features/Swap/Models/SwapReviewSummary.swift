@@ -48,6 +48,10 @@ struct SwapReviewSummary {
     let feeLines: [FeeLine]
     /// A limit order's only fee: the source-chain network fee.
     let limitNetworkFee: (amount: String, fiat: String)?
+    /// With the swap rework on, what a limit order costs if and when it fills
+    /// (Vultisig and THORChain fees, inside the floor) and if it does not
+    /// (the refund pays THORChain's outbound fee). Empty otherwise.
+    var limitFillFees: [FeeLine] = []
     let externalRecipient: String?
     /// Where a SwapKit ERC-20 deposit transfers the sold token, decoded from the
     /// calldata that gets signed; nil for any other swap. A failure is the
@@ -147,8 +151,29 @@ extension SwapReviewSummary {
             limitNetworkFee = nil
         }
 
+        limitFillFees = transaction.isLimit && SwapReworkConfig.isFeatureEnabled
+            ? Self.limitFillFees(transaction)
+            : []
+
         externalRecipient = transaction.hasExternalRecipient ? transaction.recipientAddress : nil
         self.depositRecipient = depositRecipient
+    }
+
+    /// Limit orders carry the list affiliate rate (no tier discount yet: fee
+    /// policy, not changed here), taken from the payout at fill time and so
+    /// already inside the floor, like THORChain's own fees.
+    private static func limitFillFees(_ transaction: SwapTransaction) -> [FeeLine] {
+        let listBps = SwapCryptoLogic.affiliateListFeeBps
+        let vultisig = transaction.fromCoin.fiat(decimal: transaction.fromAmount) * Decimal(listBps) / 10_000
+        return [
+            FeeLine(
+                label: String(format: "swapReworkLimitVultisigFee".localized, SwapFeeBreakdown.percent(bps: listBps)),
+                value: "≈ " + vultisig.formatToFiat()
+            ),
+            FeeLine(label: "swapReworkLimitThorchainFees".localized, value: "swapReworkLimitInsideFloor".localized),
+            FeeLine(label: "swapReworkLimitIfUnfilled".localized, value: "swapReworkLimitRefundOutbound".localized),
+            FeeLine(label: "swapReworkLimitTierNote".localized, value: nil, valueColor: Theme.colors.textTertiary)
+        ]
     }
 
     /// Prices `toAmountDecimal` directly rather than through

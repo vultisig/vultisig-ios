@@ -33,6 +33,8 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
     /// Hyperliquid perps in the DeFi tab. Off by default; see `PerpsConfig`.
     @AppStorage(PerpsConfig.featureFlagKey) var perpsEnabled: Bool = false
+    /// The reworked swap form. Off by default; see `SwapReworkConfig`.
+    @AppStorage(SwapReworkConfig.featureFlagKey) var swapReworkEnabled: Bool = false
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string
     /// = no force (production ranking across all providers). Otherwise one

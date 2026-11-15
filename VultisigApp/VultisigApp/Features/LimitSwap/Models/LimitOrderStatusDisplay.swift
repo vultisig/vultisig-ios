@@ -82,12 +82,12 @@ struct LimitOrderStatusDisplay: Equatable {
     ) -> LimitOrderStatusDisplay {
         switch effectiveUiStatus(uiStatus: uiStatus, details: details) {
         case .resting, .pending, .swapping, .unknownPendingExtended:
-            return LimitOrderStatusDisplay(kind: .inProgress, detail: progressDetail(details))
+            return LimitOrderStatusDisplay(kind: .inProgress, detail: progressDetail(details, isOpen: true))
         case .cancelling:
             // Same second line as any other live order — a partial fill on an
             // order being cancelled is still a partial fill, and hiding it would
             // suggest the cancel already undid something.
-            return LimitOrderStatusDisplay(kind: .cancelling, detail: progressDetail(details))
+            return LimitOrderStatusDisplay(kind: .cancelling, detail: progressDetail(details, isOpen: true))
         case .completed:
             // A full fill needs no second line — the amount pair above it
             // already tells the whole story.
@@ -131,11 +131,18 @@ struct LimitOrderStatusDisplay: Equatable {
     ///
     /// Shown ONLY for a partial fill. A 0% order has nothing to report beyond
     /// its status, and a 100% one is just "Successful".
-    private static func progressDetail(_ details: LimitOrderDetails?) -> String? {
+    ///
+    /// With the swap rework on, an open order's partial fill also says where
+    /// that amount is: THORChain settles it when the order closes, so it is not
+    /// in the address yet.
+    private static func progressDetail(_ details: LimitOrderDetails?, isOpen: Bool = false) -> String? {
         guard let details, details.isPartiallyFilled,
               let fraction = details.fillFraction,
               let percent = LimitOrderFormatting.percent(fraction) else {
             return nil
+        }
+        if isOpen, SwapReworkConfig.isFeatureEnabled {
+            return String(format: "swapReworkLimitFilledHeld".localized, percent)
         }
         return String(format: "limitSwap.progress.filledFormat".localized, percent)
     }
