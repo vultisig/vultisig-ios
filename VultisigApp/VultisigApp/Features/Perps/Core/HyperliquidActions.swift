@@ -60,6 +60,18 @@ struct HLOrderWire: Equatable, Sendable {
         if let clientOrderId { entries.append(("c", .string(clientOrderId))) }
         return .object(entries)
     }
+
+    /// A reduce-only market stop loss / take profit. The one place a trigger
+    /// order is built: the trigger is tick-rounded first (a sub-tick trigger
+    /// rounds to 0 and is refused), and `p` is `HLWireFormat.triggerLimitPrice`.
+    static func marketTrigger(asset: Int, isBuy: Bool, trigger: Decimal, size: String, kind: HLOrderType.Kind,
+                              szDecimals: Int) throws -> HLOrderWire {
+        let rounded = HLWireFormat.price(trigger, szDecimals: szDecimals)
+        guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
+        let worstFill = HLWireFormat.triggerLimitPrice(trigger: rounded, isBuy: isBuy, szDecimals: szDecimals)
+        return HLOrderWire(asset: asset, isBuy: isBuy, price: try HLWireFormat.wire(worstFill), size: size, reduceOnly: true,
+                           type: .trigger(isMarket: true, triggerPrice: try HLWireFormat.wire(rounded), kind: kind))
+    }
 }
 
 enum HLGrouping: String, Sendable {
@@ -319,9 +331,29 @@ enum HLWireFormat {
 
     /// Worst fill price for a market trigger: trigger ± 10% against the
     /// closing side (a buy pays up to +10%, a sell accepts down to -10%),
-    /// rounded to a valid tick. `trigger` must already be a valid price.
+    /// rounded to a valid tick TOWARD the trigger, so it is never more than
+    /// 10% away (62287 sells at 56059, not 56058). `trigger` must already be
+    /// a valid price. The single source of truth for a trigger's `p`: every
+    /// builder goes through `HLOrderWire.marketTrigger`, and a co-sign check
+    /// can recompute this and require exact equality.
     static func triggerLimitPrice(trigger: Decimal, isBuy: Bool, szDecimals: Int) -> Decimal {
-        marketPrice(mid: trigger, isBuy: isBuy, slippage: triggerMarketSlippage, szDecimals: szDecimals)
+        let raw = isBuy ? trigger * (1 + triggerMarketSlippage) : trigger * (1 - triggerMarketSlippage)
+        return price(raw, szDecimals: szDecimals, rounding: isBuy ? .down : .up)
+    }
+
+    /// `price`, but rounded in one direction instead of to the nearest:
+    /// at most 5 significant figures and `6 - szDecimals` decimals, integers
+    /// always valid. A result of `price(rounding:)` is unchanged by `price`.
+    static func price(_ value: Decimal, szDecimals: Int, rounding mode: NSDecimalNumber.RoundingMode) -> Decimal {
+        guard value > 0 else { return 0 }
+        if value == value.rounded(scale: 0) { return value }
+        // exponent = floor(log10(value)), computed exactly on Decimal.
+        var exponent = 0
+        var scaled = value
+        while scaled >= 10 { scaled /= 10; exponent += 1 }
+        while scaled < 1 { scaled *= 10; exponent -= 1 }
+        let scale = max(0, min(4 - exponent, 6 - szDecimals))
+        return round(value, scale: scale, mode: mode)
     }
 
     private static func round(_ value: Decimal, scale: Int, mode: NSDecimalNumber.RoundingMode) -> Decimal {

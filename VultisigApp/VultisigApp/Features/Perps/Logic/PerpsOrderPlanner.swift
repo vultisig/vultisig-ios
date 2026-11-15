@@ -119,19 +119,8 @@ enum PerpsOrderPlanner {
         )]
         for (trigger, kind) in [(ticket.takeProfit, HLOrderType.Kind.takeProfit), (ticket.stopLoss, .stopLoss)] {
             guard let trigger else { continue }
-            // Round first, then check: a sub-tick trigger rounds to 0.
-            let rounded = HLWireFormat.price(trigger, szDecimals: market.szDecimals)
-            guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
-            let triggerPrice = try HLWireFormat.wire(rounded)
-            let worstFill = HLWireFormat.triggerLimitPrice(trigger: rounded, isBuy: !ticket.side.isBuy, szDecimals: market.szDecimals)
-            orders.append(HLOrderWire(
-                asset: market.assetIndex,
-                isBuy: !ticket.side.isBuy,
-                price: try HLWireFormat.wire(worstFill),
-                size: size,
-                reduceOnly: true,
-                type: .trigger(isMarket: true, triggerPrice: triggerPrice, kind: kind)
-            ))
+            orders.append(try .marketTrigger(asset: market.assetIndex, isBuy: !ticket.side.isBuy, trigger: trigger, size: size,
+                                             kind: kind, szDecimals: market.szDecimals))
         }
         let grouping: HLGrouping = orders.count > 1 ? .normalTpsl : .standalone
         let steps = [

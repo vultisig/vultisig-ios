@@ -148,8 +148,38 @@ final class PerpsLogicTests: XCTestCase {
         guard case let .array(longOrders)? = longPlan.steps[1].action["orders"] else { return XCTFail("orders") }
         XCTAssertEqual(longOrders[1]["p"], .string("3000"), "3333.3 x 0.9 = 2999.97, 5 significant figures")
         XCTAssertEqual(longOrders[1]["t"]?["trigger"]?["triggerPx"], .string("3333.3"))
-        XCTAssertEqual(longOrders[2]["p"], .string("2500"), "2777.8 x 0.9 = 2500.02")
+        XCTAssertEqual(longOrders[2]["p"], .string("2500.1"), "2777.8 x 0.9 = 2500.02, rounded up toward the trigger: 2500 is 10.0007% away")
         XCTAssertEqual(longOrders[2]["t"]?["trigger"]?["triggerPx"], .string("2777.8"))
+    }
+
+    /// The worst fill rounds toward the trigger, so it is never more than 10%
+    /// away after tick rounding, and is already a valid price.
+    func testTriggerLimitPriceRoundsTowardTheTrigger() {
+        // BTC (szDecimals 5): 62287 x 0.9 = 56058.3, nearest would be 56058 (10.0005% away).
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: 62287, isBuy: false, szDecimals: 5), 56059)
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: 62287, isBuy: true, szDecimals: 5), 68515, "68515.7 rounds down")
+        // ETH (szDecimals 4).
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: dec("2777.8"), isBuy: false, szDecimals: 4), dec("2500.1"))
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: dec("2777.8"), isBuy: true, szDecimals: 4), dec("3055.5"))
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: dec("3333.3"), isBuy: false, szDecimals: 4), 3000)
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: 2800, isBuy: true, szDecimals: 4), 3080)
+        // Small coin (szDecimals 0): 0.12345 x 0.9 = 0.111105 -> 0.11111.
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: dec("0.12345"), isBuy: false, szDecimals: 0), dec("0.11111"))
+        XCTAssertEqual(HLWireFormat.triggerLimitPrice(trigger: dec("0.12345"), isBuy: true, szDecimals: 0), dec("0.13579"))
+
+        let samples = ["62287", "71398.6", "2777.8", "3012.6", "1.2346", "0.012346", "0.5", "99999", "10.001", "123456"]
+        for szDecimals in 0...5 {
+            for sample in samples {
+                let trigger = HLWireFormat.price(dec(sample), szDecimals: szDecimals)
+                guard trigger > 0 else { continue }
+                for isBuy in [true, false] {
+                    let worst = HLWireFormat.triggerLimitPrice(trigger: trigger, isBuy: isBuy, szDecimals: szDecimals)
+                    XCTAssertLessThanOrEqual(abs(worst - trigger) / trigger, HLWireFormat.triggerMarketSlippage, "\(trigger) \(isBuy) \(szDecimals)")
+                    XCTAssertEqual(isBuy ? worst >= trigger : worst <= trigger, true, "\(trigger) worst fill on the far side")
+                    XCTAssertEqual(HLWireFormat.price(worst, szDecimals: szDecimals), worst, "\(worst) is a valid tick")
+                }
+            }
+        }
     }
 
     func testPlanRejectsTinyAndOverLeveraged() {
