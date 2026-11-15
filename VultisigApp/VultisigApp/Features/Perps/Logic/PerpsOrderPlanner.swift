@@ -102,7 +102,11 @@ enum PerpsOrderPlanner {
             schedule: market.marginSchedule
         )
         guard estimate.size > 0 else { throw PerpsOrderPlannerError.sizeTooSmall }
-        guard estimate.notional >= minimumNotional else { throw PerpsOrderPlannerError.minimumNotional }
+        // Checked at the price that is signed too: a market short's IOC sits at
+        // mid - slippage, so $10.00 at mid would sign under $10.
+        guard estimate.notional >= minimumNotional, estimate.size * price >= minimumNotional else {
+            throw PerpsOrderPlannerError.minimumNotional
+        }
 
         let size = try HLWireFormat.wire(estimate.size)
         var orders = [HLOrderWire(

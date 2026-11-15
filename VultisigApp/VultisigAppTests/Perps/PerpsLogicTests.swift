@@ -163,6 +163,23 @@ final class PerpsLogicTests: XCTestCase {
         }
     }
 
+    /// $10.00 at mid is not enough for a market short: its IOC signs at mid - 1%.
+    func testMinimumNotionalIsCheckedAtTheSignedPrice() throws {
+        let sol = PerpsMarket(assetIndex: 5, coin: "SOL", szDecimals: 2, maxLeverage: 20, onlyIsolated: false,
+                              markPrice: 100, midPrice: 100, previousDayPrice: 100, hourlyFunding: 0, openInterest: 1, dayVolume: 1)
+        let short = PerpsTicket(side: .short, margin: 5, leverage: 2, marginMode: .isolated, limitPrice: nil, takeProfit: nil, stopLoss: nil)
+        XCTAssertThrowsError(try PerpsOrderPlanner.plan(market: sol, ticket: short, nonce: 1), "0.1 SOL x 99 = $9.90 signed") {
+            XCTAssertEqual($0 as? PerpsOrderPlannerError, .minimumNotional)
+        }
+        var long = short
+        long.side = .long
+        let plan = try PerpsOrderPlanner.plan(market: sol, ticket: long, nonce: 1)
+        XCTAssertEqual(plan.price * plan.estimate.size, Decimal(string: "10.1"), "a long signs above mid")
+        var bigger = short
+        bigger.margin = Decimal(string: "5.5") ?? 0
+        XCTAssertNoThrow(try PerpsOrderPlanner.plan(market: sol, ticket: bigger, nonce: 1), "0.11 SOL x 99 = $10.89")
+    }
+
     // MARK: - /info decoding (shapes captured from api.hyperliquid.xyz on 2026-11-12)
 
     func testDecodesMetaAndAssetContexts() throws {
