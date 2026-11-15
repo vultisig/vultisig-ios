@@ -318,6 +318,8 @@ final class PerpsWithdrawHistoryCache: @unchecked Sendable {
     func store(_ hasWithdrawn: Bool, for address: String, now: Date = Date()) {
         lock.lock()
         defer { lock.unlock() }
+        // An older read finishing late never takes back a withdrawal already seen.
+        if !hasWithdrawn, entries[address.lowercased()]?.hasWithdrawn == true { return }
         entries[address.lowercased()] = (hasWithdrawn, now)
     }
 }

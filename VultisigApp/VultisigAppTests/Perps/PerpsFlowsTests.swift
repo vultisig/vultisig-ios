@@ -666,6 +666,8 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertNil(cache.value(for: "0xabc", now: start.addingTimeInterval(PerpsWithdrawHistoryCache.notWithdrawnLifetime)), "not withdrawn is re-read")
         cache.store(true, for: "0xabc", now: start)
         XCTAssertEqual(cache.value(for: "0xABC", now: start.addingTimeInterval(86_400)), true, "a withdrawal is permanent")
+        cache.store(false, for: "0xabc", now: start.addingTimeInterval(90_000))
+        XCTAssertEqual(cache.value(for: "0xabc", now: start.addingTimeInterval(90_001)), true, "a late \"none\" read doesn't undo it")
     }
 
     func testNearLiquidationWithinTwoPercent() {
