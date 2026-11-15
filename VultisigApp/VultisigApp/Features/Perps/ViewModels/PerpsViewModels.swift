@@ -242,6 +242,10 @@ final class PerpsMarketViewModel: ObservableObject {
             connection.isOffline = true
             connection.pricesAsOf = Date().addingTimeInterval(-120)
         }
+        // Debug only: online, but the last good tick is a minute old (a paused poll).
+        if PerpsDemoState.current.contains(.stale) {
+            connection.pricesAsOf = Date().addingTimeInterval(-60)
+        }
         #endif
         await loadChart()
     }
@@ -250,7 +254,7 @@ final class PerpsMarketViewModel: ObservableObject {
     /// and keeps the last good values.
     func refreshPrices() async {
         #if DEBUG
-        if PerpsDemoState.current.contains(.offline), market != nil { return }
+        if !PerpsDemoState.current.isDisjoint(with: [.offline, .stale]), market != nil { return }
         #endif
         refreshGeneration += 1
         let generation = refreshGeneration

@@ -25,7 +25,7 @@ enum PerpsRepositories {
 enum PerpsDemoState: String {
     case addingFunds, tradeOpened, positionClosed, stopNotPlaced, noPositions, nearLiquidation
     case withdraw, withdrawing, withdrawn, modify, addMargin, closeHalf, stopLossHit, takeProfitHit, liquidated, orderFailed
-    case account, withdrawSlow, removeMarginBlocked, closeQuarter, closing, partlyClosed, offline
+    case account, withdrawSlow, removeMarginBlocked, closeQuarter, closing, partlyClosed, offline, stale
     /// One continuous demo whose account moves on after each review (see `PerpsDemoStory`).
     case story
 
@@ -252,7 +252,8 @@ final class PerpsDemoRepository: PerpsRepository {
         )
         snapshot.triggerOrders = [stopOrder]
         snapshot.marginSummaryCrossValue = accountValue
-        snapshot.hasWithdrawnBefore = false
+        // `-perpsDemoWithdrawHistoryUnknown YES`: as if the ledger read failed, so the fee "may apply".
+        snapshot.hasWithdrawnBefore = PerpsDemoStory.withdrawHistoryUnknown ? nil : false
         return snapshot
     }
 
@@ -350,6 +351,7 @@ enum PerpsDemoStory {
 
     static func pinnedMark(_ coin: String) -> Decimal? { decimal("perpsDemoMark\(coin)") }
     static var pinnedEntry: Decimal? { decimal("perpsDemoEntryBTC") }
+    static var withdrawHistoryUnknown: Bool { PerpsConfig.usesDemoAccount && UserDefaults.standard.bool(forKey: "perpsDemoWithdrawHistoryUnknown") }
     static var pinnedStop: String? { PerpsConfig.usesDemoAccount ? UserDefaults.standard.string(forKey: "perpsDemoStopBTC") : nil }
 
     private static func decimal(_ key: String) -> Decimal? {
