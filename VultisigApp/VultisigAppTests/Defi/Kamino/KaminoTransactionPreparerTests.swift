@@ -523,7 +523,177 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         XCTAssertEqual(harness.lookupTables.fetchCount, 1)
     }
 
+    // MARK: - Refusals name what to fix
+
+    /// The reported failure: a first USDC deposit from a wallet holding 0.00316
+    /// SOL. The farm user state's rent is what runs out, at instruction 2.
+    func testAFirstDepositShortOfSolSaysWhatItNeedsAndWhatTheVaultHas() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.results = [.refused(
+            "{InstructionError: [2, {Custom: 1}]}",
+            logs: Self.mainnetFarmUserShortfallLogs
+        )]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        XCTAssertEqual(error, .insufficientSol(KaminoSolShortfall(
+            neededLamports: 5_000 + 6_400 + 1_488_440 + 5_323_840 + 650_240,
+            availableLamports: 3_156_865
+        )))
+    }
+
+    /// `createIdempotent` charges nothing for an account that already exists,
+    /// so its rent is not part of what the deposit needs.
+    func testAnExistingShareAccountIsNotCountedAsRent() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.existingAccounts = [Self.usdcDepositShareAccount]
+        harness.solana.results = [.refused(
+            "{InstructionError: [2, {Custom: 1}]}",
+            logs: Self.mainnetFarmUserShortfallLogs
+        )]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        XCTAssertEqual(error, .insufficientSol(KaminoSolShortfall(
+            neededLamports: 5_000 + 6_400 + 5_323_840 + 650_240,
+            availableLamports: 3_156_865
+        )))
+    }
+
+    /// A SOL deposit spends the amount itself out of the same balance, and opens
+    /// the wrapped-SOL account as well as the share account.
+    func testASolDepositShortOfSolCountsTheAmountAndBothAccounts() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.solDeposit)
+        harness.solana.results = [.refused("{InstructionError: [1, {Custom: 1}]}", logs: [
+            "Transfer: insufficient lamports 3151865, need 500000000"
+        ])]
+
+        let error = await preparationError(harness, vault: Self.allezVault, owner: solOwner, amount: Self.solAmount)
+
+        XCTAssertEqual(error, .insufficientSol(KaminoSolShortfall(
+            neededLamports: 5_000 + 7_000 + 2 * 1_488_440 + 5_323_840 + 650_240 + 500_000_000,
+            availableLamports: 3_156_865
+        )))
+    }
+
+    /// The injected fee can be what tips a wallet over, so the second run is
+    /// explained the same way as the first.
+    func testRunningOutOfSolAfterInjectionIsExplainedToo() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.results = [.ok(payer: nil), .refused("{InsufficientFundsForRent: {account_index: 0}}", logs: [])]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        guard case .insufficientSol(let shortfall?) = error else {
+            return XCTFail("unexpected error \(String(describing: error))")
+        }
+        XCTAssertEqual(shortfall.availableLamports, 3_156_865)
+    }
+
+    /// The amounts are an explanation, not the refusal. When they cannot be
+    /// read, the refusal still stands and says what to do.
+    func testAnUnreadableBalanceStillRefusesAsShortOfSol() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.lamports = nil
+        harness.solana.results = [.refused("AccountNotFound", logs: [])]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        XCTAssertEqual(error, .insufficientSol(nil))
+    }
+
+    func testAWithdrawShortOfSolIsNamedWithoutAmounts() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcWithdraw)
+        harness.solana.results = [.refused("AccountNotFound", logs: [])]
+
+        do {
+            _ = try await harness.preparer.prepareWithdraw(
+                vault: Self.steakhouseWithdrawVault,
+                owner: withdrawOwner,
+                request: Self.usdcRequest,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual(error as? KaminoPreparationError, .insufficientSol(nil))
+        }
+    }
+
+    /// Figures that say the vault can pay would contradict the refusal, so the
+    /// refusal is shown without them.
+    func testAmountsThatWouldContradictTheRefusalAreDropped() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.lamports = 50_000_000
+        harness.solana.results = [.refused(
+            "{InstructionError: [2, {Custom: 1}]}",
+            logs: Self.mainnetFarmUserShortfallLogs
+        )]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        XCTAssertEqual(error, .insufficientSol(nil))
+    }
+
+    /// On a withdraw the Token program's code 1 can be shares or vault liquidity,
+    /// so it keeps the runtime's own reason rather than naming the token.
+    func testATokenShortfallOnAWithdrawKeepsTheRuntimesReason() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcWithdraw)
+        harness.solana.results = [.refused("{InstructionError: [1, {Custom: 1}]}", logs: [
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA failed: custom program error: 0x1"
+        ])]
+
+        do {
+            _ = try await harness.preparer.prepareWithdraw(
+                vault: Self.steakhouseWithdrawVault,
+                owner: withdrawOwner,
+                request: Self.usdcRequest,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual(
+                error as? KaminoPreparationError,
+                .simulationFailed(stage: .asBuilt, reason: "{InstructionError: [1, {Custom: 1}]}")
+            )
+        }
+    }
+
+    func testRunningOutOfTheVaultTokenIsNamed() async {
+        let harness = Self.solShortHarness(vector: KaminoTransactionFixtures.usdcDeposit)
+        harness.solana.results = [.refused("{InstructionError: [1, {Custom: 1}]}", logs: [
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA failed: custom program error: 0x1",
+            "Program KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd failed: custom program error: 0x1"
+        ])]
+
+        let error = await preparationError(harness, vault: Self.steakhouseVault, amount: Self.usdcAmount)
+
+        XCTAssertEqual(
+            error,
+            .insufficientToken(ticker: Self.steakhouseVault.descriptor.underlyingCoinMeta?.ticker ?? "kaminoVerifyTokens".localized)
+        )
+    }
+
     // MARK: - Helpers
+
+    private func preparationError(
+        _ harness: Harness,
+        vault: KaminoVaultInfo,
+        owner depositOwner: String? = nil,
+        amount: KaminoTokenAmount
+    ) async -> KaminoPreparationError? {
+        do {
+            _ = try await harness.preparer.prepareDeposit(
+                vault: vault,
+                owner: depositOwner ?? owner,
+                amount: amount,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected a refusal")
+            return nil
+        } catch {
+            return error as? KaminoPreparationError
+        }
+    }
 
     private func assertPreparationFails(
         _ harness: Harness,
@@ -553,6 +723,27 @@ final class KaminoTransactionPreparerTests: XCTestCase {
 // MARK: - Fixtures
 
 private extension KaminoTransactionPreparerTests {
+
+    /// A wallet holding 0.00316 SOL, with mainnet's rent at 5,080 lamports a byte
+    /// and none of the accounts a deposit opens.
+    static func solShortHarness(vector: KaminoTransactionFixtures.Vector) -> Harness {
+        let harness = Harness(vector: vector)
+        harness.solana.lamports = 3_156_865
+        harness.solana.rentBySize = [0: 650_240, 165: 1_488_440, 920: 5_323_840]
+        return harness
+    }
+
+    /// The share account the sampled USDC deposit's `createIdempotent` opens.
+    static let usdcDepositShareAccount = "pTT7BQ26zy2YkBzNk3m7ywK4E4h4XD6oL2ns5SiJTnA"
+
+    /// The tail of a mainnet simulation of a first USDC deposit from a wallet
+    /// with too little SOL for the farm user state.
+    static let mainnetFarmUserShortfallLogs = [
+        "Program log: Instruction: InitializeUser",
+        "Transfer: insufficient lamports 1663425, need 5323840",
+        "Program 11111111111111111111111111111111 failed: custom program error: 0x1",
+        "Program FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr failed: custom program error: 0x1"
+    ]
 
     static let usdcAmount = KaminoTokenAmount(baseUnits: BigInt(10_000_000), decimals: 6)
     static let solAmount = KaminoTokenAmount(baseUnits: BigInt(500_000_000), decimals: 9)
@@ -708,6 +899,7 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
     enum Outcome {
         case ok(payer: UInt64?)
         case failed(String)
+        case refused(String, logs: [String])
     }
 
     enum Sample {
@@ -717,7 +909,7 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
         case failure
     }
 
-    enum StubError: Error { case sampleUnavailable }
+    enum StubError: Error { case sampleUnavailable, balanceUnavailable }
 
     private let lock = NSLock()
     private var _simulated: [String] = []
@@ -726,6 +918,9 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
     private var _results: [Outcome] = [.ok(payer: nil), .ok(payer: nil)]
     private var _prioritizationFee: Sample = .success(KaminoComputeBudget.fallbackUnitPriceMicroLamports)
     private var _rentExemptMinimum: UInt64 = 890_880
+    private var _rentBySize: [Int: UInt64] = [:]
+    private var _lamports: UInt64? = 0
+    private var _existingAccounts: Set<String> = []
     private var _cursor = 0
 
     var simulatedTransactions: [String] { lock.withLock { _simulated } }
@@ -747,6 +942,23 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
         set { lock.withLock { _rentExemptMinimum = newValue } }
     }
 
+    /// Rent per account size, overriding `rentExemptMinimum` for those sizes.
+    var rentBySize: [Int: UInt64] {
+        get { lock.withLock { _rentBySize } }
+        set { lock.withLock { _rentBySize = newValue } }
+    }
+
+    /// The payer's balance; `nil` makes the read fail.
+    var lamports: UInt64? {
+        get { lock.withLock { _lamports } }
+        set { lock.withLock { _lamports = newValue } }
+    }
+
+    var existingAccounts: Set<String> {
+        get { lock.withLock { _existingAccounts } }
+        set { lock.withLock { _existingAccounts = newValue } }
+    }
+
     func simulateTransaction(
         base64Transaction: String,
         replaceRecentBlockhash: Bool,
@@ -764,6 +976,8 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
         switch outcome {
         case .failed(let reason):
             return SolanaSimulationResult(failure: reason, unitsConsumed: 0, logs: [])
+        case .refused(let reason, let logs):
+            return SolanaSimulationResult(failure: reason, unitsConsumed: 0, logs: logs)
         case .ok(let payer):
             var lamports: [String: UInt64] = [:]
             if let payer, let address = accountAddresses.first {
@@ -794,8 +1008,19 @@ private final class StubSolanaMeasuring: KaminoSolanaMeasuring, @unchecked Senda
         await Task.yield()
         return lock.withLock {
             _rentExemptSizes.append(size)
-            return _rentExemptMinimum
+            return _rentBySize[size] ?? _rentExemptMinimum
         }
+    }
+
+    func fetchLamports(address: String) async throws -> UInt64 {
+        await Task.yield()
+        guard let lamports else { throw StubError.balanceUnavailable }
+        return lamports
+    }
+
+    func accountExists(address: String) async throws -> Bool {
+        await Task.yield()
+        return existingAccounts.contains(address)
     }
 }
 

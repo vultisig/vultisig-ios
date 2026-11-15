@@ -714,6 +714,9 @@
 "kaminoLoadFailed" = "Impossibile caricare questo vault: %@";
 "kaminoPayerBalanceUnavailable" = "Solana non ha riportato il costo di questa transazione, quindi il massimo non può essere calcolato.";
 "kaminoSimulationFailed" = "Questa transazione fallirebbe su Solana: %@";
+"kaminoInsufficientSol" = "SOL insufficienti. Aggiungi SOL al tuo vault e riprova.";
+"kaminoInsufficientSolAmounts" = "SOL insufficienti. Questo deposito richiede circa %1$@ SOL; il tuo vault ha %2$@ SOL.";
+"kaminoInsufficientToken" = "%@ insufficienti.";
 "kaminoVerifyAmount" = "Importo";
 "kaminoVerifyAmountUnverifiable" = "L'importo sopra è una stima dell'altro dispositivo e non può essere verificato su questi byte. Ciò che viene firmato è la quantità di quote qui sotto.";
 "kaminoVerifyCurator" = "Gestore";

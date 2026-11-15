@@ -804,6 +804,19 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
         return 0.0
     }
 
+    /// Native balance of `address` in lamports; zero for an account that does not exist.
+    func fetchLamports(address: String) async throws -> UInt64 {
+        let response = try await httpClient.requestRetryingTimeout(
+            api(.getBalance(address: address)),
+            responseType: SolanaGetBalanceResponse.self
+        )
+        let value = response.data.result.value
+        guard let lamports = UInt64(exactly: value) else {
+            throw SolanaServiceError.rpcError(message: "getBalance returned \(value)", code: -1)
+        }
+        return lamports
+    }
+
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
         let response = try await httpClient.requestRetryingTimeout(
             api(.getAccountInfo(address: address)),

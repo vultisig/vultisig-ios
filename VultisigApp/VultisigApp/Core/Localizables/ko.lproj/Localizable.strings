@@ -714,6 +714,9 @@
 "kaminoLoadFailed" = "이 볼트를 불러오지 못했습니다: %@";
 "kaminoPayerBalanceUnavailable" = "Solana가 이 트랜잭션의 비용을 반환하지 않아 최대 금액을 계산할 수 없습니다.";
 "kaminoSimulationFailed" = "이 트랜잭션은 Solana에서 실패합니다: %@";
+"kaminoInsufficientSol" = "SOL이 부족합니다. 볼트에 SOL을 추가한 후 다시 시도하세요.";
+"kaminoInsufficientSolAmounts" = "SOL이 부족합니다. 이 예치에는 약 %1$@ SOL이 필요하며, 볼트에는 %2$@ SOL이 있습니다.";
+"kaminoInsufficientToken" = "%@이(가) 부족합니다.";
 "kaminoVerifyAmount" = "수량";
 "kaminoVerifyAmountUnverifiable" = "위의 수량은 다른 기기가 계산한 추정치이며 이 바이트로 확인할 수 없습니다. 실제로 서명되는 것은 아래의 지분 수량입니다.";
 "kaminoVerifyCurator" = "운영사";

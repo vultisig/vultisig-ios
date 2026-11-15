@@ -714,6 +714,9 @@
 "kaminoLoadFailed" = "Ovaj trezor nije moguće učitati: %@";
 "kaminoPayerBalanceUnavailable" = "Solana nije prijavila trošak ove transakcije pa se maksimum ne može izračunati.";
 "kaminoSimulationFailed" = "Ova transakcija bi na Solani propala: %@";
+"kaminoInsufficientSol" = "Nema dovoljno SOL-a. Dodajte SOL u svoj trezor i pokušajte ponovno.";
+"kaminoInsufficientSolAmounts" = "Nema dovoljno SOL-a. Ovaj polog treba oko %1$@ SOL; vaš trezor ima %2$@ SOL.";
+"kaminoInsufficientToken" = "Nema dovoljno %@.";
 "kaminoVerifyAmount" = "Iznos";
 "kaminoVerifyAmountUnverifiable" = "Iznos iznad je procjena drugog uređaja i ne može se provjeriti prema ovim bajtovima. Potpisuje se količina udjela ispod.";
 "kaminoVerifyCurator" = "Kurator";
