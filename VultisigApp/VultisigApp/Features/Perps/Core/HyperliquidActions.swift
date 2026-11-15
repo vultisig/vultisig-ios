@@ -64,11 +64,14 @@ struct HLOrderWire: Equatable, Sendable {
     /// A reduce-only market stop loss / take profit. The one place a trigger
     /// order is built: the trigger is tick-rounded first (a sub-tick trigger
     /// rounds to 0 and is refused), and `p` is `HLWireFormat.triggerLimitPrice`.
+    /// A tick so coarse that `p` rounds back onto the trigger is refused too:
+    /// that order would be a stop-limit at the trigger and not fill on a gap.
     static func marketTrigger(asset: Int, isBuy: Bool, trigger: Decimal, size: String, kind: HLOrderType.Kind,
                               szDecimals: Int) throws -> HLOrderWire {
         let rounded = HLWireFormat.price(trigger, szDecimals: szDecimals)
         guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
         let worstFill = HLWireFormat.triggerLimitPrice(trigger: rounded, isBuy: isBuy, szDecimals: szDecimals)
+        guard worstFill != rounded else { throw PerpsOrderPlannerError.invalidTriggerPrice }
         return HLOrderWire(asset: asset, isBuy: isBuy, price: try HLWireFormat.wire(worstFill), size: size, reduceOnly: true,
                            type: .trigger(isMarket: true, triggerPrice: try HLWireFormat.wire(rounded), kind: kind))
     }

@@ -182,6 +182,17 @@ final class PerpsLogicTests: XCTestCase {
         }
     }
 
+    /// 0.5 at szDecimals 5 has a 0.1 tick: 0.45 / 0.55 round back onto 0.5, so `p`
+    /// can't sit past the trigger and the order is refused instead of signed as a stop-limit.
+    func testMarketTriggerRefusesATickTooCoarseForTheWorstFill() throws {
+        for isBuy in [true, false] {
+            XCTAssertThrowsError(try HLOrderWire.marketTrigger(asset: 0, isBuy: isBuy, trigger: dec("0.5"), size: "1", kind: .stopLoss, szDecimals: 5)) {
+                XCTAssertEqual($0 as? PerpsOrderPlannerError, .invalidTriggerPrice)
+            }
+        }
+        XCTAssertNoThrow(try HLOrderWire.marketTrigger(asset: 0, isBuy: false, trigger: 62287, size: "0.001", kind: .stopLoss, szDecimals: 5))
+    }
+
     func testPlanRejectsTinyAndOverLeveraged() {
         let tiny = PerpsTicket(side: .long, margin: 1, leverage: 2, marginMode: .cross, limitPrice: nil, takeProfit: nil, stopLoss: nil)
         XCTAssertThrowsError(try PerpsOrderPlanner.plan(market: eth, ticket: tiny, nonce: 1)) {
