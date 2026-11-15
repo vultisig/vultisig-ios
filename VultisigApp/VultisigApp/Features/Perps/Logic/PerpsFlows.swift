@@ -288,9 +288,11 @@ enum PerpsFlows {
                 // Round first, then check: a sub-tick trigger rounds to 0.
                 let rounded = HLWireFormat.price(target, szDecimals: market.szDecimals)
                 guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
-                let price = try HLWireFormat.wire(rounded)
-                orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: price, size: size, reduceOnly: true,
-                                          type: .trigger(isMarket: true, triggerPrice: price, kind: kind)))
+                let triggerPrice = try HLWireFormat.wire(rounded)
+                let worstFill = HLWireFormat.triggerLimitPrice(trigger: rounded, isBuy: !position.isLong, szDecimals: market.szDecimals)
+                orders.append(HLOrderWire(asset: market.assetIndex, isBuy: !position.isLong, price: try HLWireFormat.wire(worstFill),
+                                          size: size, reduceOnly: true,
+                                          type: .trigger(isMarket: true, triggerPrice: triggerPrice, kind: kind)))
             }
         }
         var requests: [HLExchangeRequest] = []

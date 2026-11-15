@@ -310,6 +310,20 @@ enum HLWireFormat {
         return price(raw, szDecimals: szDecimals)
     }
 
+    /// Room a triggered market order (stop loss / take profit) gets past its
+    /// trigger. For a trigger order `p` is the worst fill price, so `p ==
+    /// triggerPx` makes a stop that gaps through its trigger never fill.
+    /// Hyperliquid's own UI sends triggerPx ± 10% for market triggers; wider
+    /// than the 1% used for opens because this order exists to get out.
+    static let triggerMarketSlippage: Decimal = Decimal(string: "0.1") ?? 0
+
+    /// Worst fill price for a market trigger: trigger ± 10% against the
+    /// closing side (a buy pays up to +10%, a sell accepts down to -10%),
+    /// rounded to a valid tick. `trigger` must already be a valid price.
+    static func triggerLimitPrice(trigger: Decimal, isBuy: Bool, szDecimals: Int) -> Decimal {
+        marketPrice(mid: trigger, isBuy: isBuy, slippage: triggerMarketSlippage, szDecimals: szDecimals)
+    }
+
     private static func round(_ value: Decimal, scale: Int, mode: NSDecimalNumber.RoundingMode) -> Decimal {
         var copy = value
         var result = Decimal()

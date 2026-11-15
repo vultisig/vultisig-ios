@@ -119,10 +119,11 @@ enum PerpsOrderPlanner {
             let rounded = HLWireFormat.price(trigger, szDecimals: market.szDecimals)
             guard rounded > 0 else { throw PerpsOrderPlannerError.invalidTriggerPrice }
             let triggerPrice = try HLWireFormat.wire(rounded)
+            let worstFill = HLWireFormat.triggerLimitPrice(trigger: rounded, isBuy: !ticket.side.isBuy, szDecimals: market.szDecimals)
             orders.append(HLOrderWire(
                 asset: market.assetIndex,
                 isBuy: !ticket.side.isBuy,
-                price: triggerPrice,
+                price: try HLWireFormat.wire(worstFill),
                 size: size,
                 reduceOnly: true,
                 type: .trigger(isMarket: true, triggerPrice: triggerPrice, kind: kind)

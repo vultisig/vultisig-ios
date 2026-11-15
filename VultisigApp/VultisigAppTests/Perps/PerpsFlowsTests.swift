@@ -319,6 +319,10 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(document.requests.map(\.kind), [.cancel, .order])
         XCTAssertEqual(document.requests.map(\.nonce), [100, 101])
         XCTAssertEqual(document.requests[1].action["grouping"], .string("positionTpsl"))
+        // A long's exits sell: worst fill is the trigger - 10%, never the trigger itself.
+        guard case let .array(orders)? = document.requests[1].action["orders"] else { return XCTFail("orders") }
+        XCTAssertEqual(orders.map { $0["t"]?["trigger"]?["triggerPx"] }, [.string("62000"), .string("72000")])
+        XCTAssertEqual(orders.map { $0["p"] }, [.string("55800"), .string("64800")])
         let unchanged = try PerpsFlows.editExits(position: try position(), market: market(), existing: [stop], stopLoss: 60_000,
                                                  takeProfit: nil, tier: nil, nonce: 200)
         XCTAssertNotNil(unchanged.blockingIssue)

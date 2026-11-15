@@ -128,6 +128,30 @@ final class PerpsLogicTests: XCTestCase {
         XCTAssertEqual(plan.steps[0].action["isCross"], .bool(false))
     }
 
+    /// A market trigger signs `p` as its worst fill: trigger ± 10% against
+    /// the closing side, so a stop that gaps through its trigger still fills.
+    func testMarketTriggersSignSlippageRoomPastTheTrigger() throws {
+        // Short: the exits buy, so they may pay up to +10%.
+        let short = PerpsTicket(side: .short, margin: 300, leverage: 3, marginMode: .isolated, limitPrice: dec("3100.123"),
+                                takeProfit: 2800, stopLoss: 3300)
+        let shortPlan = try PerpsOrderPlanner.plan(market: eth, ticket: short, nonce: 1)
+        guard case let .array(shortOrders)? = shortPlan.steps[1].action["orders"] else { return XCTFail("orders") }
+        XCTAssertEqual(shortOrders[1]["p"], .string("3080"))
+        XCTAssertEqual(shortOrders[1]["t"]?["trigger"]?["triggerPx"], .string("2800"))
+        XCTAssertEqual(shortOrders[2]["p"], .string("3630"))
+        XCTAssertEqual(shortOrders[2]["t"]?["trigger"]?["triggerPx"], .string("3300"))
+
+        // Long: the exits sell, so they accept down to -10%, rounded to a valid tick (2 decimals at szDecimals 4).
+        let long = PerpsTicket(side: .long, margin: 100, leverage: 5, marginMode: .cross, limitPrice: nil,
+                               takeProfit: dec("3333.33"), stopLoss: dec("2777.77"))
+        let longPlan = try PerpsOrderPlanner.plan(market: eth, ticket: long, nonce: 1)
+        guard case let .array(longOrders)? = longPlan.steps[1].action["orders"] else { return XCTFail("orders") }
+        XCTAssertEqual(longOrders[1]["p"], .string("3000"), "3333.3 x 0.9 = 2999.97, 5 significant figures")
+        XCTAssertEqual(longOrders[1]["t"]?["trigger"]?["triggerPx"], .string("3333.3"))
+        XCTAssertEqual(longOrders[2]["p"], .string("2500"), "2777.8 x 0.9 = 2500.02")
+        XCTAssertEqual(longOrders[2]["t"]?["trigger"]?["triggerPx"], .string("2777.8"))
+    }
+
     func testPlanRejectsTinyAndOverLeveraged() {
         let tiny = PerpsTicket(side: .long, margin: 1, leverage: 2, marginMode: .cross, limitPrice: nil, takeProfit: nil, stopLoss: nil)
         XCTAssertThrowsError(try PerpsOrderPlanner.plan(market: eth, ticket: tiny, nonce: 1)) {
