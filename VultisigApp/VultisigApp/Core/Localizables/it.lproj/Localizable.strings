@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "Circa 5 min";
 "perpsAboveNow" = "%@ sopra il prezzo attuale";
 "perpsActivationFootnote" = "Le commissioni includono %@ una tantum sul tuo primo prelievo.";
+"perpsActivationMayApplyFootnote" = "Sul tuo primo prelievo potrebbe essere applicata una commissione di attivazione una tantum di %@.";
 "perpsActivity" = "Attività";
 "perpsActivityAdded" = "Fondi aggiunti";
 "perpsActivityClosed" = "%@ %@ chiuso";

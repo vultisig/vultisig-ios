@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "Oko 5 min";
 "perpsAboveNow" = "%@ iznad trenutne cijene";
 "perpsActivationFootnote" = "Naknade uključuju jednokratnih %@ pri vašem prvom povlačenju.";
+"perpsActivationMayApplyFootnote" = "Pri vašem prvom povlačenju može se naplatiti jednokratna naknada za aktivaciju od %@.";
 "perpsActivity" = "Aktivnost";
 "perpsActivityAdded" = "Dodana sredstva";
 "perpsActivityClosed" = "Zatvoreno %@ %@";

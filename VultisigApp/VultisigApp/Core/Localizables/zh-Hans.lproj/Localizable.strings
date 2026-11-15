@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "约 5 分钟";
 "perpsAboveNow" = "比现价高 %@";
 "perpsActivationFootnote" = "费用包含首次提取时一次性收取的 %@。";
+"perpsActivationMayApplyFootnote" = "首次提取时可能收取一次性 %@ 激活费。";
 "perpsActivity" = "活动";
 "perpsActivityAdded" = "已添加资金";
 "perpsActivityClosed" = "已平仓 %@ %@";

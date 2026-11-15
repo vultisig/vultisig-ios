@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "About 5 min";
 "perpsAboveNow" = "%@ above now";
 "perpsActivationFootnote" = "Fees include a one-time %@ on your first withdrawal.";
+"perpsActivationMayApplyFootnote" = "A one-time %@ activation fee may apply on your first withdrawal.";
 "perpsActivity" = "Activity";
 "perpsActivityAdded" = "Added funds";
 "perpsActivityClosed" = "Closed %@ %@";

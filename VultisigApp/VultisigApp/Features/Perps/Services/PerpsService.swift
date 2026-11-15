@@ -7,6 +7,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "perps-repository")
 
 struct PerpsMarket: Identifiable, Hashable, Sendable {
     let assetIndex: Int
@@ -63,7 +66,8 @@ struct PerpsAccountSnapshot: Hashable, Sendable {
     var spotUsdcTotal: Decimal?
     var spotUsdcHold: Decimal = 0
     /// Whether a withdrawal already went out (the one-time activation fee is
-    /// then paid). Nil when unknown, which counts as a first withdrawal.
+    /// then paid), from the ledger. Nil when unknown: the fee then "may apply"
+    /// and never blocks a withdrawal.
     var hasWithdrawnBefore: Bool?
 
     private var crossUnrealizedPnl: Decimal {
@@ -134,6 +138,7 @@ protocol PerpsRepository: Sendable {
 
 final class HyperliquidPerpsRepository: PerpsRepository {
     private let httpClient: HTTPClientProtocol
+    private let withdrawHistory = PerpsWithdrawHistoryCache()
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
@@ -162,9 +167,11 @@ final class HyperliquidPerpsRepository: PerpsRepository {
         async let orders = httpClient.request(HyperliquidInfoAPI.openOrders(user: address), responseType: [HLOpenOrder].self)
         async let fills = httpClient.request(HyperliquidInfoAPI.userFills(user: address), responseType: [HLFill].self)
         async let triggers = httpClient.request(HyperliquidInfoAPI.frontendOpenOrders(user: address), responseType: [HLFrontendOrder].self)
+        async let hasWithdrawn = hasWithdrawnBefore(address: address)
         var snapshot = try await Self.snapshot(address: address, state: state.data, orders: orders.data, fills: fills.data)
         snapshot.mode = mode
         snapshot.triggerOrders = try await triggers.data
+        snapshot.hasWithdrawnBefore = await hasWithdrawn
         if mode.isUnified {
             let spot = try await httpClient.request(HyperliquidInfoAPI.spotClearinghouseState(user: address), responseType: HLSpotClearinghouseState.self).data
             let usdc = spot.balances.first { $0.coin == "USDC" }
@@ -172,6 +179,33 @@ final class HyperliquidPerpsRepository: PerpsRepository {
             snapshot.spotUsdcHold = usdc?.hold.value ?? 0
         }
         return snapshot
+    }
+
+    /// From the full ledger, cached so a poll does not re-read it every tick.
+    /// A failed read is unknown (nil), never "first withdrawal".
+    private func hasWithdrawnBefore(address: String) async -> Bool? {
+        if let cached = withdrawHistory.value(for: address) { return cached }
+        do {
+            let ledger = try await httpClient.request(HyperliquidInfoAPI.ledgerUpdates(user: address, startTimeMs: 0), responseType: [HLLedgerUpdate].self).data
+            let value = Self.hasWithdrawn(ledger: ledger)
+            if let value { withdrawHistory.store(value, for: address) }
+            return value
+        } catch {
+            logger.warning("Ledger read for withdraw history failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Upper bound on one `userNonFundingLedgerUpdates` response. A response
+    /// this long may be cut, so "no withdraw in it" is not proof of none.
+    /// TODO(testnet): confirm the venue's real cap for this endpoint.
+    static let ledgerHistoryCap = 500
+
+    /// True once any `withdraw` is in the history; false only when the
+    /// history is complete and has none; nil when it may be truncated.
+    static func hasWithdrawn(ledger: [HLLedgerUpdate]) -> Bool? {
+        if ledger.contains(where: { $0.delta.type == "withdraw" }) { return true }
+        return ledger.count < ledgerHistoryCap ? false : nil
     }
 
     func activity(address: String, fills: [HLFill]) async throws -> [PerpsActivityItem] {
@@ -262,5 +296,28 @@ final class HyperliquidPerpsRepository: PerpsRepository {
         )
         snapshot.marginSummaryCrossValue = state.crossMarginSummary.accountValue.value
         return snapshot
+    }
+}
+
+/// Withdraw history per address. A withdrawal is permanent, so `true` is kept
+/// for good; `false` is re-read after a few minutes (one may have gone out elsewhere).
+final class PerpsWithdrawHistoryCache: @unchecked Sendable {
+    static let notWithdrawnLifetime: TimeInterval = 300
+
+    private let lock = NSLock()
+    private var entries: [String: (hasWithdrawn: Bool, at: Date)] = [:]
+
+    func value(for address: String, now: Date = Date()) -> Bool? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let entry = entries[address.lowercased()] else { return nil }
+        if entry.hasWithdrawn || now.timeIntervalSince(entry.at) < Self.notWithdrawnLifetime { return entry.hasWithdrawn }
+        return nil
+    }
+
+    func store(_ hasWithdrawn: Bool, for address: String, now: Date = Date()) {
+        lock.lock()
+        defer { lock.unlock() }
+        entries[address.lowercased()] = (hasWithdrawn, now)
     }
 }

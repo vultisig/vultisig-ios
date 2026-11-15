@@ -253,11 +253,18 @@ enum PerpsFlows {
                 PerpsReviewRow(label: "perpsFees".localized, value: PerpsFormat.usd(quote.totalFees)),
                 PerpsReviewRow(label: "perpsArrivesIn".localized, value: "perpsAboutFiveMin".localized)
             ],
-            footer: quote.activationFee > 0
-                ? String(format: "perpsActivationFootnote".localized, PerpsFormat.amount(quote.activationFee)) : nil,
+            footer: activationFootnote(quote),
             requests: [.userSigned(.withdraw3, request)],
             blockingIssue: blocking
         )
+    }
+
+    private static func activationFootnote(_ quote: PerpsWithdrawQuote) -> String? {
+        if quote.activationFee > 0 { return String(format: "perpsActivationFootnote".localized, PerpsFormat.amount(quote.activationFee)) }
+        if quote.possibleActivationFee > 0 {
+            return String(format: "perpsActivationMayApplyFootnote".localized, PerpsFormat.amount(quote.possibleActivationFee))
+        }
+        return nil
     }
 
     // MARK: - Auto close (stop loss / take profit)

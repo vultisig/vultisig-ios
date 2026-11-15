@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "약 5분";
 "perpsAboveNow" = "현재가보다 %@ 위";
 "perpsActivationFootnote" = "수수료에는 첫 출금 시 1회 %@이(가) 포함됩니다.";
+"perpsActivationMayApplyFootnote" = "첫 출금 시 1회 %@의 활성화 수수료가 부과될 수 있습니다.";
 "perpsActivity" = "활동";
 "perpsActivityAdded" = "자금 추가됨";
 "perpsActivityClosed" = "%@ %@ 종료";

@@ -21,6 +21,9 @@ struct PerpsWithdrawQuote: Equatable, Sendable {
     let fee: Decimal
     /// One-time account activation, 0 once it has been paid.
     let activationFee: Decimal
+    /// The activation fee when the history is unknown: shown as "may apply",
+    /// left out of the fees and "You receive", and never blocks a withdrawal.
+    var possibleActivationFee: Decimal = 0
 
     var totalFees: Decimal { fee + activationFee }
     var receive: Decimal { max(0, amount - totalFees) }
@@ -39,7 +42,8 @@ struct PerpsWithdrawQuote: Equatable, Sendable {
             amount: amount,
             withdrawable: account.availableToWithdraw,
             fee: PerpsConfig.withdrawFee,
-            activationFee: PerpsConfig.withdrawActivationFee(hasWithdrawnBefore: account.hasWithdrawnBefore)
+            activationFee: PerpsConfig.withdrawActivationFee(hasWithdrawnBefore: account.hasWithdrawnBefore),
+            possibleActivationFee: account.hasWithdrawnBefore == nil ? PerpsConfig.withdrawActivationFeeAmount : 0
         )
     }
 }
@@ -61,13 +65,14 @@ extension PerpsConfig {
     /// read it as the first inbound one, and Hyperliquid's docs tie it to a new
     /// destination, maybe not to `withdraw3` at all. Perps shows it on the
     /// first withdrawal (the conservative "you receive") and only there: the
-    /// deposit side never adds it, so it is counted once. `nil` history counts
-    /// as first. If live testing shows no charge, set this to 0: the screens
-    /// and the footnote follow the quote.
+    /// deposit side never adds it, so it is counted once. `nil` history (the
+    /// ledger could not be read) charges nothing and the quote says it "may
+    /// apply" instead. If live testing shows no charge, set this to 0: the
+    /// screens and the footnote follow the quote.
     static let withdrawActivationFeeAmount: Decimal = 1
 
     static func withdrawActivationFee(hasWithdrawnBefore: Bool?) -> Decimal {
-        hasWithdrawnBefore == true ? 0 : withdrawActivationFeeAmount
+        hasWithdrawnBefore == false ? withdrawActivationFeeAmount : 0
     }
 }
 

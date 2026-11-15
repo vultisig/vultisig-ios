@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "Cerca de 5 min";
 "perpsAboveNow" = "%@ acima do preço atual";
 "perpsActivationFootnote" = "As taxas incluem %@ único no seu primeiro saque.";
+"perpsActivationMayApplyFootnote" = "Uma taxa única de ativação de %@ pode ser cobrada no seu primeiro saque.";
 "perpsActivity" = "Atividade";
 "perpsActivityAdded" = "Fundos adicionados";
 "perpsActivityClosed" = "%@ %@ fechado";

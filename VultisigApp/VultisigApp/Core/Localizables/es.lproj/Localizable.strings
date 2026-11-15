@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "Unos 5 min";
 "perpsAboveNow" = "%@ por encima del precio actual";
 "perpsActivationFootnote" = "Las tarifas incluyen un cargo único de %@ en tu primer retiro.";
+"perpsActivationMayApplyFootnote" = "Puede aplicarse un cargo único de activación de %@ en tu primer retiro.";
 "perpsActivity" = "Actividad";
 "perpsActivityAdded" = "Fondos añadidos";
 "perpsActivityClosed" = "%@ %@ cerrado";

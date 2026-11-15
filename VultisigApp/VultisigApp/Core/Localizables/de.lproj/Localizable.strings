@@ -1198,6 +1198,7 @@
 "perpsAboutFiveMin" = "Etwa 5 Min.";
 "perpsAboveNow" = "%@ über dem aktuellen Preis";
 "perpsActivationFootnote" = "Die Gebühren enthalten einmalig %@ bei Ihrer ersten Auszahlung.";
+"perpsActivationMayApplyFootnote" = "Bei Ihrer ersten Auszahlung kann einmalig eine Aktivierungsgebühr von %@ anfallen.";
 "perpsActivity" = "Aktivität";
 "perpsActivityAdded" = "Guthaben hinzugefügt";
 "perpsActivityClosed" = "%@ %@ geschlossen";

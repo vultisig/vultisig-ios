@@ -47,7 +47,13 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertNil(first.issue)
         let later = PerpsWithdrawQuote.make(amount: 100, account: account(hasWithdrawn: true))
         XCTAssertEqual(later.receive, 99)
-        XCTAssertEqual(PerpsWithdrawQuote.make(amount: 100, account: account(hasWithdrawn: nil)).activationFee, 1, "unknown history counts as first")
+        let unknown = PerpsWithdrawQuote.make(amount: 100, account: account(hasWithdrawn: nil))
+        XCTAssertEqual(unknown.activationFee, 0, "unknown history is not charged")
+        XCTAssertEqual(unknown.possibleActivationFee, 1, "it may apply")
+        XCTAssertEqual(unknown.receive, 99)
+        XCTAssertNil(PerpsWithdrawQuote.make(amount: Decimal(string: "1.5") ?? 0, account: account(hasWithdrawn: nil)).issue,
+                     "an unknown activation fee never blocks a small withdrawal")
+        XCTAssertEqual(PerpsWithdrawQuote.make(amount: Decimal(string: "1.5") ?? 0, account: account(hasWithdrawn: true)).possibleActivationFee, 0)
         XCTAssertEqual(PerpsWithdrawQuote.make(amount: 200, account: account()).issue, .moreThanWithdrawable, "200 is under equity, over withdrawable")
         XCTAssertEqual(PerpsWithdrawQuote.make(amount: 2, account: account()).issue, .belowFees)
     }
@@ -71,6 +77,9 @@ final class PerpsPositionFlowsTests: XCTestCase {
         XCTAssertNil(request.expiresAfter)
         let repeatWithdrawal = try PerpsFlows.withdraw(amount: Decimal(string: "49.5") ?? 0, account: account(hasWithdrawn: true), vault: vault, nonce: 2)
         XCTAssertNil(repeatWithdrawal.footer)
+        let unknownHistory = try PerpsFlows.withdraw(amount: 100, account: account(hasWithdrawn: nil), vault: vault, nonce: 3)
+        XCTAssertEqual(unknownHistory.footer, String(format: "perpsActivationMayApplyFootnote".localized, PerpsFormat.amount(1)))
+        XCTAssertEqual(unknownHistory.rows.dropFirst().first?.value, "$99.00")
         XCTAssertEqual(repeatWithdrawal.requests.first?.action["amount"], .string("49.5"))
     }
 

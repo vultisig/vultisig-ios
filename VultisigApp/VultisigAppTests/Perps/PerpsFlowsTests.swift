@@ -621,6 +621,28 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(items.first { $0.kind == .funding }?.amount, Decimal(string: "-0.5"))
     }
 
+    /// The activation fee follows the real ledger: any withdraw means paid, a
+    /// complete history without one means first, a possibly cut one is unknown.
+    func testWithdrawHistoryFromTheLedger() throws {
+        func ledger(_ types: [String]) throws -> [HLLedgerUpdate] {
+            let items = types.enumerated().map { #"{"time":\#($0.offset),"hash":"0x\#($0.offset)","delta":{"type":"\#($0.element)","usdc":"10"}}"# }
+            return try JSONDecoder().decode([HLLedgerUpdate].self, from: Data(("[" + items.joined(separator: ",") + "]").utf8))
+        }
+        XCTAssertEqual(HyperliquidPerpsRepository.hasWithdrawn(ledger: try ledger(["deposit", "withdraw"])), true)
+        XCTAssertEqual(HyperliquidPerpsRepository.hasWithdrawn(ledger: try ledger(["deposit"])), false)
+        XCTAssertEqual(HyperliquidPerpsRepository.hasWithdrawn(ledger: []), false)
+        let cut = try ledger(Array(repeating: "deposit", count: HyperliquidPerpsRepository.ledgerHistoryCap))
+        XCTAssertNil(HyperliquidPerpsRepository.hasWithdrawn(ledger: cut), "a full page may hide an older withdrawal")
+
+        let cache = PerpsWithdrawHistoryCache()
+        let start = Date(timeIntervalSince1970: 0)
+        cache.store(false, for: "0xAbC", now: start)
+        XCTAssertEqual(cache.value(for: "0xabc", now: start.addingTimeInterval(60)), false)
+        XCTAssertNil(cache.value(for: "0xabc", now: start.addingTimeInterval(PerpsWithdrawHistoryCache.notWithdrawnLifetime)), "not withdrawn is re-read")
+        cache.store(true, for: "0xabc", now: start)
+        XCTAssertEqual(cache.value(for: "0xABC", now: start.addingTimeInterval(86_400)), true, "a withdrawal is permanent")
+    }
+
     func testNearLiquidationWithinTwoPercent() {
         XCTAssertTrue(PerpsMath.isNearLiquidation(markPrice: 71_352.5, liquidationPrice: Decimal(string: "72241.47")))
         XCTAssertFalse(PerpsMath.isNearLiquidation(markPrice: 81.7, liquidationPrice: 680.7))
