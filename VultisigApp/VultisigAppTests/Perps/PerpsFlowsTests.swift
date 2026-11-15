@@ -70,12 +70,31 @@ final class PerpsFlowsTests: XCTestCase {
         let funded = PerpsFlows.costs(plan: plan, availableToTrade: 500)
         XCTAssertEqual(funded.transfer, 0)
         close(funded.fundingPerDay, plan.estimate.notional * 0.0000125 * 24, 0.000001)
+        // A market long is sized at its signed IOC price: 66969 x 1.01 = 67638.69, tick-rounded to 67639.
+        let load = PerpsFlows.signedPriceLoad(market: market, ticket: ticket)
+        XCTAssertEqual(load, Decimal(67_639) / Decimal(66_969))
         let short = PerpsFlows.costs(plan: plan, availableToTrade: 98)
-        XCTAssertEqual(short.transfer, (plan.estimate.margin + short.tradingFees - 98 + HLCctp.forwardingFee).rounded(scale: 2, mode: .up),
+        XCTAssertEqual(short.transfer, ((plan.estimate.margin + short.tradingFees) * load - 98 + HLCctp.forwardingFee).rounded(scale: 2, mode: .up),
                        "a shortfall is topped up by CCTP, plus its 0.20 forwarding fee")
         // A first deposit adds no activation fee: that is charged once, on the first withdrawal.
         let fresh = PerpsFlows.costs(plan: plan, availableToTrade: 0)
-        XCTAssertEqual(fresh.transfer, (plan.estimate.margin + fresh.tradingFees + HLCctp.forwardingFee).rounded(scale: 2, mode: .up))
+        XCTAssertEqual(fresh.transfer, ((plan.estimate.margin + fresh.tradingFees) * load + HLCctp.forwardingFee).rounded(scale: 2, mode: .up))
+        // A short and a limit order sign at or under the reference: no extra reserve.
+        XCTAssertEqual(PerpsFlows.signedPriceLoad(market: market, ticket: PerpsTicket(side: .short, margin: 100, leverage: 2, marginMode: .isolated,
+                                                                                      limitPrice: nil, takeProfit: nil, stopLoss: nil)), 1)
+        XCTAssertEqual(PerpsFlows.signedPriceLoad(market: market, ticket: PerpsTicket(side: .long, margin: 100, leverage: 2, marginMode: .isolated,
+                                                                                      limitPrice: 66_000, takeProfit: nil, stopLoss: nil)), 1)
+    }
+
+    /// $100 typed at 2x with $100.50 available: 100.07 at mid fits, but 101.07
+    /// at the IOC limit does not, so the ticket asks for the 0.78 difference
+    /// instead of signing an order the venue would reject for margin.
+    func testTypedAmountNearTheBalanceLeavesSlippageRoom() throws {
+        let ticket = PerpsTicket(side: .long, margin: 100, leverage: 2, marginMode: .isolated, limitPrice: nil, takeProfit: nil, stopLoss: nil)
+        let plan = try PerpsOrderPlanner.plan(market: market(), ticket: ticket, nonce: 1)
+        let costs = PerpsFlows.costs(plan: plan, availableToTrade: Decimal(string: "100.50") ?? 0, tier: nil)
+        XCTAssertLessThan(plan.estimate.margin + costs.tradingFees, Decimal(string: "100.50") ?? 0, "fits at mid")
+        XCTAssertEqual(costs.transfer, Decimal(string: "0.78"), "101.07 at 67639 - 100.50 + 0.20 forwarding")
     }
 
     /// Liquidation distance next to every liquidation price (R20): "49% below",
@@ -109,13 +128,19 @@ final class PerpsFlowsTests: XCTestCase {
         // From the vault: 250.07 less the 0.20 forwarding fee, then room for 2x trading fees
         // and the long's 1% IOC slippage.
         ticket.applyFraction(Decimal(string: "0.25") ?? 0)
-        XCTAssertEqual(ticket.amountText, "61.67")
+        XCTAssertEqual(ticket.amountText, "61.66", "249.87 / (1.0029 x 67639 / 66969) x 0.25")
         ticket.applyMax()
+        XCTAssertEqual(ticket.amountText, "246.67")
         let margin = PerpsInput.decimal(ticket.amountText) ?? 0
-        let atLimit = margin * (1 + ticket.ticket.slippage)
+        let atLimit = margin * PerpsFlows.signedPriceLoad(market: market(), ticket: ticket.ticket)
         let fees = atLimit * 2 * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: nil))
         XCTAssertLessThanOrEqual(atLimit + fees + HLCctp.forwardingFee, Decimal(string: "250.07") ?? 0,
-                                 "Max never asks for more than the vault holds, even filled at mid + slippage")
+                                 "Max never asks for more than the vault holds, even filled at the signed IOC price")
+        // The deposit Max asks for is sized with the same reserve, so it fits the vault too.
+        let maxTransfer = ticket.costs?.transfer
+        XCTAssertNotNil(maxTransfer)
+        XCTAssertLessThanOrEqual(maxTransfer ?? 0, Decimal(string: "250.07") ?? 0)
+        XCTAssertNil(ticket.fundingShortfall, "Max from the vault never shows a shortfall")
         // A short sells at mid - slippage: nothing extra to reserve.
         let short = PerpsTicketViewModel(side: .short, market: market(), account: nil, vault: funded)
         short.applyFraction(Decimal(string: "0.25") ?? 0)

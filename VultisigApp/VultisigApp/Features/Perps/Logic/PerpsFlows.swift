@@ -45,14 +45,18 @@ struct PerpsTicketCosts: Equatable, Sendable {
 enum PerpsFlows {
     /// A shortfall is covered by a CCTP deposit plus its forwarding fee. The
     /// one-time activation fee is charged on the first withdrawal, never here
-    /// (`PerpsConfig.withdrawActivationFee`).
+    /// (`PerpsConfig.withdrawActivationFee`). What is needed is margin + fees
+    /// at the signed price (`signedPriceLoad`), the same reserve Max leaves,
+    /// so a typed amount near the balance and a vault-funded deposit both
+    /// cover a market long margined at its IOC limit.
     static func costs(plan: PerpsOrderPlan, availableToTrade: Decimal,
                       tier: VultDiscountTier? = PerpsVultTier.current) -> PerpsTicketCosts {
         let notional = plan.estimate.notional
         let hyperliquid = notional * PerpsMath.baseTakerFeeRate
         let builder = notional * PerpsConfig.listBuilderFeeRate
         let discount = builder - notional * PerpsConfig.builderFeeRate(tier: tier)
-        let needed = plan.estimate.margin + hyperliquid + builder - discount - availableToTrade
+        let reserve = (plan.estimate.margin + hyperliquid + builder - discount) * signedPriceLoad(market: plan.market, ticket: plan.ticket)
+        let needed = reserve - availableToTrade
         let transfer = needed > 0 ? (needed + HLCctp.forwardingFee).rounded(scale: 2, mode: .up) : 0
         return PerpsTicketCosts(
             hyperliquidFee: hyperliquid,
@@ -62,6 +66,17 @@ enum PerpsFlows {
             vultTier: discount > 0 ? tier : nil,
             vultDiscount: discount
         )
+    }
+
+    /// How much more than at the reference price an order can cost: a market
+    /// long's IOC is signed at mid + slippage (tick-rounded), and the venue may
+    /// margin it there. 1 for shorts and limit orders.
+    static func signedPriceLoad(market: PerpsMarket, ticket: PerpsTicket) -> Decimal {
+        guard ticket.side.isBuy, ticket.limitPrice == nil else { return 1 }
+        let reference = market.midPrice ?? market.markPrice
+        guard reference > 0 else { return 1 }
+        let signed = HLWireFormat.marketPrice(mid: reference, isBuy: true, slippage: ticket.slippage, szDecimals: market.szDecimals)
+        return max(1, signed / reference)
     }
 
     // MARK: - Order
