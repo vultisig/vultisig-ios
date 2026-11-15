@@ -27,8 +27,6 @@ enum HLCctp {
     static let hyperEvmDomain: UInt32 = 19
     static let forwardingFee: Decimal = Decimal(string: "0.2") ?? 0
     static let fastFinalityThreshold: UInt32 = 1000
-    /// One-time fee on a new HyperCore account.
-    static let activationFee: Decimal = 1
 
     enum DestinationDex: UInt32 {
         case perps = 0

@@ -73,9 +73,9 @@ final class PerpsFlowsTests: XCTestCase {
         let short = PerpsFlows.costs(plan: plan, availableToTrade: 98)
         XCTAssertEqual(short.transfer, (plan.estimate.margin + short.tradingFees - 98 + HLCctp.forwardingFee).rounded(scale: 2, mode: .up),
                        "a shortfall is topped up by CCTP, plus its 0.20 forwarding fee")
-        let fresh = PerpsFlows.costs(plan: plan, availableToTrade: 0, isNewAccount: true)
-        XCTAssertEqual(fresh.transfer, (plan.estimate.margin + fresh.tradingFees + HLCctp.forwardingFee + HLCctp.activationFee)
-            .rounded(scale: 2, mode: .up))
+        // A first deposit adds no activation fee: that is charged once, on the first withdrawal.
+        let fresh = PerpsFlows.costs(plan: plan, availableToTrade: 0)
+        XCTAssertEqual(fresh.transfer, (plan.estimate.margin + fresh.tradingFees + HLCctp.forwardingFee).rounded(scale: 2, mode: .up))
     }
 
     /// Liquidation distance next to every liquidation price (R20): "49% below",
@@ -106,20 +106,20 @@ final class PerpsFlowsTests: XCTestCase {
         XCTAssertEqual(preview.liquidation, btc.estimate?.liquidationPrice)
         let funded = PerpsVaultContext(name: "Main", address: vault.address, arbitrumUsdcBalance: Decimal(string: "250.07"), tradingAddress: nil)
         let ticket = PerpsTicketViewModel(side: .long, market: market(), account: nil, vault: funded)
-        // From the vault: 250.07 less the 0.20 + 1.00 deposit fees, then room for 2x trading fees
+        // From the vault: 250.07 less the 0.20 forwarding fee, then room for 2x trading fees
         // and the long's 1% IOC slippage.
         ticket.applyFraction(Decimal(string: "0.25") ?? 0)
-        XCTAssertEqual(ticket.amountText, "61.42")
+        XCTAssertEqual(ticket.amountText, "61.67")
         ticket.applyMax()
         let margin = PerpsInput.decimal(ticket.amountText) ?? 0
         let atLimit = margin * (1 + ticket.ticket.slippage)
         let fees = atLimit * 2 * (PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: nil))
-        XCTAssertLessThanOrEqual(atLimit + fees + HLCctp.forwardingFee + HLCctp.activationFee, Decimal(string: "250.07") ?? 0,
+        XCTAssertLessThanOrEqual(atLimit + fees + HLCctp.forwardingFee, Decimal(string: "250.07") ?? 0,
                                  "Max never asks for more than the vault holds, even filled at mid + slippage")
         // A short sells at mid - slippage: nothing extra to reserve.
         let short = PerpsTicketViewModel(side: .short, market: market(), account: nil, vault: funded)
         short.applyFraction(Decimal(string: "0.25") ?? 0)
-        XCTAssertEqual(short.amountText, "62.03")
+        XCTAssertEqual(short.amountText, "62.28")
     }
 
     /// The explainer tells apart a stop that acts first, one the price already
@@ -269,8 +269,13 @@ final class PerpsFlowsTests: XCTestCase {
     func testAddFundsIsCctpIntoTheTradingAccount() throws {
         let vault = PerpsVaultContext(name: "Main", address: "0xb98df75e8c9b4de5d3368e95553eb029345b8376", arbitrumUsdcBalance: 100,
                                       tradingAddress: "0x1185457adb9913df15c0cfac2441986520827ce0")
-        XCTAssertNotNil(PerpsFlows.addFunds(amount: 1, vault: vault, isNewAccount: true).blockingIssue,
-                        "1 USDC does not cover forwarding plus activation")
+        XCTAssertNotNil(PerpsFlows.addFunds(amount: Decimal(string: "0.2") ?? 0, vault: vault).blockingIssue,
+                        "0.20 USDC does not cover forwarding")
+        // No activation fee on the deposit side: send 100, trade with 99.80.
+        let first = PerpsFlows.addFunds(amount: 100, vault: vault)
+        XCTAssertNil(first.blockingIssue)
+        XCTAssertEqual(first.fees?.breakdown.map(\.label), ["perpsForwardingFee".localized])
+        XCTAssertEqual(first.trailingRows.last?.value, PerpsFlows.usdc(Decimal(string: "99.8") ?? 0))
         let ok = PerpsFlows.addFunds(amount: 50, vault: vault)
         XCTAssertNil(ok.blockingIssue)
         XCTAssertTrue(ok.requests.isEmpty, "a deposit is CCTP on Arbitrum, never an /exchange action")

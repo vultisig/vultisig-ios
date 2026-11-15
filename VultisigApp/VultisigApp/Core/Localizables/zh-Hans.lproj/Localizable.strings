@@ -1197,7 +1197,6 @@
 "pendingRewards" = "待领取奖励";
 "perpsAboutFiveMin" = "约 5 分钟";
 "perpsAboveNow" = "比现价高 %@";
-"perpsActivationFee" = "账户激活（一次性）";
 "perpsActivationFootnote" = "费用包含首次提取时一次性收取的 %@。";
 "perpsActivity" = "活动";
 "perpsActivityAdded" = "已添加资金";

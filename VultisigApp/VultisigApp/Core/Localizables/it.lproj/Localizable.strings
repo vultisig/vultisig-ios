@@ -1197,7 +1197,6 @@
 "pendingRewards" = "Ricompense in sospeso";
 "perpsAboutFiveMin" = "Circa 5 min";
 "perpsAboveNow" = "%@ sopra il prezzo attuale";
-"perpsActivationFee" = "Attivazione account (una tantum)";
 "perpsActivationFootnote" = "Le commissioni includono %@ una tantum sul tuo primo prelievo.";
 "perpsActivity" = "Attività";
 "perpsActivityAdded" = "Fondi aggiunti";

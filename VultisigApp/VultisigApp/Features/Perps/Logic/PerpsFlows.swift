@@ -43,17 +43,17 @@ struct PerpsTicketCosts: Equatable, Sendable {
 }
 
 enum PerpsFlows {
-    /// A shortfall is covered by a CCTP deposit: the forwarding fee, plus the
-    /// one-time activation fee when the trading account is new.
-    static func costs(plan: PerpsOrderPlan, availableToTrade: Decimal, isNewAccount: Bool = false,
+    /// A shortfall is covered by a CCTP deposit plus its forwarding fee. The
+    /// one-time activation fee is charged on the first withdrawal, never here
+    /// (`PerpsConfig.withdrawActivationFee`).
+    static func costs(plan: PerpsOrderPlan, availableToTrade: Decimal,
                       tier: VultDiscountTier? = PerpsVultTier.current) -> PerpsTicketCosts {
         let notional = plan.estimate.notional
         let hyperliquid = notional * PerpsMath.baseTakerFeeRate
         let builder = notional * PerpsConfig.listBuilderFeeRate
         let discount = builder - notional * PerpsConfig.builderFeeRate(tier: tier)
         let needed = plan.estimate.margin + hyperliquid + builder - discount - availableToTrade
-        let overhead = HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0)
-        let transfer = needed > 0 ? (needed + overhead).rounded(scale: 2, mode: .up) : 0
+        let transfer = needed > 0 ? (needed + HLCctp.forwardingFee).rounded(scale: 2, mode: .up) : 0
         return PerpsTicketCosts(
             hyperliquidFee: hyperliquid,
             builderFee: builder,
@@ -69,8 +69,7 @@ enum PerpsFlows {
     static func order(
         plan: PerpsOrderPlan,
         costs: PerpsTicketCosts,
-        vault: PerpsVaultContext,
-        isNewAccount: Bool = false
+        vault: PerpsVaultContext
     ) -> PerpsReviewDocument {
         let market = plan.market
         let ticket = plan.ticket
@@ -98,9 +97,8 @@ enum PerpsFlows {
         if costs.transfer > 0 {
             rows.append(PerpsReviewRow(label: "perpsFromYourVault".localized, value: usdc(costs.transfer)))
             deposit = cctpDeposit(amount: costs.transfer, vault: vault)
-            let depositFees = HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0)
-            breakdown.append(PerpsReviewRow(label: "perpsFeeDeposit".localized, value: PerpsFormat.usd(depositFees)))
-            feeTotal += depositFees
+            breakdown.append(PerpsReviewRow(label: "perpsFeeDeposit".localized, value: PerpsFormat.usd(HLCctp.forwardingFee)))
+            feeTotal += HLCctp.forwardingFee
             blocking = fundingIssue(amount: costs.transfer, vault: vault) ?? (deposit == nil ? "perpsNoTradingAddress".localized : nil)
         }
         return PerpsReviewDocument(
@@ -202,11 +200,10 @@ enum PerpsFlows {
 
     // MARK: - Add funds
 
-    static func addFunds(amount: Decimal, vault: PerpsVaultContext, isNewAccount: Bool = false) -> PerpsReviewDocument {
+    static func addFunds(amount: Decimal, vault: PerpsVaultContext) -> PerpsReviewDocument {
         let deposit = vault.isSupported ? cctpDeposit(amount: amount, vault: vault) : nil
-        let fees = HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0)
-        var breakdown = [PerpsReviewRow(label: "perpsForwardingFee".localized, value: usdc(HLCctp.forwardingFee))]
-        if isNewAccount { breakdown.append(PerpsReviewRow(label: "perpsActivationFee".localized, value: usdc(HLCctp.activationFee))) }
+        let fees = HLCctp.forwardingFee
+        let breakdown = [PerpsReviewRow(label: "perpsForwardingFee".localized, value: usdc(HLCctp.forwardingFee))]
         let credited = amount - fees
         var blocking = fundingIssue(amount: amount, vault: vault)
         if deposit == nil { blocking = blocking ?? "perpsNoTradingAddress".localized }

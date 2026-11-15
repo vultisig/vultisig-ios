@@ -297,8 +297,8 @@ enum PerpsDemoStory {
     /// The fictional vault's Arbitrum USDC, enough for the $250 deposit.
     static let vaultUsdc: Decimal = 1_250
 
-    /// What the story deposits: $250 lands after the forwarding and first-deposit fees.
-    static var depositPrefill: Decimal { PerpsDemoRepository.deposited + HLCctp.forwardingFee + HLCctp.activationFee }
+    /// What the story deposits: $250 lands after the forwarding fee.
+    static var depositPrefill: Decimal { PerpsDemoRepository.deposited + HLCctp.forwardingFee }
 
     static var isOn: Bool { PerpsConfig.usesDemoAccount && PerpsDemoState.current.contains(.story) }
 

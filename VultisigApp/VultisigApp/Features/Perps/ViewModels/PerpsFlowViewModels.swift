@@ -154,7 +154,6 @@ final class PerpsTicketViewModel: ObservableObject {
     var openPosition: HLPosition? { account?.position(coin: market.coin) }
 
     var title: String { String(format: side == .long ? "perpsLongCoin".localized : "perpsShortCoin".localized, market.coin) }
-    var isNewAccount: Bool { account?.isEmpty ?? true }
     var availableToTrade: Decimal { account?.availableToTrade ?? 0 }
     var referencePrice: Decimal { market.midPrice ?? market.markPrice }
     /// Evenly spaced slider stops up to the market's max (1/2/3/5/10/20/40×;
@@ -184,7 +183,7 @@ final class PerpsTicketViewModel: ObservableObject {
     }
 
     /// The most margin the balance can fund once trading fees (and, from the
-    /// vault, the deposit's forwarding + first-deposit fees) are taken out:
+    /// vault, the deposit's forwarding fee) are taken out:
     /// margin + margin x leverage x fee rate fits in what is there. A market
     /// long's IOC is priced at mid + slippage, so its margin and fees can cost
     /// that much more: Max leaves the room, or the venue rejects the order.
@@ -193,7 +192,7 @@ final class PerpsTicketViewModel: ObservableObject {
         // The vault side is floored to cents first: the deposit is rounded up to
         // cents, so a fractional-cent balance must not let Max ask for more.
         var base = fromAccount ? availableToTrade : (vault.arbitrumUsdcBalance ?? 0).rounded(scale: 2, mode: .down)
-        if !fromAccount { base -= HLCctp.forwardingFee + (isNewAccount ? HLCctp.activationFee : 0) }
+        if !fromAccount { base -= HLCctp.forwardingFee }
         guard base > 0 else { return 0 }
         let feeRate = PerpsMath.baseTakerFeeRate + PerpsConfig.builderFeeRate(tier: vultTier)
         let slippageRoom = side.isBuy ? 1 + ticket.slippage : 1
@@ -272,7 +271,7 @@ final class PerpsTicketViewModel: ObservableObject {
 
     var costs: PerpsTicketCosts? {
         guard case .success(let plan) = plan else { return nil }
-        return PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, isNewAccount: isNewAccount, tier: vultTier)
+        return PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, tier: vultTier)
     }
 
     var sizeText: String {
@@ -313,8 +312,8 @@ final class PerpsTicketViewModel: ObservableObject {
         guard canReview,
               case .success(let plan) = plan(nonce: HyperliquidExchangeDryRunClient.shared.nonces.next(count: 2)) else { return nil }
         // Costs from this same plan and tier: the fee shown is the fee signed.
-        let costs = PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, isNewAccount: isNewAccount, tier: vultTier)
-        return PerpsFlows.order(plan: plan, costs: costs, vault: vault, isNewAccount: isNewAccount)
+        let costs = PerpsFlows.costs(plan: plan, availableToTrade: availableToTrade, tier: vultTier)
+        return PerpsFlows.order(plan: plan, costs: costs, vault: vault)
     }
 
     /// "You already have a BTC long open. …"
@@ -565,7 +564,7 @@ final class PerpsFundsViewModel: ObservableObject {
     var issue: String? {
         guard amount > 0 else { return nil }
         if let reason = PerpsFlows.fundingIssue(amount: amount, vault: vault) { return reason }
-        if amount <= HLCctp.forwardingFee + ((account?.isEmpty ?? true) ? HLCctp.activationFee : 0) { return "perpsDepositBelowFees".localized }
+        if amount <= HLCctp.forwardingFee { return "perpsDepositBelowFees".localized }
         return nil
     }
 
@@ -573,7 +572,7 @@ final class PerpsFundsViewModel: ObservableObject {
 
     func reviewDocument() -> PerpsReviewDocument? {
         guard canReview else { return nil }
-        return PerpsFlows.addFunds(amount: amount, vault: vault, isNewAccount: account?.isEmpty ?? true)
+        return PerpsFlows.addFunds(amount: amount, vault: vault)
     }
 }
 

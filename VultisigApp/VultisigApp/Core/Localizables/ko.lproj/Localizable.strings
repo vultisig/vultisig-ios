@@ -1197,7 +1197,6 @@
 "pendingRewards" = "대기 중인 보상";
 "perpsAboutFiveMin" = "약 5분";
 "perpsAboveNow" = "현재가보다 %@ 위";
-"perpsActivationFee" = "계정 활성화 (1회)";
 "perpsActivationFootnote" = "수수료에는 첫 출금 시 1회 %@이(가) 포함됩니다.";
 "perpsActivity" = "활동";
 "perpsActivityAdded" = "자금 추가됨";

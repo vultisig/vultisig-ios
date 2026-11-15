@@ -60,7 +60,8 @@ extension PerpsConfig {
     /// activate a new HyperCore account on its first outbound action; the spike
     /// read it as the first inbound one, and Hyperliquid's docs tie it to a new
     /// destination, maybe not to `withdraw3` at all. Perps shows it on the
-    /// first withdrawal (the conservative "you receive"). `nil` history counts
+    /// first withdrawal (the conservative "you receive") and only there: the
+    /// deposit side never adds it, so it is counted once. `nil` history counts
     /// as first. If live testing shows no charge, set this to 0: the screens
     /// and the footnote follow the quote.
     static let withdrawActivationFeeAmount: Decimal = 1
