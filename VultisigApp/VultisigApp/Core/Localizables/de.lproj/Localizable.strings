@@ -1523,6 +1523,7 @@
 "signer" = "Unterzeichner";
 "signFasterThanEverBefore" = "Schneller als je zuvor signieren";
 "signingErrorTryAgain" = "Fehler beim Signieren";
+"signingManyInputsNotice" = "%d Inputs werden signiert. Das dauert länger als üblich.";
 "signingMethod" = "Signaturmethode";
 "signingTransaction" = "Transaktion wird signiert";
 "signTransaction" = "Transaktion signieren";

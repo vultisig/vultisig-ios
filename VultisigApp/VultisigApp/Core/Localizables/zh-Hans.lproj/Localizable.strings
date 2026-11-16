@@ -1523,6 +1523,7 @@
 "signer" = "签名者";
 "signFasterThanEverBefore" = "比以往任何时候都更快地签名";
 "signingErrorTryAgain" = "签名错误";
+"signingManyInputsNotice" = "正在签署 %d 个输入。这比平常需要更长时间";
 "signingMethod" = "签名方式";
 "signingTransaction" = "正在签署交易";
 "signTransaction" = "签署交易";

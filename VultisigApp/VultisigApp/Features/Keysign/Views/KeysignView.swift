@@ -196,6 +196,16 @@ struct KeysignView: View {
                     coinLogo: sourceKeysignPayload?.coin.logo,
                     progress: viewModel.signingProgress
                 )
+                .overlay(alignment: .bottom) {
+                    if let notice = viewModel.manyInputsNotice {
+                        Text(notice)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 32)
+                    }
+                }
             case .connectingToFastServerFailed:
                 fastBootstrapErrorView
             case .KeysignFailed:

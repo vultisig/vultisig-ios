@@ -1523,6 +1523,7 @@
 "signer" = "서명자";
 "signFasterThanEverBefore" = "그 어느 때보다 빠르게 서명하세요";
 "signingErrorTryAgain" = "서명 오류";
+"signingManyInputsNotice" = "%d개의 입력에 서명하는 중입니다. 평소보다 시간이 더 걸립니다.";
 "signingMethod" = "서명 방식";
 "signingTransaction" = "트랜잭션 서명 중";
 "signTransaction" = "트랜잭션 서명";
