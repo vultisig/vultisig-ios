@@ -105,12 +105,12 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
 
         for (tier, expectedLabel) in expectedLabels {
             XCTAssertEqual(
-                SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: tier.bpsDiscount),
+                SwapCryptoLogic.vultDiscountLabel(quote: nil, vultDiscountBps: tier.bpsDiscount, referralDiscountBps: 0),
                 expectedLabel
             )
         }
         XCTAssertEqual(
-            SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: 15),
+            SwapCryptoLogic.vultDiscountLabel(quote: nil, vultDiscountBps: 15, referralDiscountBps: 0),
             "VULT: 30%"
         )
         XCTAssertEqual(
@@ -629,6 +629,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
             summary.feeLines.first { $0.label == label }?.value
         }
 
+        XCTAssertEqual(transaction.vultDiscountLabel, "VULT Ultimate: 70%")
         XCTAssertEqual(
             value(transaction.vultDiscountLabel),
             "-" + (Decimal(string: "3.5") ?? 0).formatToFiatForFee(includeCurrencySymbol: true)

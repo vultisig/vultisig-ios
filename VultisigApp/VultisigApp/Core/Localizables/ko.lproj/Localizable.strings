@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "추천 코드 만들기";
 "referralOnboardingTitle2" = "친구와 공유하기";
 "referralOnboardingTitle3" = "자동으로 10 bps 수수료 보상 받기";
-"referralOnboardingTitle4" = "추천 코드 사용 - 5bps 절약";
+"referralOnboardingTitle4" = "추천 코드 사용 - 10% 절약";
 "referralProgram" = "추천 프로그램";
 "referralProgramTooltipDescription" = "추천 프로그램은 THORChain 스왑에 적용되며 최선 노력 방식으로 운영됩니다. Vultisig 추천을 사용하려면 THORName을 등록해야 합니다. 등록 수수료는 THORChain 네트워크에 지불되는 10 RUNE과 연간 1 RUNE입니다.";
 "referralRewardsBannerSubtitle" = "추천 코드를 추가하세요";

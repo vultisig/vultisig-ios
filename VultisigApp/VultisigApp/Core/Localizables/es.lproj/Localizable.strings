@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "Crea tu código de referido";
 "referralOnboardingTitle2" = "Compártelo con amigos";
 "referralOnboardingTitle3" = "Gana automáticamente recompensas de 10 bps en comisiones";
-"referralOnboardingTitle4" = "Usa el código de referido - Ahorra 5 bps";
+"referralOnboardingTitle4" = "Usa el código de referido - Ahorra un 10%";
 "referralProgram" = "Programa de Referidos";
 "referralProgramTooltipDescription" = "El programa de referidos se aplica a los intercambios de THORChain y funciona sobre la base del mejor esfuerzo. Para usar el referido de Vultisig, debes registrar un THORName. La tarifa de registro es de 10 RUNE más 1 RUNE por año, pagada a la red THORChain.";
 "referralRewardsBannerSubtitle" = "Agrega tu código de referido";
