@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "创建您的推荐码";
 "referralOnboardingTitle2" = "与朋友分享";
 "referralOnboardingTitle3" = "自动赚取 10 个基点费用奖励";
-"referralOnboardingTitle4" = "使用推荐码 - 节省 5 个基点";
+"referralOnboardingTitle4" = "使用推荐码 - 节省 10%";
 "referralProgram" = "推荐计划";
 "referralProgramTooltipDescription" = "推荐计划适用于 THORChain 交换，并尽力而为。要使用 Vultisig 推荐，您必须注册 THORName。注册费为 10 RUNE 加上每年 1 RUNE，支付给 THORChain 网络";
 "referralRewardsBannerSubtitle" = "添加您的推荐码";

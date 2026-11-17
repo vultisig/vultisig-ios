@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "Create your referral code";
 "referralOnboardingTitle2" = "Share with friends";
 "referralOnboardingTitle3" = "Earn 10 bps fee rewards automatically";
-"referralOnboardingTitle4" = "Use Referral code - Save 5bps";
+"referralOnboardingTitle4" = "Use Referral code - Save 10%";
 "referralProgram" = "Referral Program";
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
 "referralRewardsBannerSubtitle" = "Add your referral code";

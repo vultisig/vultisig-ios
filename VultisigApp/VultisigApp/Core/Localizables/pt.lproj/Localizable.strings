@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "Crie seu código de indicação";
 "referralOnboardingTitle2" = "Compartilhe com amigos";
 "referralOnboardingTitle3" = "Ganhe automaticamente 10 bps de recompensas de taxa";
-"referralOnboardingTitle4" = "Use o código de indicação - Economize 5 bps";
+"referralOnboardingTitle4" = "Use o código de indicação - Economize 10%";
 "referralProgram" = "Programa de Indicação";
 "referralProgramTooltipDescription" = "O programa de indicação se aplica às trocas da THORChain e opera com base no melhor esforço. Para usar a indicação Vultisig, você deve registrar um THORName. A taxa de registro é de 10 RUNE mais 1 RUNE por ano, paga à rede THORChain.";
 "referralRewardsBannerSubtitle" = "Adicione seu código de indicação";

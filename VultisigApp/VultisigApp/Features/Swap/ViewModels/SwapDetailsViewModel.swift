@@ -816,7 +816,9 @@ extension SwapDetailsViewModel {
     }
 
     var vultDiscountLabel: String {
-        SwapCryptoLogic.vultDiscountLabel(vultDiscountBps: vultDiscountBps)
+        SwapCryptoLogic.vultDiscountLabel(
+            quote: quote, vultDiscountBps: vultDiscountBps, referralDiscountBps: referralDiscountBps
+        )
     }
 
     var referralDiscountLabel: String {

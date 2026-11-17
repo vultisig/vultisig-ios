@@ -1313,7 +1313,7 @@
 "referralOnboardingTitle1" = "Empfehlungscode erstellen";
 "referralOnboardingTitle2" = "Mit Freunden teilen";
 "referralOnboardingTitle3" = "Automatisch 10 bps Gebührenbelohnung verdienen";
-"referralOnboardingTitle4" = "Empfehlungscode nutzen – 5 bps sparen";
+"referralOnboardingTitle4" = "Empfehlungscode nutzen – 10 % sparen";
 "referralProgram" = "Empfehlungsprogramm";
 "referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps und wird nach dem Best-Effort-Prinzip betrieben. Um die Vultisig-Empfehlung zu nutzen, müssen Sie einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
 "referralRewardsBannerSubtitle" = "Empfehlungscode hinzufügen";

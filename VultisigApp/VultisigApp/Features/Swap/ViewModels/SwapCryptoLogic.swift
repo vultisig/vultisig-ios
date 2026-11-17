@@ -736,8 +736,13 @@ enum SwapCryptoLogic {
         max(0, min(bps, affiliateListFeeBps)) * 100 / affiliateListFeeBps
     }
 
-    static func vultDiscountLabel(vultDiscountBps: Int) -> String {
-        let percentage = percentOffListFee(bps: vultDiscountBps)
+    /// Share of the list fee the VULT tier actually waives. A referred THORChain swap
+    /// still pays the referrer, so Ultimate waives 35 of 50 bps there (70%).
+    static func vultDiscountLabel(quote: SwapQuote?, vultDiscountBps: Int, referralDiscountBps: Int) -> String {
+        let waivedBps = referralDiscountBps > 0 && appliesReferralDiscount(quote: quote)
+            ? min(vultDiscountBps, THORChainSwaps.referredAffiliateFeeRateBp)
+            : vultDiscountBps
+        let percentage = percentOffListFee(bps: waivedBps)
         guard let tier = VultDiscountTier.from(bpsDiscount: vultDiscountBps) else {
             return String(format: "swapVultDiscountFallback".localized, percentage)
         }
@@ -823,16 +828,8 @@ enum SwapCryptoLogic {
             }
         }
 
-        let appliesReferralDiscount: Bool
-        switch quote {
-        case .thorchain, .thorchainChainnet, .thorchainStagenet:
-            appliesReferralDiscount = true
-        default:
-            appliesReferralDiscount = false
-        }
-
         let referral: Decimal
-        if appliesReferralDiscount {
+        if appliesReferralDiscount(quote: quote) {
             let appliedBps = max(0, min(referralDiscountBps, affiliateListFeeBps))
             referral = inputFiat * Decimal(appliedBps) / 10000
         } else {
@@ -849,6 +846,16 @@ enum SwapCryptoLogic {
         }
 
         return AffiliateDiscountBreakdown(vult: vult, referral: referral)
+    }
+
+    /// Only native THORChain routes carry the referrer, so only they apply the referral discount.
+    private static func appliesReferralDiscount(quote: SwapQuote?) -> Bool {
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return true
+        default:
+            return false
+        }
     }
 
     /// Same precision as the gross Vultisig Fee and Total Fee rows, so the rows subtract on screen.

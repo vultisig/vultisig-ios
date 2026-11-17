@@ -30,7 +30,8 @@ struct LimitAssetRow: View {
     /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
     var focusedField: FocusState<LimitFocusField?>.Binding
     let computedAmount: Decimal?
-    let usdPricePerUnit: Decimal
+    /// Price per unit in the selected currency (`Coin.price`).
+    let fiatPricePerUnit: Decimal
     let onPickAsset: () -> Void
 
     var body: some View {
@@ -61,15 +62,8 @@ struct LimitAssetRow: View {
 
     private var fiatLine: String {
         let amount = effectiveAmount
-        guard usdPricePerUnit > 0, amount > 0 else { return "$0.00" }
-        let usd = amount * usdPricePerUnit
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        formatter.groupingSeparator = ","
-        let value = formatter.string(from: NSDecimalNumber(decimal: usd)) ?? "0.00"
-        return "$\(value)"
+        guard fiatPricePerUnit > 0, amount > 0 else { return Decimal.zero.formatToFiat() }
+        return (amount * fiatPricePerUnit).formatToFiat()
     }
 
     private var effectiveAmount: Decimal {
