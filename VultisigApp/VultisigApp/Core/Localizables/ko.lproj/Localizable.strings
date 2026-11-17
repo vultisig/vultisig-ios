@@ -711,6 +711,9 @@
 "kaminoEarnWithdraw" = "출금";
 "kaminoErrorVaultMetadataMismatch" = "Kamino가 %1$@을(를) %2$@(으)로 보고했습니다. 이 볼트의 값은 %3$@입니다";
 "kaminoErrorVaultNotInRegistry" = "볼트 %@은(는) 이 앱이 지원하는 볼트가 아닙니다";
+"kaminoInsufficientSol" = "SOL이 부족합니다. 볼트에 SOL을 추가한 후 다시 시도하세요.";
+"kaminoInsufficientSolAmounts" = "SOL이 부족합니다. 이 예치에는 약 %1$@ SOL이 필요하며, 볼트에는 %2$@ SOL이 있습니다.";
+"kaminoInsufficientToken" = "%@이(가) 부족합니다.";
 "kaminoLoadFailed" = "이 볼트를 불러오지 못했습니다: %@";
 "kaminoPayerBalanceUnavailable" = "Solana가 이 트랜잭션의 비용을 반환하지 않아 최대 금액을 계산할 수 없습니다.";
 "kaminoSimulationFailed" = "이 트랜잭션은 Solana에서 실패합니다: %@";

@@ -426,6 +426,16 @@ private struct PermissiveSolana: KaminoSolanaMeasuring {
         await Task.yield()
         return 890_880
     }
+
+    func fetchLamports(address: String) async throws -> UInt64 {
+        await Task.yield()
+        return 0
+    }
+
+    func isTokenAccount(address: String) async throws -> Bool {
+        await Task.yield()
+        return false
+    }
 }
 
 private struct FixtureLookupTables: SolanaAddressLookupTableFetching {

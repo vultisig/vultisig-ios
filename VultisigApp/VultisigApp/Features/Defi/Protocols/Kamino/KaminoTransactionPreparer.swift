@@ -24,9 +24,20 @@ protocol KaminoSolanaMeasuring {
     func fetchPrioritizationFeeSample() async throws -> UInt64?
 
     func fetchRentExemptMinimum(size: Int) async throws -> UInt64
+
+    func fetchLamports(address: String) async throws -> UInt64
+
+    /// Whether a token program owns `address`. Lamports alone, e.g. sent there before the
+    /// account was opened, still leave its rent to pay.
+    func isTokenAccount(address: String) async throws -> Bool
 }
 
-extension SolanaService: KaminoSolanaMeasuring {}
+extension SolanaService: KaminoSolanaMeasuring {
+    func isTokenAccount(address: String) async throws -> Bool {
+        let owner = try await fetchAccountOwner(address: address)
+        return owner == KaminoSolanaProgram.token.rawValue || owner == KaminoSolanaProgram.token2022.rawValue
+    }
+}
 
 /// The compute-unit price both forms pin for the lifetime of a session.
 protocol KaminoPriorityPricing {
@@ -94,6 +105,11 @@ enum KaminoPreparationError: Error, LocalizedError, Equatable {
     /// says which of the two simulations refused it — as built, or after the
     /// compute budget was injected — and is for diagnosis, not for the user.
     case simulationFailed(stage: Stage, reason: String)
+    /// The simulation ran out of the payer's SOL. Carries what a deposit needed
+    /// against what the wallet holds, or `nil` when that could not be read.
+    case insufficientSol(KaminoSolShortfall?)
+    /// The simulation ran out of the vault's token.
+    case insufficientToken(ticker: String)
     /// The node ran the transaction but did not report the payer's balance, so
     /// nothing here can say what the transaction costs.
     case payerBalanceUnavailable
@@ -107,6 +123,16 @@ enum KaminoPreparationError: Error, LocalizedError, Equatable {
         switch self {
         case .simulationFailed(_, let reason):
             return String(format: "kaminoSimulationFailed".localized, reason)
+        case .insufficientSol(let shortfall?):
+            return String(
+                format: "kaminoInsufficientSolAmounts".localized,
+                shortfall.neededText,
+                shortfall.availableText
+            )
+        case .insufficientSol(nil):
+            return "kaminoInsufficientSol".localized
+        case .insufficientToken(let ticker):
+            return String(format: "kaminoInsufficientToken".localized, ticker)
         case .payerBalanceUnavailable:
             return "kaminoPayerBalanceUnavailable".localized
         }
@@ -341,9 +367,13 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             accountAddresses: []
         )
         guard dryRun.succeeded else {
-            throw KaminoPreparationError.simulationFailed(
+            throw try await refusal(
                 stage: .asBuilt,
-                reason: dryRun.failure ?? "unknown"
+                result: dryRun,
+                transaction: transaction,
+                lookupTables: lookupTables,
+                intent: asBuilt,
+                fee: KaminoPriorityFee(limit: unitLimit, price: unitPrice)
             )
         }
 
@@ -395,9 +425,13 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             accountAddresses: [owner]
         )
         guard verdict.succeeded else {
-            throw KaminoPreparationError.simulationFailed(
+            throw try await refusal(
                 stage: .budgeted,
-                reason: verdict.failure ?? "unknown"
+                result: verdict,
+                transaction: transaction,
+                lookupTables: lookupTables,
+                intent: injected,
+                fee: fee
             )
         }
 
@@ -409,4 +443,126 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             recentBlockhash: budgeted.recentBlockhash
         )
     }
+
+    // MARK: - Refusals
+
+    /// The error for a refused simulation, named by what the user can fix. Its reads run only
+    /// after a failure, so a deposit that simulates cleanly pays nothing for them.
+    private func refusal(
+        stage: KaminoPreparationError.Stage,
+        result: SolanaSimulationResult,
+        transaction: SolanaV0Transaction,
+        lookupTables: [String: [String]],
+        intent: KaminoTransactionIntent,
+        fee: KaminoPriorityFee
+    ) async throws -> KaminoPreparationError {
+        let reason = result.failure ?? "unknown"
+        switch KaminoSimulationFailure(failure: reason, logs: result.logs) {
+        case .other:
+            return .simulationFailed(stage: stage, reason: reason)
+        case .insufficientToken:
+            // On a withdraw this code can be shares or vault liquidity, not the wallet's token.
+            guard case .deposit = intent.operation else { return .simulationFailed(stage: stage, reason: reason) }
+            return .insufficientToken(
+                ticker: intent.vault.descriptor.underlyingCoinMeta?.ticker ?? "kaminoVerifyTokens".localized
+            )
+        case .insufficientSol:
+            guard case .deposit(let amount) = intent.operation else { return .insufficientSol(nil) }
+            do {
+                let shortfall = try await depositShortfall(
+                    transaction: transaction,
+                    lookupTables: lookupTables,
+                    intent: intent,
+                    amount: amount,
+                    fee: fee
+                )
+                // Figures that say the wallet can pay would contradict the refusal.
+                return .insufficientSol(shortfall.availableLamports < shortfall.neededLamports ? shortfall : nil)
+            } catch let error as CancellationError {
+                throw error
+            } catch {
+                logger.warning(
+                    "[kamino] SOL shortfall unreadable at \(stage.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)"
+                )
+                return .insufficientSol(nil)
+            }
+        }
+    }
+
+    /// Everything this deposit spends in SOL: fees, rent for the accounts it opens, the wallet's
+    /// rent-exempt minimum, and the amount itself when it is wrapped from native SOL.
+    private func depositShortfall(
+        transaction: SolanaV0Transaction,
+        lookupTables: [String: [String]],
+        intent: KaminoTransactionIntent,
+        amount: KaminoTokenAmount,
+        fee: KaminoPriorityFee
+    ) async throws -> KaminoSolShortfall {
+        let opened = try Self.accountsOpened(by: transaction, lookupTables: lookupTables)
+
+        async let availableRead = solana.fetchLamports(address: intent.owner)
+        async let walletRentRead = solana.fetchRentExemptMinimum(size: Self.walletAccountDataSize)
+        async let tokenAccountRentRead = solana.fetchRentExemptMinimum(size: Self.tokenAccountDataSize)
+        async let farmUserRentRead = opened.initializesFarmUser
+            ? solana.fetchRentExemptMinimum(size: Self.farmUserStateDataSize)
+            : 0
+
+        var missingTokenAccounts = 0
+        for address in opened.tokenAccounts {
+            let isOpen = try await solana.isTokenAccount(address: address)
+            if !isOpen { missingTokenAccounts += 1 }
+        }
+
+        let available = try await availableRead
+        let walletRent = try await walletRentRead
+        let tokenAccountRent = try await tokenAccountRentRead
+        let farmUserRent = try await farmUserRentRead
+
+        let priorityFee = (BigInt(fee.limit) * BigInt(fee.price) + Self.microLamportsPerLamport - 1)
+            / Self.microLamportsPerLamport
+        let wrapped = intent.vault.isWrappedSolVault ? amount.baseUnits : 0
+        let needed = Self.signatureFeeLamports
+            + priorityFee
+            + BigInt(missingTokenAccounts) * BigInt(tokenAccountRent)
+            + BigInt(farmUserRent)
+            + BigInt(walletRent)
+            + wrapped
+
+        return KaminoSolShortfall(neededLamports: needed, availableLamports: BigInt(available))
+    }
+
+    /// The token accounts the transaction's `createIdempotent` instructions open, and whether it
+    /// initializes a farm user state.
+    private static func accountsOpened(
+        by transaction: SolanaV0Transaction,
+        lookupTables: [String: [String]]
+    ) throws -> (tokenAccounts: [String], initializesFarmUser: Bool) {
+        let accounts = try transaction.resolvedAccountAddresses(lookupTables: lookupTables)
+        var tokenAccounts: [String] = []
+        var initializesFarmUser = false
+        for (position, instruction) in transaction.instructions.enumerated() {
+            let program = KaminoSolanaProgram(programId: accounts[Int(instruction.programIdIndex)])
+            switch KaminoInstructionSequence.kind(program: program, data: instruction.data) {
+            case .createTokenAccount:
+                let slot = KaminoInstructionAccounts.AssociatedToken.account
+                guard instruction.accountIndexes.indices.contains(slot) else {
+                    throw KaminoValidationError.malformedInstruction(index: position, detail: "createIdempotent accounts")
+                }
+                tokenAccounts.append(accounts[Int(instruction.accountIndexes[slot])])
+            case .farmsInitializeUser:
+                initializesFarmUser = true
+            default:
+                break
+            }
+        }
+        return (tokenAccounts, initializesFarmUser)
+    }
+
+    /// The runtime's fee per signature; a Kamino transaction carries one.
+    private static let signatureFeeLamports = BigInt(5_000)
+    private static let microLamportsPerLamport = BigInt(1_000_000)
+    /// An SPL token account; every mint these vaults use is classic SPL Token.
+    private static let tokenAccountDataSize = 165
+    /// The farms program's `UserState`, created by `initialize_user`.
+    private static let farmUserStateDataSize = 920
 }
