@@ -149,6 +149,21 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
+    /// Message count from which the signing screen warns that signing takes longer.
+    static let manyInputsNoticeThreshold = 3
+
+    /// "Signing N inputs" notice for the signing-in-progress screen; nil below the threshold or outside signing.
+    var manyInputsNotice: String? {
+        switch status {
+        case .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
+            guard messsageToSign.count >= Self.manyInputsNoticeThreshold else { return nil }
+            return String(format: "signingManyInputsNotice".localized, messsageToSign.count)
+        case .connectingToFastServer, .connectingToFastServerFailed, .KeysignFinished,
+                .KeysignFailed, .KeysignRetryRequested, .KeysignVaultMismatch, .KeysignBroadcastUnconfirmed:
+            return nil
+        }
+    }
+
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo

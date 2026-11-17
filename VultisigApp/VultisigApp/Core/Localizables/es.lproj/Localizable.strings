@@ -1526,6 +1526,7 @@
 "signer" = "Firmante";
 "signFasterThanEverBefore" = "Firma más rápido que nunca";
 "signingErrorTryAgain" = "Error al Firmar";
+"signingManyInputsNotice" = "Firmando %d entradas. Esto tarda más de lo habitual.";
 "signingMethod" = "Método de firma";
 "signingTransaction" = "Firmando transacción";
 "signTransaction" = "Firmar transacción";

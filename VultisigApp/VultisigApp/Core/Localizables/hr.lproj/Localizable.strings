@@ -1526,6 +1526,7 @@
 "signer" = "Potpisnik";
 "signFasterThanEverBefore" = "Potpiši brže nego ikad prije";
 "signingErrorTryAgain" = "Greška pri potpisivanju";
+"signingManyInputsNotice" = "Potpisivanje ulaza: %d. To traje dulje nego inače.";
 "signingMethod" = "Metoda potpisa";
 "signingTransaction" = "Potpisivanje transakcije";
 "signTransaction" = "Potpiši transakciju";

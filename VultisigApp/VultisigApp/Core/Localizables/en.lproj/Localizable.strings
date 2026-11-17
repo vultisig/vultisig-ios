@@ -1526,6 +1526,7 @@
 "signer" = "Signer";
 "signFasterThanEverBefore" = "Sign faster than ever before";
 "signingErrorTryAgain" = "Signing Error";
+"signingManyInputsNotice" = "Signing %d inputs. This takes longer than usual.";
 "signingMethod" = "Signing method";
 "signingTransaction" = "Signing transaction";
 "signTransaction" = "Sign transaction";
