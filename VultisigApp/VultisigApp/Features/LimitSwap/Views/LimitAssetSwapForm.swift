@@ -51,7 +51,7 @@ struct LimitAssetSwapForm: View {
                     // text, so it states what the order actually guarantees even
                     // while the field still shows what was asked for.
                     computedAmount: buyAmountDecimal,
-                    fiatPricePerUnit: vm.targetUsdPricePerUnit,
+                    fiatPricePerUnit: Decimal(toCoin.price),
                     onPickAsset: onPickToAsset
                 )
                 .id(LimitScrollAnchor.buy)
