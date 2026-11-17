@@ -9,16 +9,16 @@ import XCTest
 @MainActor
 final class KeysignManyInputsNoticeTests: XCTestCase {
 
-    func testNoticeAppearsFromTenMessagesWithTheCount() {
+    func testNoticeAppearsFromThreeMessagesWithTheCount() {
         let vm = KeysignViewModel()
         vm.status = .KeysignECDSA
 
-        vm.messsageToSign = Array(repeating: "hash", count: 9)
+        vm.messsageToSign = Array(repeating: "hash", count: 2)
         XCTAssertNil(vm.manyInputsNotice)
 
-        vm.messsageToSign = Array(repeating: "hash", count: 10)
+        vm.messsageToSign = Array(repeating: "hash", count: 3)
         let notice = vm.manyInputsNotice
-        XCTAssertEqual(notice, String(format: "signingManyInputsNotice".localized, 10))
-        XCTAssertTrue(notice?.contains("10") == true, "notice must carry the message count")
+        XCTAssertEqual(notice, String(format: "signingManyInputsNotice".localized, 3))
+        XCTAssertTrue(notice?.contains("3") == true, "notice must carry the message count")
     }
 }

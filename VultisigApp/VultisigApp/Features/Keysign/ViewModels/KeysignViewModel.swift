@@ -150,7 +150,7 @@ class KeysignViewModel: ObservableObject {
     }
 
     /// Message count from which the signing screen warns that signing takes longer.
-    static let manyInputsNoticeThreshold = 10
+    static let manyInputsNoticeThreshold = 3
 
     /// "Signing N inputs" notice for the signing-in-progress screen; nil below the threshold or outside signing.
     var manyInputsNotice: String? {
