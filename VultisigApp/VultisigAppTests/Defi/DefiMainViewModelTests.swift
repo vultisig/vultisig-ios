@@ -66,6 +66,34 @@ final class DefiMainViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filteredItems(in: vault), expected)
     }
 
+    func testPreviouslySavedQbtcIsHiddenWhileDefiFlagOff() {
+        // A vault that saved QBTC as a DeFi chain before the flag existed keeps
+        // it persisted (no destructive migration), but the DeFi tab skips it.
+        let qbtc = makeCoin(chain: .qbtc, ticker: "QBTC", decimals: 8, priceProviderID: "")
+        let tron = makeCoin(chain: .tron, ticker: "TRX", decimals: 6, priceProviderID: "tron")
+        vault.coins = [qbtc, tron]
+        vault.defiChains = [.qbtc, .tron]
+
+        let viewModel = DefiMainViewModel()
+        viewModel.groupChains(vault: vault)
+
+        XCTAssertFalse(QBTCConfig.isDefiEnabled)
+        XCTAssertEqual(viewModel.filteredItems(in: vault), [.chain(.tron)])
+        XCTAssertFalse(vault.availableDefiChains.contains(.qbtc), "the DeFi chain picker no longer offers it")
+    }
+
+    func testChainPickerDropsPreviouslySavedQbtcWhileDefiFlagOff() {
+        // The picker preselects from `vault.defiChains`; a stale `.qbtc` there
+        // would make `save` try to enable the QBTC coin and fail.
+        vault.defiChains = [.qbtc, .thorChain]
+
+        let viewModel = DefiSelectChainViewModel()
+        viewModel.setData(for: vault)
+
+        XCTAssertFalse(viewModel.selection.contains(.qbtc))
+        XCTAssertTrue(viewModel.selection.contains(.thorChain))
+    }
+
     private func makeCoin(
         chain: Chain,
         ticker: String,
