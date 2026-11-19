@@ -387,7 +387,7 @@ extension SwapCryptoLogic {
                 vault: vault
             )
 
-        case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
+        case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _), let .fynd(evmQuote, _):
             // Never stamp the signed payload with a guessed provider. All three
             // grouped cases resolve `swapProviderId` to a concrete non-nil value
             // by construction; a nil here is an internal inconsistency, not a

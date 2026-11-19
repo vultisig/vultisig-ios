@@ -13,7 +13,7 @@ extension SwapQuote {
     /// to the same `toCoin`, so this value is directly comparable.
     ///
     /// - THORChain/Maya: `expectedAmountOut` is already net of inbound + swap + outbound fees.
-    /// - 1inch/KyberSwap: `dstAmount` is net of swap fees.
+    /// - 1inch/KyberSwap/Fynd: `dstAmount` is net of swap fees.
     /// - LiFi: `dstAmount` is already net of the integrator fee, which LI.FI takes from the
     ///   source token (`fromToken`) and reflects in `estimate.toAmount` (`included: true`).
     ///
@@ -34,6 +34,7 @@ extension SwapQuote {
 
         case .oneinch(let quote, _),
              .kyberswap(let quote, _),
+             .fynd(let quote, _),
              .lifi(let quote, _, _):
             guard let raw = BigInt(quote.dstAmount), raw > 0 else { return nil }
             return toCoin.decimal(for: raw)

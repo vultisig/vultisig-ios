@@ -9,10 +9,12 @@ import Foundation
 import OSLog
 enum FeatureFlag: String {
     case EncryptGCM
+    case fyndSwap
 
     var name: String {
         switch self {
         case .EncryptGCM: return "encrypt-gcm"
+        case .fyndSwap: return "fynd-swap"
         }
     }
 }

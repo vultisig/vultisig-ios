@@ -14,6 +14,7 @@ enum SwapProvider: Equatable, Hashable {
     case mayachain
     case oneinch(Chain)
     case kyberswap(Chain)
+    case fynd(Chain)
     case lifi
     case swapkit
     case jupiter
@@ -57,7 +58,7 @@ enum SwapProvider: Equatable, Hashable {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain, .swapkit:
             return true
-        case .oneinch, .kyberswap, .lifi, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .jupiter:
             // Jupiter is Solana-only same-chain (no external recipient flow), and
             // it buries the recipient in the prebuilt tx with no verifiable echo —
             // same constraint as the other aggregators.
@@ -69,7 +70,7 @@ enum SwapProvider: Equatable, Hashable {
         switch self {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return true
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter:
             return false
         }
     }

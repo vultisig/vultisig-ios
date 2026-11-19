@@ -91,7 +91,7 @@ enum ExplorerLinkBuilder {
             return lifiTracker(txid: txHash)
         case .swapkit:
             return swapkitTracker(txid: txHash, chain: sourceChain)
-        case .oneinch, .kyberswap, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .jupiter:
             // Pure aggregators (and Jupiter) have no dedicated tracker; the tx
             // shows on the source chain's canonical explorer instead.
             return nil
@@ -110,6 +110,7 @@ enum ExplorerLinkBuilder {
         case .swapkit: return .swapkit
         case .oneinch: return .oneinch(sourceChain)
         case .kyberswap: return .kyberswap(sourceChain)
+        case .fynd: return .fynd(sourceChain)
         case .jupiter: return .jupiter
         }
     }
@@ -130,6 +131,7 @@ enum ExplorerLinkBuilder {
             case .swapkit: return .swapkit
             case .oneInch: return .oneinch(payload.fromCoin.chain)
             case .kyberSwap: return .kyberswap(payload.fromCoin.chain)
+            case .fynd: return .fynd(payload.fromCoin.chain)
             case .jupiter: return .jupiter
             case .unknown: return nil
             }

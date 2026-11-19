@@ -122,7 +122,7 @@ enum SwapCryptoLogic {
         switch quote {
         case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
-        case let .oneinch(_, fee), let .kyberswap(_, fee), let .lifi(_, fee, _):
+        case let .oneinch(_, fee), let .kyberswap(_, fee), let .fynd(_, fee), let .lifi(_, fee, _):
             return fee ?? 0
         case let .swapkit(response, fee, _):
             // SwapKit's wire `inbound` fee for UTXO/Cardano sources doesn't
@@ -204,7 +204,7 @@ enum SwapCryptoLogic {
              let .thorchainStagenet(quote):
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
-        case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
+        case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _), let .fynd(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         case let .jupiter(quote, _, _, _):
@@ -248,7 +248,7 @@ enum SwapCryptoLogic {
             let signedMemo = ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain)
             guard let limit = ThorchainMemoLimit.assertedLimit(in: signedMemo) else { return nil }
             return Decimal(limit) / toCoin.thorswapMultiplier
-        case .oneinch, .kyberswap, .lifi, .jupiter, .swapkit:
+        case .oneinch, .kyberswap, .fynd, .lifi, .jupiter, .swapkit:
             return nil
         }
     }
@@ -649,7 +649,7 @@ enum SwapCryptoLogic {
         case let .mayachain(q):
             let feeDecimal = q.fees.affiliate.toDecimal() / toCoin.thorswapMultiplier
             return toCoin.fiat(decimal: feeDecimal)
-        case .oneinch, .kyberswap:
+        case .oneinch, .kyberswap, .fynd:
             let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
             let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
             return coin.fiat(decimal: feeDecimal)
@@ -682,7 +682,7 @@ enum SwapCryptoLogic {
     ) -> String {
         guard quote != nil else { return "vultisigFee".localized }
         switch quote {
-        case .oneinch, .kyberswap, .lifi, .jupiter:
+        case .oneinch, .kyberswap, .fynd, .lifi, .jupiter:
             let net = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
             if net <= 0, vultDiscountBps != Int.max {
                 return "vultisigFee".localized

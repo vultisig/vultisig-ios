@@ -574,7 +574,7 @@ extension NativeSwapTrackingService {
             return isMarketSwapMemo(quote.memo) ? .thorChainStagenet : nil
         case let .mayachain(quote):
             return isMarketSwapMemo(quote.memo) ? .mayaChain : nil
-        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter, nil:
+        case .oneinch, .kyberswap, .fynd, .lifi, .swapkit, .jupiter, nil:
             return nil
         }
     }

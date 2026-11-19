@@ -40,7 +40,7 @@ struct SwapPayoutModel: Equatable {
                 proportionalFeeFraction: proportionalFeeFraction,
                 flatFee: outbound / multiplier
             )
-        case .oneinch, .kyberswap, .lifi, .jupiter, .swapkit:
+        case .oneinch, .kyberswap, .fynd, .lifi, .jupiter, .swapkit:
             return SwapPayoutModel(rate: output / fromAmount, proportionalFeeFraction: 0, flatFee: 0)
         }
     }
