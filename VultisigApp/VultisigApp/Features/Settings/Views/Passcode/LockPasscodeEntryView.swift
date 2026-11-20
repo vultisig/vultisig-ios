@@ -180,7 +180,6 @@ struct LockPasscodeEntryView: View {
     private func startBiometricUnlock() {
         #if os(iOS)
         shouldRestorePasscodeFieldFocus = true
-        isPasscodeFieldFocused = false
         #endif
         onBiometricUnlock()
     }
