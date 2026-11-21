@@ -13,7 +13,7 @@ enum DefiInteractorResolver {
         case .mayaChain:
             return MayaChainStakeInteractor()
         case .ton:
-            return TonStakeInteractor()
+            return TonCompositeStakeInteractor()
         default:
             return nil  // Chain doesn't support DeFi Stake Tab
         }

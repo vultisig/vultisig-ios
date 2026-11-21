@@ -125,6 +125,10 @@ struct SignTonDisplayView: View {
             return "excessGasRefund"
         case .swap:
             return "swap"
+        case .liquidStakingDeposit:
+            return "liquidStakingDeposit"
+        case .jettonBurn:
+            return "jettonBurn"
         case nil:
             return "transfer"
         }
@@ -146,7 +150,13 @@ struct SignTonDisplayView: View {
                 row(title: "to", value: nft.newOwner)
                 row(title: "forwardTonAmount", value: tonAmountString(rawAmount: nft.forwardAmount))
             }
-        case .excesses, .swap, nil:
+        case .jettonBurn(let burn):
+            VStack(alignment: .leading, spacing: 8) {
+                row(title: "to", value: entry.message.to)
+                row(title: "amount", value: jettonAmountString(rawAmount: burn.amount, coin: entry.jettonCoin))
+                row(title: "forwardTonAmount", value: tonAmountString(rawAmount: entry.message.amount))
+            }
+        case .excesses, .swap, .liquidStakingDeposit, nil:
             VStack(alignment: .leading, spacing: 8) {
                 row(title: "to", value: entry.message.to)
                 row(title: "amount", value: tonAmountString(rawAmount: entry.message.amount))

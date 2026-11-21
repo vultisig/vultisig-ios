@@ -229,6 +229,11 @@ struct SendTransaction: Hashable {
     /// transaction bytes. Local-only on iOS — same posture as
     /// `cosmosStakingPayload`.
     let solanaStakingPayload: SolanaStakingPayload?
+    /// TonConnect-style message intent for the Tonstakers liquid-staking flows
+    /// (deposit / unstake). Non-nil only for those flows; the Verify →
+    /// KeysignPayload bridge turns it into `.signTon(...)`. Local-only (same
+    /// posture as `cosmosStakingPayload`).
+    let tonStakePayload: TonStakePayload?
 }
 
 extension SendTransaction {
@@ -259,7 +264,8 @@ extension SendTransaction {
             lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
             lhs.limitCancelContext == rhs.limitCancelContext &&
             lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount &&
-            lhs.approvalDecision == rhs.approvalDecision
+            lhs.approvalDecision == rhs.approvalDecision &&
+            lhs.tonStakePayload == rhs.tonStakePayload
     }
 
     func hash(into hasher: inout Hasher) {
@@ -290,6 +296,7 @@ extension SendTransaction {
         hasher.combine(limitCancelContext)
         hasher.combine(withdrawDisplayAmount)
         hasher.combine(approvalDecision)
+        hasher.combine(tonStakePayload)
     }
 }
 
@@ -321,7 +328,8 @@ extension SendTransaction {
         limitCancelContext: LimitOrderCancelRequest? = nil,
         withdrawDisplayAmount: Decimal? = nil,
         approvalDecision: ERC20ApprovalDecision? = nil,
-        amountWasAutoAdjusted: Bool = false
+        amountWasAutoAdjusted: Bool = false,
+        tonStakePayload: TonStakePayload? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -353,6 +361,7 @@ extension SendTransaction {
         self.limitCancelContext = limitCancelContext
         self.withdrawDisplayAmount = withdrawDisplayAmount
         self.approvalDecision = approvalDecision
+        self.tonStakePayload = tonStakePayload
     }
 }
 
@@ -423,7 +432,8 @@ extension SendTransaction {
         wasmContractPayload: SendTransactionUpdate<WasmExecuteContractPayload?>? = nil,
         feeCoin: Coin? = nil,
         cosmosStakingPayload: SendTransactionUpdate<CosmosStakingPayload?>? = nil,
-        solanaStakingPayload: SendTransactionUpdate<SolanaStakingPayload?>? = nil
+        solanaStakingPayload: SendTransactionUpdate<SolanaStakingPayload?>? = nil,
+        tonStakePayload: SendTransactionUpdate<TonStakePayload?>? = nil
     ) -> SendTransaction {
         let resolvedVault = vault ?? self.vault
         let resolvedCoin = coin ?? self.coin
@@ -458,6 +468,10 @@ extension SendTransaction {
         let resolvedDestinationTag: UInt32? = {
             guard let destinationTag else { return self.destinationTag }
             return destinationTag.value
+        }()
+        let resolvedTonStakePayload: TonStakePayload? = {
+            guard let tonStakePayload else { return self.tonStakePayload }
+            return tonStakePayload.value
         }()
         return SendTransaction(
             coin: resolvedCoin,
@@ -502,7 +516,8 @@ extension SendTransaction {
             // `copy(gas:fee:)` between the LP form and Verify would drop it, and
             // signing refuses a router deposit whose approval was not decided.
             approvalDecision: approvalDecision,
-            amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted
+            amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted,
+            tonStakePayload: resolvedTonStakePayload
         )
     }
 

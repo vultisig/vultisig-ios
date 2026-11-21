@@ -54,6 +54,10 @@ enum FunctionTransactionType: Hashable {
     /// existing pool the position is staked into; `poolImplementation` resolves
     /// the withdraw comment; `stakedAmount` is shown for confirmation.
     case tonUnstake(coin: CoinMeta, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal)
+    /// Tonstakers deposit. `coin` is native TON, which funds the stake and the fee.
+    case tonLiquidStake(coin: CoinMeta)
+    /// Tonstakers unstake (tsTON burn). `coin` is native TON, which pays the attached value.
+    case tonLiquidUnstake(coin: CoinMeta)
     /// THORChain / MayaChain node LEAVE. `node` is the validator address the
     /// memo names; it is optional so a caller that already knows it (a bond
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
@@ -159,6 +163,10 @@ enum FunctionTransactionType: Hashable {
         case .ibcTransfer(let coin, _):
             return [coin]
         case .customMemo(let coin), .customMemoPrefilled(let coin, _, _):
+            return [coin]
+        case .tonLiquidStake(let coin):
+            return [coin]
+        case .tonLiquidUnstake(let coin):
             return [coin]
         }
     }
