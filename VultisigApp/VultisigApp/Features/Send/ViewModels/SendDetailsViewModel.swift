@@ -310,6 +310,21 @@ final class SendDetailsViewModel {
         return detectedCoin
     }
 
+    /// Follows a chain change: keeps a coin already on that chain (a token
+    /// picked on another chain moves `selectedChain` itself), otherwise
+    /// switches to the chain's native coin when the vault has it.
+    func onSelectedChainChange(to chain: Chain?) {
+        if coin.chain == chain {
+            fromAddress = coin.address
+            return
+        }
+        guard let nativeCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+            return
+        }
+        fromAddress = nativeCoin.address
+        coin = nativeCoin
+    }
+
     // MARK: - Derived state
 
     /// Continue button is disabled while either async path is running, or while
