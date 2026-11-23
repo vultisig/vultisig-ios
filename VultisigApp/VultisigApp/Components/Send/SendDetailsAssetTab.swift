@@ -28,6 +28,12 @@ struct SendDetailsAssetTab: View {
                 handleAssetSelection(oldValue, newValue)
             }
             .onChange(of: viewModel.selectedChain) { _, newValue in
+                // A coin picked on another chain already moved selectedChain; keep it over the native coin.
+                if viewModel.coin.chain == newValue {
+                    viewModel.fromAddress = viewModel.coin.address
+                    return
+                }
+
                 guard let vault = appViewModel.selectedVault else { return }
 
                 let nativeCoin = vault.coins.first(where: {
