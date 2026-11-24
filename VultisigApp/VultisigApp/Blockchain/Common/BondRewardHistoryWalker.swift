@@ -16,10 +16,10 @@ enum BondRewardHistoryWalker {
     /// past churn's reward never changes, so they are never queried again.
     ///
     /// A failed query is tried once more. The walk ends at the first churn the
-    /// address was not yet a provider for, and after the first batch that still
-    /// has a failure (nodes only keep recent state, so older heights would fail
-    /// too). A failure leaves the history incomplete; it throws only when
-    /// nothing at all could be loaded.
+    /// address was not yet a provider for, or at the first churn that still
+    /// fails, so the rows are always the newest contiguous churns. A failure
+    /// leaves the history incomplete; it throws only when nothing at all could
+    /// be loaded.
     static func walk(
         churns: [ChurnEntry],
         limit: Int,
@@ -27,7 +27,6 @@ enum BondRewardHistoryWalker {
         query: @escaping @Sendable (_ snapshotHeight: Int, _ churnDate: Date) async -> BondRewardHistoryQueryResult
     ) async throws -> BondRewardHistory {
         var entries: [BondRewardHistoryEntry] = []
-        var firstFailure: Error?
 
         for batch in queryTargets(churns, limit: limit).chunked(into: BondRewardHistoryConfig.concurrency) {
             // A cancelled caller must never read any result as trustworthy.
@@ -52,20 +51,18 @@ enum BondRewardHistoryWalker {
                     entries.append(entry)
                 case .notAProvider:
                     try Task.checkCancellation()
-                    return BondRewardHistory(entries: entries, isComplete: firstFailure == nil)
+                    return BondRewardHistory(entries: entries, isComplete: true)
                 case .failed(let error):
-                    firstFailure = firstFailure ?? error
+                    // This churn may be where the address stopped providing; older rows could be an earlier bond.
+                    try Task.checkCancellation()
+                    if entries.isEmpty { throw error }
+                    return BondRewardHistory(entries: entries, isComplete: false)
                 }
             }
-
-            if firstFailure != nil { break }
         }
 
         try Task.checkCancellation()
-        if let firstFailure, entries.isEmpty {
-            throw firstFailure
-        }
-        return BondRewardHistory(entries: entries, isComplete: firstFailure == nil)
+        return BondRewardHistory(entries: entries, isComplete: true)
     }
 
     /// The snapshot height (`churn - 1`) and churn date of the newest `limit` churns, newest first.
