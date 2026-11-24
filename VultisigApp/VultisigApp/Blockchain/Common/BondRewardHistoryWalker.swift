@@ -27,9 +27,8 @@ enum BondRewardHistoryWalker {
         query: @escaping @Sendable (_ snapshotHeight: Int, _ churnDate: Date) async -> BondRewardHistoryQueryResult
     ) async throws -> BondRewardHistory {
         var entries: [BondRewardHistoryEntry] = []
-        var firstFailure: Error?
 
-        walk: for batch in queryTargets(churns, limit: limit).chunked(into: BondRewardHistoryConfig.concurrency) {
+        for batch in queryTargets(churns, limit: limit).chunked(into: BondRewardHistoryConfig.concurrency) {
             // A cancelled caller must never read any result as trustworthy.
             try Task.checkCancellation()
 
@@ -55,17 +54,15 @@ enum BondRewardHistoryWalker {
                     return BondRewardHistory(entries: entries, isComplete: true)
                 case .failed(let error):
                     // This churn may be where the address stopped providing; older rows could be an earlier bond.
-                    firstFailure = error
-                    break walk
+                    try Task.checkCancellation()
+                    if entries.isEmpty { throw error }
+                    return BondRewardHistory(entries: entries, isComplete: false)
                 }
             }
         }
 
         try Task.checkCancellation()
-        if let firstFailure, entries.isEmpty {
-            throw firstFailure
-        }
-        return BondRewardHistory(entries: entries, isComplete: firstFailure == nil)
+        return BondRewardHistory(entries: entries, isComplete: true)
     }
 
     /// The snapshot height (`churn - 1`) and churn date of the newest `limit` churns, newest first.
