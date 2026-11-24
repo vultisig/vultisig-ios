@@ -414,6 +414,7 @@
 "doneVerbRedelegated" = "已重新委托";
 "doneVerbRemovedLiquidity" = "已移除流动性";
 "doneVerbSent" = "已发送";
+"doneVerbSigned" = "已签名";
 "doneVerbStaked" = "已质押";
 "doneVerbSwitched" = "已切换";
 "doneVerbUnbonded" = "已解绑";

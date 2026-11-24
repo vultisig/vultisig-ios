@@ -124,7 +124,7 @@ class KeysignViewModel: ObservableObject {
     private let swapFeeViewModel = JoinKeysignSwapFeeViewModel()
 
     var showRedacted: Bool {
-        txid.isEmpty && !(keysignPayload?.skipBroadcast ?? false)
+        txid.isEmpty && !(keysignPayload?.skipsBroadcast ?? false)
     }
 
     /// Drives the keysign Rive animation's `progessPercentage` bar (0–100). The
@@ -999,7 +999,7 @@ class KeysignViewModel: ObservableObject {
     func broadcastTransaction() async {
         guard let keysignPayload else { return }
 
-        guard !keysignPayload.skipBroadcast else {
+        guard !keysignPayload.skipsBroadcast else {
             logger.info("Transaction not broadcasted, skipBroadcast is set to true")
             self.txid = ""
             return

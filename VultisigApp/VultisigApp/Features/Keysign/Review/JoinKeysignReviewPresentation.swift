@@ -99,7 +99,7 @@ enum JoinKeysignReviewPresentation {
             ? (feeCrypto: "loading".localized, feeFiat: String.empty)
             : viewModel.getCalculatedNetworkFee()
         let lpDetails = liquidityDetails(for: payload)
-        let hasSignedBody = payload?.hasSignedCosmosBody == true
+        let hasSignedBody = payload?.hasSignedBody == true
         let signedTransfer = payload.flatMap(Self.signedTransfer)
         let batch = payload.flatMap(Self.transferBatch)
         let isPlainRipplePayment = payload?.coin.chain == .ripple && payload?.swapPayload == nil
@@ -247,7 +247,7 @@ enum JoinKeysignReviewPresentation {
             rows.append(.init(label: "validator".localized, value: address))
         } else if let transfer = signedTransfer(of: payload) {
             rows.append(.init(label: "to".localized, value: transfer.recipient))
-        } else if !isStakingReview, !payload.hasSignedCosmosBody, payload.toAddress.isNotEmpty {
+        } else if !isStakingReview, !payload.hasSignedBody, payload.toAddress.isNotEmpty {
             rows.append(.init(label: "to".localized, value: payload.toAddress))
         }
         if let details {
@@ -269,7 +269,7 @@ enum JoinKeysignReviewPresentation {
         ) ?? ballot.map { .title(text: "governanceVoteAction".localized, caption: voteTitle($0.option)) } ?? .send(
             title: nil,
             coin: HeroCoinAmount(
-                amount: !payload.hasSignedCosmosBody
+                amount: !payload.hasSignedBody
                     ? liquidityAmount(for: payload, details: details)
                     : (signedTransfer(of: payload)?.amount.formatForDisplay() ?? .empty),
                 ticker: details == nil ? payload.coin.ticker : .empty,
@@ -293,10 +293,14 @@ enum JoinKeysignReviewPresentation {
     }
 
     /// Recipient and amount of a single Cosmos send, read from the signed
-    /// `signDirect` body or `signAmino` messages rather than the initiator's
+    /// `signDirect` body or `signAmino` messages, or of a Substrate dApp
+    /// Balances transfer read from its call bytes, rather than the initiator's
     /// display copy. Nil for anything else, or when the denom is not the
     /// payload coin's own.
     static func signedTransfer(of payload: KeysignPayload) -> (recipient: String, amount: Decimal)? {
+        if let dapp = try? payload.substrateDappPayload {
+            return substrateTransfer(dapp, coin: payload.coin)
+        }
         let send: (recipient: String, denom: String, raw: String)?
         if let direct = payload.signDirect {
             guard let reading = CosmosSignDocReader.read(bodyBytes: direct.bodyBytes),
@@ -315,6 +319,26 @@ enum JoinKeysignReviewPresentation {
               let value = Decimal(string: send.raw)
         else { return nil }
         return (send.recipient, value / pow(10, payload.coin.decimals))
+    }
+
+    enum SubstrateDappReading: Equatable {
+        case transfer(recipient: String, amount: Decimal)
+        case otherCall
+    }
+
+    /// A Substrate dApp `signPayload` as its signed call reads; nil for any other payload.
+    static func substrateDappReading(of payload: KeysignPayload) -> SubstrateDappReading? {
+        guard let dapp = try? payload.substrateDappPayload else { return nil }
+        guard let transfer = substrateTransfer(dapp, coin: payload.coin) else { return .otherCall }
+        return .transfer(recipient: transfer.recipient, amount: transfer.amount)
+    }
+
+    private static func substrateTransfer(_ dapp: SubstrateSignerPayload, coin: Coin) -> (recipient: String, amount: Decimal)? {
+        guard let transfer = (try? dapp.methodBytes()).flatMap(SubstrateTransferCallReader.read),
+              let recipient = SubstrateTransferCallReader.recipientAddress(transfer.destination, chain: coin.chain),
+              let value = Decimal(string: transfer.amount.description)
+        else { return nil }
+        return (recipient, value / pow(10, coin.decimals))
     }
 
     /// The one `cosmos-sdk/MsgSend` of an amino body; nil for batches, other
@@ -398,5 +422,5 @@ enum JoinKeysignReviewPresentation {
 
 private extension KeysignPayload {
     /// To and amount of these payloads come from the signed content, never `toAddress` / `toAmount`.
-    var hasSignedCosmosBody: Bool { signDirect != nil || signAmino != nil }
+    var hasSignedBody: Bool { signDirect != nil || signAmino != nil || (try? substrateDappPayload) != nil }
 }

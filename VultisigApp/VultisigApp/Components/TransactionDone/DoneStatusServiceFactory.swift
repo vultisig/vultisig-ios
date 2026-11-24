@@ -139,6 +139,10 @@ enum DoneStatusServiceFactory {
         txHash: String,
         vault: Vault
     ) -> DoneStatusService {
+        // A Substrate dApp `signPayload` is never broadcast: there is no hash to poll.
+        if (try? keysignPayload.substrateDappPayload) != nil {
+            return signedMessage()
+        }
         if isLimitSwapMemo(keysignPayload.memo) {
             return DoneStatusService(poller: LimitOrderPoller(
                 txHash: txHash,

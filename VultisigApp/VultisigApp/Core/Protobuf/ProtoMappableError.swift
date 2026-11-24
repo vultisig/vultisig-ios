@@ -11,4 +11,5 @@ enum ProtoMappableError: Error {
     case chainNotSupport
     case blockchainSpecificNotFound
     case base64EncodedDataNotFound
+    case invalidAmount
 }

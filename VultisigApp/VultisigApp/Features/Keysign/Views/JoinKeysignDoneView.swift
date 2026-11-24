@@ -77,15 +77,16 @@ struct JoinKeysignDoneView: View {
     private func sendBranch(keysignPayload: KeysignPayload) -> some View {
         let fees = viewModel.getCalculatedNetworkFee()
         let resolution = doneResolution(for: keysignPayload)
+        let display = SendDoneDisplay(payload: keysignPayload)
         DoneScreen(
             input: TransactionDonePayload(
                 coin: keysignPayload.coin,
-                amountCrypto: keysignPayload.toAmountWithTickerString,
-                amountFiat: keysignPayload.toSendAmountFiatString,
+                amountCrypto: display.amountCrypto,
+                amountFiat: display.amountFiat,
                 // An XRPL TrustSet carries the trust-line LIMIT in `toAmount`, so
                 // it has to claim the hero before the amount slot describes it as
                 // a transfer of that many tokens.
-                hero: resolution?.provider == .decoded ? nil : resolution?.hero,
+                hero: display.hero ?? (resolution?.provider == .decoded ? nil : resolution?.hero),
                 operationHero: resolution?.provider == .decoded
                     ? resolvedOperationHero ?? resolution?.hero
                     : nil,
@@ -94,9 +95,9 @@ struct JoinKeysignDoneView: View {
                 memo: viewModel.memo ?? "",
                 isSend: true,
                 fromAddress: keysignPayload.coin.address,
-                toAddress: keysignPayload.toAddress,
+                toAddress: display.toAddress,
                 toAlias: SendAddressResolver.resolveAlias(
-                    address: keysignPayload.toAddress,
+                    address: display.toAddress,
                     coinMeta: keysignPayload.coin.toCoinMeta(),
                     ensLabel: nil,
                     vaults: vaults,
@@ -283,4 +284,31 @@ struct JoinKeysignDoneView: View {
 #Preview {
     JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel())
         .environmentObject(AppViewModel())
+}
+
+/// Amount and recipient for the Send done branch. A Substrate dApp payload
+/// reads them from its signed call; its wire `toAmount` / `toAddress` are empty.
+private struct SendDoneDisplay {
+    let amountCrypto: String
+    let amountFiat: String
+    let toAddress: String
+    let hero: HeroContent?
+
+    init(payload: KeysignPayload) {
+        switch JoinKeysignReviewPresentation.substrateDappReading(of: payload) {
+        case nil:
+            self.init(payload.toAmountWithTickerString, payload.toSendAmountFiatString, payload.toAddress, nil)
+        case .transfer(let recipient, let amount)?:
+            self.init("\(amount.formatForDisplay()) \(payload.coin.ticker)", .empty, recipient, nil)
+        case .otherCall?:
+            self.init(.empty, .empty, .empty, .title(text: "doneVerbSigned".localized, caption: nil))
+        }
+    }
+
+    private init(_ amountCrypto: String, _ amountFiat: String, _ toAddress: String, _ hero: HeroContent?) {
+        self.amountCrypto = amountCrypto
+        self.amountFiat = amountFiat
+        self.toAddress = toAddress
+        self.hero = hero
+    }
 }
