@@ -58,7 +58,16 @@ final class BondRewardHistoryWalkerTests: XCTestCase {
         }
 
         XCTAssertEqual(calls.count(199), 2)
-        XCTAssertEqual(history.entries.map(\.id), [300, 100])
+        XCTAssertEqual(history.entries.map(\.id), [300])
+        XCTAssertFalse(history.isComplete)
+    }
+
+    func testTheWalkEndsAtTheFirstFailedChurnEvenWhenAnOlderOneInTheBatchPaid() async throws {
+        let history = try await BondRewardHistoryWalker.walk(churns: churns, limit: 20, known: [:]) { height, _ in
+            height == 199 ? .failed(Unreachable()) : found(height)
+        }
+
+        XCTAssertEqual(history.entries.map(\.id), [300])
         XCTAssertFalse(history.isComplete)
     }
 }
