@@ -11,8 +11,6 @@ struct SendDetailsAssetTab: View {
     let isExpanded: Bool
     @Bindable var viewModel: SendDetailsViewModel
 
-    @EnvironmentObject var appViewModel: AppViewModel
-
     var body: some View {
         content
             .onAppear {
@@ -28,16 +26,7 @@ struct SendDetailsAssetTab: View {
                 handleAssetSelection(oldValue, newValue)
             }
             .onChange(of: viewModel.selectedChain) { _, newValue in
-                guard let vault = appViewModel.selectedVault else { return }
-
-                let nativeCoin = vault.coins.first(where: {
-                    $0.chain == newValue && $0.isNativeToken == true
-                })
-
-                if let nativeCoin {
-                    viewModel.fromAddress = nativeCoin.address
-                    viewModel.coin = nativeCoin
-                }
+                viewModel.onSelectedChainChange(to: newValue)
             }
             .clipped()
     }
