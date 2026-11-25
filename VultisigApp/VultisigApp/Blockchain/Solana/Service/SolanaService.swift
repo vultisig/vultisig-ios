@@ -931,8 +931,12 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
     /// so a read that fails or outlasts `ataRentWarmTimeout` leaves the fallback rather than holding up the caller.
     func warmAtaRent(isToken2022: Bool) async {
         let size = SolanaHelper.ataAccountSize(isToken2022: isToken2022)
-        _ = try? await withTimeout(seconds: Self.ataRentWarmTimeout) { [self] in
-            try await fetchRentExemptMinimum(size: size)
+        do {
+            _ = try await withTimeout(seconds: Self.ataRentWarmTimeout) { [self] in
+                try await fetchRentExemptMinimum(size: size)
+            }
+        } catch {
+            logger.warning("solana ATA rent read (\(size) bytes) failed, quoting the fallback: \(error.localizedDescription, privacy: .public)")
         }
     }
 
