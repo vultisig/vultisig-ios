@@ -321,6 +321,10 @@ class JoinKeysignViewModel: ObservableObject {
         // before computing sighashes so this co-signer's sighash digests match
         // the rest of the committee.
         let keysignPayload = await withZcashBranchId(keysignPayload)
+        // The fee row reads the new-ATA rent from this cache; without a read it shows the fallback, not the live rent.
+        if let isToken2022 = keysignPayload.chainSpecific.solanaNewAtaIsToken2022 {
+            await SolanaService.shared.warmAtaRent(isToken2022: isToken2022)
+        }
         self.keysignPayload = keysignPayload
         do {
             // `self.vault` may not be the session's vault yet: the caller's

@@ -107,14 +107,11 @@ enum BlockChainSpecific: Codable, Hashable {
             return MayaChainHelper.MayaChainGas.description.toBigInt() // Maya uses 10e10
         case .Cosmos(_, _, let gas, _, _, _):
             return gas.description.toBigInt()
-        case .Solana(_, _, _, let fromAddressPubKey, let toAddressPubKey, _):
-            // Include ATA rent when the recipient's associated token account must be
-            // created alongside the SPL transfer (sender has an ATA, recipient does not).
-            if let from = fromAddressPubKey, !from.isEmpty,
-               toAddressPubKey == nil || toAddressPubKey?.isEmpty == true {
-                return SolanaHelper.defaultFeeInLamports + SolanaHelper.ataRentLamports
+        case .Solana:
+            guard let isToken2022 = solanaNewAtaIsToken2022 else {
+                return SolanaHelper.defaultFeeInLamports
             }
-            return SolanaHelper.defaultFeeInLamports
+            return SolanaHelper.defaultFeeInLamports + SolanaHelper.ataRentLamports(isToken2022: isToken2022)
         case .Sui(_, _, let gasBudget):
             return gasBudget
         case .Polkadot(_, _, _, _, _, _, let gas, _):
@@ -151,6 +148,17 @@ enum BlockChainSpecific: Codable, Hashable {
             return false
         }
         return allowDeath
+    }
+
+    /// For a Solana SPL transfer that also creates the recipient's associated token account
+    /// (sender has an ATA, recipient does not): whether that account is Token-2022. Otherwise nil.
+    var solanaNewAtaIsToken2022: Bool? {
+        guard case .Solana(_, _, _, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = self,
+              let from = fromAddressPubKey, !from.isEmpty,
+              toAddressPubKey?.isEmpty ?? true else {
+            return nil
+        }
+        return hasProgramId
     }
 
     var fee: BigInt {

@@ -853,6 +853,7 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
     private let minDelegationCache = ThreadSafeDictionary<String, (data: UInt64, timestamp: Date)>()
 
     private static let rentReserveTTL: TimeInterval = 60 * 60 * 24
+    private static let ataRentWarmTimeout: TimeInterval = 3
     private static let epochInfoTTL: TimeInterval = 45
     private static let minDelegationTTL: TimeInterval = 60 * 60 * 24
 
@@ -908,8 +909,7 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
     /// (`InsufficientFundsForRent`), so a "max" that spends into that band would
     /// build a transaction that cannot execute.
     func fetchRentExemptMinimum(size: Int) async throws -> UInt64 {
-        let cacheKey = "solana-rent-reserve-\(size)"
-        if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL) {
+        if let cached = cachedRentExemptMinimum(size: size) {
             return cached
         }
         let response = try await httpClient.requestRetryingTimeout(
@@ -917,8 +917,27 @@ final class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBloc
             responseType: SolanaGetMinimumBalanceForRentExemptionResponse.self
         )
         let reserve = response.data.result
-        rentReserveCache.set(cacheKey, (data: reserve, timestamp: Date()))
+        rentReserveCache.set(Self.rentReserveCacheKey(size: size), (data: reserve, timestamp: Date()))
         return reserve
+    }
+
+    /// The reserve `fetchRentExemptMinimum(size:)` cached for `size`, or nil
+    /// when none was read in the last 24h.
+    func cachedRentExemptMinimum(size: Int) -> UInt64? {
+        Utils.getCachedData(cacheKey: Self.rentReserveCacheKey(size: size), cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL)
+    }
+
+    /// Reads the new-ATA rent into the cache `SolanaHelper.ataRentLamports` uses. Only the fee row depends on it,
+    /// so a read that fails or outlasts `ataRentWarmTimeout` leaves the fallback rather than holding up the caller.
+    func warmAtaRent(isToken2022: Bool) async {
+        let size = SolanaHelper.ataAccountSize(isToken2022: isToken2022)
+        _ = try? await withTimeout(seconds: Self.ataRentWarmTimeout) { [self] in
+            try await fetchRentExemptMinimum(size: size)
+        }
+    }
+
+    private static func rentReserveCacheKey(size: Int) -> String {
+        "solana-rent-reserve-\(size)"
     }
 
     /// Network minimum active delegation (lamports), cached 24h. The Vultisig
