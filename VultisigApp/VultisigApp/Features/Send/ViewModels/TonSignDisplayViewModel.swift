@@ -117,7 +117,7 @@ final class TonSignDisplayViewModel: ObservableObject {
 
         let needsJetton: Bool
         switch entry.intent {
-        case .jettonTransfer:
+        case .jettonTransfer, .jettonBurn:
             needsJetton = true
         case .swap(let swap) where swap.offerAsset == .jetton:
             needsJetton = true

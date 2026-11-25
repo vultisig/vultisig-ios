@@ -55,6 +55,10 @@ protocol TransactionBuilder {
     /// hands off to Verify. Populated only by the LP-add builder; every other
     /// builder uses the default `nil`.
     var approvalDecision: ERC20ApprovalDecision? { get }
+    /// TonConnect-style message intent for the Tonstakers liquid-staking flows.
+    /// Populated only by the TON liquid stake / unstake builders; every other
+    /// builder uses the default `nil`.
+    var tonStakePayload: TonStakePayload? { get }
 }
 
 extension TransactionBuilder {
@@ -90,6 +94,13 @@ extension TransactionBuilder {
     /// any seam that hands the result to the review; this stays for the flows
     /// that stamp their own fee (the Cosmos staking constant, a THORChain
     /// deposit's fixed gas) and for tests.
+    /// Default — only the TON liquid-staking builders override this.
+    var tonStakePayload: TonStakePayload? { nil }
+
+    /// Builds the immutable `SendTransaction` struct directly. `gas` /
+    /// `fee` and runtime-only fields default to the construction-time
+    /// zero state and are filled in downstream by `SendCryptoVerifyViewModel`
+    /// (via the interactor).
     func buildSendTransaction(vault: Vault) -> SendTransaction {
         SendTransaction(
             coin: coin,
@@ -116,7 +127,8 @@ extension TransactionBuilder {
             solanaStakingPayload: solanaStakingPayload,
             limitCancelContext: limitCancelContext,
             withdrawDisplayAmount: withdrawDisplayAmount,
-            approvalDecision: approvalDecision
+            approvalDecision: approvalDecision,
+            tonStakePayload: tonStakePayload
         )
     }
 

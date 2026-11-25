@@ -23,4 +23,11 @@ enum TonOpcode {
     static let stonfiV2Swap: UInt32 = 0x6664de2a
     static let dedustNativeSwap: UInt32 = 0xea06185d
     static let dedustJettonSwap: UInt32 = 0xe3a0d482
+    /// TEP-74 jetton burn — used by the Tonstakers liquid-staking unstake flow
+    /// (burn tsTON to redeem the underlying TON).
+    /// https://github.com/ton-blockchain/TEPs/blob/master/text/0074-jettons-standard.md
+    static let jettonBurn: UInt32 = 0x595f07bc
+    /// Tonstakers pool deposit op. Sent to the Tonstakers pool with the staked
+    /// TON to mint tsTON. https://github.com/ton-blockchain/liquid-staking-contract
+    static let tonstakersDeposit: UInt32 = 0x47d54391
 }

@@ -107,6 +107,44 @@ class TonService {
         return response.data.pools
     }
 
+    /// TON redeemable per tsTON: `pool.total_amount ÷ tsTON total_supply` (both 9 decimals).
+    /// `nil` when either read fails, so callers hide estimates instead of pricing at a guess.
+    func getTonstakersRate() async -> Decimal? {
+        async let poolInfo = getStakingPoolInfo(poolAddress: Tonstakers.poolAddress)
+        async let supply = getTsTONSupply()
+
+        guard
+            let totalAmount = await poolInfo?.totalAmount, totalAmount > 0,
+            let tsTONSupply = await supply, tsTONSupply > 0
+        else {
+            return nil
+        }
+        return Decimal(totalAmount) / tsTONSupply
+    }
+
+    /// Reads the tsTON jetton master's `total_supply` (base units) from the
+    /// Toncenter v3 `/jetton/masters` endpoint. Returns `nil` on any failure so
+    /// the rate falls back to `1.0`.
+    private func getTsTONSupply() async -> Decimal? {
+        do {
+            let response = try await httpClient.request(
+                api(.jettonMasters(jettonAddress: Tonstakers.tsTONMasterAddress)),
+                responseType: JettonMastersResponse.self
+            )
+            guard
+                let supplyString = response.data.jetton_masters.first?.total_supply,
+                let supply = Decimal(string: supplyString),
+                supply > 0
+            else {
+                return nil
+            }
+            return supply
+        } catch {
+            logger.error("Failed to fetch tsTON supply: \(error.localizedDescription, privacy: .private)")
+            return nil
+        }
+    }
+
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             return try await getTONBalance(address: address)
