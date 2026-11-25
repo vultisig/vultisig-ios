@@ -29,7 +29,7 @@ struct SubstrateSignerPayload: Equatable {
 
     private static let modeDisabled: UInt8 = 0
     private static let modeEnabled: UInt8 = 1
-    private static let metadataHashLength = 32
+    private static let hashLength = 32
     private static let optionNone: UInt8 = 0x00
     private static let optionSome: UInt8 = 0x01
     /// Balance is `u128` on both runtimes; a wider tip is no balance either decodes.
@@ -38,7 +38,13 @@ struct SubstrateSignerPayload: Equatable {
     func methodBytes() throws -> Data { try Self.hexBytes("method", method) }
     func eraBytes() throws -> Data { try Self.hexBytes("era", era) }
     func genesisHashBytes() throws -> Data { try Self.hexBytes("genesisHash", genesisHash) }
-    func blockHashBytes() throws -> Data { try Self.hexBytes("blockHash", blockHash) }
+    func blockHashBytes() throws -> Data {
+        let hash = try Self.hexBytes("blockHash", blockHash)
+        guard hash.count == Self.hashLength else {
+            throw HelperError.runtimeError("Substrate signer payload blockHash is not 32 bytes")
+        }
+        return hash
+    }
     func nonceValue() throws -> UInt32 { try Self.u32("nonce", nonce) }
     func specVersionValue() throws -> UInt32 { try Self.u32("specVersion", specVersion) }
     func transactionVersionValue() throws -> UInt32 { try Self.u32("transactionVersion", transactionVersion) }
@@ -73,7 +79,7 @@ struct SubstrateSignerPayload: Equatable {
         }
         guard enabled else { return Data([Self.optionNone]) }
         let hash = try Self.hexBytes("metadataHash", metadataHash)
-        guard hash.count == Self.metadataHashLength else {
+        guard hash.count == Self.hashLength else {
             throw HelperError.runtimeError("Substrate signer payload metadataHash is not 32 bytes")
         }
         return Data([Self.optionSome]) + hash

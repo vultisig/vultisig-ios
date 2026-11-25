@@ -104,7 +104,9 @@ final class SubstrateDappSignerTests: XCTestCase {
             realistic(["nonce": "0x100000000"]),
             realistic(["specVersion": ""]),
             realistic(["tip": "-1"]),
-            realistic(["tip": "0x1" + String(repeating: "0", count: 32)])
+            realistic(["tip": "0x1" + String(repeating: "0", count: 32)]),
+            realistic(["blockHash": Self.blockHash + "00"]),
+            realistic(["blockHash": String(Self.blockHash.dropLast(2))])
         ]
         for payload in malformed {
             XCTAssertThrowsError(try SubstrateDappSigner.signingBytes(payload), "\(payload)")
