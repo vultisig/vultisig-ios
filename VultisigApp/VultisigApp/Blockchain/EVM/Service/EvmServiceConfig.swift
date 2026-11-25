@@ -102,11 +102,6 @@ struct EvmServiceConfig {
             rpcEndpoint: Endpoint.optimismServiceRpcService,
             tokenProvider: .standard
         ),
-        .blast: EvmServiceConfig(
-            chain: .blast,
-            rpcEndpoint: Endpoint.blastServiceRpcService,
-            tokenProvider: .standard
-        ),
         .cronosChain: EvmServiceConfig(
             chain: .cronosChain,
             rpcEndpoint: Endpoint.cronosServiceRpcService,

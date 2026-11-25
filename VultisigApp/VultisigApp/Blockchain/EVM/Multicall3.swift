@@ -26,7 +26,7 @@ enum Multicall3 {
     static func address(for chain: Chain) -> String? {
         switch chain {
         case .ethereum, .ethereumSepolia, .bscChain, .avalanche, .base, .arbitrum,
-             .polygon, .polygonV2, .optimism, .blast, .cronosChain, .mantle,
+             .polygon, .polygonV2, .optimism, .cronosChain, .mantle,
              .hyperliquid, .sei, .robinhood:
             return canonical
         case .zksync:

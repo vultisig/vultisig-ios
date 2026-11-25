@@ -92,7 +92,7 @@ class EthereumFeeService {
         case .arbitrum, .mantle, .robinhood:
             return BigInt.zero
 
-        case .base, .blast, .optimism:
+        case .base, .optimism:
             return max(originalPriorityFee, defaultMaxPriorityFeePerGasL2)
 
         case .polygon:

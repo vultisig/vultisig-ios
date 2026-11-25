@@ -9,7 +9,6 @@ enum BlockaidChainIdentifier {
         case .arbitrum: return "arbitrum"
         case .avalanche: return "avalanche"
         case .base: return "base"
-        case .blast: return "blast"
         case .bscChain: return "bsc"
         case .bitcoin: return "bitcoin"
         case .ethereum: return "ethereum"

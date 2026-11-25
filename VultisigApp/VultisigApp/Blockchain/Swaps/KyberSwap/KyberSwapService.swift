@@ -220,8 +220,6 @@ struct KyberSwapService {
             return "base"
         case .zksync:
             return "zksync"
-        case .blast:
-            return "blast"
         case .robinhood:
             return "robinhood"
         default:

@@ -107,7 +107,8 @@ struct AppMigrationService {
             RujiAutoCompoundPositionMigration(),
             TonGramDefiPositionsMigration(),
             StakePositionCeilingMigration(),
-            RemoveKujiraMigration()
+            RemoveKujiraMigration(),
+            RemoveKujiraMigration(chain: .blast, version: 7)
         ]
     }
 }

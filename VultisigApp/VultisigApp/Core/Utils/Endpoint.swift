@@ -72,8 +72,6 @@ class Endpoint {
 
     static let cronosServiceRpcService = "https://cronos-evm-rpc.publicnode.com"
 
-    static let blastServiceRpcService = "https://api.vultisig.com/blast/"
-
     static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
 
     static let ethServiceRpcService = "https://api.vultisig.com/eth/"
