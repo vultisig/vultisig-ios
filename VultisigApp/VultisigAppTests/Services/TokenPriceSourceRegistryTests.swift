@@ -53,7 +53,6 @@ final class TokenPriceSourceRegistryTests: XCTestCase {
         XCTAssertEqual(CoinGeckoPlatform.id(for: .ethereumSepolia), "ethereum")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .avalanche), "avalanche")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .base), "base")
-        XCTAssertEqual(CoinGeckoPlatform.id(for: .blast), "blast")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .arbitrum), "arbitrum-one")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .polygon), "polygon-pos")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .polygonV2), "polygon-pos")

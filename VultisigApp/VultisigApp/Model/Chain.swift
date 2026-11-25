@@ -61,7 +61,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     static let supportedCases = allCases.filter(\.isSupported)
 
     var isSupported: Bool {
-        self != .kujira
+        self != .kujira && self != .blast // Blast L2 shut down 2026-11
     }
 
     /// Maps removed chain raw values to their replacement chain.
@@ -216,7 +216,7 @@ extension Chain {
     /// here or its max sends keep under-reserving.
     var isOpStack: Bool {
         switch self {
-        case .optimism, .base, .blast, .mantle:
+        case .optimism, .base, .mantle:
             return true
         default:
             return false

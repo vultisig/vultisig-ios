@@ -318,11 +318,6 @@ enum ExplorerLinkBuilder {
             address: { "https://polygonscan.com/address/\($0)" },
             token: { "https://polygonscan.com/token/\($0)" }
         ),
-        .blast: ExplorerConfig(
-            tx: { "https://blastscan.io/tx/\($0)" },
-            address: { "https://blastscan.io/address/\($0)" },
-            token: { "https://blastscan.io/token/\($0)" }
-        ),
         .cronosChain: ExplorerConfig(
             tx: { "https://cronoscan.com/tx/\($0)" },
             address: { "https://cronoscan.com/address/\($0)" },

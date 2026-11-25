@@ -111,8 +111,6 @@ extension Coin {
             return [.lifi, .oneinch(chain), .kyberswap(chain)]
         case .zksync:
             return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
-        case .blast:
-            return [.lifi] // KyberSwap not supported on Blast
         case .thorChain:
             return [.thorchain, .mayachain]
         case .thorChainChainnet:
@@ -184,7 +182,7 @@ extension Coin {
             // 1inch live-confirmed on 4663: /quote and /swap return executable
             // calldata to its deployed router (0x5a70…89c7).
             return [.oneinch(chain), .lifi, .kyberswap(chain)]
-        case .polkadot, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor, .near:
+        case .polkadot, .dydx, .kujira, .blast, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor, .near:
             return []
         }
     }
