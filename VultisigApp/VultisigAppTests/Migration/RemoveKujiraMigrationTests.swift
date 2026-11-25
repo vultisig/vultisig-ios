@@ -272,7 +272,7 @@ final class RemoveKujiraMigrationTests: XCTestCase {
         XCTAssertEqual(decoded, .kujira)
     }
 
-    func testMigrationServiceRegistersVersionSixAfterVersionFive() throws {
+    func testMigrationServiceRegistersKujiraAtVersionSixAfterVersionFive() throws {
         let vault = makeVault()
         addCoin(kujira, to: vault)
         try Storage.shared.save()
@@ -284,6 +284,7 @@ final class RemoveKujiraMigrationTests: XCTestCase {
         XCTAssertEqual(previousVersion, 5)
         XCTAssertEqual(RemoveKujiraMigration().version, 6)
         XCTAssertFalse(vault.coins.contains { $0.chain == .kujira })
-        XCTAssertEqual(keychain.lastMigratedVersion, 6)
+        XCTAssertEqual(RemoveKujiraMigration(chain: .blast, version: 7).version, 7)
+        XCTAssertEqual(keychain.lastMigratedVersion, 7)
     }
 }

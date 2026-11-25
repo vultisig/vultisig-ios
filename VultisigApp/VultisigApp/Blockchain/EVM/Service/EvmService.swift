@@ -18,7 +18,6 @@ enum EvmService {
     case polygon
     case polygonV2
     case optimism
-    case blast
     case cronosChain
     case zksync
     case mantle
@@ -59,8 +58,6 @@ enum EvmService {
             return .polygonV2
         case .optimism:
             return .optimism
-        case .blast:
-            return .blast
         case .cronosChain:
             return .cronosChain
         case .zksync:
@@ -120,8 +117,6 @@ enum EvmService {
             return .polygonV2
         case .optimism:
             return .optimism
-        case .blast:
-            return .blast
         case .cronosChain:
             return .cronosChain
         case .zksync:

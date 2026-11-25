@@ -240,7 +240,7 @@ final class EvmMaxSendClampTests: XCTestCase {
     // MARK: - Chain.isOpStack
 
     func testOpStackChainsAreTheOnesExposingTheGasPriceOracle() {
-        for chain in [Chain.optimism, .base, .blast, .mantle] {
+        for chain in [Chain.optimism, .base, .mantle] {
             XCTAssertTrue(chain.isOpStack, "\(chain.name) is an OP-stack rollup")
         }
         // Probed live against the app's own RPC endpoints: the GasPriceOracle
@@ -345,12 +345,12 @@ final class EvmMaxSendClampTests: XCTestCase {
         XCTAssertEqual(sum, BigInt(4_293_564_911) + BigInt(400_000_000_000_000))
     }
 
-    /// Blast's oracle predates `getOperatorFee` and reverts on it. That must not
+    /// An oracle that predates `getOperatorFee` reverts on it. That must not
     /// take the L1 data fee down with it — the chain would then reserve nothing
     /// at all, which is the bug.
     func testOperatorFeeFailureLeavesTheL1DataFeeReserved() async {
         let sum = await DefaultSendInteractor.opStackReserveSum(
-            chain: .blast,
+            chain: .base,
             l1DataFee: { BigInt(622_082_656) },
             operatorFee: { throw HelperError.runtimeError("execution reverted") }
         )

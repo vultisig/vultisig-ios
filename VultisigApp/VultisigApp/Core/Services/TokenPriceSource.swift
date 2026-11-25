@@ -452,7 +452,6 @@ enum CoinGeckoPlatform {
         .ethereumSepolia: "ethereum",
         .avalanche: "avalanche",
         .base: "base",
-        .blast: "blast",
         .arbitrum: "arbitrum-one",
         .polygon: "polygon-pos",
         .polygonV2: "polygon-pos",
