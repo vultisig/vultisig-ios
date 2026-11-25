@@ -18,23 +18,39 @@ class HomeViewModel: ObservableObject {
 
     @Published var shouldShowScanner: Bool = false
 
+    @MainActor
     func balanceText(for vaults: [Vault]) -> String {
         guard !hideVaultBalance else {
             return String.hideBalanceText
         }
 
         return vaults
-            .map(\.coins.totalBalanceInFiatDecimal)
+            .map(totalBalance(for:))
             .reduce(0, +)
             .formatToFiat(includeCurrencySymbol: true)
     }
 
+    @MainActor
     func balanceText(for vault: Vault?) -> String {
         guard !hideVaultBalance else {
             return String.hideBalanceText
         }
+        guard let vault else { return "" }
 
-        return vault?.coins.totalBalanceInFiatString ?? ""
+        return totalBalance(for: vault).formatToFiat(includeCurrencySymbol: true)
+    }
+
+    /// The wallet total, plus the DeFi value it does not already hold when the display is combined.
+    @MainActor
+    private func totalBalance(for vault: Vault) -> Decimal {
+        let wallet = vault.coins.totalBalanceInFiatDecimal
+        guard balanceDisplay == .combined else { return wallet }
+
+        return balanceDisplay.total(
+            for: .wallet,
+            wallet: wallet,
+            defi: DefiBalanceService().totals(for: vault.defiChains, vault: vault)
+        )
     }
 
     func filterVaults(vaults: [Vault], folders: [Folder]) {
