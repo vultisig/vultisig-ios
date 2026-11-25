@@ -59,7 +59,7 @@ struct MayaChainBondInteractor: BondInteractor {
                     nodeAddress: node.address,
                     myBondAddress: cacaoAddress,
                     limit: 1
-                ).entries.first?.amount
+                ).first?.amount
                 drafts.append(
                     BondPositionDraft(
                         node: bondNode,
@@ -100,7 +100,7 @@ struct MayaChainBondInteractor: BondInteractor {
         return true
     }
 
-    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> BondRewardHistory {
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
         try await rewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
     }
 
@@ -126,8 +126,8 @@ private extension MayaChainBondInteractor {
     func rewardHistory(
         nodeAddress: String,
         myBondAddress: String,
-        limit: Int = BondRewardHistoryConfig.limit
-    ) async throws -> BondRewardHistory {
+        limit: Int = .max
+    ) async throws -> [BondRewardHistoryEntry] {
         try await rewardHistoryStore.fetch(bondAddress: myBondAddress, nodeAddress: nodeAddress) { known in
             try await mayaChainAPIService.getBondRewardHistory(
                 nodeAddress: nodeAddress,

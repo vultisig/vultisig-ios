@@ -100,7 +100,7 @@ final class TCYRewardHistoryTests: XCTestCase {
             coin: .example,
             subtitle: String(format: "stakedCoin".localized, TokensStore.tcy.ticker),
             upcomingAmount: 0,
-            fetchHistory: { BondRewardHistory(entries: rows, isComplete: true) }
+            fetchHistory: { rows }
         )
 
         viewModel.load()
@@ -119,7 +119,7 @@ final class TCYRewardHistoryTests: XCTestCase {
             coin: .example,
             subtitle: String(format: "stakedCoin".localized, TokensStore.tcy.ticker),
             upcomingAmount: 0,
-            fetchHistory: { BondRewardHistory(entries: rows, isComplete: true) }
+            fetchHistory: { rows }
         )
 
         viewModel.load()

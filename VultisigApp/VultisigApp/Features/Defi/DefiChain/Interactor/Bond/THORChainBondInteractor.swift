@@ -57,7 +57,7 @@ struct THORChainBondInteractor: BondInteractor {
                             nodeAddress: node.address,
                             myBondAddress: runeAddress,
                             limit: 1
-                        ).entries.first?.amount
+                        ).first?.amount
                         return BondPositionDraft(
                             node: bondNode,
                             amount: metrics.myBond,
@@ -110,7 +110,7 @@ struct THORChainBondInteractor: BondInteractor {
         return true
     }
 
-    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> BondRewardHistory {
+    func fetchRewardHistory(nodeAddress: String, myBondAddress: String) async throws -> [BondRewardHistoryEntry] {
         try await rewardHistory(nodeAddress: nodeAddress, myBondAddress: myBondAddress)
     }
 
@@ -136,8 +136,8 @@ private extension THORChainBondInteractor {
     func rewardHistory(
         nodeAddress: String,
         myBondAddress: String,
-        limit: Int = BondRewardHistoryConfig.limit
-    ) async throws -> BondRewardHistory {
+        limit: Int = .max
+    ) async throws -> [BondRewardHistoryEntry] {
         try await rewardHistoryStore.fetch(bondAddress: myBondAddress, nodeAddress: nodeAddress) { known in
             try await thorchainAPIService.getBondRewardHistory(
                 nodeAddress: nodeAddress,

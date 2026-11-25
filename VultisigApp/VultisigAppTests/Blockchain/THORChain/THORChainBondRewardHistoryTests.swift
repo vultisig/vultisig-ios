@@ -2,8 +2,8 @@
 //  THORChainBondRewardHistoryTests.swift
 //  VultisigAppTests
 //
-//  `getBondRewardHistory` drives the rewards sheet: stop-at-first-gap,
-//  the 20-churn cap, newest-first ordering, ns->date conversion, and the
+//  `getBondRewardHistory` drives the rewards sheet: where the walk stops or
+//  crosses a gap, the requested limit, newest-first ordering, ns->date conversion, and the
 //  no-prior-churn case all live here. No real network — `StubBondsHTTPClient`
 //  is keyed by path + `height` query param so each historical snapshot can
 //  return its own fixture.
@@ -16,6 +16,8 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
 
     private let myAddress = "thor1myaddress"
     private let nodeAddress = "thor1nodeaddress"
+    /// Every fixture churn is within the fetch window of this moment.
+    private let fixtureNow = Date(timeIntervalSince1970: 2_000)
 
     // MARK: - Fixtures
 
@@ -58,7 +60,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
 
         XCTAssertEqual(history.map(\.id), [300, 200], "stops before the churn the vault wasn't bonded for yet")
         XCTAssertEqual(history.map(\.amount), [500, 500])
@@ -77,7 +79,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
 
         XCTAssertEqual(history.map(\.id), [300, 200, 100])
     }
@@ -91,10 +93,10 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
             nodeDetailsByHeight: [99: nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])]
         )
         let service = THORChainAPIService(httpClient: stub)
-
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
-
         let expected = Date(timeIntervalSince1970: Double(nanos) / 1_000_000_000)
+
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: expected)
+
         XCTAssertEqual(history.first?.date.timeIntervalSince1970 ?? 0, expected.timeIntervalSince1970, accuracy: 0.001)
     }
 
@@ -108,7 +110,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let stub = StubBondsHTTPClient(churns: churnsJSON(churns), nodeDetailsByHeight: byHeight)
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, limit: 3).entries
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, limit: 3, now: fixtureNow)
 
         XCTAssertEqual(history.count, 3)
         XCTAssertEqual(history.map(\.id), [500, 400, 300], "the 3 newest, not an arbitrary 3")
@@ -123,7 +125,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress).entries
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
 
         XCTAssertTrue(history.isEmpty)
     }
@@ -138,7 +140,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let service = THORChainAPIService(httpClient: stub)
 
         do {
-            _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+            _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
             XCTFail("expected the churns failure to propagate")
         } catch {
             // Any thrown error is the contract; the specific type is HTTPClient's.
@@ -146,8 +148,8 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
     }
 
     /// A failed query (199 is missing from the fixture, so the stub 404s) keeps
-    /// the rewards that loaded and marks them incomplete.
-    func testTransientQueryFailureKeepsLoadedRewardsAndMarksThemIncomplete() async throws {
+    /// the rewards that loaded before it.
+    func testAQueryFailureKeepsTheRewardsLoadedBeforeIt() async throws {
         let stub = StubBondsHTTPClient(
             churns: churnsJSON([(300, 300_000_000_000), (200, 200_000_000_000), (100, 100_000_000_000)]),
             nodeDetailsByHeight: [
@@ -156,10 +158,9 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         )
         let service = THORChainAPIService(httpClient: stub)
 
-        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+        let history = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
 
-        XCTAssertEqual(history.entries.map(\.id), [300])
-        XCTAssertFalse(history.isComplete)
+        XCTAssertEqual(history.map(\.id), [300])
     }
 
     /// Nothing loaded is an error, not an empty history.
@@ -171,7 +172,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let service = THORChainAPIService(httpClient: stub)
 
         do {
-            _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+            _ = try await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
             XCTFail("with no reward loaded the failure must surface")
         } catch {
             // Expected.
@@ -194,12 +195,12 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let history = try await service.getBondRewardHistory(
             nodeAddress: nodeAddress,
             myBondAddress: myAddress,
-            known: [300: saved]
+            known: [300: saved],
+            now: fixtureNow
         )
 
-        XCTAssertEqual(history.entries.map(\.id), [300, 200])
-        XCTAssertEqual(history.entries.map(\.amount), [777, 500])
-        XCTAssertTrue(history.isComplete)
+        XCTAssertEqual(history.map(\.id), [300, 200])
+        XCTAssertEqual(history.map(\.amount), [777, 500])
     }
 
     /// Cancelling before batch 1 resolves must prevent every later batch
@@ -231,7 +232,7 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
         let service = THORChainAPIService(httpClient: stub)
 
         let task = Task {
-            try? await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress)
+            try? await service.getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, now: fixtureNow)
         }
 
         // All of batch 1 (one request per concurrency slot) is now in
@@ -253,6 +254,230 @@ final class THORChainBondRewardHistoryTests: XCTestCase {
 
         let requestCount = await stub.totalRequestCount
         XCTAssertEqual(requestCount, BondRewardHistoryConfig.concurrency, "cancellation must have prevented every later batch from ever being scheduled")
+    }
+
+    // MARK: - Gaps: churns too old to read that were never saved
+
+    private let gapNow = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func nanos(daysAgo: Double) -> Int64 {
+        Int64((gapNow.timeIntervalSince1970 - daysAgo * 24 * 60 * 60) * 1_000_000_000)
+    }
+
+    private func savedRow(_ height: Int) -> BondRewardHistoryEntry {
+        BondRewardHistoryEntry(churnHeight: height, churnDate: Date(timeIntervalSince1970: 0), amount: 7)
+    }
+
+    /// `provider` is set when an operator (`sender`) unbonds a provider: THORChain puts it last in the memo.
+    private func unbondsJSON(_ unbonds: [(height: Int, nodeAddress: String, sender: String, provider: String?)]) -> Data {
+        let actions = unbonds.map {
+            let memo = "UNBOND:\($0.nodeAddress):1" + ($0.provider.map { ":\($0)" } ?? "")
+            return """
+            {"height":"\($0.height)","type":"unbond","status":"success","date":"0","pools":[],\
+            "in":[{"address":"\($0.sender)","coins":[],"txID":"TX"}],"out":[],\
+            "metadata":{"bond":{"memo":"\(memo)","nodeAddress":"\($0.nodeAddress)"}}}
+            """
+        }
+        return Data("{\"actions\":[\(actions.joined(separator: ","))],\"meta\":{\"nextPageToken\":\"\",\"prevPageToken\":\"\"}}".utf8)
+    }
+
+    /// 400 is read (1 day old), 300 is a gap (20 days, unsaved), 200 and 100 are saved.
+    private func gapStub(unbondActions: Data?) -> StubBondsHTTPClient {
+        StubBondsHTTPClient(
+            churns: churnsJSON([(400, nanos(daysAgo: 1)), (300, nanos(daysAgo: 20)), (200, nanos(daysAgo: 25)), (100, nanos(daysAgo: 30))]),
+            nodeDetailsByHeight: [399: nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])],
+            unbondActions: unbondActions
+        )
+    }
+
+    func testAGapWithNoUnbondIsBridgedToTheSavedRowsBehindIt() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([]))
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400, 200, 100])
+        XCTAssertEqual(stub.actionsRequestCount, 1)
+        XCTAssertEqual(stub.lastActionsQuery?["address"] as? String, nodeAddress)
+        XCTAssertEqual(stub.lastActionsQuery?["type"] as? String, "unbond")
+    }
+
+    func testAnUnbondFromThisNodeInsideAGapCutsTheHistoryThere() async throws {
+        // 500 read; gap 400; 300 saved; gap 250; 200 saved. The unbond at 260 is inside the second gap.
+        let stub = StubBondsHTTPClient(
+            churns: churnsJSON([
+                (500, nanos(daysAgo: 1)), (400, nanos(daysAgo: 20)), (300, nanos(daysAgo: 22)),
+                (250, nanos(daysAgo: 24)), (200, nanos(daysAgo: 26))
+            ]),
+            nodeDetailsByHeight: [499: nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])],
+            unbondActions: unbondsJSON([(260, nodeAddress, myAddress, nil)])
+        )
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [300: savedRow(300), 200: savedRow(200)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [500, 300])
+        XCTAssertEqual(stub.actionsRequestCount, 1)
+    }
+
+    func testAGapIsBridgedWhenTheOnlyUnbondWasFromAnotherNode() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([(350, "thor1othernode", myAddress, nil)]))
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400, 200, 100])
+    }
+
+    func testAnOperatorUnbondOfThisProviderInsideAGapCutsTheHistoryThere() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([(350, nodeAddress, "thor1operator", myAddress)]))
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400])
+        XCTAssertEqual(stub.lastActionsQuery?["address"] as? String, nodeAddress, "operator unbonds are only indexed by node")
+    }
+
+    func testAnOperatorUnbondNamingThisProviderInUppercaseCutsTheHistory() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([(350, nodeAddress, "thor1operator", myAddress.uppercased())]))
+
+        let history = try await THORChainAPIService(httpClient: stub).getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400])
+    }
+
+    func testAGapIsBridgedWhenOnlyAnotherProviderUnbondedFromThisNode() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([
+            (350, nodeAddress, "thor1otherprovider", nil),
+            (340, nodeAddress, "thor1operator", "thor1otherprovider")
+        ]))
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400, 200, 100])
+    }
+
+    func testAGapIsBridgedWhenThisAddressAsOperatorOnlyUnbondedAnotherProvider() async throws {
+        let stub = gapStub(unbondActions: unbondsJSON([(350, nodeAddress, myAddress, "thor1otherprovider")]))
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400, 200, 100])
+    }
+
+    /// A saved row reads the block before its churn, so an unbond in the older churn's
+    /// own block is inside the gap, and one in the newer churn's block is not.
+    func testAnUnbondInTheOlderChurnsBlockCutsAndOneInTheNewerChurnsBlockDoesNot() async throws {
+        let known = [200: savedRow(200), 100: savedRow(100)]
+        let atOlder = gapStub(unbondActions: unbondsJSON([(200, nodeAddress, myAddress, nil)]))
+        let atNewer = gapStub(unbondActions: unbondsJSON([(400, nodeAddress, myAddress, nil)]))
+
+        let cut = try await THORChainAPIService(httpClient: atOlder)
+            .getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, known: known, now: gapNow)
+        let bridged = try await THORChainAPIService(httpClient: atNewer)
+            .getBondRewardHistory(nodeAddress: nodeAddress, myBondAddress: myAddress, known: known, now: gapNow)
+
+        XCTAssertEqual(cut.map(\.id), [400])
+        XCTAssertEqual(bridged.map(\.id), [400, 200, 100])
+    }
+
+    /// One request bounded to the gaps: from the saved churn below the lowest gap
+    /// (inclusive) to the known churn above the highest gap (exclusive).
+    func testTheUnbondLookupIsBoundedToTheGaps() async throws {
+        // 500 read; gap 400; 300 saved; gap 250; 200, 100 saved.
+        let stub = StubBondsHTTPClient(
+            churns: churnsJSON([
+                (500, nanos(daysAgo: 1)), (400, nanos(daysAgo: 20)), (300, nanos(daysAgo: 22)),
+                (250, nanos(daysAgo: 24)), (200, nanos(daysAgo: 26)), (100, nanos(daysAgo: 28))
+            ]),
+            nodeDetailsByHeight: [499: nodeDetailsJSON(currentAward: 10, feeBps: 0, providers: [(myAddress, 1)])],
+            unbondActions: unbondsJSON([])
+        )
+
+        let history = try await THORChainAPIService(httpClient: stub).getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [300: savedRow(300), 200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [500, 300, 200, 100])
+        XCTAssertEqual(stub.actionsRequestCount, 1)
+        XCTAssertEqual(stub.lastActionsQuery?["fromHeight"] as? Int, 200)
+        XCTAssertEqual(stub.lastActionsQuery?["height"] as? Int, 500)
+    }
+
+    func testAnOpenEndedTopGapLeavesTheUnbondLookupUnboundedAbove() async throws {
+        // The newest churn is itself a gap, so nothing known sits above it.
+        let stub = StubBondsHTTPClient(
+            churns: churnsJSON([(400, nanos(daysAgo: 20)), (300, nanos(daysAgo: 22))]),
+            nodeDetailsByHeight: [:],
+            unbondActions: unbondsJSON([])
+        )
+
+        let history = try await THORChainAPIService(httpClient: stub).getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [300: savedRow(300)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [300])
+        XCTAssertEqual(stub.lastActionsQuery?["fromHeight"] as? Int, 300)
+        XCTAssertNil(stub.lastActionsQuery?["height"])
+    }
+
+    func testAFailedUnbondLookupCutsTheHistoryAtTheGapWithoutAnError() async throws {
+        let stub = gapStub(unbondActions: nil)
+        let service = THORChainAPIService(httpClient: stub)
+
+        let history = try await service.getBondRewardHistory(
+            nodeAddress: nodeAddress,
+            myBondAddress: myAddress,
+            known: [200: savedRow(200), 100: savedRow(100)],
+            now: gapNow
+        )
+
+        XCTAssertEqual(history.map(\.id), [400])
+        XCTAssertEqual(stub.actionsRequestCount, 1)
     }
 }
 
@@ -347,11 +572,20 @@ private actor GatedCountingBondsHTTPClient: HTTPClientProtocol {
 private final class StubBondsHTTPClient: HTTPClientProtocol, @unchecked Sendable {
     private let churns: Data?
     private let nodeDetailsByHeight: [Int: Data]
+    /// Midgard's unbond actions page; `nil` fails the request.
+    private let unbondActions: Data?
+    private let lock = NSLock()
+    private var actionsQueries: [[String: Any]] = []
 
-    init(churns: Data?, nodeDetailsByHeight: [Int: Data]) {
+    init(churns: Data?, nodeDetailsByHeight: [Int: Data], unbondActions: Data? = nil) {
         self.churns = churns
         self.nodeDetailsByHeight = nodeDetailsByHeight
+        self.unbondActions = unbondActions
     }
+
+    var actionsRequestCount: Int { lock.withLock { actionsQueries.count } }
+
+    var lastActionsQuery: [String: Any]? { lock.withLock { actionsQueries.last } }
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
         let data = try responseData(for: target)
@@ -368,6 +602,13 @@ private final class StubBondsHTTPClient: HTTPClientProtocol, @unchecked Sendable
         if target.path == "/churns" {
             guard let churns else { throw HTTPError.statusCode(500, Data()) }
             return churns
+        }
+        if target.path == "/actions" {
+            if case let .requestParameters(params, _) = target.task {
+                lock.withLock { actionsQueries.append(params) }
+            }
+            guard let unbondActions else { throw HTTPError.statusCode(500, Data()) }
+            return unbondActions
         }
         if target.path.hasPrefix("/thorchain/node/") {
             guard

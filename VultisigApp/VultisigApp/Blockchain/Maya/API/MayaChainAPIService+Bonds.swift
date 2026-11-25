@@ -125,19 +125,30 @@ extension MayaChainAPIService {
         )
     }
 
-    /// This bond address's share of the award paid at each of the vault's
-    /// last `limit` churns, newest first. Mirrors
+    /// This bond address's share of the award paid at each of the node's
+    /// newest `limit` churns, newest first. Mirrors
     /// `THORChainAPIService.getBondRewardHistory`.
     func getBondRewardHistory(
         nodeAddress: String,
         myBondAddress: String,
-        limit: Int = BondRewardHistoryConfig.limit,
-        known: [Int: BondRewardHistoryEntry] = [:]
-    ) async throws -> BondRewardHistory {
-        try await BondRewardHistoryWalker.walk(
+        limit: Int = .max,
+        known: [Int: BondRewardHistoryEntry] = [:],
+        now: Date = Date()
+    ) async throws -> [BondRewardHistoryEntry] {
+        let unbondHeights: @Sendable (Int, Int?) async throws -> [Int] = { fromHeight, belowHeight in
+            try await self.getUnbondHeights(
+                bondAddress: myBondAddress,
+                nodeAddress: nodeAddress,
+                fromHeight: fromHeight,
+                belowHeight: belowHeight
+            )
+        }
+        return try await BondRewardHistoryWalker.walk(
             churns: try await getChurns(),
             limit: limit,
-            known: known
+            known: known,
+            now: now,
+            unbondHeights: unbondHeights
         ) { height, date in
             do {
                 let node = try await self.getNodeDetails(nodeAddress: nodeAddress, height: height)
@@ -154,6 +165,18 @@ extension MayaChainAPIService {
                 return .failed(error)
             }
         }
+    }
+
+    /// The heights, from `fromHeight` up to but not including `belowHeight` (unbounded when
+    /// `nil`), at which `bondAddress` unbonded from `nodeAddress`,
+    /// by itself or by the node operator. Read by node: Midgard does not index the
+    /// provider named in an operator's unbond memo.
+    func getUnbondHeights(bondAddress: String, nodeAddress: String, fromHeight: Int, belowHeight: Int?) async throws -> [Int] {
+        let response = try await httpClient.request(
+            MayaChainBondsAPI.getUnbondActions(nodeAddress: nodeAddress, fromHeight: fromHeight, belowHeight: belowHeight),
+            responseType: MidgardUnbondActions.self
+        )
+        return try response.data.heights(of: bondAddress, onNode: nodeAddress)
     }
 
     /// Estimate next churn ETA for MayaChain

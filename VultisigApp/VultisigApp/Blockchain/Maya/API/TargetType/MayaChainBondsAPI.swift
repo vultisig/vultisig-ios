@@ -15,12 +15,13 @@ enum MayaChainBondsAPI: TargetType {
     case getChurns
     case getMimir
     case getLastBlock
+    case getUnbondActions(nodeAddress: String, fromHeight: Int, belowHeight: Int?)
 
     var baseURL: URL {
         switch self {
         case .getAllNodes, .getNodeDetails, .getMimir, .getLastBlock:
             return URL(string: "https://mayanode.mayachain.info")!
-        case .getHealth, .getNetwork, .getChurns:
+        case .getHealth, .getNetwork, .getChurns, .getUnbondActions:
             return URL(string: "https://midgard.mayachain.info/v2")!
         }
     }
@@ -41,12 +42,14 @@ enum MayaChainBondsAPI: TargetType {
             return "/mayachain/mimir"
         case .getLastBlock:
             return "/mayachain/lastblock"
+        case .getUnbondActions:
+            return "/actions"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock, .getUnbondActions:
             return .get
         }
     }
@@ -55,6 +58,16 @@ enum MayaChainBondsAPI: TargetType {
         switch self {
         case .getNodeDetails(_, let height?):
             return .requestParameters(["height": height], .urlEncoding)
+        case .getUnbondActions(let nodeAddress, let fromHeight, let belowHeight):
+            var params: [String: Any] = [
+                "address": nodeAddress,
+                "type": "unbond",
+                "fromHeight": fromHeight,
+                "limit": BondRewardHistoryConfig.unbondPageSize
+            ]
+            // Midgard's `height` is an exclusive upper bound.
+            params["height"] = belowHeight
+            return .requestParameters(params, .urlEncoding)
         case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
             return .requestPlain
         }
@@ -62,7 +75,7 @@ enum MayaChainBondsAPI: TargetType {
 
     var headers: [String: String]? {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getChurns, .getMimir, .getLastBlock, .getUnbondActions:
             return ["X-Client-ID": "vultisig"]
         }
     }
