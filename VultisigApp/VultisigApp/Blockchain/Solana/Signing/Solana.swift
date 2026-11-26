@@ -18,9 +18,28 @@ enum SolanaHelper {
     /// could burn the balance as a priority fee. Same bounds as the Android signer.
     static let maxPriorityFeePrice: BigInt = 100_000_000 // microlamports per compute unit
     static let maxComputeUnitLimit: BigInt = 1_400_000 // Solana's per-transaction compute-unit maximum
-    /// Rent-exempt reserve for a new SPL Associated Token Account (~0.00203928 SOL).
-    /// Required when the recipient has no ATA and we create one alongside the transfer.
-    static let ataRentLamports: BigInt = 2_039_280
+    /// Token-account rent before SIMD-0437, used until a live read succeeds.
+    static let fallbackAtaRentLamports: BigInt = 2_039_280
+
+    /// `spl_token::state::Account::LEN`.
+    static let splTokenAccountSize = 165
+    /// A Token-2022 account plus the ImmutableOwner extension every ATA carries.
+    static let token2022AtaSize = 170
+
+    /// Data size of the ATA a transfer creates for the recipient.
+    static func ataAccountSize(isToken2022: Bool) -> Int {
+        isToken2022 ? token2022AtaSize : splTokenAccountSize
+    }
+
+    /// Rent-exempt reserve the sender funds when the transfer creates the recipient's ATA:
+    /// the live value cached by `SolanaService.warmAtaRent`, else the fallback.
+    static func ataRentLamports(isToken2022: Bool) -> BigInt {
+        let size = ataAccountSize(isToken2022: isToken2022)
+        guard let live = SolanaService.shared.cachedRentExemptMinimum(size: size), live > 0 else {
+            return fallbackAtaRentLamports
+        }
+        return BigInt(live)
+    }
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .solana else {
