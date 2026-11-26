@@ -738,9 +738,13 @@ private extension BlockChainService {
                 // treats a nil `toAddressPubKey` as the signal to emit a
                 // `createAssociatedTokenAccount` instruction alongside the SPL transfer so
                 // the recipient's ATA is created in the same transaction (see
-                // `SolanaHelper.getPreSignedInputData`). The extra ~0.00203 SOL rent for the
-                // new account is surfaced via `BlockChainSpecific.gas` (see `SolanaHelper.ataRentLamports`).
+                // `SolanaHelper.getPreSignedInputData`). The new account's rent is surfaced via
+                // `BlockChainSpecific.gas` (see `SolanaHelper.ataRentLamports`).
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
+
+                if finalToAddress == nil {
+                    await sol.warmAtaRent(isToken2022: isToken2022)
+                }
 
                 return .Solana(recentBlockHash: recentBlockHash, priorityFee: dynamicPriorityFee, priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
