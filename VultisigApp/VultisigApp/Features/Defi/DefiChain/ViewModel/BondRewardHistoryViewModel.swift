@@ -18,8 +18,6 @@ final class BondRewardHistoryViewModel: ObservableObject {
     @Published private(set) var history: [BondRewardHistoryEntry] = []
     @Published private(set) var isLoading = false
     @Published private(set) var loadError: String?
-    /// `false` when some rewards could not be loaded, so `total` may be short.
-    @Published private(set) var isHistoryComplete = true
 
     let coin: Coin
     /// Names whose rewards these are, under the header total.
@@ -29,7 +27,7 @@ final class BondRewardHistoryViewModel: ObservableObject {
     /// off the already-loaded position, so it never waits on the history fetch.
     let upcomingAmount: Decimal?
 
-    private let fetchHistory: @MainActor () async throws -> BondRewardHistory
+    private let fetchHistory: @MainActor () async throws -> [BondRewardHistoryEntry]
     private var fetchTask: Task<Void, Never>?
 
     /// Sum of realized (dated) rows only — Upcoming is excluded per the
@@ -42,7 +40,7 @@ final class BondRewardHistoryViewModel: ObservableObject {
         coin: Coin,
         subtitle: String,
         upcomingAmount: Decimal?,
-        fetchHistory: @escaping @MainActor () async throws -> BondRewardHistory
+        fetchHistory: @escaping @MainActor () async throws -> [BondRewardHistoryEntry]
     ) {
         self.coin = coin
         self.subtitle = subtitle
@@ -72,10 +70,7 @@ final class BondRewardHistoryViewModel: ObservableObject {
             subtitle: String(format: "stakedCoin".localized, TokensStore.tcy.ticker),
             upcomingAmount: estimatedReward.map { runeCoin.decimalToCrypto(value: $0) }
         ) {
-            BondRewardHistory(
-                entries: try await THORChainStakingService.shared.fetchTcyRewardHistory(address: address),
-                isComplete: true
-            )
+            try await THORChainStakingService.shared.fetchTcyRewardHistory(address: address)
         }
     }
 
@@ -117,8 +112,8 @@ final class BondRewardHistoryViewModel: ObservableObject {
         do {
             let result = try await fetchHistory()
             guard !Task.isCancelled else { return }
-            history = result.entries
-            isHistoryComplete = result.isComplete
+            // A churn that paid nothing is still saved, since it marks the bond as active.
+            history = result.filter { $0.amount > 0 }
         } catch {
             guard !Task.isCancelled else { return }
             // History-only failure: the list this sheet was opened from is

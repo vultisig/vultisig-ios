@@ -24,19 +24,10 @@ extension BondRewardHistoryEntry {
     }
 }
 
-/// The rewards a history sheet can show, and whether that is all of them.
-struct BondRewardHistory: Equatable, Sendable {
-    /// Newest first.
-    let entries: [BondRewardHistoryEntry]
-    /// `false` when a reward that should be in `entries` could not be loaded,
-    /// so the sheet's total may be short.
-    let isComplete: Bool
-}
-
 /// The outcome of one historical `?height=` query, distinguishing a
 /// successfully decoded "not a bond provider here" snapshot (the legitimate
-/// stop-walking-backward signal) from a network/decode failure, which marks
-/// the history incomplete instead — see `BondRewardHistoryWalker`.
+/// stop-walking-backward signal) from a network/decode failure, which also
+/// ends the walk — see `BondRewardHistoryWalker`.
 enum BondRewardHistoryQueryResult: Sendable {
     case found(BondRewardHistoryEntry)
     case notAProvider
@@ -44,11 +35,11 @@ enum BondRewardHistoryQueryResult: Sendable {
 }
 
 enum BondRewardHistoryConfig {
-    /// Cap on how many past churns the rewards-earned sheet considers. Well
-    /// below the network's full churn history (400+) — the sheet renders
-    /// recent history, not an audit trail.
-    static let limit = 20
+    /// Only churns this recent are read from the node: liquify keeps about 13 days of state.
+    static let fetchWindow: TimeInterval = 13 * 24 * 60 * 60
     /// How many historical `?height=` queries run at once while building the
     /// sheet's history.
     static let concurrency = 5
+    /// Midgard's largest `limit` for `/actions`.
+    static let unbondPageSize = 50
 }

@@ -4,8 +4,8 @@
 //
 //  Runs `operation` over `items` with at most `maxConcurrent` in flight at
 //  once, returning results in input order regardless of completion order.
-//  Backs the rewards sheet's up-to-20 historical `?height=` fetches — issuing
-//  all of them at once would be indistinguishable from the "query all 400+
+//  Backs the rewards sheet's historical `?height=` fetches — issuing all of
+//  them at once would be indistinguishable from the "query all 400+
 //  churns" antipattern this feature exists to avoid; running them one at a
 //  time would make the sheet noticeably slower to open than it needs to be.
 //

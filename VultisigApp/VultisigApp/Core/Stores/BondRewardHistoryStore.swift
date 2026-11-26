@@ -7,10 +7,12 @@ import Foundation
 
 /// Per-device copy of the bond rewards already realized, so a past churn is
 /// read from the network once. Nodes keep only recent state, so this copy is
-/// also the only source for churns they have since dropped.
+/// also the only source for churns they have since dropped, and it is never
+/// trimmed: a bond's history grows on the device over time.
 ///
-/// At most `BondRewardHistoryConfig.limit` rows (about 40 bytes each) per bond
-/// provider and node, in `UserDefaults`.
+/// One row (about 40 bytes) per churn, per bond provider and node, in
+/// `UserDefaults`. Both addresses are bech32 with a chain prefix, so THORChain
+/// and MayaChain keys cannot collide.
 struct BondRewardHistoryStore {
     private static let writeLock = NSLock()
 
@@ -25,11 +27,11 @@ struct BondRewardHistoryStore {
     func fetch(
         bondAddress: String,
         nodeAddress: String,
-        using load: ([Int: BondRewardHistoryEntry]) async throws -> BondRewardHistory
-    ) async throws -> BondRewardHistory {
+        using load: ([Int: BondRewardHistoryEntry]) async throws -> [BondRewardHistoryEntry]
+    ) async throws -> [BondRewardHistoryEntry] {
         let key = "bondRewardHistory.\(bondAddress).\(nodeAddress)"
         let history = try await load(read(key))
-        write(key, adding: history.entries)
+        write(key, adding: history)
         return history
     }
 
@@ -54,10 +56,8 @@ struct BondRewardHistoryStore {
         }
         guard merged.count > saved.count else { return }
 
-        let newest = merged.values
-            .sorted { $0.id > $1.id }
-            .prefix(BondRewardHistoryConfig.limit)
-        if let data = try? JSONEncoder().encode(Array(newest)) {
+        let newestFirst = merged.values.sorted { $0.id > $1.id }
+        if let data = try? JSONEncoder().encode(newestFirst) {
             defaults.set(data, forKey: key)
         }
     }
