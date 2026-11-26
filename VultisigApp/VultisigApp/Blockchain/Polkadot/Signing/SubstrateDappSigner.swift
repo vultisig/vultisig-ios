@@ -9,7 +9,7 @@ import WalletCore
 /// Signs a dApp's Substrate `SignerPayloadJSON` the way the extension does
 /// (`constructPolkadotSigningPayload`): the extrinsic payload is assembled from the dApp's fields
 /// and signed as-is. The dApp wraps the signature around its own call and submits it, so nothing
-/// is compiled or broadcast here (`KeysignPayload.skipsBroadcast`).
+/// is compiled here; the extension sends the request with `skipBroadcast` set.
 enum SubstrateDappSigner {
 
     /// Past this many bytes the runtime signs `blake2b_256(payload)` instead of the payload.

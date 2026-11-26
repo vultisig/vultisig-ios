@@ -185,16 +185,16 @@ struct KeysignMessageFactory {
             return try helper.getPreSignedImageHash(keysignPayload: payload)
         case .kujira:
             throw HelperError.runtimeError("Unsupported Cosmos chain: \(payload.coin.chain)")
-        case .polkadot, .bittensor:
-            // A dApp `signPayload` is signed as the extrinsic payload in its memo; the transfer
-            // helpers would hash a call the initiator never asked for.
+        case .polkadot:
             if let dapp = try payload.substrateDappPayload {
                 return try SubstrateDappSigner.getPreSignedImageHash(dapp)
             }
-            if payload.coin.chain == .bittensor {
-                return try BittensorHelper.getPreSignedImageHash(keysignPayload: payload)
-            }
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .bittensor:
+            if let dapp = try payload.substrateDappPayload {
+                return try SubstrateDappSigner.getPreSignedImageHash(dapp)
+            }
+            return try BittensorHelper.getPreSignedImageHash(keysignPayload: payload)
         case .near:
             return try NearHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ton:

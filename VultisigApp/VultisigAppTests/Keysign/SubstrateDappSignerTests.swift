@@ -128,14 +128,13 @@ final class SubstrateDappSignerTests: XCTestCase {
 
     // MARK: - Co-signer dispatch
 
-    func testCoSignerSignsTheDappPayloadAndNeverBroadcasts() throws {
+    func testCoSignerSignsTheDappPayload() throws {
         let payload = try keysignPayload(chain: .bittensor, memo: Self.taostatsMemo)
         let dapp = try XCTUnwrap(SubstrateSignerPayload.fromMemo(Self.taostatsMemo))
 
         let messages = try KeysignMessageFactory(payload: payload, vaultPubKeyEdDSA: "").getKeysignMessages()
 
         XCTAssertEqual(messages, [try SubstrateDappSigner.signingBytes(dapp).hexString])
-        XCTAssertTrue(payload.skipsBroadcast)
     }
 
     func testFeeIncludesTheSignedTip() throws {
@@ -160,7 +159,6 @@ final class SubstrateDappSignerTests: XCTestCase {
         let transfer = try XCTUnwrap(JoinKeysignReviewPresentation.signedTransfer(of: payload))
         XCTAssertEqual(transfer.recipient, "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5")
         XCTAssertEqual(transfer.amount, Decimal(1))
-        XCTAssertTrue(payload.skipsBroadcast)
     }
 
     func testReviewShowsNoAmountForANonTransferCall() throws {

@@ -161,10 +161,4 @@ extension KeysignPayload {
     var substrateDappPayload: SubstrateSignerPayload? {
         get throws { try SubstrateSignerPayload.fromKeysign(chain: coin.chain, memo: memo) }
     }
-
-    /// A dApp `signPayload` is never broadcast here: the dApp wraps the signature around its own
-    /// call and submits it, whatever the wire flag says (Android infers it the same way).
-    var skipsBroadcast: Bool {
-        skipBroadcast || (try? substrateDappPayload) != nil
-    }
 }
