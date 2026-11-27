@@ -36,16 +36,27 @@ struct SettingsAdvancedView: View {
         case thorchainStagenet
         case sell
         case tssBatching
+        case perps
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
+
+        /// Perps is Debug-only until live signing lands: Release (App Store and
+        /// TestFlight) never shows the toggle.
+        static var visible: [Row] {
+            #if DEBUG
+            allCases
+            #else
+            allCases.filter { $0 != .perps }
+            #endif
+        }
     }
 
     var content: some View {
         VStack(spacing: 0) {
-            ForEach(Array(Row.allCases.enumerated()), id: \.element) { index, row in
+            ForEach(Array(Row.visible.enumerated()), id: \.element) { index, row in
                 view(for: row)
-                    .commonListItemContainer(index: index, itemsCount: Row.allCases.count)
+                    .commonListItemContainer(index: index, itemsCount: Row.visible.count)
             }
         }
         .commonListContainer()
@@ -77,6 +88,12 @@ struct SettingsAdvancedView: View {
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
+            )
+        case .perps:
+            SettingToggleCell(
+                title: "settingsAdvancedPerps".localized,
+                icon: "chart.line.uptrend.xyaxis",
+                isEnabled: $settingsViewModel.perpsEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

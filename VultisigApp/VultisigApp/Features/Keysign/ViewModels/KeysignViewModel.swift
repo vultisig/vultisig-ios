@@ -49,6 +49,9 @@ class KeysignViewModel: ObservableObject {
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
+    /// A non-default signing path requested by the custom message, resolved
+    /// before any relay traffic. nil = every path decision is the default.
+    private(set) var derivation: KeysignDerivation?
     @Published var dilithiumSignatures = [String: DilithiumKeysignResponse]()
     @Published var txid: String = .empty
     @Published var approveTxid: String?
@@ -391,6 +394,9 @@ class KeysignViewModel: ObservableObject {
                 throw CustomMessagePayloadError.unsupportedChain(chain.name)
             }
             _ = try customMessagePayload?.resolveSigningChain()
+            derivation = try KeysignDerivationResolver.ceremonyOverride(vault: vault, keysignType: keysignType,
+                                                                keysignPayload: keysignPayload,
+                                                                customMessagePayload: customMessagePayload)
         } catch {
             logger.error("Refusing keysign for unsupported chain: \(error.localizedDescription, privacy: .public)")
             keysignError = error.localizedDescription
@@ -524,24 +530,19 @@ class KeysignViewModel: ObservableObject {
             guard self.keysignPayload != nil || self.customMessagePayload != nil else {
                 throw HelperError.runtimeError("keysign payload is nil")
             }
-            // Determine chainPath - use keysignPayload if available, otherwise determine from customMessagePayload
-            var chainPath: String
+            // The DKLS chainPath decides which key signs; the resolver owns it.
+            let chainPath = try KeysignDerivationResolver.dklsChainPath(keysignPayload: self.keysignPayload,
+                                                                        customMessagePayload: self.customMessagePayload,
+                                                                        isImport: isImport,
+                                                                        override: derivation)
             var publicKey: String? = nil
             if let keysignPayload = self.keysignPayload {
-                chainPath = keysignPayload.coin.coinType.derivationPath()
                 publicKey = self.vault.chainPublicKeys.first(where: { $0.chain == keysignPayload.coin.chain })?.publicKeyHex
             } else if let customMessagePayload = self.customMessagePayload {
                 let targetChain = try customMessagePayload.resolveSigningChain()
-                chainPath = targetChain.coinType.derivationPath()
                 publicKey = Self.customMessagePublicKey(for: targetChain,
                                                         in: self.vault.chainPublicKeys,
                                                         isImport: isImport)
-            } else {
-                throw HelperError.runtimeError("keysign payload is nil")
-            }
-
-            if isImport {
-                chainPath = ""
             }
 
             switch self.keysignType {
@@ -563,6 +564,16 @@ class KeysignViewModel: ObservableObject {
                 self.signatures = dklsKeysign.getSignatures()
                 if self.signatures.isEmpty {
                     throw HelperError.runtimeError("fail to sign transaction")
+                }
+                if let derivation {
+                    do {
+                        try KeysignDerivationResolver.verify(signatures: self.signatures,
+                                                             expectedPublicKeyHex: derivation.expectedPublicKeyHex)
+                    } catch {
+                        self.signatures = [:]
+                        logger.error("Override signature did not recover to the expected key (role initiator=\(self.isInitiateDevice, privacy: .public))")
+                        throw error
+                    }
                 }
             case .EdDSA:
                 status = .KeysignEdDSA
@@ -706,12 +717,7 @@ class KeysignViewModel: ObservableObject {
         keysignReq.localPartyKey = self.vault.localPartyID
         keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
 
-        if let keysignPayload {
-            keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
-        } else {
-            // TODO: Should we use Ether as default derivationPath?
-            keysignReq.derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
-        }
+        keysignReq.derivePath = KeysignDerivationResolver.gg20DerivePath(keysignPayload: keysignPayload, override: derivation)
 
         // sign messages one by one , since the msg is in hex format , so we need convert it to base64
         // and then pass it to TSS for keysign

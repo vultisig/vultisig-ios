@@ -1,0 +1,11 @@
+{
+  "name": "perps-test-vectors",
+  "private": true,
+  "type": "module",
+  "description": "Generators for the perps test vectors. Exact versions: noble-curves 2.x changed the APIs these scripts use.",
+  "dependencies": {
+    "@noble/curves": "1.9.7",
+    "@scure/bip32": "1.7.0",
+    "viem": "2.39.3"
+  }
+}
