@@ -31,6 +31,8 @@ struct DefiChainMainScreen: View {
     /// sheet is open reuses the same instance instead of discarding its loaded
     /// history and restarting the fetch.
     @State private var rewardHistoryViewModel: BondRewardHistoryViewModel?
+    @State private var rewardsPayoutViewModel: RewardsPayoutViewModel?
+    @State private var pendingRewardsPayoutReview: KeysignReview?
     @State private var isLoading = false
     @State private var error: HelperError?
     @State private var refreshErrorToast: String?
@@ -141,6 +143,22 @@ struct DefiChainMainScreen: View {
         .crossPlatformSheet(item: $rewardHistoryViewModel) { viewModel in
             BondRewardHistorySheet(viewModel: viewModel, onDismiss: { rewardHistoryViewModel = nil })
         }
+        .crossPlatformSheet(
+            item: $rewardsPayoutViewModel,
+            onDismiss: presentPendingRewardsPayoutReview,
+            sheetContent: { viewModel in
+                RewardsPayoutSheet(
+                    viewModel: viewModel,
+                    onContinue: { review in
+                        // Dismissed while the review was being priced: drop it.
+                        guard rewardsPayoutViewModel === viewModel else { return }
+                        pendingRewardsPayoutReview = review
+                        rewardsPayoutViewModel = nil
+                    },
+                    onDismiss: { rewardsPayoutViewModel = nil }
+                )
+            }
+        )
         .crossPlatformToolbar(ignoresTopEdge: true) {
             #if os(macOS)
             CustomToolbarItem(placement: .trailing) {
@@ -188,6 +206,15 @@ struct DefiChainMainScreen: View {
                                 node: node
                             )
                         },
+                        onRewardsPayout: chain == .thorChain ? { position in
+                            // A review still waiting on the previous sheet's dismissal belongs to that session.
+                            pendingRewardsPayoutReview = nil
+                            rewardsPayoutViewModel = RewardsPayoutViewModel(
+                                vault: vault,
+                                coin: nativeCoin,
+                                position: position
+                            )
+                        } : nil,
                         emptyStateView: { emptyStateView }
                     )
                 }
@@ -416,6 +443,13 @@ struct DefiChainMainScreen: View {
             return
         }
         reviewPresenter.present(.functionTransaction(tx: tx, vault: vault))
+    }
+
+    /// The review is a sheet too, so it opens once the Rewards Payout sheet has closed.
+    func presentPendingRewardsPayoutReview() {
+        guard let review = pendingRewardsPayoutReview else { return }
+        pendingRewardsPayoutReview = nil
+        reviewPresenter.present(review)
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {

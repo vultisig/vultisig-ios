@@ -32,6 +32,16 @@ enum BondNodeState: String, CaseIterable, Codable {
         }
     }
 
+    /// Whether THORChain accepts a BONDYIELD memo for this node
+    var canSetBondYield: Bool {
+        switch self {
+        case .active, .ready, .standby:
+            return true
+        case .whitelisted, .disabled, .unknown:
+            return false
+        }
+    }
+
     /// Whether a user can bond to this node
     var canBond: Bool {
         switch self {

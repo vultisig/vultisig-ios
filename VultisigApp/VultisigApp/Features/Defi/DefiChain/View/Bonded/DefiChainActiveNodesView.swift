@@ -15,6 +15,7 @@ struct DefiChainActiveNodesView: View {
     var onBond: (BondNode) -> Void
     var onUnbond: (BondNode) -> Void
     var onShowRewardHistory: (BondPosition) -> Void
+    var onRewardsPayout: ((BondPosition) -> Void)? = nil
 
     @State private var isExpanded = false
 
@@ -41,7 +42,8 @@ struct DefiChainActiveNodesView: View {
                             canAddBond: canAddBond,
                             onUnbond: onUnbond,
                             onBond: onBond,
-                            onShowRewardHistory: { onShowRewardHistory(node) }
+                            onShowRewardHistory: { onShowRewardHistory(node) },
+                            onRewardsPayout: onRewardsPayout.map { open in { open(node) } }
                         )
                         Separator(color: Theme.colors.border, opacity: 1)
                             .showIf(node != activeNodes.last)

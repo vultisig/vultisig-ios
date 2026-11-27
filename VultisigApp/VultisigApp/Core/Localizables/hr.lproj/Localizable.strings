@@ -1190,6 +1190,8 @@
 "passwordIsRequired" = "Potrebna je lozinka.";
 "passwordMismatch" = "Lozinke se ne podudaraju";
 "paste" = "Zalijepi";
+"payoutAsset" = "Imovina isplate";
+"payoutPercentage" = "Postotak isplate";
 "peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
@@ -1351,6 +1353,10 @@
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
 "rewardHistoryNodeAddress" = "Čvor: %@";
 "rewardHistoryUnavailable" = "Povijest Nagrada Nedostupna";
+"rewardsPayout" = "Isplata nagrada";
+"rewardsPayoutCaption" = "%d%% tvojih nagrada od bonda se isplaćuje. Ostatak se dodaje tvom vezanom iznosu.";
+"rewardsPayoutCaptionNone" = "Sve tvoje nagrade od bonda dodaju se tvom vezanom iznosu.";
+"rewardsPayoutDescription" = "Primi dio nagrada od bonda kao isplatu u RUNE.";
 "rippleCustomTokenInvalidFormat" = "Unesite XRP token kao currency.issuer — kod tokena (npr. USD ili SOLO), a zatim adresu izdavatelja.";
 "rippleFieldAmount" = "Iznos";
 "rippleFieldDeliverMin" = "Deliver Min";

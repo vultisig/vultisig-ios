@@ -22,6 +22,14 @@ struct NodeDetailsResponse: Decodable {
         case currentAward = "current_award"
     }
 
+    /// The Bond Yield share `address` set on this node, in basis points; nil when it is not a provider here.
+    func payoutBps(for address: String) -> Int? {
+        guard let provider = bondProviders.providers.first(where: {
+            $0.bondAddress.caseInsensitiveCompare(address) == .orderedSame
+        }) else { return nil }
+        return provider.bps ?? 0
+    }
+
     struct BondProvidersInfo: Decodable {
         let nodeOperatorFee: String
         let providers: [BondProvider]
@@ -35,10 +43,13 @@ struct NodeDetailsResponse: Decodable {
     struct BondProvider: Decodable {
         let bondAddress: String
         let bond: String
+        /// Bond Yield share of future rewards paid out, in basis points. THORNode omits it when unset, which means 0.
+        let bps: Int?
 
         enum CodingKeys: String, CodingKey {
             case bondAddress = "bond_address"
             case bond
+            case bps
         }
     }
 }
