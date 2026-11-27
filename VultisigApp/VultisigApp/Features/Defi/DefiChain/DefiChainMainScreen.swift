@@ -207,6 +207,8 @@ struct DefiChainMainScreen: View {
                             )
                         },
                         onRewardsPayout: chain == .thorChain ? { position in
+                            // A review still waiting on the previous sheet's dismissal belongs to that session.
+                            pendingRewardsPayoutReview = nil
                             rewardsPayoutViewModel = RewardsPayoutViewModel(
                                 vault: vault,
                                 coin: nativeCoin,

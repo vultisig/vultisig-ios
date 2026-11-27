@@ -101,7 +101,7 @@ struct RewardsPayoutSheet: View {
                         viewModel.load()
                     }
                     .fixedSize()
-                } else if viewModel.initialPercentage == nil {
+                } else if viewModel.currentBps == nil {
                     ProgressView()
                 } else {
                     Text("\(viewModel.selectedPercentage)%")
@@ -113,12 +113,12 @@ struct RewardsPayoutSheet: View {
                 PercentageSliderView(percentage: $viewModel.percentage)
                 PercentageButtonsStack(selectedPercentage: $viewModel.percentage)
             }
-            .disabled(viewModel.initialPercentage == nil)
+            .disabled(viewModel.currentBps == nil)
             Text(caption)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
-                .showIf(viewModel.initialPercentage != nil)
+                .showIf(viewModel.currentBps != nil)
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
@@ -133,20 +133,24 @@ struct RewardsPayoutSheet: View {
 
     private var nodeInfo: some View {
         VStack(spacing: 12) {
-            infoRow("nodeAddress".localized, viewModel.nodeAddress.truncatedAddress)
-            infoRow("bonded".localized, viewModel.coin.formatWithTicker(value: viewModel.bondedAmount))
-            infoRow("nextReward".localized, viewModel.coin.formatWithTicker(value: viewModel.nextReward))
+            infoRow("nodeAddress".localized) { Text(viewModel.nodeAddress.truncatedAddress) }
+            infoRow("bonded".localized) {
+                HiddenBalanceText(viewModel.coin.formatWithTicker(value: viewModel.bondedAmount))
+            }
+            infoRow("nextReward".localized) {
+                HiddenBalanceText(viewModel.coin.formatWithTicker(value: viewModel.nextReward))
+            }
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
     }
 
-    private func infoRow(_ label: String, _ value: String) -> some View {
+    private func infoRow<Value: View>(_ label: String, @ViewBuilder value: () -> Value) -> some View {
         HStack {
             Text(label)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
-            Text(value)
+            value()
                 .foregroundStyle(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.bodySMedium)

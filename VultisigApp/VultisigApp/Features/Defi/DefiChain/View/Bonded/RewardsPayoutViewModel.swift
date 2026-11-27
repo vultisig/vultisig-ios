@@ -21,8 +21,8 @@ final class RewardsPayoutViewModel: ObservableObject, Identifiable, Equatable {
     let nextReward: Decimal
 
     @Published var percentage: Double? = 0
-    /// The share the sheet opened with, in whole percent; nil until read.
-    @Published private(set) var initialPercentage: Int?
+    /// The provider's on-chain Bond Yield share in basis points; nil until read.
+    @Published private(set) var currentBps: Int?
     @Published private(set) var loadFailed = false
     @Published private(set) var isPreparing = false
 
@@ -40,8 +40,8 @@ final class RewardsPayoutViewModel: ObservableObject, Identifiable, Equatable {
     var selectedPercentage: Int { Int(percentage ?? 0) }
 
     var canContinue: Bool {
-        guard let initialPercentage, !isPreparing else { return false }
-        return selectedPercentage != initialPercentage
+        guard let currentBps, !isPreparing else { return false }
+        return selectedPercentage * BondYieldTransactionBuilder.basisPointsPerPercent != currentBps
     }
 
     func load() {
@@ -55,9 +55,8 @@ final class RewardsPayoutViewModel: ObservableObject, Identifiable, Equatable {
                     loadFailed = true
                     return
                 }
-                let loaded = bps / BondYieldTransactionBuilder.basisPointsPerPercent
-                initialPercentage = loaded
-                percentage = Double(loaded)
+                currentBps = bps
+                percentage = Double(bps / BondYieldTransactionBuilder.basisPointsPerPercent)
             } catch is CancellationError {
                 return
             } catch {
