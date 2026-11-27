@@ -50,6 +50,7 @@ struct TransactionHistoryDetailSheet: View {
     /// Drives the live expiry countdown. A resting order's chip has to tick on
     /// its own — nothing else republishes between the tracker's 60s polls.
     @State private var now = Date()
+    @State private var bannerText: String?
 
     private var isLimit: Bool { transaction.type == .limit }
 
@@ -96,6 +97,7 @@ struct TransactionHistoryDetailSheet: View {
             .padding(16)
             .padding(.top, 20)
         }
+        .withBanner(text: $bannerText)
         .onAppear { now = Date() }
         // Keyed on the order's status so the tick is torn down and re-evaluated
         // the moment it goes terminal, rather than running on for a closed
@@ -560,6 +562,11 @@ struct TransactionHistoryDetailSheet: View {
                 explorerButton
                 copyHashButton
             }
+        } else if providerExplorerURL != nil {
+            HStack(spacing: 8) {
+                explorerButton
+                copyLinkButton
+            }
         } else {
             explorerButton
                 .fixedSize()
@@ -571,6 +578,14 @@ struct TransactionHistoryDetailSheet: View {
             if let url = providerExplorerURL {
                 openURL(url)
             }
+        }
+    }
+
+    private var copyLinkButton: some View {
+        PrimaryButton(title: "copyLink", type: .secondary) {
+            guard let url = providerExplorerURL else { return }
+            ClipboardManager.copyToClipboard(url.absoluteString)
+            bannerText = "linkCopied".localized
         }
     }
 
