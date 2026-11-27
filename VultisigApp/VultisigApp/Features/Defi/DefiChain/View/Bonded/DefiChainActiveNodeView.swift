@@ -15,6 +15,8 @@ struct DefiChainActiveNodeView: View {
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
     var onShowRewardHistory: () -> Void
+    /// Opens Rewards Payout; nil hides the button (MayaChain has no Bond Yield).
+    var onRewardsPayout: (() -> Void)? = nil
 
     let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -85,6 +87,10 @@ struct DefiChainActiveNodeView: View {
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.textSecondary)
                     .showIf(unbondDisabled)
+                if let onRewardsPayout {
+                    DefiButton(title: "rewardsPayout".localized, type: .secondary, action: onRewardsPayout)
+                        .disabled(!activeNode.node.state.canSetBondYield)
+                }
             }
         }
     }

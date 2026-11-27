@@ -1190,6 +1190,8 @@
 "passwordIsRequired" = "Password is required.";
 "passwordMismatch" = "Password Mismatch";
 "paste" = "Paste";
+"payoutAsset" = "Payout asset";
+"payoutPercentage" = "Payout percentage";
 "peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
 "peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
@@ -1351,6 +1353,10 @@
 "reviewYourVaultDevices" = "Review your vault devices";
 "rewardHistoryNodeAddress" = "Node: %@";
 "rewardHistoryUnavailable" = "Reward History Unavailable";
+"rewardsPayout" = "Rewards Payout";
+"rewardsPayoutCaption" = "%d%% of your bond rewards are paid out. The rest is added back to your bonded amount.";
+"rewardsPayoutCaptionNone" = "All of your bond rewards are added back to your bonded amount.";
+"rewardsPayoutDescription" = "Receive part of your bond rewards as a RUNE payout.";
 "rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";
 "rippleFieldDeliverMin" = "Deliver Min";

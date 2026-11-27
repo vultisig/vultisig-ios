@@ -1190,6 +1190,8 @@
 "passwordIsRequired" = "Se requiere contraseña.";
 "passwordMismatch" = "Las contraseñas no coinciden";
 "paste" = "Pegar";
+"payoutAsset" = "Activo de pago";
+"payoutPercentage" = "Porcentaje de pago";
 "peerDiscoveryInfoDescription" = "En tu otro dispositivo, abre la app y toca \"Escanear QR\" para conectarlo.";
 "peerDiscoveryInfoTitle" = "Escanea el QR en tus otros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
@@ -1351,6 +1353,10 @@
 "reviewYourVaultDevices" = "Revisa los dispositivos de tu bóveda";
 "rewardHistoryNodeAddress" = "Nodo: %@";
 "rewardHistoryUnavailable" = "Historial de Recompensas No Disponible";
+"rewardsPayout" = "Pago de recompensas";
+"rewardsPayoutCaption" = "Se paga el %d%% de tus recompensas de bond. El resto se añade a tu monto vinculado.";
+"rewardsPayoutCaptionNone" = "Todas tus recompensas de bond se añaden a tu monto vinculado.";
+"rewardsPayoutDescription" = "Recibe parte de tus recompensas de bond como pago en RUNE.";
 "rippleCustomTokenInvalidFormat" = "Ingresa un token XRP como currency.issuer: el código del token (p. ej. USD o SOLO) y luego la dirección del emisor.";
 "rippleFieldAmount" = "Cantidad";
 "rippleFieldDeliverMin" = "Deliver Min";
