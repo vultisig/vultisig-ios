@@ -99,7 +99,7 @@ final class ERC20ApproveLegsTests: XCTestCase {
             $0.spender = Self.spender
         }
 
-        let decoded = ERC20ApprovePayload(proto: legacy)
+        let decoded = try ERC20ApprovePayload(proto: legacy)
 
         XCTAssertFalse(decoded.resetAllowanceFirst)
         XCTAssertEqual(try decoded.mapToProtobuff().serializedData(), try legacy.serializedData())

@@ -67,6 +67,15 @@ enum ForegroundNotificationParser {
             )
             return .swap(description: description)
         } else {
+            if let reading = JoinKeysignReviewPresentation.substrateDappReading(of: payload) {
+                switch reading {
+                case .otherCall:
+                    return .generic(body: "foregroundNotificationGeneric".localized)
+                case .transfer(_, let amount):
+                    let amountText = "\(amount.formatForDisplay()) \(payload.coin.ticker)"
+                    return .send(description: String(format: "foregroundNotificationSend".localized, amountText))
+                }
+            }
             let description = String(
                 format: "foregroundNotificationSend".localized,
                 payload.toAmountWithTickerString

@@ -414,6 +414,7 @@
 "doneVerbRedelegated" = "Redelegated";
 "doneVerbRemovedLiquidity" = "Removed liquidity";
 "doneVerbSent" = "Sent";
+"doneVerbSigned" = "Signed";
 "doneVerbStaked" = "Staked";
 "doneVerbSwitched" = "Switched";
 "doneVerbUnbonded" = "Unbonded";

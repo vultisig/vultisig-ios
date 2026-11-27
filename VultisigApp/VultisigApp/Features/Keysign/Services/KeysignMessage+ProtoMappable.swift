@@ -125,14 +125,18 @@ extension KeysignPayload: ProtoMappable {
             try proto.requireNearWireAmounts()
         }
         self.toAddress = proto.toAddress
-        self.toAmount = BigInt(stringLiteral: proto.toAmount)
+        if proto.toAmount.isEmpty, try SubstrateSignerPayload.fromKeysign(chain: coin.chain, memo: proto.memo) != nil {
+            self.toAmount = .zero
+        } else {
+            self.toAmount = try BigInt(wireAmount: proto.toAmount)
+        }
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
         self.utxos = try proto.utxoInfo.compactMap { try UtxoInfo(proto: $0) }
         self.memo = proto.memo
         self.vaultPubKeyECDSA = proto.vaultPublicKeyEcdsa
         self.vaultLocalPartyID = proto.vaultLocalPartyID
         self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0) }
-        self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
+        self.approvePayload = try proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
         self.libType = proto.libType
 
         // Handle contract_payload oneof
@@ -232,6 +236,7 @@ extension KeysignPayload: ProtoMappable {
 }
 
 private extension VSKeysignPayload {
+
     /// Refuses the NEAR amount spellings `BigInt` parsing would normalise into a
     /// signable payload. Mirrors the SDK resolver's `NEAR_UNSIGNED_DECIMAL` and
     /// deposit-amount checks and Android's `requireNearWireAmounts`.
@@ -250,10 +255,20 @@ private extension VSKeysignPayload {
     }
 }
 
+private extension BigInt {
+    /// Decodes a keysign amount, throwing on anything but unsigned decimal digits.
+    init(wireAmount value: String) throws {
+        guard value.isUnsignedDecimal, let amount = BigInt(value) else {
+            throw ProtoMappableError.invalidAmount
+        }
+        self = amount
+    }
+}
+
 extension ERC20ApprovePayload {
 
-    init(proto: VSErc20ApprovePayload) {
-        self.amount = BigInt(stringLiteral: proto.amount)
+    init(proto: VSErc20ApprovePayload) throws {
+        self.amount = try BigInt(wireAmount: proto.amount)
         self.spender = proto.spender
         self.resetAllowanceFirst = proto.resetAllowanceFirst
     }
@@ -303,7 +318,7 @@ extension SwapPayload {
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 vaultAddress: value.vaultAddress,
                 routerAddress: value.routerAddress.nilIfEmpty,
-                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                fromAmount: try BigInt(wireAmount: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 toAmountLimit: value.toAmountLimit,
                 streamingInterval: value.streamingInterval,
@@ -320,7 +335,7 @@ extension SwapPayload {
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 vaultAddress: value.vaultAddress,
                 routerAddress: value.routerAddress.nilIfEmpty,
-                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                fromAmount: try BigInt(wireAmount: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 toAmountLimit: value.toAmountLimit,
                 streamingInterval: value.streamingInterval,
@@ -337,7 +352,7 @@ extension SwapPayload {
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
-                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                fromAmount: try BigInt(wireAmount: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 quote: EVMQuote(
                     dstAmount: value.quote.dstAmount,
@@ -362,7 +377,7 @@ extension SwapPayload {
             self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
-                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                fromAmount: try BigInt(wireAmount: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 quote: EVMQuote(
                     dstAmount: value.quote.dstAmount,
@@ -381,7 +396,7 @@ extension SwapPayload {
             self = .swapkit(SwapKitSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
-                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                fromAmount: try BigInt(wireAmount: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 txType: value.txType,
                 txPayload: value.txPayload,

@@ -414,6 +414,7 @@
 "doneVerbRedelegated" = "Ponovno delegirano";
 "doneVerbRemovedLiquidity" = "Uklonjena likvidnost";
 "doneVerbSent" = "Poslano";
+"doneVerbSigned" = "Potpisano";
 "doneVerbStaked" = "Stakano";
 "doneVerbSwitched" = "Prebačeno";
 "doneVerbUnbonded" = "Odvezano";

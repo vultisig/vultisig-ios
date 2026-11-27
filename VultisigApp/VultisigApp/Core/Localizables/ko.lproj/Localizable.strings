@@ -414,6 +414,7 @@
 "doneVerbRedelegated" = "재위임됨";
 "doneVerbRemovedLiquidity" = "유동성 제거됨";
 "doneVerbSent" = "전송됨";
+"doneVerbSigned" = "서명됨";
 "doneVerbStaked" = "스테이킹됨";
 "doneVerbSwitched" = "전환됨";
 "doneVerbUnbonded" = "언본딩됨";

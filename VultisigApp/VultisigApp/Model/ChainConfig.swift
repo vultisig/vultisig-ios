@@ -27,6 +27,8 @@ extension Chain {
         /// User-facing network label (not localized: same in every locale). `name` stays the wire/storage identifier.
         let displayName: String
         var typedAddressCompleteLength: Int?
+        /// Genesis hash a dApp `signPayload` on this chain is bound to (Polkadot relay chain, not Asset Hub).
+        var substrateGenesisHash: String?
     }
 
     /// Lookup table built from an exhaustive switch (`makeConfig()`), so adding a
@@ -77,6 +79,8 @@ extension Chain {
     /// NEAR accepts any account id of 2+ characters; a 43-character Solana
     /// prefix can decode to 32 bytes.
     var typedAddressCompleteLength: Int? { config.typedAddressCompleteLength }
+
+    var substrateGenesisHash: String? { config.substrateGenesisHash }
 
     // MARK: - Row definitions
     //
@@ -135,7 +139,7 @@ extension Chain {
         case .sui:
             return ChainConfig(name: "Sui", ticker: "SUI", feeUnit: "SUI", swapAsset: "SUI", logo: "sui", chainID: nil, coinType: .sui, chainType: .Sui, banxaBlockchainCode: "SUI", minimumSendAmount: nil, displayName: "Sui")
         case .polkadot:
-            return ChainConfig(name: "Polkadot", ticker: "DOT", feeUnit: "DOT", swapAsset: "DOT", logo: "dot", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "DOT", minimumSendAmount: nil, displayName: "Polkadot")
+            return ChainConfig(name: "Polkadot", ticker: "DOT", feeUnit: "DOT", swapAsset: "DOT", logo: "dot", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "DOT", minimumSendAmount: nil, displayName: "Polkadot", substrateGenesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3")
         case .zksync:
             return ChainConfig(name: "Zksync", ticker: "ZK", feeUnit: "Gwei", swapAsset: "ZK", logo: "zsync_era", chainID: 324, coinType: .zksync, chainType: .EVM, banxaBlockchainCode: "ZKSYNC", minimumSendAmount: nil, displayName: "ZKsync")
         case .dydx:
@@ -171,7 +175,7 @@ extension Chain {
         case .qbtc:
             return ChainConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil, displayName: "QBTC")
         case .bittensor:
-            return ChainConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil, displayName: "Bittensor")
+            return ChainConfig(name: "Bittensor", ticker: "TAO", feeUnit: "RAO", swapAsset: "TAO", logo: "bittensor", chainID: nil, coinType: .polkadot, chainType: .Polkadot, banxaBlockchainCode: "TAO", minimumSendAmount: nil, displayName: "Bittensor", substrateGenesisHash: "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03")
         case .near:
             // `banxaBlockchainCode` is inert: `canBuy` is false for NEAR, so no
             // on-ramp ever reads it.

@@ -109,6 +109,10 @@ struct JoinKeysignGasViewModel {
         } else if payload.coin.chainType == .Cardano {
             feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
+        // A Substrate dApp payload signs its own tip, paid on top of the fee.
+        if let tip = try? payload.substrateDappPayload?.tipValue() {
+            feeToUse += tip
+        }
 
         return ResolvedNetworkFee(amount: feeToUse, nativeToken: nativeToken)
     }

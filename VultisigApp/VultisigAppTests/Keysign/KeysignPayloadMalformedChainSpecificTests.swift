@@ -9,6 +9,9 @@
 //  crash-hardened contract: malformed/empty/absent numeric fields fall back to
 //  0 (mirroring an absent field), while every well-formed value — including an
 //  explicit "0" — still maps through verbatim so the signed tx is unchanged.
+//  Amounts are stricter: a malformed amount throws instead of becoming 0,
+//  except an empty to_amount on a Substrate dApp signPayload, which has no
+//  single amount.
 //
 
 import BigInt
@@ -20,6 +23,8 @@ final class KeysignPayloadMalformedChainSpecificTests: XCTestCase {
 
     // Base58 of 32 zero bytes — a structurally valid recent blockhash.
     private let recentBlockHash = "11111111111111111111111111111111"
+
+    private let signerPayloadMemo = #"{"method":"0x0758","genesisHash":"0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03"}"#
 
     // MARK: - Solana priority_fee
 
@@ -138,7 +143,85 @@ final class KeysignPayloadMalformedChainSpecificTests: XCTestCase {
         XCTAssertEqual(currentBlockNumber, BigInt(24_680_123), "well-formed current_block_number must map through unchanged")
     }
 
+    // MARK: - Amounts
+
+    func testEmptyToAmountOnSubstrateDappPayloadDecodesToZero() throws {
+        var proto = try makePayloadProto()
+        proto.toAmount = ""
+        proto.memo = signerPayloadMemo
+
+        XCTAssertEqual(try KeysignPayload(proto: proto).toAmount, 0)
+    }
+
+    func testEmptyToAmountWithAnotherChainsGenesisThrows() throws {
+        var proto = try makePayloadProto()
+        proto.toAmount = ""
+        proto.memo = #"{"method":"0x0758","genesisHash":"0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"}"#
+
+        XCTAssertThrowsError(try KeysignPayload(proto: proto))
+    }
+
+    func testEmptyToAmountWithSignerPayloadOnNonSubstrateChainThrows() throws {
+        var proto = try makePayloadProto()
+        proto.coin = ProtoCoinResolver.proto(
+            from: SigningGoldenFactory.coin(chain: .ethereum, ticker: "ETH", decimals: 18, curve: .secp256k1)
+        )
+        proto.toAmount = ""
+        proto.memo = signerPayloadMemo
+
+        assertThrowsInvalidAmount(try KeysignPayload(proto: proto))
+    }
+
+    func testEmptyToAmountWithoutSignerPayloadThrows() throws {
+        var proto = try makePayloadProto()
+        proto.toAmount = ""
+
+        assertThrowsInvalidAmount(try KeysignPayload(proto: proto))
+    }
+
+    func testMalformedToAmountThrows() throws {
+        var proto = try makePayloadProto()
+        proto.toAmount = "-5"
+
+        assertThrowsInvalidAmount(try KeysignPayload(proto: proto))
+    }
+
+    func testEmptyApproveAmountThrows() throws {
+        var proto = try makePayloadProto()
+        proto.erc20ApprovePayload = .with { $0.spender = proto.toAddress }
+
+        assertThrowsInvalidAmount(try KeysignPayload(proto: proto))
+    }
+
+    func testEmptySwapFromAmountThrows() throws {
+        var proto = try makePayloadProto()
+        proto.thorchainSwapPayload = .with {
+            $0.fromCoin = proto.coin
+            $0.toCoin = proto.coin
+        }
+
+        assertThrowsInvalidAmount(try KeysignPayload(proto: proto))
+    }
+
     // MARK: - Helpers
+
+    private func assertThrowsInvalidAmount<T>(_ expression: @autoclosure () throws -> T, line: UInt = #line) {
+        XCTAssertThrowsError(try expression(), line: line) { error in
+            guard case ProtoMappableError.invalidAmount = error else {
+                return XCTFail("expected invalidAmount, got \(error)", line: line)
+            }
+        }
+    }
+
+    private func makePayloadProto() throws -> VSKeysignPayload {
+        let payload = SigningGoldenFactory.payload(
+            coin: SigningGoldenFactory.coin(chain: .bittensor, ticker: "TAO", decimals: 9, curve: .ed25519),
+            toAddress: SigningGoldenFactory.recipient(.bittensor),
+            toAmount: BigInt(1_000_000_000),
+            chainSpecific: try decodePolkadot(currentBlockNumber: "24680123")
+        )
+        return payload.mapToProtobuff()
+    }
 
     /// Decodes a Solana chain-specific proto through the untrusted-payload path.
     /// A nil `computeLimit` leaves the field unset (absent on the wire).
