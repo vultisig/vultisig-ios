@@ -44,26 +44,26 @@ struct TronAPIService {
     // MARK: - Block Info
 
     func getNowBlock() async throws -> TronNowBlockResponse {
-        let response = try await httpClient.request(api(.getNowBlock), responseType: TronNowBlockResponse.self)
+        let response = try await httpClient.requestRetryingTimeout(api(.getNowBlock), responseType: TronNowBlockResponse.self)
         return response.data
     }
 
     // MARK: - Account
 
     func getAccount(address: String) async throws -> TronAccountResponse {
-        let response = try await httpClient.request(api(.getAccount(address: address)), responseType: TronAccountResponse.self)
+        let response = try await httpClient.requestRetryingTimeout(api(.getAccount(address: address)), responseType: TronAccountResponse.self)
         return response.data
     }
 
     func getAccountResource(address: String) async throws -> TronAccountResourceResponse {
-        let response = try await httpClient.request(api(.getAccountResource(address: address)), responseType: TronAccountResourceResponse.self)
+        let response = try await httpClient.requestRetryingTimeout(api(.getAccountResource(address: address)), responseType: TronAccountResourceResponse.self)
         return response.data
     }
 
     // MARK: - Chain Parameters
 
     func getChainParameters() async throws -> TronChainParametersResponse {
-        let response = try await httpClient.request(api(.getChainParameters), responseType: TronChainParametersResponse.self)
+        let response = try await httpClient.requestRetryingTimeout(api(.getChainParameters), responseType: TronChainParametersResponse.self)
         return response.data
     }
 
@@ -132,7 +132,7 @@ struct TronAPIService {
         toAddress: String
     ) async throws -> TronTriggerConstantResponse {
         let parameter = try Self.encodeTrc20TransferParameter(toAddress: toAddress, amount: 1)
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.triggerConstantContract(
                 ownerAddress: ownerAddress,
                 contractAddress: contractAddress,
@@ -182,7 +182,7 @@ struct TronAPIService {
         let emptyParameter = String(repeating: "0", count: 64)
 
         // Fetch all three in parallel
-        async let nameResponse = httpClient.request(
+        async let nameResponse = httpClient.requestRetryingTimeout(
             api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
@@ -192,7 +192,7 @@ struct TronAPIService {
             responseType: TronTriggerConstantResponse.self
         )
 
-        async let symbolResponse = httpClient.request(
+        async let symbolResponse = httpClient.requestRetryingTimeout(
             api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
@@ -202,7 +202,7 @@ struct TronAPIService {
             responseType: TronTriggerConstantResponse.self
         )
 
-        async let decimalsResponse = httpClient.request(
+        async let decimalsResponse = httpClient.requestRetryingTimeout(
             api(.triggerConstantContract(
                 ownerAddress: contractAddress,
                 contractAddress: contractAddress,
@@ -273,7 +273,7 @@ struct TronAPIService {
         let addressHex = addressData.hexString
         let parameter = String(repeating: "0", count: max(0, 64 - addressHex.count)) + addressHex
 
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.triggerConstantContract(
                 ownerAddress: walletAddress,
                 contractAddress: contractAddress,

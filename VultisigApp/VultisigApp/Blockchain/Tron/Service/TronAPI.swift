@@ -28,6 +28,10 @@ struct TronAPI: TargetType {
     /// Default TRON REST host (Vultisig proxy).
     static let defaultHost = URL(staticString: "https://api.vultisig.com/tron")
 
+    static let defaultTimeout: TimeInterval = 60
+    /// Short so `requestRetryingTimeout` resends while the user waits; matches `SolanaAPI.proxyReadTimeout`.
+    static let proxyReadTimeout: TimeInterval = 20
+
     let endpoint: Endpoint
     /// The resolved TRON REST host (override-aware), baked in by the API service.
     let host: URL
@@ -53,6 +57,17 @@ struct TronAPI: TargetType {
             return "/wallet/broadcasttransaction"
         case .triggerConstantContract:
             return "/wallet/triggerconstantcontract"
+        }
+    }
+
+    /// A custom node was never measured against the proxy's stall boundary, so it keeps the default.
+    var timeoutInterval: TimeInterval {
+        guard host == Self.defaultHost else { return Self.defaultTimeout }
+        switch endpoint {
+        case .broadcastTransaction:
+            return Self.defaultTimeout
+        case .getNowBlock, .getAccount, .getAccountResource, .getChainParameters, .triggerConstantContract:
+            return Self.proxyReadTimeout
         }
     }
 
